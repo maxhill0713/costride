@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { motion } from 'framer-motion';
 import { Html5Qrcode } from 'html5-qrcode';
 import { X, Loader2, Camera, AlertCircle, Plus } from 'lucide-react';
 
@@ -151,7 +152,11 @@ export default function FoodBarcodeScanner({ onFoodAdded, onClose }) {
   };
 
   return (
-    <div
+    <motion.div
+      initial={{ y: '100%' }}
+      animate={{ y: 0 }}
+      exit={{ y: '100%', transition: { type: 'spring', stiffness: 420, damping: 40, mass: 0.9 } }}
+      transition={{ type: 'spring', stiffness: 380, damping: 36, mass: 1 }}
       style={{
         position: 'fixed',
         inset: 0,
@@ -535,6 +540,6 @@ export default function FoodBarcodeScanner({ onFoodAdded, onClose }) {
           to { transform: rotate(360deg); }
         }
       `}</style>
-    </div>
+    </motion.div>
   );
 }

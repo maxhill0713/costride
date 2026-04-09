@@ -1,4 +1,5 @@
 import React, { useState, useRef, useCallback, useEffect, useMemo } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   Flame, ChevronRight, Droplets, Zap, ScanBarcode, X,
   Search, Clock, Star, BookMarked, ChevronDown, ChevronUp,
@@ -285,18 +286,27 @@ function BottomSheet({ onClose, children }) {
   return (
     <div style={{ position:'fixed', inset:0, zIndex:300, display:'flex',
       flexDirection:'column', justifyContent:'flex-end' }}>
-      <div style={{ position:'absolute', inset:0, background:'rgba(2,4,10,0.87)',
-        backdropFilter:'blur(10px)' }} onClick={onClose} />
-      <div style={{ position:'relative', background:SHEET_BG,
-        border:'1px solid rgba(255,255,255,0.09)', borderBottom:'none',
-        borderRadius:'26px 26px 0 0', padding:'10px 18px 42px',
-        maxHeight:'90vh', overflowY:'auto',
-        boxShadow:'0 -16px 60px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.06)' }}>
+      <motion.div
+        initial={{ opacity:0 }} animate={{ opacity:1 }} exit={{ opacity:0 }}
+        transition={{ duration:0.2 }}
+        style={{ position:'absolute', inset:0, background:'rgba(2,4,10,0.87)', backdropFilter:'blur(10px)' }}
+        onClick={onClose}
+      />
+      <motion.div
+        initial={{ y:'100%' }}
+        animate={{ y:0 }}
+        exit={{ y:'100%', transition:{ type:'spring', stiffness:420, damping:40, mass:0.9 } }}
+        transition={{ type:'spring', stiffness:380, damping:36, mass:1 }}
+        style={{ position:'relative', background:SHEET_BG,
+          border:'1px solid rgba(255,255,255,0.09)', borderBottom:'none',
+          borderRadius:'26px 26px 0 0', padding:'10px 18px 42px',
+          maxHeight:'90vh', overflowY:'auto',
+          boxShadow:'0 -16px 60px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.06)' }}>
         <div style={{ display:'flex', justifyContent:'center', paddingBottom:16 }}>
           <div style={{ width:36, height:4, borderRadius:99, background:'rgba(255,255,255,0.14)' }} />
         </div>
         {children}
-      </div>
+      </motion.div>
     </div>
   );
 }
@@ -492,7 +502,11 @@ function AddFoodSheet({ section, onAdd, onClose }) {
     onClose();
   };
 
-  if (selected) return <FoodDetailSheet food={selected} section={section} onConfirm={handleConfirm} onClose={()=>setSelected(null)} />;
+  if (selected) return (
+    <AnimatePresence>
+      <FoodDetailSheet food={selected} section={section} onConfirm={handleConfirm} onClose={()=>setSelected(null)} />
+    </AnimatePresence>
+  );
 
   const TABS = [
     { key:'search', label:'Search' },
@@ -1076,8 +1090,10 @@ export default function NutritionTab() {
       </div>
 
       {/* ── Modals ── */}
-      {addingTo  && <AddFoodSheet section={addingTo}  onAdd={handleAddFood} onClose={()=>setAddingTo(null)} />}
-      {showScanner && <BarcodeModal onAdd={handleAddFood} onClose={()=>setScanner(false)} />}
+      <AnimatePresence>
+        {addingTo   && <AddFoodSheet key="addFood" section={addingTo} onAdd={handleAddFood} onClose={()=>setAddingTo(null)} />}
+        {showScanner && <BarcodeModal key="scanner" onAdd={handleAddFood} onClose={()=>setScanner(false)} />}
+      </AnimatePresence>
       <Toast msg={toast.msg} visible={toast.visible} />
     </div>
   );

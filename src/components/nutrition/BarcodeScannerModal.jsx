@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { X, ScanBarcode, Loader2, Camera, AlertCircle } from 'lucide-react';
 import { Html5Qrcode, Html5QrcodeSupportedFormats } from 'html5-qrcode';
 import { base44 } from '@/api/base44Client';
+import { motion } from 'framer-motion';
 
 const OVERLAY_BG = 'rgba(0,0,0,0.92)';
 const CARD_BG = 'linear-gradient(135deg, rgba(20,25,50,0.99) 0%, rgba(6,8,18,1) 100%)';
@@ -219,7 +220,13 @@ export default function BarcodeScannerModal({ onAdd, onClose }) {
   const showScanner = phase === 'scanning' || phase === 'init';
 
   return (
-    <div style={{ position: 'fixed', inset: 0, zIndex: 500, display: 'flex', flexDirection: 'column', background: OVERLAY_BG }}>
+    <motion.div
+      initial={{ y: '100%' }}
+      animate={{ y: 0 }}
+      exit={{ y: '100%', transition: { type: 'spring', stiffness: 420, damping: 40, mass: 0.9 } }}
+      transition={{ type: 'spring', stiffness: 380, damping: 36, mass: 1 }}
+      style={{ position: 'fixed', inset: 0, zIndex: 500, display: 'flex', flexDirection: 'column', background: OVERLAY_BG }}
+    >
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 16px 12px', flexShrink: 0 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
@@ -398,6 +405,6 @@ export default function BarcodeScannerModal({ onAdd, onClose }) {
         @keyframes spin { to { transform: rotate(360deg); } }
         #${idRef.current} video { width: 100% !important; height: 100% !important; object-fit: cover; }
       `}</style>
-    </div>
+    </motion.div>
   );
 }
