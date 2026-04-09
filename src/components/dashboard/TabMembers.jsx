@@ -1,484 +1,302 @@
-/**
- * MembersPageAI — v2 "Tailwind Refactor"
- * Design: Stripe/Linear/Notion — high signal, low noise.
- */
-
 import { useState, useMemo, useCallback } from "react";
 import {
   AlertTriangle, TrendingDown, TrendingUp, Users, UserPlus,
   Flame, Send, X, ChevronRight, ChevronDown, ChevronLeft, Search,
-  Check, Bell, Activity, Star, Tag, MoreHorizontal,
-  Plus,
+  Check, Bell, Activity, Star, MoreHorizontal, Plus, QrCode,
+  Zap, Target, BarChart2, ArrowRight,
 } from "lucide-react";
-import { AppButton } from "@/components/ui/AppButton";
-import { AppBadge } from "@/components/ui/AppBadge";
-import { AppProgressBar } from "@/components/ui/AppProgressBar";
 import { cn } from "@/lib/utils";
 
-/* ── Mock Data ──────────────────────────────────────────────────── */
+/* ── Design tokens ──────────────────────────────────────────── */
+const T = {
+  bg:       '#060c18',
+  surface:  '#0b1221',
+  surfaceH: '#0f1830',
+  border:   'rgba(255,255,255,0.06)',
+  borderM:  'rgba(255,255,255,0.10)',
+  text:     '#eef2ff',
+  textSec:  '#7d8ea6',
+  textMut:  '#3d4f66',
+  blue:     '#3b82f6', blueDim: 'rgba(59,130,246,0.12)', blueBd: 'rgba(59,130,246,0.28)',
+  red:      '#f04f4f', redDim:  'rgba(240,79,79,0.10)',  redBd:  'rgba(240,79,79,0.22)',
+  amber:    '#f59e0b', amberDim:'rgba(245,158,11,0.10)', amberBd:'rgba(245,158,11,0.22)',
+  green:    '#34d399', greenDim:'rgba(52,211,153,0.10)', greenBd:'rgba(52,211,153,0.22)',
+};
+const card = (ex={}) => ({ background:T.surface, border:`1px solid ${T.border}`, borderRadius:12, ...ex });
+
+/* ── Mock Data ──────────────────────────────────────────────── */
 const NOW = new Date();
-const daysAgo = (n) => new Date(NOW.getTime() - n * 864e5);
-
+const daysAgo = n => new Date(NOW.getTime() - n * 864e5);
 const MOCK_MEMBERS = [
-  { id:"1", name:"Marcus Webb",    initials:"MW", colorIdx:0, plan:"Premium", monthlyValue:120, lastVisit:daysAgo(22), daysSince:22,  visits30:0,  prevVisits30:8,  visitsTotal:47,  streak:0,  churnPct:84, joinedDaysAgo:180, returnChance:38, reasons:["No visits in 22 days","Was averaging 8/mo → 0","Missed last 3 classes"],        bestAction:"Send 'We miss you'",   status:"At risk",      statusDetail:"No visits in 22 days · Dropped from 8/month",   segment:"atRisk" },
-  { id:"2", name:"Priya Sharma",   initials:"PS", colorIdx:1, plan:"Monthly", monthlyValue:60,  lastVisit:daysAgo(16), daysSince:16,  visits30:1,  prevVisits30:4,  visitsTotal:31,  streak:0,  churnPct:71, joinedDaysAgo:95,  returnChance:44, reasons:["16 days since last visit","Frequency down 75%","Usually comes Tues/Thurs"],   bestAction:"Friendly check-in",    status:"Dropping off", statusDetail:"Frequency dropped 75% · Pattern broken",        segment:"atRisk" },
-  { id:"3", name:"Tyler Rhodes",   initials:"TR", colorIdx:2, plan:"Monthly", monthlyValue:60,  lastVisit:daysAgo(9),  daysSince:9,   visits30:1,  prevVisits30:5,  visitsTotal:12,  streak:0,  churnPct:55, joinedDaysAgo:28,  returnChance:52, reasons:["New member not building habit","Only 1 visit this month","Week 4 — critical window"], bestAction:"Habit-building nudge", status:"New",          statusDetail:"28 days in · Only 1 visit this month",          segment:"new"    },
-  { id:"4", name:"Chloe Nakamura", initials:"CN", colorIdx:3, plan:"Annual",  monthlyValue:90,  lastVisit:daysAgo(1),  daysSince:1,   visits30:14, prevVisits30:11, visitsTotal:203, streak:18, churnPct:4,  joinedDaysAgo:420, returnChance:96, reasons:[],                                                                                     bestAction:"Challenge invite",     status:"Consistent",   statusDetail:"18-day streak · Up 27% this month",             segment:"active" },
-  { id:"5", name:"Devon Osei",     initials:"DO", colorIdx:4, plan:"Monthly", monthlyValue:60,  lastVisit:daysAgo(19), daysSince:19,  visits30:0,  prevVisits30:3,  visitsTotal:8,   streak:0,  churnPct:78, joinedDaysAgo:45,  returnChance:35, reasons:["19 days absent","Early-stage member at risk","Visited 3x then stopped"],          bestAction:"Personal outreach",    status:"At risk",      statusDetail:"19 days absent · Joined & disappeared",         segment:"atRisk" },
-  { id:"6", name:"Anya Petrov",    initials:"AP", colorIdx:5, plan:"Premium", monthlyValue:120, lastVisit:daysAgo(0),  daysSince:0,   visits30:9,  prevVisits30:7,  visitsTotal:88,  streak:7,  churnPct:6,  joinedDaysAgo:210, returnChance:94, reasons:[],                                                                                     bestAction:"Referral ask",         status:"Engaged",      statusDetail:"7-day streak · Consistent performer",           segment:"active" },
-  { id:"7", name:"Jamie Collins",  initials:"JC", colorIdx:6, plan:"Monthly", monthlyValue:60,  lastVisit:daysAgo(5),  daysSince:5,   visits30:2,  prevVisits30:4,  visitsTotal:19,  streak:0,  churnPct:42, joinedDaysAgo:58,  returnChance:58, reasons:[],                                                                                     bestAction:"Motivate",             status:"Dropping off", statusDetail:"Frequency halved · Below target",               segment:"inactive"},
-  { id:"8", name:"Sam Rivera",     initials:"SR", colorIdx:7, plan:"Monthly", monthlyValue:60,  lastVisit:null,        daysSince:999, visits30:0,  prevVisits30:0,  visitsTotal:1,   streak:0,  churnPct:91, joinedDaysAgo:6,   returnChance:30, reasons:["Joined 6 days ago, 1 visit only","Critical first-week window","Has not returned"], bestAction:"Week-1 welcome",       status:"New",          statusDetail:"6 days in · First week habit window",           segment:"new"    },
+  { id:"1", name:"Marcus Webb",    initials:"MW", ci:0, plan:"Premium", val:120, lastVisit:daysAgo(22), daysSince:22,  v30:0,  pv30:8,  vTotal:47,  streak:0,  churn:84, jDays:180, retChance:38, reasons:["No visits in 22 days","Was averaging 8/mo → 0","Missed last 3 classes"],        action:"Send 'We miss you'",   status:"At risk",      seg:"atRisk"  },
+  { id:"2", name:"Priya Sharma",   initials:"PS", ci:1, plan:"Monthly", val:60,  lastVisit:daysAgo(16), daysSince:16,  v30:1,  pv30:4,  vTotal:31,  streak:0,  churn:71, jDays:95,  retChance:44, reasons:["16 days since last visit","Frequency down 75%"],                              action:"Friendly check-in",    status:"Dropping off", seg:"atRisk"  },
+  { id:"3", name:"Tyler Rhodes",   initials:"TR", ci:2, plan:"Monthly", val:60,  lastVisit:daysAgo(9),  daysSince:9,   v30:1,  pv30:5,  vTotal:12,  streak:0,  churn:55, jDays:28,  retChance:52, reasons:["New member not building habit","Only 1 visit this month"],                    action:"Habit-building nudge", status:"New",          seg:"new"     },
+  { id:"4", name:"Chloe Nakamura", initials:"CN", ci:3, plan:"Annual",  val:90,  lastVisit:daysAgo(1),  daysSince:1,   v30:14, pv30:11, vTotal:203, streak:18, churn:4,  jDays:420, retChance:96, reasons:[],                                                                              action:"Challenge invite",     status:"Consistent",   seg:"active"  },
+  { id:"5", name:"Devon Osei",     initials:"DO", ci:4, plan:"Monthly", val:60,  lastVisit:daysAgo(19), daysSince:19,  v30:0,  pv30:3,  vTotal:8,   streak:0,  churn:78, jDays:45,  retChance:35, reasons:["19 days absent","Early-stage member at risk"],                               action:"Personal outreach",    status:"At risk",      seg:"atRisk"  },
+  { id:"6", name:"Anya Petrov",    initials:"AP", ci:5, plan:"Premium", val:120, lastVisit:daysAgo(0),  daysSince:0,   v30:9,  pv30:7,  vTotal:88,  streak:7,  churn:6,  jDays:210, retChance:94, reasons:[],                                                                              action:"Referral ask",         status:"Engaged",      seg:"active"  },
+  { id:"7", name:"Jamie Collins",  initials:"JC", ci:6, plan:"Monthly", val:60,  lastVisit:daysAgo(5),  daysSince:5,   v30:2,  pv30:4,  vTotal:19,  streak:0,  churn:42, jDays:58,  retChance:58, reasons:[],                                                                              action:"Motivate",             status:"Dropping off", seg:"inactive"},
+  { id:"8", name:"Sam Rivera",     initials:"SR", ci:7, plan:"Monthly", val:60,  lastVisit:null,        daysSince:999, v30:0,  pv30:0,  vTotal:1,   streak:0,  churn:91, jDays:6,   retChance:30, reasons:["Joined 6 days ago, 1 visit only","Critical first-week window"],               action:"Week-1 welcome",       status:"New",          seg:"new"     },
+];
+const PAL = [
+  {bg:"rgba(59,130,246,0.14)",txt:"#6ea8fe"},{bg:"rgba(16,185,129,0.14)",txt:"#4ade80"},
+  {bg:"rgba(139,92,246,0.14)",txt:"#c084fc"},{bg:"rgba(245,158,11,0.14)",txt:"#fbbf24"},
+  {bg:"rgba(239,68,68,0.14)", txt:"#f87171"},{bg:"rgba(6,182,212,0.14)", txt:"#22d3ee"},
+  {bg:"rgba(168,85,247,0.14)",txt:"#d946ef"},{bg:"rgba(249,115,22,0.14)",txt:"#fb923c"},
 ];
 
-const AVATAR_PALETTE = [
-  { bg:"rgba(59,130,246,0.12)",  text:"#6ea8fe" },
-  { bg:"rgba(16,185,129,0.12)",  text:"#4ade80" },
-  { bg:"rgba(139,92,246,0.12)",  text:"#c084fc" },
-  { bg:"rgba(245,158,11,0.12)",  text:"#fbbf24" },
-  { bg:"rgba(239,68,68,0.12)",   text:"#f87171" },
-  { bg:"rgba(6,182,212,0.12)",   text:"#22d3ee" },
-  { bg:"rgba(168,85,247,0.12)",  text:"#d946ef" },
-  { bg:"rgba(249,115,22,0.12)",  text:"#fb923c" },
-];
+function churnColor(p) { return p>=70?T.red:p>=40?T.amber:T.green; }
+function statusColor(s) { return {["At risk"]:T.red,["Dropping off"]:T.amber,["Consistent"]:T.green,["Engaged"]:T.green,["New"]:T.blue}[s]||T.textSec; }
 
-/* ── Color helpers ──────────────────────────────────────────────── */
-function churnColorClass(pct) {
-  if (pct >= 70) return "bg-red-500";
-  if (pct >= 40) return "bg-amber-500";
-  return "bg-emerald-500";
-}
-function churnTextClass(pct) {
-  if (pct >= 70) return "text-red-500";
-  if (pct >= 40) return "text-amber-500";
-  return "text-emerald-500";
-}
-function churnLeftBorder(pct) {
-  if (pct >= 70) return "border-l-red-500";
-  if (pct >= 40) return "border-l-amber-500";
-  return "border-l-emerald-500";
-}
-function statusBadgeVariant(status) {
-  return { "At risk":"danger", "Dropping off":"dropping", "Consistent":"success", "Engaged":"success" }[status] || "neutral";
-}
-
-/* ── Avatar ─────────────────────────────────────────────────────── */
-function Avatar({ m, size = 30 }) {
-  const c = AVATAR_PALETTE[m.colorIdx % AVATAR_PALETTE.length];
-  // Inline styles are required here — colors come from a runtime data palette
+/* ── Avatar ─────────────────────────────────────────────────── */
+function Av({ m, size=30 }) {
+  const c = PAL[m.ci % PAL.length];
   return (
-    <div
-      className="rounded-full shrink-0 flex items-center justify-center font-mono font-semibold tracking-[0.02em]"
-      style={{ width: size, height: size, background: c.bg, color: c.text, fontSize: size * 0.32 }}
-    >
+    <div style={{ width:size, height:size, borderRadius:'50%', flexShrink:0, background:c.bg,
+      display:'flex', alignItems:'center', justifyContent:'center',
+      fontSize:size*0.32, fontWeight:700, color:c.txt, letterSpacing:'0.02em' }}>
       {m.initials}
     </div>
   );
 }
 
-/* ══════════════════════════════════════════════════════════════════
-   METRICS BAR
-══════════════════════════════════════════════════════════════════ */
-function MetricsBar({ members }) {
-  const atRiskCount = members.filter(m => m.churnPct >= 60).length;
-  const atRiskValue = members.filter(m => m.churnPct >= 60).reduce((s, m) => s + m.monthlyValue, 0);
-  const activeCount = members.filter(m => m.daysSince < 7).length;
+/* ── Badge ──────────────────────────────────────────────────── */
+function Bdg({ label, color='blue' }) {
+  const m={blue:[T.blue,T.blueDim,T.blueBd],red:[T.red,T.redDim,T.redBd],amber:[T.amber,T.amberDim,T.amberBd],green:[T.green,T.greenDim,T.greenBd]};
+  const [fg,bg,bd]=m[color]||m.blue;
+  return <span style={{ padding:'2px 8px', borderRadius:5, background:bg, border:`1px solid ${bd}`, fontSize:10, fontWeight:800, color:fg, letterSpacing:'0.07em', textTransform:'uppercase', whiteSpace:'nowrap' }}>{label}</span>;
+}
 
-  const stats = [
-    { label:"Total Members",   val:members.length,   sub:"all time"                                                       },
-    { label:"Active (7 days)", val:activeCount,       sub:`${Math.round(activeCount/members.length*100)}% of total`        },
-    { label:"At Risk",         val:atRiskCount,       sub:"60%+ churn risk", highlight:atRiskCount > 0                     },
-    { label:"Revenue at Risk", val:`$${atRiskValue}`, sub:"per month",       highlight:atRiskValue > 0                     },
-  ];
-
+/* ── Progress bar ───────────────────────────────────────────── */
+function Bar({ value, color }) {
   return (
-    <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5 mb-4">
-      {stats.map((s, i) => (
-        <div key={i} className="px-4 py-4 rounded-2xl bg-[#0a0f1e] border border-white/[0.04] shadow-[inset_0_1px_0_rgba(255,255,255,0.012)]">
-          <div className="text-[10px] font-semibold text-slate-600 uppercase tracking-[0.1em] mb-2">{s.label}</div>
-          <div className={cn("text-[26px] font-bold tracking-[-0.04em] leading-none mb-1", s.highlight ? "text-red-500" : "text-[#eef2ff]")}>
-            {s.val}
-          </div>
-          <div className="text-[10px] text-slate-600">{s.sub}</div>
+    <div style={{ height:3, borderRadius:99, background:'rgba(255,255,255,0.06)', overflow:'hidden' }}>
+      <div style={{ height:'100%', width:`${Math.min(100,value)}%`, background:color, borderRadius:99 }}/>
+    </div>
+  );
+}
+
+/* ── Top header bar ─────────────────────────────────────────── */
+function PageHeader({ atRisk, search, setSearch, onAddMember }) {
+  const d = new Date();
+  const ds = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  const ms = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  return (
+    <div style={{ display:'flex', alignItems:'center', gap:14, padding:'13px 24px',
+      borderBottom:`1px solid ${T.border}`, background:T.surface, flexShrink:0 }}>
+      <div style={{ display:'flex', flexDirection:'column' }}>
+        <div style={{ display:'flex', alignItems:'baseline', gap:6 }}>
+          <span style={{ fontSize:16, fontWeight:800, color:T.text, letterSpacing:'-0.02em' }}>Members</span>
+          <span style={{ fontSize:14, color:T.textMut }}>/</span>
+          <span style={{ fontSize:14, color:T.textSec }}>Hub</span>
+        </div>
+        <span style={{ fontSize:11, color:T.textMut, marginTop:1 }}>{ds[d.getDay()]} {d.getDate()} {ms[d.getMonth()]}</span>
+      </div>
+      <div style={{ flex:1 }}/>
+      <div style={{ position:'relative' }}>
+        <Search size={13} color={T.textMut} style={{ position:'absolute', left:10, top:'50%', transform:'translateY(-50%)', pointerEvents:'none' }}/>
+        <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Search members..."
+          style={{ padding:'7px 12px 7px 30px', background:T.surfaceH, border:`1px solid ${T.border}`,
+            borderRadius:9, color:T.textSec, fontSize:12, outline:'none', width:220 }}/>
+      </div>
+      <button style={{ display:'flex', alignItems:'center', gap:6, padding:'7px 13px',
+        background:T.surfaceH, border:`1px solid ${T.borderM}`, borderRadius:9,
+        color:T.textSec, fontSize:12, fontWeight:600, cursor:'pointer' }}>
+        <QrCode size={13}/> Scan QR
+      </button>
+      <Av m={{initials:'MX',ci:0}} size={30}/>
+      <span style={{ fontSize:12, fontWeight:600, color:T.text }}>Max</span>
+      {atRisk>0 && (
+        <span style={{ display:'flex', alignItems:'center', gap:5, padding:'4px 10px',
+          background:T.redDim, border:`1px solid ${T.redBd}`, borderRadius:20,
+          fontSize:11, fontWeight:800, color:T.red }}>
+          <span style={{ width:6,height:6,borderRadius:'50%',background:T.red }}/>
+          {atRisk} At Risk
+        </span>
+      )}
+    </div>
+  );
+}
+
+/* ── Alert Banner ───────────────────────────────────────────── */
+function AlertBanner({ atRisk, totalVal }) {
+  if (atRisk === 0) return null;
+  return (
+    <div style={{ margin:'20px 24px 0', padding:'12px 18px',
+      background:`linear-gradient(135deg,${T.surface} 60%,rgba(240,79,79,0.07) 100%)`,
+      border:`1px solid ${T.redBd}`, borderLeft:`3px solid ${T.red}`, borderRadius:10,
+      display:'flex', alignItems:'center', gap:12 }}>
+      <AlertTriangle size={16} color={T.red}/>
+      <span style={{ fontSize:13, fontWeight:700, color:T.text }}>Attention Required: Critical Churn Interventions</span>
+      <span style={{ fontSize:12, color:T.textSec, marginLeft:4 }}>— {atRisk} members at risk · ${totalVal}/mo</span>
+    </div>
+  );
+}
+
+/* ── Journey Strip ──────────────────────────────────────────── */
+function JourneyStrip({ members }) {
+  const atRisk = members.filter(m=>m.churn>=60).length;
+  const newM   = members.filter(m=>m.jDays<=14).length;
+  const active = members.filter(m=>m.streak>=5).length;
+  const steps = [
+    { label:'Message At-Risk Members', done: atRisk===0, color:T.red },
+    { label:'Welcome New Members',     done: newM===0,   color:T.amber },
+    { label:'Reward Top Performers',   done: false,      color:T.green },
+  ];
+  return (
+    <div style={{ margin:'14px 24px 0', padding:'12px 18px',
+      background:T.surfaceH, border:`1px solid ${T.border}`, borderRadius:10,
+      display:'flex', alignItems:'center', gap:6 }}>
+      <span style={{ fontSize:11, fontWeight:700, color:T.textSec, marginRight:8, whiteSpace:'nowrap' }}>Member Success Journey</span>
+      {steps.map((s,i)=>(
+        <div key={i} style={{ display:'flex', alignItems:'center', gap:6, flex:1 }}>
+          {i>0 && <div style={{ height:2, flex:1, background:s.done?s.color:'rgba(255,255,255,0.07)', borderRadius:99, minWidth:20 }}/>}
+          <span style={{ fontSize:11, fontWeight:s.done?700:500,
+            color:s.done?s.color:T.textMut, whiteSpace:'nowrap',
+            padding:'3px 9px', borderRadius:20,
+            background:s.done?`rgba(${s.color===T.red?'240,79,79':s.color===T.amber?'245,158,11':'52,211,153'},0.1)`:'rgba(255,255,255,0.03)',
+            border:`1px solid ${s.done?s.color+'44':'rgba(255,255,255,0.06)'}` }}>
+            {s.done ? '✓ ' : `Step ${i+1}: `}{s.label}
+          </span>
         </div>
       ))}
     </div>
   );
 }
 
-/* ══════════════════════════════════════════════════════════════════
-   SECTION 1: PRIORITY MEMBERS
-══════════════════════════════════════════════════════════════════ */
-function ActOnToday({ members, onMessage, onSelect }) {
-  const priority = useMemo(() =>
-    members.filter(m => m.churnPct >= 40).sort((a, b) => b.churnPct - a.churnPct).slice(0, 4),
-  [members]);
-
-  if (!priority.length) return null;
-  const totalAtRisk = priority.reduce((s, m) => s + m.monthlyValue, 0);
-
-  return (
-    <div className="mb-4">
-      <div className="flex items-center justify-between mb-2.5">
-        <div className="flex items-center gap-2">
-          <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-[0.1em]">Priority Today</span>
-          <AppBadge variant="danger">{priority.length} need attention</AppBadge>
-        </div>
-        <span className="text-[11px] text-slate-600">${totalAtRisk}/mo at risk</span>
-      </div>
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-        {priority.map(m => (
-          <div
-            key={m.id}
-            onClick={() => onSelect(m)}
-            className={cn(
-              "px-4 py-4 rounded-2xl bg-[#0a0f1e] border border-white/[0.04] border-l-2",
-              "shadow-[inset_0_1px_0_rgba(255,255,255,0.012)] cursor-pointer transition-colors duration-150 hover:bg-[#0d1225]",
-              churnLeftBorder(m.churnPct),
-            )}
-          >
-            <div className="flex items-center justify-between mb-3">
-              <div className="flex items-center gap-2.5">
-                <Avatar m={m} size={34} />
-                <div>
-                  <div className="text-[13px] font-semibold text-[#eef2ff]">{m.name}</div>
-                  <div className="text-[10px] text-slate-600 mt-0.5">
-                    {m.daysSince === 999 ? "Never visited" : `Last seen ${m.daysSince}d ago`}
-                  </div>
-                </div>
-              </div>
-              <div className="text-right">
-                <span className={cn("text-[13px] font-semibold tabular-nums", churnTextClass(m.churnPct))}>{m.churnPct}%</span>
-                <div className="text-[9px] text-slate-600 mt-0.5">churn risk</div>
-              </div>
-            </div>
-
-            <AppProgressBar value={m.churnPct} colorClass={churnColorClass(m.churnPct)} className="h-[2px]" />
-
-            <div className="mt-2.5 flex flex-col gap-1">
-              {m.reasons.slice(0, 2).map((r, i) => (
-                <div key={i} className="flex gap-1.5 items-start">
-                  <span className="text-[#252d45] text-[10px] mt-0.5">—</span>
-                  <span className="text-[11px] text-slate-400 leading-relaxed">{r}</span>
-                </div>
-              ))}
-            </div>
-
-            <div className="flex items-center justify-between mt-3.5">
-              <span className="text-[11px] text-slate-600">
-                <span className="text-slate-400 font-medium">${m.monthlyValue}</span>/mo · {m.returnChance}% return likelihood
-              </span>
-              <button
-                onClick={e => { e.stopPropagation(); onMessage(m); }}
-                className="flex items-center gap-1 px-2.5 py-1 rounded-[10px] bg-[#0d1225] border border-white/[0.07] text-slate-400 text-[10px] font-medium cursor-pointer hover:border-white/[0.12] transition-colors"
-              >
-                <Send className="w-2 h-2" /> {m.bestAction}
-              </button>
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-/* ══════════════════════════════════════════════════════════════════
-   SECTION 2: SMART SEGMENTS
-══════════════════════════════════════════════════════════════════ */
-function SmartSegments({ members, activeFilter, onFilter, onBulkMessage }) {
-  const segments = useMemo(() => [
-    { id:"atRisk",   icon:AlertTriangle, label:"Need attention", textCls:"text-red-500",     count:members.filter(m => m.churnPct >= 60).length,                                           action:"Message all" },
-    { id:"dropping", icon:TrendingDown,  label:"Dropping off",   textCls:"text-amber-500",   count:members.filter(m => m.prevVisits30 > 0 && m.visits30 <= m.prevVisits30 * 0.5).length,  action:"Nudge all"   },
-    { id:"new",      icon:UserPlus,      label:"New members",    textCls:"text-blue-500",    count:members.filter(m => m.joinedDaysAgo <= 14).length,                                      action:"Welcome"     },
-    { id:"active",   icon:Flame,         label:"On streak",      textCls:"text-emerald-500", count:members.filter(m => m.streak >= 5).length,                                              action:"Challenge"   },
-  ], [members]);
-
-  return (
-    <div className="flex gap-2 mb-4 flex-wrap">
-      {segments.map(s => {
-        const Icon = s.icon;
-        const on   = activeFilter === s.id;
-        return (
-          <div
-            key={s.id}
-            onClick={() => onFilter(on ? "all" : s.id)}
-            className={cn(
-              "flex-1 basis-40 min-w-[150px] flex items-center gap-2.5 px-3.5 py-2.5 rounded-2xl border cursor-pointer transition-all duration-150",
-              on ? "bg-[#131c2e] border-white/[0.07]" : "bg-[#0a0f1e] border-white/[0.04] hover:bg-[#0d1225]",
-            )}
-          >
-            <div className="w-[30px] h-[30px] rounded-[7px] bg-[#0d1225] shrink-0 flex items-center justify-center">
-              <Icon className={cn("w-3 h-3", on ? s.textCls : "text-slate-600")} />
-            </div>
-            <div className="flex-1 min-w-0">
-              <div className={cn("text-[17px] font-bold leading-none", on ? s.textCls : "text-[#eef2ff]")}>{s.count}</div>
-              <div className="text-[10px] text-slate-600 mt-0.5 truncate">{s.label}</div>
-            </div>
-            {s.count > 0 && (
-              <button
-                onClick={e => { e.stopPropagation(); onBulkMessage(s.id); }}
-                className="px-2 py-0.5 rounded-md bg-transparent border border-white/[0.04] text-slate-600 text-[10px] cursor-pointer whitespace-nowrap shrink-0 hover:border-white/[0.07] hover:text-slate-400 transition-colors"
-              >
-                {s.action}
-              </button>
-            )}
-          </div>
-        );
-      })}
-    </div>
-  );
-}
-
-/* ══════════════════════════════════════════════════════════════════
-   FILTER BAR
-══════════════════════════════════════════════════════════════════ */
-function FilterBar({ filter, setFilter, search, setSearch, sort, setSort, counts }) {
+/* ── Filter Tabs ────────────────────────────────────────────── */
+function FilterTabs({ filter, setFilter, counts }) {
   const tabs = [
-    { id:"all",      label:"All",      count:counts.all      },
-    { id:"atRisk",   label:"At Risk",  count:counts.atRisk   },
-    { id:"dropping", label:"Dropping", count:counts.dropping },
-    { id:"new",      label:"New",      count:counts.new      },
-    { id:"active",   label:"Active",   count:counts.active   },
-    { id:"inactive", label:"Inactive", count:counts.inactive },
+    {id:'all',label:'All',count:counts.all},
+    {id:'atRisk',label:'At Risk',count:counts.atRisk},
+    {id:'dropping',label:'Dropping Off',count:counts.dropping},
+    {id:'new',label:'New Members',count:counts.new},
+    {id:'active',label:'On Streak',count:counts.active},
+    {id:'inactive',label:'Inactive',count:counts.inactive},
   ];
-
   return (
-    <div className="sticky top-0 z-10 px-3.5 py-2 bg-[#0a0f1e] border-b border-white/[0.04] flex items-center gap-0.5 flex-wrap">
-      {tabs.map(t => {
-        const on = filter === t.id;
+    <div style={{ display:'flex', gap:2, borderBottom:`1px solid ${T.border}`, padding:'0 24px', marginTop:16 }}>
+      {tabs.map(t=>{
+        const on=filter===t.id;
         return (
-          <button
-            key={t.id}
-            onClick={() => setFilter(t.id)}
-            className={cn(
-              "flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] cursor-pointer transition-all duration-100",
-              on
-                ? "bg-[#0d1225] text-[#eef2ff] font-semibold border border-white/[0.07]"
-                : "text-slate-600 font-normal border border-transparent hover:text-slate-400",
-            )}
-          >
+          <button key={t.id} onClick={()=>setFilter(t.id)}
+            style={{ padding:'9px 14px', fontSize:12, fontWeight:on?700:500, cursor:'pointer',
+              color:on?T.text:T.textMut, background:'none', border:'none',
+              borderBottom:`2px solid ${on?T.blue:'transparent'}`,
+              display:'flex', alignItems:'center', gap:5, marginBottom:-1, transition:'all 0.15s' }}>
             {t.label}
-            {t.count > 0 && (
-              <span className={cn("text-[9px]", on ? "text-slate-400" : "text-[#252d45]")}>{t.count}</span>
-            )}
+            {t.count>0&&<span style={{ fontSize:10, padding:'1px 6px', borderRadius:99, fontWeight:700,
+              background:on?T.blueDim:'rgba(255,255,255,0.04)', color:on?T.blue:T.textMut }}>{t.count}</span>}
           </button>
         );
       })}
-      <div className="flex-1" />
-
-      {/* Sort */}
-      <div className="relative">
-        <select
-          value={sort}
-          onChange={e => setSort(e.target.value)}
-          className="appearance-none pl-2.5 pr-7 py-1 rounded-md bg-[#0d1225] border border-white/[0.04] text-slate-400 text-[11px] outline-none cursor-pointer"
-        >
-          <option value="churnDesc">Highest risk</option>
-          <option value="lastVisit">Recently active</option>
-          <option value="value">Highest value</option>
-          <option value="name">Name A–Z</option>
-        </select>
-        <ChevronDown className="w-2 h-2 text-[#252d45] absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none" />
-      </div>
-
-      {/* Search */}
-      <div className="relative">
-        <Search className="w-2.5 h-2.5 text-[#252d45] absolute left-2 top-1/2 -translate-y-1/2 pointer-events-none" />
-        <input
-          placeholder="Search members…"
-          value={search}
-          onChange={e => setSearch(e.target.value)}
-          className="pl-6 pr-2.5 py-1 rounded-md bg-[#0d1225] border border-white/[0.04] text-[#eef2ff] text-[11px] outline-none w-40 focus:border-white/[0.12] transition-colors"
-        />
-      </div>
     </div>
   );
 }
 
-/* ══════════════════════════════════════════════════════════════════
-   SECTION 3: MEMBERS TABLE
-══════════════════════════════════════════════════════════════════ */
-// Complex fr-unit grid — kept as a JS constant, applied via style prop (static value, unavoidable with mixed fr units)
-const COLS = "28px 1.8fr 1.1fr 70px 100px 90px 80px 130px";
+/* ── Members Table ──────────────────────────────────────────── */
+const GCOLS = "28px 1.8fr 1.1fr 80px 90px 80px 110px";
+function MembersTable({ members, filter, search, sort, setSort, selectedRows, toggleRow, toggleAll, onMessage, onSelect, selectedId }) {
+  const filtered = useMemo(()=>{
+    let l=members;
+    if(filter==='atRisk')   l=l.filter(m=>m.churn>=60);
+    if(filter==='dropping') l=l.filter(m=>m.pv30>0&&m.v30<=m.pv30*0.5);
+    if(filter==='new')      l=l.filter(m=>m.jDays<=14);
+    if(filter==='active')   l=l.filter(m=>m.streak>=5);
+    if(filter==='inactive') l=l.filter(m=>m.daysSince>=14);
+    if(search) l=l.filter(m=>m.name.toLowerCase().includes(search.toLowerCase()));
+    return l;
+  },[members,filter,search]);
+  const sorted = useMemo(()=>[...filtered].sort((a,b)=>{
+    if(sort==='churnDesc') return b.churn-a.churn;
+    if(sort==='lastVisit') return a.daysSince-b.daysSince;
+    if(sort==='value')     return b.val-a.val;
+    if(sort==='name')      return a.name.localeCompare(b.name);
+    return b.churn-a.churn;
+  }),[filtered,sort]);
 
-const COL_DEFS = [
-  { label:"MEMBER",    key:"name"      },
-  { label:"STATUS",    key:null        },
-  { label:"CHURN",     key:"churnDesc" },
-  { label:"LAST SEEN", key:"lastVisit" },
-  { label:"TREND",     key:null        },
-  { label:"VALUE",     key:"value"     },
-  { label:"ACTION",    key:null        },
-];
-
-function MembersTable({ members, filter, search, sort, setSort, selectedRows, toggleRow, toggleAll, previewMember, setPreviewMember, onMessage }) {
-  const filtered = useMemo(() => {
-    let list = members;
-    if (filter === "atRisk")   list = list.filter(m => m.churnPct >= 60);
-    if (filter === "dropping") list = list.filter(m => m.prevVisits30 > 0 && m.visits30 <= m.prevVisits30 * 0.5);
-    if (filter === "new")      list = list.filter(m => m.joinedDaysAgo <= 14);
-    if (filter === "active")   list = list.filter(m => m.streak >= 5);
-    if (filter === "inactive") list = list.filter(m => m.daysSince >= 14);
-    if (search) list = list.filter(m => m.name.toLowerCase().includes(search.toLowerCase()));
-    return list;
-  }, [members, filter, search]);
-
-  const sorted = useMemo(() => [...filtered].sort((a, b) => {
-    if (sort === "churnDesc") return b.churnPct - a.churnPct;
-    if (sort === "lastVisit") return a.daysSince - b.daysSince;
-    if (sort === "value")     return b.monthlyValue - a.monthlyValue;
-    if (sort === "name")      return a.name.localeCompare(b.name);
-    return b.churnPct - a.churnPct;
-  }), [filtered, sort]);
+  const cols=[{label:'MEMBER',key:'name'},{label:'STATUS',key:null},{label:'CHURN',key:'churnDesc'},{label:'LAST SEEN',key:'lastVisit'},{label:'TREND',key:null},{label:'VALUE',key:'value'},{label:'ACTION',key:null}];
 
   return (
-    <div>
-      {/* Desktop: Column headers */}
-      <div className="hidden sm:grid gap-2 px-4 py-1.5 border-b border-white/[0.04] bg-[#050810]" style={{ gridTemplateColumns: COLS }}>
-        <div className="flex items-center justify-center">
-          <input
-            type="checkbox"
-            checked={sorted.length > 0 && selectedRows.size === sorted.length}
-            onChange={() => toggleAll(sorted)}
-            className="w-3 h-3 cursor-pointer accent-blue-500"
-          />
+    <div style={{ overflowX:'auto' }}>
+      {/* Header */}
+      <div style={{ display:'grid', gridTemplateColumns:GCOLS, gap:8, padding:'8px 20px',
+        borderBottom:`1px solid ${T.border}`, background:'rgba(0,0,0,0.15)' }}>
+        <div style={{ display:'flex', alignItems:'center', justifyContent:'center' }}>
+          <input type="checkbox" checked={sorted.length>0&&selectedRows.size===sorted.length}
+            onChange={()=>toggleAll(sorted)} style={{ cursor:'pointer', accentColor:T.blue, width:12, height:12 }}/>
         </div>
-        {COL_DEFS.map((c, i) => (
-          <div key={i} className="flex items-center gap-1">
-            <span
-              onClick={() => c.key && setSort(c.key)}
-              className={cn(
-                "text-[9px] font-semibold uppercase tracking-[0.1em]",
-                sort === c.key ? "text-slate-400" : "text-[#252d45]",
-                c.key ? "cursor-pointer" : "cursor-default",
-              )}
-            >
+        {cols.map((c,i)=>(
+          <div key={i} style={{ display:'flex', alignItems:'center', gap:4 }}>
+            <span onClick={()=>c.key&&setSort(c.key)} style={{ fontSize:9.5, fontWeight:700, letterSpacing:'0.12em',
+              textTransform:'uppercase', color:sort===c.key?T.textSec:T.textMut, cursor:c.key?'pointer':'default' }}>
               {c.label}
             </span>
-            {c.key && <ChevronDown className="w-1.5 h-1.5 text-[#252d45]" />}
+            {c.key&&<ChevronDown size={8} color={T.textMut}/>}
           </div>
         ))}
       </div>
 
-      {/* Empty state */}
-      {sorted.length === 0 && (
-        <div className="py-12 px-5 text-center">
-          <Users className="w-8 h-8 text-[#252d45] mx-auto mb-3" />
-          <div className="text-[13px] text-slate-400 font-medium mb-1">No members match</div>
-          <div className="text-[11px] text-slate-600">Try a different filter or search term</div>
+      {sorted.length===0&&(
+        <div style={{ padding:'48px 20px', textAlign:'center', color:T.textMut }}>
+          <Users size={28} style={{ margin:'0 auto 12px', opacity:0.3, display:'block' }}/>
+          <div style={{ fontSize:13, color:T.textSec }}>No members match</div>
         </div>
       )}
 
-      {sorted.map((m, idx) => {
-        const isSel    = selectedRows.has(m.id);
-        const isPrev   = previewMember?.id === m.id;
-        const trendPct = m.prevVisits30 > 0 ? Math.round(((m.visits30 - m.prevVisits30) / m.prevVisits30) * 100) : 0;
-        const lastSeenCls = m.daysSince >= 14 ? "text-red-500" : m.daysSince <= 1 ? "text-emerald-500" : "text-[#eef2ff]";
-        const lastSeenLabel = m.daysSince === 999 ? "Never" : m.daysSince === 0 ? "Today" : `${m.daysSince}d ago`;
-
+      {sorted.map((m,idx)=>{
+        const isSel=selectedRows.has(m.id);
+        const isPrev=selectedId===m.id;
+        const trendPct=m.pv30>0?Math.round(((m.v30-m.pv30)/m.pv30)*100):0;
+        const lastLabel=m.daysSince===999?'Never':m.daysSince===0?'Today':`${m.daysSince}d ago`;
+        const lastColor=m.daysSince>=14?T.red:m.daysSince<=1?T.green:T.text;
         return (
-          <div key={m.id}>
-
-            {/* ── Desktop row ── */}
-            <div
-              onClick={() => setPreviewMember(isPrev ? null : m)}
-              className={cn(
-                "hidden sm:grid items-center gap-2 px-4 py-2.5 cursor-pointer transition-colors duration-100 border-l-2",
-                idx < sorted.length - 1 && "border-b border-white/[0.03]",
-                isPrev  ? "bg-[#0d1225] border-l-blue-500"
-                : isSel ? "bg-blue-500/[0.03] border-l-blue-500/30"
-                :          "border-l-transparent hover:bg-[#101929]",
-              )}
-              style={{ gridTemplateColumns: COLS }}
-            >
-              <div className="flex items-center justify-center" onClick={e => { e.stopPropagation(); toggleRow(m.id); }}>
-                <input type="checkbox" checked={isSel} onChange={() => toggleRow(m.id)} className="w-3 h-3 accent-blue-500 cursor-pointer" />
+          <div key={m.id} onClick={()=>onSelect(m)}
+            style={{ display:'grid', gridTemplateColumns:GCOLS, gap:8, padding:'11px 20px',
+              borderBottom:`1px solid rgba(255,255,255,0.03)`, cursor:'pointer', transition:'background 0.1s',
+              borderLeft:`3px solid ${isPrev?T.blue:'transparent'}`,
+              background:isPrev?'rgba(59,130,246,0.06)':isSel?'rgba(59,130,246,0.03)':'transparent' }}
+            onMouseEnter={e=>{ if(!isPrev&&!isSel) e.currentTarget.style.background='rgba(255,255,255,0.02)'; }}
+            onMouseLeave={e=>{ if(!isPrev&&!isSel) e.currentTarget.style.background='transparent'; }}>
+            <div style={{ display:'flex', alignItems:'center', justifyContent:'center' }}
+              onClick={e=>{e.stopPropagation();toggleRow(m.id);}}>
+              <input type="checkbox" checked={isSel} onChange={()=>toggleRow(m.id)}
+                style={{ cursor:'pointer', accentColor:T.blue, width:12, height:12 }}/>
+            </div>
+            <div style={{ display:'flex', alignItems:'center', gap:9, minWidth:0 }}>
+              <div style={{ position:'relative', flexShrink:0 }}>
+                <Av m={m} size={28}/>
+                {m.streak>=5&&<div style={{ position:'absolute', top:-2, right:-2, width:10, height:10, borderRadius:'50%', background:T.surface, border:`1px solid ${T.border}`, display:'flex', alignItems:'center', justifyContent:'center' }}><Flame size={6} color={T.amber}/></div>}
               </div>
-              <div className="flex items-center gap-2 min-w-0">
-                <div className="relative shrink-0">
-                  <Avatar m={m} size={28} />
-                  {m.streak >= 5 && (
-                    <div className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-[#0d1225] border border-white/[0.04] flex items-center justify-center">
-                      <Flame className="w-1.5 h-1.5 text-amber-500" />
-                    </div>
-                  )}
-                </div>
-                <div className="min-w-0">
-                  <div className={cn("text-xs font-semibold truncate", isPrev ? "text-blue-500" : "text-[#eef2ff]")}>{m.name}</div>
-                  <div className="text-[10px] text-slate-600">{m.plan} · {m.visitsTotal} visits</div>
-                </div>
-              </div>
-              <div>
-                <AppBadge variant={statusBadgeVariant(m.status)}>{m.status}</AppBadge>
-                <div className="text-[10px] text-slate-600 mt-0.5 leading-snug">{m.statusDetail}</div>
-              </div>
-              <div>
-                <span className={cn("text-[13px] font-semibold tabular-nums", churnTextClass(m.churnPct))}>{m.churnPct}%</span>
-                <AppProgressBar value={m.churnPct} colorClass={churnColorClass(m.churnPct)} className="h-[2px] mt-1.5" />
-              </div>
-              <div>
-                <span className={cn("text-xs font-medium", lastSeenCls)}>{lastSeenLabel}</span>
-              </div>
-              <div className="flex items-center gap-1">
-                {trendPct > 10  ? <><TrendingUp   className="w-3 h-3 text-emerald-500" /><span className="text-[10px] text-emerald-500">+{trendPct}%</span></> :
-                 trendPct < -10 ? <><TrendingDown  className="w-3 h-3 text-red-500"     /><span className="text-[10px] text-red-500">{trendPct}%</span></> :
-                                   <span className="text-[10px] text-slate-600">—</span>}
-              </div>
-              <div>
-                <div className="text-xs font-semibold text-[#eef2ff]">${m.monthlyValue}</div>
-                <div className="text-[9px] text-slate-600">/month</div>
-              </div>
-              <div onClick={e => e.stopPropagation()}>
-                <AppButton variant="outline" size="sm" onClick={() => onMessage(m)}>
-                  {m.bestAction} <ChevronRight className="w-3 h-3" />
-                </AppButton>
-                <div className="text-[9px] text-slate-600 mt-0.5">~{m.returnChance}% success</div>
+              <div style={{ minWidth:0 }}>
+                <div style={{ fontSize:12.5, fontWeight:600, color:isPrev?T.blue:T.text, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{m.name}</div>
+                <div style={{ fontSize:10, color:T.textMut, marginTop:1 }}>{m.plan} · {m.vTotal} visits</div>
               </div>
             </div>
-
-            {/* ── Mobile card ── */}
-            <div
-              onClick={() => setPreviewMember(isPrev ? null : m)}
-              className={cn(
-                "sm:hidden flex flex-col gap-2.5 px-4 py-3.5 cursor-pointer transition-colors border-l-2",
-                idx < sorted.length - 1 && "border-b border-white/[0.03]",
-                isPrev  ? "bg-[#0d1225] border-l-blue-500"
-                : isSel ? "bg-blue-500/[0.03] border-l-blue-500/30"
-                :          "border-l-transparent",
-              )}
-            >
-              {/* Top row: avatar + name + churn % */}
-              <div className="flex items-center gap-2.5">
-                <div onClick={e => { e.stopPropagation(); toggleRow(m.id); }} className="relative shrink-0">
-                  <Avatar m={m} size={34} />
-                  {m.streak >= 5 && (
-                    <div className="absolute -top-0.5 -right-0.5 w-3 h-3 rounded-full bg-[#0d1225] border border-white/[0.04] flex items-center justify-center">
-                      <Flame className="w-2 h-2 text-amber-500" />
-                    </div>
-                  )}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className={cn("text-[12.5px] font-semibold truncate", isPrev ? "text-blue-500" : "text-[#eef2ff]")}>{m.name}</div>
-                  <div className="text-[10.5px] text-slate-600 mt-0.5">{m.plan} · {m.visitsTotal} visits</div>
-                </div>
-                <div className="text-right shrink-0">
-                  <div className={cn("text-[17px] font-extrabold tabular-nums leading-none tracking-[-0.03em]", churnTextClass(m.churnPct))}>{m.churnPct}%</div>
-                  <div className="text-[9px] text-slate-600 mt-0.5">churn risk</div>
-                </div>
-              </div>
-
-              {/* Bottom row: status badge + last seen + action */}
-              <div className="flex items-center gap-2 flex-wrap">
-                <AppBadge variant={statusBadgeVariant(m.status)}>{m.status}</AppBadge>
-                <span className={cn("text-[10.5px] font-medium", lastSeenCls)}>{lastSeenLabel}</span>
-                <div className="ml-auto" onClick={e => e.stopPropagation()}>
-                  <AppButton variant="outline" size="sm" onClick={() => onMessage(m)}>
-                    {m.bestAction} <ChevronRight className="w-2.5 h-2.5" />
-                  </AppButton>
-                </div>
-              </div>
+            <div>
+              <Bdg label={m.status} color={m.status==='At risk'||m.status==='Dropping off'?'red':m.status==='New'?'blue':'green'}/>
             </div>
-
+            <div>
+              <span style={{ fontSize:13, fontWeight:700, color:churnColor(m.churn) }}>{m.churn}%</span>
+              <Bar value={m.churn} color={churnColor(m.churn)}/>
+            </div>
+            <div>
+              <span style={{ fontSize:12, fontWeight:600, color:lastColor }}>{lastLabel}</span>
+            </div>
+            <div style={{ display:'flex', alignItems:'center', gap:4 }}>
+              {trendPct>10?<><TrendingUp size={11} color={T.green}/><span style={{fontSize:10,color:T.green}}>+{trendPct}%</span></>:
+               trendPct<-10?<><TrendingDown size={11} color={T.red}/><span style={{fontSize:10,color:T.red}}>{trendPct}%</span></>:
+               <span style={{fontSize:10,color:T.textMut}}>—</span>}
+            </div>
+            <div>
+              <span style={{ fontSize:12, fontWeight:600, color:T.text }}>${m.val}/mo</span>
+            </div>
+            <div onClick={e=>e.stopPropagation()}>
+              <button onClick={()=>onMessage(m)} style={{ display:'flex', alignItems:'center', gap:5, padding:'5px 11px',
+                background:T.blueDim, border:`1px solid ${T.blueBd}`, borderRadius:7,
+                color:T.blue, fontSize:11, fontWeight:600, cursor:'pointer', whiteSpace:'nowrap' }}>
+                <Send size={9}/> {m.action.length>14?m.action.slice(0,14)+'…':m.action}
+              </button>
+            </div>
           </div>
         );
       })}
@@ -486,425 +304,274 @@ function MembersTable({ members, filter, search, sort, setSort, selectedRows, to
   );
 }
 
-/* ══════════════════════════════════════════════════════════════════
-   SECTION 4: BULK ACTION BAR
-══════════════════════════════════════════════════════════════════ */
-function BulkBar({ selectedRows, members, onClear, onBulkMessage }) {
-  if (selectedRows.size === 0) return null;
-  const sel      = members.filter(m => selectedRows.has(m.id));
-  const totalVal = sel.reduce((s, m) => s + m.monthlyValue, 0);
+/* ── Right Panel ────────────────────────────────────────────── */
+function RightPanel({ members, onMessage, onAddMember }) {
+  const highRisk = members.filter(m=>m.churn>=70);
+  const newQuiet = members.filter(m=>m.jDays<=10&&m.vTotal<2);
 
-  return (
-    <div className="border-t border-white/[0.07] bg-[#0d1225]">
-      <div className="px-4 py-1.5 border-b border-white/[0.03] flex items-center justify-between">
-        <span className="text-[11px] text-slate-400 font-medium">
-          {selectedRows.size} selected
-          <span className="text-slate-600 font-normal"> · ${totalVal}/mo combined</span>
-        </span>
-        <button
-          onClick={onClear}
-          className="text-[11px] text-slate-600 bg-transparent border-none cursor-pointer hover:text-slate-400 transition-colors"
-        >
-          Clear
-        </button>
-      </div>
-      <div className="px-4 py-2 flex items-center gap-1.5">
-        <AppButton size="sm" onClick={() => onBulkMessage(sel)}>
-          <Send className="w-2.5 h-2.5" /> Message {selectedRows.size}
-        </AppButton>
-        <AppButton variant="secondary" size="sm"><Tag  className="w-2.5 h-2.5" /> Tag</AppButton>
-        <AppButton variant="secondary" size="sm"><Star className="w-2.5 h-2.5" /> Add to list</AppButton>
-        <div className="flex-1" />
-        <span className="text-[11px] text-slate-600">
-          {sel.filter(m => m.churnPct >= 60).length} at risk in selection
-        </span>
-      </div>
-    </div>
-  );
-}
-
-/* ══════════════════════════════════════════════════════════════════
-   SECTION 5: MEMBER PREVIEW PANEL
-══════════════════════════════════════════════════════════════════ */
-function MemberPreview({ m, onClose, onMessage }) {
-  if (!m) return null;
-  const engScore   = Math.min(100, Math.round((m.visits30 / 12) * 100));
-  const engCls     = engScore >= 60 ? "bg-emerald-500" : engScore >= 30 ? "bg-amber-500" : "bg-red-500";
-  const engTextCls = engScore >= 60 ? "text-emerald-500" : engScore >= 30 ? "text-amber-500" : "text-red-500";
-
-  return (
-    <div className="fixed top-0 right-0 bottom-0 w-full sm:w-80 bg-[#0a0f1e] border-l border-white/[0.04] z-[200] flex flex-col shadow-[-12px_0_40px_rgba(0,0,0,0.5)] animate-[panelIn_0.18s_ease]">
-      <style>{`@keyframes panelIn{from{transform:translateX(24px);opacity:0}to{transform:translateX(0);opacity:1}}`}</style>
-
-      {/* Header */}
-      <div className="px-4 py-3.5 border-b border-white/[0.03] flex items-center justify-between">
-        <div className="flex items-center gap-2.5">
-          <Avatar m={m} size={38} />
-          <div>
-            <div className="text-[13px] font-semibold text-[#eef2ff] mb-1">{m.name}</div>
-            <AppBadge variant={statusBadgeVariant(m.status)}>{m.status}</AppBadge>
-          </div>
-        </div>
-        <button
-          onClick={onClose}
-          className="w-6 h-6 rounded-md bg-[#0d1225] border border-white/[0.04] cursor-pointer flex items-center justify-center hover:border-white/[0.07] transition-colors"
-        >
-          <X className="w-2.5 h-2.5 text-slate-600" />
-        </button>
-      </div>
-
-      <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-3">
-        {/* Churn signal */}
-        {m.churnPct >= 40 && (
-          <div className={cn("px-3.5 py-3 rounded-2xl bg-[#0d1225] border border-white/[0.04] border-l-2", churnLeftBorder(m.churnPct))}>
-            <div className="flex justify-between mb-2">
-              <span className={cn("text-xs font-semibold", churnTextClass(m.churnPct))}>{m.churnPct}% churn risk</span>
-              <span className="text-[10px] text-slate-600">${m.monthlyValue}/mo</span>
-            </div>
-            <AppProgressBar value={m.churnPct} colorClass={churnColorClass(m.churnPct)} className="h-[2px]" />
-            <div className="mt-2 flex flex-col gap-1">
-              {m.reasons.map((r, i) => (
-                <div key={i} className="flex gap-1.5">
-                  <span className="text-[#252d45] text-[10px] mt-0.5 shrink-0">—</span>
-                  <span className="text-[11px] text-slate-400 leading-relaxed">{r}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Visit stats */}
-        <div className="grid grid-cols-3 gap-1.5">
-          {[
-            { label:"This mo", val:m.visits30,      accent:false },
-            { label:"Last mo", val:m.prevVisits30,   accent:false },
-            { label:"Total",   val:m.visitsTotal,    accent:true  },
-          ].map((s, i) => (
-            <div key={i} className="px-2.5 py-2.5 rounded-[10px] bg-[#0d1225] border border-white/[0.04] text-center">
-              <div className={cn("text-[18px] font-bold leading-none", s.accent ? "text-blue-500" : "text-[#eef2ff]")}>{s.val}</div>
-              <div className="text-[9px] text-slate-600 mt-0.5 uppercase tracking-[0.07em]">{s.label}</div>
-            </div>
-          ))}
-        </div>
-
-        {/* Engagement */}
-        <div>
-          <div className="flex justify-between mb-1.5">
-            <span className="text-[10px] text-slate-600 uppercase tracking-[0.09em]">Engagement</span>
-            <span className={cn("text-[11px] font-semibold", engTextCls)}>{engScore}%</span>
-          </div>
-          <AppProgressBar value={engScore} colorClass={engCls} className="h-[3px]" />
-        </div>
-
-        {/* Recommended action */}
-        <div className="px-3.5 py-3 rounded-2xl bg-[#0d1225] border border-white/[0.04]">
-          <div className="text-[9px] text-slate-600 uppercase tracking-[0.09em] mb-1">Recommended</div>
-          <div className="text-xs font-semibold text-[#eef2ff] mb-0.5">{m.bestAction}</div>
-          <div className="text-[10px] text-slate-600">{m.returnChance}% predicted success</div>
-        </div>
-      </div>
-
-      {/* Footer */}
-      <div className="px-4 py-3 border-t border-white/[0.03] flex gap-1.5">
-        <AppButton className="flex-1 justify-center" onClick={() => onMessage(m)}>
-          <Send className="w-2.5 h-2.5" /> {m.bestAction}
-        </AppButton>
-        <AppButton variant="secondary" size="sm">
-          <MoreHorizontal className="w-3 h-3" />
-        </AppButton>
-      </div>
-    </div>
-  );
-}
-
-/* ══════════════════════════════════════════════════════════════════
-   SECTION 6: ALERTS SIDEBAR
-══════════════════════════════════════════════════════════════════ */
-function AlertsSidebar({ members, onFilter, onMessage }) {
-  const highRisk = members.filter(m => m.churnPct >= 70);
-  const newQuiet = members.filter(m => m.joinedDaysAgo <= 10 && m.visitsTotal < 2);
-  const totalVal = highRisk.reduce((s, m) => s + m.monthlyValue, 0);
+  const suggestions = [
+    { label:'Message At-Risk Members', color:'red',   icon:Send },
+    { label:'Welcome New Members',     color:'amber',  icon:UserPlus },
+    { label:'Post Member Spotlight',   color:'blue',  icon:Star },
+    { label:'Create Weekend Challenge',color:'green', icon:Zap },
+  ];
 
   const dropoffs = [
-    { label:"Week 1", pct:25, colorCls:"bg-red-500"   },
-    { label:"Week 2", pct:66, colorCls:"bg-amber-500" },
-    { label:"Week 4", pct:41, colorCls:"bg-slate-600" },
+    {label:'Week 1', pct:25, color:T.red},
+    {label:'Week 2', pct:66, color:T.amber},
+    {label:'Week 4', pct:41, color:T.textMut},
   ];
 
   return (
-    <div className="flex flex-col gap-2">
+    <div style={{ display:'flex', flexDirection:'column', gap:12 }}>
 
-      {highRisk.length > 0 && (
-        <div className="px-4 py-3.5 rounded-2xl bg-[#0a0f1e] border border-white/[0.04] border-l-2 border-l-red-500 shadow-[inset_0_1px_0_rgba(255,255,255,0.012)]">
-          <div className="flex items-center justify-between mb-2">
-            <div className="flex items-center gap-1.5">
-              <span className="inline-block w-1.5 h-1.5 rounded-full bg-red-500 shadow-[0_0_6px_rgba(239,68,68,0.56)] shrink-0" />
-              <span className="text-xs font-semibold text-[#eef2ff]">{highRisk.length} likely to churn</span>
-            </div>
-          </div>
-          <div className="flex gap-1 mb-2 flex-wrap">
-            {highRisk.slice(0, 3).map((m, i) => (
-              <div key={i} className="flex items-center gap-1 py-0.5 pr-2 pl-0.5 rounded-full bg-[#0d1225] border border-white/[0.04]">
-                <Avatar m={m} size={14} />
-                <span className="text-[10px] text-slate-400">{m.name.split(" ")[0]}</span>
-              </div>
-            ))}
-            {highRisk.length > 3 && <span className="text-[10px] text-slate-600 self-center">+{highRisk.length - 3}</span>}
-          </div>
-          <div className="text-[11px] text-slate-600 mb-2.5">${totalVal}/mo at risk</div>
-          <div className="flex gap-1.5">
-            <AppButton variant="secondary" size="sm" className="flex-1 justify-center" onClick={() => { onFilter("atRisk"); onMessage(null, "atRisk"); }}>
-              <Send className="w-2 h-2" /> Message
-            </AppButton>
-            <AppButton variant="outline" size="sm" onClick={() => onFilter("atRisk")}>View</AppButton>
-          </div>
+      {/* Action Suggestions */}
+      <div style={card()}>
+        <div style={{ padding:'13px 16px', borderBottom:`1px solid ${T.border}` }}>
+          <div style={{ fontSize:12.5, fontWeight:700, color:T.text }}>What To Do Today?</div>
+          <div style={{ fontSize:10.5, color:T.textMut, marginTop:2 }}>Guided Actions</div>
         </div>
-      )}
+        <div style={{ padding:'10px 12px', display:'flex', flexDirection:'column', gap:6 }}>
+          {suggestions.map(({label,color,icon:Icon},i)=>{
+            const m={red:[T.red,T.redDim,T.redBd],amber:[T.amber,T.amberDim,T.amberBd],blue:[T.blue,T.blueDim,T.blueBd],green:[T.green,T.greenDim,T.greenBd]};
+            const [fg,bg,bd]=m[color];
+            return (
+              <button key={i} onClick={()=>color==='red'&&highRisk.length>0?onMessage(highRisk[0]):null}
+                style={{ display:'flex', alignItems:'center', gap:8, padding:'9px 12px', borderRadius:9,
+                  background:bg, border:`1px solid ${bd}`, cursor:'pointer', textAlign:'left', width:'100%' }}>
+                <Icon size={11} color={fg}/>
+                <span style={{ fontSize:11.5, fontWeight:600, color:fg }}>{label}</span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
 
-      {newQuiet.length > 0 && (
-        <div className="px-4 py-3.5 rounded-2xl bg-[#0a0f1e] border border-white/[0.04] border-l-2 border-l-amber-500 shadow-[inset_0_1px_0_rgba(255,255,255,0.012)]">
-          <div className="flex items-center gap-1.5 mb-2">
-            <UserPlus className="w-2.5 h-2.5 text-amber-500" />
-            <span className="text-xs font-semibold text-[#eef2ff]">New members going quiet</span>
+      {/* Actionable Insights */}
+      <div style={card()}>
+        <div style={{ padding:'13px 16px', borderBottom:`1px solid ${T.border}` }}>
+          <div style={{ fontSize:12.5, fontWeight:700, color:T.text }}>Actionable Insights</div>
+        </div>
+        <div style={{ padding:'14px 16px' }}>
+          {/* Simple bar chart */}
+          <div style={{ display:'flex', alignItems:'flex-end', gap:5, height:60, marginBottom:10 }}>
+            {[45,72,38,81,55,29,63].map((v,i)=>(
+              <div key={i} style={{ flex:1, borderRadius:'3px 3px 0 0',
+                background: i===3?T.blue:`rgba(59,130,246,${0.15+i*0.03})`,
+                height:`${(v/90)*100}%`, transition:'height 0.3s' }}/>
+            ))}
           </div>
-          <div className="flex gap-1 mb-2 flex-wrap">
-            {newQuiet.map((m, i) => (
-              <div key={i} className="flex items-center gap-1 py-0.5 pr-2 pl-0.5 rounded-full bg-[#0d1225] border border-white/[0.04]">
-                <Avatar m={m} size={14} />
-                <span className="text-[10px] text-slate-400">{m.name.split(" ")[0]}</span>
+          <div style={{ display:'flex', flexDirection:'column', gap:6 }}>
+            {[
+              `${highRisk.length} members haven't been in 14+ days`,
+              "Engaged members refer at 3× the rate",
+              "New members respond best in days 3–7",
+            ].map((s,i)=>(
+              <div key={i} style={{ display:'flex', gap:7, alignItems:'flex-start' }}>
+                <span style={{ color:T.textMut, fontSize:11, marginTop:1 }}>·</span>
+                <span style={{ fontSize:11, color:T.textSec, lineHeight:1.5 }}>{s}</span>
               </div>
             ))}
           </div>
-          <div className="text-[11px] text-slate-600 leading-relaxed mb-2.5">
-            Week-1 follow-up has the highest retention impact.
+          <button style={{ marginTop:10, fontSize:11, color:T.blue, background:'none', border:'none', cursor:'pointer', display:'flex', alignItems:'center', gap:4, padding:0 }}>
+            Review Detailed Insights <ArrowRight size={10}/>
+          </button>
+        </div>
+      </div>
+
+      {/* Member Preview */}
+      {highRisk.length > 0 && (
+        <div style={{ ...card(), border:`1px solid ${T.redBd}` }}>
+          <div style={{ padding:'13px 16px', borderBottom:`1px solid ${T.border}` }}>
+            <div style={{ fontSize:12.5, fontWeight:700, color:T.text }}>Member Preview</div>
           </div>
-          <div className="flex gap-1.5">
-            <AppButton variant="secondary" size="sm" className="flex-1 justify-center" onClick={() => onFilter("new")}>
-              <Send className="w-2 h-2" /> Follow up
-            </AppButton>
-            <AppButton variant="outline" size="sm" onClick={() => onFilter("new")}>View</AppButton>
+          <div style={{ padding:'14px 16px' }}>
+            {highRisk.slice(0,2).map((m,i)=>(
+              <div key={i} style={{ display:'flex', alignItems:'center', gap:10,
+                padding:'9px 0', borderBottom:i<highRisk.slice(0,2).length-1?`1px solid ${T.border}`:'none' }}>
+                <Av m={m} size={30}/>
+                <div style={{ flex:1, minWidth:0 }}>
+                  <div style={{ fontSize:12, fontWeight:600, color:T.text }}>{m.name}</div>
+                  <div style={{ fontSize:10.5, color:T.red, marginTop:2 }}>{m.daysSince}d absent · {m.churn}% churn risk</div>
+                </div>
+                <button onClick={()=>onMessage(m)} style={{ padding:'5px 10px', borderRadius:7, background:T.redDim,
+                  border:`1px solid ${T.redBd}`, color:T.red, fontSize:10, fontWeight:600, cursor:'pointer' }}>
+                  Message
+                </button>
+              </div>
+            ))}
           </div>
         </div>
       )}
 
       {/* Drop-off patterns */}
-      <div className="px-4 py-3.5 rounded-2xl bg-[#0a0f1e] border border-white/[0.04] shadow-[inset_0_1px_0_rgba(255,255,255,0.012)]">
-        <div className="flex items-center gap-1.5 mb-2.5">
-          <TrendingDown className="w-2.5 h-2.5 text-slate-600" />
-          <span className="text-xs font-semibold text-[#eef2ff]">Drop-off patterns</span>
+      <div style={card()}>
+        <div style={{ padding:'13px 16px', borderBottom:`1px solid ${T.border}` }}>
+          <div style={{ fontSize:12.5, fontWeight:700, color:T.text }}>Drop-off Patterns</div>
         </div>
-        <div className="text-[11px] text-slate-600 mb-3 leading-relaxed">When members go quiet after joining.</div>
-        {dropoffs.map((b, i) => (
-          <div key={i} className={cn("flex items-center gap-2", i < 2 && "mb-2")}>
-            <span className="text-[10px] text-slate-600 w-[42px] shrink-0">{b.label}</span>
-            <div className="flex-1">
-              <AppProgressBar value={b.pct} colorClass={b.colorCls} className="h-[3px]" />
+        <div style={{ padding:'14px 16px', display:'flex', flexDirection:'column', gap:10 }}>
+          {dropoffs.map(({label,pct,color},i)=>(
+            <div key={i}>
+              <div style={{ display:'flex', justifyContent:'space-between', marginBottom:5 }}>
+                <span style={{ fontSize:11, color:T.textSec }}>{label}</span>
+                <span style={{ fontSize:11, fontWeight:700, color }}>{pct}%</span>
+              </div>
+              <Bar value={pct} color={color}/>
             </div>
-            <span className="text-[10px] font-semibold text-slate-400 w-[28px] text-right">{b.pct}%</span>
-          </div>
-        ))}
-      </div>
-
-      {/* Insights */}
-      <div className="px-4 py-3.5 rounded-2xl bg-[#0a0f1e] border border-white/[0.04] shadow-[inset_0_1px_0_rgba(255,255,255,0.012)]">
-        <div className="text-[11px] font-semibold text-slate-400 mb-2.5">Insights</div>
-        {[
-          `${highRisk.length} members haven't engaged in 14+ days`,
-          "Highly engaged members refer at 3× the rate",
-          "New members respond best in days 3–7",
-        ].map((s, i) => (
-          <div key={i} className={cn("flex gap-1.5", i < 2 && "mb-1.5")}>
-            <span className="text-[#252d45] text-[10px] mt-0.5 shrink-0">·</span>
-            <span className="text-[11px] text-slate-600 leading-relaxed">{s}</span>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-/* ══════════════════════════════════════════════════════════════════
-   MESSAGE TOAST
-══════════════════════════════════════════════════════════════════ */
-function MessageToast({ member, onClose }) {
-  const [sent, setSent] = useState(false);
-  const [body, setBody] = useState(
-    member ? `Hey ${member.name.split(" ")[0]}, we've missed seeing you at the gym. Your progress is waiting — come back and pick up where you left off.` : ""
-  );
-  if (!member) return null;
-
-  return (
-    <div className="fixed bottom-[82px] right-4 sm:right-[26px] w-[calc(100vw-2rem)] max-w-[350px] bg-[#0a0f1e] border border-white/[0.07] rounded-2xl shadow-[0_4px_24px_rgba(0,0,0,0.15)] z-[300] overflow-hidden animate-[toastIn_0.18s_ease]">
-      <style>{`@keyframes toastIn{from{transform:translateY(12px);opacity:0}to{transform:translateY(0);opacity:1}}`}</style>
-      <div className="px-3.5 py-2.5 border-b border-white/[0.03] flex items-center justify-between">
-        <div className="flex items-center gap-1.5">
-          <Bell className="w-2.5 h-2.5 text-slate-600" />
-          <span className="text-[11px] font-semibold text-[#eef2ff]">Push notification</span>
-          <span className="text-[10px] text-slate-600">→ {member.name.split(" ")[0]}</span>
+          ))}
         </div>
-        <button onClick={onClose} className="bg-transparent border-none cursor-pointer p-0">
-          <X className="w-2.5 h-2.5 text-slate-600" />
-        </button>
       </div>
-      <div className="px-3.5 py-3">
-        <textarea
-          value={body}
-          onChange={e => setBody(e.target.value)}
-          rows={3}
-          className="w-full bg-[#0d1225] border border-white/[0.04] rounded-[7px] px-2.5 py-2 text-[11px] text-[#eef2ff] resize-none outline-none leading-relaxed focus:border-white/[0.12] transition-colors"
-        />
-        <div className="mt-0.5 text-[10px] text-slate-600">{member.returnChance}% predicted return rate</div>
-        <button
-          onClick={() => { setSent(true); setTimeout(onClose, 1600); }}
-          className={cn(
-            "mt-2 w-full py-2 rounded-[7px] border-none text-[11px] font-semibold cursor-pointer flex items-center justify-center gap-1.5 transition-all duration-200",
-            sent ? "bg-[#0d1225] text-emerald-500" : "bg-blue-500 text-white",
-          )}
-        >
-          {sent
-            ? <><Check className="w-2.5 h-2.5" /> Sent</>
-            : <><Send  className="w-2.5 h-2.5" /> Send to {member.name.split(" ")[0]}</>
-          }
+
+      {/* Add Member CTA */}
+      <button onClick={onAddMember}
+        style={{ display:'flex', alignItems:'center', justifyContent:'center', gap:7,
+          padding:'12px', borderRadius:10, background:T.blue, color:'#fff', border:'none',
+          fontSize:13, fontWeight:700, cursor:'pointer', boxShadow:`0 4px 20px rgba(59,130,246,0.3)` }}>
+        <Plus size={14}/> Add Member
+      </button>
+    </div>
+  );
+}
+
+/* ── Message Toast ──────────────────────────────────────────── */
+function MsgToast({ member, onClose }) {
+  const [sent, setSent] = useState(false);
+  const [body, setBody] = useState(member?`Hey ${member.name.split(' ')[0]}, we've missed seeing you at the gym. Your progress is waiting — come back!`:'');
+  if (!member) return null;
+  return (
+    <div style={{ position:'fixed', bottom:100, right:24, width:340, background:T.surface,
+      border:`1px solid ${T.borderM}`, borderRadius:14, boxShadow:'0 8px 40px rgba(0,0,0,0.4)',
+      zIndex:300, overflow:'hidden' }}>
+      <div style={{ padding:'11px 14px', borderBottom:`1px solid ${T.border}`, display:'flex', alignItems:'center', justifyContent:'space-between' }}>
+        <div style={{ display:'flex', alignItems:'center', gap:7 }}>
+          <Bell size={12} color={T.textMut}/>
+          <span style={{ fontSize:11.5, fontWeight:600, color:T.text }}>Push notification → {member.name.split(' ')[0]}</span>
+        </div>
+        <button onClick={onClose} style={{ background:'none', border:'none', cursor:'pointer', padding:0 }}><X size={13} color={T.textMut}/></button>
+      </div>
+      <div style={{ padding:'12px 14px' }}>
+        <textarea value={body} onChange={e=>setBody(e.target.value)} rows={3}
+          style={{ width:'100%', background:T.surfaceH, border:`1px solid ${T.border}`, borderRadius:8,
+            padding:'9px 11px', fontSize:11.5, color:T.text, resize:'none', outline:'none', boxSizing:'border-box', lineHeight:1.5 }}/>
+        <div style={{ fontSize:10.5, color:T.textMut, marginTop:4 }}>{member.retChance}% predicted return rate</div>
+        <button onClick={()=>{setSent(true);setTimeout(onClose,1600);}}
+          style={{ marginTop:8, width:'100%', padding:'9px', borderRadius:8, border:'none',
+            background:sent?T.greenDim:T.blue, color:sent?T.green:'#fff', fontSize:12, fontWeight:600,
+            cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', gap:6 }}>
+          {sent?<><Check size={12}/>Sent!</>:<><Send size={12}/>Send to {member.name.split(' ')[0]}</>}
         </button>
       </div>
     </div>
   );
 }
 
-/* ══════════════════════════════════════════════════════════════════
-   ROOT
-══════════════════════════════════════════════════════════════════ */
+/* ── Root ───────────────────────────────────────────────────── */
 export default function MembersPageAI() {
   const members = MOCK_MEMBERS;
-  const [filter,        setFilter]        = useState("all");
-  const [search,        setSearch]        = useState("");
-  const [sort,          setSort]          = useState("churnDesc");
-  const [selectedRows,  setSelectedRows]  = useState(new Set());
-  const [previewMember, setPreviewMember] = useState(null);
-  const [messageTarget, setMessageTarget] = useState(null);
+  const [filter,        setFilter]  = useState('all');
+  const [search,        setSearch]  = useState('');
+  const [sort,          setSort]    = useState('churnDesc');
+  const [selectedRows,  setSelRows] = useState(new Set());
+  const [selectedId,    setSelId]   = useState(null);
+  const [msgTarget,     setMsgTgt]  = useState(null);
 
-  const counts = useMemo(() => ({
+  const counts = useMemo(()=>({
     all:      members.length,
-    atRisk:   members.filter(m => m.churnPct >= 60).length,
-    dropping: members.filter(m => m.prevVisits30 > 0 && m.visits30 <= m.prevVisits30 * 0.5).length,
-    new:      members.filter(m => m.joinedDaysAgo <= 14).length,
-    active:   members.filter(m => m.streak >= 5).length,
-    inactive: members.filter(m => m.daysSince >= 14).length,
-  }), [members]);
+    atRisk:   members.filter(m=>m.churn>=60).length,
+    dropping: members.filter(m=>m.pv30>0&&m.v30<=m.pv30*0.5).length,
+    new:      members.filter(m=>m.jDays<=14).length,
+    active:   members.filter(m=>m.streak>=5).length,
+    inactive: members.filter(m=>m.daysSince>=14).length,
+  }),[members]);
 
-  const toggleRow = useCallback(id => {
-    setSelectedRows(prev => { const s = new Set(prev); s.has(id) ? s.delete(id) : s.add(id); return s; });
-  }, []);
+  const atRisk = members.filter(m=>m.churn>=60);
+  const atRiskVal = atRisk.reduce((s,m)=>s+m.val,0);
 
-  const toggleAll = useCallback(rows => {
-    if (selectedRows.size === rows.length) setSelectedRows(new Set());
-    else setSelectedRows(new Set(rows.map(m => m.id)));
-  }, [selectedRows]);
-
-  const handleMessage     = useCallback(m => { setMessageTarget(m); setPreviewMember(null); }, []);
-  const handleBulkMessage = useCallback(segId => {
-    const seg = members.filter(m => {
-      if (segId === "atRisk")   return m.churnPct >= 60;
-      if (segId === "dropping") return m.prevVisits30 > 0 && m.visits30 <= m.prevVisits30 * 0.5;
-      if (segId === "new")      return m.joinedDaysAgo <= 14;
-      if (segId === "active")   return m.streak >= 5;
-      return false;
-    });
-    if (seg.length) setMessageTarget(seg[0]);
-  }, [members]);
+  const toggleRow = useCallback(id=>setSelRows(p=>{const s=new Set(p);s.has(id)?s.delete(id):s.add(id);return s;}),[]);
+  const toggleAll = useCallback(rows=>{if(selectedRows.size===rows.length)setSelRows(new Set());else setSelRows(new Set(rows.map(m=>m.id)));},[ selectedRows]);
 
   return (
-    <div className="min-h-screen bg-[#050810] text-[#eef2ff] text-[13px] leading-relaxed">
-      <div className="max-w-[1380px] mx-auto px-4 sm:px-6 pt-5 sm:pt-6 pb-20">
+    <div style={{ minHeight:'100vh', background:T.bg, color:T.text, display:'flex', flexDirection:'column',
+      fontFamily:"'Inter',-apple-system,BlinkMacSystemFont,sans-serif" }}>
 
-        {/* Page header */}
-        <div className="flex items-center justify-between mb-5">
-          <div>
-            <h1 className="text-xl font-bold text-[#eef2ff] m-0 tracking-[-0.03em]">Members</h1>
-            <p className="text-[11px] text-slate-600 mt-0.5 mb-0">AI-powered retention · know who needs you, act instantly</p>
-          </div>
-          <div className="flex gap-1.5">
-            <AppButton variant="secondary" size="sm">
-              <Activity className="w-2.5 h-2.5" /> Export
-            </AppButton>
-            <AppButton size="sm">
-              <Plus className="w-3 h-3" /> Invite Member
-            </AppButton>
-          </div>
-        </div>
+      <PageHeader atRisk={atRisk.length} search={search} setSearch={setSearch} onAddMember={()=>{}}/>
 
-        <MetricsBar members={members} />
-        <ActOnToday
-          members={members}
-          onMessage={handleMessage}
-          onSelect={m => setPreviewMember(prev => prev?.id === m.id ? null : m)}
-        />
-        <SmartSegments
-          members={members}
-          activeFilter={filter}
-          onFilter={setFilter}
-          onBulkMessage={handleBulkMessage}
-        />
+      <AlertBanner atRisk={atRisk.length} totalVal={atRiskVal}/>
+      <JourneyStrip members={members}/>
+      <FilterTabs filter={filter} setFilter={setFilter} counts={counts}/>
 
-        {/* Main grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-[1fr_260px] gap-3.5 items-start">
+      <div style={{ display:'grid', gridTemplateColumns:'1fr 280px', gap:16, padding:'16px 24px 40px', alignItems:'start' }}>
 
-          {/* Table card */}
-          <div className="rounded-2xl bg-[#0a0f1e] border border-white/[0.04] shadow-[inset_0_1px_0_rgba(255,255,255,0.012)] overflow-hidden">
-            <FilterBar
-              filter={filter} setFilter={setFilter}
-              search={search} setSearch={setSearch}
-              sort={sort}     setSort={setSort}
-              counts={counts}
-            />
-            <div className="overflow-x-auto">
-            <MembersTable
-              members={members} filter={filter} search={search} sort={sort} setSort={setSort}
-              selectedRows={selectedRows} toggleRow={toggleRow} toggleAll={toggleAll}
-              previewMember={previewMember} setPreviewMember={setPreviewMember}
-              onMessage={handleMessage}
-            />
+        {/* Main table card */}
+        <div style={{ ...card(), overflow:'hidden' }}>
+          {/* Table top bar */}
+          <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'12px 20px', borderBottom:`1px solid ${T.border}` }}>
+            <div style={{ display:'flex', alignItems:'center', gap:8 }}>
+              <Users size={14} color={T.blue}/>
+              <span style={{ fontSize:12.5, fontWeight:700, color:T.text }}>All Members</span>
+              <span style={{ fontSize:11, padding:'2px 8px', borderRadius:99, background:T.blueDim, color:T.blue, fontWeight:700 }}>{members.length}</span>
             </div>
-            <BulkBar
-              selectedRows={selectedRows}
-              members={members}
-              onClear={() => setSelectedRows(new Set())}
-              onBulkMessage={sel => setMessageTarget(sel[0])}
-            />
+            <div style={{ display:'flex', alignItems:'center', gap:8 }}>
+              <span style={{ fontSize:11, color:T.textMut }}>Sort:</span>
+              <select value={sort} onChange={e=>setSort(e.target.value)}
+                style={{ padding:'4px 8px', background:T.surfaceH, border:`1px solid ${T.border}`,
+                  borderRadius:7, color:T.textSec, fontSize:11, outline:'none' }}>
+                <option value="churnDesc">Highest Risk</option>
+                <option value="lastVisit">Recently Active</option>
+                <option value="value">Highest Value</option>
+                <option value="name">Name A–Z</option>
+              </select>
+              <button style={{ display:'flex', alignItems:'center', gap:6, padding:'6px 12px',
+                background:T.blue, border:'none', borderRadius:8,
+                color:'#fff', fontSize:11.5, fontWeight:600, cursor:'pointer' }}>
+                <Plus size={11}/> Add Member
+              </button>
+            </div>
+          </div>
 
-            {/* Pagination */}
-            <div className="px-4 py-2 border-t border-white/[0.04] flex items-center justify-between">
-              <div className="flex gap-1">
-                {[ChevronLeft, ChevronRight].map((Icon, i) => (
-                  <button key={i} className="w-6 h-6 rounded-md bg-transparent border border-white/[0.04] flex items-center justify-center cursor-pointer opacity-40">
-                    <Icon className="w-2.5 h-2.5 text-slate-400" />
-                  </button>
-                ))}
-                <button className="w-6 h-6 rounded-md bg-[#0d1225] border border-white/[0.07] flex items-center justify-center cursor-pointer text-[11px] font-bold text-[#eef2ff]">
-                  1
+          <MembersTable
+            members={members} filter={filter} search={search} sort={sort} setSort={setSort}
+            selectedRows={selectedRows} toggleRow={toggleRow} toggleAll={toggleAll}
+            onMessage={m=>setMsgTgt(m)} onSelect={m=>setSelId(p=>p===m.id?null:m.id)} selectedId={selectedId}
+          />
+
+          {/* Bulk bar */}
+          {selectedRows.size>0&&(
+            <div style={{ padding:'10px 20px', borderTop:`1px solid ${T.border}`, display:'flex', alignItems:'center', gap:8, background:T.surfaceH }}>
+              <span style={{ fontSize:11.5, color:T.textSec }}>{selectedRows.size} selected</span>
+              <button onClick={()=>{ const sel=members.filter(m=>selectedRows.has(m.id)); if(sel.length) setMsgTgt(sel[0]); }}
+                style={{ display:'flex', alignItems:'center', gap:5, padding:'6px 12px', borderRadius:7,
+                  background:T.blue, border:'none', color:'#fff', fontSize:11, fontWeight:600, cursor:'pointer' }}>
+                <Send size={10}/> Message {selectedRows.size}
+              </button>
+              <button onClick={()=>setSelRows(new Set())}
+                style={{ fontSize:11, color:T.textMut, background:'none', border:'none', cursor:'pointer' }}>Clear</button>
+            </div>
+          )}
+
+          {/* Pagination */}
+          <div style={{ padding:'10px 20px', borderTop:`1px solid ${T.border}`, display:'flex', alignItems:'center', justifyContent:'space-between' }}>
+            <div style={{ display:'flex', gap:4 }}>
+              {[ChevronLeft,ChevronRight].map((Icon,i)=>(
+                <button key={i} style={{ width:26, height:26, borderRadius:7, background:T.surfaceH,
+                  border:`1px solid ${T.border}`, display:'flex', alignItems:'center', justifyContent:'center',
+                  cursor:'pointer', opacity:0.5 }}>
+                  <Icon size={12} color={T.textSec}/>
                 </button>
-              </div>
-              <span className="text-[10px] text-slate-600">{members.length} members · page 1 of 1</span>
+              ))}
+              <button style={{ width:26, height:26, borderRadius:7, background:T.blueDim,
+                border:`1px solid ${T.blueBd}`, display:'flex', alignItems:'center', justifyContent:'center',
+                cursor:'pointer', fontSize:11, fontWeight:700, color:T.blue }}>1</button>
             </div>
-          </div>
-
-          <div className="order-first lg:order-last">
-            <AlertsSidebar members={members} onFilter={setFilter} onMessage={handleMessage} />
+            <span style={{ fontSize:10.5, color:T.textMut }}>{members.length} members · page 1 of 1</span>
           </div>
         </div>
+
+        {/* Right panel */}
+        <RightPanel members={members} onMessage={setMsgTgt} onAddMember={()=>{}}/>
       </div>
 
-      {previewMember && (
-        <MemberPreview m={previewMember} onClose={() => setPreviewMember(null)} onMessage={handleMessage} />
-      )}
-      {messageTarget && (
-        <MessageToast member={messageTarget} onClose={() => setMessageTarget(null)} />
-      )}
-
-      {/* Floating CTA */}
-      <button className="fixed bottom-[82px] sm:bottom-[26px] right-4 sm:right-[26px] z-[100] flex items-center gap-1.5 px-5 py-3 rounded-full bg-blue-500 text-white border-none text-xs font-semibold cursor-pointer shadow-[0_4px_20px_rgba(59,130,246,0.25)] hover:-translate-y-px hover:shadow-[0_6px_28px_rgba(59,130,246,0.35)] transition-all duration-150">
-        <Plus className="w-3 h-3" /> Invite Member
-      </button>
+      <MsgToast member={msgTarget} onClose={()=>setMsgTgt(null)}/>
     </div>
   );
 }
