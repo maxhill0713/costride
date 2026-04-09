@@ -378,6 +378,7 @@ return (
   };
 return (
   <div className="min-h-screen bg-[linear-gradient(to_bottom_right,#02040a,#0d2360,#02040a)]">
+  <div style={{ position: 'fixed', inset: 0, zIndex: -1, background: 'linear-gradient(to bottom right, #02040a, #0d2360, #02040a)' }} />
 
     <Tabs defaultValue="my-gyms" className="w-full">
         {/* ── Fixed header — Star + Tabs + Join with Code all in one bar ── */}
