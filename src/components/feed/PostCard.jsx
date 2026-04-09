@@ -766,7 +766,7 @@ function PostCard({ post, onLike, onComment, onSave, onDelete, fullWidth = false
               )}
             </div>
             {Object.keys(localReactions).length > 0 && (
-              <button onClick={() => setShowReactionsModal(true)} className="flex items-center hover:opacity-80 transition-opacity">
+              <button onClick={() => setShowReactionsModal(true)} className="flex items-center hover:opacity-80 transition-opacity mr-2">
                 <div className="flex items-center" style={{ gap: 0 }}>
                   {Object.entries(localReactions).slice(0, 3).map(([uid, variant], i) => (
                     <div key={uid} className="relative w-6 h-6" style={{ marginLeft: i === 0 ? 0 : '-6px', zIndex: 3 - i }}>
@@ -872,7 +872,7 @@ function PostCard({ post, onLike, onComment, onSave, onDelete, fullWidth = false
             )}
           </div>
           {totalReactions > 0 && (
-            <button onClick={() => setShowReactionsModal(true)} className="flex items-center hover:opacity-80 transition-opacity">
+            <button onClick={() => setShowReactionsModal(true)} className="flex items-center hover:opacity-80 transition-opacity mr-2">
               <div className="flex items-center" style={{ gap: 0 }}>
                 {Object.entries(localReactions).slice(0, 3).map(([uid, variant], i) => (
                   <div key={uid} className="relative w-6 h-6" style={{ marginLeft: i === 0 ? 0 : '-6px', zIndex: 3 - i }}>
