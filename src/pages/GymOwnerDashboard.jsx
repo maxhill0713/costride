@@ -15,24 +15,7 @@ import { createPageUrl } from '../utils';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import ProfileDropdown from '../components/dashboard/ProfileDropdown';
-import MemberChatPanel from '../components/dashboard/MemberChatPanel';
-import ManageRewardsModal from '../components/gym/ManageRewardsModal';
-import ManageClassesModal from '../components/gym/ManageClassesModal';
-import ManageCoachesModal from '../components/gym/ManageCoachesModal';
-import ManageGymPhotosModal from '../components/gym/ManageGymPhotosModal';
-import EditGymPhotoModal from '../components/gym/EditGymPhotoModal';
-import ManageMembersModal from '../components/gym/ManageMembersModal';
-import CreateGymOwnerPostModal from '../components/gym/CreateGymOwnerPostModal';
-import ManageEquipmentModal from '../components/gym/ManageEquipmentModal';
-import ManageAmenitiesModal from '../components/gym/ManageAmenitiesModal';
-import EditBasicInfoModal from '../components/gym/EditBasicInfoModal';
-import CreateEventModal from '../components/events/CreateEventModal';
-import CreateChallengeModal from '../components/challenges/CreateChallengeModal';
-import QRScanner from '../components/gym/QRScanner';
-import CreatePollModal from '../components/polls/CreatePollModal';
-import GymJoinPoster from '../components/dashboard/GymJoinPoster';
-import EditGymLogoModal from '../components/gym/EditGymLogoModal';
-import EditPricingModal from '../components/gym/EditPricingModal';
+import MemberQuickModal from '../components/dashboard/MemberQuickModal';
 import QRCode from 'react-qr-code';
 
 import { lazy, Suspense } from 'react';
@@ -250,6 +233,10 @@ export default function GymOwnerDashboard() {
   const [memberPageSize] = useState(10);
   const [selectedRows, setSelectedRows] = useState(new Set());
   const [showChat, setShowChat] = useState(false);
+  const [memberSearchQuery, setMemberSearchQuery] = useState('');
+  const [memberSearchOpen, setMemberSearchOpen] = useState(false);
+  const [selectedQuickMember, setSelectedQuickMember] = useState(null);
+  const memberSearchRef = React.useRef(null);
 
   const openModal = useCallback((name) => {if (name === 'message') {setTab('members');return;}setModal(name);}, []);
   const closeModal = useCallback(() => setModal(null), []);
@@ -827,8 +814,53 @@ export default function GymOwnerDashboard() {
 
         {/* ── TOP BAR ── */}
         <header className="h-[54px] shrink-0 flex items-center justify-between px-5 bg-[#050810] border-b border-white/[0.04]">
-          <div className="text-[13px] font-semibold text-slate-400 tracking-[-0.01em]">
-            {new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' })}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <div className="text-[13px] font-semibold text-slate-400 tracking-[-0.01em]">
+              {new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' })}
+            </div>
+            {/* Member search */}
+            <div style={{ position: 'relative' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '5px 11px', borderRadius: 8, background: 'rgba(255,255,255,0.03)', border: `1px solid ${memberSearchOpen ? 'rgba(59,130,246,0.4)' : 'rgba(255,255,255,0.06)'}`, transition: 'border-color 0.15s' }}>
+                <svg width="11" height="11" viewBox="0 0 20 20" fill="none"><circle cx="8" cy="8" r="6" stroke="#4b5578" strokeWidth="2"/><path d="M13 13l4 4" stroke="#4b5578" strokeWidth="2" strokeLinecap="round"/></svg>
+                <input
+                  value={memberSearchQuery}
+                  onChange={e => { setMemberSearchQuery(e.target.value); setMemberSearchOpen(true); }}
+                  onFocus={() => setMemberSearchOpen(true)}
+                  onBlur={() => setTimeout(() => setMemberSearchOpen(false), 180)}
+                  placeholder="Search members..."
+                  style={{ width: 170, background: 'transparent', border: 'none', outline: 'none', color: '#eef2ff', fontSize: 12 }}
+                />
+                {memberSearchQuery && (
+                  <button onClick={() => { setMemberSearchQuery(''); setMemberSearchOpen(false); }} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, display: 'flex' }}>
+                    <X className="w-[10px] h-[10px] text-[#4b5578]" />
+                  </button>
+                )}
+              </div>
+              {memberSearchOpen && memberSearchQuery.length >= 1 && (() => {
+                const q = memberSearchQuery.toLowerCase();
+                const results = effectiveMemberships.filter(m => (m.user_name || '').toLowerCase().includes(q) || (m.user_email || '').toLowerCase().includes(q)).slice(0, 8);
+                return (
+                  <div style={{ position: 'absolute', top: 'calc(100% + 6px)', left: 0, minWidth: 240, background: '#060c18', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 10, zIndex: 9990, overflow: 'hidden', boxShadow: '0 12px 36px rgba(0,0,0,0.6)' }}>
+                    {results.length === 0 ? (
+                      <div style={{ padding: '10px 14px', fontSize: 12, color: '#4b5578' }}>No members found</div>
+                    ) : results.map(m => (
+                      <button key={m.user_id} onMouseDown={() => { setSelectedQuickMember(m); setMemberSearchQuery(''); setMemberSearchOpen(false); }}
+                        style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 9, padding: '9px 14px', background: 'transparent', border: 'none', cursor: 'pointer', textAlign: 'left' }}
+                        onMouseEnter={e => e.currentTarget.style.background = 'rgba(59,130,246,0.08)'}
+                        onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
+                        <div style={{ width: 26, height: 26, borderRadius: '50%', flexShrink: 0, background: `hsl(${(m.user_name?.charCodeAt(0) || 72) % 360},38%,16%)`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 800, color: '#eef2ff', overflow: 'hidden' }}>
+                          {avatarMapFull[m.user_id] ? <img src={avatarMapFull[m.user_id]} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : (m.user_name || '?').charAt(0).toUpperCase()}
+                        </div>
+                        <div>
+                          <div style={{ fontSize: 12.5, fontWeight: 700, color: '#eef2ff' }}>{m.user_name || 'Member'}</div>
+                          {m.user_email && <div style={{ fontSize: 10.5, color: '#4b5578' }}>{m.user_email}</div>}
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                );
+              })()}
+            </div>
           </div>
 
           <div className="flex items-center gap-1.5">
@@ -870,6 +902,15 @@ export default function GymOwnerDashboard() {
             </button>
           </div>
         </header>
+
+        {selectedQuickMember && (
+          <MemberQuickModal
+            member={selectedQuickMember}
+            onClose={() => setSelectedQuickMember(null)}
+            checkIns={checkIns}
+            avatarMap={avatarMapFull}
+          />
+        )}
 
         <main className="flex-1 overflow-hidden px-[22px] pt-5 pb-7 flex flex-col">
           <div className="flex-1 min-h-0 w-full max-w-[1600px] overflow-y-auto pr-0.5">
