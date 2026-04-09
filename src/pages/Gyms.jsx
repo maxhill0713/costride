@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { MapPin, Star, Users, Dumbbell, Filter, Gift, BadgeCheck, Edit, Key, Heart, Images, Plus, Search, Building2, Loader2, Crown, CheckCircle, X, MoreVertical, LogOut, SlidersHorizontal } from 'lucide-react';
@@ -374,8 +374,12 @@ return (
       </div>
     );
   };
+
 return (
-  <div className="min-h-screen bg-[linear-gradient(to_bottom_right,#02040a,#0d2360,#02040a)]">
+  // ── FIX: transparent main div + fixed background div for seamless overscroll ──
+  <div className="min-h-screen" style={{ backgroundColor: 'transparent' }}>
+    {/* Overscroll background fix — covers rubber-band pull area on iOS/Android */}
+    <div style={{ position: 'fixed', inset: 0, zIndex: -1, background: 'linear-gradient(to bottom right, #02040a, #0d2360, #02040a)' }} />
 
     <Tabs defaultValue="my-gyms" className="w-full">
         {/* ── Fixed header — Star + Tabs + Join with Code all in one bar ── */}
@@ -690,9 +694,7 @@ return (
       <Dialog open={!!equipmentGym} onOpenChange={() => setEquipmentGym(null)}>
         <DialogContent className="fixed left-[50%] top-[50%] z-50 grid w-full translate-x-[-50%] translate-y-[-50%] gap-4 p-6 duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%] max-w-lg max-h-[80vh] overflow-y-auto [&>button]:hidden bg-slate-800/30 backdrop-blur-md border border-slate-700/20 rounded-3xl shadow-2xl shadow-black/20 text-white">
           <DialogHeader>
-            <DialogTitle className="text-lg font-bold text-center">
-              Equipment
-            </DialogTitle>
+            <DialogTitle className="text-lg font-bold text-center">Equipment</DialogTitle>
           </DialogHeader>
           <div className="space-y-3">
             {equipmentGym?.equipment && equipmentGym.equipment.length > 0 ?
