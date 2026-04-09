@@ -518,6 +518,7 @@ function LastSevenDaysWinbacks() {
         </div>
         </div>
         </div>
+        </div>
         );
 }
 
