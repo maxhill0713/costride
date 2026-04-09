@@ -528,85 +528,15 @@ function RightSidebar() {
   );
 }
 
-/* ─── main content area ───────────────────────────────────────── */
-function ContentArea() {
-  const [tab, setTab] = useState("Drafts");
-  const [alert, setAlert] = useState(true);
-
-  return (
-    <div style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0, overflow: "hidden" }}>
-      <div style={{ flex: 1, display: "flex", overflow: "hidden" }}>
-
-        {/* center column */}
-        <div style={{ flex: 1, overflowY: "auto", padding: "16px 18px 40px", minWidth: 0 }}>
-
-          {/* Page title row */}
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
-            <div>
-              <div style={{ fontSize: 19, fontWeight: 800, color: C.text, letterSpacing: "-0.02em", display: "flex", alignItems: "baseline", gap: 6 }}>
-                Content Center
-                <span style={{ color: C.muted, fontWeight: 300, fontSize: 17 }}>/</span>
-                <span style={{ color: "#818cf8" }}>Hub</span>
-              </div>
-            </div>
-            <button style={{
-              display: "flex", alignItems: "center", gap: 6, padding: "7px 14px",
-              borderRadius: 8, background: "#3b82f6", color: "#fff",
-              border: "none", fontSize: 13, fontWeight: 700, cursor: "pointer",
-            }}>
-              Create New <ChevronDown size={11} />
-            </button>
-          </div>
-
-          {alert && <AlertBanner onDismiss={() => setAlert(false)} />}
-          <JourneyCard />
-          <Tabs active={tab} setActive={setTab} />
-
-          {/* Drafts content */}
-          {tab === "Drafts" && (
-            <>
-              <div style={{ fontSize: 12, fontWeight: 700, color: C.muted, marginBottom: 9 }}>Draft Content</div>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 16 }}>
-                {DRAFTS.map(d => <DraftCard key={d.id} d={d} />)}
-              </div>
-
-              <div style={{ fontSize: 12.5, fontWeight: 700, color: C.text, marginBottom: 9 }}>
-                All Content (Drafts &amp; Scheduled)
-              </div>
-              <ContentTable />
-              <FeedRow />
-            </>
-          )}
-
-          {/* Other tab empty states */}
-          {tab !== "Drafts" && (
-            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", padding: "56px 0", gap: 12 }}>
-              <div style={{ width: 48, height: 48, borderRadius: 12, background: "rgba(59,130,246,0.08)", border: `1px solid rgba(59,130,246,0.18)`, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                <Flame size={20} color="#60a5fa" />
-              </div>
-              <div style={{ fontSize: 14, fontWeight: 700, color: C.muted }}>Nothing in {tab} yet</div>
-              <button style={{ padding: "7px 16px", borderRadius: 8, background: "#3b82f6", color: "#fff", border: "none", fontSize: 12.5, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}>
-                <Plus size={12} /> Create Content
-              </button>
-            </div>
-          )}
-        </div>
-
-        <RightSidebar />
-      </div>
-    </div>
-  );
-}
-
 /* ─── root ────────────────────────────────────────────────────── */
-export default function ContentPage() {
+export default function ContentPage({ events = [], challenges = [], polls = [], posts = [], openModal, onDeleteEvent, onDeleteChallenge, onDeletePost }) {
   return (
     <div style={{
       display: "flex", minHeight: "100vh", background: C.bg, color: C.text,
       fontFamily: "'Inter', 'DM Sans', system-ui, sans-serif",
       fontSize: 13, lineHeight: 1.5, WebkitFontSmoothing: "antialiased",
     }}>
-      <ContentArea />
+      <ContentArea events={events} challenges={challenges} polls={polls} posts={posts} openModal={openModal} onDeleteEvent={onDeleteEvent} onDeleteChallenge={onDeleteChallenge} onDeletePost={onDeletePost} />
     </div>
   );
 }
