@@ -433,7 +433,10 @@ export default function Settings() {
       <LogoutDialog
         open={showLogoutDialog}
         onClose={() => setShowLogoutDialog(false)}
-        onConfirm={() => base44.auth.logout()}
+        onConfirm={() => {
+          navigate(createPageUrl('Home'));
+          base44.auth.logout();
+        }}
       />
       <DeleteAccountDialog
         open={showDeleteDialog}
