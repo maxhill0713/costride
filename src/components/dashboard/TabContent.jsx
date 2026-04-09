@@ -1,706 +1,615 @@
-import React, { useMemo, useState, useRef, useEffect } from 'react';
-import { format, subDays, getDay, startOfMonth, endOfMonth, eachDayOfInterval, isToday } from 'date-fns';
+import { useState } from "react";
 import {
-  Trophy, BarChart2, Calendar, ChevronRight, TrendingUp, TrendingDown,
-  Heart, MessageCircle, MoreHorizontal, Trash2, CheckCircle, Plus,
-  Users, Flame, HelpCircle, ChevronLeft, List,
-} from 'lucide-react';
-import { AppButton } from '@/components/ui/AppButton';
-import { AppBadge } from '@/components/ui/AppBadge';
-import { AppProgressBar } from '@/components/ui/AppProgressBar';
-import { cn } from '@/lib/utils';
+  LayoutDashboard, Users, FileText, BarChart2, Zap, Settings, Gift,
+  ExternalLink, Eye, LogOut, QrCode, ChevronDown, Search, Plus,
+  Calendar, Flame, BookOpen, CheckCircle2, Facebook, Instagram,
+  Sparkles, Heart, MessageCircle, TrendingUp, AlertTriangle,
+  ChevronRight, Check, AlignLeft, HelpCircle, Star, X, MoreHorizontal,
+} from "lucide-react";
 
-/* ─── PRIMITIVES ─── */
-function Av({ name = '', size = 28, src = null }) {
-  const letters = name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2) || '?';
-  const hue = (name.charCodeAt(0) || 72) % 360;
-  if (src) return (
-    <img src={src} alt={name} className="rounded-full object-cover shrink-0"
-         style={{ width: size, height: size }}
-         onError={e => { e.currentTarget.style.display = 'none'; }} />
+/* ─── tokens ──────────────────────────────────────────────────── */
+const C = {
+  bg:      "#0b0e17",
+  surface: "#111520",
+  card:    "#161b28",
+  card2:   "#1a2030",
+  border:  "rgba(255,255,255,0.06)",
+  border2: "rgba(255,255,255,0.10)",
+  text:    "#e8ecf4",
+  muted:   "#7c879e",
+  dim:     "#3e4a60",
+  dimmer:  "#252d3d",
+};
+
+/* ─── primitives ──────────────────────────────────────────────── */
+function Avatar({ name = "", size = 28, img = null }) {
+  const letters = name.split(" ").map(w => w[0]).join("").toUpperCase().slice(0, 2) || "?";
+  const hue = ((name.charCodeAt(0) || 72) * 47) % 360;
+  if (img) return (
+    <img src={img} alt={name} style={{ width: size, height: size, borderRadius: "50%", objectFit: "cover", flexShrink: 0 }}
+      onError={e => { e.currentTarget.style.display = "none"; }} />
   );
   return (
-    <div className="flex items-center justify-center shrink-0 font-extrabold"
-         style={{ width: size, height: size, borderRadius: size * 0.28,
-                  background: `hsl(${hue},38%,16%)`,
-                  border: `1.5px solid hsl(${hue},38%,24%)`,
-                  fontSize: size * 0.32,
-                  color: `hsl(${hue},60%,60%)` }}>
-      {letters}
+    <div style={{
+      width: size, height: size, borderRadius: "50%", flexShrink: 0,
+      background: `hsl(${hue},40%,16%)`, border: `1.5px solid hsl(${hue},40%,28%)`,
+      color: `hsl(${hue},65%,65%)`, fontSize: size * 0.35, fontWeight: 800,
+      display: "flex", alignItems: "center", justifyContent: "center",
+    }}>{letters}</div>
+  );
+}
+
+function PlatformPill({ type }) {
+  const styles = {
+    instagram: { bg: "#25303e", border: "rgba(168,85,247,0.35)", Icon: Instagram, color: "#a855f7" },
+    facebook:  { bg: "#1e2b3a", border: "rgba(59,130,246,0.35)",  Icon: Facebook,  color: "#3b82f6" },
+  };
+  const s = styles[type];
+  if (!s) return null;
+  return (
+    <div style={{ width: 22, height: 22, borderRadius: 6, background: s.bg, border: `1px solid ${s.border}`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+      <s.Icon size={11} color={s.color} />
     </div>
   );
 }
 
-function DelBtn({ onDelete }) {
-  const [open, setOpen] = useState(false);
-  const ref = useRef(null);
-  useEffect(() => {
-    if (!open) return;
-    const h = e => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
-    document.addEventListener('mousedown', h);
-    return () => document.removeEventListener('mousedown', h);
-  }, [open]);
+function IaBadge() {
   return (
-    <div ref={ref} className="relative shrink-0">
-      <button
-        onClick={e => { e.stopPropagation(); setOpen(o => !o); }}
-        className="w-[22px] h-[22px] flex items-center justify-center bg-transparent border border-white/[0.04] rounded-[5px] cursor-pointer transition-colors hover:border-white/[0.07]">
-        <MoreHorizontal className="w-[11px] h-[11px] text-[#4b5578]" />
+    <span style={{ padding: "1px 5px", borderRadius: 4, background: "rgba(99,102,241,0.15)", border: "1px solid rgba(99,102,241,0.3)", fontSize: 9.5, fontWeight: 800, color: "#818cf8", letterSpacing: "0.04em" }}>IA</span>
+  );
+}
+
+function ScheduledBadge() {
+  return (
+    <span style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "2px 8px", borderRadius: 20, background: "rgba(16,185,129,0.12)", border: "1px solid rgba(16,185,129,0.25)", fontSize: 11, fontWeight: 700, color: "#34d399" }}>
+      <div style={{ width: 5, height: 5, borderRadius: "50%", background: "#34d399" }} />
+      Scheduled
+    </span>
+  );
+}
+
+function Checkbox({ checked, onChange }) {
+  return (
+    <div onClick={onChange} style={{ width: 14, height: 14, borderRadius: 3, cursor: "pointer", flexShrink: 0, background: checked ? "#3b82f6" : "transparent", border: `1.5px solid ${checked ? "#3b82f6" : C.dim}`, display: "flex", alignItems: "center", justifyContent: "center" }}>
+      {checked && <Check size={8} color="#fff" strokeWidth={3} />}
+    </div>
+  );
+}
+
+/* ─── sidebar ─────────────────────────────────────────────────── */
+const NAV = [
+  { Icon: LayoutDashboard, label: "Overview"         },
+  { Icon: Users,           label: "Members"          },
+  { Icon: FileText,        label: "Content", active: true },
+  { Icon: BarChart2,       label: "Analytics"        },
+  { Icon: Zap,             label: "Automations"      },
+  { Icon: Settings,        label: "Settings"         },
+  { Icon: Gift,            label: "Loyalty Programs" },
+];
+const LINKS = [
+  { Icon: ExternalLink, label: "View Gym Page" },
+  { Icon: Eye,          label: "Member View"   },
+  { Icon: LogOut,       label: "Log Out", red: true },
+];
+
+function Sidebar() {
+  return (
+    <div style={{ width: 210, minHeight: "100vh", flexShrink: 0, background: C.surface, borderRight: `1px solid ${C.border}`, display: "flex", flexDirection: "column", fontFamily: "inherit" }}>
+
+      {/* Brand */}
+      <div style={{ padding: "16px 14px 14px", borderBottom: `1px solid ${C.border}`, display: "flex", alignItems: "center", gap: 9 }}>
+        <div style={{ width: 34, height: 34, borderRadius: 8, background: "linear-gradient(135deg,#3b82f6,#6366f1)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+          <Flame size={15} color="#fff" />
+        </div>
+        <div>
+          <div style={{ fontSize: 12.5, fontWeight: 800, color: C.text, lineHeight: 1.25 }}>Foundry Gym</div>
+          <div style={{ fontSize: 9, fontWeight: 700, color: C.muted, letterSpacing: "0.12em", textTransform: "uppercase", marginTop: 1 }}>Gym Owner</div>
+        </div>
+      </div>
+
+      {/* Nav section */}
+      <div style={{ padding: "13px 12px 8px" }}>
+        <div style={{ fontSize: 9, fontWeight: 700, color: C.dimmer, letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: 6 }}>Navigation</div>
+        {NAV.map(item => (
+          <div key={item.label} style={{
+            display: "flex", alignItems: "center", gap: 8, padding: "7px 9px", borderRadius: 8, marginBottom: 1, cursor: "pointer",
+            background: item.active ? "rgba(59,130,246,0.13)" : "transparent",
+            border: item.active ? "1px solid rgba(59,130,246,0.22)" : "1px solid transparent",
+          }}>
+            <item.Icon size={13} color={item.active ? "#60a5fa" : C.muted} strokeWidth={1.8} />
+            <span style={{ fontSize: 12.5, fontWeight: item.active ? 700 : 400, color: item.active ? "#60a5fa" : C.muted }}>{item.label}</span>
+          </div>
+        ))}
+      </div>
+
+      <div style={{ flex: 1 }} />
+
+      {/* Links section */}
+      <div style={{ padding: "10px 12px 18px", borderTop: `1px solid ${C.border}` }}>
+        <div style={{ fontSize: 9, fontWeight: 700, color: C.dimmer, letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: 6 }}>Links</div>
+        {LINKS.map(l => (
+          <div key={l.label} style={{ display: "flex", alignItems: "center", gap: 8, padding: "6px 9px", borderRadius: 8, cursor: "pointer", marginBottom: 1 }}>
+            <l.Icon size={12} color={l.red ? "#f87171" : C.muted} strokeWidth={1.8} />
+            <span style={{ fontSize: 12, fontWeight: 400, color: l.red ? "#f87171" : C.muted }}>{l.label}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* ─── header ──────────────────────────────────────────────────── */
+function TopBar() {
+  return (
+    <div style={{ height: 48, background: C.surface, borderBottom: `1px solid ${C.border}`, display: "flex", alignItems: "center", padding: "0 18px", gap: 10, flexShrink: 0 }}>
+      <span style={{ fontSize: 12.5, fontWeight: 700, color: C.text, whiteSpace: "nowrap" }}>Thurs 9 Apr</span>
+
+      <div style={{ position: "relative", flex: "0 0 220px" }}>
+        <Search size={11} color={C.dim} style={{ position: "absolute", left: 9, top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }} />
+        <input placeholder="Search members..." style={{
+          width: "100%", boxSizing: "border-box", padding: "5px 9px 5px 27px",
+          borderRadius: 7, background: C.card, border: `1px solid ${C.border}`,
+          color: C.text, fontSize: 12, outline: "none",
+        }} />
+      </div>
+
+      <div style={{ flex: 1 }} />
+
+      <button style={{ display: "flex", alignItems: "center", gap: 5, padding: "5px 11px", borderRadius: 7, background: C.card, border: `1px solid ${C.border2}`, color: C.muted, fontSize: 12, fontWeight: 600, cursor: "pointer" }}>
+        <QrCode size={11} /> Scan QR <ChevronDown size={9} />
       </button>
-      {open && (
-        <div className="absolute top-[26px] right-0 z-[9999] bg-[#060d1c] border border-white/[0.07] rounded-[9px] shadow-[0_8px_28px_rgba(0,0,0,0.75)] min-w-[100px] overflow-hidden">
-          <button
-            onClick={e => { e.stopPropagation(); setOpen(false); onDelete(); }}
-            className="w-full flex items-center gap-[7px] px-[13px] py-[9px] text-[11.5px] font-bold text-red-500 bg-transparent border-none cursor-pointer hover:bg-red-500/[0.07] transition-colors">
-            <Trash2 className="w-[11px] h-[11px]" /> Delete
-          </button>
-        </div>
-      )}
+
+      <div style={{ display: "flex", alignItems: "center", gap: 7, padding: "4px 10px", borderRadius: 7, background: C.card, border: `1px solid ${C.border}`, cursor: "pointer" }}>
+        <Avatar name="Max" size={20} />
+        <span style={{ fontSize: 12, fontWeight: 600, color: C.text }}>Max</span>
+        <ChevronDown size={9} color={C.dim} />
+      </div>
+
+      <div style={{ display: "flex", alignItems: "center", gap: 5, padding: "5px 10px", borderRadius: 7, background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.28)", cursor: "pointer" }}>
+        <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#ef4444" }} />
+        <span style={{ fontSize: 11.5, fontWeight: 700, color: "#f87171" }}>3 At Risk</span>
+      </div>
     </div>
   );
 }
 
-/* ─── METRICS BAR ─── */
-function MetricsBar({ allPosts, allMemberships, now }) {
-  const weekPosts = allPosts.filter(p => new Date(p.created_date || 0) >= subDays(now, 7));
-  const totalMem  = allMemberships.length;
-  const totalInt  = allPosts.reduce((s, p) => s + (p.likes?.length || 0) + (p.comments?.length || 0), 0);
-  const engRate   = totalMem > 0 ? Math.round((totalInt / totalMem) * 100) : 0;
-  const activeMem = new Set([
-    ...allPosts.flatMap(p => p.likes || []),
-    ...allPosts.flatMap(p => (p.comments || []).map(c => c.user_id).filter(Boolean)),
-  ]).size;
-  const typeMap = {};
-  allPosts.forEach(p => {
-    const type = (p.image_url || p.media_url) ? 'Photo' : p.poll_options ? 'Poll' : 'Text';
-    typeMap[type] = (typeMap[type] || 0) + (p.likes?.length || 0) + (p.comments?.length || 0) * 2;
-  });
-  const bestType    = Object.entries(typeMap).sort((a, b) => b[1] - a[1])[0]?.[0] || '—';
-  const wkDotClass  = weekPosts.length === 0 ? 'bg-red-500' : weekPosts.length < 3 ? 'bg-amber-400' : 'bg-emerald-500';
-  const engDotClass = engRate > 0 ? 'bg-emerald-500' : 'bg-[#252d45]';
-  const actDotClass = activeMem > 0 ? 'bg-emerald-500' : 'bg-[#252d45]';
-
-  const metrics = [
-    { icon: Flame,     iconClass: 'text-orange-500',  label: 'Posts This Week',   display: String(weekPosts.length), sub: 'Gyms posting 3×/week see +40% retention', dotClass: wkDotClass },
-    { icon: BarChart2, iconClass: 'text-blue-500',    label: 'Engagement Rate',   display: `${engRate}%`,           sub: totalMem > 0 ? `Across ${totalMem} members` : 'Add members to track', dotClass: engDotClass },
-    { icon: Users,     iconClass: 'text-emerald-500', label: 'Actively Engaging', display: String(activeMem), suffix: ' Members', sub: activeMem > 0 ? 'Liked or commented recently' : 'No interactions yet', dotClass: actDotClass },
-    { icon: Trophy,    iconClass: 'text-amber-400',   label: 'Top Post Type',     display: bestType, sub: allPosts.length > 0 ? 'Best for likes & saves' : 'Post to see insights', isDonut: true },
-  ];
-
+/* ─── alert banner ────────────────────────────────────────────── */
+function AlertBanner({ onDismiss }) {
   return (
-    <div className="grid grid-cols-2 md:grid-cols-4 border-b border-white/[0.04] shrink-0 bg-[#0a0f1e]">
-      {metrics.map((m, i) => (
-        <div key={i} className={cn(
-          'px-5 py-[14px] relative cursor-default transition-colors hover:bg-[#0d1225]',
-          i < metrics.length - 1 && 'border-r border-white/[0.04]',
-        )}>
-          <div className="flex items-center gap-1.5 mb-[7px]">
-            <m.icon className={cn('w-[11px] h-[11px]', m.iconClass)} />
-            <span className="text-[10.5px] font-semibold text-[#4b5578] tracking-[0.01em]">{m.label}</span>
-            <div className="ml-auto flex items-center gap-[5px]">
-              {m.dotClass && <div className={cn('w-[5px] h-[5px] rounded-full', m.dotClass)} />}
-              {m.isDonut && (
-                <svg viewBox="0 0 34 34" className="w-7 h-7 -rotate-90">
-                  <circle cx="17" cy="17" r="12" fill="none" stroke="rgba(255,255,255,0.03)" strokeWidth="4" />
-                  <circle cx="17" cy="17" r="12" fill="none" stroke="#0d9488" strokeWidth="4" strokeDasharray="46 75" strokeLinecap="round" />
-                </svg>
-              )}
-            </div>
-          </div>
-          <div className="text-[28px] font-extrabold text-[#eef2ff] tracking-[-0.035em] leading-none mb-[5px]">
-            {m.display}
-            {m.suffix && <span className="text-sm font-semibold text-[#8b95b3] ml-1">{m.suffix}</span>}
-          </div>
-          <div className="text-[10px] text-[#4b5578] leading-relaxed">{m.sub}</div>
+    <div style={{
+      background: C.card2, border: `1px solid ${C.border}`, borderRadius: 10,
+      padding: "11px 16px", marginBottom: 10,
+      display: "flex", alignItems: "center", gap: 10,
+    }}>
+      <AlertTriangle size={13} color="#f87171" style={{ flexShrink: 0 }} />
+      <span style={{ fontSize: 12.5, fontWeight: 700, color: C.text }}>Attention Required: Critical Churn Interventions</span>
+      <div style={{ flex: 1 }} />
+      <button onClick={onDismiss} style={{ background: "none", border: "none", cursor: "pointer", padding: 2, display: "flex" }}>
+        <X size={12} color={C.dim} />
+      </button>
+    </div>
+  );
+}
+
+/* ─── journey card ────────────────────────────────────────────── */
+function JourneyCard() {
+  return (
+    <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 10, padding: "11px 16px", marginBottom: 10 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+        <span style={{ fontSize: 12, fontWeight: 700, color: C.text, whiteSpace: "nowrap" }}>Content Success Journey</span>
+        {/* Progress track */}
+        <div style={{ flex: 1, position: "relative", height: 6, background: C.dimmer, borderRadius: 3, overflow: "hidden" }}>
+          <div style={{ position: "absolute", left: 0, top: 0, bottom: 0, width: "66%", background: "linear-gradient(90deg,#22c55e,#16a34a)", borderRadius: 3 }} />
         </div>
+      </div>
+      <div style={{ display: "flex", gap: 0, marginTop: 9, position: "relative" }}>
+        {[
+          { label: "Step 1: Connect Facebook",         done: true  },
+          { label: "Step 2: Schedule your first Poll", done: true  },
+          { label: "Step 3: Review Insights",          done: false },
+        ].map((s, i) => (
+          <div key={i} style={{ flex: 1, display: "flex", alignItems: "center", gap: 5, paddingRight: i < 2 ? 8 : 0 }}>
+            <div style={{ width: 8, height: 8, borderRadius: "50%", background: s.done ? "#22c55e" : C.dim, flexShrink: 0 }} />
+            <span style={{ fontSize: 10.5, color: s.done ? "#86efac" : C.muted, fontWeight: s.done ? 600 : 400 }}>{s.label}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* ─── tabs ────────────────────────────────────────────────────── */
+const TABS = ["Feed", "Calendar", "Drafts", "Scheduled", "Library"];
+
+function Tabs({ active, setActive }) {
+  return (
+    <div style={{ display: "flex", alignItems: "center", gap: 0, marginBottom: 14 }}>
+      <span style={{ fontSize: 12.5, fontWeight: 600, color: C.muted, marginRight: 10 }}>Tab:</span>
+      {TABS.map(tab => (
+        <button key={tab} onClick={() => setActive(tab)} style={{
+          padding: "6px 13px", fontSize: 12.5, background: "transparent", border: "none",
+          borderBottom: `2px solid ${active === tab ? "#3b82f6" : "transparent"}`,
+          color: active === tab ? C.text : C.muted,
+          fontWeight: active === tab ? 700 : 400,
+          cursor: "pointer", marginBottom: -1,
+          textDecoration: active === tab ? "underline" : "none",
+          textDecorationColor: "transparent",
+        }}>
+          {tab}
+        </button>
       ))}
     </div>
   );
 }
 
-/* ─── QUICK IDEAS ─── */
-const QUICK_IDEAS = [
-  { icon: Flame,  iconClass: 'text-orange-500', bgClass: 'bg-orange-500/[0.12]', borderClass: 'border-orange-500/[0.19]', ctaClass: 'text-orange-500', title: 'Motivation Monday',         desc: 'Drives comments',      cta: 'Generate post',   modal: 'post'      },
-  { icon: Users,  iconClass: 'text-blue-500',   bgClass: 'bg-blue-500/[0.12]',   borderClass: 'border-blue-500/[0.19]',   ctaClass: 'text-blue-500',   title: 'Member Spotlight',          desc: 'Builds community',     cta: 'Create',          modal: 'post'      },
-  { icon: Trophy, iconClass: 'text-amber-400',  bgClass: 'bg-amber-400/[0.12]',  borderClass: 'border-amber-400/[0.19]',  ctaClass: 'text-amber-400',  title: 'Start a weekend challenge', desc: 'Increases attendance', cta: 'Start challenge', modal: 'challenge' },
+/* ─── draft cards ─────────────────────────────────────────────── */
+const DRAFTS = [
+  {
+    id: "d1", author: "AI Gym", title: "AI Draft: Motivation Monday",
+    sub: "Ready to crush your goals with...",
+    platforms: ["instagram", "facebook"], aiGen: true,
+  },
+  {
+    id: "d2", author: "Priya S", title: "Draft: New Class Poll",
+    sub: "What class should we add next?...",
+    platforms: ["instagram"], aiGen: false,
+  },
 ];
 
-function QuickIdeas({ openModal }) {
+function DraftCard({ d }) {
   return (
-    <div>
-      <div className="flex items-center gap-[7px] mb-[11px]">
-        <span className="text-[13px] font-bold text-[#eef2ff]">Quick post ideas</span>
-        <HelpCircle className="w-3 h-3 text-[#4b5578]" />
+    <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 10, overflow: "hidden" }}>
+      {/* Row 1: avatar + title/sub */}
+      <div style={{ padding: "12px 14px 10px", display: "flex", alignItems: "flex-start", gap: 9 }}>
+        <Avatar name={d.author} size={30} />
+        <div style={{ minWidth: 0 }}>
+          <div style={{ fontSize: 12.5, fontWeight: 700, color: C.text, lineHeight: 1.3 }}>{d.title}</div>
+          <div style={{ fontSize: 11, color: C.muted, marginTop: 2 }}>{d.sub}</div>
+        </div>
       </div>
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-[9px]">
-        {QUICK_IDEAS.map((c, i) => (
-          <div
-            key={i}
-            className="bg-[#0d1225] border border-white/[0.07] rounded-[11px] p-4 cursor-pointer transition-all duration-150 flex flex-col gap-4 hover:border-white/[0.14] hover:bg-[#101929] hover:-translate-y-px hover:shadow-[0_8px_24px_rgba(0,0,0,0.5)]"
-            onClick={() => openModal(c.modal)}
-          >
-            <div className="flex items-center gap-[13px]">
-              <div className={cn('w-[42px] h-[42px] rounded-[12px] shrink-0 border flex items-center justify-center', c.bgClass, c.borderClass)}>
-                <c.icon className={cn('w-[19px] h-[19px]', c.iconClass)} />
-              </div>
-              <div className="min-w-0">
-                <div className="text-sm font-extrabold text-[#eef2ff] leading-snug mb-1">{c.title}</div>
-                <div className="text-[11px] text-[#4b5578] leading-snug">{c.desc}</div>
-              </div>
-            </div>
-            <button
-              className={cn('w-full py-[10px] rounded-[7px] text-[13px] font-bold cursor-pointer bg-[#050810] border border-white/[0.07] transition-all tracking-[0.01em]', c.ctaClass)}
-              onClick={e => { e.stopPropagation(); openModal(c.modal); }}
-            >
-              {c.cta}
-            </button>
-          </div>
-        ))}
+      {/* Row 2: platform icons + button */}
+      <div style={{ padding: "9px 14px 12px", display: "flex", alignItems: "center", gap: 6 }}>
+        <div style={{ display: "flex", gap: 4 }}>
+          {d.platforms.map(p => <PlatformPill key={p} type={p} />)}
+        </div>
+        {d.aiGen && <IaBadge />}
+        <div style={{ flex: 1 }} />
+        <button style={{
+          padding: "6px 13px", borderRadius: 7, fontSize: 11.5, fontWeight: 700,
+          background: "#3b82f6", color: "#fff", border: "none", cursor: "pointer",
+        }}>
+          Review &amp; Schedule Now
+        </button>
       </div>
     </div>
   );
 }
 
-/* ─── FEED CARDS ─── */
-const CARD = 'bg-[#0d1225] border border-white/[0.04] rounded-2xl overflow-hidden transition-colors hover:border-white/[0.07] relative';
+/* ─── content table ───────────────────────────────────────────── */
+const TABLE_ROWS = [
+  { id: "r1", typeAvatar: "MG", typeLabel: "Motivation Monday AI", platforms: ["instagram", "facebook"], aiGen: true,  date: "Apr 13, 9:00 AM", engBar: 70 },
+  { id: "r2", typeAvatar: "NP", typeLabel: "Draft: New Class Poll", platforms: ["instagram"],            aiGen: false, date: "Apr 13, 9:00 AM", engBar: 0  },
+  { id: "r3", typeAvatar: "MG", typeLabel: "Motivation Monday AI", platforms: ["instagram", "facebook"], aiGen: true,  date: "Apr 13, 9:00 AM", engBar: 50 },
+  { id: "r4", typeAvatar: "PS", typeLabel: "Priya Sharma",          platforms: ["instagram", "facebook"], aiGen: true,  date: "Apr 13, 9:00 AM", engBar: 30 },
+];
 
-function FeedPostCard({ post, onDelete, isTop, totalMembers }) {
-  const likes    = post.likes?.length    || 0;
-  const comments = post.comments?.length || 0;
-  const engRate  = totalMembers > 0 ? Math.round(((likes + comments) / totalMembers) * 100) : 0;
-  const title    = post.title || (post.content || '').split('\n')[0] || '';
-  const body     = post.title ? (post.content || '') : '';
+const COL = "28px 2fr 90px 90px 130px 100px 120px";
+
+function TableHeader() {
+  const cols = ["", "TYPE", "CHANNEL", "STATUS", "PUBLISH DATE", "ENGAGEMENT %", "RECOMMENDED ACTION"];
   return (
-    <div className={cn(CARD, isTop && 'border-blue-500/[0.22]')}>
-      {isTop && <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-blue-500 to-transparent" />}
-      {isTop && (
-        <div className="absolute top-[10px] left-[11px] z-[2]">
-          <AppBadge variant="active">⭐ Top Post</AppBadge>
-        </div>
-      )}
-      <div className="px-[14px] pt-3">
-        <div className="flex items-center gap-2">
-          <Av name={post.author_name || post.gym_name || 'G'} size={26} src={post.author_avatar || null} />
-          <span className="flex-1 text-xs font-semibold text-[#8b95b3] overflow-hidden text-ellipsis whitespace-nowrap">
-            {post.author_name || post.gym_name || 'Gym Post'}
-          </span>
-          <span className="text-[10px] text-[#4b5578] shrink-0">{post.created_date ? format(new Date(post.created_date), 'MMM d') : ''}</span>
-          <DelBtn onDelete={() => onDelete(post.id)} />
-        </div>
-      </div>
-      {title && (
-        <div className="px-[14px] py-[10px]">
-          <p className="text-[13.5px] font-bold text-[#eef2ff] mb-1 leading-snug">{title}</p>
-          {body && <p className="text-xs text-[#8b95b3] leading-relaxed line-clamp-2">{body}</p>}
-        </div>
-      )}
-      {(post.image_url || post.media_url) && (
-        <div className="mx-[14px] mb-[10px] rounded-[8px] overflow-hidden">
-          <img src={post.image_url || post.media_url} alt="" className="w-full max-h-[140px] object-cover block" onError={e => e.currentTarget.parentElement.style.display = 'none'} />
-        </div>
-      )}
-      <div className="px-[14px] pb-[11px] pt-2 flex items-center gap-3 border-t border-white/[0.03]">
-        <span className="flex items-center gap-1 text-[11px] font-semibold text-[#4b5578]"><Heart className="w-[11px] h-[11px]" />{likes}</span>
-        <span className="flex items-center gap-1 text-[11px] font-semibold text-[#4b5578]"><MessageCircle className="w-[11px] h-[11px]" />{comments}</span>
-        {engRate > 0 && <AppBadge variant="active" className="ml-auto">{engRate}% engaged</AppBadge>}
-      </div>
+    <div style={{ display: "grid", gridTemplateColumns: COL, gap: 6, padding: "7px 12px", background: C.surface, borderBottom: `1px solid ${C.border}` }}>
+      {cols.map((c, i) => (
+        <div key={i} style={{ fontSize: 9.5, fontWeight: 700, color: C.dim, letterSpacing: "0.08em", textTransform: "uppercase", display: "flex", alignItems: "center" }}>{c}</div>
+      ))}
     </div>
   );
 }
 
-function EventCard({ event, now, onDelete }) {
-  const evDate = new Date(event.event_date);
-  const diff   = Math.max(0, Math.floor((evDate - now) / 86400000));
-  const timingLabel = diff === 0 ? 'Today' : diff === 1 ? 'Tomorrow' : `${diff}d away`;
+function TableRow({ row, checked, onToggle, last }) {
   return (
-    <div className={CARD}>
-      <div className="p-[14px]">
-        <div className="flex items-center gap-2 mb-[9px]">
-          <div className="w-[26px] h-[26px] rounded-[7px] bg-blue-500/[0.08] border border-blue-500/[0.13] flex items-center justify-center shrink-0">
-            <Calendar className="w-[11px] h-[11px] text-blue-500" />
-          </div>
-          <AppBadge variant="active">Event</AppBadge>
-          <AppBadge variant={diff <= 2 ? 'warning' : 'neutral'}>{timingLabel}</AppBadge>
-          <div className="ml-auto"><DelBtn onDelete={() => onDelete(event.id)} /></div>
-        </div>
-        <p className="text-[13px] font-bold text-[#eef2ff] mb-1">{event.title}</p>
-        {event.description && <p className="text-[11px] text-[#8b95b3] mb-[7px] leading-relaxed">{event.description}</p>}
-        <div className="text-[10px] text-[#4b5578]">{format(evDate, 'MMM d, h:mm a')}</div>
+    <div style={{
+      display: "grid", gridTemplateColumns: COL, gap: 6, padding: "9px 12px",
+      alignItems: "center", cursor: "pointer",
+      background: checked ? "rgba(59,130,246,0.05)" : "transparent",
+      borderBottom: last ? "none" : `1px solid ${C.border}`,
+    }} onClick={onToggle}>
+      <div style={{ display: "flex", justifyContent: "center" }}>
+        <Checkbox checked={checked} onChange={onToggle} />
       </div>
-    </div>
-  );
-}
 
-function ChallengeCard({ challenge, now, onDelete }) {
-  const start  = new Date(challenge.start_date), end = new Date(challenge.end_date);
-  const totalD  = Math.max(1, Math.floor((end - start) / 86400000));
-  const elapsed = Math.max(0, Math.floor((now - start) / 86400000));
-  const rem     = Math.max(0, totalD - elapsed);
-  const pct     = Math.min(100, Math.round((elapsed / totalD) * 100));
-  const parts   = challenge.participants?.length || 0;
-  return (
-    <div className={CARD}>
-      <div className="p-[14px]">
-        <div className="flex items-center gap-2 mb-[9px]">
-          <div className="w-[26px] h-[26px] rounded-[7px] bg-amber-400/[0.08] border border-amber-400/[0.13] flex items-center justify-center shrink-0">
-            <Trophy className="w-[11px] h-[11px] text-amber-400" />
-          </div>
-          <AppBadge variant="active">Challenge</AppBadge>
-          <AppBadge variant={rem <= 3 ? 'warning' : 'neutral'}>{rem}d left</AppBadge>
-          <div className="ml-auto"><DelBtn onDelete={() => onDelete(challenge.id)} /></div>
-        </div>
-        <p className="text-[13px] font-bold text-[#eef2ff] mb-[10px]">{challenge.title}</p>
-        <div className="flex justify-between mb-[5px]">
-          <span className="text-[11px] text-[#4b5578]">{parts} joined</span>
-          <span className="text-[11px] font-bold text-blue-500">{pct}%</span>
-        </div>
-        <AppProgressBar value={pct} colorClass="bg-blue-500" className="h-[2px]" />
+      {/* TYPE */}
+      <div style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0 }}>
+        <Avatar name={row.typeAvatar} size={24} />
+        <span style={{ fontSize: 12, fontWeight: 600, color: C.text, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{row.typeLabel}</span>
       </div>
-    </div>
-  );
-}
 
-function PollCard({ poll, onDelete, allMemberships }) {
-  const votes = poll.voters?.length || 0;
-  const total = allMemberships?.length || 0;
-  const pct   = total > 0 ? Math.round((votes / total) * 100) : 0;
-  return (
-    <div className={CARD}>
-      <div className="p-[14px]">
-        <div className="flex items-center gap-2 mb-[9px]">
-          <div className="w-[26px] h-[26px] rounded-[7px] bg-blue-500/[0.08] border border-blue-500/[0.13] flex items-center justify-center shrink-0">
-            <BarChart2 className="w-[11px] h-[11px] text-blue-500" />
-          </div>
-          <AppBadge variant="active">Poll</AppBadge>
-          {pct > 0 && <AppBadge variant="neutral">{pct}% voted</AppBadge>}
-          <div className="ml-auto"><DelBtn onDelete={() => onDelete(poll.id)} /></div>
-        </div>
-        <p className="text-[13px] font-bold text-[#eef2ff] mb-[10px]">{poll.title}</p>
-        <AppProgressBar value={pct} colorClass="bg-blue-500" className="h-[2px] mb-[6px]" />
-        <div className="text-[11px] text-[#4b5578]">{votes} vote{votes !== 1 ? 's' : ''}{total > 0 ? ` of ${total} members` : ''}</div>
+      {/* CHANNEL */}
+      <div style={{ display: "flex", alignItems: "center", gap: 3 }}>
+        {row.platforms.map(p => <PlatformPill key={p} type={p} />)}
+        {row.aiGen && <IaBadge />}
       </div>
-    </div>
-  );
-}
 
-const CLS_IMGS = {
-  hiit:     'https://images.unsplash.com/photo-1517963879433-6ad2171073a4?w=400&q=80',
-  yoga:     'https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=400&q=80',
-  strength: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=400&q=80',
-  default:  'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=400&q=80',
-};
-function getClsType(c) {
-  const n = (c.class_type || c.name || '').toLowerCase();
-  if (n.includes('hiit') || n.includes('interval')) return 'hiit';
-  if (n.includes('yoga') || n.includes('flow'))     return 'yoga';
-  if (n.includes('strength') || n.includes('lift')) return 'strength';
-  return 'default';
-}
-function ClassCard({ gymClass, onDelete }) {
-  const type = getClsType(gymClass);
-  return (
-    <div className={CARD}>
-      <div className="relative h-20 overflow-hidden">
-        <img src={gymClass.image_url || CLS_IMGS[type]} alt="" className="w-full h-full object-cover" />
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent to-[#0d1225cc]" />
-        <span className="absolute top-[7px] left-[9px] text-[8.5px] font-extrabold tracking-[0.08em] uppercase text-blue-500 bg-black/50 border border-blue-500/[0.22] rounded px-[6px] py-[2px]">
-          {type.toUpperCase()}
-        </span>
-      </div>
-      <div className="px-[13px] py-[10px] pb-3">
-        <div className="flex items-center justify-between gap-1.5">
-          <div className="text-[13px] font-bold text-[#eef2ff] flex-1 overflow-hidden text-ellipsis whitespace-nowrap">{gymClass.name || gymClass.title}</div>
-          <DelBtn onDelete={() => onDelete(gymClass.id)} />
-        </div>
-        {gymClass.duration_minutes && <div className="text-[11px] text-[#4b5578] mt-[3px]">{gymClass.duration_minutes} min</div>}
-        {gymClass.instructor       && <div className="text-[11px] text-[#8b95b3] mt-[3px]">{gymClass.instructor}</div>}
-      </div>
-    </div>
-  );
-}
+      {/* STATUS */}
+      <div><ScheduledBadge /></div>
 
-/* ─── EMPTY STATE ─── */
-function EmptyState({ openModal, label }) {
-  return (
-    <div className="flex flex-col items-center py-[52px] px-5 gap-[14px] text-center">
-      <div className="w-[50px] h-[50px] rounded-[14px] bg-blue-500/10 border border-blue-500/[0.22] flex items-center justify-center">
-        <Flame className="w-[22px] h-[22px] text-blue-500" />
-      </div>
+      {/* DATE */}
+      <div style={{ fontSize: 11.5, color: C.muted }}>{row.date}</div>
+
+      {/* ENGAGEMENT */}
       <div>
-        <p className="text-[15px] font-extrabold text-[#eef2ff] mb-[6px]">🔥 Let's get your members engaged!</p>
-        <p className="text-xs text-[#4b5578] leading-relaxed">
-          {label ? `No ${label} yet.` : 'Your feed is empty. Create your first piece of content.'}
-        </p>
-      </div>
-      <div className="flex gap-[7px] flex-wrap justify-center">
-        <AppButton variant="primary"   size="sm" onClick={() => openModal('post')}><Plus className="w-[13px] h-[13px]" /> Create first post</AppButton>
-        <AppButton variant="secondary" size="sm" onClick={() => openModal('challenge')}><Trophy className="w-[13px] h-[13px]" /> Start a challenge</AppButton>
-        <AppButton variant="secondary" size="sm" onClick={() => openModal('poll')}><HelpCircle className="w-[13px] h-[13px]" /> Ask a question</AppButton>
-      </div>
-    </div>
-  );
-}
-
-/* ─── CALENDAR VIEW ─── */
-function CalendarView({ allPosts, events, now, openModal }) {
-  const [viewMonth, setViewMonth] = useState(now);
-  const ms   = startOfMonth(viewMonth), me = endOfMonth(viewMonth);
-  const days   = eachDayOfInterval({ start: ms, end: me });
-  const blanks = Array(getDay(ms)).fill(null);
-  const DOW    = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
-  const postDates = new Set(allPosts.map(p => format(new Date(p.created_date || 0), 'yyyy-MM-dd')));
-  const evDates   = new Set(events.map(e => format(new Date(e.event_date    || 0), 'yyyy-MM-dd')));
-  return (
-    <div>
-      <div className="flex items-center justify-between mb-[10px]">
-        <button onClick={() => setViewMonth(subDays(ms, 1))} className="bg-[#0d1225] border border-white/[0.04] rounded-[5px] px-[7px] py-1 cursor-pointer text-[#8b95b3] flex transition-colors hover:border-white/[0.07]">
-          <ChevronLeft className="w-3 h-3" />
-        </button>
-        <span className="text-xs font-bold text-[#eef2ff]">{format(viewMonth, 'MMMM yyyy')}</span>
-        <button onClick={() => setViewMonth(new Date(me.getTime() + 86400000))} className="bg-[#0d1225] border border-white/[0.04] rounded-[5px] px-[7px] py-1 cursor-pointer text-[#8b95b3] flex transition-colors hover:border-white/[0.07]">
-          <ChevronRight className="w-3 h-3" />
-        </button>
-      </div>
-
-      <div className="grid grid-cols-7 gap-[2px] mb-[2px]">
-        {DOW.map(d => (
-          <div key={d} className="text-center text-[9px] font-bold text-[#4b5578] py-[2px] tracking-[0.05em]">{d}</div>
-        ))}
-      </div>
-
-      <div className="grid grid-cols-7 gap-[2px]">
-        {blanks.map((_, i) => <div key={`b${i}`} />)}
-        {days.map(day => {
-          const key     = format(day, 'yyyy-MM-dd');
-          const hasPost = postDates.has(key);
-          const hasEv   = evDates.has(key);
-          const today   = isToday(day);
-          return (
-            <div key={key} className={cn(
-              'h-[26px] flex items-center justify-center text-[10.5px] rounded-[5px] relative text-[#8b95b3] font-medium cursor-default transition-colors',
-              today ? 'bg-blue-500 text-white font-extrabold' : 'hover:bg-[#0d1225]',
-            )}>
-              {format(day, 'd')}
-              {(hasPost || hasEv) && !today && (
-                <div className="absolute bottom-[1px] left-1/2 -translate-x-1/2 flex gap-[2px]">
-                  {hasPost && <div className="w-[3px] h-[3px] rounded-full bg-blue-500" />}
-                  {hasEv   && <div className="w-[3px] h-[3px] rounded-full bg-orange-500" />}
-                </div>
-              )}
-            </div>
-          );
-        })}
-      </div>
-
-      <div className="mt-3 p-[11px] rounded-[7px] bg-[#0d1225] border border-white/[0.04]">
-        <div className="flex items-start gap-[7px] mb-[6px]">
-          <div className="w-[5px] h-[5px] rounded-full bg-[#4b5578] mt-1 shrink-0" />
-          <span className="text-[10.5px] text-[#4b5578] leading-relaxed">No content scheduled. Filling your calendar keeps members engaged.</span>
-        </div>
-        <div className="flex items-center gap-[6px]">
-          <CheckCircle className="w-[9px] h-[9px] text-emerald-500 shrink-0" />
-          <span className="text-[10px] text-[#4b5578]">Best engagement time: <span className="text-emerald-500 font-bold">5–7pm</span></span>
-        </div>
-      </div>
-
-      <AppButton variant="primary" className="w-full justify-center mt-[10px] text-[11.5px]" onClick={() => openModal('post')}>
-        <Plus className="w-3 h-3" /> Schedule a Post
-      </AppButton>
-    </div>
-  );
-}
-
-/* ─── RIGHT PANEL ─── */
-const SUGG_IMGS = [
-  'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=120&q=80',
-  'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=120&q=80',
-  'https://images.unsplash.com/photo-1517963879433-6ad2171073a4?w=120&q=80',
-];
-const AI_SUGGS = [
-  { dotClass: 'bg-blue-500',    label: 'Motivation Monday',         sub: 'Share a motivating quote · Drives comments',       btns: [{ label: 'Generate post',  primary: true,  modal: 'post'      }, { label: 'Make it →',  primary: false, modal: 'post'      }] },
-  { dotClass: 'bg-emerald-500', label: 'Post a member spotlight',   sub: 'Feature a dedicated member from your community',   btns: [{ label: 'Create',         primary: true,  modal: 'post'      }, { label: 'Refine',     primary: false, modal: 'post'      }] },
-  { dotClass: 'bg-amber-400',   label: 'Start a weekend challenge', sub: 'Clearly repeat a signature event',                  btns: [{ label: 'Start challenge', primary: true, modal: 'challenge' }, { label: 'Goals',      primary: false, modal: 'challenge' }] },
-];
-
-function AISuggestions({ openModal }) {
-  return (
-    <div>
-      <div className="flex items-center gap-[6px] mb-[10px]">
-        <Flame className="w-3 h-3 text-orange-500" />
-        <span className="text-xs font-bold text-[#eef2ff]">What should you post today?</span>
-      </div>
-      <div className="flex flex-col gap-[7px]">
-        {AI_SUGGS.map((s, i) => (
-          <div key={i}
-            className="bg-[#050810] border border-white/[0.04] rounded-2xl p-[11px] cursor-pointer transition-all hover:border-blue-500/[0.22] hover:bg-[#0d1225]"
-            onClick={() => openModal(s.btns[0].modal)}>
-            <div className="flex gap-[9px] items-start">
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-[5px] mb-[2px]">
-                  <div className={cn('w-[5px] h-[5px] rounded-full shrink-0', s.dotClass)} />
-                  <div className="text-[11.5px] font-bold text-[#eef2ff] overflow-hidden text-ellipsis whitespace-nowrap">{s.label}</div>
-                </div>
-                <div className="text-[9.5px] text-[#4b5578] mb-2 pl-[10px] leading-snug">{s.sub}</div>
-                <div className="flex gap-[5px] pl-[10px]">
-                  {s.btns.map((b, j) => (
-                    <button key={j}
-                      className={cn(
-                        'text-[10.5px] font-bold px-[10px] py-[5px] rounded-[6px] cursor-pointer transition-all',
-                        b.primary
-                          ? 'bg-blue-500/10 border border-blue-500/[0.22] text-blue-500 hover:bg-blue-500 hover:text-white'
-                          : 'bg-transparent border border-white/[0.04] text-[#8b95b3] hover:border-white/[0.07] hover:text-[#eef2ff]',
-                      )}
-                      onClick={e => { e.stopPropagation(); openModal(b.modal); }}>
-                      {b.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-              <div className="w-[44px] h-[44px] rounded-[7px] overflow-hidden shrink-0">
-                <img src={SUGG_IMGS[i]} alt="" className="w-full h-full object-cover" onError={e => e.currentTarget.parentElement.style.display = 'none'} />
-              </div>
-            </div>
+        <span style={{ fontSize: 11.5, color: C.muted }}>N/A</span>
+        {row.engBar > 0 && (
+          <div style={{ height: 3, background: C.dimmer, borderRadius: 2, marginTop: 4, width: 60 }}>
+            <div style={{ width: `${row.engBar}%`, height: "100%", background: "#22c55e", borderRadius: 2 }} />
           </div>
-        ))}
+        )}
+      </div>
+
+      {/* ACTION */}
+      <div onClick={e => e.stopPropagation()}>
+        <button style={{
+          display: "flex", alignItems: "center", gap: 4, padding: "4px 10px",
+          borderRadius: 6, fontSize: 11.5, fontWeight: 600,
+          background: C.surface, border: `1px solid ${C.border2}`, color: C.muted, cursor: "pointer",
+        }}>
+          Review, Edit <ChevronDown size={9} />
+        </button>
       </div>
     </div>
   );
 }
 
-function EngagementScore({ allPosts, polls, activeChallenges, now, openModal }) {
-  const score = (s, e) =>
-    allPosts.filter(x => { const d = new Date(x.created_date || 0); return d >= s && d < e; })
-      .reduce((a, x) => a + (x.likes?.length || 0) + (x.comments?.length || 0), 0) +
-    polls.filter(x => { const d = new Date(x.created_date || 0); return d >= s && d < e; })
-      .reduce((a, x) => a + (x.voters?.length || 0), 0);
-  const thisW = score(subDays(now, 7), now);
-  const lastW = score(subDays(now, 14), subDays(now, 7));
-  const chg   = lastW === 0 ? 0 : Math.round(((thisW - lastW) / lastW) * 100);
-  const up    = chg >= 0;
-  const total = allPosts.reduce((s, p) => s + (p.likes?.length || 0) + (p.comments?.length || 0), 0) +
-                polls.reduce((s, p)   => s + (p.voters?.length    || 0), 0) +
-                activeChallenges.reduce((s, c) => s + (c.participants?.length || 0), 0);
-  const likes    = allPosts.reduce((s, p) => s + (p.likes?.length    || 0), 0);
-  const comments = allPosts.reduce((s, p) => s + (p.comments?.length || 0), 0);
-  const challP   = activeChallenges.reduce((s, c) => s + (c.participants?.length || 0), 0);
-  const pollV    = polls.reduce((s, p) => s + (p.voters?.length || 0), 0);
+function ContentTable() {
+  const [checked, setChecked] = useState(new Set());
+  const toggle = id => setChecked(p => { const s = new Set(p); s.has(id) ? s.delete(id) : s.add(id); return s; });
 
   return (
-    <div>
-      <div className="flex items-center gap-[6px] mb-[10px]">
-        <Flame className="w-3 h-3 text-orange-500" />
-        <span className="text-xs font-bold text-[#eef2ff]">Engagement Score</span>
-        <HelpCircle className="w-[10px] h-[10px] text-[#4b5578]" />
+    <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 10, overflow: "hidden" }}>
+      <TableHeader />
+      {TABLE_ROWS.map((row, i) => (
+        <TableRow key={row.id} row={row} checked={checked.has(row.id)} onToggle={() => toggle(row.id)} last={i === TABLE_ROWS.length - 1} />
+      ))}
+    </div>
+  );
+}
+
+/* ─── feed row (below the table) ─────────────────────────────── */
+function FeedRow() {
+  return (
+    <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 10, marginTop: 10 }}>
+      <div style={{ padding: "8px 12px", borderBottom: `1px solid ${C.border}` }}>
+        <span style={{ fontSize: 12.5, fontWeight: 700, color: C.text }}>Feed</span>
       </div>
-      <div className="flex items-baseline gap-[9px] mb-[2px]">
-        <span className="text-[38px] font-extrabold text-[#eef2ff] tracking-[-0.04em] leading-none">{total}</span>
-        <span className={cn('flex items-center gap-[3px] text-[11px] font-bold', up ? 'text-emerald-500' : 'text-red-500')}>
-          {up ? <TrendingUp className="w-[10px] h-[10px]" /> : <TrendingDown className="w-[10px] h-[10px]" />}
-          {up ? '+' : ''}{chg}% this week
+      <div style={{ padding: "9px 12px", display: "flex", alignItems: "center", gap: 10 }}>
+        <Checkbox checked={false} onChange={() => {}} />
+        <Avatar name="Crushed" size={26} />
+        <span style={{ fontSize: 12, color: C.muted, flex: 1 }}>
+          <span style={{ color: C.text, fontWeight: 600 }}>Crushed my personal best on deadlifts!</span>
+          <span style={{ color: C.dim, fontSize: 11 }}> · 15 likes</span>
         </span>
+        <MoreHorizontal size={14} color={C.dim} style={{ cursor: "pointer" }} />
       </div>
-      <div className="text-[10px] text-[#4b5578] mb-[13px]">Total interactions</div>
-      <div className="flex flex-col mb-[13px]">
-        {[
-          { l: `${likes} Likes`,       r: `${challP} Challenge Responses` },
-          { l: `${comments} Comments`, r: `${pollV} Poll Votes`            },
-        ].map((row, i) => (
-          <div key={i} className={cn('flex justify-between text-[11px] py-[5px]', i === 0 && 'border-b border-white/[0.03]')}>
-            <span className="text-[#8b95b3] font-semibold">{row.l}</span>
-            <span className="text-[#4b5578]">{row.r}</span>
-          </div>
-        ))}
-      </div>
-      {total === 0 && (
-        <div className="text-[10.5px] text-[#8b95b3] px-[11px] py-2 bg-amber-400/[0.07] border border-amber-400/[0.16] rounded-[7px] mb-[11px] leading-relaxed">
-          Low engagement — try posting a poll question
-        </div>
-      )}
-      <AppButton variant="primary" className="w-full justify-center text-xs" onClick={() => openModal('post')}>
-        <Plus className="w-3 h-3" /> Create
-      </AppButton>
     </div>
   );
 }
 
-function RightPanel({ allPosts, polls, challenges, events, activeChallenges, allMemberships, now, openModal }) {
-  const [view, setView] = useState('feed');
+/* ─── right sidebar ───────────────────────────────────────────── */
+const BAR_CHART = [
+  { h: 60 }, { h: 85 }, { h: 35 }, { h: 60 }, { h: 28 }, { h: 22 }, { h: 18 },
+];
+
+const QUICK = [
+  { label: "Generate AI Motivation Monday" },
+  { label: "Post Member Spotlight"          },
+  { label: "Create Weekend Challenge Poll"  },
+];
+
+function RightSidebar() {
   return (
-    <>
-      <div className="inline-flex gap-[2px] bg-[#0d1225] border border-white/[0.04] rounded-[7px] p-[2px]">
-        <button
-          className={cn('inline-flex items-center gap-1 px-[11px] py-[5px] rounded-[5px] text-[11.5px] font-semibold cursor-pointer border-none transition-all', view === 'feed' ? 'bg-blue-500 text-white' : 'bg-transparent text-[#4b5578] hover:text-[#8b95b3]')}
-          onClick={() => setView('feed')}>
-          <Flame className="w-[10px] h-[10px]" /> Feed
-        </button>
-        <button
-          className={cn('inline-flex items-center gap-1 px-[11px] py-[5px] rounded-[5px] text-[11.5px] font-semibold cursor-pointer border-none transition-all', view === 'cal' ? 'bg-blue-500 text-white' : 'bg-transparent text-[#4b5578] hover:text-[#8b95b3]')}
-          onClick={() => setView('cal')}>
-          <Calendar className="w-[10px] h-[10px]" /> Calendar
-        </button>
+    <div style={{
+      width: 260, flexShrink: 0, background: C.surface, borderLeft: `1px solid ${C.border}`,
+      padding: "14px 12px", display: "flex", flexDirection: "column", gap: 12, overflowY: "auto",
+    }}>
+
+      {/* What to Post Today */}
+      <div>
+        <div style={{ fontSize: 12.5, fontWeight: 700, color: C.text, marginBottom: 1 }}>What to Post Today?</div>
+        <div style={{ fontSize: 10.5, color: C.muted, marginBottom: 9 }}>(Guided Ideas)</div>
+        <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+          {QUICK.map((q, i) => (
+            <button key={i} style={{
+              width: "100%", padding: "8px 12px", borderRadius: 7, textAlign: "left",
+              background: C.card, border: `1px solid ${C.border2}`,
+              color: C.text, fontSize: 11.5, fontWeight: 500, cursor: "pointer",
+            }}>
+              {q.label}
+            </button>
+          ))}
+        </div>
       </div>
 
-      <div className="h-px bg-white/[0.03]" />
+      {/* Divider */}
+      <div style={{ height: 1, background: C.border }} />
 
-      {view === 'feed' ? (
-        <>
-          <AISuggestions openModal={openModal} />
-          <div className="h-px bg-white/[0.03]" />
-          <EngagementScore allPosts={allPosts} polls={polls} activeChallenges={activeChallenges} now={now} openModal={openModal} />
-        </>
-      ) : (
-        <CalendarView allPosts={allPosts} events={events} now={now} openModal={openModal} />
-      )}
-    </>
+      {/* Actionable Insights */}
+      <div>
+        <div style={{ fontSize: 12.5, fontWeight: 700, color: C.text, marginBottom: 10 }}>Actionable Insights</div>
+
+        {/* Bar chart */}
+        <div style={{ display: "flex", gap: 4, alignItems: "flex-end", height: 70, marginBottom: 3 }}>
+          {/* Y axis */}
+          <div style={{ display: "flex", flexDirection: "column", justifyContent: "space-between", height: "100%", paddingBottom: 0, marginRight: 3 }}>
+            {["12k", "8k", "4k", "0"].map(l => (
+              <div key={l} style={{ fontSize: 8.5, color: C.dim, lineHeight: 1 }}>{l}</div>
+            ))}
+          </div>
+          {/* Bars */}
+          {BAR_CHART.map((b, i) => (
+            <div key={i} style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "flex-end", height: "100%" }}>
+              <div style={{
+                width: "100%", height: `${b.h}%`,
+                background: i < 2 ? "#3b82f6" : i < 4 ? "#6366f1" : "#8b5cf6",
+                borderRadius: "2px 2px 0 0", opacity: 0.9,
+              }} />
+            </div>
+          ))}
+        </div>
+        {/* X baseline */}
+        <div style={{ height: 1, background: C.dimmer, marginBottom: 10, marginLeft: 24 }} />
+
+        <div style={{ fontSize: 11.5, color: C.muted, lineHeight: 1.6, marginBottom: 8 }}>
+          Polls have <span style={{ color: C.text, fontWeight: 700 }}>2x more engagement</span> than text. Ask a question about new class ideas.
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: 4, cursor: "pointer" }}>
+          <span style={{ fontSize: 11.5, color: "#60a5fa", fontWeight: 600 }}>Review Detailed Insights</span>
+          <ChevronRight size={11} color="#60a5fa" />
+        </div>
+      </div>
+
+      {/* Divider */}
+      <div style={{ height: 1, background: C.border }} />
+
+      {/* Content Feed Preview */}
+      <div>
+        <div style={{ fontSize: 12.5, fontWeight: 700, color: C.text, marginBottom: 10 }}>Content Feed Preview</div>
+
+        {/* Post */}
+        <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 10, overflow: "hidden" }}>
+          <div style={{ padding: "10px 12px 8px", display: "flex", alignItems: "center", gap: 8 }}>
+            <Avatar name="Sarah" size={26} />
+            <span style={{ fontSize: 12, fontWeight: 700, color: C.text }}>Sarah</span>
+          </div>
+          <div style={{ padding: "0 12px 8px", fontSize: 11.5, color: C.muted, lineHeight: 1.55 }}>
+            Finally nailed that pose!{" "}
+            <span style={{ color: "#60a5fa" }}>@foundrygym</span>{" "}
+            <span style={{ color: "#60a5fa" }}>#yogagoals</span>
+          </div>
+
+          {/* Photo placeholder — gradient resembling workout image */}
+          <div style={{
+            margin: "0 12px 10px", borderRadius: 8, overflow: "hidden", height: 100,
+            background: "linear-gradient(160deg,#1a2535,#0f1a2a)",
+            border: `1px solid ${C.border}`,
+            display: "flex", alignItems: "center", justifyContent: "center",
+          }}>
+            {/* silhouette yoga figure */}
+            <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
+              <ellipse cx="24" cy="10" rx="5" ry="5" fill="#3e4a60" />
+              <line x1="24" y1="15" x2="24" y2="32" stroke="#3e4a60" strokeWidth="3" strokeLinecap="round" />
+              <line x1="24" y1="20" x2="10" y2="28" stroke="#3e4a60" strokeWidth="2.5" strokeLinecap="round" />
+              <line x1="24" y1="20" x2="38" y2="14" stroke="#3e4a60" strokeWidth="2.5" strokeLinecap="round" />
+              <line x1="24" y1="32" x2="16" y2="42" stroke="#3e4a60" strokeWidth="2.5" strokeLinecap="round" />
+              <line x1="24" y1="32" x2="32" y2="42" stroke="#3e4a60" strokeWidth="2.5" strokeLinecap="round" />
+            </svg>
+          </div>
+
+          <div style={{ padding: "8px 12px 10px", borderTop: `1px solid ${C.border}`, display: "flex", gap: 14 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 11.5, color: C.muted }}>
+              <Heart size={12} color="#f87171" /> 18
+            </div>
+            <div style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 11.5, color: C.muted }}>
+              <MessageCircle size={12} color="#60a5fa" /> 4
+            </div>
+          </div>
+        </div>
+
+        {/* Add member button */}
+        <button style={{
+          width: "100%", marginTop: 9, padding: "9px", borderRadius: 8,
+          background: "#3b82f6", color: "#fff", border: "none",
+          fontSize: 12.5, fontWeight: 700, cursor: "pointer",
+          display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
+        }}>
+          <Plus size={13} /> Add Member
+        </button>
+      </div>
+    </div>
   );
 }
 
-/* ─── MAIN EXPORT ─── */
-export default function TabContent({
-  events = [], challenges = [], polls = [], posts = [], userPosts = [],
-  checkIns, ci30, avatarMap,
-  openModal        = () => {},
-  now              = new Date(),
-  allMemberships   = [],
-  classes          = [],
-  currentUser      = null,
-  onDeletePost      = () => {},
-  onDeleteEvent     = () => {},
-  onDeleteChallenge = () => {},
-  onDeleteClass     = () => {},
-  onDeletePoll      = () => {},
-  isCoach = false,
-}) {
-  const [activeFilter, setActiveFilter] = useState(isCoach ? 'classes' : 'gym');
-  const [viewMode,     setViewMode]     = useState('feed');
-
-  const allPosts         = [...(userPosts || []), ...(posts || [])].sort((a, b) => new Date(b.created_date) - new Date(a.created_date));
-  const gymPosts         = allPosts.filter(p => !p.user_id || p.gym_id || p.member_id);
-  const memberPosts      = allPosts.filter(p => p.user_id && !p.gym_id);
-  const upcomingEvents   = events.filter(e => new Date(e.event_date) >= now);
-  const activeChallenges = challenges.filter(c => c.status === 'active');
-  const totalMembers     = allMemberships.length;
-
-  const postScores = useMemo(() => allPosts.map(p => ({ id: p.id, score: (p.likes?.length || 0) + (p.comments?.length || 0) * 2 })), [allPosts]);
-  const maxScore   = Math.max(...postScores.map(p => p.score), 1);
-  const topPostIds = new Set(postScores.filter(p => p.score >= maxScore * 0.7 && p.score > 0).map(p => p.id));
-
-  const FILTERS = isCoach
-    ? [{ id: 'classes', label: 'My Classes' }, { id: 'gym', label: 'Posts' }, { id: 'challenges', label: 'Challenges' }, { id: 'polls', label: 'Polls' }, { id: 'events', label: 'Events' }]
-    : [{ id: 'gym', label: 'Feed' }, { id: 'members', label: 'Members' }, { id: 'challenges', label: 'Challenges' }, { id: 'classes', label: 'Classes' }, { id: 'polls', label: 'Polls' }];
-
-  const feedItems = useMemo(() => {
-    const fi = (() => {
-      switch (activeFilter) {
-        case 'members':    return { posts: memberPosts,   events: [],             challenges: [],               polls: [],  classes: [] };
-        case 'gym':        return { posts: gymPosts,       events: [],             challenges: [],               polls: [],  classes: [] };
-        case 'challenges': return { posts: [],             events: [],             challenges: activeChallenges, polls: [],  classes: [] };
-        case 'classes':    return { posts: [],             events: [],             challenges: [],               polls: [],  classes };
-        case 'polls':      return { posts: [],             events: [],             challenges: [],               polls,      classes: [] };
-        case 'events':     return { posts: [],             events: upcomingEvents, challenges: [],               polls: [],  classes: [] };
-        default:           return { posts: allPosts,       events: upcomingEvents, challenges: activeChallenges, polls,      classes };
-      }
-    })();
-    return [
-      ...fi.posts.map(p      => ({ type: 'post',      data: p, date: new Date(p.created_date || 0) })),
-      ...fi.events.map(e     => ({ type: 'event',     data: e, date: new Date(e.event_date    || 0) })),
-      ...fi.challenges.map(c => ({ type: 'challenge', data: c, date: new Date(c.start_date    || 0) })),
-      ...fi.polls.map(p      => ({ type: 'poll',      data: p, date: new Date(p.created_date  || 0) })),
-      ...fi.classes.map(c    => ({ type: 'class',     data: c, date: new Date(c.created_date  || 0) })),
-    ].sort((a, b) => b.date - a.date);
-  }, [activeFilter, allPosts, gymPosts, memberPosts, upcomingEvents, activeChallenges, polls, classes]);
-
-  const renderItem = (item, i) => {
-    if (item.type === 'post')      return <FeedPostCard  key={item.data.id || i} post={item.data}      onDelete={onDeletePost}      isTop={topPostIds.has(item.data.id)} totalMembers={totalMembers} />;
-    if (item.type === 'event')     return <EventCard     key={item.data.id || i} event={item.data}     onDelete={onDeleteEvent}     now={now} />;
-    if (item.type === 'challenge') return <ChallengeCard key={item.data.id || i} challenge={item.data} onDelete={onDeleteChallenge} now={now} />;
-    if (item.type === 'poll')      return <PollCard      key={item.data.id || i} poll={item.data}      onDelete={onDeletePoll}      allMemberships={allMemberships} />;
-    if (item.type === 'class')     return <ClassCard     key={item.data.id || i} gymClass={item.data}  onDelete={onDeleteClass} />;
-    return null;
-  };
-
-  const currentLabel = FILTERS.find(f => f.id === activeFilter)?.label;
+/* ─── main content area ───────────────────────────────────────── */
+function ContentArea() {
+  const [tab, setTab] = useState("Drafts");
+  const [alert, setAlert] = useState(true);
 
   return (
-    <div className="flex flex-col w-full h-full min-h-[600px] overflow-hidden bg-[#050810] text-[#eef2ff]">
+    <div style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0, overflow: "hidden" }}>
+      <TopBar />
 
-      {/* ── METRICS BAR ── */}
-      <MetricsBar allPosts={allPosts} allMemberships={allMemberships} now={now} />
+      <div style={{ flex: 1, display: "flex", overflow: "hidden" }}>
 
-      {/* ── BODY ── */}
-      <div className="grid grid-cols-1 md:grid-cols-[1fr_292px] flex-1 overflow-hidden min-h-0">
+        {/* center column */}
+        <div style={{ flex: 1, overflowY: "auto", padding: "16px 18px 40px", minWidth: 0 }}>
 
-        {/* ══ CENTER ══ */}
-        <div className="px-[22px] py-5 pb-12 overflow-y-auto flex flex-col gap-[18px] [scrollbar-width:thin] [scrollbar-color:#252d45_transparent]">
-
-          {/* Header row */}
-          <div className="flex items-center gap-3 flex-wrap">
-            <h2 className="m-0 text-[17px] font-extrabold text-[#eef2ff] tracking-[-0.025em] flex-1 min-w-[160px] whitespace-nowrap">
-              🔥 Let's get your members engaged!
-            </h2>
-            <div className="flex gap-[7px] shrink-0 flex-wrap">
-              <AppButton variant="primary"   size="sm" onClick={() => openModal('post')}><Plus className="w-[13px] h-[13px]" /> Create first post</AppButton>
-              <AppButton variant="secondary" size="sm" onClick={() => openModal('challenge')}><Trophy className="w-[13px] h-[13px]" /> Start a challenge</AppButton>
-              <AppButton variant="secondary" size="sm" onClick={() => openModal('poll')}><HelpCircle className="w-[13px] h-[13px]" /> Ask a question</AppButton>
+          {/* Page title row */}
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
+            <div>
+              <div style={{ fontSize: 19, fontWeight: 800, color: C.text, letterSpacing: "-0.02em", display: "flex", alignItems: "baseline", gap: 6 }}>
+                Content Center
+                <span style={{ color: C.muted, fontWeight: 300, fontSize: 17 }}>/</span>
+                <span style={{ color: "#818cf8" }}>Hub</span>
+              </div>
             </div>
-          </div>
-
-          {/* Quick post ideas */}
-          <QuickIdeas openModal={openModal} />
-
-          {/* Feed / Calendar toggle */}
-          <div className="inline-flex gap-[2px] bg-[#0d1225] border border-white/[0.04] rounded-[7px] p-[2px] self-start">
-            <button
-              className={cn('inline-flex items-center gap-1 px-[11px] py-[5px] rounded-[5px] text-[11.5px] font-semibold cursor-pointer border-none transition-all', viewMode === 'feed' ? 'bg-blue-500 text-white' : 'bg-transparent text-[#4b5578] hover:text-[#8b95b3]')}
-              onClick={() => setViewMode('feed')}>
-              <List className="w-[10px] h-[10px]" /> Feed
-            </button>
-            <button
-              className={cn('inline-flex items-center gap-1 px-[11px] py-[5px] rounded-[5px] text-[11.5px] font-semibold cursor-pointer border-none transition-all', viewMode === 'calendar' ? 'bg-blue-500 text-white' : 'bg-transparent text-[#4b5578] hover:text-[#8b95b3]')}
-              onClick={() => setViewMode('calendar')}>
-              <Calendar className="w-[10px] h-[10px]" /> Calendar
+            <button style={{
+              display: "flex", alignItems: "center", gap: 6, padding: "7px 14px",
+              borderRadius: 8, background: "#3b82f6", color: "#fff",
+              border: "none", fontSize: 13, fontWeight: 700, cursor: "pointer",
+            }}>
+              Create New <ChevronDown size={11} />
             </button>
           </div>
 
-          {/* Calendar or Feed */}
-          {viewMode === 'calendar' ? (
-            <CalendarView allPosts={allPosts} events={events} now={now} openModal={openModal} />
-          ) : (
+          {alert && <AlertBanner onDismiss={() => setAlert(false)} />}
+          <JourneyCard />
+          <Tabs active={tab} setActive={setTab} />
+
+          {/* Drafts content */}
+          {tab === "Drafts" && (
             <>
-              {/* Filter tabs */}
-              <div className="flex items-center border-b border-white/[0.04] overflow-x-auto -mt-[6px] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-                {FILTERS.map(f => (
-                  <button key={f.id}
-                    className={cn(
-                      'px-[14px] py-2 text-[12.5px] bg-transparent border-b-2 cursor-pointer transition-all -mb-px whitespace-nowrap font-medium',
-                      activeFilter === f.id
-                        ? 'text-[#eef2ff] border-blue-500 font-bold'
-                        : 'text-[#4b5578] border-transparent hover:text-[#8b95b3]',
-                    )}
-                    onClick={() => setActiveFilter(f.id)}>
-                    {f.label}
-                  </button>
-                ))}
+              <div style={{ fontSize: 12, fontWeight: 700, color: C.muted, marginBottom: 9 }}>Draft Content</div>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 16 }}>
+                {DRAFTS.map(d => <DraftCard key={d.id} d={d} />)}
               </div>
 
-              {feedItems.length > 0
-                ? <div className="flex flex-col gap-[9px]">{feedItems.map(renderItem)}</div>
-                : <EmptyState openModal={openModal} label={currentLabel !== 'Feed' ? currentLabel : null} />
-              }
+              <div style={{ fontSize: 12.5, fontWeight: 700, color: C.text, marginBottom: 9 }}>
+                All Content (Drafts &amp; Scheduled)
+              </div>
+              <ContentTable />
+              <FeedRow />
             </>
+          )}
+
+          {/* Other tab empty states */}
+          {tab !== "Drafts" && (
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", padding: "56px 0", gap: 12 }}>
+              <div style={{ width: 48, height: 48, borderRadius: 12, background: "rgba(59,130,246,0.08)", border: `1px solid rgba(59,130,246,0.18)`, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <Flame size={20} color="#60a5fa" />
+              </div>
+              <div style={{ fontSize: 14, fontWeight: 700, color: C.muted }}>Nothing in {tab} yet</div>
+              <button style={{ padding: "7px 16px", borderRadius: 8, background: "#3b82f6", color: "#fff", border: "none", fontSize: 12.5, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}>
+                <Plus size={12} /> Create Content
+              </button>
+            </div>
           )}
         </div>
 
-        {/* ══ RIGHT PANEL ══ */}
-        <div className="hidden md:flex flex-col px-[15px] py-4 pb-10 overflow-y-auto gap-[13px] border-l border-white/[0.04] bg-[#0a0f1e] [scrollbar-width:thin] [scrollbar-color:#252d45_transparent]">
-          <RightPanel
-            allPosts={allPosts} polls={polls} challenges={challenges}
-            events={events} activeChallenges={activeChallenges}
-            allMemberships={allMemberships} now={now} openModal={openModal}
-          />
-        </div>
-
+        <RightSidebar />
       </div>
+    </div>
+  );
+}
+
+/* ─── root ────────────────────────────────────────────────────── */
+export default function ContentPage() {
+  return (
+    <div style={{
+      display: "flex", minHeight: "100vh", background: C.bg, color: C.text,
+      fontFamily: "'Inter', 'DM Sans', system-ui, sans-serif",
+      fontSize: 13, lineHeight: 1.5, WebkitFontSmoothing: "antialiased",
+    }}>
+      <Sidebar />
+      <ContentArea />
     </div>
   );
 }
