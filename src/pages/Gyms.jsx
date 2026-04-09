@@ -135,7 +135,7 @@ export default function Gyms() {
     placeholderData: (prev) => prev
   });
   const recentlyViewedGymIds = React.useMemo(() => {
-    try {return JSON.parse(localStorage.getItem('recentlyViewedGyms') || '[]');}
+    try {return JSON.parse(localStorage.getItem('recentlyViewedGyms') || '[]').slice(0, 3);}
     catch {return [];}
   }, []);
   const memberGymIds = gymMemberships.map((m) => m.gym_id);
