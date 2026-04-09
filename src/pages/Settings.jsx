@@ -244,13 +244,18 @@ export default function Settings() {
 
   const handleDeleteAccount = async () => {
     setDeletePending(true);
+    setShowDeleteDialog(false);
     try {
       await base44.functions.invoke('deleteUserAccount');
-      // Redirect to onboarding page after account deletion
-      navigate(createPageUrl('Onboarding'), { replace: true });
+      // Clear all cached query data
+      queryClient.clear();
+      // Log out and redirect to login/onboarding
+      base44.auth.logout();
     } catch (error) {
       console.error('Delete account error:', error);
       setDeletePending(false);
+      setShowDeleteDialog(true);
+      alert('Failed to delete account. Please try again.');
     }
   };
 
