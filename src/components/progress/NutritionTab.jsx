@@ -637,94 +637,22 @@ function SavedMealRow({ meal, section, onAdd, onClose }) {
   );
 }
 
-// ─── Barcode scanner (real camera + Open Food Facts API) ─────────────────────
+// ─── Barcode scanner ──────────────────────────────────────────────────────────
 function BarcodeModal({ onAdd, onClose }) {
-  const [phase, setPhase]   = useState('scanner'); // scanner | loading | found | error
+  const [phase, setPhase] = useState('scanning');
   const [result, setResult] = useState(null);
-  const [errorMsg, setErrorMsg] = useState('');
   const [sec, setSec]  = useState('Snacks');
   const [qty, setQty]  = useState(1);
-  const scannerRef     = useRef(null);
-  const activeRef      = useRef(false);
 
   useEffect(() => {
-    let cancelled = false;
-    const init = async () => {
-      try {
-        const { Html5Qrcode } = await import('html5-qrcode');
-        const scanner = new Html5Qrcode('nt-qr-scanner');
-        scannerRef.current = scanner;
-        activeRef.current  = true;
-        await scanner.start(
-          { facingMode: 'environment' },
-          { fps: 10, qrbox: { width: 240, height: 140 } },
-          (barcode) => {
-            if (!activeRef.current || cancelled) return;
-            activeRef.current = false;
-            scanner.stop();
-            fetchFood(barcode);
-          },
-          () => {}
-        );
-      } catch {
-        if (!cancelled) { setPhase('error'); setErrorMsg('Camera not available. Check permissions.'); }
-      }
-    };
-    init();
-    return () => {
-      cancelled = true;
-      if (scannerRef.current && activeRef.current) {
-        scannerRef.current.stop().catch(()=>{});
-        activeRef.current = false;
-      }
-    };
+    const t = setTimeout(()=>{
+      setResult(BARCODE_MOCK[Math.floor(Math.random()*BARCODE_MOCK.length)]);
+      setPhase('found');
+    }, 1800);
+    return ()=>clearTimeout(t);
   }, []);
 
-  const fetchFood = async (barcode) => {
-    setPhase('loading');
-    try {
-      const res  = await fetch(`https://world.openfoodfacts.org/api/v0/product/${barcode}.json`, {
-        headers: { 'User-Agent': 'CoStrideApp - Web - Version 1.0' },
-      });
-      const data = await res.json();
-      if (data.status === 1 && data.product) {
-        const n = data.product.nutriments || {};
-        setResult({
-          id:       `bc-${barcode}`,
-          name:     data.product.product_name || 'Unknown Product',
-          brand:    data.product.brands || '',
-          cal:      Math.round(n['energy-kcal_100g'] || 0),
-          protein:  parseFloat((n.proteins_100g    || 0).toFixed(1)),
-          carbs:    parseFloat((n.carbohydrates_100g || 0).toFixed(1)),
-          fat:      parseFloat((n.fat_100g          || 0).toFixed(1)),
-          serving:  '100g',
-          servingG: 100,
-        });
-        setPhase('found');
-      } else {
-        setPhase('error'); setErrorMsg('Food not found in database.');
-      }
-    } catch {
-      setPhase('error'); setErrorMsg('Failed to fetch food data. Try again.');
-    }
-  };
-
-  const retry = async () => {
-    setPhase('scanner'); setResult(null); setErrorMsg('');
-    try {
-      const { Html5Qrcode } = await import('html5-qrcode');
-      const scanner = new Html5Qrcode('nt-qr-scanner');
-      scannerRef.current = scanner; activeRef.current = true;
-      await scanner.start(
-        { facingMode: 'environment' },
-        { fps: 10, qrbox: { width: 240, height: 140 } },
-        (barcode) => { if (!activeRef.current) return; activeRef.current=false; scanner.stop(); fetchFood(barcode); },
-        ()=>{}
-      );
-    } catch { setPhase('error'); setErrorMsg('Camera not available.'); }
-  };
-
-  const cal = result ? Math.round(result.cal * qty) : 0;
+  const cal = result ? Math.round(result.cal*qty) : 0;
   const qtyBtn = {
     width:38, height:38, borderRadius:12, background:'rgba(255,255,255,0.06)',
     border:'1px solid rgba(255,255,255,0.1)', cursor:'pointer',
@@ -735,81 +663,45 @@ function BarcodeModal({ onAdd, onClose }) {
     <BottomSheet onClose={onClose}>
       <div style={{ display:'flex', alignItems:'center', gap:10, marginBottom:20 }}>
         <ScanBarcode style={{ width:18, height:18, color:C.blue.color }} />
-        <p style={{ fontSize:17, fontWeight:900, color:'#fff', margin:0, letterSpacing:'-0.02em' }}>
-          Barcode Scanner
-        </p>
+        <p style={{ fontSize:17, fontWeight:900, color:'#fff', margin:0,
+          letterSpacing:'-0.02em' }}>Barcode Scanner</p>
       </div>
 
-      {/* Camera viewport */}
       <div style={{ borderRadius:18, overflow:'hidden', position:'relative',
-        marginBottom:20, height:200, background:'rgba(0,0,0,0.7)',
-        border:`1px solid ${C.blue.border}` }}>
-
-        {/* html5-qrcode mounts here — always rendered so scanner can attach */}
-        <div id="nt-qr-scanner" style={{ width:'100%', height:'100%',
-          display: phase==='scanner' ? 'block' : 'none' }} />
-
-        {/* Corner markers overlay */}
+        marginBottom:20, height:160, background:'rgba(0,0,0,0.5)',
+        border:`1px solid rgba(56,189,248,0.2)`,
+        display:'flex', alignItems:'center', justifyContent:'center' }}>
+        {/* Corner markers */}
         {[0,1,2,3].map(i => {
           const t=i<2, l=i%2===0;
-          return <div key={i} style={{ position:'absolute', pointerEvents:'none',
-            top:t?14:undefined, bottom:!t?14:undefined,
-            left:l?14:undefined, right:!l?14:undefined,
-            width:24, height:24,
+          return <div key={i} style={{
+            position:'absolute',
+            top:t?16:undefined, bottom:!t?16:undefined,
+            left:l?16:undefined, right:!l?16:undefined,
+            width:22, height:22,
             borderTop:    t  ? `2.5px solid ${C.blue.color}` : 'none',
             borderBottom: !t ? `2.5px solid ${C.blue.color}` : 'none',
             borderLeft:   l  ? `2.5px solid ${C.blue.color}` : 'none',
             borderRight:  !l ? `2.5px solid ${C.blue.color}` : 'none',
           }} />;
         })}
-
-        {phase === 'scanner' && (
-          <p style={{ position:'absolute', bottom:12, left:0, right:0, textAlign:'center',
-            fontSize:12, color:'rgba(255,255,255,0.5)', margin:0, fontWeight:600,
-            pointerEvents:'none' }}>
-            Point camera at barcode
-          </p>
-        )}
-
-        {phase === 'loading' && (
-          <div style={{ position:'absolute', inset:0, display:'flex', flexDirection:'column',
-            alignItems:'center', justifyContent:'center', gap:12 }}>
-            <div style={{ animation:'nt-spin 1s linear infinite', display:'inline-block' }}>
-              <Loader2 style={{ width:28, height:28, color:C.blue.color }} />
+        {phase === 'scanning' && (
+          <div style={{ textAlign:'center' }}>
+            <div style={{ animation:'nt-spin 1s linear infinite', display:'inline-block', marginBottom:10 }}>
+              <Loader2 style={{ width:26, height:26, color:C.blue.color }} />
             </div>
-            <p style={{ fontSize:13, color:'rgba(255,255,255,0.4)', margin:0 }}>Looking up food data…</p>
+            <p style={{ fontSize:13, color:'rgba(255,255,255,0.4)', margin:0 }}>Scanning barcode…</p>
           </div>
         )}
-
         {phase === 'found' && result && (
-          <div style={{ position:'absolute', inset:0, display:'flex', flexDirection:'column',
-            alignItems:'center', justifyContent:'center', gap:8 }}>
-            <div style={{ width:44, height:44, borderRadius:'50%', background:C.green.bg,
-              border:`1px solid ${C.green.border}`, display:'flex', alignItems:'center',
-              justifyContent:'center' }}>
-              <Check style={{ width:20, height:20, color:C.green.color }} strokeWidth={3} />
+          <div style={{ textAlign:'center' }}>
+            <div style={{ width:40, height:40, borderRadius:'50%', background:C.blue.bg,
+              border:`1px solid ${C.blue.border}`, display:'flex', alignItems:'center',
+              justifyContent:'center', margin:'0 auto 8px' }}>
+              <Check style={{ width:18, height:18, color:C.blue.color }} strokeWidth={3} />
             </div>
-            <p style={{ fontSize:13, fontWeight:800, color:'#fff', margin:0 }}>{result.name}</p>
-            {result.brand && <p style={{ fontSize:11.5, color:'rgba(255,255,255,0.35)', margin:0 }}>{result.brand}</p>}
-          </div>
-        )}
-
-        {phase === 'error' && (
-          <div style={{ position:'absolute', inset:0, display:'flex', flexDirection:'column',
-            alignItems:'center', justifyContent:'center', gap:12 }}>
-            <div style={{ width:44, height:44, borderRadius:'50%', background:C.red.bg,
-              border:`1px solid ${C.red.border}`, display:'flex', alignItems:'center',
-              justifyContent:'center' }}>
-              <AlertCircle style={{ width:20, height:20, color:C.red.color }} />
-            </div>
-            <p style={{ fontSize:12, color:C.red.color, margin:0, textAlign:'center',
-              padding:'0 16px' }}>{errorMsg}</p>
-            <button onClick={retry}
-              style={{ fontSize:12, fontWeight:800, color:C.blue.color, background:C.blue.bg,
-                border:`1px solid ${C.blue.border}`, borderRadius:10, padding:'7px 16px',
-                cursor:'pointer', letterSpacing:'0.02em' }}>
-              Try Again
-            </button>
+            <p style={{ fontSize:13, fontWeight:800, color:'#fff', margin:'0 0 2px' }}>{result.name}</p>
+            <p style={{ fontSize:11.5, color:'rgba(255,255,255,0.35)', margin:0 }}>{result.brand}</p>
           </div>
         )}
       </div>
@@ -822,9 +714,10 @@ function BarcodeModal({ onAdd, onClose }) {
               alignItems:'center', marginBottom:10 }}>
               <div>
                 <p style={{ fontSize:14, fontWeight:800, color:'#fff', margin:'0 0 2px' }}>{result.name}</p>
-                <p style={{ fontSize:12, color:'rgba(255,255,255,0.3)', margin:0 }}>per 100g · ×{qty}</p>
+                <p style={{ fontSize:12, color:'rgba(255,255,255,0.3)', margin:0 }}>{result.serving}</p>
               </div>
-              <p style={{ fontSize:24, fontWeight:900, color:'#fff', margin:0, letterSpacing:'-0.03em' }}>
+              <p style={{ fontSize:24, fontWeight:900, color:'#fff', margin:0,
+                letterSpacing:'-0.03em' }}>
                 {cal} <span style={{ fontSize:12, fontWeight:500, color:'rgba(255,255,255,0.3)' }}>kcal</span>
               </p>
             </div>
@@ -834,7 +727,7 @@ function BarcodeModal({ onAdd, onClose }) {
 
           <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:10, marginBottom:18 }}>
             <div>
-              <SectionHead>Servings</SectionHead>
+              <SectionHead>Quantity</SectionHead>
               <div style={{ display:'flex', alignItems:'center' }}>
                 <button onClick={()=>setQty(q=>Math.max(0.5,+(q-0.5).toFixed(1)))} style={qtyBtn}>
                   <Minus style={{width:13,height:13,color:'#fff'}} />
@@ -856,7 +749,7 @@ function BarcodeModal({ onAdd, onClose }) {
             </div>
           </div>
 
-          <BigCTA label={`Add to ${sec}`} onClick={()=>{ onAdd(sec, result, qty); onClose(); }} />
+          <BigCTA label={`Add to ${sec}`} onClick={()=>{ onAdd(sec,result,qty); onClose(); }} />
         </>
       )}
     </BottomSheet>
@@ -1003,7 +896,7 @@ export default function NutritionTab() {
 
   return (
     <div style={{ display:'flex', flexDirection:'column', paddingBottom:100,
-      background:'#060810', minHeight:'100vh', color:'#fff',
+      color:'#fff',
       fontFamily:'-apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif' }}>
 
       {/* ── DAILY OVERVIEW CARD ── */}
@@ -1177,7 +1070,7 @@ export default function NutritionTab() {
       {/* ── FIXED BOTTOM CTA ── */}
       <div style={{ position:'fixed', bottom:0, left:0, right:0, zIndex:100,
         padding:'12px 18px 34px',
-        background:'linear-gradient(to top, #060810 55%, transparent)',
+        background:'linear-gradient(to top, rgba(4,6,16,0.98) 55%, transparent)',
         borderTop:'1px solid rgba(255,255,255,0.05)' }}>
         <BigCTA label="Log Food" onClick={()=>setAddingTo('Snacks')} />
       </div>
