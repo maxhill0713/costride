@@ -18,7 +18,12 @@ async function fetchAll(entity, filter) {
 async function deleteAll(entity, records) {
   const BATCH = 50;
   for (let i = 0; i < records.length; i += BATCH) {
-    await Promise.all(records.slice(i, i + BATCH).map(r => entity.delete(r.id)));
+    await Promise.all(records.slice(i, i + BATCH).map(r => 
+      entity.delete(r.id).catch(err => {
+        // Ignore 404 errors (record already deleted or doesn't exist)
+        if (err?.status !== 404) throw err;
+      })
+    ));
   }
 }
 
