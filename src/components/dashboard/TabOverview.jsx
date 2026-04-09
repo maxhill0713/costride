@@ -667,6 +667,7 @@ function LivePulse({ todayCI, todayVsYest, activeThisWeek, totalMembers, retenti
     {
       label: 'Retention rate', value: `${retentionRate}%`, valueColor: retColor,
       meta: { label: retentionRate >= 70 ? 'Healthy' : retentionRate >= 50 ? 'Average' : 'Below target', up: retentionRate >= 70 },
+      bench: { avg: 71, diff: retentionRate - 71 },
     },
   ];
 
@@ -684,6 +685,15 @@ function LivePulse({ todayCI, todayVsYest, activeThisWeek, totalMembers, retenti
           <div>
             <div style={{ fontSize: 10.5, color: T.textMuted, marginBottom: 4 }}>{s.label}</div>
             <span style={{ fontSize: 22, fontWeight: 800, color: s.valueColor, letterSpacing: '-0.03em', lineHeight: 1 }}>{s.value}</span>
+            {s.bench && (
+              <div style={{ marginTop: 4, fontSize: 10, color: T.textMuted }}>
+                Avg gym: <span style={{ fontWeight: 700, color: T.textSecondary }}>{s.bench.avg}%</span>
+                {' · '}
+                <span style={{ fontWeight: 700, color: s.bench.diff >= 0 ? T.green : T.red }}>
+                  {s.bench.diff >= 0 ? '+' : ''}{s.bench.diff}pp
+                </span>
+              </div>
+            )}
           </div>
           {s.meta && (
             <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 10.5, fontWeight: 600, color: s.meta.up ? T.green : T.textMuted }}>
