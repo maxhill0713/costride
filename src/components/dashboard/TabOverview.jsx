@@ -823,12 +823,7 @@ export default function TabOverview() {
       fontSize: 13, lineHeight: 1.5, WebkitFontSmoothing: 'antialiased',
       display: 'flex', flexDirection: 'column',
     }}>
-      <TopBar />
-
-      <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
-        <Sidebar />
-
-        <main style={{ flex: 1, padding: '16px 18px 40px', overflowY: 'auto' }}>
+      <main style={{ flex: 1, padding: '16px 18px 40px', overflowY: 'auto' }}>
           {/* Page title */}
           <div style={{ fontSize: 19, fontWeight: 800, color: C.text, letterSpacing: '-0.02em', display: 'flex', alignItems: 'baseline', gap: 6, marginBottom: 14 }}>
             Overview
@@ -885,7 +880,6 @@ export default function TabOverview() {
             </div>
           </div>
         </main>
-      </div>
     </div>
   );
 }
