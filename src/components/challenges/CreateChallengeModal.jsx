@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import {
  X, Trophy, Users, Flame, Calendar, Gift,
@@ -291,14 +292,10 @@ export default function CreateChallengeModal({ open, onClose, gyms = [], onSave,
 
  const handleClose = () => { setForm(DEFAULT_FORM); onClose(); };
 
- if (!open) return null;
-
  return (
  <>
  <style>{`
  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;0,9..40,800;0,9..40,900&display=swap');
- @keyframes ch-overlay { from { opacity: 0 } to { opacity: 1 } }
- @keyframes ch-modal { from { opacity: 0; transform: scale(0.97) translateY(8px) } to { opacity: 1; transform: scale(1) translateY(0) } }
  @keyframes ch-spin { from { transform: rotate(0deg) } to { transform: rotate(360deg) } }
  .ch-body::-webkit-scrollbar { width: 3px } .ch-body::-webkit-scrollbar-track { background: transparent } .ch-body::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 2px }
  .ch-save:not(:disabled):hover { opacity: 0.9; transform: translateY(-1px); }
@@ -306,12 +303,25 @@ export default function CreateChallengeModal({ open, onClose, gyms = [], onSave,
  .ch-cancel:hover { background: rgba(255,255,255,0.08) !important; color: #f0f4f8 !important; }
  `}</style>
 
- {/* Overlay */}
- <div style={{ position: 'fixed', inset: 0, background: 'rgba(2,5,20,0.82)', backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20, animation: 'ch-overlay 0.18s ease', fontFamily: "'DM Sans', system-ui, sans-serif" }}
- onClick={e => e.target === e.currentTarget && handleClose()}>
+ <AnimatePresence>
+ {open && (
+ <motion.div
+   key="ch-overlay"
+   initial={{ opacity: 0 }}
+   animate={{ opacity: 1 }}
+   exit={{ opacity: 0 }}
+   transition={{ duration: 0.2 }}
+   style={{ position: 'fixed', inset: 0, background: 'rgba(2,5,20,0.82)', backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20, fontFamily: "'DM Sans', system-ui, sans-serif" }}
+   onClick={e => e.target === e.currentTarget && handleClose()}>
 
  {/* Modal */}
- <div style={{ width: '100%', maxWidth: 860, maxHeight: '92vh', display: 'flex', flexDirection: 'column', background: '#07101f', border: `1px solid ${T.borderM}`, borderRadius: 18, overflow: 'hidden', boxShadow: '0 32px 80px rgba(0,0,0,0.72), 0 0 0 1px rgba(255,255,255,0.04) inset', animation: 'ch-modal 0.22s cubic-bezier(0.34,1.4,0.64,1)' }}>
+ <motion.div
+   key="ch-modal"
+   initial={{ opacity: 0, y: 40, scale: 0.97 }}
+   animate={{ opacity: 1, y: 0, scale: 1 }}
+   exit={{ opacity: 0, y: 40, scale: 0.97, transition: { type: 'spring', stiffness: 420, damping: 40, mass: 0.9 } }}
+   transition={{ type: 'spring', stiffness: 380, damping: 36, mass: 1 }}
+   style={{ width: '100%', maxWidth: 860, maxHeight: '92vh', display: 'flex', flexDirection: 'column', background: '#07101f', border: `1px solid ${T.borderM}`, borderRadius: 18, overflow: 'hidden', boxShadow: '0 32px 80px rgba(0,0,0,0.72), 0 0 0 1px rgba(255,255,255,0.04) inset' }}>
 
  {/* Header */}
  <div style={{ flexShrink: 0, padding: '18px 24px 16px', borderBottom: `1px solid ${T.border}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'relative', overflow: 'hidden' }}>
@@ -473,8 +483,10 @@ export default function CreateChallengeModal({ open, onClose, gyms = [], onSave,
  }
  </button>
  </div>
- </div>
- </div>
+ </motion.div>
+ </motion.div>
+ )}
+ </AnimatePresence>
  </>
  );
 }

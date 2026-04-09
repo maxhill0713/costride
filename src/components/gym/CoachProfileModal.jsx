@@ -122,7 +122,7 @@ function MessageModal({open,onClose,coach,preText='',showToast}){
           <motion.div initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}} onClick={onClose}
             style={{position:'fixed',inset:0,zIndex:10200,background:'rgba(2,4,10,0.9)',backdropFilter:'blur(14px)'}}/>
           <motion.div initial={{y:'100%'}} animate={{y:0}} exit={{y:'100%'}}
-            transition={{type:'spring',stiffness:280,damping:32,mass:1.1}}
+            transition={{type:'spring',stiffness:380,damping:36,mass:1}}
             style={{position:'fixed',bottom:0,left:0,right:0,zIndex:10201,borderRadius:'24px 24px 0 0',background:SHEET_BG,border:'1px solid rgba(255,255,255,0.09)',borderBottom:'none',padding:'10px 18px 36px'}}>
             <div style={{display:'flex',justifyContent:'center',paddingBottom:14}}><div style={{width:36,height:4,borderRadius:99,background:'rgba(255,255,255,0.14)'}}/></div>
             {sent?(
@@ -332,8 +332,8 @@ export default function CoachProfileModal({
             </AnimatePresence>
 
             {/* Sheet */}
-            <motion.div key="sh" className="cpm-root" initial={{y:'100%'}} animate={{y:0}} exit={{y:'100%'}}
-              transition={{type:'spring',stiffness:280,damping:32,mass:1.1}}
+            <motion.div key="sh" className="cpm-root" initial={{y:'100%'}} animate={{y:0}} exit={{y:'100%', transition:{type:'spring',stiffness:420,damping:40,mass:0.9}}}
+              transition={{type:'spring',stiffness:380,damping:36,mass:1}}
               style={{position:'fixed',bottom:0,left:0,right:0,zIndex:9999,maxHeight:'95vh',display:'flex',flexDirection:'column',borderRadius:'26px 26px 0 0',background:SHEET_BG,border:'1px solid rgba(255,255,255,0.09)',borderBottom:'none',boxShadow:'0 -16px 60px rgba(0,0,0,0.7),inset 0 1px 0 rgba(255,255,255,0.06)'}}>
 
               {/* Top accent line */}

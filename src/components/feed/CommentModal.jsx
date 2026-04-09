@@ -1,7 +1,5 @@
 import React, { useState } from 'react';
-import { Dialog, DialogContent } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { motion, AnimatePresence } from 'framer-motion';
 import { X, Send } from 'lucide-react';
 import { format } from 'date-fns';
 
@@ -17,66 +15,109 @@ export default function CommentModal({ open, onClose, post, onAddComment }) {
   };
 
   return (
-    <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="bg-white max-w-2xl max-h-[80vh] p-0">
-        {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-gray-200">
-          <h3 className="text-lg font-bold text-gray-900">Comments</h3>
-          <button onClick={onClose} className="text-gray-500 hover:text-gray-700">
-            <X className="w-5 h-5" />
-          </button>
-        </div>
+    <AnimatePresence>
+      {open && (
+        <motion.div
+          key="comment-overlay"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.2 }}
+          onClick={onClose}
+          style={{
+            position: 'fixed', inset: 0, zIndex: 9999,
+            background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(8px)',
+            WebkitBackdropFilter: 'blur(8px)',
+            display: 'flex', alignItems: 'flex-end', justifyContent: 'center',
+          }}
+        >
+          <motion.div
+            key="comment-sheet"
+            initial={{ y: '100%' }}
+            animate={{ y: 0 }}
+            exit={{ y: '100%' }}
+            transition={{ type: 'spring', stiffness: 380, damping: 36, mass: 1 }}
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              width: '100%', maxWidth: '640px', maxHeight: '80vh',
+              display: 'flex', flexDirection: 'column',
+              background: 'linear-gradient(160deg, #0c1128 0%, #060810 100%)',
+              border: '1px solid rgba(255,255,255,0.09)', borderBottom: 'none',
+              borderRadius: '24px 24px 0 0',
+              boxShadow: '0 -8px 40px rgba(0,0,0,0.5)',
+              paddingBottom: 'max(env(safe-area-inset-bottom), 16px)',
+            }}
+          >
+            {/* Drag handle */}
+            <div style={{ display: 'flex', justifyContent: 'center', paddingTop: 12, paddingBottom: 4 }}>
+              <div style={{ width: 36, height: 4, borderRadius: 99, background: 'rgba(255,255,255,0.2)' }} />
+            </div>
 
-        {/* Comments List */}
-        <div className="overflow-y-auto max-h-[50vh] px-4 py-2">
-          {post.comments && post.comments.length > 0 ? (
-            <div className="space-y-4">
-              {post.comments.map((comment, idx) => (
-                <div key={idx} className="flex gap-3">
-                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-400 to-pink-500 flex items-center justify-center flex-shrink-0">
-                    <span className="text-xs font-bold text-white">
-                      {comment.user?.charAt(0)?.toUpperCase()}
-                    </span>
+            {/* Header */}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 20px 12px', borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
+              <h3 style={{ fontSize: 16, fontWeight: 700, color: '#f1f5f9', margin: 0 }}>Comments</h3>
+              <button onClick={onClose} style={{ background: 'rgba(255,255,255,0.07)', border: 'none', borderRadius: 10, width: 30, height: 30, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#94a3b8' }}>
+                <X style={{ width: 15, height: 15 }} />
+              </button>
+            </div>
+
+            {/* Comments List */}
+            <div style={{ flex: 1, overflowY: 'auto', padding: '12px 20px', display: 'flex', flexDirection: 'column', gap: 16 }}>
+              {post.comments && post.comments.length > 0 ? (
+                post.comments.map((comment, idx) => (
+                  <div key={idx} style={{ display: 'flex', gap: 12 }}>
+                    <div style={{ width: 36, height: 36, borderRadius: '50%', background: 'linear-gradient(135deg, #a855f7, #ec4899)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                      <span style={{ fontSize: 12, fontWeight: 700, color: '#fff' }}>{comment.user?.charAt(0)?.toUpperCase()}</span>
+                    </div>
+                    <div style={{ flex: 1 }}>
+                      <p style={{ margin: '0 0 2px', fontSize: 14 }}>
+                        <span style={{ fontWeight: 700, color: '#f1f5f9' }}>{comment.user}</span>{' '}
+                        <span style={{ color: '#cbd5e1' }}>{comment.text}</span>
+                      </p>
+                      <p style={{ margin: 0, fontSize: 11, color: '#475569' }}>
+                        {format(new Date(comment.timestamp), 'MMM d, h:mm a')}
+                      </p>
+                    </div>
                   </div>
-                  <div className="flex-1">
-                    <p className="text-sm">
-                      <span className="font-semibold text-gray-900">{comment.user}</span>{' '}
-                      <span className="text-gray-700">{comment.text}</span>
-                    </p>
-                    <p className="text-xs text-gray-400 mt-1">
-                      {format(new Date(comment.timestamp), 'MMM d, h:mm a')}
-                    </p>
-                  </div>
+                ))
+              ) : (
+                <div style={{ textAlign: 'center', padding: '32px 0', color: '#475569' }}>
+                  <p style={{ margin: 0, fontSize: 14 }}>No comments yet</p>
+                  <p style={{ margin: '4px 0 0', fontSize: 12 }}>Be the first to comment!</p>
                 </div>
-              ))}
+              )}
             </div>
-          ) : (
-            <div className="text-center py-8 text-gray-500">
-              <p>No comments yet</p>
-              <p className="text-sm mt-1">Be the first to comment!</p>
-            </div>
-          )}
-        </div>
 
-        {/* Add Comment */}
-        <form onSubmit={handleSubmit} className="border-t border-gray-200 p-4">
-          <div className="flex gap-2">
-            <Input
-              placeholder="Add a comment..."
-              value={comment}
-              onChange={(e) => setComment(e.target.value)}
-              className="flex-1 rounded-full border-2 border-gray-200 focus:border-purple-500"
-            />
-            <Button
-              type="submit"
-              disabled={!comment.trim()}
-              className="rounded-full w-10 h-10 p-0 bg-purple-500 hover:bg-purple-600 disabled:opacity-50"
-            >
-              <Send className="w-5 h-5" />
-            </Button>
-          </div>
-        </form>
-      </DialogContent>
-    </Dialog>
+            {/* Add Comment */}
+            <form onSubmit={handleSubmit} style={{ padding: '12px 20px', borderTop: '1px solid rgba(255,255,255,0.07)' }}>
+              <div style={{ display: 'flex', gap: 10 }}>
+                <input
+                  placeholder="Add a comment..."
+                  value={comment}
+                  onChange={(e) => setComment(e.target.value)}
+                  style={{
+                    flex: 1, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)',
+                    borderRadius: 99, padding: '10px 16px', color: '#f1f5f9', fontSize: 14,
+                    outline: 'none', fontFamily: 'inherit',
+                  }}
+                />
+                <button
+                  type="submit"
+                  disabled={!comment.trim()}
+                  style={{
+                    width: 42, height: 42, borderRadius: '50%', border: 'none', cursor: comment.trim() ? 'pointer' : 'default',
+                    background: comment.trim() ? 'linear-gradient(135deg, #a855f7, #7c3aed)' : 'rgba(255,255,255,0.06)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+                    opacity: comment.trim() ? 1 : 0.4, transition: 'all 0.15s',
+                  }}
+                >
+                  <Send style={{ width: 18, height: 18, color: '#fff' }} />
+                </button>
+              </div>
+            </form>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 }

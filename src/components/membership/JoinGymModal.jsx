@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -7,7 +7,7 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { Dumbbell, Check, Trophy, Gift, TrendingUp, Loader2, CreditCard, Lock, Plus, ChevronLeft } from 'lucide-react';
+import { Dumbbell, Check, Trophy, Gift, TrendingUp, Loader2, CreditCard, Lock, Plus, ChevronLeft, X } from 'lucide-react';
 import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 
@@ -151,19 +151,62 @@ export default function JoinGymModal({ open, onClose, gym, currentUser }) {
   if (!gym) return null;
 
   return (
-    <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="text-2xl font-bold flex items-center gap-2">
-            {step > 1 && step < 4 && (
-              <button onClick={() => setStep(step - 1)} className="mr-2">
-                <ChevronLeft className="w-5 h-5" />
-              </button>
-            )}
-            <Dumbbell className="w-6 h-6 text-blue-500" />
-            {step === 4 ? 'Payment Successful!' : `Join ${gym.name}`}
-          </DialogTitle>
-        </DialogHeader>
+    <AnimatePresence>
+      {open && (
+        <motion.div
+          key="joingym-overlay"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.2 }}
+          onClick={handleClose}
+          style={{
+            position: 'fixed', inset: 0, zIndex: 9999,
+            background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(10px)',
+            WebkitBackdropFilter: 'blur(10px)',
+            display: 'flex', alignItems: 'flex-end', justifyContent: 'center',
+          }}
+        >
+        <motion.div
+          key="joingym-sheet"
+          initial={{ y: '100%' }}
+          animate={{ y: 0 }}
+          exit={{ y: '100%' }}
+          transition={{ type: 'spring', stiffness: 380, damping: 36, mass: 1 }}
+          onClick={(e) => e.stopPropagation()}
+          style={{
+            width: '100%', maxWidth: '500px', maxHeight: '90vh', overflowY: 'auto',
+            background: 'linear-gradient(160deg, #0c1128 0%, #060810 100%)',
+            border: '1px solid rgba(255,255,255,0.09)', borderBottom: 'none',
+            borderRadius: '24px 24px 0 0',
+            boxShadow: '0 -8px 40px rgba(0,0,0,0.5)',
+            paddingBottom: 'max(env(safe-area-inset-bottom), 24px)',
+          }}
+        >
+          {/* Drag handle */}
+          <div style={{ display: 'flex', justifyContent: 'center', paddingTop: 12, paddingBottom: 4 }}>
+            <div style={{ width: 36, height: 4, borderRadius: 99, background: 'rgba(255,255,255,0.2)' }} />
+          </div>
+
+          {/* Header */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 20px 16px', borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              {step > 1 && step < 4 && (
+                <button onClick={() => setStep(step - 1)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#94a3b8', display: 'flex', padding: 0 }}>
+                  <ChevronLeft style={{ width: 20, height: 20 }} />
+                </button>
+              )}
+              <Dumbbell style={{ width: 20, height: 20, color: '#3b82f6' }} />
+              <h2 style={{ margin: 0, fontSize: 18, fontWeight: 800, color: '#f1f5f9' }}>
+                {step === 4 ? 'Payment Successful!' : `Join ${gym.name}`}
+              </h2>
+            </div>
+            <button onClick={handleClose} style={{ background: 'rgba(255,255,255,0.07)', border: 'none', borderRadius: 10, width: 30, height: 30, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#94a3b8' }}>
+              <X style={{ width: 15, height: 15 }} />
+            </button>
+          </div>
+
+          <div className="p-5">
 
         {/* Step 1: Plan Selection */}
         {step === 1 && (
@@ -531,7 +574,10 @@ export default function JoinGymModal({ open, onClose, gym, currentUser }) {
             </Button>
           </div>
         )}
-      </DialogContent>
-    </Dialog>
+          </div>
+        </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 }

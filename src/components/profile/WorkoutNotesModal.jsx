@@ -60,29 +60,29 @@ export default function WorkoutNotesModal({ isOpen, onClose, workoutName }) {
             backdropFilter: 'blur(6px)',
             WebkitBackdropFilter: 'blur(6px)',
             display: 'flex',
-            alignItems: 'center',
+            alignItems: 'flex-end',
             justifyContent: 'center',
-            padding: '24px 16px',
           }}>
           <motion.div
             key="notes-card"
-            initial={{ opacity: 0, scale: 0.95, y: 12 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: 12 }}
-            transition={{ duration: 0.25, ease: [0.34, 1.2, 0.64, 1] }}
+            initial={{ y: '100%' }}
+            animate={{ y: 0 }}
+            exit={{ y: '100%' }}
+            transition={{ type: 'spring', stiffness: 380, damping: 36, mass: 1 }}
             onClick={(e) => e.stopPropagation()}
             style={{
               width: '100%',
-              maxWidth: '384px',
+              maxWidth: '600px',
               background: 'linear-gradient(135deg, rgba(28,34,60,0.97) 0%, rgba(8,10,20,0.99) 100%)',
               border: '1px solid rgba(255,255,255,0.07)',
               backdropFilter: 'blur(20px)',
               WebkitBackdropFilter: 'blur(20px)',
-              borderRadius: '24px',
-              boxShadow: '0 24px 60px rgba(0,0,0,0.6)',
+              borderRadius: '24px 24px 0 0',
+              boxShadow: '0 -8px 40px rgba(0,0,0,0.5)',
               color: 'white',
               position: 'relative',
               overflow: 'hidden',
+              paddingBottom: 'max(env(safe-area-inset-bottom), 20px)',
             }}>
 
             {/* Top shine */}

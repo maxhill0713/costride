@@ -48,14 +48,14 @@ export default function BadgesModal({ isOpen, onClose, user, checkIns = [] }) {
 
   const equippedBadgeDetails = earnedBadges.filter(b => equippedBadges.includes(b.id));
 
-  if (!isOpen) return null;
-
   return (
     <AnimatePresence>
+      {isOpen && (
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
+        transition={{ duration: 0.2 }}
         onClick={onClose}
         className="fixed inset-0 bg-black/60 backdrop-blur-md z-50 flex items-end justify-center"
       >
@@ -63,7 +63,7 @@ export default function BadgesModal({ isOpen, onClose, user, checkIns = [] }) {
           initial={{ y: '100%' }}
           animate={{ y: 0 }}
           exit={{ y: '100%' }}
-          transition={{ type: 'spring', damping: 32, stiffness: 320 }}
+          transition={{ type: 'spring', stiffness: 380, damping: 36, mass: 1 }}
           onClick={(e) => e.stopPropagation()}
           className="w-full max-w-2xl max-h-[80vh] overflow-y-auto bg-gradient-to-br from-slate-900 via-slate-900 to-slate-950 rounded-t-3xl border-t border-x border-white/10 shadow-2xl"
         >
@@ -170,6 +170,7 @@ export default function BadgesModal({ isOpen, onClose, user, checkIns = [] }) {
           </div>
         </motion.div>
       </motion.div>
+      )}
     </AnimatePresence>
   );
 }
