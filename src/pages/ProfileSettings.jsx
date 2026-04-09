@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Link, useLocation } from 'react-router-dom';
@@ -27,7 +27,9 @@ function useSectionHighlight() {
 function PageShell({ title, children }) {
   return (
     <div style={{ minHeight: '100vh', background: PAGE_BG, color: '#fff', fontFamily: 'inherit' }}>
-      <div style={{ position: 'sticky', top: 'env(safe-area-inset-top)', zIndex: 10, background: 'rgba(2,4,10,0.8)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', borderBottom: '1px solid rgba(255,255,255,0.07)', padding: '10px 16px' }}>
+      {/* Status bar colour fill — matches header bg so it bleeds to top of phone */}
+      <div style={{ position: 'fixed', top: 0, left: 0, right: 0, height: 'env(safe-area-inset-top)', background: 'rgba(2,4,10,0.95)', zIndex: 20 }} />
+      <div style={{ position: 'sticky', top: 0, zIndex: 10, background: 'rgba(2,4,10,0.95)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', borderBottom: '1px solid rgba(255,255,255,0.07)', padding: '10px 16px', paddingTop: 'max(env(safe-area-inset-top), 10px)' }}>
         <div style={{ maxWidth: 520, margin: '0 auto', display: 'flex', alignItems: 'center', gap: 4 }}>
           <Link to={createPageUrl('Settings')} style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', padding: '4px 8px 4px 0' }}>
             <ChevronLeft style={{ width: 22, height: 22, color: '#94a3b8' }} />
@@ -69,75 +71,65 @@ function Row({ label, sublabel, children, isLast }) {
 function loadImage(src) {
   return new Promise((resolve, reject) => {
     const img = new Image();
-    img.onload = () => resolve(img);
+    img.onload  = () => resolve(img);
     img.onerror = reject;
     img.src = src;
   });
 }
 
 async function cropToBlob(imageSrc, cropRect, outputSize) {
-  const img = await loadImage(imageSrc);
+  const img    = await loadImage(imageSrc);
   const canvas = document.createElement('canvas');
   canvas.width  = outputSize.w;
   canvas.height = outputSize.h;
-  const ctx = canvas.getContext('2d');
-  ctx.drawImage(img, cropRect.x, cropRect.y, cropRect.w, cropRect.h, 0, 0, outputSize.w, outputSize.h);
+  canvas.getContext('2d').drawImage(img, cropRect.x, cropRect.y, cropRect.w, cropRect.h, 0, 0, outputSize.w, outputSize.h);
   return new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', 0.92));
 }
 
+// ─── Circle Crop Modal ────────────────────────────────────────────────────────
 function CircleCropModal({ imageSrc, onConfirm, onCancel, uploading }) {
   const containerRef = useRef(null);
-  const [imgNatural, setImgNatural] = useState({ w: 1, h: 1 });
-  const [offset, setOffset] = useState({ x: 0, y: 0 });
-  const [scale, setScale] = useState(1);
 
-  // Refs so event listeners (attached to DOM directly) always see latest values
-  const scaleRef   = useRef(scale);
-  const offsetRef  = useRef(offset);
-  const natRef     = useRef(imgNatural);
-  const dragRef    = useRef(null);
-  const pinchRef   = useRef(null); // { dist } when pinching
-  const isPinching = useRef(false);
-  const rafId      = useRef(null);
+  // All live state in refs so DOM listeners never close over stale values
+  const natRef    = useRef({ w: 1, h: 1 });
+  const scaleRef  = useRef(1);
+  const offsetRef = useRef({ x: 0, y: 0 }); // image-centre displacement from circle-centre
 
-  useEffect(() => { scaleRef.current  = scale;      }, [scale]);
-  useEffect(() => { offsetRef.current = offset;     }, [offset]);
-  useEffect(() => { natRef.current    = imgNatural; }, [imgNatural]);
+  // Separate React state just for triggering re-renders
+  const [renderState, setRenderState] = useState({ scale: 1, offset: { x: 0, y: 0 } });
 
-  const getMinScale = (nat) => {
-    if (!nat || nat.w <= 0 || nat.h <= 0) return 1;
-    return Math.max(CROP_SIZE / nat.w, CROP_SIZE / nat.h);
-  };
+  const commit = () =>
+    setRenderState({ scale: scaleRef.current, offset: { ...offsetRef.current } });
 
-  // offset = displacement of image CENTRE from circle CENTRE
-  // Clamp so image always covers the full circle
+  const getMinScale = (nat) =>
+    Math.max(CROP_SIZE / nat.w, CROP_SIZE / nat.h);
+
+  // Clamp so the image always fully covers the circle
   const clampOffset = (ox, oy, sc, nat) => {
-    const n   = nat || natRef.current;
-    const imgW = n.w * sc;
-    const imgH = n.h * sc;
-    const maxX = imgW / 2 - CROP_SIZE / 2;
-    const maxY = imgH / 2 - CROP_SIZE / 2;
+    const maxX = (nat.w * sc) / 2 - CROP_SIZE / 2;
+    const maxY = (nat.h * sc) / 2 - CROP_SIZE / 2;
     return {
       x: Math.max(-maxX, Math.min(maxX, ox)),
       y: Math.max(-maxY, Math.min(maxY, oy)),
     };
   };
 
-  // Load image → set min scale, centre it
+  // Load image → min scale, perfectly centred
   useEffect(() => {
     loadImage(imageSrc).then(img => {
       const nat = { w: img.naturalWidth, h: img.naturalHeight };
       const ms  = getMinScale(nat);
-      setImgNatural(nat);
-      natRef.current = nat;
-      setScale(ms);
-      scaleRef.current = ms;
-      setOffset({ x: 0, y: 0 });
+      natRef.current    = nat;
+      scaleRef.current  = ms;
       offsetRef.current = { x: 0, y: 0 };
+      commit();
     });
   }, [imageSrc]);
 
-  // ── Pointer (drag) handlers — attached via React props (fine for drag) ──────
+  // ── Pointer drag ──────────────────────────────────────────────────────────
+  const dragRef    = useRef(null);
+  const isPinching = useRef(false);
+
   const onPointerDown = (e) => {
     if (isPinching.current) return;
     e.currentTarget.setPointerCapture(e.pointerId);
@@ -149,122 +141,155 @@ function CircleCropModal({ imageSrc, onConfirm, onCancel, uploading }) {
 
   const onPointerMove = (e) => {
     if (!dragRef.current || isPinching.current) return;
-    const nx = e.clientX - dragRef.current.startX;
-    const ny = e.clientY - dragRef.current.startY;
-    if (rafId.current) cancelAnimationFrame(rafId.current);
-    rafId.current = requestAnimationFrame(() => {
-      const clamped = clampOffset(nx, ny, scaleRef.current, natRef.current);
-      setOffset(clamped);
-      offsetRef.current = clamped;
-    });
+    const clamped = clampOffset(
+      e.clientX - dragRef.current.startX,
+      e.clientY - dragRef.current.startY,
+      scaleRef.current,
+      natRef.current,
+    );
+    offsetRef.current = clamped;
+    commit();
   };
 
   const onPointerUp = () => { dragRef.current = null; };
 
-  // ── Touch & wheel — attached directly to DOM with { passive: false } ────────
-  // This is the ONLY way to call preventDefault() and stop the browser
-  // from zooming / scrolling the page.
+  // ── Non-passive touch & wheel (must be attached directly to DOM) ──────────
+  const pinchRef = useRef(null); // { dist }
+
   useEffect(() => {
     const el = containerRef.current;
     if (!el) return;
 
-    const handleTouchStart = (e) => {
+    const onTouchStart = (e) => {
       if (e.touches.length === 2) {
         e.preventDefault();
         isPinching.current = true;
-        dragRef.current = null;
-        const dx   = e.touches[0].clientX - e.touches[1].clientX;
-        const dy   = e.touches[0].clientY - e.touches[1].clientY;
+        dragRef.current    = null;
+        const dx = e.touches[0].clientX - e.touches[1].clientX;
+        const dy = e.touches[0].clientY - e.touches[1].clientY;
         pinchRef.current = { dist: Math.hypot(dx, dy) };
       }
     };
 
-    const handleTouchMove = (e) => {
-      // Always prevent default while over the crop area to stop page zoom/scroll
-      e.preventDefault();
+    const onTouchMove = (e) => {
+      e.preventDefault(); // always block page scroll/zoom while over the crop area
 
       if (e.touches.length === 2 && pinchRef.current) {
-        const dx   = e.touches[0].clientX - e.touches[1].clientX;
-        const dy   = e.touches[0].clientY - e.touches[1].clientY;
-        const dist = Math.hypot(dx, dy);
-        const ratio = dist / pinchRef.current.dist;
-        pinchRef.current = { dist };
+        // ── Zoom anchored to the circle centre ────────────────────────────────
+        // The "world point" at the circle centre must remain fixed after scaling.
+        // In our coordinate system the circle centre maps to the point:
+        //   worldX = -offsetRef.current.x / oldScale
+        //   worldY = -offsetRef.current.y / oldScale
+        // After rescaling we set:
+        //   newOffset = worldPoint * newScale  (so the same world point stays centred)
+        // Simplifying: newOffset = oldOffset * (newScale / oldScale)
+        const dx      = e.touches[0].clientX - e.touches[1].clientX;
+        const dy      = e.touches[0].clientY - e.touches[1].clientY;
+        const newDist = Math.hypot(dx, dy);
+        const ratio   = newDist / pinchRef.current.dist;
+        pinchRef.current = { dist: newDist };
 
-        const ms      = getMinScale(natRef.current);
-        const newScale = Math.max(ms, Math.min(4, scaleRef.current * ratio));
-        const clamped  = clampOffset(offsetRef.current.x, offsetRef.current.y, newScale, natRef.current);
+        const nat        = natRef.current;
+        const oldScale   = scaleRef.current;
+        const newScale   = Math.max(getMinScale(nat), Math.min(4, oldScale * ratio));
+        const scaleDelta = newScale / oldScale;
+
+        const newOffset = clampOffset(
+          offsetRef.current.x * scaleDelta,
+          offsetRef.current.y * scaleDelta,
+          newScale,
+          nat,
+        );
 
         scaleRef.current  = newScale;
-        offsetRef.current = clamped;
-        setScale(newScale);
-        setOffset(clamped);
+        offsetRef.current = newOffset;
+        commit();
+
       } else if (e.touches.length === 1 && dragRef.current && !isPinching.current) {
-        // Single-finger drag (also needs preventDefault to stop page scroll)
-        const nx = e.touches[0].clientX - dragRef.current.startX;
-        const ny = e.touches[0].clientY - dragRef.current.startY;
-        const clamped = clampOffset(nx, ny, scaleRef.current, natRef.current);
+        const clamped = clampOffset(
+          e.touches[0].clientX - dragRef.current.startX,
+          e.touches[0].clientY - dragRef.current.startY,
+          scaleRef.current,
+          natRef.current,
+        );
         offsetRef.current = clamped;
-        setOffset(clamped);
+        commit();
       }
     };
 
-    const handleTouchEnd = (e) => {
+    const onTouchEnd = (e) => {
       if (e.touches.length < 2) {
         pinchRef.current = null;
         setTimeout(() => { isPinching.current = false; }, 80);
       }
     };
 
-    const handleWheel = (e) => {
+    const onWheel = (e) => {
       e.preventDefault();
-      const ms      = getMinScale(natRef.current);
-      const newScale = Math.max(ms, Math.min(4, scaleRef.current * (1 - e.deltaY * 0.002)));
-      const clamped  = clampOffset(offsetRef.current.x, offsetRef.current.y, newScale, natRef.current);
+      const nat        = natRef.current;
+      const oldScale   = scaleRef.current;
+      // Natural scroll direction: scroll up = zoom in
+      const newScale   = Math.max(getMinScale(nat), Math.min(4, oldScale * (1 - e.deltaY * 0.001)));
+      const scaleDelta = newScale / oldScale;
+      const newOffset  = clampOffset(
+        offsetRef.current.x * scaleDelta,
+        offsetRef.current.y * scaleDelta,
+        newScale,
+        nat,
+      );
       scaleRef.current  = newScale;
-      offsetRef.current = clamped;
-      setScale(newScale);
-      setOffset(clamped);
+      offsetRef.current = newOffset;
+      commit();
     };
 
-    // { passive: false } is the critical flag — without it preventDefault() is a no-op
-    el.addEventListener('touchstart', handleTouchStart, { passive: false });
-    el.addEventListener('touchmove',  handleTouchMove,  { passive: false });
-    el.addEventListener('touchend',   handleTouchEnd,   { passive: false });
-    el.addEventListener('wheel',      handleWheel,      { passive: false });
+    el.addEventListener('touchstart', onTouchStart, { passive: false });
+    el.addEventListener('touchmove',  onTouchMove,  { passive: false });
+    el.addEventListener('touchend',   onTouchEnd,   { passive: false });
+    el.addEventListener('wheel',      onWheel,      { passive: false });
 
     return () => {
-      el.removeEventListener('touchstart', handleTouchStart);
-      el.removeEventListener('touchmove',  handleTouchMove);
-      el.removeEventListener('touchend',   handleTouchEnd);
-      el.removeEventListener('wheel',      handleWheel);
+      el.removeEventListener('touchstart', onTouchStart);
+      el.removeEventListener('touchmove',  onTouchMove);
+      el.removeEventListener('touchend',   onTouchEnd);
+      el.removeEventListener('wheel',      onWheel);
     };
-  }, []); // mount/unmount only — handlers read everything via refs
+  }, []); // mount/unmount only — all state read via refs
 
-  // ── Export crop ──────────────────────────────────────────────────────────────
+  // ── Crop export ───────────────────────────────────────────────────────────
   const handleConfirm = async () => {
-    const imgW = imgNatural.w * scale;
-    const imgH = imgNatural.h * scale;
+    const { scale, offset } = renderState;
+    const nat  = natRef.current;
+    const imgW = nat.w * scale;
+    const imgH = nat.h * scale;
     const imgLeft = CROP_SIZE / 2 + offset.x - imgW / 2;
     const imgTop  = CROP_SIZE / 2 + offset.y - imgH / 2;
-    const scaleX  = imgNatural.w / imgW;
-    const scaleY  = imgNatural.h / imgH;
+    const scaleX  = nat.w / imgW;
+    const scaleY  = nat.h / imgH;
     const blob = await cropToBlob(
       imageSrc,
       { x: -imgLeft * scaleX, y: -imgTop * scaleY, w: CROP_SIZE * scaleX, h: CROP_SIZE * scaleY },
-      { w: 400, h: 400 }
+      { w: 400, h: 400 },
     );
     onConfirm(blob);
   };
 
-  const imgW = imgNatural.w * scale;
-  const imgH = imgNatural.h * scale;
+  const { scale, offset } = renderState;
+  const nat  = natRef.current;
+  const imgW = nat.w * scale;
+  const imgH = nat.h * scale;
 
   return (
-    <div style={{ position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(0,0,0,0.92)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 24,
-      // Also block viewport-level pinch-zoom via CSS (belt-and-suspenders)
+    <div style={{
+      position: 'fixed', inset: 0, zIndex: 9999,
+      background: '#000',
+      display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 24,
       touchAction: 'none',
+      paddingTop: 'env(safe-area-inset-top)',
+      paddingBottom: 'env(safe-area-inset-bottom)',
     }}>
-      <p style={{ color: '#94a3b8', fontSize: 13, fontWeight: 600, letterSpacing: '0.04em', textTransform: 'uppercase' }}>Drag to position</p>
+      <p style={{ color: '#94a3b8', fontSize: 13, fontWeight: 600, letterSpacing: '0.04em', textTransform: 'uppercase' }}>
+        Drag to position
+      </p>
 
       <div
         ref={containerRef}
@@ -287,7 +312,6 @@ function CircleCropModal({ imageSrc, onConfirm, onCancel, uploading }) {
               top:  CROP_SIZE / 2 + offset.y - imgH / 2,
               pointerEvents: 'none',
               userSelect: 'none',
-              willChange: 'transform',
             }}
           />
         </div>
@@ -295,8 +319,6 @@ function CircleCropModal({ imageSrc, onConfirm, onCancel, uploading }) {
         {/* Circle border ring */}
         <div style={{ position: 'absolute', inset: 0, borderRadius: '50%', border: '2px solid rgba(255,255,255,0.6)', pointerEvents: 'none' }} />
       </div>
-
-      <p style={{ color: '#475569', fontSize: 11, fontWeight: 500 }}>Pinch or scroll to zoom</p>
 
       <div style={{ display: 'flex', gap: 12, width: CROP_SIZE }}>
         <button onClick={onCancel} style={{ flex: 1, padding: '12px 0', borderRadius: 14, border: '1px solid rgba(255,255,255,0.12)', background: 'linear-gradient(to bottom, #1e2535 0%, #0f1520 100%)', color: '#94a3b8', fontSize: 14, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, boxShadow: '0 4px 0 0 #0a0f1a' }}>
@@ -310,16 +332,16 @@ function CircleCropModal({ imageSrc, onConfirm, onCancel, uploading }) {
   );
 }
 
+// ─── Main Page ────────────────────────────────────────────────────────────────
 export default function ProfileSettings() {
   const queryClient = useQueryClient();
   const highlighted = useSectionHighlight();
 
-  const [circleCrop, setCircleCrop] = useState(null);
+  const [circleCrop,      setCircleCrop]      = useState(null);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
-
-  const [localFullName, setLocalFullName] = useState('');
-  const [nameEditing,   setNameEditing]   = useState(false);
-  const [nameSaving,    setNameSaving]    = useState(false);
+  const [localFullName,   setLocalFullName]   = useState('');
+  const [nameEditing,     setNameEditing]     = useState(false);
+  const [nameSaving,      setNameSaving]      = useState(false);
 
   const { data: currentUser } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
 
@@ -366,9 +388,7 @@ export default function ProfileSettings() {
     } catch (err) {
       console.error('[ProfileSettings] name save failed:', err);
       alert('Failed to save name — ' + (err?.message || 'unknown error'));
-    } finally {
-      setNameSaving(false);
-    }
+    } finally { setNameSaving(false); }
   };
 
   const handleNameCancel = () => {
@@ -376,7 +396,11 @@ export default function ProfileSettings() {
     setNameEditing(false);
   };
 
-  if (!currentUser) return <PageShell title="Profile"><p style={{ color: '#475569', textAlign: 'center', paddingTop: 40 }}>Loading…</p></PageShell>;
+  if (!currentUser) return (
+    <PageShell title="Profile">
+      <p style={{ color: '#475569', textAlign: 'center', paddingTop: 40 }}>Loading…</p>
+    </PageShell>
+  );
 
   return (
     <>
