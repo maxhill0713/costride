@@ -5,6 +5,8 @@ import {
   Plus, Minus, Check, ArrowLeft, Pencil, BarChart2, Target,
   TrendingUp, Loader2, AlertCircle
 } from 'lucide-react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { base44 } from '@/api/base44Client';
 
 /* ─────────────────────────────────────────────────────────────
    DESIGN TOKENS  (extend your existing palette)
@@ -91,22 +93,16 @@ const BARCODE_MOCK_RESULTS = [
   { id: 'b003', name: 'Müller Light Yoghurt',     brand: 'Müller',   cal: 98,  protein: 5,  carbs: 14, fat: 1.9, serving: '1 pot',    servingG: 175},
 ];
 
-const NUTRITION_BASE = {
-  calories: { target: 2400, consumed: 1620 },
-  protein:  { target: 180,  consumed: 112  },
-  carbs:    { target: 260,  consumed: 198  },
-  fats:     { target: 70,   consumed: 41   },
-  water:    { glasses: 5,   target: 8      },
-  streak:   4,
-  weekDays: [true, true, false, true, true, false, false],
+const DEFAULT_TARGETS = {
+  calories: 2400,
+  protein:  180,
+  carbs:    260,
+  fats:     70,
 };
 
-const INITIAL_MEALS = {
-  Breakfast: [{ ...FOOD_DB.find(f => f.id === 'f008'), qty: 1, logId: 'l1' }],
-  Lunch:     [{ ...FOOD_DB.find(f => f.id === 'f001'), qty: 2, logId: 'l2' }, { ...FOOD_DB.find(f => f.id === 'f009'), qty: 2, logId: 'l3' }],
-  Dinner:    [],
-  Snacks:    [{ ...FOOD_DB.find(f => f.id === 'f015'), qty: 1, logId: 'l4' }],
-};
+const EMPTY_MEALS = { Breakfast: [], Lunch: [], Dinner: [], Snacks: [] };
+
+const todayStr = () => new Date().toISOString().split('T')[0];
 
 const MEAL_ICONS = { Breakfast: '☀', Lunch: '⛅', Dinner: '◑', Snacks: '◇' };
 const MACRO_COLORS = { protein: T.blue, carbs: T.green, fat: T.amber };
@@ -979,16 +975,132 @@ function StatGrid({ consumed, nutrition }) {
    MAIN NUTRITION TAB
 ───────────────────────────────────────────────────────────── */
 export default function NutritionTab() {
-  const [nutrition, setNutrition] = useState(NUTRITION_BASE);
-  const [meals, setMeals]         = useState(INITIAL_MEALS);
-  const [addingTo, setAddingTo]   = useState(null);
+  const queryClient = useQueryClient();
+  const [addingTo, setAddingTo]       = useState(null);
   const [showScanner, setShowScanner] = useState(false);
-  const [insight, setInsight]     = useState(true);
-  const [toast, setToast]         = useState({ msg: '', visible: false });
-  const toastTimer                = useRef(null);
+  const [insight, setInsight]         = useState(true);
+  const [toast, setToast]             = useState({ msg: '', visible: false });
+  const toastTimer                    = useRef(null);
+  const saveTimer                     = useRef(null);
 
-  // Derived consumed totals (single source of truth)
+  // ── Current user ──────────────────────────────────────────
+  const { data: currentUser } = useQuery({
+    queryKey: ['currentUser'],
+    queryFn: () => base44.auth.me(),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  // ── Today's log ───────────────────────────────────────────
+  const today = todayStr();
+  const { data: todayLog, isLoading } = useQuery({
+    queryKey: ['nutritionLog', currentUser?.id, today],
+    queryFn: () => base44.entities.NutritionLog.filter({ user_id: currentUser.id, log_date: today }, '-created_date', 1).then(r => r[0] || null),
+    enabled: !!currentUser?.id,
+    staleTime: 60 * 1000,
+  });
+
+  // ── Last 7 days logs (for weekly consistency) ─────────────
+  const { data: weekLogs = [] } = useQuery({
+    queryKey: ['nutritionWeek', currentUser?.id],
+    queryFn: async () => {
+      const days = Array.from({ length: 7 }, (_, i) => {
+        const d = new Date(); d.setDate(d.getDate() - (6 - i));
+        return d.toISOString().split('T')[0];
+      });
+      return base44.entities.NutritionLog.filter({ user_id: currentUser.id }, '-log_date', 7);
+    },
+    enabled: !!currentUser?.id,
+    staleTime: 5 * 60 * 1000,
+  });
+
+  // ── Targets: from existing log or user profile or defaults ─
+  const targets = useMemo(() => ({
+    calories: todayLog?.calorie_target || currentUser?.calorie_target || DEFAULT_TARGETS.calories,
+    protein:  todayLog?.protein_target || currentUser?.protein_target || DEFAULT_TARGETS.protein,
+    carbs:    todayLog?.carbs_target   || currentUser?.carbs_target   || DEFAULT_TARGETS.carbs,
+    fats:     todayLog?.fats_target    || currentUser?.fats_target    || DEFAULT_TARGETS.fats,
+    waterTarget: 8,
+    nutritionGoal: todayLog?.nutrition_goal || currentUser?.nutrition_goal || 'muscle_gain',
+  }), [todayLog, currentUser]);
+
+  // ── Local state seeded from DB ────────────────────────────
+  const [meals, setMeals]         = useState(EMPTY_MEALS);
+  const [waterGlasses, setWater]  = useState(0);
+  const [logId, setLogId]         = useState(null);
+
+  // Seed state from DB once loaded
+  useEffect(() => {
+    if (todayLog) {
+      setMeals(todayLog.meals || EMPTY_MEALS);
+      setWater(todayLog.water_glasses || 0);
+      setLogId(todayLog.id || null);
+    } else if (todayLog === null && !isLoading) {
+      // No log yet — start fresh
+      setMeals(EMPTY_MEALS);
+      setWater(0);
+      setLogId(null);
+    }
+  }, [todayLog, isLoading]);
+
+  // ── Save mutation ─────────────────────────────────────────
+  const saveMutation = useMutation({
+    mutationFn: async ({ meals, waterGlasses }) => {
+      const payload = {
+        user_id: currentUser.id,
+        log_date: today,
+        meals,
+        water_glasses: waterGlasses,
+        calorie_target: targets.calories,
+        protein_target: targets.protein,
+        carbs_target:   targets.carbs,
+        fats_target:    targets.fats,
+        nutrition_goal: targets.nutritionGoal,
+      };
+      if (logId) {
+        return base44.entities.NutritionLog.update(logId, payload);
+      } else {
+        const created = await base44.entities.NutritionLog.create(payload);
+        setLogId(created.id);
+        return created;
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['nutritionLog', currentUser?.id, today] });
+      queryClient.invalidateQueries({ queryKey: ['nutritionWeek', currentUser?.id] });
+    },
+  });
+
+  // Debounced auto-save whenever meals or water change
+  const scheduleAutoSave = useCallback((meals, water) => {
+    clearTimeout(saveTimer.current);
+    saveTimer.current = setTimeout(() => {
+      if (currentUser?.id) saveMutation.mutate({ meals, waterGlasses: water });
+    }, 800);
+  }, [currentUser?.id]);
+
+  // ── Derived consumed totals ───────────────────────────────
   const consumed = useMemo(() => sumMeals(meals), [meals]);
+
+  // ── Weekly dots: did user log anything each day ───────────
+  const weekDays = useMemo(() => {
+    return Array.from({ length: 7 }, (_, i) => {
+      const d = new Date(); d.setDate(d.getDate() - (6 - i));
+      const ds = d.toISOString().split('T')[0];
+      return weekLogs.some(l => l.log_date === ds);
+    });
+  }, [weekLogs]);
+
+  // ── Streak: consecutive logged days up to today ───────────
+  const streak = useMemo(() => {
+    let count = 0;
+    for (let i = 0; i < 30; i++) {
+      const d = new Date(); d.setDate(d.getDate() - i);
+      const ds = d.toISOString().split('T')[0];
+      if (weekLogs.some(l => l.log_date === ds)) count++;
+      else break;
+    }
+    return count;
+  }, [weekLogs]);
 
   const showToast = useCallback((msg) => {
     clearTimeout(toastTimer.current);
@@ -997,39 +1109,73 @@ export default function NutritionTab() {
   }, []);
 
   const handleAddFood = useCallback((section, food, qty) => {
-    setMeals(m => ({
-      ...m,
-      [section]: [...(m[section] || []), { ...food, qty, logId: newLogId() }],
-    }));
+    setMeals(m => {
+      const updated = { ...m, [section]: [...(m[section] || []), { ...food, qty, logId: newLogId() }] };
+      scheduleAutoSave(updated, waterGlasses);
+      return updated;
+    });
     showToast(`✓ ${food.name} added to ${section}`);
-  }, [showToast]);
+  }, [showToast, scheduleAutoSave, waterGlasses]);
 
   const handleDeleteFood = useCallback((section, idx) => {
     const name = meals[section][idx]?.name ?? 'Item';
-    setMeals(m => ({ ...m, [section]: m[section].filter((_, i) => i !== idx) }));
+    setMeals(m => {
+      const updated = { ...m, [section]: m[section].filter((_, i) => i !== idx) };
+      scheduleAutoSave(updated, waterGlasses);
+      return updated;
+    });
     showToast(`Removed ${name}`);
-  }, [meals, showToast]);
+  }, [meals, showToast, scheduleAutoSave, waterGlasses]);
 
   const handleAddWater = useCallback(() => {
-    setNutrition(n => ({
-      ...n, water: { ...n.water, glasses: Math.min(n.water.glasses + 1, n.water.target) },
-    }));
+    setWater(w => {
+      const next = Math.min(w + 1, targets.waterTarget);
+      scheduleAutoSave(meals, next);
+      return next;
+    });
     showToast('💧 Water logged');
-  }, [showToast]);
+  }, [showToast, scheduleAutoSave, meals, targets.waterTarget]);
 
-  // Insight text (dynamic)
-  const proteinGap   = nutrition.protein.target  - consumed.protein;
-  const calorieGap   = nutrition.calories.target - consumed.cal;
-  const insightText  = consumed.cal >= nutrition.calories.target
+  // ── Insight text ──────────────────────────────────────────
+  const proteinGap  = targets.protein  - consumed.protein;
+  const calorieGap  = targets.calories - consumed.cal;
+  const insightText = consumed.cal >= targets.calories
     ? "🎯 You've hit your calorie goal for today — great work!"
     : proteinGap > 0
     ? `💪 You need ${proteinGap}g more protein to hit your daily target.`
     : `${calorieGap} kcal remaining — keep it up!`;
 
+  const nutrition = {
+    calories: { target: targets.calories },
+    protein:  { target: targets.protein  },
+    carbs:    { target: targets.carbs    },
+    fats:     { target: targets.fats     },
+    water:    { glasses: waterGlasses, target: targets.waterTarget },
+    streak,
+    weekDays,
+    nutritionGoal: targets.nutritionGoal,
+  };
+
+  if (isLoading && !todayLog) {
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 12, paddingBottom: 40 }}>
+        {[1, 2, 3].map(i => (
+          <div key={i} style={{ height: i === 1 ? 220 : 140, borderRadius: T.rad, background: 'rgba(255,255,255,0.04)', animation: 'pulse 1.5s infinite' }} />
+        ))}
+      </div>
+    );
+  }
+
+  const goalLabel = {
+    muscle_gain: 'Muscle Gain', fat_loss: 'Fat Loss',
+    maintenance: 'Maintenance', performance: 'Performance',
+  }[nutrition.nutritionGoal] || 'Muscle Gain';
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', paddingBottom: 40 }}>
       <style>{`
         @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        @keyframes pulse { 0%,100%{opacity:0.5} 50%{opacity:1} }
         input::placeholder { color: rgba(148,163,184,0.38); }
         select option { background: #1a1e38; color: #e2e8f0; }
       `}</style>
@@ -1055,8 +1201,8 @@ export default function NutritionTab() {
         <StatGrid consumed={consumed} nutrition={nutrition} />
 
         <MacroBar label="Protein"       current={consumed.protein} target={nutrition.protein.target} color={MACRO_COLORS.protein} />
-        <MacroBar label="Carbohydrates" current={consumed.carbs}   target={nutrition.carbs.target}   color={MACRO_COLORS.carbs}   />
-        <MacroBar label="Fat"           current={consumed.fat}     target={nutrition.fats.target}     color={MACRO_COLORS.fat}     />
+        <MacroBar label="Carbohydrates" current={consumed.carbs}   target={nutrition.carbs.target}    color={MACRO_COLORS.carbs}   />
+        <MacroBar label="Fat"           current={consumed.fat}     target={nutrition.fats.target}      color={MACRO_COLORS.fat}     />
       </Card>
 
       {/* ── ADD FOOD ── */}
@@ -1152,7 +1298,7 @@ export default function NutritionTab() {
         </SectionLabel>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
           {[
-            { label: 'Goal',     value: 'Muscle Gain',                             color: T.purple, dim: T.purpleDim, border: T.purpleBorder },
+            { label: 'Goal',     value: goalLabel,                                   color: T.purple, dim: T.purpleDim, border: T.purpleBorder },
             { label: 'Calories', value: `${nutrition.calories.target.toLocaleString()} kcal`, color: T.blue,   dim: T.blueDim,   border: T.blueBorder   },
             { label: 'Protein',  value: `${nutrition.protein.target}g`,             color: T.green,  dim: 'rgba(34,197,94,0.1)', border: 'rgba(34,197,94,0.2)' },
           ].map(({ label, value, color, dim, border }) => (

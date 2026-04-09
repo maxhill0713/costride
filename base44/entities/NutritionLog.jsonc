@@ -1,0 +1,70 @@
+{
+  "name": "NutritionLog",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string",
+      "description": "User who logged nutrition"
+    },
+    "log_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Date of the nutrition log (YYYY-MM-DD)"
+    },
+    "meals": {
+      "type": "object",
+      "description": "Meals for the day keyed by meal type (Breakfast, Lunch, Dinner, Snacks)",
+      "additionalProperties": true
+    },
+    "water_glasses": {
+      "type": "number",
+      "default": 0,
+      "description": "Number of water glasses consumed"
+    },
+    "calorie_target": {
+      "type": "number",
+      "description": "Daily calorie target"
+    },
+    "protein_target": {
+      "type": "number",
+      "description": "Daily protein target in grams"
+    },
+    "carbs_target": {
+      "type": "number",
+      "description": "Daily carbs target in grams"
+    },
+    "fats_target": {
+      "type": "number",
+      "description": "Daily fats target in grams"
+    },
+    "nutrition_goal": {
+      "type": "string",
+      "enum": [
+        "muscle_gain",
+        "fat_loss",
+        "maintenance",
+        "performance"
+      ],
+      "default": "muscle_gain",
+      "description": "User's nutrition goal"
+    }
+  },
+  "required": [
+    "user_id",
+    "log_date"
+  ],
+  "rls": {
+    "create": {
+      "data.user_id": "{{user.id}}"
+    },
+    "read": {
+      "data.user_id": "{{user.id}}"
+    },
+    "update": {
+      "data.user_id": "{{user.id}}"
+    },
+    "delete": {
+      "data.user_id": "{{user.id}}"
+    }
+  }
+}
