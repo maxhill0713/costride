@@ -387,7 +387,7 @@ export default function Gyms() {
   return (
     <div className="min-h-screen">
       {/* Fixed background — covers rubber-band overscroll area on iOS/Android */}
-      <div style={{ position: 'fixed', inset: 0, zIndex: -1, background: 'linear-gradient(to bottom right, #02040a, #0d2360, #02040a)' }} />
+      <div style={{ position: 'fixed', inset: 0, zIndex: -1, background: '#02040a' }} />
 
       <Tabs defaultValue="my-gyms" className="w-full">
         {/* ── Fixed header — Star + Tabs + Join with Code all in one bar ── */}
