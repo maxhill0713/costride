@@ -410,26 +410,22 @@ export default function TabOverview({
   }, []);
 
   return (
-    <div style={{ display:'flex', background:T.bg, minHeight:'100vh',
+    <div style={{ background:T.bg, minHeight:'100vh', padding:20,
       fontFamily:"'Inter',-apple-system,BlinkMacSystemFont,sans-serif" }}>
-      <Sidebar activeTab={activeTab} setActiveTab={setActiveTab}/>
-      <div style={{ flex:1, display:'flex', flexDirection:'column', minWidth:0 }}>
-        <Header atRisk={atRisk}/>
-        <div style={{ display:'grid', gridTemplateColumns:'1fr 280px', gap:16, padding:20, alignItems:'start' }}>
-          {/* Left */}
-          <div className="ov8m" style={{ display:'flex', flexDirection:'column', gap:14 }}>
-            <AtRiskPipeline atRisk={atRisk} mrr={mrr} totalMembers={totalMembers}/>
-            <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:14 }}>
-              <EngagementImpact stats={automationStats}/>
-              <MemberHealth totalMembers={totalMembers}/>
-            </div>
+      <div style={{ display:'grid', gridTemplateColumns:'1fr 280px', gap:16, alignItems:'start' }}>
+        {/* Left */}
+        <div className="ov8m" style={{ display:'flex', flexDirection:'column', gap:14 }}>
+          <AtRiskPipeline atRisk={atRisk} mrr={mrr} totalMembers={totalMembers}/>
+          <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:14 }}>
+            <EngagementImpact stats={automationStats}/>
+            <MemberHealth totalMembers={totalMembers}/>
           </div>
-          {/* Right */}
-          <div className="ov8s" style={{ display:'flex', flexDirection:'column', gap:14 }}>
-            <SmartPriorities/>
-            <RecentLiveActivity/>
-            <ActionQueue atRisk={atRisk}/>
-          </div>
+        </div>
+        {/* Right */}
+        <div className="ov8s" style={{ display:'flex', flexDirection:'column', gap:14 }}>
+          <SmartPriorities/>
+          <RecentLiveActivity/>
+          <ActionQueue atRisk={atRisk}/>
         </div>
       </div>
     </div>
