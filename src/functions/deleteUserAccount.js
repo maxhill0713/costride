@@ -63,6 +63,11 @@ Deno.serve(async (req) => {
       ),
     ]);
 
+    // Reset onboarding flag so user can go through fresh onboarding on next sign-up
+    await db.entities.User.update(userId, {
+      onboarding_completed: false,
+    });
+
     // Logout the user (this removes their session)
     await base44.auth.logout();
 
