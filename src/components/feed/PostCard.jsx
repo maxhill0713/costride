@@ -759,6 +759,11 @@ function PostCard({ post, onLike, onComment, onSave, onDelete, fullWidth = false
                     : <img src={STREAK_ICON_URL} alt="streak" className={`w-11 h-11 ${hasReacted ? '' : 'opacity-40'}`} style={{ objectFit: 'contain' }} />}
                 </motion.button>
               )}
+              {Object.keys(localReactions).length > 0 && (
+                <span className={`text-sm font-bold -ml-1 ${hasReacted ? 'text-white' : 'text-slate-400'}`}>
+                  {Object.keys(localReactions).length}
+                </span>
+              )}
               {isOwner && (
                 <motion.button onClick={(e) => { e.stopPropagation(); setShowWorkoutShare(true); }} className="flex items-center justify-center p-2 rounded-lg text-slate-400 hover:text-white transition-colors" whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.93 }}>
                   <Send className="w-5 h-5" />
@@ -864,6 +869,11 @@ function PostCard({ post, onLike, onComment, onSave, onDelete, fullWidth = false
                   ? <div className="relative w-11 h-11 flex items-center justify-center"><img src={STREAK_ICON_URL} alt="streak" className={`w-11 h-11 ${hasReacted ? '' : 'opacity-40'}`} style={{ objectFit: 'contain' }} /><svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 64 64"><circle cx="20" cy="24" r="6" fill="none" stroke="black" strokeWidth="1.5" /><circle cx="44" cy="24" r="6" fill="none" stroke="black" strokeWidth="1.5" /><line x1="26" y1="24" x2="38" y2="24" stroke="black" strokeWidth="1.5" /></svg></div>
                   : <img src={STREAK_ICON_URL} alt="streak" className={`w-11 h-11 ${hasReacted ? '' : 'opacity-40'}`} style={{ objectFit: 'contain' }} />}
               </motion.button>
+            )}
+            {totalReactions > 0 && (
+              <span className={`text-sm font-bold -ml-1 ${hasReacted ? 'text-white' : 'text-slate-400'}`}>
+                {totalReactions}
+              </span>
             )}
             {isOwner && (
               <motion.button onClick={(e) => { e.stopPropagation(); setShowPostShare(true); }} className="flex items-center justify-center p-2 rounded-lg text-slate-400 hover:text-white transition-colors" whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.93 }}>
