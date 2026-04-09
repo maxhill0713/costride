@@ -216,10 +216,7 @@ export default function Gyms() {
     return 0;
   });
   const recentlyViewedGyms = useMemo(() => {
-    return recentlyViewedGymIds.
-    map((id) => gyms.find((g) => g.id === id)).
-    filter(Boolean).
-    slice(0, 3);
+    return recentlyViewedGymIds.map(id => gyms.find(g => g.id === id)).filter(Boolean).slice(0, 3);
   }, [recentlyViewedGymIds, gyms]);
 
   const filteredGyms = gyms.filter((gym) => {
