@@ -821,7 +821,8 @@ export default function ClassDetailModal({
                         {className}
                       </h2>
                       {instructor && (
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                          {/* Instructor info */}
                           <div style={{ display: 'flex', alignItems: 'center', gap: 9, flex: 1, minWidth: 0 }}>
                             <div style={{ width: 33, height: 33, borderRadius: '50%', background: `linear-gradient(135deg,${c.color}55,${c.color}22)`, border: `1.5px solid ${c.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 900, color: c.color, flexShrink: 0, boxShadow: `0 0 10px ${c.glow}` }}>
                               {ini(instructor)}
@@ -831,16 +832,20 @@ export default function ClassDetailModal({
                               <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.38)', fontWeight: 600, marginTop: 2 }}>Lead Instructor</div>
                             </div>
                           </div>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
-                            <div style={{ display: 'flex', gap: 1 }}>
-                              {[1, 2, 3, 4, 5].map(s => <Star key={s} style={{ width: 10, height: 10, fill: s <= Math.round(parseFloat(avg)) ? '#fbbf24' : 'rgba(255,255,255,0.15)', color: s <= Math.round(parseFloat(avg)) ? '#fbbf24' : 'rgba(255,255,255,0.15)' }} />)}
+                          {/* Class rating + view profile */}
+                          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 5, flexShrink: 0 }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                              <div style={{ display: 'flex', gap: 1 }}>
+                                {[1, 2, 3, 4, 5].map(s => <Star key={s} style={{ width: 9, height: 9, fill: s <= Math.round(parseFloat(avg)) ? '#fbbf24' : 'rgba(255,255,255,0.15)', color: s <= Math.round(parseFloat(avg)) ? '#fbbf24' : 'rgba(255,255,255,0.15)' }} />)}
+                              </div>
+                              <span style={{ fontSize: 11.5, fontWeight: 800, color: '#fbbf24' }}>{avg}</span>
                             </div>
-                            <span style={{ fontSize: 12, fontWeight: 800, color: '#fbbf24' }}>{avg}</span>
-                            <button onClick={() => setShowCoachProfile(true)}
-                              style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '6px 12px', borderRadius: 20, fontSize: 11, fontWeight: 800, cursor: 'pointer', border: `1px solid ${c.border}`, background: c.bg, color: c.color, flexShrink: 0, whiteSpace: 'nowrap' }}>
-                              View Profile
-                            </button>
+                            <div style={{ fontSize: 9, fontWeight: 700, color: 'rgba(255,255,255,0.28)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Class Rating</div>
                           </div>
+                          <button onClick={() => setShowCoachProfile(true)}
+                            style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '7px 13px', borderRadius: 20, fontSize: 11, fontWeight: 800, cursor: 'pointer', border: `1px solid ${c.border}`, background: c.bg, color: c.color, flexShrink: 0, whiteSpace: 'nowrap' }}>
+                            View Profile
+                          </button>
                         </div>
                       )}
                     </motion.div>
