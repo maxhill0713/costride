@@ -552,7 +552,6 @@ function MainContent() {
 
   return (
     <div style={{ flex:1, display:"flex", flexDirection:"column", minWidth:0, overflow:"hidden" }}>
-      <Header />
 
       <div style={{ flex:1, display:"flex", overflow:"hidden" }}>
         {/* Center column */}
@@ -646,7 +645,6 @@ export default function ContentPage() {
       fontFamily:"'DM Sans','Figtree','Sora',system-ui,sans-serif",
       fontSize:13, lineHeight:1.5,
     }}>
-      <Sidebar />
       <MainContent />
     </div>
   );
