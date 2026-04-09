@@ -60,6 +60,9 @@ Deno.serve(async (req) => {
 
   for (const user of allUsers) {
     try {
+      // Skip users who are mid-deletion or have been marked as deleted
+      if (user.deleted_at) { skipped++; continue; }
+
       const trainingDays = user.training_days || [];
       if (!trainingDays.includes(yesterdayDayKey)) { skipped++; continue; }
 

@@ -14,7 +14,7 @@ async function fetchAll(entity, filter) {
   return results;
 }
 
-// Helper: delete records in batches to avoid overwhelming the API
+// Helper: delete records in batches
 async function deleteAll(entity, records) {
   const BATCH = 50;
   for (let i = 0; i < records.length; i += BATCH) {
@@ -40,25 +40,40 @@ Deno.serve(async (req) => {
     const userEmail = user.email;
     const db = base44.asServiceRole;
 
-    console.log(`Deleting account for user: ${userEmail} (${userId})`);
+    console.log(`[deleteUserAccount] START — user: ${userEmail} (${userId}) at ${new Date().toISOString()}`);
 
-    // Fetch all user data (paginated)
+    // ── STEP 1: Immediately mark account as deleted to prevent race conditions
+    // (e.g. scheduled automations re-processing this user while deletion is in-flight)
+    await db.entities.User.update(userId, {
+      deleted_at: new Date().toISOString(),
+      onboarding_completed: false,
+    });
+
+    // ── STEP 2: Fetch all data owned by this user (strictly scoped to userId/userEmail)
     const [
       checkIns, memberships, lifts, goals, notifs,
-      friendsBy, friendsTo, posts, workoutLogs
+      // friendsBy = Friend records where THIS user sent the request (their outbound side)
+      // friendsTo = Friend records where THIS user is the friend_id (other users' records pointing TO us)
+      //             These must also be deleted — otherwise other users have dangling friend references.
+      friendsBy, friendsTo, posts, workoutLogs,
+      messages, achievements, coachInvites, assignedWorkouts,
     ] = await Promise.all([
-      fetchAll(db.entities.CheckIn,       { user_id: userId }),
-      fetchAll(db.entities.GymMembership, { user_id: userId }),
-      fetchAll(db.entities.Lift,          { member_id: userId }),
-      fetchAll(db.entities.Goal,          { user_id: userId }),
-      fetchAll(db.entities.Notification,  { user_id: userId }),
-      fetchAll(db.entities.Friend,        { user_id: userId }),
-      fetchAll(db.entities.Friend,        { friend_id: userId }),
-      fetchAll(db.entities.Post,          { member_id: userId }),
-      fetchAll(db.entities.WorkoutLog,    { user_id: userId }),
+      fetchAll(db.entities.CheckIn,        { user_id: userId }),
+      fetchAll(db.entities.GymMembership,  { user_id: userId }),
+      fetchAll(db.entities.Lift,           { member_id: userId }),
+      fetchAll(db.entities.Goal,           { user_id: userId }),
+      fetchAll(db.entities.Notification,   { user_id: userId }),
+      fetchAll(db.entities.Friend,         { user_id: userId }),
+      fetchAll(db.entities.Friend,         { friend_id: userId }),
+      fetchAll(db.entities.Post,           { member_id: userId }),
+      fetchAll(db.entities.WorkoutLog,     { user_id: userId }),
+      fetchAll(db.entities.Message,        { sender_id: userId }),
+      fetchAll(db.entities.Achievement,    { user_id: userId }),
+      fetchAll(db.entities.CoachInvite,    { member_id: userId }),
+      fetchAll(db.entities.AssignedWorkout,{ member_id: userId }),
     ]);
 
-    // Gyms owned by this user (both by id and email)
+    // Gyms owned by this user
     const [gymsByAdmin, gymsByEmail] = await Promise.all([
       fetchAll(db.entities.Gym, { admin_id: userId }),
       fetchAll(db.entities.Gym, { owner_email: userEmail }),
@@ -66,26 +81,35 @@ Deno.serve(async (req) => {
     const gymIds = new Set(gymsByAdmin.map(g => g.id));
     const allGyms = [...gymsByAdmin, ...gymsByEmail.filter(g => !gymIds.has(g.id))];
 
-    // Deduplicate friends
+    // Deduplicate friends — both sides
     const friendIdsSeen = new Set(friendsBy.map(f => f.id));
     const allFriends = [...friendsBy, ...friendsTo.filter(f => !friendIdsSeen.has(f.id))];
 
-    console.log(`Deleting: ${checkIns.length} check-ins, ${memberships.length} memberships, ${lifts.length} lifts, ${goals.length} goals, ${notifs.length} notifications, ${allFriends.length} friend records, ${posts.length} posts, ${workoutLogs.length} workout logs, ${allGyms.length} gyms`);
+    console.log(`[deleteUserAccount] Queued for deletion:`);
+    console.log(`  check-ins: ${checkIns.length}, memberships: ${memberships.length}, lifts: ${lifts.length}`);
+    console.log(`  goals: ${goals.length}, notifications: ${notifs.length}, friend records: ${allFriends.length}`);
+    console.log(`  posts: ${posts.length}, workout logs: ${workoutLogs.length}, gyms: ${allGyms.length}`);
+    console.log(`  messages: ${messages.length}, achievements: ${achievements.length}`);
+    console.log(`  NOTE: friendsTo (${friendsTo.length}) = records owned by OTHER users pointing to this account — these WILL be deleted to avoid dangling references`);
 
-    // Delete all data in parallel batches
+    // ── STEP 3: Delete all owned data
     await Promise.all([
-      deleteAll(db.entities.CheckIn,       checkIns),
-      deleteAll(db.entities.GymMembership, memberships),
-      deleteAll(db.entities.Lift,          lifts),
-      deleteAll(db.entities.Goal,          goals),
-      deleteAll(db.entities.Notification,  notifs),
-      deleteAll(db.entities.Friend,        allFriends),
-      deleteAll(db.entities.Post,          posts),
-      deleteAll(db.entities.WorkoutLog,    workoutLogs),
-      deleteAll(db.entities.Gym,           allGyms),
+      deleteAll(db.entities.CheckIn,        checkIns),
+      deleteAll(db.entities.GymMembership,  memberships),
+      deleteAll(db.entities.Lift,           lifts),
+      deleteAll(db.entities.Goal,           goals),
+      deleteAll(db.entities.Notification,   notifs),
+      deleteAll(db.entities.Friend,         allFriends),
+      deleteAll(db.entities.Post,           posts),
+      deleteAll(db.entities.WorkoutLog,     workoutLogs),
+      deleteAll(db.entities.Gym,            allGyms),
+      deleteAll(db.entities.Message,        messages),
+      deleteAll(db.entities.Achievement,    achievements),
+      deleteAll(db.entities.CoachInvite,    coachInvites),
+      deleteAll(db.entities.AssignedWorkout,assignedWorkouts),
     ]);
 
-    // Reset all profile data so user goes through fresh onboarding on next sign-in
+    // ── STEP 4: Full profile reset (preserves the User row for platform auth purposes)
     await db.entities.User.update(userId, {
       onboarding_completed: false,
       account_type: null,
@@ -94,14 +118,23 @@ Deno.serve(async (req) => {
       custom_workout_types: null,
       workout_split: null,
       custom_split_name: null,
+      saved_splits: null,
       current_streak: 0,
       streak_freezes: 0,
       avatar_url: null,
       display_name: null,
       username: null,
+      hero_image_url: null,
+      gym_location: null,
+      monthly_challenge_progress: null,
+      unlocked_streak_variants: null,
+      streak_variant: null,
+      equipped_badges: null,
+      // deleted_at cleared so account is fresh for re-onboarding
+      deleted_at: null,
     });
 
-    console.log(`Account fully deleted for: ${userEmail}`);
+    console.log(`[deleteUserAccount] COMPLETE — account fully reset for: ${userEmail} (${userId})`);
     return Response.json({ success: true });
 
   } catch (error) {
