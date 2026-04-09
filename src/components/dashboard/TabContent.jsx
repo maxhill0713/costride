@@ -1,706 +1,653 @@
-import React, { useMemo, useState, useRef, useEffect } from 'react';
-import { format, subDays, getDay, startOfMonth, endOfMonth, eachDayOfInterval, isToday } from 'date-fns';
+import { useState } from "react";
 import {
-  Trophy, BarChart2, Calendar, ChevronRight, TrendingUp, TrendingDown,
-  Heart, MessageCircle, MoreHorizontal, Trash2, CheckCircle, Plus,
-  Users, Flame, HelpCircle, ChevronLeft, List,
-} from 'lucide-react';
-import { AppButton } from '@/components/ui/AppButton';
-import { AppBadge } from '@/components/ui/AppBadge';
-import { AppProgressBar } from '@/components/ui/AppProgressBar';
-import { cn } from '@/lib/utils';
+  LayoutDashboard, Users, FileText, BarChart2, Zap, Settings,
+  Gift, ExternalLink, Eye, LogOut, QrCode, ChevronDown, Bell,
+  Search, Plus, Calendar, Flame, BookOpen, Clock, CheckCircle2,
+  Facebook, Instagram, Sparkles, Send, MoreHorizontal, Heart,
+  MessageCircle, TrendingUp, AlertTriangle, ChevronRight,
+  Check, Image, AlignLeft, HelpCircle, Star, X, AlignJustify,
+} from "lucide-react";
 
-/* ─── PRIMITIVES ─── */
-function Av({ name = '', size = 28, src = null }) {
-  const letters = name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2) || '?';
-  const hue = (name.charCodeAt(0) || 72) % 360;
-  if (src) return (
-    <img src={src} alt={name} className="rounded-full object-cover shrink-0"
-         style={{ width: size, height: size }}
-         onError={e => { e.currentTarget.style.display = 'none'; }} />
-  );
+/* ── Design tokens ─────────────────────────────────────── */
+const BG      = "#050810";
+const SURFACE = "#0a0f1e";
+const CARD    = "#0d1225";
+const BORDER  = "rgba(255,255,255,0.045)";
+const BORDER2 = "rgba(255,255,255,0.08)";
+const TEXT    = "#eef2ff";
+const MUTED   = "#8b95b3";
+const DIM     = "#4b5578";
+const DIMMER  = "#252d45";
+
+/* ── Helpers ───────────────────────────────────────────── */
+function Badge({ children, color = "blue" }) {
+  const map = {
+    blue:    { bg:"rgba(59,130,246,0.12)",  text:"#60a5fa", border:"rgba(59,130,246,0.22)" },
+    green:   { bg:"rgba(16,185,129,0.12)",  text:"#34d399", border:"rgba(16,185,129,0.22)" },
+    amber:   { bg:"rgba(245,158,11,0.12)",  text:"#fbbf24", border:"rgba(245,158,11,0.22)" },
+    red:     { bg:"rgba(239,68,68,0.12)",   text:"#f87171", border:"rgba(239,68,68,0.22)"  },
+    purple:  { bg:"rgba(139,92,246,0.12)",  text:"#c084fc", border:"rgba(139,92,246,0.22)" },
+    neutral: { bg:CARD,                     text:MUTED,     border:BORDER                   },
+  };
+  const c = map[color] || map.neutral;
   return (
-    <div className="flex items-center justify-center shrink-0 font-extrabold"
-         style={{ width: size, height: size, borderRadius: size * 0.28,
-                  background: `hsl(${hue},38%,16%)`,
-                  border: `1.5px solid hsl(${hue},38%,24%)`,
-                  fontSize: size * 0.32,
-                  color: `hsl(${hue},60%,60%)` }}>
-      {letters}
+    <span style={{
+      background:c.bg, color:c.text, border:`1px solid ${c.border}`,
+      borderRadius:6, padding:"2px 8px", fontSize:10.5, fontWeight:700,
+      display:"inline-flex", alignItems:"center", gap:4, whiteSpace:"nowrap",
+    }}>{children}</span>
+  );
+}
+
+function Btn({ children, variant="primary", size="md", onClick, style={} }) {
+  const base = {
+    display:"inline-flex", alignItems:"center", gap:6,
+    border:"none", cursor:"pointer", fontWeight:700,
+    borderRadius:10, transition:"all 0.15s", whiteSpace:"nowrap",
+    fontSize: size==="sm" ? 11.5 : 13,
+    padding: size==="sm" ? "5px 12px" : "8px 16px",
+  };
+  const variants = {
+    primary:   { background:"#3b82f6",                  color:"#fff",   border:"1px solid rgba(59,130,246,0.4)"   },
+    secondary: { background:CARD,                        color:MUTED,    border:`1px solid ${BORDER2}`             },
+    outline:   { background:"transparent",               color:MUTED,    border:`1px solid ${BORDER2}`             },
+    ghost:     { background:"transparent",               color:MUTED,    border:"1px solid transparent"            },
+    success:   { background:"rgba(16,185,129,0.12)",    color:"#34d399", border:"1px solid rgba(16,185,129,0.22)" },
+  };
+  return (
+    <button onClick={onClick} style={{ ...base, ...(variants[variant]||variants.ghost), ...style }}>
+      {children}
+    </button>
+  );
+}
+
+function Avatar({ name="", size=28 }) {
+  const initials = name.split(" ").map(w=>w[0]).join("").toUpperCase().slice(0,2);
+  const hue = (name.charCodeAt(0)||72) % 360;
+  return (
+    <div style={{
+      width:size, height:size, borderRadius:size*0.3,
+      background:`hsl(${hue},38%,14%)`, border:`1.5px solid hsl(${hue},38%,26%)`,
+      color:`hsl(${hue},60%,62%)`, fontSize:size*0.33, fontWeight:800,
+      display:"flex", alignItems:"center", justifyContent:"center",
+      flexShrink:0, letterSpacing:"0.02em",
+    }}>{initials||"?"}</div>
+  );
+}
+
+function PlatformIcon({ type }) {
+  if (type==="instagram") return (
+    <div style={{ width:20, height:20, borderRadius:5, background:"rgba(168,85,247,0.15)", border:"1px solid rgba(168,85,247,0.3)", display:"flex", alignItems:"center", justifyContent:"center" }}>
+      <Instagram size={10} color="#c084fc" />
+    </div>
+  );
+  if (type==="facebook") return (
+    <div style={{ width:20, height:20, borderRadius:5, background:"rgba(59,130,246,0.15)", border:"1px solid rgba(59,130,246,0.3)", display:"flex", alignItems:"center", justifyContent:"center" }}>
+      <Facebook size={10} color="#60a5fa" />
+    </div>
+  );
+  return null;
+}
+
+function PlatformIcons({ platforms=[] }) {
+  return <div style={{ display:"flex", gap:4 }}>{platforms.map((p,i)=><PlatformIcon key={i} type={p} />)}</div>;
+}
+
+function TypeChip({ type }) {
+  const map = {
+    post: { Icon:AlignLeft,   bg:"rgba(59,130,246,0.12)",  color:"#60a5fa"  },
+    poll: { Icon:HelpCircle,  bg:"rgba(245,158,11,0.12)",  color:"#fbbf24"  },
+    event:{ Icon:Calendar,    bg:"rgba(16,185,129,0.12)",  color:"#34d399"  },
+  };
+  const t = map[type] || map.post;
+  return (
+    <div style={{ width:26, height:26, borderRadius:7, background:t.bg, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
+      <t.Icon size={12} color={t.color} />
     </div>
   );
 }
 
-function DelBtn({ onDelete }) {
-  const [open, setOpen] = useState(false);
-  const ref = useRef(null);
-  useEffect(() => {
-    if (!open) return;
-    const h = e => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
-    document.addEventListener('mousedown', h);
-    return () => document.removeEventListener('mousedown', h);
-  }, [open]);
+function AIChip() {
   return (
-    <div ref={ref} className="relative shrink-0">
-      <button
-        onClick={e => { e.stopPropagation(); setOpen(o => !o); }}
-        className="w-[22px] h-[22px] flex items-center justify-center bg-transparent border border-white/[0.04] rounded-[5px] cursor-pointer transition-colors hover:border-white/[0.07]">
-        <MoreHorizontal className="w-[11px] h-[11px] text-[#4b5578]" />
-      </button>
-      {open && (
-        <div className="absolute top-[26px] right-0 z-[9999] bg-[#060d1c] border border-white/[0.07] rounded-[9px] shadow-[0_8px_28px_rgba(0,0,0,0.75)] min-w-[100px] overflow-hidden">
-          <button
-            onClick={e => { e.stopPropagation(); setOpen(false); onDelete(); }}
-            className="w-full flex items-center gap-[7px] px-[13px] py-[9px] text-[11.5px] font-bold text-red-500 bg-transparent border-none cursor-pointer hover:bg-red-500/[0.07] transition-colors">
-            <Trash2 className="w-[11px] h-[11px]" /> Delete
-          </button>
+    <div style={{ padding:"1px 6px", borderRadius:4, background:"rgba(99,102,241,0.12)", border:"1px solid rgba(99,102,241,0.25)", fontSize:9.5, fontWeight:800, color:"#818cf8" }}>IA</div>
+  );
+}
+
+/* ── Mock data ─────────────────────────────────────────── */
+const DRAFTS = [
+  { id:"d1", author:"Foundry Gym", title:"AI Draft: Motivation Monday",
+    preview:"Ready to crush your goals? This week we're pushing limits — every rep, every set, every second counts. Share your journey.",
+    platforms:["instagram","facebook"], aiGen:true, scheduledFor:"Apr 13, 9:00 AM" },
+  { id:"d2", author:"Priya Sharma", title:"Draft: New Class Poll",
+    preview:"What class should we add next? Your vote shapes our timetable — HIIT, Yoga, or Strength? Cast your vote below!",
+    platforms:["instagram"], aiGen:false, scheduledFor:"Apr 13, 9:00 AM" },
+];
+
+const ALL_CONTENT = [
+  { id:"c1", type:"post", author:"Foundry Gym",  title:"Motivation Monday AI",  platforms:["instagram","facebook"], aiGen:true,  date:"Apr 13, 9:00 AM" },
+  { id:"c2", type:"poll", author:"Foundry Gym",  title:"Draft: New Class Poll",  platforms:["instagram"],           aiGen:false, date:"Apr 13, 9:00 AM" },
+  { id:"c3", type:"post", author:"Foundry Gym",  title:"Motivation Monday AI",  platforms:["instagram","facebook"], aiGen:true,  date:"Apr 13, 9:00 AM" },
+  { id:"c4", type:"post", author:"Priya Sharma", title:"Priya Sharma",           platforms:["instagram","facebook"], aiGen:true,  date:"Apr 13, 9:00 AM" },
+];
+
+const FEED_POST = { author:"Sarah", text:"Finally nailed that pose! @foundrygym #yogagoals", likes:18, comments:4 };
+
+const QUICK_ACTIONS = [
+  { label:"Generate AI Motivation Monday", Icon:Sparkles, color:"#818cf8" },
+  { label:"Post Member Spotlight",          Icon:Star,     color:"#fbbf24" },
+  { label:"Create Weekend Challenge Poll",  Icon:Flame,    color:"#f97316" },
+];
+
+const BAR_DATA = [
+  { h:55, color:"#3b82f6" }, { h:82, color:"#3b82f6" }, { h:38, color:"#6366f1" },
+  { h:65, color:"#6366f1" }, { h:28, color:"#8b5cf6" }, { h:22, color:"#8b5cf6" },
+  { h:18, color:"#8b5cf6" },
+];
+
+const NAV = [
+  { Icon:LayoutDashboard, label:"Overview"        },
+  { Icon:Users,           label:"Members"         },
+  { Icon:FileText,        label:"Content", active:true },
+  { Icon:BarChart2,       label:"Analytics"       },
+  { Icon:Zap,             label:"Automations"     },
+  { Icon:Settings,        label:"Settings"        },
+  { Icon:Gift,            label:"Loyalty Programs"},
+];
+
+const BOTTOM_LINKS = [
+  { Icon:ExternalLink, label:"View Gym Page" },
+  { Icon:Eye,          label:"Member View"   },
+  { Icon:LogOut,       label:"Log Out", red:true },
+];
+
+const TABS = ["Feed","Calendar","Drafts","Scheduled","Library"];
+const STEPS = [
+  { label:"Step 1: Connect Facebook",       done:true  },
+  { label:"Step 2: Schedule your first Poll", done:true  },
+  { label:"Step 3: Review Insights",        done:false },
+];
+
+/* ══════════════════════════════════════════════════════════
+   LEFT SIDEBAR
+══════════════════════════════════════════════════════════ */
+function Sidebar() {
+  return (
+    <div style={{ width:216, minHeight:"100vh", flexShrink:0, background:SURFACE, borderRight:`1px solid ${BORDER}`, display:"flex", flexDirection:"column" }}>
+
+      {/* Logo */}
+      <div style={{ padding:"18px 16px 14px", borderBottom:`1px solid ${BORDER}` }}>
+        <div style={{ display:"flex", alignItems:"center", gap:10 }}>
+          <div style={{ width:32, height:32, borderRadius:9, background:"linear-gradient(135deg,#3b82f6,#6366f1)", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
+            <Flame size={14} color="#fff" />
+          </div>
+          <div>
+            <div style={{ fontSize:12.5, fontWeight:800, color:TEXT, lineHeight:1.2 }}>Foundry Gym</div>
+            <div style={{ fontSize:9, fontWeight:700, color:DIM, letterSpacing:"0.1em", textTransform:"uppercase", marginTop:2 }}>Gym Owner</div>
+          </div>
         </div>
-      )}
+      </div>
+
+      {/* Nav label */}
+      <div style={{ padding:"14px 16px 6px" }}>
+        <span style={{ fontSize:9, fontWeight:700, color:DIMMER, letterSpacing:"0.1em", textTransform:"uppercase" }}>Navigation</span>
+      </div>
+
+      {/* Nav items */}
+      <div style={{ flex:1, padding:"0 8px" }}>
+        {NAV.map(item => (
+          <div key={item.label} style={{
+            display:"flex", alignItems:"center", gap:9, padding:"8px 10px", borderRadius:9, marginBottom:2, cursor:"pointer",
+            background:item.active ? "rgba(59,130,246,0.12)" : "transparent",
+            border: item.active ? "1px solid rgba(59,130,246,0.2)" : "1px solid transparent",
+          }}>
+            <item.Icon size={13} color={item.active ? "#60a5fa" : DIM} />
+            <span style={{ fontSize:12.5, fontWeight:item.active ? 700 : 500, color:item.active ? "#60a5fa" : MUTED }}>{item.label}</span>
+          </div>
+        ))}
+      </div>
+
+      {/* Bottom */}
+      <div style={{ padding:"10px 8px 20px", borderTop:`1px solid ${BORDER}` }}>
+        <div style={{ padding:"0 10px 6px" }}>
+          <span style={{ fontSize:9, fontWeight:700, color:DIMMER, letterSpacing:"0.1em", textTransform:"uppercase" }}>Links</span>
+        </div>
+        {BOTTOM_LINKS.map(l => (
+          <div key={l.label} style={{ display:"flex", alignItems:"center", gap:9, padding:"7px 10px", borderRadius:8, cursor:"pointer" }}>
+            <l.Icon size={12} color={l.red ? "#f87171" : DIM} />
+            <span style={{ fontSize:12, fontWeight:500, color:l.red ? "#f87171" : DIM }}>{l.label}</span>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
 
-/* ─── METRICS BAR ─── */
-function MetricsBar({ allPosts, allMemberships, now }) {
-  const weekPosts = allPosts.filter(p => new Date(p.created_date || 0) >= subDays(now, 7));
-  const totalMem  = allMemberships.length;
-  const totalInt  = allPosts.reduce((s, p) => s + (p.likes?.length || 0) + (p.comments?.length || 0), 0);
-  const engRate   = totalMem > 0 ? Math.round((totalInt / totalMem) * 100) : 0;
-  const activeMem = new Set([
-    ...allPosts.flatMap(p => p.likes || []),
-    ...allPosts.flatMap(p => (p.comments || []).map(c => c.user_id).filter(Boolean)),
-  ]).size;
-  const typeMap = {};
-  allPosts.forEach(p => {
-    const type = (p.image_url || p.media_url) ? 'Photo' : p.poll_options ? 'Poll' : 'Text';
-    typeMap[type] = (typeMap[type] || 0) + (p.likes?.length || 0) + (p.comments?.length || 0) * 2;
-  });
-  const bestType    = Object.entries(typeMap).sort((a, b) => b[1] - a[1])[0]?.[0] || '—';
-  const wkDotClass  = weekPosts.length === 0 ? 'bg-red-500' : weekPosts.length < 3 ? 'bg-amber-400' : 'bg-emerald-500';
-  const engDotClass = engRate > 0 ? 'bg-emerald-500' : 'bg-[#252d45]';
-  const actDotClass = activeMem > 0 ? 'bg-emerald-500' : 'bg-[#252d45]';
+/* ══════════════════════════════════════════════════════════
+   TOP HEADER
+══════════════════════════════════════════════════════════ */
+function Header() {
+  return (
+    <div style={{ height:52, borderBottom:`1px solid ${BORDER}`, background:SURFACE, display:"flex", alignItems:"center", padding:"0 20px", gap:12, flexShrink:0 }}>
+      <span style={{ fontSize:12.5, fontWeight:700, color:MUTED, whiteSpace:"nowrap" }}>Thurs 9 Apr</span>
 
-  const metrics = [
-    { icon: Flame,     iconClass: 'text-orange-500',  label: 'Posts This Week',   display: String(weekPosts.length), sub: 'Gyms posting 3×/week see +40% retention', dotClass: wkDotClass },
-    { icon: BarChart2, iconClass: 'text-blue-500',    label: 'Engagement Rate',   display: `${engRate}%`,           sub: totalMem > 0 ? `Across ${totalMem} members` : 'Add members to track', dotClass: engDotClass },
-    { icon: Users,     iconClass: 'text-emerald-500', label: 'Actively Engaging', display: String(activeMem), suffix: ' Members', sub: activeMem > 0 ? 'Liked or commented recently' : 'No interactions yet', dotClass: actDotClass },
-    { icon: Trophy,    iconClass: 'text-amber-400',   label: 'Top Post Type',     display: bestType, sub: allPosts.length > 0 ? 'Best for likes & saves' : 'Post to see insights', isDonut: true },
-  ];
+      <div style={{ flex:1, maxWidth:240, position:"relative" }}>
+        <Search size={12} color={DIM} style={{ position:"absolute", left:9, top:"50%", transform:"translateY(-50%)", pointerEvents:"none" }} />
+        <input placeholder="Search members..." style={{
+          width:"100%", padding:"6px 10px 6px 28px", borderRadius:8,
+          background:CARD, border:`1px solid ${BORDER}`, color:TEXT,
+          fontSize:11.5, outline:"none", boxSizing:"border-box",
+        }} />
+      </div>
+
+      <div style={{ flex:1 }} />
+
+      <button style={{ display:"flex", alignItems:"center", gap:6, padding:"5px 12px", borderRadius:8, background:CARD, border:`1px solid ${BORDER2}`, color:MUTED, fontSize:11.5, fontWeight:600, cursor:"pointer" }}>
+        <QrCode size={12} /> Scan QR <ChevronDown size={10} />
+      </button>
+
+      <div style={{ display:"flex", alignItems:"center", gap:8, padding:"5px 10px", borderRadius:8, background:CARD, border:`1px solid ${BORDER}`, cursor:"pointer" }}>
+        <Avatar name="Max" size={22} />
+        <span style={{ fontSize:12, fontWeight:600, color:TEXT }}>Max</span>
+        <ChevronDown size={10} color={DIM} />
+      </div>
+
+      <div style={{ display:"flex", alignItems:"center", gap:6, padding:"5px 10px", borderRadius:8, background:"rgba(239,68,68,0.1)", border:"1px solid rgba(239,68,68,0.25)", cursor:"pointer" }}>
+        <div style={{ width:6, height:6, borderRadius:"50%", background:"#ef4444" }} />
+        <span style={{ fontSize:11.5, fontWeight:700, color:"#f87171" }}>3 At Risk</span>
+      </div>
+    </div>
+  );
+}
+
+/* ══════════════════════════════════════════════════════════
+   JOURNEY CARD
+══════════════════════════════════════════════════════════ */
+function JourneyCard() {
+  return (
+    <div style={{ background:CARD, border:`1px solid ${BORDER}`, borderRadius:14, padding:"14px 18px", marginBottom:14 }}>
+      <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:10 }}>
+        <Star size={12} color="#fbbf24" />
+        <span style={{ fontSize:12, fontWeight:800, color:TEXT }}>Content Success Journey</span>
+      </div>
+      {/* Track */}
+      <div style={{ height:4, background:BORDER, borderRadius:4, overflow:"hidden", marginBottom:10 }}>
+        <div style={{ width:"66%", height:"100%", background:"linear-gradient(90deg,#3b82f6,#6366f1)", borderRadius:4 }} />
+      </div>
+      <div style={{ display:"flex", gap:6, flexWrap:"wrap" }}>
+        {STEPS.map((s,i) => (
+          <div key={i} style={{
+            display:"flex", alignItems:"center", gap:5, padding:"4px 10px",
+            borderRadius:20, fontSize:10.5, fontWeight:600,
+            background: s.done ? "rgba(16,185,129,0.1)" : "rgba(255,255,255,0.03)",
+            border: `1px solid ${s.done ? "rgba(16,185,129,0.25)" : BORDER}`,
+            color: s.done ? "#34d399" : DIM,
+          }}>
+            {s.done
+              ? <CheckCircle2 size={10} color="#34d399" />
+              : <div style={{ width:10, height:10, borderRadius:"50%", border:`1.5px solid ${DIM}` }} />
+            }
+            {s.label}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* ══════════════════════════════════════════════════════════
+   ALERT BANNER
+══════════════════════════════════════════════════════════ */
+function AlertBanner() {
+  const [show, setShow] = useState(true);
+  if (!show) return null;
+  return (
+    <div style={{
+      background:"rgba(239,68,68,0.08)", border:"1px solid rgba(239,68,68,0.22)", borderRadius:10,
+      padding:"10px 14px", marginBottom:14, display:"flex", alignItems:"center", gap:10,
+    }}>
+      <AlertTriangle size={13} color="#f87171" style={{ flexShrink:0 }} />
+      <span style={{ fontSize:12, fontWeight:700, color:"#f87171" }}>Attention Required:</span>
+      <span style={{ fontSize:12, color:MUTED, flex:1 }}>Critical Churn Interventions — 3 members need immediate outreach.</span>
+      <button onClick={()=>setShow(false)} style={{ background:"none", border:"none", cursor:"pointer", padding:2 }}>
+        <X size={12} color={DIM} />
+      </button>
+    </div>
+  );
+}
+
+/* ══════════════════════════════════════════════════════════
+   DRAFT CARD
+══════════════════════════════════════════════════════════ */
+function DraftCard({ draft }) {
+  return (
+    <div style={{ background:CARD, border:`1px solid ${BORDER}`, borderRadius:14, display:"flex", flexDirection:"column", overflow:"hidden" }}>
+      <div style={{ padding:"12px 14px 10px", display:"flex", alignItems:"center", gap:8 }}>
+        <Avatar name={draft.author} size={28} />
+        <div style={{ flex:1, minWidth:0 }}>
+          <div style={{ fontSize:12.5, fontWeight:700, color:TEXT, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{draft.title}</div>
+          <div style={{ fontSize:10, color:DIM, marginTop:2 }}>Draft · {draft.scheduledFor}</div>
+        </div>
+        {draft.aiGen && <AIChip />}
+      </div>
+
+      <div style={{ padding:"0 14px 10px", fontSize:11.5, color:MUTED, lineHeight:1.55 }}>
+        {draft.preview.slice(0,95)}…
+      </div>
+
+      <div style={{ padding:"10px 14px", borderTop:`1px solid ${BORDER}`, display:"flex", alignItems:"center", gap:8, marginTop:"auto" }}>
+        <PlatformIcons platforms={draft.platforms} />
+        <div style={{ flex:1 }} />
+        <Btn variant="primary" size="sm" style={{ fontSize:11 }}>Review &amp; Schedule Now</Btn>
+      </div>
+    </div>
+  );
+}
+
+/* ══════════════════════════════════════════════════════════
+   CONTENT TABLE
+══════════════════════════════════════════════════════════ */
+function ContentTable() {
+  const [checked, setChecked] = useState(new Set());
+  const toggle = id => setChecked(prev => { const s=new Set(prev); s.has(id)?s.delete(id):s.add(id); return s; });
+
+  const COLS = "28px 2fr 80px 90px 130px 90px 120px";
+
+  const colHeader = (label) => (
+    <div style={{ fontSize:9, fontWeight:700, color:DIMMER, letterSpacing:"0.09em", textTransform:"uppercase", display:"flex", alignItems:"center" }}>
+      {label}
+    </div>
+  );
 
   return (
-    <div className="grid grid-cols-2 md:grid-cols-4 border-b border-white/[0.04] shrink-0 bg-[#0a0f1e]">
-      {metrics.map((m, i) => (
-        <div key={i} className={cn(
-          'px-5 py-[14px] relative cursor-default transition-colors hover:bg-[#0d1225]',
-          i < metrics.length - 1 && 'border-r border-white/[0.04]',
-        )}>
-          <div className="flex items-center gap-1.5 mb-[7px]">
-            <m.icon className={cn('w-[11px] h-[11px]', m.iconClass)} />
-            <span className="text-[10.5px] font-semibold text-[#4b5578] tracking-[0.01em]">{m.label}</span>
-            <div className="ml-auto flex items-center gap-[5px]">
-              {m.dotClass && <div className={cn('w-[5px] h-[5px] rounded-full', m.dotClass)} />}
-              {m.isDonut && (
-                <svg viewBox="0 0 34 34" className="w-7 h-7 -rotate-90">
-                  <circle cx="17" cy="17" r="12" fill="none" stroke="rgba(255,255,255,0.03)" strokeWidth="4" />
-                  <circle cx="17" cy="17" r="12" fill="none" stroke="#0d9488" strokeWidth="4" strokeDasharray="46 75" strokeLinecap="round" />
-                </svg>
-              )}
+    <div style={{ background:CARD, border:`1px solid ${BORDER}`, borderRadius:14, overflow:"hidden" }}>
+      {/* Header */}
+      <div style={{ display:"grid", gridTemplateColumns:COLS, gap:8, padding:"8px 14px", borderBottom:`1px solid ${BORDER}`, background:SURFACE }}>
+        <div />
+        {colHeader("TYPE")}
+        {colHeader("CHANNEL")}
+        {colHeader("STATUS")}
+        {colHeader("PUBLISH DATE")}
+        {colHeader("ENGAGEMENT %")}
+        {colHeader("RECOMMENDED ACTION")}
+      </div>
+
+      {ALL_CONTENT.map((row, idx) => (
+        <div key={row.id} style={{
+          display:"grid", gridTemplateColumns:COLS, gap:8, padding:"10px 14px", alignItems:"center",
+          borderBottom: idx < ALL_CONTENT.length-1 ? `1px solid ${BORDER}` : "none",
+          background: checked.has(row.id) ? "rgba(59,130,246,0.04)" : "transparent",
+          cursor:"pointer",
+        }} onClick={()=>toggle(row.id)}>
+
+          {/* Checkbox */}
+          <div onClick={e=>{e.stopPropagation();toggle(row.id);}} style={{ display:"flex", alignItems:"center", justifyContent:"center" }}>
+            <div style={{
+              width:13, height:13, borderRadius:4,
+              background: checked.has(row.id) ? "#3b82f6" : "transparent",
+              border:`1.5px solid ${checked.has(row.id) ? "#3b82f6" : BORDER2}`,
+              display:"flex", alignItems:"center", justifyContent:"center",
+            }}>
+              {checked.has(row.id) && <Check size={8} color="#fff" />}
             </div>
           </div>
-          <div className="text-[28px] font-extrabold text-[#eef2ff] tracking-[-0.035em] leading-none mb-[5px]">
-            {m.display}
-            {m.suffix && <span className="text-sm font-semibold text-[#8b95b3] ml-1">{m.suffix}</span>}
+
+          {/* Type */}
+          <div style={{ display:"flex", alignItems:"center", gap:8, minWidth:0 }}>
+            <TypeChip type={row.type} />
+            <div style={{ minWidth:0 }}>
+              <div style={{ fontSize:11.5, fontWeight:600, color:TEXT, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{row.title}</div>
+              <div style={{ fontSize:10, color:DIM }}>{row.author}</div>
+            </div>
+            {row.aiGen && <AIChip />}
           </div>
-          <div className="text-[10px] text-[#4b5578] leading-relaxed">{m.sub}</div>
+
+          {/* Channel */}
+          <div><PlatformIcons platforms={row.platforms} /></div>
+
+          {/* Status */}
+          <div>
+            <Badge color="green">
+              <div style={{ width:5, height:5, borderRadius:"50%", background:"#34d399" }} />
+              Scheduled
+            </Badge>
+          </div>
+
+          {/* Date */}
+          <div style={{ fontSize:11.5, color:MUTED }}>{row.date}</div>
+
+          {/* Engagement */}
+          <div>
+            <div style={{ fontSize:11, color:DIM, marginBottom:4 }}>N/A</div>
+            <div style={{ height:3, background:BORDER, borderRadius:2, width:52 }} />
+          </div>
+
+          {/* Action */}
+          <div onClick={e=>e.stopPropagation()}>
+            <button style={{
+              display:"flex", alignItems:"center", gap:5, padding:"5px 10px",
+              borderRadius:7, fontSize:11, fontWeight:600,
+              background:SURFACE, border:`1px solid ${BORDER2}`, color:MUTED, cursor:"pointer",
+            }}>
+              Review, Edit <ChevronDown size={9} />
+            </button>
+          </div>
         </div>
       ))}
     </div>
   );
 }
 
-/* ─── QUICK IDEAS ─── */
-const QUICK_IDEAS = [
-  { icon: Flame,  iconClass: 'text-orange-500', bgClass: 'bg-orange-500/[0.12]', borderClass: 'border-orange-500/[0.19]', ctaClass: 'text-orange-500', title: 'Motivation Monday',         desc: 'Drives comments',      cta: 'Generate post',   modal: 'post'      },
-  { icon: Users,  iconClass: 'text-blue-500',   bgClass: 'bg-blue-500/[0.12]',   borderClass: 'border-blue-500/[0.19]',   ctaClass: 'text-blue-500',   title: 'Member Spotlight',          desc: 'Builds community',     cta: 'Create',          modal: 'post'      },
-  { icon: Trophy, iconClass: 'text-amber-400',  bgClass: 'bg-amber-400/[0.12]',  borderClass: 'border-amber-400/[0.19]',  ctaClass: 'text-amber-400',  title: 'Start a weekend challenge', desc: 'Increases attendance', cta: 'Start challenge', modal: 'challenge' },
-];
-
-function QuickIdeas({ openModal }) {
+/* ══════════════════════════════════════════════════════════
+   RIGHT SIDEBAR
+══════════════════════════════════════════════════════════ */
+function RightSidebar() {
   return (
-    <div>
-      <div className="flex items-center gap-[7px] mb-[11px]">
-        <span className="text-[13px] font-bold text-[#eef2ff]">Quick post ideas</span>
-        <HelpCircle className="w-3 h-3 text-[#4b5578]" />
-      </div>
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-[9px]">
-        {QUICK_IDEAS.map((c, i) => (
-          <div
-            key={i}
-            className="bg-[#0d1225] border border-white/[0.07] rounded-[11px] p-4 cursor-pointer transition-all duration-150 flex flex-col gap-4 hover:border-white/[0.14] hover:bg-[#101929] hover:-translate-y-px hover:shadow-[0_8px_24px_rgba(0,0,0,0.5)]"
-            onClick={() => openModal(c.modal)}
-          >
-            <div className="flex items-center gap-[13px]">
-              <div className={cn('w-[42px] h-[42px] rounded-[12px] shrink-0 border flex items-center justify-center', c.bgClass, c.borderClass)}>
-                <c.icon className={cn('w-[19px] h-[19px]', c.iconClass)} />
+    <div style={{
+      width:272, flexShrink:0, borderLeft:`1px solid ${BORDER}`,
+      background:SURFACE, display:"flex", flexDirection:"column",
+      padding:"18px 14px", gap:14, overflowY:"auto",
+    }}>
+
+      {/* Quick Actions */}
+      <div style={{ background:CARD, border:`1px solid ${BORDER}`, borderRadius:14, padding:"14px" }}>
+        <div style={{ fontSize:12, fontWeight:800, color:TEXT, marginBottom:2 }}>What to Post Today?</div>
+        <div style={{ fontSize:10.5, color:DIM, marginBottom:12 }}>Guided Ideas</div>
+        <div style={{ display:"flex", flexDirection:"column", gap:7 }}>
+          {QUICK_ACTIONS.map((a,i) => (
+            <button key={i} style={{
+              display:"flex", alignItems:"center", gap:9, padding:"9px 12px",
+              borderRadius:10, background:SURFACE, border:`1px solid ${BORDER2}`,
+              color:MUTED, fontSize:11, fontWeight:600, cursor:"pointer", textAlign:"left",
+            }}>
+              <div style={{ width:26, height:26, borderRadius:7, flexShrink:0, background:`${a.color}1a`, border:`1px solid ${a.color}30`, display:"flex", alignItems:"center", justifyContent:"center" }}>
+                <a.Icon size={12} color={a.color} />
               </div>
-              <div className="min-w-0">
-                <div className="text-sm font-extrabold text-[#eef2ff] leading-snug mb-1">{c.title}</div>
-                <div className="text-[11px] text-[#4b5578] leading-snug">{c.desc}</div>
-              </div>
-            </div>
-            <button
-              className={cn('w-full py-[10px] rounded-[7px] text-[13px] font-bold cursor-pointer bg-[#050810] border border-white/[0.07] transition-all tracking-[0.01em]', c.ctaClass)}
-              onClick={e => { e.stopPropagation(); openModal(c.modal); }}
-            >
-              {c.cta}
+              {a.label}
             </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Insights */}
+      <div style={{ background:CARD, border:`1px solid ${BORDER}`, borderRadius:14, padding:"14px" }}>
+        <div style={{ fontSize:12, fontWeight:800, color:TEXT, marginBottom:12 }}>Actionable Insights</div>
+
+        {/* Bar chart */}
+        <div style={{ display:"flex", alignItems:"flex-end", gap:5, height:90, marginBottom:6 }}>
+          {/* Y labels */}
+          <div style={{ display:"flex", flexDirection:"column", justifyContent:"space-between", height:"100%", marginRight:2 }}>
+            {["12k","8k","4k","0"].map(l => <div key={l} style={{ fontSize:8.5, color:DIMMER, lineHeight:1 }}>{l}</div>)}
           </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-/* ─── FEED CARDS ─── */
-const CARD = 'bg-[#0d1225] border border-white/[0.04] rounded-2xl overflow-hidden transition-colors hover:border-white/[0.07] relative';
-
-function FeedPostCard({ post, onDelete, isTop, totalMembers }) {
-  const likes    = post.likes?.length    || 0;
-  const comments = post.comments?.length || 0;
-  const engRate  = totalMembers > 0 ? Math.round(((likes + comments) / totalMembers) * 100) : 0;
-  const title    = post.title || (post.content || '').split('\n')[0] || '';
-  const body     = post.title ? (post.content || '') : '';
-  return (
-    <div className={cn(CARD, isTop && 'border-blue-500/[0.22]')}>
-      {isTop && <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-blue-500 to-transparent" />}
-      {isTop && (
-        <div className="absolute top-[10px] left-[11px] z-[2]">
-          <AppBadge variant="active">⭐ Top Post</AppBadge>
-        </div>
-      )}
-      <div className="px-[14px] pt-3">
-        <div className="flex items-center gap-2">
-          <Av name={post.author_name || post.gym_name || 'G'} size={26} src={post.author_avatar || null} />
-          <span className="flex-1 text-xs font-semibold text-[#8b95b3] overflow-hidden text-ellipsis whitespace-nowrap">
-            {post.author_name || post.gym_name || 'Gym Post'}
-          </span>
-          <span className="text-[10px] text-[#4b5578] shrink-0">{post.created_date ? format(new Date(post.created_date), 'MMM d') : ''}</span>
-          <DelBtn onDelete={() => onDelete(post.id)} />
-        </div>
-      </div>
-      {title && (
-        <div className="px-[14px] py-[10px]">
-          <p className="text-[13.5px] font-bold text-[#eef2ff] mb-1 leading-snug">{title}</p>
-          {body && <p className="text-xs text-[#8b95b3] leading-relaxed line-clamp-2">{body}</p>}
-        </div>
-      )}
-      {(post.image_url || post.media_url) && (
-        <div className="mx-[14px] mb-[10px] rounded-[8px] overflow-hidden">
-          <img src={post.image_url || post.media_url} alt="" className="w-full max-h-[140px] object-cover block" onError={e => e.currentTarget.parentElement.style.display = 'none'} />
-        </div>
-      )}
-      <div className="px-[14px] pb-[11px] pt-2 flex items-center gap-3 border-t border-white/[0.03]">
-        <span className="flex items-center gap-1 text-[11px] font-semibold text-[#4b5578]"><Heart className="w-[11px] h-[11px]" />{likes}</span>
-        <span className="flex items-center gap-1 text-[11px] font-semibold text-[#4b5578]"><MessageCircle className="w-[11px] h-[11px]" />{comments}</span>
-        {engRate > 0 && <AppBadge variant="active" className="ml-auto">{engRate}% engaged</AppBadge>}
-      </div>
-    </div>
-  );
-}
-
-function EventCard({ event, now, onDelete }) {
-  const evDate = new Date(event.event_date);
-  const diff   = Math.max(0, Math.floor((evDate - now) / 86400000));
-  const timingLabel = diff === 0 ? 'Today' : diff === 1 ? 'Tomorrow' : `${diff}d away`;
-  return (
-    <div className={CARD}>
-      <div className="p-[14px]">
-        <div className="flex items-center gap-2 mb-[9px]">
-          <div className="w-[26px] h-[26px] rounded-[7px] bg-blue-500/[0.08] border border-blue-500/[0.13] flex items-center justify-center shrink-0">
-            <Calendar className="w-[11px] h-[11px] text-blue-500" />
-          </div>
-          <AppBadge variant="active">Event</AppBadge>
-          <AppBadge variant={diff <= 2 ? 'warning' : 'neutral'}>{timingLabel}</AppBadge>
-          <div className="ml-auto"><DelBtn onDelete={() => onDelete(event.id)} /></div>
-        </div>
-        <p className="text-[13px] font-bold text-[#eef2ff] mb-1">{event.title}</p>
-        {event.description && <p className="text-[11px] text-[#8b95b3] mb-[7px] leading-relaxed">{event.description}</p>}
-        <div className="text-[10px] text-[#4b5578]">{format(evDate, 'MMM d, h:mm a')}</div>
-      </div>
-    </div>
-  );
-}
-
-function ChallengeCard({ challenge, now, onDelete }) {
-  const start  = new Date(challenge.start_date), end = new Date(challenge.end_date);
-  const totalD  = Math.max(1, Math.floor((end - start) / 86400000));
-  const elapsed = Math.max(0, Math.floor((now - start) / 86400000));
-  const rem     = Math.max(0, totalD - elapsed);
-  const pct     = Math.min(100, Math.round((elapsed / totalD) * 100));
-  const parts   = challenge.participants?.length || 0;
-  return (
-    <div className={CARD}>
-      <div className="p-[14px]">
-        <div className="flex items-center gap-2 mb-[9px]">
-          <div className="w-[26px] h-[26px] rounded-[7px] bg-amber-400/[0.08] border border-amber-400/[0.13] flex items-center justify-center shrink-0">
-            <Trophy className="w-[11px] h-[11px] text-amber-400" />
-          </div>
-          <AppBadge variant="active">Challenge</AppBadge>
-          <AppBadge variant={rem <= 3 ? 'warning' : 'neutral'}>{rem}d left</AppBadge>
-          <div className="ml-auto"><DelBtn onDelete={() => onDelete(challenge.id)} /></div>
-        </div>
-        <p className="text-[13px] font-bold text-[#eef2ff] mb-[10px]">{challenge.title}</p>
-        <div className="flex justify-between mb-[5px]">
-          <span className="text-[11px] text-[#4b5578]">{parts} joined</span>
-          <span className="text-[11px] font-bold text-blue-500">{pct}%</span>
-        </div>
-        <AppProgressBar value={pct} colorClass="bg-blue-500" className="h-[2px]" />
-      </div>
-    </div>
-  );
-}
-
-function PollCard({ poll, onDelete, allMemberships }) {
-  const votes = poll.voters?.length || 0;
-  const total = allMemberships?.length || 0;
-  const pct   = total > 0 ? Math.round((votes / total) * 100) : 0;
-  return (
-    <div className={CARD}>
-      <div className="p-[14px]">
-        <div className="flex items-center gap-2 mb-[9px]">
-          <div className="w-[26px] h-[26px] rounded-[7px] bg-blue-500/[0.08] border border-blue-500/[0.13] flex items-center justify-center shrink-0">
-            <BarChart2 className="w-[11px] h-[11px] text-blue-500" />
-          </div>
-          <AppBadge variant="active">Poll</AppBadge>
-          {pct > 0 && <AppBadge variant="neutral">{pct}% voted</AppBadge>}
-          <div className="ml-auto"><DelBtn onDelete={() => onDelete(poll.id)} /></div>
-        </div>
-        <p className="text-[13px] font-bold text-[#eef2ff] mb-[10px]">{poll.title}</p>
-        <AppProgressBar value={pct} colorClass="bg-blue-500" className="h-[2px] mb-[6px]" />
-        <div className="text-[11px] text-[#4b5578]">{votes} vote{votes !== 1 ? 's' : ''}{total > 0 ? ` of ${total} members` : ''}</div>
-      </div>
-    </div>
-  );
-}
-
-const CLS_IMGS = {
-  hiit:     'https://images.unsplash.com/photo-1517963879433-6ad2171073a4?w=400&q=80',
-  yoga:     'https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=400&q=80',
-  strength: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=400&q=80',
-  default:  'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=400&q=80',
-};
-function getClsType(c) {
-  const n = (c.class_type || c.name || '').toLowerCase();
-  if (n.includes('hiit') || n.includes('interval')) return 'hiit';
-  if (n.includes('yoga') || n.includes('flow'))     return 'yoga';
-  if (n.includes('strength') || n.includes('lift')) return 'strength';
-  return 'default';
-}
-function ClassCard({ gymClass, onDelete }) {
-  const type = getClsType(gymClass);
-  return (
-    <div className={CARD}>
-      <div className="relative h-20 overflow-hidden">
-        <img src={gymClass.image_url || CLS_IMGS[type]} alt="" className="w-full h-full object-cover" />
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent to-[#0d1225cc]" />
-        <span className="absolute top-[7px] left-[9px] text-[8.5px] font-extrabold tracking-[0.08em] uppercase text-blue-500 bg-black/50 border border-blue-500/[0.22] rounded px-[6px] py-[2px]">
-          {type.toUpperCase()}
-        </span>
-      </div>
-      <div className="px-[13px] py-[10px] pb-3">
-        <div className="flex items-center justify-between gap-1.5">
-          <div className="text-[13px] font-bold text-[#eef2ff] flex-1 overflow-hidden text-ellipsis whitespace-nowrap">{gymClass.name || gymClass.title}</div>
-          <DelBtn onDelete={() => onDelete(gymClass.id)} />
-        </div>
-        {gymClass.duration_minutes && <div className="text-[11px] text-[#4b5578] mt-[3px]">{gymClass.duration_minutes} min</div>}
-        {gymClass.instructor       && <div className="text-[11px] text-[#8b95b3] mt-[3px]">{gymClass.instructor}</div>}
-      </div>
-    </div>
-  );
-}
-
-/* ─── EMPTY STATE ─── */
-function EmptyState({ openModal, label }) {
-  return (
-    <div className="flex flex-col items-center py-[52px] px-5 gap-[14px] text-center">
-      <div className="w-[50px] h-[50px] rounded-[14px] bg-blue-500/10 border border-blue-500/[0.22] flex items-center justify-center">
-        <Flame className="w-[22px] h-[22px] text-blue-500" />
-      </div>
-      <div>
-        <p className="text-[15px] font-extrabold text-[#eef2ff] mb-[6px]">🔥 Let's get your members engaged!</p>
-        <p className="text-xs text-[#4b5578] leading-relaxed">
-          {label ? `No ${label} yet.` : 'Your feed is empty. Create your first piece of content.'}
-        </p>
-      </div>
-      <div className="flex gap-[7px] flex-wrap justify-center">
-        <AppButton variant="primary"   size="sm" onClick={() => openModal('post')}><Plus className="w-[13px] h-[13px]" /> Create first post</AppButton>
-        <AppButton variant="secondary" size="sm" onClick={() => openModal('challenge')}><Trophy className="w-[13px] h-[13px]" /> Start a challenge</AppButton>
-        <AppButton variant="secondary" size="sm" onClick={() => openModal('poll')}><HelpCircle className="w-[13px] h-[13px]" /> Ask a question</AppButton>
-      </div>
-    </div>
-  );
-}
-
-/* ─── CALENDAR VIEW ─── */
-function CalendarView({ allPosts, events, now, openModal }) {
-  const [viewMonth, setViewMonth] = useState(now);
-  const ms   = startOfMonth(viewMonth), me = endOfMonth(viewMonth);
-  const days   = eachDayOfInterval({ start: ms, end: me });
-  const blanks = Array(getDay(ms)).fill(null);
-  const DOW    = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
-  const postDates = new Set(allPosts.map(p => format(new Date(p.created_date || 0), 'yyyy-MM-dd')));
-  const evDates   = new Set(events.map(e => format(new Date(e.event_date    || 0), 'yyyy-MM-dd')));
-  return (
-    <div>
-      <div className="flex items-center justify-between mb-[10px]">
-        <button onClick={() => setViewMonth(subDays(ms, 1))} className="bg-[#0d1225] border border-white/[0.04] rounded-[5px] px-[7px] py-1 cursor-pointer text-[#8b95b3] flex transition-colors hover:border-white/[0.07]">
-          <ChevronLeft className="w-3 h-3" />
-        </button>
-        <span className="text-xs font-bold text-[#eef2ff]">{format(viewMonth, 'MMMM yyyy')}</span>
-        <button onClick={() => setViewMonth(new Date(me.getTime() + 86400000))} className="bg-[#0d1225] border border-white/[0.04] rounded-[5px] px-[7px] py-1 cursor-pointer text-[#8b95b3] flex transition-colors hover:border-white/[0.07]">
-          <ChevronRight className="w-3 h-3" />
-        </button>
-      </div>
-
-      <div className="grid grid-cols-7 gap-[2px] mb-[2px]">
-        {DOW.map(d => (
-          <div key={d} className="text-center text-[9px] font-bold text-[#4b5578] py-[2px] tracking-[0.05em]">{d}</div>
-        ))}
-      </div>
-
-      <div className="grid grid-cols-7 gap-[2px]">
-        {blanks.map((_, i) => <div key={`b${i}`} />)}
-        {days.map(day => {
-          const key     = format(day, 'yyyy-MM-dd');
-          const hasPost = postDates.has(key);
-          const hasEv   = evDates.has(key);
-          const today   = isToday(day);
-          return (
-            <div key={key} className={cn(
-              'h-[26px] flex items-center justify-center text-[10.5px] rounded-[5px] relative text-[#8b95b3] font-medium cursor-default transition-colors',
-              today ? 'bg-blue-500 text-white font-extrabold' : 'hover:bg-[#0d1225]',
-            )}>
-              {format(day, 'd')}
-              {(hasPost || hasEv) && !today && (
-                <div className="absolute bottom-[1px] left-1/2 -translate-x-1/2 flex gap-[2px]">
-                  {hasPost && <div className="w-[3px] h-[3px] rounded-full bg-blue-500" />}
-                  {hasEv   && <div className="w-[3px] h-[3px] rounded-full bg-orange-500" />}
-                </div>
-              )}
+          {/* Bars */}
+          {BAR_DATA.map((b,i) => (
+            <div key={i} style={{ flex:1, display:"flex", flexDirection:"column", justifyContent:"flex-end", height:"100%" }}>
+              <div style={{ width:"100%", height:`${b.h}%`, background:b.color, borderRadius:"3px 3px 0 0", opacity:0.85 }} />
             </div>
-          );
-        })}
-      </div>
-
-      <div className="mt-3 p-[11px] rounded-[7px] bg-[#0d1225] border border-white/[0.04]">
-        <div className="flex items-start gap-[7px] mb-[6px]">
-          <div className="w-[5px] h-[5px] rounded-full bg-[#4b5578] mt-1 shrink-0" />
-          <span className="text-[10.5px] text-[#4b5578] leading-relaxed">No content scheduled. Filling your calendar keeps members engaged.</span>
+          ))}
         </div>
-        <div className="flex items-center gap-[6px]">
-          <CheckCircle className="w-[9px] h-[9px] text-emerald-500 shrink-0" />
-          <span className="text-[10px] text-[#4b5578]">Best engagement time: <span className="text-emerald-500 font-bold">5–7pm</span></span>
+
+        <div style={{ fontSize:11, color:MUTED, lineHeight:1.55, marginBottom:8 }}>
+          Polls have <span style={{ color:TEXT, fontWeight:700 }}>2x more engagement</span> than text. Ask a question about new class ideas.
+        </div>
+        <div style={{ display:"flex", alignItems:"center", gap:5, cursor:"pointer" }}>
+          <TrendingUp size={11} color="#60a5fa" />
+          <span style={{ fontSize:11, color:"#60a5fa", fontWeight:600 }}>Review Detailed Insights</span>
+          <ChevronRight size={10} color="#60a5fa" />
         </div>
       </div>
 
-      <AppButton variant="primary" className="w-full justify-center mt-[10px] text-[11.5px]" onClick={() => openModal('post')}>
-        <Plus className="w-3 h-3" /> Schedule a Post
-      </AppButton>
+      {/* Feed Preview */}
+      <div style={{ background:CARD, border:`1px solid ${BORDER}`, borderRadius:14, overflow:"hidden" }}>
+        <div style={{ padding:"10px 14px", borderBottom:`1px solid ${BORDER}` }}>
+          <span style={{ fontSize:10, fontWeight:700, color:DIM, letterSpacing:"0.08em", textTransform:"uppercase" }}>Content Feed Preview</span>
+        </div>
+        <div style={{ padding:14 }}>
+          <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:8 }}>
+            <Avatar name={FEED_POST.author} size={26} />
+            <span style={{ fontSize:12, fontWeight:700, color:TEXT }}>{FEED_POST.author}</span>
+          </div>
+          <div style={{ fontSize:11.5, color:MUTED, lineHeight:1.55, marginBottom:10 }}>
+            {FEED_POST.text.split(" ").map((word,i) =>
+              word.startsWith("@")||word.startsWith("#")
+                ? <span key={i} style={{ color:"#60a5fa" }}>{word} </span>
+                : <span key={i}>{word} </span>
+            )}
+          </div>
+
+          {/* Image placeholder */}
+          <div style={{
+            width:"100%", height:90, borderRadius:9, marginBottom:10,
+            background:"linear-gradient(135deg,rgba(59,130,246,0.1),rgba(99,102,241,0.07))",
+            border:`1px solid ${BORDER}`,
+            display:"flex", alignItems:"center", justifyContent:"center",
+          }}>
+            <Image size={20} color={DIM} />
+          </div>
+
+          <div style={{ display:"flex", gap:14 }}>
+            <div style={{ display:"flex", alignItems:"center", gap:5, fontSize:11.5, color:MUTED }}>
+              <Heart size={12} color="#f87171" /> {FEED_POST.likes}
+            </div>
+            <div style={{ display:"flex", alignItems:"center", gap:5, fontSize:11.5, color:MUTED }}>
+              <MessageCircle size={12} color="#60a5fa" /> {FEED_POST.comments}
+            </div>
+          </div>
+        </div>
+
+        <div style={{ padding:"10px 14px", borderTop:`1px solid ${BORDER}` }}>
+          <Btn variant="primary" size="sm" style={{ width:"100%", justifyContent:"center" }}>
+            <Plus size={12} /> Add Member
+          </Btn>
+        </div>
+      </div>
     </div>
   );
 }
 
-/* ─── RIGHT PANEL ─── */
-const SUGG_IMGS = [
-  'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=120&q=80',
-  'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=120&q=80',
-  'https://images.unsplash.com/photo-1517963879433-6ad2171073a4?w=120&q=80',
-];
-const AI_SUGGS = [
-  { dotClass: 'bg-blue-500',    label: 'Motivation Monday',         sub: 'Share a motivating quote · Drives comments',       btns: [{ label: 'Generate post',  primary: true,  modal: 'post'      }, { label: 'Make it →',  primary: false, modal: 'post'      }] },
-  { dotClass: 'bg-emerald-500', label: 'Post a member spotlight',   sub: 'Feature a dedicated member from your community',   btns: [{ label: 'Create',         primary: true,  modal: 'post'      }, { label: 'Refine',     primary: false, modal: 'post'      }] },
-  { dotClass: 'bg-amber-400',   label: 'Start a weekend challenge', sub: 'Clearly repeat a signature event',                  btns: [{ label: 'Start challenge', primary: true, modal: 'challenge' }, { label: 'Goals',      primary: false, modal: 'challenge' }] },
-];
+/* ══════════════════════════════════════════════════════════
+   MAIN CONTENT AREA
+══════════════════════════════════════════════════════════ */
+function MainContent() {
+  const [activeTab, setActiveTab] = useState("Drafts");
 
-function AISuggestions({ openModal }) {
   return (
-    <div>
-      <div className="flex items-center gap-[6px] mb-[10px]">
-        <Flame className="w-3 h-3 text-orange-500" />
-        <span className="text-xs font-bold text-[#eef2ff]">What should you post today?</span>
-      </div>
-      <div className="flex flex-col gap-[7px]">
-        {AI_SUGGS.map((s, i) => (
-          <div key={i}
-            className="bg-[#050810] border border-white/[0.04] rounded-2xl p-[11px] cursor-pointer transition-all hover:border-blue-500/[0.22] hover:bg-[#0d1225]"
-            onClick={() => openModal(s.btns[0].modal)}>
-            <div className="flex gap-[9px] items-start">
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-[5px] mb-[2px]">
-                  <div className={cn('w-[5px] h-[5px] rounded-full shrink-0', s.dotClass)} />
-                  <div className="text-[11.5px] font-bold text-[#eef2ff] overflow-hidden text-ellipsis whitespace-nowrap">{s.label}</div>
-                </div>
-                <div className="text-[9.5px] text-[#4b5578] mb-2 pl-[10px] leading-snug">{s.sub}</div>
-                <div className="flex gap-[5px] pl-[10px]">
-                  {s.btns.map((b, j) => (
-                    <button key={j}
-                      className={cn(
-                        'text-[10.5px] font-bold px-[10px] py-[5px] rounded-[6px] cursor-pointer transition-all',
-                        b.primary
-                          ? 'bg-blue-500/10 border border-blue-500/[0.22] text-blue-500 hover:bg-blue-500 hover:text-white'
-                          : 'bg-transparent border border-white/[0.04] text-[#8b95b3] hover:border-white/[0.07] hover:text-[#eef2ff]',
-                      )}
-                      onClick={e => { e.stopPropagation(); openModal(b.modal); }}>
-                      {b.label}
-                    </button>
-                  ))}
-                </div>
+    <div style={{ flex:1, display:"flex", flexDirection:"column", minWidth:0, overflow:"hidden" }}>
+      <Header />
+
+      <div style={{ flex:1, display:"flex", overflow:"hidden" }}>
+        {/* Center column */}
+        <div style={{ flex:1, overflowY:"auto", padding:"20px 22px 40px", minWidth:0 }}>
+
+          {/* Page header */}
+          <div style={{ display:"flex", alignItems:"flex-start", justifyContent:"space-between", marginBottom:16, gap:12 }}>
+            <div>
+              <div style={{ fontSize:18, fontWeight:800, color:TEXT, letterSpacing:"-0.025em", display:"flex", alignItems:"center", gap:8 }}>
+                Content Center
+                <span style={{ color:DIM, fontWeight:400, fontSize:16 }}>/</span>
+                <span style={{ color:"#60a5fa" }}>Hub</span>
               </div>
-              <div className="w-[44px] h-[44px] rounded-[7px] overflow-hidden shrink-0">
-                <img src={SUGG_IMGS[i]} alt="" className="w-full h-full object-cover" onError={e => e.currentTarget.parentElement.style.display = 'none'} />
-              </div>
+              <div style={{ fontSize:11, color:DIM, marginTop:3 }}>AI-powered content · create, schedule &amp; track performance</div>
             </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function EngagementScore({ allPosts, polls, activeChallenges, now, openModal }) {
-  const score = (s, e) =>
-    allPosts.filter(x => { const d = new Date(x.created_date || 0); return d >= s && d < e; })
-      .reduce((a, x) => a + (x.likes?.length || 0) + (x.comments?.length || 0), 0) +
-    polls.filter(x => { const d = new Date(x.created_date || 0); return d >= s && d < e; })
-      .reduce((a, x) => a + (x.voters?.length || 0), 0);
-  const thisW = score(subDays(now, 7), now);
-  const lastW = score(subDays(now, 14), subDays(now, 7));
-  const chg   = lastW === 0 ? 0 : Math.round(((thisW - lastW) / lastW) * 100);
-  const up    = chg >= 0;
-  const total = allPosts.reduce((s, p) => s + (p.likes?.length || 0) + (p.comments?.length || 0), 0) +
-                polls.reduce((s, p)   => s + (p.voters?.length    || 0), 0) +
-                activeChallenges.reduce((s, c) => s + (c.participants?.length || 0), 0);
-  const likes    = allPosts.reduce((s, p) => s + (p.likes?.length    || 0), 0);
-  const comments = allPosts.reduce((s, p) => s + (p.comments?.length || 0), 0);
-  const challP   = activeChallenges.reduce((s, c) => s + (c.participants?.length || 0), 0);
-  const pollV    = polls.reduce((s, p) => s + (p.voters?.length || 0), 0);
-
-  return (
-    <div>
-      <div className="flex items-center gap-[6px] mb-[10px]">
-        <Flame className="w-3 h-3 text-orange-500" />
-        <span className="text-xs font-bold text-[#eef2ff]">Engagement Score</span>
-        <HelpCircle className="w-[10px] h-[10px] text-[#4b5578]" />
-      </div>
-      <div className="flex items-baseline gap-[9px] mb-[2px]">
-        <span className="text-[38px] font-extrabold text-[#eef2ff] tracking-[-0.04em] leading-none">{total}</span>
-        <span className={cn('flex items-center gap-[3px] text-[11px] font-bold', up ? 'text-emerald-500' : 'text-red-500')}>
-          {up ? <TrendingUp className="w-[10px] h-[10px]" /> : <TrendingDown className="w-[10px] h-[10px]" />}
-          {up ? '+' : ''}{chg}% this week
-        </span>
-      </div>
-      <div className="text-[10px] text-[#4b5578] mb-[13px]">Total interactions</div>
-      <div className="flex flex-col mb-[13px]">
-        {[
-          { l: `${likes} Likes`,       r: `${challP} Challenge Responses` },
-          { l: `${comments} Comments`, r: `${pollV} Poll Votes`            },
-        ].map((row, i) => (
-          <div key={i} className={cn('flex justify-between text-[11px] py-[5px]', i === 0 && 'border-b border-white/[0.03]')}>
-            <span className="text-[#8b95b3] font-semibold">{row.l}</span>
-            <span className="text-[#4b5578]">{row.r}</span>
-          </div>
-        ))}
-      </div>
-      {total === 0 && (
-        <div className="text-[10.5px] text-[#8b95b3] px-[11px] py-2 bg-amber-400/[0.07] border border-amber-400/[0.16] rounded-[7px] mb-[11px] leading-relaxed">
-          Low engagement — try posting a poll question
-        </div>
-      )}
-      <AppButton variant="primary" className="w-full justify-center text-xs" onClick={() => openModal('post')}>
-        <Plus className="w-3 h-3" /> Create
-      </AppButton>
-    </div>
-  );
-}
-
-function RightPanel({ allPosts, polls, challenges, events, activeChallenges, allMemberships, now, openModal }) {
-  const [view, setView] = useState('feed');
-  return (
-    <>
-      <div className="inline-flex gap-[2px] bg-[#0d1225] border border-white/[0.04] rounded-[7px] p-[2px]">
-        <button
-          className={cn('inline-flex items-center gap-1 px-[11px] py-[5px] rounded-[5px] text-[11.5px] font-semibold cursor-pointer border-none transition-all', view === 'feed' ? 'bg-blue-500 text-white' : 'bg-transparent text-[#4b5578] hover:text-[#8b95b3]')}
-          onClick={() => setView('feed')}>
-          <Flame className="w-[10px] h-[10px]" /> Feed
-        </button>
-        <button
-          className={cn('inline-flex items-center gap-1 px-[11px] py-[5px] rounded-[5px] text-[11.5px] font-semibold cursor-pointer border-none transition-all', view === 'cal' ? 'bg-blue-500 text-white' : 'bg-transparent text-[#4b5578] hover:text-[#8b95b3]')}
-          onClick={() => setView('cal')}>
-          <Calendar className="w-[10px] h-[10px]" /> Calendar
-        </button>
-      </div>
-
-      <div className="h-px bg-white/[0.03]" />
-
-      {view === 'feed' ? (
-        <>
-          <AISuggestions openModal={openModal} />
-          <div className="h-px bg-white/[0.03]" />
-          <EngagementScore allPosts={allPosts} polls={polls} activeChallenges={activeChallenges} now={now} openModal={openModal} />
-        </>
-      ) : (
-        <CalendarView allPosts={allPosts} events={events} now={now} openModal={openModal} />
-      )}
-    </>
-  );
-}
-
-/* ─── MAIN EXPORT ─── */
-export default function TabContent({
-  events = [], challenges = [], polls = [], posts = [], userPosts = [],
-  checkIns, ci30, avatarMap,
-  openModal        = () => {},
-  now              = new Date(),
-  allMemberships   = [],
-  classes          = [],
-  currentUser      = null,
-  onDeletePost      = () => {},
-  onDeleteEvent     = () => {},
-  onDeleteChallenge = () => {},
-  onDeleteClass     = () => {},
-  onDeletePoll      = () => {},
-  isCoach = false,
-}) {
-  const [activeFilter, setActiveFilter] = useState(isCoach ? 'classes' : 'gym');
-  const [viewMode,     setViewMode]     = useState('feed');
-
-  const allPosts         = [...(userPosts || []), ...(posts || [])].sort((a, b) => new Date(b.created_date) - new Date(a.created_date));
-  const gymPosts         = allPosts.filter(p => !p.user_id || p.gym_id || p.member_id);
-  const memberPosts      = allPosts.filter(p => p.user_id && !p.gym_id);
-  const upcomingEvents   = events.filter(e => new Date(e.event_date) >= now);
-  const activeChallenges = challenges.filter(c => c.status === 'active');
-  const totalMembers     = allMemberships.length;
-
-  const postScores = useMemo(() => allPosts.map(p => ({ id: p.id, score: (p.likes?.length || 0) + (p.comments?.length || 0) * 2 })), [allPosts]);
-  const maxScore   = Math.max(...postScores.map(p => p.score), 1);
-  const topPostIds = new Set(postScores.filter(p => p.score >= maxScore * 0.7 && p.score > 0).map(p => p.id));
-
-  const FILTERS = isCoach
-    ? [{ id: 'classes', label: 'My Classes' }, { id: 'gym', label: 'Posts' }, { id: 'challenges', label: 'Challenges' }, { id: 'polls', label: 'Polls' }, { id: 'events', label: 'Events' }]
-    : [{ id: 'gym', label: 'Feed' }, { id: 'members', label: 'Members' }, { id: 'challenges', label: 'Challenges' }, { id: 'classes', label: 'Classes' }, { id: 'polls', label: 'Polls' }];
-
-  const feedItems = useMemo(() => {
-    const fi = (() => {
-      switch (activeFilter) {
-        case 'members':    return { posts: memberPosts,   events: [],             challenges: [],               polls: [],  classes: [] };
-        case 'gym':        return { posts: gymPosts,       events: [],             challenges: [],               polls: [],  classes: [] };
-        case 'challenges': return { posts: [],             events: [],             challenges: activeChallenges, polls: [],  classes: [] };
-        case 'classes':    return { posts: [],             events: [],             challenges: [],               polls: [],  classes };
-        case 'polls':      return { posts: [],             events: [],             challenges: [],               polls,      classes: [] };
-        case 'events':     return { posts: [],             events: upcomingEvents, challenges: [],               polls: [],  classes: [] };
-        default:           return { posts: allPosts,       events: upcomingEvents, challenges: activeChallenges, polls,      classes };
-      }
-    })();
-    return [
-      ...fi.posts.map(p      => ({ type: 'post',      data: p, date: new Date(p.created_date || 0) })),
-      ...fi.events.map(e     => ({ type: 'event',     data: e, date: new Date(e.event_date    || 0) })),
-      ...fi.challenges.map(c => ({ type: 'challenge', data: c, date: new Date(c.start_date    || 0) })),
-      ...fi.polls.map(p      => ({ type: 'poll',      data: p, date: new Date(p.created_date  || 0) })),
-      ...fi.classes.map(c    => ({ type: 'class',     data: c, date: new Date(c.created_date  || 0) })),
-    ].sort((a, b) => b.date - a.date);
-  }, [activeFilter, allPosts, gymPosts, memberPosts, upcomingEvents, activeChallenges, polls, classes]);
-
-  const renderItem = (item, i) => {
-    if (item.type === 'post')      return <FeedPostCard  key={item.data.id || i} post={item.data}      onDelete={onDeletePost}      isTop={topPostIds.has(item.data.id)} totalMembers={totalMembers} />;
-    if (item.type === 'event')     return <EventCard     key={item.data.id || i} event={item.data}     onDelete={onDeleteEvent}     now={now} />;
-    if (item.type === 'challenge') return <ChallengeCard key={item.data.id || i} challenge={item.data} onDelete={onDeleteChallenge} now={now} />;
-    if (item.type === 'poll')      return <PollCard      key={item.data.id || i} poll={item.data}      onDelete={onDeletePoll}      allMemberships={allMemberships} />;
-    if (item.type === 'class')     return <ClassCard     key={item.data.id || i} gymClass={item.data}  onDelete={onDeleteClass} />;
-    return null;
-  };
-
-  const currentLabel = FILTERS.find(f => f.id === activeFilter)?.label;
-
-  return (
-    <div className="flex flex-col w-full h-full min-h-[600px] overflow-hidden bg-[#050810] text-[#eef2ff]">
-
-      {/* ── METRICS BAR ── */}
-      <MetricsBar allPosts={allPosts} allMemberships={allMemberships} now={now} />
-
-      {/* ── BODY ── */}
-      <div className="grid grid-cols-1 md:grid-cols-[1fr_292px] flex-1 overflow-hidden min-h-0">
-
-        {/* ══ CENTER ══ */}
-        <div className="px-[22px] py-5 pb-12 overflow-y-auto flex flex-col gap-[18px] [scrollbar-width:thin] [scrollbar-color:#252d45_transparent]">
-
-          {/* Header row */}
-          <div className="flex items-center gap-3 flex-wrap">
-            <h2 className="m-0 text-[17px] font-extrabold text-[#eef2ff] tracking-[-0.025em] flex-1 min-w-[160px] whitespace-nowrap">
-              🔥 Let's get your members engaged!
-            </h2>
-            <div className="flex gap-[7px] shrink-0 flex-wrap">
-              <AppButton variant="primary"   size="sm" onClick={() => openModal('post')}><Plus className="w-[13px] h-[13px]" /> Create first post</AppButton>
-              <AppButton variant="secondary" size="sm" onClick={() => openModal('challenge')}><Trophy className="w-[13px] h-[13px]" /> Start a challenge</AppButton>
-              <AppButton variant="secondary" size="sm" onClick={() => openModal('poll')}><HelpCircle className="w-[13px] h-[13px]" /> Ask a question</AppButton>
-            </div>
+            <Btn variant="primary">
+              <Plus size={13} /> Create New <ChevronDown size={11} />
+            </Btn>
           </div>
 
-          {/* Quick post ideas */}
-          <QuickIdeas openModal={openModal} />
+          <AlertBanner />
+          <JourneyCard />
 
-          {/* Feed / Calendar toggle */}
-          <div className="inline-flex gap-[2px] bg-[#0d1225] border border-white/[0.04] rounded-[7px] p-[2px] self-start">
-            <button
-              className={cn('inline-flex items-center gap-1 px-[11px] py-[5px] rounded-[5px] text-[11.5px] font-semibold cursor-pointer border-none transition-all', viewMode === 'feed' ? 'bg-blue-500 text-white' : 'bg-transparent text-[#4b5578] hover:text-[#8b95b3]')}
-              onClick={() => setViewMode('feed')}>
-              <List className="w-[10px] h-[10px]" /> Feed
-            </button>
-            <button
-              className={cn('inline-flex items-center gap-1 px-[11px] py-[5px] rounded-[5px] text-[11.5px] font-semibold cursor-pointer border-none transition-all', viewMode === 'calendar' ? 'bg-blue-500 text-white' : 'bg-transparent text-[#4b5578] hover:text-[#8b95b3]')}
-              onClick={() => setViewMode('calendar')}>
-              <Calendar className="w-[10px] h-[10px]" /> Calendar
-            </button>
+          {/* Tabs */}
+          <div style={{ display:"flex", borderBottom:`1px solid ${BORDER}`, marginBottom:16 }}>
+            {TABS.map(tab => (
+              <button key={tab} onClick={()=>setActiveTab(tab)} style={{
+                padding:"8px 16px", fontSize:12.5, fontWeight: activeTab===tab ? 700 : 500,
+                color: activeTab===tab ? TEXT : DIM,
+                background:"transparent", border:"none",
+                borderBottom:`2px solid ${activeTab===tab ? "#3b82f6" : "transparent"}`,
+                cursor:"pointer", marginBottom:-1, transition:"all 0.15s",
+              }}>
+                {tab}
+              </button>
+            ))}
           </div>
 
-          {/* Calendar or Feed */}
-          {viewMode === 'calendar' ? (
-            <CalendarView allPosts={allPosts} events={events} now={now} openModal={openModal} />
-          ) : (
+          {/* Drafts view */}
+          {activeTab==="Drafts" && (
             <>
-              {/* Filter tabs */}
-              <div className="flex items-center border-b border-white/[0.04] overflow-x-auto -mt-[6px] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-                {FILTERS.map(f => (
-                  <button key={f.id}
-                    className={cn(
-                      'px-[14px] py-2 text-[12.5px] bg-transparent border-b-2 cursor-pointer transition-all -mb-px whitespace-nowrap font-medium',
-                      activeFilter === f.id
-                        ? 'text-[#eef2ff] border-blue-500 font-bold'
-                        : 'text-[#4b5578] border-transparent hover:text-[#8b95b3]',
-                    )}
-                    onClick={() => setActiveFilter(f.id)}>
-                    {f.label}
-                  </button>
-                ))}
+              <div style={{ fontSize:12, fontWeight:700, color:MUTED, marginBottom:10 }}>Draft Content</div>
+              <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:12, marginBottom:20 }}>
+                {DRAFTS.map(d => <DraftCard key={d.id} draft={d} />)}
               </div>
 
-              {feedItems.length > 0
-                ? <div className="flex flex-col gap-[9px]">{feedItems.map(renderItem)}</div>
-                : <EmptyState openModal={openModal} label={currentLabel !== 'Feed' ? currentLabel : null} />
-              }
+              <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:10 }}>
+                <div style={{ fontSize:12, fontWeight:700, color:MUTED }}>All Content (Drafts &amp; Scheduled)</div>
+              </div>
+              <ContentTable />
             </>
+          )}
+
+          {/* Feed empty state */}
+          {activeTab==="Feed" && (
+            <div style={{ display:"flex", flexDirection:"column", alignItems:"center", padding:"48px 0", gap:12 }}>
+              <div style={{ width:52, height:52, borderRadius:14, background:"rgba(59,130,246,0.08)", border:`1px solid rgba(59,130,246,0.2)`, display:"flex", alignItems:"center", justifyContent:"center" }}>
+                <Flame size={22} color="#60a5fa" />
+              </div>
+              <div style={{ fontSize:14, fontWeight:700, color:MUTED }}>Your feed is empty</div>
+              <div style={{ fontSize:12, color:DIM }}>Create your first post to start engaging members</div>
+              <Btn variant="primary"><Plus size={13} /> Create Post</Btn>
+            </div>
+          )}
+
+          {/* Other tabs empty state */}
+          {!["Drafts","Feed"].includes(activeTab) && (
+            <div style={{ display:"flex", flexDirection:"column", alignItems:"center", padding:"48px 0", gap:12 }}>
+              <div style={{ width:52, height:52, borderRadius:14, background:"rgba(255,255,255,0.03)", border:`1px solid ${BORDER}`, display:"flex", alignItems:"center", justifyContent:"center" }}>
+                <BookOpen size={22} color={DIM} />
+              </div>
+              <div style={{ fontSize:14, fontWeight:700, color:MUTED }}>Nothing in {activeTab} yet</div>
+              <div style={{ fontSize:12, color:DIM }}>Content you add will appear here</div>
+            </div>
           )}
         </div>
 
-        {/* ══ RIGHT PANEL ══ */}
-        <div className="hidden md:flex flex-col px-[15px] py-4 pb-10 overflow-y-auto gap-[13px] border-l border-white/[0.04] bg-[#0a0f1e] [scrollbar-width:thin] [scrollbar-color:#252d45_transparent]">
-          <RightPanel
-            allPosts={allPosts} polls={polls} challenges={challenges}
-            events={events} activeChallenges={activeChallenges}
-            allMemberships={allMemberships} now={now} openModal={openModal}
-          />
-        </div>
-
+        <RightSidebar />
       </div>
+    </div>
+  );
+}
+
+/* ══════════════════════════════════════════════════════════
+   ROOT
+══════════════════════════════════════════════════════════ */
+export default function ContentPage() {
+  return (
+    <div style={{
+      display:"flex", minHeight:"100vh", background:BG, color:TEXT,
+      fontFamily:"'DM Sans','Figtree','Sora',system-ui,sans-serif",
+      fontSize:13, lineHeight:1.5,
+    }}>
+      <Sidebar />
+      <MainContent />
     </div>
   );
 }
