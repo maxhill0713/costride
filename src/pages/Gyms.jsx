@@ -212,16 +212,18 @@ const recentlyViewedGyms = useMemo(() => {
       .slice(0, 3);
   }, [recentlyViewedGymIds, gyms]);
 
-const filteredGyms = gyms.filter((gym) => {
-const matchesSearch = gym.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      gym.city?.toLowerCase().includes(searchQuery.toLowerCase());
-const matchesType = selectedType === 'all' || gym.type === selectedType;
-const matchesDistance = maxDistance === 'all' || gym.distance_km && gym.distance_km <= parseFloat(maxDistance);
-const matchesEquipment = selectedEquipment === 'all' ||
-      gym.equipment && gym.equipment.includes(selectedEquipment);
-const isGhostOrApproved = gym.status === 'approved' || !gym.admin_id && !gym.owner_email;
-return matchesSearch && matchesType && matchesDistance && matchesEquipment && isGhostOrApproved;
-  });
+const filteredGyms = useMemo(() => {
+    const q = searchQuery.toLowerCase();
+    const maxDist = maxDistance === 'all' ? null : parseFloat(maxDistance);
+    return gyms.filter((gym) => {
+      const matchesSearch = gym.name?.toLowerCase().includes(q) || gym.city?.toLowerCase().includes(q);
+      const matchesType = selectedType === 'all' || gym.type === selectedType;
+      const matchesDistance = maxDist === null || (gym.distance_km && gym.distance_km <= maxDist);
+      const matchesEquipment = selectedEquipment === 'all' || (gym.equipment && gym.equipment.includes(selectedEquipment));
+      const isGhostOrApproved = gym.status === 'approved' || (!gym.admin_id && !gym.owner_email);
+      return matchesSearch && matchesType && matchesDistance && matchesEquipment && isGhostOrApproved;
+    });
+  }, [gyms, searchQuery, selectedType, maxDistance, selectedEquipment]);
 const toggleSave = (gymId) => {
     setSavedGyms((prev) =>
       prev.includes(gymId) ? prev.filter((id) => id !== gymId) : [...prev, gymId]

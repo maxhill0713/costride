@@ -247,9 +247,10 @@ function ActiveNowStrip({ checkIns, memberAvatarMap }) {
     return best;
   };
   const twoHoursAgo = new Date(Date.now() - 2 * 60 * 60 * 1000);
+  const seen = new Set();
   const recent = checkIns
     .filter(c => { const ts = getTimestamp(c); return ts && ts >= twoHoursAgo; })
-    .reduce((acc, c) => { if (!acc.find(a => a.user_id === c.user_id)) acc.push(c); return acc; }, [])
+    .filter(c => { if (seen.has(c.user_id)) return false; seen.add(c.user_id); return true; })
     .slice(0, 12);
   if (recent.length === 0) return null;
   const ini = (n = '') => (n || '?').split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);

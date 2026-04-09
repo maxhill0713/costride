@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
@@ -72,6 +72,12 @@ function FriendsSection({
   cancelFriendMutation,
   addFriendMutation,
 }) {
+  const friendUsersMap = useMemo(() => {
+    const m = new Map();
+    friendUsersList.forEach(u => m.set(u.id, u));
+    return m;
+  }, [friendUsersList]);
+
   return (
     <>
       {/* ── Friends Modal ── */}
@@ -120,10 +126,10 @@ function FriendsSection({
 
                   {/* ── Sent / pending requests ── */}
                   {sentFriendRequests.filter(req => {
-                    const u = friendUsersList.find(u => u.id === req.friend_id);
+                    const u = friendUsersMap.get(req.friend_id);
                     return (u?.full_name || req.friend_name || '').toLowerCase().includes(friendsListSearchQuery.toLowerCase());
                   }).map(request => {
-                    const u = friendUsersList.find(u => u.id === request.friend_id);
+                    const u = friendUsersMap.get(request.friend_id);
                     const name = u?.display_name || u?.full_name || request.friend_name || 'User';
                     const sentMs = Date.now() - new Date(request.created_date).getTime();
                     const sentHours = Math.floor(sentMs / (1000 * 60 * 60));
@@ -187,10 +193,10 @@ function FriendsSection({
 
                   {/* ── Incoming friend requests ── */}
                   {friendRequests.filter(req => {
-                    const u = friendUsersList.find(u => u.id === req.user_id);
+                    const u = friendUsersMap.get(req.user_id);
                     return (u?.full_name || u?.display_name || req.user_name || '').toLowerCase().includes(friendsListSearchQuery.toLowerCase());
                   }).map(request => {
-                    const u = friendUsersList.find(u => u.id === request.user_id);
+                    const u = friendUsersMap.get(request.user_id);
                     const name = u?.display_name || u?.full_name || request.user_name || 'User';
                     return (
                       <div key={request.id} className="px-2.5 py-2 rounded-lg bg-slate-700/40 flex items-center gap-2 relative">
@@ -236,10 +242,10 @@ function FriendsSection({
                   {friends.length === 0 && friendRequests.length === 0 && sentFriendRequests.length === 0
                     ? <p className="text-center text-slate-400 text-sm py-8">No friends yet</p>
                     : friendsWithActivity.filter(friend => {
-                        const u = friendUsersList.find(u => u.id === friend.friend_id);
+                        const u = friendUsersMap.get(friend.friend_id);
                         return (u?.full_name || friend.friend_name || '').toLowerCase().includes(friendsListSearchQuery.toLowerCase());
                       }).map(friend => {
-                        const u = friendUsersList.find(u => u.id === friend.friend_id);
+                        const u = friendUsersMap.get(friend.friend_id);
                         const name = u?.display_name || u?.full_name || friend.friend_name;
                         return (
                           <div key={friend.id} className="p-2 rounded-lg bg-slate-700/40 flex items-center justify-between gap-2 relative">
@@ -257,7 +263,7 @@ function FriendsSection({
                                 <>
                                   <div className="fixed inset-0 z-[10001]" onClick={() => setFriendMenuOpen(null)} />
                                   <div className="absolute right-0 top-8 z-[10002] bg-slate-800 border border-slate-700/50 rounded-lg shadow-[0_3px_0_0_#1e293b,0_8px_20px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.1)] overflow-hidden min-w-[110px]">
-                                    <button onClick={(e) => { e.stopPropagation(); setFriendMenuOpen(null); const u2 = friendUsersList.find(u => u.id === friend.friend_id); setConfirmRemoveFriend({ id: friend.friend_id, name: u2?.full_name || friend.friend_name }); }} className="w-full px-4 py-2.5 text-left text-sm font-semibold text-red-400 hover:text-red-300 hover:bg-slate-700 transition-colors">
+                                    <button onClick={(e) => { e.stopPropagation(); setFriendMenuOpen(null); const u2 = friendUsersMap.get(friend.friend_id); setConfirmRemoveFriend({ id: friend.friend_id, name: u2?.full_name || friend.friend_name }); }} className="w-full px-4 py-2.5 text-left text-sm font-semibold text-red-400 hover:text-red-300 hover:bg-slate-700 transition-colors">
                                       Remove
                                     </button>
                                   </div>

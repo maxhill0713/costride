@@ -94,7 +94,7 @@ export default function RedeemReward() {
     placeholderData: (prev) => prev
   });
 
-  const gymIds = gymMemberships.map((m) => m.gym_id);
+  const gymIds = useMemo(() => gymMemberships.map((m) => m.gym_id), [gymMemberships]);
 
   const { data: allChallenges = [] } = useQuery({
     queryKey: ['activeChallenges'],
@@ -109,10 +109,10 @@ export default function RedeemReward() {
   const monthlyProgress = currentUser?.monthly_challenge_progress || {};
   const isCurrentMonth = monthlyProgress.month === currentMonth;
 
-  const monthlyChallengesWithProgress = MONTHLY_CHALLENGES.map(c => ({
+  const monthlyChallengesWithProgress = useMemo(() => MONTHLY_CHALLENGES.map(c => ({
     ...c,
     userProgress: isCurrentMonth ? (monthlyProgress[c.progressKey] || 0) : 0,
-  }));
+  })), [isCurrentMonth, monthlyProgress]);
 
   const weeklyChallenges = allChallenges.slice(0, 3);
 
@@ -181,59 +181,62 @@ export default function RedeemReward() {
     }
   });
 
-  const userChallengeProgress = challenges.map((challenge) => {
+  const userChallengeProgress = useMemo(() => challenges.map((challenge) => {
     const participants = challenge.participants || [];
     const targetValue = challenge.target_value || 10;
     const progress = Math.floor(participants.length / targetValue * 100);
     return { ...challenge, progress, participantCount: participants.length, targetValue };
-  }).sort((a, b) => b.progress - a.progress);
+  }).sort((a, b) => b.progress - a.progress), [challenges]);
 
-  const unclaimedRewards = rewards.filter((r) => {
+  const claimedBonusIds = useMemo(() => new Set(claimedBonuses.map(cb => cb.reward_id)), [claimedBonuses]);
+  const claimedChallengeIds = useMemo(() => new Set(claimedBonuses.map(cb => cb.challenge_id)), [claimedBonuses]);
+
+  const unclaimedRewards = useMemo(() => rewards.filter((r) => {
     if (!r.active) return false;
-    if (claimedBonuses.find((cb) => cb.reward_id === r.id)) return false;
+    if (claimedBonusIds.has(r.id)) return false;
     if (r.premium_only && !isPremium) return false;
     return true;
-  });
+  }), [rewards, claimedBonusIds, isPremium]);
 
-  const completedChallengeRewards = [
+  const completedChallengeRewards = useMemo(() => {
+    const result = [];
     // Check if "Witness My Gains" monthly challenge is completed
-    ...(() => {
-      const witnessed = monthlyChallengesWithProgress.find(c => c.id === 'witness_my_gains');
-      if (witnessed && witnessed.userProgress >= 4 && !claimedBonuses.find(cb => cb.challenge_id === 'witness_my_gains')) {
-        return [{
-          id: 'witness_my_gains',
-          title: 'Witness My Gains',
-          description: 'Monthly Challenge: Share 4 workouts with community',
-          type: 'challenge',
-          icon: '⚔️',
-          reward: '1 x Spartan Streak Icon Design',
-          rewardType: 'streak_icon',
-          rewardValue: 'spartan',
-          earnedText: 'Completed: Witness My Gains',
-          isChallenge: true,
-          challengeId: 'witness_my_gains'
-        }];
-      }
-      return [];
-    })(),
+    const witnessed = monthlyChallengesWithProgress.find(c => c.id === 'witness_my_gains');
+    if (witnessed && witnessed.userProgress >= 4 && !claimedChallengeIds.has('witness_my_gains')) {
+      result.push({
+        id: 'witness_my_gains',
+        title: 'Witness My Gains',
+        description: 'Monthly Challenge: Share 4 workouts with community',
+        type: 'challenge',
+        icon: '⚔️',
+        reward: '1 x Spartan Streak Icon Design',
+        rewardType: 'streak_icon',
+        rewardValue: 'spartan',
+        earnedText: 'Completed: Witness My Gains',
+        isChallenge: true,
+        challengeId: 'witness_my_gains'
+      });
+    }
     // Gym-based challenges
-    ...completedChallenges.filter((challenge) => {
+    completedChallenges.forEach((challenge) => {
       const isWinner = challenge.winner_id === currentUser?.id;
       const isParticipant = challenge.participants?.includes(currentUser?.id);
-      const notClaimed = !claimedBonuses.find((cb) => cb.challenge_id === challenge.id);
-      return (isWinner || isParticipant) && notClaimed;
-    }).map((challenge) => ({
-      id: challenge.id,
-      title: challenge.title,
-      description: challenge.description,
-      type: 'challenge',
-      icon: '🏆',
-      reward: challenge.reward,
-      earnedText: `Completed: ${challenge.title}`,
-      isChallenge: true,
-      challengeId: challenge.id
-    }))
-  ];
+      if ((isWinner || isParticipant) && !claimedChallengeIds.has(challenge.id)) {
+        result.push({
+          id: challenge.id,
+          title: challenge.title,
+          description: challenge.description,
+          type: 'challenge',
+          icon: '🏆',
+          reward: challenge.reward,
+          earnedText: `Completed: ${challenge.title}`,
+          isChallenge: true,
+          challengeId: challenge.id
+        });
+      }
+    });
+    return result;
+  }, [monthlyChallengesWithProgress, completedChallenges, claimedChallengeIds, currentUser?.id]);
 
   return (
     <div className="min-h-screen bg-[linear-gradient(to_bottom_right,#050b1a,#102a70,#050b1a)] pb-24">

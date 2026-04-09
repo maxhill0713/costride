@@ -851,15 +851,17 @@ export default function Home() {
     setCelebrationDurationMinutes(durationMins > 0 ? durationMins : 0);
     const showShare = () => { setShowShareWorkout(true); };
     setShowStreakCelebration(true);
-    setTimeout(() => {
+    const celebT1 = setTimeout(() => {
       setShowStreakCelebration(false);
       if (challengesData.length > 0) {
         setShowChallengesCelebration(true);
-        setTimeout(() => { setShowChallengesCelebration(false); showShare(); }, 4000);
+        const celebT2 = setTimeout(() => { setShowChallengesCelebration(false); showShare(); }, 4000);
+        celebTimers.current.push(celebT2);
       } else {
         showShare();
       }
     }, 3500);
+    celebTimers.current.push(celebT1);
   };
 
   const handleStreakVariantSelect = (variant) => {

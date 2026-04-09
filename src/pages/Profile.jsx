@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Link } from 'react-router-dom';
@@ -164,7 +164,7 @@ export default function Profile() {
     gcTime: 15 * 60 * 1000,
     placeholderData: (prev) => prev,
   });
-  const memberGymIds = gymMemberships.map((m) => m.gym_id);
+  const memberGymIds = useMemo(() => gymMemberships.map((m) => m.gym_id), [gymMemberships]);
   const { data: memberGymsData = [] } = useQuery({
     queryKey: ['memberGyms', currentUser?.id],
     queryFn: async () => {
@@ -198,7 +198,10 @@ export default function Profile() {
     staleTime: 2 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
   });
-  const knownUserIds = [...friends.map(f => f.friend_id), ...friendRequests.map(r => r.user_id), ...sentFriendRequests.map(r => r.friend_id)];
+  const knownUserIds = useMemo(
+    () => [...friends.map(f => f.friend_id), ...friendRequests.map(r => r.user_id), ...sentFriendRequests.map(r => r.friend_id)],
+    [friends, friendRequests, sentFriendRequests]
+  );
   const { data: friendUsersList = [] } = useQuery({
     queryKey: ['friendUsers', knownUserIds.join(',')],
     queryFn: () => base44.entities.User.filter({ id: { $in: knownUserIds } }),
@@ -364,12 +367,12 @@ export default function Profile() {
   const primaryGymId = currentUser?.primary_gym_id;
   const primaryGym = memberGymsData.find((g) => g.id === primaryGymId);
   const currentStreak = currentUser?.current_streak || 0;
-  const filteredPosts = userPosts.filter((post) =>
+  const filteredPosts = useMemo(() => userPosts.filter((post) =>
     (post.image_url || post.video_url) &&
     !post.content?.includes('Well done, workout') &&
     post.gym_join !== true &&
     !post.is_hidden
-  );
+  ), [userPosts]);
   const friendCount = friends.length;
 
 

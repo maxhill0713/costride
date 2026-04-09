@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Link } from 'react-router-dom';
@@ -7,6 +7,22 @@ import { ChevronLeft, MapPin, Building2, Flame, Star } from 'lucide-react';
 import PostCard from '../components/feed/PostCard';
 import StatusBadge from '../components/profile/StatusBadge';
 import ProfilePictureModal from '../components/profile/ProfilePictureModal';
+
+const BADGE_DEFS = [
+  { id: '10_visits', icon: '🎯', color: 'from-blue-400 to-blue-600' },
+  { id: '50_visits', icon: '🔥', color: 'from-orange-400 to-red-500' },
+  { id: '100_visits', icon: '🏆', color: 'from-yellow-400 to-orange-500' },
+  { id: '7_day_streak', icon: '⚡', color: 'from-green-400 to-emerald-500' },
+  { id: '30_day_streak', icon: '🔥', color: 'from-red-400 to-pink-500' },
+  { id: '90_day_streak', icon: '👑', color: 'from-purple-400 to-pink-500' },
+  { id: '1_year', icon: '📅', color: 'from-indigo-400 to-blue-500' },
+  { id: 'community_leader', icon: '👥', color: 'from-cyan-400 to-blue-500' },
+  { id: '7_days', icon: '🔥', color: 'from-orange-400 to-red-500', days: 7 },
+  { id: '30_days', icon: '⚡', color: 'from-yellow-400 to-orange-500', days: 30 },
+  { id: '50_days', icon: '💪', color: 'from-purple-400 to-pink-500', days: 50 },
+  { id: '100_days', icon: '👑', color: 'from-blue-400 to-cyan-500', days: 100 },
+  { id: '365_days', icon: '🏆', color: 'from-green-400 to-emerald-500', days: 365 }
+];
 
 export default function UserProfile() {
   const urlParams = new URLSearchParams(window.location.search);
@@ -58,7 +74,10 @@ export default function UserProfile() {
     staleTime: 5 * 60 * 1000
   });
 
-  const favouritePosts = posts.filter((p) => p.is_favourite && (p.image_url || p.video_url));
+  const favouritePosts = useMemo(
+    () => posts.filter((p) => p.is_favourite && (p.image_url || p.video_url)),
+    [posts]
+  );
 
   const displayName = profileUser?.display_name || profileUser?.username || profileUser?.full_name || 'User';
   const streak = profileUser?.current_streak || 0;
@@ -66,24 +85,12 @@ export default function UserProfile() {
 
   const isOwnProfile = currentUser?.id === userId;
   const isProfilePrivate = profileUser?.public_profile === false;
-  const isFriend = friendsList.some(f => f.friend_id === currentUser?.id || f.user_id === currentUser?.id);
+  const isFriend = useMemo(
+    () => friendsList.some(f => f.friend_id === currentUser?.id || f.user_id === currentUser?.id),
+    [friendsList, currentUser?.id]
+  );
   const isBlocked = isProfilePrivate && !isOwnProfile && !isFriend;
-
-  const badgeDefs = [
-    { id: '10_visits', icon: '🎯', color: 'from-blue-400 to-blue-600' },
-    { id: '50_visits', icon: '🔥', color: 'from-orange-400 to-red-500' },
-    { id: '100_visits', icon: '🏆', color: 'from-yellow-400 to-orange-500' },
-    { id: '7_day_streak', icon: '⚡', color: 'from-green-400 to-emerald-500' },
-    { id: '30_day_streak', icon: '🔥', color: 'from-red-400 to-pink-500' },
-    { id: '90_day_streak', icon: '👑', color: 'from-purple-400 to-pink-500' },
-    { id: '1_year', icon: '📅', color: 'from-indigo-400 to-blue-500' },
-    { id: 'community_leader', icon: '👥', color: 'from-cyan-400 to-blue-500' },
-    { id: '7_days', icon: '🔥', color: 'from-orange-400 to-red-500', days: 7 },
-    { id: '30_days', icon: '⚡', color: 'from-yellow-400 to-orange-500', days: 30 },
-    { id: '50_days', icon: '💪', color: 'from-purple-400 to-pink-500', days: 50 },
-    { id: '100_days', icon: '👑', color: 'from-blue-400 to-cyan-500', days: 100 },
-    { id: '365_days', icon: '🏆', color: 'from-green-400 to-emerald-500', days: 365 }
-  ];
+  const badgeDefs = BADGE_DEFS;
 
   if (!userId) {
     return (
