@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import CoachProfileModal from './CoachProfileModal';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   X, Clock, Users, MapPin, Star, Calendar, Dumbbell,
@@ -629,6 +630,7 @@ export default function ClassDetailModal({
   const [bookAnim, setBookAnim]         = useState(false);
   const [tab, setTab]                   = useState('details');
   const [selectedSession, setSelectedSession] = useState(null);
+  const [showCoachProfile, setShowCoachProfile] = useState(false);
 
   useEffect(() => { setBooked(initBooked); }, [initBooked]);
   useEffect(() => { injectCSS(); }, []);
@@ -820,15 +822,16 @@ export default function ClassDetailModal({
                       </h2>
                       {instructor && (
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
+                          <button onClick={() => setShowCoachProfile(true)}
+                            style={{ display: 'flex', alignItems: 'center', gap: 9, background: 'none', border: 'none', cursor: 'pointer', padding: 0, textAlign: 'left' }}>
                             <div style={{ width: 33, height: 33, borderRadius: '50%', background: `linear-gradient(135deg,${c.color}55,${c.color}22)`, border: `1.5px solid ${c.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 900, color: c.color, flexShrink: 0, boxShadow: `0 0 10px ${c.glow}` }}>
                               {ini(instructor)}
                             </div>
                             <div>
                               <div style={{ fontSize: 12.5, fontWeight: 800, color: '#fff', lineHeight: 1 }}>{instructor}</div>
-                              <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.38)', fontWeight: 600, marginTop: 2 }}>Lead Instructor</div>
+                              <div style={{ fontSize: 10, color: c.color, fontWeight: 600, marginTop: 2 }}>Lead Instructor · View profile →</div>
                             </div>
-                          </div>
+                          </button>
                           <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
                             <div style={{ display: 'flex', gap: 1 }}>
                               {[1, 2, 3, 4, 5].map(s => <Star key={s} style={{ width: 10, height: 10, fill: s <= Math.round(parseFloat(avg)) ? '#fbbf24' : 'rgba(255,255,255,0.15)', color: s <= Math.round(parseFloat(avg)) ? '#fbbf24' : 'rgba(255,255,255,0.15)' }} />)}
@@ -1234,6 +1237,11 @@ export default function ClassDetailModal({
 
       <QRModal open={showQR} onClose={() => setShowQR(false)} gymClass={gymClass} c={c} />
       <RateSheet open={showRate} onClose={() => setShowRate(false)} c={c} className={className} />
+      <CoachProfileModal
+        open={showCoachProfile}
+        onClose={() => setShowCoachProfile(false)}
+        coach={gymClass.instructor || gymClass.coach_name ? { name: instructor, title: 'Coach', gym_name: gymClass.gym_name } : null}
+      />
     </>
   );
 }
