@@ -8,6 +8,7 @@ import { ChevronLeft, Check, X } from 'lucide-react';
 const PAGE_BG  = 'linear-gradient(135deg, #02040a 0%, #0d2360 50%, #02040a 100%)';
 const GROUP_BG = 'linear-gradient(135deg, rgba(30,35,60,0.72) 0%, rgba(8,10,20,0.88) 100%)';
 const DIVIDER  = 'rgba(255,255,255,0.06)';
+const CROP_SIZE = 260;
 
 function useSectionHighlight() {
   const { search } = useLocation();
@@ -80,218 +81,198 @@ async function cropToBlob(imageSrc, cropRect, outputSize) {
   canvas.width  = outputSize.w;
   canvas.height = outputSize.h;
   const ctx = canvas.getContext('2d');
-  ctx.drawImage(
-    img,
-    cropRect.x, cropRect.y, cropRect.w, cropRect.h,
-    0, 0, outputSize.w, outputSize.h
-  );
+  ctx.drawImage(img, cropRect.x, cropRect.y, cropRect.w, cropRect.h, 0, 0, outputSize.w, outputSize.h);
   return new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', 0.92));
 }
 
-const CROP_SIZE = 260;
-
 function CircleCropModal({ imageSrc, onConfirm, onCancel, uploading }) {
+  const containerRef = useRef(null);
   const [imgNatural, setImgNatural] = useState({ w: 1, h: 1 });
   const [offset, setOffset] = useState({ x: 0, y: 0 });
   const [scale, setScale] = useState(1);
 
-  // Minimum scale = image fills the circle (no empty edges)
-  // The rendered image is imgNatural.w * scale × imgNatural.h * scale
-  // We need both dimensions >= CROP_SIZE
-  const minScale = useCallback((nat) => {
-    if (!nat || nat.w <= 0 || nat.h <= 0) return 1;
-    return Math.max(CROP_SIZE / nat.w, CROP_SIZE / nat.h);
-  }, []);
+  // Refs so event listeners (attached to DOM directly) always see latest values
+  const scaleRef   = useRef(scale);
+  const offsetRef  = useRef(offset);
+  const natRef     = useRef(imgNatural);
+  const dragRef    = useRef(null);
+  const pinchRef   = useRef(null); // { dist } when pinching
+  const isPinching = useRef(false);
+  const rafId      = useRef(null);
 
-  // Clamp offset so the image always fully covers the circle.
-  // Coordinate system: offset is the translation applied to the image centre
-  // relative to the circle centre. So the image top-left in circle-space is:
-  //   left = CROP_SIZE/2 + offset.x - (imgW/2)
-  //   top  = CROP_SIZE/2 + offset.y - (imgH/2)
-  // For full coverage we need:
-  //   left <= 0  →  offset.x <= imgW/2
-  //   top  <= 0  →  offset.y <= imgH/2
-  //   left + imgW >= CROP_SIZE  →  offset.x >= CROP_SIZE/2 - imgW/2... wait, easier:
-  // Image covers circle iff:
-  //   imgCentreX - imgW/2 <= 0       → offset.x <= imgW/2
-  //   imgCentreY - imgH/2 <= 0       → offset.y <= imgH/2
-  //   imgCentreX + imgW/2 >= CROP_SIZE → offset.x >= CROP_SIZE/2 - imgW/2... 
-  // Let half = CROP_SIZE/2, hw = imgW/2, hh = imgH/2
-  //   offset.x in [half - hw*2 ... hw*2 - half]  no — let's think simply:
-  // The image left edge = circleLeft + CROP_SIZE/2 + offset.x - imgW/2
-  // Must be <= circleLeft  →  offset.x <= imgW/2  ✓
-  // The image right edge = left + imgW must be >= circleLeft + CROP_SIZE
-  //   → CROP_SIZE/2 + offset.x + imgW/2 >= CROP_SIZE
-  //   → offset.x >= CROP_SIZE/2 - imgW/2
-  // Same vertically.
-  const clamp = useCallback((ox, oy, sc, nat) => {
-    const imgW = (nat || imgNatural).w * sc;
-    const imgH = (nat || imgNatural).h * sc;
-    const half = CROP_SIZE / 2;
-    const maxX = imgW / 2 - half;   // how far right the centre can move (positive = right)
-    const maxY = imgH / 2 - half;
-    // offset moves image centre away from circle centre
-    // positive offset.x → image shifts right → left edge moves right (bad if > 0 from circle left)
-    // We need image left <= circle left: circleCentre + offset.x - imgW/2 <= 0 → offset.x <= imgW/2 - 0... 
-    // Simpler: just bound offset.x to [-maxX, maxX]
-    return {
-      x: Math.max(-maxX, Math.min(maxX, ox)),
-      y: Math.max(-maxY, Math.min(maxY, oy)),
-    };
-  }, [imgNatural]);
-
-  const scaleRef  = useRef(scale);
-  const offsetRef = useRef(offset);
-  const natRef    = useRef(imgNatural);
   useEffect(() => { scaleRef.current  = scale;      }, [scale]);
   useEffect(() => { offsetRef.current = offset;     }, [offset]);
   useEffect(() => { natRef.current    = imgNatural; }, [imgNatural]);
 
-  // Load image and initialise: centre the image, enforce min scale
+  const getMinScale = (nat) => {
+    if (!nat || nat.w <= 0 || nat.h <= 0) return 1;
+    return Math.max(CROP_SIZE / nat.w, CROP_SIZE / nat.h);
+  };
+
+  // offset = displacement of image CENTRE from circle CENTRE
+  // Clamp so image always covers the full circle
+  const clampOffset = (ox, oy, sc, nat) => {
+    const n   = nat || natRef.current;
+    const imgW = n.w * sc;
+    const imgH = n.h * sc;
+    const maxX = imgW / 2 - CROP_SIZE / 2;
+    const maxY = imgH / 2 - CROP_SIZE / 2;
+    return {
+      x: Math.max(-maxX, Math.min(maxX, ox)),
+      y: Math.max(-maxY, Math.min(maxY, oy)),
+    };
+  };
+
+  // Load image → set min scale, centre it
   useEffect(() => {
     loadImage(imageSrc).then(img => {
       const nat = { w: img.naturalWidth, h: img.naturalHeight };
+      const ms  = getMinScale(nat);
       setImgNatural(nat);
-      const ms = minScale(nat);
-      // Start at minScale so image exactly fills the circle
+      natRef.current = nat;
       setScale(ms);
       scaleRef.current = ms;
-      // Offset (0,0) = image centre at circle centre = perfectly centred
       setOffset({ x: 0, y: 0 });
       offsetRef.current = { x: 0, y: 0 };
-      natRef.current = nat;
     });
   }, [imageSrc]);
 
-  // ── Drag — pointer events only, blocked during pinch ──
-  const drag      = useRef(null);
-  const isPinching = useRef(false);
-  const rafId     = useRef(null);
-
+  // ── Pointer (drag) handlers — attached via React props (fine for drag) ──────
   const onPointerDown = (e) => {
     if (isPinching.current) return;
     e.currentTarget.setPointerCapture(e.pointerId);
-    drag.current = {
+    dragRef.current = {
       startX: e.clientX - offsetRef.current.x,
       startY: e.clientY - offsetRef.current.y,
     };
   };
 
   const onPointerMove = (e) => {
-    if (!drag.current || isPinching.current) return;
-    const nx = e.clientX - drag.current.startX;
-    const ny = e.clientY - drag.current.startY;
+    if (!dragRef.current || isPinching.current) return;
+    const nx = e.clientX - dragRef.current.startX;
+    const ny = e.clientY - dragRef.current.startY;
     if (rafId.current) cancelAnimationFrame(rafId.current);
     rafId.current = requestAnimationFrame(() => {
-      const clamped = clamp(nx, ny, scaleRef.current, natRef.current);
+      const clamped = clampOffset(nx, ny, scaleRef.current, natRef.current);
       setOffset(clamped);
       offsetRef.current = clamped;
     });
   };
 
-  const onPointerUp = () => { drag.current = null; };
+  const onPointerUp = () => { dragRef.current = null; };
 
-  // ── Pinch zoom — uniform scale, blocks drag simultaneously ──
-  const lastPinch = useRef(null); // { dist, midX, midY }
+  // ── Touch & wheel — attached directly to DOM with { passive: false } ────────
+  // This is the ONLY way to call preventDefault() and stop the browser
+  // from zooming / scrolling the page.
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
 
-  const onTouchStart = (e) => {
-    if (e.touches.length === 2) {
-      isPinching.current = true;
-      drag.current = null; // cancel any active drag
-      const dx = e.touches[0].clientX - e.touches[1].clientX;
-      const dy = e.touches[0].clientY - e.touches[1].clientY;
-      lastPinch.current = { dist: Math.hypot(dx, dy) };
-    }
-  };
+    const handleTouchStart = (e) => {
+      if (e.touches.length === 2) {
+        e.preventDefault();
+        isPinching.current = true;
+        dragRef.current = null;
+        const dx   = e.touches[0].clientX - e.touches[1].clientX;
+        const dy   = e.touches[0].clientY - e.touches[1].clientY;
+        pinchRef.current = { dist: Math.hypot(dx, dy) };
+      }
+    };
 
-  const onTouchMove = (e) => {
-    if (e.touches.length !== 2 || !lastPinch.current) return;
-    e.preventDefault();
-    const dx   = e.touches[0].clientX - e.touches[1].clientX;
-    const dy   = e.touches[0].clientY - e.touches[1].clientY;
-    const dist = Math.hypot(dx, dy);
-    const ratio = dist / lastPinch.current.dist;
-    lastPinch.current = { dist };
+    const handleTouchMove = (e) => {
+      // Always prevent default while over the crop area to stop page zoom/scroll
+      e.preventDefault();
 
-    setScale(prevScale => {
-      const ms  = minScale(natRef.current);
-      const ns  = Math.max(ms, Math.min(4, prevScale * ratio));
-      scaleRef.current = ns;
-      // Re-clamp offset with new scale so image still covers circle
-      const clamped = clamp(offsetRef.current.x, offsetRef.current.y, ns, natRef.current);
-      setOffset(clamped);
+      if (e.touches.length === 2 && pinchRef.current) {
+        const dx   = e.touches[0].clientX - e.touches[1].clientX;
+        const dy   = e.touches[0].clientY - e.touches[1].clientY;
+        const dist = Math.hypot(dx, dy);
+        const ratio = dist / pinchRef.current.dist;
+        pinchRef.current = { dist };
+
+        const ms      = getMinScale(natRef.current);
+        const newScale = Math.max(ms, Math.min(4, scaleRef.current * ratio));
+        const clamped  = clampOffset(offsetRef.current.x, offsetRef.current.y, newScale, natRef.current);
+
+        scaleRef.current  = newScale;
+        offsetRef.current = clamped;
+        setScale(newScale);
+        setOffset(clamped);
+      } else if (e.touches.length === 1 && dragRef.current && !isPinching.current) {
+        // Single-finger drag (also needs preventDefault to stop page scroll)
+        const nx = e.touches[0].clientX - dragRef.current.startX;
+        const ny = e.touches[0].clientY - dragRef.current.startY;
+        const clamped = clampOffset(nx, ny, scaleRef.current, natRef.current);
+        offsetRef.current = clamped;
+        setOffset(clamped);
+      }
+    };
+
+    const handleTouchEnd = (e) => {
+      if (e.touches.length < 2) {
+        pinchRef.current = null;
+        setTimeout(() => { isPinching.current = false; }, 80);
+      }
+    };
+
+    const handleWheel = (e) => {
+      e.preventDefault();
+      const ms      = getMinScale(natRef.current);
+      const newScale = Math.max(ms, Math.min(4, scaleRef.current * (1 - e.deltaY * 0.002)));
+      const clamped  = clampOffset(offsetRef.current.x, offsetRef.current.y, newScale, natRef.current);
+      scaleRef.current  = newScale;
       offsetRef.current = clamped;
-      return ns;
-    });
-  };
-
-  const onTouchEnd = (e) => {
-    if (e.touches.length < 2) {
-      lastPinch.current = null;
-      // Small delay before re-enabling drag so a lift-then-drag doesn't glitch
-      setTimeout(() => { isPinching.current = false; }, 80);
-    }
-  };
-
-  // ── Mouse wheel zoom ──
-  const onWheel = (e) => {
-    e.preventDefault();
-    setScale(prevScale => {
-      const ms = minScale(natRef.current);
-      const ns = Math.max(ms, Math.min(4, prevScale - e.deltaY * 0.002));
-      scaleRef.current = ns;
-      const clamped = clamp(offsetRef.current.x, offsetRef.current.y, ns, natRef.current);
+      setScale(newScale);
       setOffset(clamped);
-      offsetRef.current = clamped;
-      return ns;
-    });
-  };
+    };
 
-  // ── Crop & export ──
+    // { passive: false } is the critical flag — without it preventDefault() is a no-op
+    el.addEventListener('touchstart', handleTouchStart, { passive: false });
+    el.addEventListener('touchmove',  handleTouchMove,  { passive: false });
+    el.addEventListener('touchend',   handleTouchEnd,   { passive: false });
+    el.addEventListener('wheel',      handleWheel,      { passive: false });
+
+    return () => {
+      el.removeEventListener('touchstart', handleTouchStart);
+      el.removeEventListener('touchmove',  handleTouchMove);
+      el.removeEventListener('touchend',   handleTouchEnd);
+      el.removeEventListener('wheel',      handleWheel);
+    };
+  }, []); // mount/unmount only — handlers read everything via refs
+
+  // ── Export crop ──────────────────────────────────────────────────────────────
   const handleConfirm = async () => {
-    // offset is image-centre displacement from circle-centre (in screen pixels at current scale)
-    // Image rendered: centre at (CROP_SIZE/2 + offset.x, CROP_SIZE/2 + offset.y)
     const imgW = imgNatural.w * scale;
     const imgH = imgNatural.h * scale;
-    // Top-left of rendered image in circle space:
     const imgLeft = CROP_SIZE / 2 + offset.x - imgW / 2;
     const imgTop  = CROP_SIZE / 2 + offset.y - imgH / 2;
-    // Circle crop window in rendered-image space:
-    const cropX = -imgLeft;
-    const cropY = -imgTop;
-    // Map to natural image coordinates:
-    const scaleX = imgNatural.w / imgW;
-    const scaleY = imgNatural.h / imgH;
-    const natCropX = cropX * scaleX;
-    const natCropY = cropY * scaleY;
-    const natCropW = CROP_SIZE * scaleX;
-    const natCropH = CROP_SIZE * scaleY;
+    const scaleX  = imgNatural.w / imgW;
+    const scaleY  = imgNatural.h / imgH;
     const blob = await cropToBlob(
       imageSrc,
-      { x: natCropX, y: natCropY, w: natCropW, h: natCropH },
+      { x: -imgLeft * scaleX, y: -imgTop * scaleY, w: CROP_SIZE * scaleX, h: CROP_SIZE * scaleY },
       { w: 400, h: 400 }
     );
     onConfirm(blob);
   };
 
-  // Rendered image position: centre of image at (CROP_SIZE/2 + offset.x, CROP_SIZE/2 + offset.y)
   const imgW = imgNatural.w * scale;
   const imgH = imgNatural.h * scale;
 
   return (
-    <div style={{ position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(0,0,0,0.92)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 24 }}>
+    <div style={{ position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(0,0,0,0.92)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 24,
+      // Also block viewport-level pinch-zoom via CSS (belt-and-suspenders)
+      touchAction: 'none',
+    }}>
       <p style={{ color: '#94a3b8', fontSize: 13, fontWeight: 600, letterSpacing: '0.04em', textTransform: 'uppercase' }}>Drag to position</p>
 
       <div
-        style={{ position: 'relative', width: CROP_SIZE, height: CROP_SIZE, userSelect: 'none' }}
+        ref={containerRef}
+        style={{ position: 'relative', width: CROP_SIZE, height: CROP_SIZE, userSelect: 'none', touchAction: 'none' }}
         onPointerDown={onPointerDown}
         onPointerMove={onPointerMove}
         onPointerUp={onPointerUp}
         onPointerCancel={onPointerUp}
-        onTouchStart={onTouchStart}
-        onTouchMove={onTouchMove}
-        onTouchEnd={onTouchEnd}
-        onWheel={onWheel}
       >
         {/* Clipped circle */}
         <div style={{ position: 'absolute', inset: 0, borderRadius: '50%', overflow: 'hidden', cursor: 'grab' }}>
@@ -302,7 +283,6 @@ function CircleCropModal({ imageSrc, onConfirm, onCancel, uploading }) {
               position: 'absolute',
               width:  imgW,
               height: imgH,
-              // Centre of image at (CROP_SIZE/2 + offset.x, CROP_SIZE/2 + offset.y)
               left: CROP_SIZE / 2 + offset.x - imgW / 2,
               top:  CROP_SIZE / 2 + offset.y - imgH / 2,
               pointerEvents: 'none',
@@ -337,9 +317,9 @@ export default function ProfileSettings() {
   const [circleCrop, setCircleCrop] = useState(null);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
 
-  const [localFullName, setLocalFullName]   = useState('');
-  const [nameEditing,   setNameEditing]     = useState(false);
-  const [nameSaving,    setNameSaving]      = useState(false);
+  const [localFullName, setLocalFullName] = useState('');
+  const [nameEditing,   setNameEditing]   = useState(false);
+  const [nameSaving,    setNameSaving]    = useState(false);
 
   const { data: currentUser } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
 
@@ -359,8 +339,7 @@ export default function ProfileSettings() {
   const handleAvatarFileChange = (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    const src = URL.createObjectURL(file);
-    setCircleCrop({ src });
+    setCircleCrop({ src: URL.createObjectURL(file) });
     e.target.value = '';
   };
 
@@ -374,8 +353,9 @@ export default function ProfileSettings() {
     } catch (err) {
       console.error('[ProfileSettings] avatar upload failed:', err);
       alert('Failed to upload photo — ' + (err?.message || 'unknown error'));
+    } finally {
+      setUploadingAvatar(false);
     }
-    finally { setUploadingAvatar(false); }
   };
 
   const handleNameSave = async () => {
@@ -386,8 +366,9 @@ export default function ProfileSettings() {
     } catch (err) {
       console.error('[ProfileSettings] name save failed:', err);
       alert('Failed to save name — ' + (err?.message || 'unknown error'));
+    } finally {
+      setNameSaving(false);
     }
-    finally { setNameSaving(false); }
   };
 
   const handleNameCancel = () => {
@@ -400,7 +381,6 @@ export default function ProfileSettings() {
   return (
     <>
       <PageShell title="Profile">
-
         <SectionLabel>Profile picture</SectionLabel>
         <Group sectionId="avatar" highlighted={highlighted}>
           <Row label="Photo" sublabel="Shown on your profile and posts" isLast>
@@ -432,23 +412,17 @@ export default function ProfileSettings() {
               placeholder="Your display name"
               style={{ background: 'rgba(255,255,255,0.06)', border: `1px solid ${nameEditing ? 'rgba(96,165,250,0.5)' : 'rgba(255,255,255,0.1)'}`, borderRadius: 10, color: '#e2e8f0', fontSize: 14, padding: '9px 12px', outline: 'none', width: '100%', fontFamily: 'inherit', transition: 'border-color 0.2s', boxSizing: 'border-box' }}
             />
-
             {nameEditing && (
               <div style={{ display: 'flex', gap: 10, marginTop: 12 }}>
                 <div style={{ position: 'relative', flex: 1 }}>
                   <div style={{ position: 'absolute', inset: 0, borderRadius: 12, background: '#0a0f1a', transform: 'translateY(4px)' }} />
-                  <button
-                    onClick={handleNameCancel}
-                    style={{ position: 'relative', zIndex: 1, width: '100%', padding: '10px 0', borderRadius: 12, border: '1px solid rgba(255,255,255,0.08)', background: 'linear-gradient(to bottom, #1e2535 0%, #0f1520 100%)', color: '#94a3b8', fontSize: 13, fontWeight: 700, cursor: 'pointer', boxShadow: '0 4px 0 0 #0a0f1a, inset 0 1px 0 rgba(255,255,255,0.06)' }}>
+                  <button onClick={handleNameCancel} style={{ position: 'relative', zIndex: 1, width: '100%', padding: '10px 0', borderRadius: 12, border: '1px solid rgba(255,255,255,0.08)', background: 'linear-gradient(to bottom, #1e2535 0%, #0f1520 100%)', color: '#94a3b8', fontSize: 13, fontWeight: 700, cursor: 'pointer', boxShadow: '0 4px 0 0 #0a0f1a, inset 0 1px 0 rgba(255,255,255,0.06)' }}>
                     Cancel
                   </button>
                 </div>
                 <div style={{ position: 'relative', flex: 1 }}>
                   <div style={{ position: 'absolute', inset: 0, borderRadius: 12, background: '#1a3fa8', transform: 'translateY(4px)' }} />
-                  <button
-                    onClick={handleNameSave}
-                    disabled={nameSaving || !localFullName.trim()}
-                    style={{ position: 'relative', zIndex: 1, width: '100%', padding: '10px 0', borderRadius: 12, border: 'none', background: nameSaving ? 'rgba(59,130,246,0.5)' : 'linear-gradient(to bottom, #3b82f6 0%, #1d4ed8 100%)', color: '#fff', fontSize: 13, fontWeight: 700, cursor: nameSaving || !localFullName.trim() ? 'default' : 'pointer', boxShadow: nameSaving ? 'none' : '0 4px 0 0 #1a3fa8, inset 0 1px 0 rgba(255,255,255,0.15)', opacity: !localFullName.trim() ? 0.5 : 1 }}>
+                  <button onClick={handleNameSave} disabled={nameSaving || !localFullName.trim()} style={{ position: 'relative', zIndex: 1, width: '100%', padding: '10px 0', borderRadius: 12, border: 'none', background: nameSaving ? 'rgba(59,130,246,0.5)' : 'linear-gradient(to bottom, #3b82f6 0%, #1d4ed8 100%)', color: '#fff', fontSize: 13, fontWeight: 700, cursor: nameSaving || !localFullName.trim() ? 'default' : 'pointer', boxShadow: nameSaving ? 'none' : '0 4px 0 0 #1a3fa8, inset 0 1px 0 rgba(255,255,255,0.15)', opacity: !localFullName.trim() ? 0.5 : 1 }}>
                     {nameSaving ? 'Saving…' : 'Save'}
                   </button>
                 </div>
@@ -456,7 +430,6 @@ export default function ProfileSettings() {
             )}
           </div>
         </Group>
-
       </PageShell>
 
       {circleCrop && (
