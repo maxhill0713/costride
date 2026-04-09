@@ -240,6 +240,7 @@ export default function RedeemReward() {
 
   return (
     <div className="min-h-screen bg-[linear-gradient(to_bottom_right,#050b1a,#102a70,#050b1a)] pb-24">
+  <div style={{ position: 'fixed', inset: 0, zIndex: -1, background: 'linear-gradient(to bottom right, #050b1a, #102a70, #050b1a)' }} />
       <div className="max-w-6xl mx-auto px-3 md:px-4 py-4">
         <div className="mb-6 grid grid-cols-3 gap-3">
           <button
