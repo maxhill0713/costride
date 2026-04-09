@@ -693,8 +693,6 @@ function FacilitySnapshots() {
             <span style={{ width: 6, height: 6, borderRadius: '50%', background: C.green }} />
             <span style={{ fontSize: 10.5, color: C.green, fontWeight: 700 }}>Active</span>
           </div>
-        </div>
-      </div>
     </div>
   );
 }
@@ -776,37 +774,29 @@ export default function TabOverview({
 
   return (
     <div style={{
-      display: 'flex', minHeight: '100vh', background: C.bg, color: C.text,
+      minHeight: '100vh', background: C.bg, color: C.text,
       fontFamily: "'Inter','DM Sans',system-ui,sans-serif",
       fontSize: 13, lineHeight: 1.5, WebkitFontSmoothing: 'antialiased',
+      overflowY: 'auto', padding: '16px 18px 40px',
     }}>
-      <Sidebar />
+      <div style={{ fontSize: 19, fontWeight: 800, color: C.text, letterSpacing: '-0.02em', display: 'flex', alignItems: 'baseline', gap: 6, marginBottom: 14 }}>
+        Overview
+        <span style={{ color: C.muted, fontWeight: 300, fontSize: 17 }}>/</span>
+        <span style={{ color: C.purple }}>Dashboard</span>
+      </div>
 
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, overflow: 'hidden' }}>
-        <TopBar />
+      <RetentionStatusCard />
 
-        <div style={{ flex: 1, overflowY: 'auto', padding: '16px 18px 40px' }}>
-          {/* Page heading */}
-          <div style={{ fontSize: 19, fontWeight: 800, color: C.text, letterSpacing: '-0.02em', display: 'flex', alignItems: 'baseline', gap: 6, marginBottom: 14 }}>
-            Overview
-            <span style={{ color: C.muted, fontWeight: 300, fontSize: 17 }}>/</span>
-            <span style={{ color: C.purple }}>Dashboard</span>
-          </div>
+      <div className="ovr" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12, marginBottom: 12, alignItems: 'start' }}>
+        <EngagementMetrics stats={automationStats} />
+        <MemberHealth />
+        <RecentLiveActivity />
+      </div>
 
-          <RetentionStatusCard />
-
-          <div className="ovr" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12, marginBottom: 12, alignItems: 'start' }}>
-            <EngagementMetrics stats={automationStats} />
-            <MemberHealth />
-            <RecentLiveActivity />
-          </div>
-
-          <div className="ovr" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12, alignItems: 'start' }}>
-            <PriorityTodos />
-            <FacilitySnapshots />
-            <BusinessSnapshot />
-          </div>
-        </div>
+      <div className="ovr" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12, alignItems: 'start' }}>
+        <PriorityTodos />
+        <FacilitySnapshots />
+        <BusinessSnapshot />
       </div>
     </div>
   );
