@@ -80,8 +80,12 @@ Deno.serve(async (req) => {
       deleteAll(db.entities.Gym,           allGyms),
     ]);
 
-    // Finally delete the User record itself
-    await db.entities.User.delete(userId);
+    // Mark user as deleted (can't delete User entity as it's built-in)
+    // Set display_name to empty and add a flag so they can't interact
+    await db.entities.User.update(userId, {
+      display_name: '[deleted]',
+      deleted_at: new Date().toISOString(),
+    });
 
     console.log(`Account fully deleted for: ${userEmail}`);
     return Response.json({ success: true });
