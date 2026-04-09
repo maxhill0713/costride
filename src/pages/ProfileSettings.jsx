@@ -88,223 +88,130 @@ async function cropToBlob(imageSrc, cropRect, outputSize) {
   return new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', 0.92));
 }
 
-const CROP_SIZE = 260;
-
 function CircleCropModal({ imageSrc, onConfirm, onCancel, uploading }) {
+  const containerRef = useRef(null);
   const [imgNatural, setImgNatural] = useState({ w: 1, h: 1 });
   const [offset, setOffset] = useState({ x: 0, y: 0 });
   const [scale, setScale] = useState(1);
 
-  // Minimum scale = image fills the circle (no empty edges)
-  // The rendered image is imgNatural.w * scale × imgNatural.h * scale
-  // We need both dimensions >= CROP_SIZE
-  const minScale = useCallback((nat) => {
-    if (!nat || nat.w <= 0 || nat.h <= 0) return 1;
-    return Math.max(CROP_SIZE / nat.w, CROP_SIZE / nat.h);
-  }, []);
+  const CROP_SIZE = 260;
 
-  // Clamp offset so the image always fully covers the circle.
-  // Coordinate system: offset is the translation applied to the image centre
-  // relative to the circle centre. So the image top-left in circle-space is:
-  //   left = CROP_SIZE/2 + offset.x - (imgW/2)
-  //   top  = CROP_SIZE/2 + offset.y - (imgH/2)
-  // For full coverage we need:
-  //   left <= 0  →  offset.x <= imgW/2
-  //   top  <= 0  →  offset.y <= imgH/2
-  //   left + imgW >= CROP_SIZE  →  offset.x >= CROP_SIZE/2 - imgW/2... wait, easier:
-  // Image covers circle iff:
-  //   imgCentreX - imgW/2 <= 0       → offset.x <= imgW/2
-  //   imgCentreY - imgH/2 <= 0       → offset.y <= imgH/2
-  //   imgCentreX + imgW/2 >= CROP_SIZE → offset.x >= CROP_SIZE/2 - imgW/2... 
-  // Let half = CROP_SIZE/2, hw = imgW/2, hh = imgH/2
-  //   offset.x in [half - hw*2 ... hw*2 - half]  no — let's think simply:
-  // The image left edge = circleLeft + CROP_SIZE/2 + offset.x - imgW/2
-  // Must be <= circleLeft  →  offset.x <= imgW/2  ✓
-  // The image right edge = left + imgW must be >= circleLeft + CROP_SIZE
-  //   → CROP_SIZE/2 + offset.x + imgW/2 >= CROP_SIZE
-  //   → offset.x >= CROP_SIZE/2 - imgW/2
-  // Same vertically.
-  const clamp = useCallback((ox, oy, sc, nat) => {
-    const imgW = (nat || imgNatural).w * sc;
-    const imgH = (nat || imgNatural).h * sc;
-    const half = CROP_SIZE / 2;
-    const maxX = imgW / 2 - half;   // how far right the centre can move (positive = right)
-    const maxY = imgH / 2 - half;
-    // offset moves image centre away from circle centre
-    // positive offset.x → image shifts right → left edge moves right (bad if > 0 from circle left)
-    // We need image left <= circle left: circleCentre + offset.x - imgW/2 <= 0 → offset.x <= imgW/2 - 0... 
-    // Simpler: just bound offset.x to [-maxX, maxX]
-    return {
-      x: Math.max(-maxX, Math.min(maxX, ox)),
-      y: Math.max(-maxY, Math.min(maxY, oy)),
-    };
-  }, [imgNatural]);
-
-  const scaleRef  = useRef(scale);
-  const offsetRef = useRef(offset);
-  const natRef    = useRef(imgNatural);
-  useEffect(() => { scaleRef.current  = scale;      }, [scale]);
-  useEffect(() => { offsetRef.current = offset;     }, [offset]);
-  useEffect(() => { natRef.current    = imgNatural; }, [imgNatural]);
-
-  // Load image and initialise: centre the image, enforce min scale
   useEffect(() => {
     loadImage(imageSrc).then(img => {
-      const nat = { w: img.naturalWidth, h: img.naturalHeight };
-      setImgNatural(nat);
-      const ms = minScale(nat);
-      // Start at minScale so image exactly fills the circle
-      setScale(ms);
-      scaleRef.current = ms;
-      // Offset (0,0) = image centre at circle centre = perfectly centred
+      setImgNatural({ w: img.naturalWidth, h: img.naturalHeight });
+      const fit = CROP_SIZE / Math.min(img.naturalWidth, img.naturalHeight);
+      setScale(fit);
+      scaleRef.current = fit;
       setOffset({ x: 0, y: 0 });
-      offsetRef.current = { x: 0, y: 0 };
-      natRef.current = nat;
     });
   }, [imageSrc]);
 
-  // ── Drag — pointer events only, blocked during pinch ──
-  const drag      = useRef(null);
-  const isPinching = useRef(false);
-  const rafId     = useRef(null);
+  const clamp = useCallback((ox, oy, sc) => {
+    const rw = imgNatural.w * sc;
+    const rh = imgNatural.h * sc;
+    const half = CROP_SIZE / 2;
+    return {
+      x: Math.min(half, Math.max(half - rw, ox)),
+      y: Math.min(half, Math.max(half - rh, oy)),
+    };
+  }, [imgNatural, CROP_SIZE]);
+
+  // Keep a ref to scale so RAF callbacks always see the latest value
+  const scaleRef = useRef(scale);
+  useEffect(() => { scaleRef.current = scale; }, [scale]);
+
+  // ── Smooth drag via RAF ──
+  const drag = useRef(null);
+  const rafId = useRef(null);
 
   const onPointerDown = (e) => {
-    if (isPinching.current) return;
     e.currentTarget.setPointerCapture(e.pointerId);
-    drag.current = {
-      startX: e.clientX - offsetRef.current.x,
-      startY: e.clientY - offsetRef.current.y,
-    };
+    drag.current = { startX: e.clientX - offset.x, startY: e.clientY - offset.y };
   };
 
   const onPointerMove = (e) => {
-    if (!drag.current || isPinching.current) return;
+    if (!drag.current) return;
     const nx = e.clientX - drag.current.startX;
     const ny = e.clientY - drag.current.startY;
     if (rafId.current) cancelAnimationFrame(rafId.current);
     rafId.current = requestAnimationFrame(() => {
-      const clamped = clamp(nx, ny, scaleRef.current, natRef.current);
-      setOffset(clamped);
-      offsetRef.current = clamped;
+      setOffset(clamp(nx, ny, scaleRef.current));
     });
   };
 
   const onPointerUp = () => { drag.current = null; };
 
-  // ── Pinch zoom — uniform scale, blocks drag simultaneously ──
-  const lastPinch = useRef(null); // { dist, midX, midY }
-
-  const onTouchStart = (e) => {
-    if (e.touches.length === 2) {
-      isPinching.current = true;
-      drag.current = null; // cancel any active drag
-      const dx = e.touches[0].clientX - e.touches[1].clientX;
-      const dy = e.touches[0].clientY - e.touches[1].clientY;
-      lastPinch.current = { dist: Math.hypot(dx, dy) };
-    }
-  };
+  // ── Pinch zoom — uniform scale only, no distortion ──
+  const lastDist = useRef(null);
 
   const onTouchMove = (e) => {
-    if (e.touches.length !== 2 || !lastPinch.current) return;
+    if (e.touches.length !== 2) return;
     e.preventDefault();
-    const dx   = e.touches[0].clientX - e.touches[1].clientX;
-    const dy   = e.touches[0].clientY - e.touches[1].clientY;
+    const dx = e.touches[0].clientX - e.touches[1].clientX;
+    const dy = e.touches[0].clientY - e.touches[1].clientY;
     const dist = Math.hypot(dx, dy);
-    const ratio = dist / lastPinch.current.dist;
-    lastPinch.current = { dist };
-
-    setScale(prevScale => {
-      const ms  = minScale(natRef.current);
-      const ns  = Math.max(ms, Math.min(4, prevScale * ratio));
-      scaleRef.current = ns;
-      // Re-clamp offset with new scale so image still covers circle
-      const clamped = clamp(offsetRef.current.x, offsetRef.current.y, ns, natRef.current);
-      setOffset(clamped);
-      offsetRef.current = clamped;
-      return ns;
-    });
-  };
-
-  const onTouchEnd = (e) => {
-    if (e.touches.length < 2) {
-      lastPinch.current = null;
-      // Small delay before re-enabling drag so a lift-then-drag doesn't glitch
-      setTimeout(() => { isPinching.current = false; }, 80);
+    if (lastDist.current != null) {
+      const delta = (dist - lastDist.current) * 0.008;
+      setScale(s => {
+        const ns = Math.max(0.5, Math.min(4, s + delta));
+        scaleRef.current = ns;
+        setOffset(o => clamp(o.x, o.y, ns));
+        return ns;
+      });
     }
+    lastDist.current = dist;
   };
 
-  // ── Mouse wheel zoom ──
+  const onTouchEnd = () => { lastDist.current = null; };
+
   const onWheel = (e) => {
     e.preventDefault();
-    setScale(prevScale => {
-      const ms = minScale(natRef.current);
-      const ns = Math.max(ms, Math.min(4, prevScale - e.deltaY * 0.002));
+    setScale(s => {
+      const ns = Math.max(0.5, Math.min(4, s - e.deltaY * 0.002));
       scaleRef.current = ns;
-      const clamped = clamp(offsetRef.current.x, offsetRef.current.y, ns, natRef.current);
-      setOffset(clamped);
-      offsetRef.current = clamped;
+      setOffset(o => clamp(o.x, o.y, ns));
       return ns;
     });
   };
 
-  // ── Crop & export ──
   const handleConfirm = async () => {
-    // offset is image-centre displacement from circle-centre (in screen pixels at current scale)
-    // Image rendered: centre at (CROP_SIZE/2 + offset.x, CROP_SIZE/2 + offset.y)
-    const imgW = imgNatural.w * scale;
-    const imgH = imgNatural.h * scale;
-    // Top-left of rendered image in circle space:
-    const imgLeft = CROP_SIZE / 2 + offset.x - imgW / 2;
-    const imgTop  = CROP_SIZE / 2 + offset.y - imgH / 2;
-    // Circle crop window in rendered-image space:
-    const cropX = -imgLeft;
-    const cropY = -imgTop;
-    // Map to natural image coordinates:
-    const scaleX = imgNatural.w / imgW;
-    const scaleY = imgNatural.h / imgH;
-    const natCropX = cropX * scaleX;
-    const natCropY = cropY * scaleY;
-    const natCropW = CROP_SIZE * scaleX;
-    const natCropH = CROP_SIZE * scaleY;
-    const blob = await cropToBlob(
-      imageSrc,
-      { x: natCropX, y: natCropY, w: natCropW, h: natCropH },
-      { w: 400, h: 400 }
-    );
+    const rw = imgNatural.w * scale;
+    const rh = imgNatural.h * scale;
+    const imgLeft = CROP_SIZE / 2 + offset.x;
+    const imgTop  = CROP_SIZE / 2 + offset.y;
+    const cropX = (-imgLeft / rw) * imgNatural.w;
+    const cropY = (-imgTop  / rh) * imgNatural.h;
+    const cropW = (CROP_SIZE / rw) * imgNatural.w;
+    const cropH = (CROP_SIZE / rh) * imgNatural.h;
+    const blob = await cropToBlob(imageSrc, { x: cropX, y: cropY, w: cropW, h: cropH }, { w: 400, h: 400 });
     onConfirm(blob);
   };
-
-  // Rendered image position: centre of image at (CROP_SIZE/2 + offset.x, CROP_SIZE/2 + offset.y)
-  const imgW = imgNatural.w * scale;
-  const imgH = imgNatural.h * scale;
 
   return (
     <div style={{ position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(0,0,0,0.92)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 24 }}>
       <p style={{ color: '#94a3b8', fontSize: 13, fontWeight: 600, letterSpacing: '0.04em', textTransform: 'uppercase' }}>Drag to position</p>
 
       <div
+        ref={containerRef}
         style={{ position: 'relative', width: CROP_SIZE, height: CROP_SIZE, userSelect: 'none' }}
         onPointerDown={onPointerDown}
         onPointerMove={onPointerMove}
         onPointerUp={onPointerUp}
-        onPointerCancel={onPointerUp}
-        onTouchStart={onTouchStart}
         onTouchMove={onTouchMove}
         onTouchEnd={onTouchEnd}
         onWheel={onWheel}
       >
-        {/* Clipped circle */}
+        {/* Clipped circle — no dark overlay */}
         <div style={{ position: 'absolute', inset: 0, borderRadius: '50%', overflow: 'hidden', cursor: 'grab' }}>
           <img
             src={imageSrc}
             draggable={false}
             style={{
               position: 'absolute',
-              width:  imgW,
-              height: imgH,
-              // Centre of image at (CROP_SIZE/2 + offset.x, CROP_SIZE/2 + offset.y)
-              left: CROP_SIZE / 2 + offset.x - imgW / 2,
-              top:  CROP_SIZE / 2 + offset.y - imgH / 2,
+              width: imgNatural.w * scale,
+              height: imgNatural.h * scale,
+              left: CROP_SIZE / 2 + offset.x,
+              top:  CROP_SIZE / 2 + offset.y,
               pointerEvents: 'none',
               userSelect: 'none',
               willChange: 'transform',

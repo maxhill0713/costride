@@ -177,7 +177,7 @@ function TopBar() {
 function AlertBanner({ onDismiss }) {
   return (
     <div style={{
-      border: `1px solid ${C.border}`, borderRadius: 10,
+      background: C.card2, border: `1px solid ${C.border}`, borderRadius: 10,
       padding: "11px 16px", marginBottom: 10,
       display: "flex", alignItems: "center", gap: 10,
     }}>
@@ -194,7 +194,7 @@ function AlertBanner({ onDismiss }) {
 /* ─── journey card ────────────────────────────────────────────── */
 function JourneyCard() {
   return (
-    <div style={{ border: `1px solid ${C.border}`, borderRadius: 10, padding: "11px 16px", marginBottom: 10 }}>
+    <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 10, padding: "11px 16px", marginBottom: 10 }}>
       <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
         <span style={{ fontSize: 12, fontWeight: 700, color: C.text, whiteSpace: "nowrap" }}>Content Success Journey</span>
         {/* Progress track */}
@@ -258,7 +258,7 @@ const DRAFTS = [
 
 function DraftCard({ d }) {
   return (
-    <div style={{ border: `1px solid ${C.border}`, borderRadius: 10, overflow: "hidden" }}>
+    <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 10, overflow: "hidden" }}>
       {/* Row 1: avatar + title/sub */}
       <div style={{ padding: "12px 14px 10px", display: "flex", alignItems: "flex-start", gap: 9 }}>
         <Avatar name={d.author} size={30} />
@@ -365,7 +365,7 @@ function ContentTable() {
   const toggle = id => setChecked(p => { const s = new Set(p); s.has(id) ? s.delete(id) : s.add(id); return s; });
 
   return (
-    <div style={{ border: `1px solid ${C.border}`, borderRadius: 10, overflow: "hidden" }}>
+    <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 10, overflow: "hidden" }}>
       <TableHeader />
       {TABLE_ROWS.map((row, i) => (
         <TableRow key={row.id} row={row} checked={checked.has(row.id)} onToggle={() => toggle(row.id)} last={i === TABLE_ROWS.length - 1} />
@@ -377,7 +377,7 @@ function ContentTable() {
 /* ─── feed row (below the table) ─────────────────────────────── */
 function FeedRow() {
   return (
-    <div style={{ border: `1px solid ${C.border}`, borderRadius: 10, marginTop: 10 }}>
+    <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 10, marginTop: 10 }}>
       <div style={{ padding: "8px 12px", borderBottom: `1px solid ${C.border}` }}>
         <span style={{ fontSize: 12.5, fontWeight: 700, color: C.text }}>Feed</span>
       </div>
@@ -475,7 +475,7 @@ function RightSidebar() {
         <div style={{ fontSize: 12.5, fontWeight: 700, color: C.text, marginBottom: 10 }}>Content Feed Preview</div>
 
         {/* Post */}
-        <div style={{ border: `1px solid ${C.border}`, borderRadius: 10, overflow: "hidden" }}>
+        <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 10, overflow: "hidden" }}>
           <div style={{ padding: "10px 12px 8px", display: "flex", alignItems: "center", gap: 8 }}>
             <Avatar name="Sarah" size={26} />
             <span style={{ fontSize: 12, fontWeight: 700, color: C.text }}>Sarah</span>
@@ -602,7 +602,7 @@ function ContentArea({ events = [], challenges = [], polls = [], posts = [], ope
               ) : (
                 <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                   {events.map(ev => (
-                    <div key={ev.id} style={{ border: `1px solid ${C.border}`, borderRadius: 10, padding: "13px 16px", display: "flex", alignItems: "center", gap: 12 }}>
+                    <div key={ev.id} style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 10, padding: "13px 16px", display: "flex", alignItems: "center", gap: 12 }}>
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <div style={{ fontSize: 13, fontWeight: 700, color: C.text }}>{ev.title}</div>
                         {ev.description && <div style={{ fontSize: 11.5, color: C.muted, marginTop: 3 }}>{ev.description}</div>}
@@ -632,7 +632,7 @@ function ContentArea({ events = [], challenges = [], polls = [], posts = [], ope
               ) : (
                 <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                   {challenges.map(ch => (
-                    <div key={ch.id} style={{ border: `1px solid ${C.border}`, borderRadius: 10, padding: "13px 16px", display: "flex", alignItems: "center", gap: 12 }}>
+                    <div key={ch.id} style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 10, padding: "13px 16px", display: "flex", alignItems: "center", gap: 12 }}>
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 3 }}>
                           <div style={{ fontSize: 13, fontWeight: 700, color: C.text }}>{ch.title}</div>
@@ -665,7 +665,7 @@ function ContentArea({ events = [], challenges = [], polls = [], posts = [], ope
               ) : (
                 <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                   {polls.map(poll => (
-                    <div key={poll.id} style={{ border: `1px solid ${C.border}`, borderRadius: 10, padding: "13px 16px" }}>
+                    <div key={poll.id} style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 10, padding: "13px 16px" }}>
                       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
                         <div style={{ fontSize: 13, fontWeight: 700, color: C.text }}>{poll.question || poll.title}</div>
                         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
@@ -707,7 +707,7 @@ function ContentArea({ events = [], challenges = [], polls = [], posts = [], ope
               ) : (
                 <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                   {posts.map(p => (
-                    <div key={p.id} style={{ border: `1px solid ${C.border}`, borderRadius: 10, padding: "13px 16px", display: "flex", alignItems: "center", gap: 12 }}>
+                    <div key={p.id} style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 10, padding: "13px 16px", display: "flex", alignItems: "center", gap: 12 }}>
                       {p.image_url && <img src={p.image_url} alt="" style={{ width: 52, height: 52, borderRadius: 7, objectFit: "cover", flexShrink: 0 }} />}
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <div style={{ fontSize: 12.5, fontWeight: 700, color: C.text }}>{p.member_name}</div>
