@@ -96,6 +96,7 @@ function FriendsSection({
             <motion.div
               key="friends-panel"
               className="fixed inset-x-0 top-0 z-[9999] flex justify-center"
+              style={{ paddingTop: 'env(safe-area-inset-top)' }}
               variants={slideDownVariants}
               initial="hidden"
               animate="visible"
@@ -297,6 +298,7 @@ function FriendsSection({
             <motion.div
               key="add-friend-panel"
               className="fixed inset-x-0 top-0 z-[9999] flex justify-center"
+              style={{ paddingTop: 'env(safe-area-inset-top)' }}
               variants={slideDownVariants}
               initial="hidden"
               animate="visible"
