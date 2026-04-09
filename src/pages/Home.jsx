@@ -596,10 +596,10 @@ export default function Home() {
   });
 
   useEffect(() => {
-    if (currentUser && !currentUser.onboarding_completed) {
+    if (currentUser && !currentUser.onboarding_completed && !currentUser.deleted_at) {
       navigate(createPageUrl('Onboarding'), { replace: true });
     }
-  }, [currentUser?.onboarding_completed, navigate]);
+  }, [currentUser?.onboarding_completed, currentUser?.deleted_at, navigate]);
 
   useEffect(() => {
     if (!showStreakCelebration) return;

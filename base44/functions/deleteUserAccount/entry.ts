@@ -44,9 +44,10 @@ Deno.serve(async (req) => {
 
     // ── STEP 1: Immediately mark account as deleted to prevent race conditions
     // (e.g. scheduled automations re-processing this user while deletion is in-flight)
+    // NOTE: Do NOT touch onboarding_completed here — changing it prematurely causes the
+    // frontend to redirect to Onboarding before the user has intentionally triggered that flow.
     await db.entities.User.update(userId, {
       deleted_at: new Date().toISOString(),
-      onboarding_completed: false,
     });
 
     // ── STEP 2: Fetch all data owned by this user (strictly scoped to userId/userEmail)
