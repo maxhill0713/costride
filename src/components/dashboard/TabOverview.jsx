@@ -1,137 +1,44 @@
 import React, { useState, useEffect } from 'react';
-import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
 import {
   AlertTriangle, ArrowRight, Activity, TrendingUp, TrendingDown,
   RotateCcw, BarChart2, Star, MessageSquare, Phone, PlayCircle,
-  Check, MoreHorizontal, Eye, Dumbbell, Users, DollarSign,
+  Check, MoreHorizontal, Eye, Users, DollarSign,
   Zap, Target, ChevronUp, ChevronDown, Send,
-  LayoutDashboard, FileText, Settings, Gift, Flame,
-  ExternalLink, LogOut, QrCode, Search,
+  LayoutDashboard, FileText, Settings, Flame,
+  ExternalLink, LogOut, Search, Plus, Bell, Clock, Trophy,
+  RefreshCw, Shield, Award, Dumbbell, Filter, Info
 } from 'lucide-react';
 
-/* ─── Content Hub design tokens — exact match ────────────────── */
+/* ─── Design Tokens ─────────────────────────────────────────── */
 const C = {
-  bg:      "#0b0e17",
-  surface: "#111520",
-  card:    "#161b28",
-  card2:   "#1a2030",
-  border:  "rgba(255,255,255,0.06)",
-  border2: "rgba(255,255,255,0.10)",
-  text:    "#e8ecf4",
-  muted:   "#7c879e",
-  dim:     "#3e4a60",
-  dimmer:  "#252d3d",
-  blue:    "#3b82f6",  blueDim:    "rgba(59,130,246,0.13)",   blueBorder:   "rgba(59,130,246,0.22)",
-  red:     "#f87171",  redDim:     "rgba(239,68,68,0.10)",    redBorder:    "rgba(239,68,68,0.25)",
-  redSolid:"#ef4444",
-  amber:   "#fbbf24",  amberDim:   "rgba(245,158,11,0.10)",   amberBorder:  "rgba(245,158,11,0.25)",
-  green:   "#34d399",  greenDim:   "rgba(16,185,129,0.10)",   greenBorder:  "rgba(16,185,129,0.25)",
-  purple:  "#818cf8",  purpleDim:  "rgba(99,102,241,0.13)",   purpleBorder: "rgba(99,102,241,0.25)",
-  orange:  "#fb923c",  orangeDim:  "rgba(249,115,22,0.10)",   orangeBorder: "rgba(249,115,22,0.25)",
+  bg:      '#0b0e17',
+  surface: '#111520',
+  card:    '#161b28',
+  card2:   '#1a2030',
+  border:  'rgba(255,255,255,0.06)',
+  border2: 'rgba(255,255,255,0.10)',
+  text:    '#e8ecf4',
+  muted:   '#7c879e',
+  dim:     '#3e4a60',
+  dimmer:  '#252d3d',
+  blue:    '#3b82f6',  blueDim:    'rgba(59,130,246,0.13)',   blueBorder:   'rgba(59,130,246,0.22)',
+  red:     '#f87171',  redDim:     'rgba(239,68,68,0.10)',    redBorder:    'rgba(239,68,68,0.25)',
+  redSolid:'#ef4444',
+  amber:   '#fbbf24',  amberDim:   'rgba(245,158,11,0.10)',   amberBorder:  'rgba(245,158,11,0.25)',
+  green:   '#34d399',  greenDim:   'rgba(16,185,129,0.10)',   greenBorder:  'rgba(16,185,129,0.25)',
+  purple:  '#818cf8',  purpleDim:  'rgba(99,102,241,0.13)',   purpleBorder: 'rgba(99,102,241,0.25)',
+  orange:  '#fb923c',  orangeDim:  'rgba(249,115,22,0.10)',   orangeBorder: 'rgba(249,115,22,0.25)',
 };
-
-const card = (ex={}) => ({
-  background: C.card, border: `1px solid ${C.border}`, borderRadius: 10, ...ex,
-});
-
 const mono = { fontVariantNumeric: 'tabular-nums', fontFeatureSettings: '"tnum"' };
 
-/* ── Sidebar ─────────────────────────────────────────────────── */
-const NAV = [
-  { Icon: LayoutDashboard, label: "Overview", active: true },
-  { Icon: Users,           label: "Members"   },
-  { Icon: FileText,        label: "Content"   },
-  { Icon: BarChart2,       label: "Analytics" },
-  { Icon: Zap,             label: "Automations" },
-  { Icon: Settings,        label: "Settings"  },
-  { Icon: Gift,            label: "Loyalty Programs" },
-];
-const LINKS = [
-  { Icon: ExternalLink, label: "View Gym Page" },
-  { Icon: Eye,          label: "Member View"   },
-  { Icon: LogOut,       label: "Log Out", red: true },
-];
-
-function Sidebar() {
-  return (
-    <div style={{
-      width: 210, minHeight: "100vh", flexShrink: 0,
-      background: C.surface, borderRight: `1px solid ${C.border}`,
-      display: "flex", flexDirection: "column",
-    }}>
-      <div style={{ padding: "16px 14px 14px", borderBottom: `1px solid ${C.border}`, display: "flex", alignItems: "center", gap: 9 }}>
-        <div style={{ width: 34, height: 34, borderRadius: 8, background: "linear-gradient(135deg,#3b82f6,#6366f1)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-          <Flame size={15} color="#fff" />
-        </div>
-        <div>
-          <div style={{ fontSize: 12.5, fontWeight: 800, color: C.text, lineHeight: 1.25 }}>Foundry Gym</div>
-          <div style={{ fontSize: 9, fontWeight: 700, color: C.muted, letterSpacing: "0.12em", textTransform: "uppercase", marginTop: 1 }}>Gym Owner</div>
-        </div>
-      </div>
-      <div style={{ padding: "13px 12px 8px" }}>
-        <div style={{ fontSize: 9, fontWeight: 700, color: C.dimmer, letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: 6 }}>Navigation</div>
-        {NAV.map(item => (
-          <div key={item.label} style={{
-            display: "flex", alignItems: "center", gap: 8, padding: "7px 9px", borderRadius: 8, marginBottom: 1, cursor: "pointer",
-            background: item.active ? C.blueDim : "transparent",
-            border: item.active ? `1px solid ${C.blueBorder}` : "1px solid transparent",
-          }}>
-            <item.Icon size={13} color={item.active ? C.blue : C.muted} strokeWidth={1.8} />
-            <span style={{ fontSize: 12.5, fontWeight: item.active ? 700 : 400, color: item.active ? C.blue : C.muted }}>{item.label}</span>
-          </div>
-        ))}
-      </div>
-      <div style={{ flex: 1 }} />
-      <div style={{ padding: "10px 12px 18px", borderTop: `1px solid ${C.border}` }}>
-        <div style={{ fontSize: 9, fontWeight: 700, color: C.dimmer, letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: 6 }}>Links</div>
-        {LINKS.map(l => (
-          <div key={l.label} style={{ display: "flex", alignItems: "center", gap: 8, padding: "6px 9px", borderRadius: 8, cursor: "pointer", marginBottom: 1 }}>
-            <l.Icon size={12} color={l.red ? C.red : C.muted} strokeWidth={1.8} />
-            <span style={{ fontSize: 12, color: l.red ? C.red : C.muted }}>{l.label}</span>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-/* ── TopBar ──────────────────────────────────────────────────── */
-function TopBar() {
-  return (
-    <div style={{
-      height: 48, background: C.surface, borderBottom: `1px solid ${C.border}`,
-      display: "flex", alignItems: "center", padding: "0 18px", gap: 10, flexShrink: 0,
-    }}>
-      <span style={{ fontSize: 12.5, fontWeight: 700, color: C.text }}>Thurs 9 Apr</span>
-      <div style={{ position: "relative", flex: "0 0 220px" }}>
-        <Search size={11} color={C.dim} style={{ position: "absolute", left: 9, top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }} />
-        <input placeholder="Search members..." style={{ width: "100%", boxSizing: "border-box", padding: "5px 9px 5px 27px", borderRadius: 7, background: C.card, border: `1px solid ${C.border}`, color: C.text, fontSize: 12, outline: "none" }} />
-      </div>
-      <div style={{ flex: 1 }} />
-      <button style={{ display: "flex", alignItems: "center", gap: 5, padding: "5px 11px", borderRadius: 7, background: C.card, border: `1px solid ${C.border2}`, color: C.muted, fontSize: 12, fontWeight: 600, cursor: "pointer" }}>
-        <QrCode size={11} /> Scan QR <ChevronDown size={9} />
-      </button>
-      <div style={{ display: "flex", alignItems: "center", gap: 7, padding: "4px 10px", borderRadius: 7, background: C.card, border: `1px solid ${C.border}`, cursor: "pointer" }}>
-        <div style={{ width: 20, height: 20, borderRadius: "50%", background: C.blueDim, color: C.blue, fontSize: 8, fontWeight: 800, display: "flex", alignItems: "center", justifyContent: "center" }}>M</div>
-        <span style={{ fontSize: 12, fontWeight: 600, color: C.text }}>Max</span>
-        <ChevronDown size={9} color={C.dim} />
-      </div>
-      <div style={{ display: "flex", alignItems: "center", gap: 5, padding: "5px 10px", borderRadius: 7, background: C.redDim, border: `1px solid ${C.redBorder}`, cursor: "pointer" }}>
-        <div style={{ width: 6, height: 6, borderRadius: "50%", background: C.redSolid }} />
-        <span style={{ fontSize: 11.5, fontWeight: 700, color: C.red }}>3 At Risk</span>
-      </div>
-    </div>
-  );
-}
-
-/* ── Primitives ──────────────────────────────────────────────── */
+/* ─── Primitives ─────────────────────────────────────────────── */
 function Avatar({ name = '?', size = 28 }) {
   const initials = name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
   const hue = [...name].reduce((a, c) => a + c.charCodeAt(0), 0) % 360;
   return (
     <div style={{
       width: size, height: size, borderRadius: '50%', flexShrink: 0,
-      background: `hsl(${hue},35%,10%)`, border: `1.5px solid hsl(${hue},35%,20%)`,
+      background: `hsl(${hue},35%,10%)`, border: `1.5px solid hsl(${hue},35%,22%)`,
       display: 'flex', alignItems: 'center', justifyContent: 'center',
       fontSize: size * 0.33, fontWeight: 800, color: `hsl(${hue},55%,62%)`, ...mono,
     }}>{initials}</div>
@@ -141,14 +48,14 @@ function Avatar({ name = '?', size = 28 }) {
 function AvatarStack({ names = [], size = 22 }) {
   return (
     <div style={{ display: 'flex', alignItems: 'center' }}>
-      {names.slice(0, 6).map((n, i) => (
+      {names.slice(0, 5).map((n, i) => (
         <div key={i} style={{ marginLeft: i === 0 ? 0 : -6, zIndex: 10 - i }}>
           <Avatar name={n} size={size} />
         </div>
       ))}
-      {names.length > 6 && (
-        <div style={{ width: size, height: size, borderRadius: '50%', background: C.card2, border: `1.5px solid ${C.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 9, color: C.muted, marginLeft: -6, ...mono }}>
-          +{names.length - 6}
+      {names.length > 5 && (
+        <div style={{ width: size, height: size, borderRadius: '50%', background: C.card2, border: `1.5px solid ${C.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 8, color: C.muted, marginLeft: -6, ...mono }}>
+          +{names.length - 5}
         </div>
       )}
     </div>
@@ -168,10 +75,9 @@ function Badge({ label, color = 'blue', dot, small }) {
   return (
     <span style={{
       display: 'inline-flex', alignItems: 'center', gap: 4,
-      padding: small ? '2px 6px' : '2px 8px', borderRadius: 20,
+      padding: small ? '2px 6px' : '3px 9px', borderRadius: 20,
       background: bg, border: `1px solid ${bd}`,
-      fontSize: small ? 9.5 : 10.5, fontWeight: 700, color: fg,
-      whiteSpace: 'nowrap', flexShrink: 0,
+      fontSize: small ? 9.5 : 10.5, fontWeight: 700, color: fg, whiteSpace: 'nowrap', flexShrink: 0,
     }}>
       {dot && <span style={{ width: 5, height: 5, borderRadius: '50%', background: fg, flexShrink: 0 }} />}
       {label}
@@ -199,12 +105,12 @@ function Sparkline({ data = [], color = C.blue, height = 32, width = 80 }) {
   const lastPt = pts.split(' ').pop().split(',');
   const ptsArr = pts.split(' ');
   const area = `M1,${height - 1} ${ptsArr.map(p => `L${p}`).join(' ')} L${width - 1},${height - 1} Z`;
-  const gradId = `sp_${color.replace(/[^a-z0-9]/gi, '')}${Math.round(Math.random()*9999)}`;
+  const gradId = `sp_${color.replace(/[^a-z0-9]/gi, '').slice(0, 8)}_${Math.round(Math.random() * 9999)}`;
   return (
     <svg width={width} height={height} style={{ overflow: 'visible', display: 'block' }}>
       <defs>
         <linearGradient id={gradId} x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor={color} stopOpacity="0.15" />
+          <stop offset="0%" stopColor={color} stopOpacity="0.18" />
           <stop offset="100%" stopColor={color} stopOpacity="0" />
         </linearGradient>
       </defs>
@@ -215,205 +121,361 @@ function Sparkline({ data = [], color = C.blue, height = 32, width = 80 }) {
   );
 }
 
-/* ═══════════════════════════════════════════════════════════════
-   CARD 1 — Member Retention Status & Forecast
-═══════════════════════════════════════════════════════════════ */
-function RetentionStatusCard() {
-  const tiers = [
-    {
-      id: 'slip-a', label: 'Slipping', range: '7–10 days', count: 12, total: 87,
-      color: C.amber, dim: C.amberDim, border: C.amberBorder,
-      mrrAtRisk: 420, recoveryRate: 88,
-      members: ['Alex B','Sam C','Chris D','Jordan E','Taylor F','Riley G','Casey H','Pat L'],
-      action: 'Bulk Message Nudge', Icon: MessageSquare,
-    },
-    {
-      id: 'slip-b', label: 'Slipping', range: '11–13 days', count: 3, total: 87,
-      color: C.orange, dim: C.orangeDim, border: C.orangeBorder,
-      mrrAtRisk: 165, recoveryRate: 74,
-      members: ['Morgan K','Drew L','Quinn M'],
-      action: 'Bulk Message Nudge', Icon: MessageSquare,
-    },
-    {
-      id: 'ghost', label: 'Ghosting', range: '14–20 days', count: 3, total: 87,
-      color: C.red, dim: C.redDim, border: C.redBorder,
-      mrrAtRisk: 210, recoveryRate: 61,
-      members: ['Jamie N','Avery O','Blake P'],
-      action: 'Schedule Individual Call', Icon: Phone,
-    },
-    {
-      id: 'churn', label: 'Churn Risk', range: '21+ days', count: 1, total: 87,
-      color: '#f43f5e', dim: 'rgba(244,63,94,0.10)', border: 'rgba(244,63,94,0.25)',
-      mrrAtRisk: 95, recoveryRate: 38,
-      members: ['Skyler Q'],
-      action: 'Run Automated Rule', Icon: PlayCircle,
-    },
+/* ─── Gauge SVG ──────────────────────────────────────────────── */
+function GaugeMeter({ value = 127, max = 200 }) {
+  const W = 200, H = 112;
+  const cx = 100, cy = 104;
+  const Ro = 84, Ri = 60;
+
+  /* In this coord system:
+     pt(r, deg) → x = cx + r·cos(deg), y = cy − r·sin(deg)
+     So 180° = left, 90° = top, 0° = right  (standard maths, y-flipped for SVG) */
+  const pt = (r, deg) => {
+    const rad = deg * Math.PI / 180;
+    return [cx + r * Math.cos(rad), cy - r * Math.sin(rad)];
+  };
+
+  /* Donut segment from startDeg → endDeg (both decrease: 180→0)
+     Outer arc is counterclockwise in screen = sweep=0
+     Inner return arc is clockwise in screen  = sweep=1 */
+  const seg = (startDeg, endDeg) => {
+    const [sox, soy] = pt(Ro, startDeg);
+    const [eox, eoy] = pt(Ro, endDeg);
+    const [eix, eiy] = pt(Ri, endDeg);
+    const [six, siy] = pt(Ri, startDeg);
+    const span = Math.abs(startDeg - endDeg);
+    const lg = span > 180 ? 1 : 0;
+    return [
+      `M${sox.toFixed(2)},${soy.toFixed(2)}`,
+      `A${Ro},${Ro} 0 ${lg} 0 ${eox.toFixed(2)},${eoy.toFixed(2)}`,
+      `L${eix.toFixed(2)},${eiy.toFixed(2)}`,
+      `A${Ri},${Ri} 0 ${lg} 1 ${six.toFixed(2)},${siy.toFixed(2)}`,
+      'Z',
+    ].join(' ');
+  };
+
+  const zones = [
+    { s: 182, e: 140, color: '#ef4444' },
+    { s: 140, e: 104, color: '#f97316' },
+    { s: 104, e: 66,  color: '#eab308' },
+    { s: 66,  e: -2,  color: '#22c55e' },
   ];
 
-  const totalAtRisk = tiers.reduce((s, t) => s + t.count, 0);
-  const totalMRR    = tiers.reduce((s, t) => s + t.mrrAtRisk, 0);
+  const pct = Math.min(value / max, 1);
+  const needleDeg = (1 - pct) * 180;
+  const [nx, ny] = pt(Ro - 9, needleDeg);
 
   return (
-    <div style={{ background: C.card, border: `1px solid ${C.redBorder}`, borderRadius: 10, overflow: 'hidden', marginBottom: 14 }}>
-      {/* Top summary bar */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', alignItems: 'center', padding: '14px 18px', borderBottom: `1px solid ${C.border}` }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <div style={{ width: 28, height: 28, borderRadius: 8, background: C.redDim, border: `1px solid ${C.redBorder}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-            <AlertTriangle size={12} color={C.red} />
-          </div>
-          <div>
-            <div style={{ fontSize: 13, fontWeight: 700, color: C.text, letterSpacing: '-0.01em' }}>
-              Member Retention Status &amp; Forecast
-            </div>
-            <div style={{ fontSize: 10.5, color: C.muted, marginTop: 1 }}>
-              Inactive threshold · 14+ days · Updated just now
-            </div>
-          </div>
+    <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`} style={{ overflow: 'visible', display: 'block' }}>
+      {/* background track */}
+      <path d={seg(182, -2)} fill={C.dimmer} opacity={0.7} />
+      {/* coloured zones */}
+      {zones.map((z, i) => (
+        <path key={i} d={seg(z.s, z.e)} fill={z.color} opacity={0.9} />
+      ))}
+      {/* thin gap lines between zones */}
+      {[140, 104, 66].map(d => {
+        const [mx, my] = pt((Ro + Ri) / 2, d);
+        return <circle key={d} cx={mx.toFixed(2)} cy={my.toFixed(2)} r={1.8} fill={C.bg} />;
+      })}
+      {/* needle */}
+      <line x1={cx} y1={cy} x2={nx.toFixed(2)} y2={ny.toFixed(2)}
+        stroke={C.text} strokeWidth={2.8} strokeLinecap="round" />
+      <circle cx={cx} cy={cy} r={8} fill={C.card} stroke={C.border2} strokeWidth={2} />
+      <circle cx={cx} cy={cy} r={3.5} fill={C.text} />
+    </svg>
+  );
+}
+
+/* ─── Sidebar ────────────────────────────────────────────────── */
+const NAV = [
+  { Icon: LayoutDashboard, label: 'Overview',    active: true },
+  { Icon: Users,           label: 'Members'      },
+  { Icon: FileText,        label: 'Content'      },
+  { Icon: BarChart2,       label: 'Analytics'    },
+  { Icon: Zap,             label: 'Automations'  },
+  { Icon: RefreshCw,       label: 'Reengagers'   },
+  { Icon: Settings,        label: 'Settings'     },
+];
+const LINKS = [
+  { Icon: ExternalLink, label: 'View Gym Page' },
+  { Icon: Eye,          label: 'Member View'   },
+  { Icon: LogOut,       label: 'Log Out', red: true },
+];
+
+function Sidebar() {
+  return (
+    <div style={{
+      width: 210, minHeight: '100vh', flexShrink: 0,
+      background: C.surface, borderRight: `1px solid ${C.border}`,
+      display: 'flex', flexDirection: 'column',
+    }}>
+      <div style={{ padding: '14px 13px 12px', borderBottom: `1px solid ${C.border}`, display: 'flex', alignItems: 'center', gap: 9 }}>
+        <div style={{ width: 34, height: 34, borderRadius: 8, background: 'linear-gradient(135deg,#3b82f6,#6366f1)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+          <Flame size={15} color="#fff" />
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-          {[
-            { label: 'Members flagged', value: totalAtRisk, color: C.red },
-            { label: 'MRR at risk',     value: `$${totalMRR}/mo`, color: C.amber },
-            { label: 'Avg recovery',    value: '73%', color: C.green },
-          ].map((k, i) => (
-            <div key={i} style={{ padding: '6px 12px', borderRadius: 7, background: C.card2, border: `1px solid ${C.border}`, display: 'flex', flexDirection: 'column', alignItems: 'flex-end', minWidth: 86 }}>
-              <span style={{ fontSize: 13, fontWeight: 700, color: k.color, ...mono }}>{k.value}</span>
-              <span style={{ fontSize: 9, color: C.muted, marginTop: 1, whiteSpace: 'nowrap' }}>{k.label}</span>
-            </div>
-          ))}
+        <div>
+          <div style={{ fontSize: 12.5, fontWeight: 800, color: C.text, lineHeight: 1.25 }}>Foundry Gym</div>
+          <div style={{ fontSize: 9, fontWeight: 700, color: C.muted, letterSpacing: '0.12em', textTransform: 'uppercase', marginTop: 1 }}>Gym Owner</div>
         </div>
       </div>
 
-      {/* Column headers */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', borderBottom: `1px solid ${C.border}`, background: C.surface }}>
-        {['STAGE','MRR EXPOSURE','MEMBERS','RECOVERY EST.'].map((h, i) => (
-          <div key={i} style={{ padding: '7px 16px', borderRight: i < 3 ? `1px solid ${C.border}` : 'none', fontSize: 9, fontWeight: 700, color: C.dim, letterSpacing: '0.09em', textTransform: 'uppercase' }}>{h}</div>
-        ))}
-      </div>
-
-      {/* Tier columns */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)' }}>
-        {tiers.map((t, i) => (
-          <div key={t.id} style={{ borderRight: i < 3 ? `1px solid ${C.border}` : 'none', borderLeft: `2px solid ${t.color}`, position: 'relative', overflow: 'hidden' }}>
-            <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', background: `linear-gradient(180deg,${t.dim} 0%,transparent 60%)` }} />
-            <div style={{ position: 'relative', padding: '14px 16px' }}>
-
-              <div style={{ marginBottom: 10 }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <span style={{ fontSize: 12, fontWeight: 700, color: C.text }}>{t.label}</span>
-                  <Badge label={`${t.count} members`} color={t.id === 'churn' ? 'red' : t.id === 'ghost' ? 'red' : 'amber'} small />
-                </div>
-                <span style={{ fontSize: 10, color: C.muted }}>{t.range}</span>
-              </div>
-
-              <div style={{ marginBottom: 10 }}>
-                <div style={{ fontSize: 9, color: C.dim, marginBottom: 3, textTransform: 'uppercase', letterSpacing: '0.07em' }}>MRR Exposure</div>
-                <div style={{ fontSize: 18, fontWeight: 800, color: t.color, ...mono, letterSpacing: '-0.02em' }}>
-                  ${t.mrrAtRisk}<span style={{ fontSize: 10, fontWeight: 500, color: C.muted }}>/mo</span>
-                </div>
-              </div>
-
-              <div style={{ marginBottom: 10 }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-                  <span style={{ fontSize: 9, color: C.dim }}>Share of roster</span>
-                  <span style={{ fontSize: 9, color: t.color, fontWeight: 700, ...mono }}>{((t.count / t.total) * 100).toFixed(0)}%</span>
-                </div>
-                <ProgressBar value={(t.count / t.total) * 100} color={t.color} height={3} />
-              </div>
-
-              <div style={{ marginBottom: 12 }}>
-                <AvatarStack names={t.members} size={22} />
-              </div>
-
-              <div style={{ marginBottom: 12 }}>
-                <div style={{ fontSize: 9, color: C.dim, marginBottom: 4, textTransform: 'uppercase', letterSpacing: '0.07em' }}>Est. Recovery Rate</div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                  <div style={{ flex: 1 }}>
-                    <ProgressBar value={t.recoveryRate} color={C.green} height={3} />
-                  </div>
-                  <span style={{ fontSize: 11, fontWeight: 700, color: C.green, ...mono }}>{t.recoveryRate}%</span>
-                </div>
-              </div>
-
-              <button style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5, padding: '7px 10px', borderRadius: 7, cursor: 'pointer', fontWeight: 600, fontSize: 11, background: C.surface, border: `1px solid ${C.border2}`, color: C.muted, whiteSpace: 'nowrap' }}>
-                <t.Icon size={10} color={C.muted} />{t.action}
-              </button>
-            </div>
+      <div style={{ padding: '12px 11px 8px' }}>
+        <div style={{ fontSize: 9, fontWeight: 700, color: C.dimmer, letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: 5 }}>Navigation</div>
+        {NAV.map(item => (
+          <div key={item.label} style={{
+            display: 'flex', alignItems: 'center', gap: 8, padding: '7px 9px',
+            borderRadius: 8, marginBottom: 1, cursor: 'pointer',
+            background: item.active ? C.blueDim : 'transparent',
+            border: item.active ? `1px solid ${C.blueBorder}` : '1px solid transparent',
+          }}>
+            <item.Icon size={13} color={item.active ? C.blue : C.muted} strokeWidth={1.8} />
+            <span style={{ fontSize: 12.5, fontWeight: item.active ? 700 : 400, color: item.active ? C.blue : C.muted }}>{item.label}</span>
           </div>
         ))}
       </div>
 
-      {/* Footer */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 18px', borderTop: `1px solid ${C.border}`, background: C.surface }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
-          <TrendingDown size={11} color={C.red} />
-          <span style={{ fontSize: 11, color: C.muted }}>
-            Projected monthly churn:{' '}
-            <span style={{ color: C.text, fontWeight: 700, ...mono }}>$890/mo</span>
-            {' '}without intervention
-          </span>
-        </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
-          <span style={{ fontSize: 11, color: C.muted }}>
-            With outreach campaign:{' '}
-            <span style={{ color: C.green, fontWeight: 700, ...mono }}>-$651/mo saved</span>
-          </span>
-          <div style={{ width: 1, height: 14, background: C.border }} />
-          <span style={{ fontSize: 11, color: C.dim }}>Updated 2 min ago</span>
-        </div>
+      <div style={{ flex: 1 }} />
+      <div style={{ padding: '10px 11px 18px', borderTop: `1px solid ${C.border}` }}>
+        <div style={{ fontSize: 9, fontWeight: 700, color: C.dimmer, letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: 5 }}>Links</div>
+        {LINKS.map(l => (
+          <div key={l.label} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 9px', borderRadius: 8, cursor: 'pointer', marginBottom: 1 }}>
+            <l.Icon size={12} color={l.red ? C.red : C.muted} strokeWidth={1.8} />
+            <span style={{ fontSize: 12, color: l.red ? C.red : C.muted }}>{l.label}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* ─── TopBar ─────────────────────────────────────────────────── */
+function TopBar() {
+  return (
+    <div style={{
+      height: 46, background: C.surface, borderBottom: `1px solid ${C.border}`,
+      display: 'flex', alignItems: 'center', padding: '0 16px', gap: 8, flexShrink: 0,
+    }}>
+      <span style={{ fontSize: 12.5, fontWeight: 700, color: C.text }}>Thursday 9 April</span>
+      <div style={{ position: 'relative', flex: '0 0 210px' }}>
+        <Search size={11} color={C.dim} style={{ position: 'absolute', left: 8, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }} />
+        <input
+          placeholder="Search members..."
+          style={{ width: '100%', boxSizing: 'border-box', padding: '5px 8px 5px 25px', borderRadius: 7, background: C.card, border: `1px solid ${C.border}`, color: C.text, fontSize: 11.5, outline: 'none' }}
+        />
+      </div>
+      <div style={{ flex: 1 }} />
+      <button style={{ padding: '5px 12px', borderRadius: 7, background: C.card2, border: `1px solid ${C.border2}`, color: C.muted, fontSize: 11.5, fontWeight: 600, cursor: 'pointer' }}>
+        Seen GR
+      </button>
+      <button style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '5px 12px', borderRadius: 7, background: C.blue, border: 'none', color: '#fff', fontSize: 11.5, fontWeight: 700, cursor: 'pointer' }}>
+        <Plus size={11} /> New Post
+      </button>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '4px 10px', borderRadius: 7, background: C.card, border: `1px solid ${C.border}`, cursor: 'pointer' }}>
+        <div style={{ width: 20, height: 20, borderRadius: '50%', background: C.blueDim, color: C.blue, fontSize: 8, fontWeight: 800, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>M</div>
+        <span style={{ fontSize: 12, fontWeight: 600, color: C.text }}>Max</span>
+        <ChevronDown size={9} color={C.dim} />
       </div>
     </div>
   );
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   CARD 2 — Engagement Metrics
+   ADVANCED CARD 1 — Member Engagement Score
 ═══════════════════════════════════════════════════════════════ */
-function EngagementMetrics({ stats = {} }) {
-  const msgData   = [42,38,55,48,62,58,71,65,83];
-  const reengData = [14,18,15,22,20,26,24,29,29];
-  const mrrData   = [710,740,760,800,820,870,900,920,940];
-
-  const rows = [
-    { value: stats.messagesSent ?? 83,       label: 'Messages Sent',      data: msgData,   color: C.text,  sparkColor: C.blue },
-    { value: stats.reengaged ?? 29,          label: 'Members Re-engaged',  data: reengData, color: C.green, sparkColor: C.green, trend: '+5%', up: true, sub: 'vs last month' },
-    { value: `$${stats.mrrRetained ?? 940}`, label: 'MRR Retained',        data: mrrData,   color: C.blue,  sparkColor: C.blue,  trend: '+$130', up: true, sub: 'vs last month' },
+function MemberEngagementScore() {
+  const healthBands = [
+    { label: 'Highly Active', pct: 75, color: '#22c55e' },
+    { label: 'Slipping',      pct: 11, color: '#f97316' },
+    { label: 'At Risk',       pct: 14, color: '#ef4444' },
   ];
-
   return (
-    <div style={{ ...card({ padding: 0 }) }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '12px 15px', borderBottom: `1px solid ${C.border}` }}>
-        <div style={{ width: 22, height: 22, borderRadius: 6, background: C.blueDim, border: `1px solid ${C.blueBorder}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <BarChart2 size={11} color={C.blue} />
-        </div>
-        <span style={{ fontSize: 12.5, fontWeight: 700, color: C.text }}>Engagement Metrics</span>
-        <span style={{ fontSize: 9.5, color: C.muted, marginLeft: 'auto' }}>This month</span>
+    <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 10, padding: '13px 14px', display: 'flex', flexDirection: 'column' }}>
+      {/* Header */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
+        <span style={{ fontSize: 11.5, fontWeight: 700, color: C.text }}>Member Engagement Score</span>
+        <Info size={12} color={C.dim} style={{ cursor: 'pointer' }} />
       </div>
 
-      <div style={{ padding: '13px 15px', display: 'flex', flexDirection: 'column', gap: 12 }}>
-        {rows.map(({ value, label, data, color, sparkColor, trend, up, sub }, i) => (
-          <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-            <div style={{ flex: '0 0 auto', minWidth: 60 }}>
-              <div style={{ fontSize: 22, fontWeight: 800, color, letterSpacing: '-0.03em', lineHeight: 1, ...mono }}>{value}</div>
-              <div style={{ fontSize: 10, color: C.muted, marginTop: 2 }}>{label}</div>
-              {trend && (
-                <div style={{ display: 'flex', alignItems: 'center', gap: 3, marginTop: 3 }}>
-                  {up ? <ChevronUp size={9} color={C.green} /> : <ChevronDown size={9} color={C.red} />}
-                  <span style={{ fontSize: 9.5, color: up ? C.green : C.red, fontWeight: 700, ...mono }}>{trend}</span>
-                  {sub && <span style={{ fontSize: 9, color: C.muted }}> {sub}</span>}
-                </div>
-              )}
+      {/* Gauge */}
+      <div style={{ display: 'flex', justifyContent: 'center', marginTop: -4 }}>
+        <GaugeMeter value={127} max={200} />
+      </div>
+
+      {/* Value */}
+      <div style={{ textAlign: 'center', marginTop: -6, marginBottom: 8 }}>
+        <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'center', gap: 5 }}>
+          <span style={{ fontSize: 38, fontWeight: 900, color: C.text, ...mono, letterSpacing: '-0.04em', lineHeight: 1 }}>127</span>
+          <span style={{ fontSize: 13, color: C.muted, fontWeight: 400 }}>Members</span>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7, marginTop: 5 }}>
+          <Badge label="Active" color="green" dot small />
+          <div style={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <ChevronUp size={10} color={C.green} />
+            <span style={{ fontSize: 10.5, fontWeight: 700, color: C.green, ...mono }}>+5%</span>
+          </div>
+        </div>
+        <div style={{ marginTop: 6 }}>
+          <Badge label="● Healthy" color="green" />
+        </div>
+      </div>
+
+      {/* Zone breakdown */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 5, marginTop: 4 }}>
+        {healthBands.map((b, i) => (
+          <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <span style={{ width: 6, height: 6, borderRadius: 2, background: b.color, flexShrink: 0 }} />
+            <span style={{ fontSize: 10, color: C.muted, flex: 1 }}>{b.label}</span>
+            <div style={{ width: 70 }}>
+              <ProgressBar value={b.pct} color={b.color} height={3} />
             </div>
-            <div style={{ flex: 1 }}>
-              <Sparkline data={data} color={sparkColor} height={34} width={110} />
-            </div>
+            <span style={{ fontSize: 10, fontWeight: 700, color: C.text, minWidth: 26, textAlign: 'right', ...mono }}>{b.pct}%</span>
           </div>
         ))}
       </div>
 
-      <div style={{ padding: '9px 15px', borderTop: `1px solid ${C.border}` }}>
-        <button style={{ display: 'flex', alignItems: 'center', gap: 5, background: 'none', border: 'none', color: C.blue, fontSize: 11.5, fontWeight: 600, cursor: 'pointer', padding: 0 }}>
-          View full report <ArrowRight size={10} />
+      {/* Sub metrics */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6, marginTop: 10 }}>
+        {[
+          { label: 'Retention', value: '78%', color: C.amber },
+          { label: 'New/Mo', value: '+12', color: C.blue },
+        ].map((m, i) => (
+          <div key={i} style={{ background: C.card2, border: `1px solid ${C.border}`, borderRadius: 7, padding: '6px 9px' }}>
+            <div style={{ fontSize: 9, color: C.muted, marginBottom: 2 }}>{m.label}</div>
+            <div style={{ fontSize: 14, fontWeight: 800, color: m.color, ...mono }}>{m.value}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* ─── Mini Stat Card ─────────────────────────────────────────── */
+function MiniStatCard({ label, value, line1, line2, color }) {
+  return (
+    <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 10, padding: '14px' }}>
+      <div style={{ fontSize: 10.5, fontWeight: 600, color: C.muted, marginBottom: 10, lineHeight: 1.4 }}>{label}</div>
+      <div style={{ fontSize: 30, fontWeight: 900, color, ...mono, letterSpacing: '-0.03em', lineHeight: 1, marginBottom: 6 }}>{value}</div>
+      {line1 && <div style={{ fontSize: 10.5, color: C.dim, marginBottom: 2 }}>{line1}</div>}
+      {line2 && <div style={{ fontSize: 10.5, color: C.muted }}>{line2}</div>}
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   ADVANCED CARD 2 — Immediate Nudges
+═══════════════════════════════════════════════════════════════ */
+function ImmediateNudges() {
+  const [sent, setSent] = useState({});
+
+  const members = [
+    {
+      name: 'Sarah K.', sub: 'Risk just crossed',
+      risk: 'High', riskColor: C.red,
+      openRate: '94%', aiNote: 'Best time: now',
+      lastSeen: '14d', urgency: 3,
+    },
+    {
+      name: 'John D.', sub: 'Risk just crossed',
+      risk: 'High', riskColor: C.red,
+      openRate: '87%', aiNote: '2nd attempt',
+      lastSeen: '11d', urgency: 2,
+    },
+    {
+      name: 'Mike P.', sub: 'Risk just crossed',
+      risk: 'High', riskColor: C.red,
+      openRate: '79%', aiNote: 'Urgent',
+      lastSeen: '18d', urgency: 3,
+    },
+  ];
+
+  return (
+    <div style={{ background: C.card, border: `1px solid ${C.redBorder}`, borderRadius: 10, overflow: 'hidden' }}>
+      {/* Header */}
+      <div style={{ padding: '13px 14px 11px', borderBottom: `1px solid ${C.border}` }}>
+        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 5 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <div style={{ width: 26, height: 26, borderRadius: 7, background: C.redDim, border: `1px solid ${C.redBorder}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+              <Bell size={11} color={C.red} />
+            </div>
+            <div>
+              <div style={{ fontSize: 12.5, fontWeight: 700, color: C.text }}>Immediate Nudges</div>
+              <div style={{ fontSize: 9.5, color: C.amber, fontWeight: 600, marginTop: 1 }}>Next 2 Hours</div>
+            </div>
+          </div>
+          <MoreHorizontal size={13} color={C.dim} style={{ cursor: 'pointer', marginTop: 2 }} />
+        </div>
+        <div style={{ fontSize: 10, color: C.muted, lineHeight: 1.5 }}>
+          Prioritised list.{' '}
+          <span style={{ color: C.red, fontWeight: 600 }}>risk just crossed</span>
+          {' '}a threshold.
+        </div>
+
+        {/* Advanced stat strip */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6, marginTop: 10 }}>
+          {[
+            { label: 'Avg. Open Rate', value: '87%', color: C.green },
+            { label: 'Est. Recovery',  value: '73%', color: C.blue  },
+          ].map((s, i) => (
+            <div key={i} style={{ background: C.card2, border: `1px solid ${C.border}`, borderRadius: 7, padding: '6px 10px' }}>
+              <div style={{ fontSize: 8.5, color: C.muted, marginBottom: 2 }}>{s.label}</div>
+              <div style={{ fontSize: 14, fontWeight: 800, color: s.color, ...mono }}>{s.value}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Member rows */}
+      {members.map((m, i) => (
+        <div key={i} style={{ padding: '10px 14px', borderBottom: i < members.length - 1 ? `1px solid ${C.border}` : 'none', display: 'flex', alignItems: 'center', gap: 8 }}>
+          {/* Number badge */}
+          <div style={{ width: 18, height: 18, borderRadius: '50%', background: C.card2, border: `1px solid ${C.border2}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 9, fontWeight: 800, color: C.muted, flexShrink: 0, ...mono }}>
+            {i + 1}
+          </div>
+          <Avatar name={m.name} size={26} />
+          {/* Info */}
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginBottom: 2 }}>
+              <span style={{ fontSize: 11.5, fontWeight: 700, color: C.text }}>{m.name}</span>
+              <span style={{
+                fontSize: 8.5, fontWeight: 700, color: m.riskColor,
+                background: `${m.riskColor}1a`, border: `1px solid ${m.riskColor}40`,
+                borderRadius: 20, padding: '1px 5px',
+              }}>{m.risk}</span>
+            </div>
+            <div style={{ fontSize: 9.5, color: C.muted, marginBottom: 2 }}>{m.sub}</div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <span style={{ fontSize: 8.5, color: C.dim }}>
+                Open: <span style={{ color: C.green, fontWeight: 700 }}>{m.openRate}</span>
+              </span>
+              <span style={{ fontSize: 8.5, color: C.amber, fontWeight: 600 }}>{m.aiNote}</span>
+            </div>
+          </div>
+          {/* Send button */}
+          <button
+            onClick={() => setSent(p => ({ ...p, [i]: !p[i] }))}
+            style={{
+              padding: '5px 10px', borderRadius: 7, cursor: 'pointer', fontSize: 10.5, fontWeight: 700, flexShrink: 0,
+              background: sent[i] ? C.greenDim : C.blueDim,
+              border: `1px solid ${sent[i] ? C.greenBorder : C.blueBorder}`,
+              color: sent[i] ? C.green : C.blue,
+              display: 'flex', alignItems: 'center', gap: 4,
+              transition: 'all 0.2s ease',
+            }}
+          >
+            {sent[i] ? <><Check size={9} /> Sent</> : 'Click to Send'}
+          </button>
+        </div>
+      ))}
+
+      {/* Footer */}
+      <div style={{ padding: '9px 14px', background: C.surface, display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderTop: `1px solid ${C.border}` }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+          <Clock size={10} color={C.amber} />
+          <span style={{ fontSize: 9.5, color: C.amber, fontWeight: 600 }}>Best results within 2 hrs</span>
+        </div>
+        <button style={{ fontSize: 10.5, fontWeight: 700, color: C.blue, background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 3 }}>
+          View all <ArrowRight size={9} />
         </button>
       </div>
     </div>
@@ -421,161 +483,256 @@ function EngagementMetrics({ stats = {} }) {
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   CARD 3 — Member Health Overview
+   CARD — At-Risk Action Center
 ═══════════════════════════════════════════════════════════════ */
-function MemberHealth() {
-  const [tab, setTab] = useState('All');
-  const tabs = ['Premium', 'Basic', 'All'];
-  const data = [
-    { label: 'Highly Active (0–6d)', pct: 75, color: C.green },
-    { label: 'Slipping (7–13d)',      pct: 10, color: C.amber },
-    { label: 'At Risk (14d+)',         pct: 16, color: C.red   },
+function AtRiskActionCenter() {
+  const members = [
+    { name: 'Alex Rivers',    lastVisited: '14 hrs ago',  risk: 'Low',    riskPct: 18, color: '#22c55e' },
+    { name: 'Sarah Chen',     lastVisited: '3 days ago',  risk: 'Medium', riskPct: 52, color: C.amber   },
+    { name: 'Mike Thompson',  lastVisited: '12 days ago', risk: 'High',   riskPct: 86, color: C.red     },
   ];
-  const trendData = [1.2,1.4,1.3,1.5,1.4,1.6,1.35,1.35,1.353];
 
   return (
-    <div style={{ ...card({ padding: 0 }) }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 15px', borderBottom: `1px solid ${C.border}` }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
-          <div style={{ width: 22, height: 22, borderRadius: 6, background: C.greenDim, border: `1px solid ${C.greenBorder}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <Activity size={11} color={C.green} />
-          </div>
-          <span style={{ fontSize: 12.5, fontWeight: 700, color: C.text }}>Member Health</span>
-        </div>
-        <div style={{ display: 'flex', gap: 1, background: C.card2, border: `1px solid ${C.border}`, borderRadius: 6, padding: 2 }}>
-          {tabs.map(t => (
-            <button key={t} onClick={() => setTab(t)} style={{ padding: '3px 9px', borderRadius: 5, fontSize: 10, fontWeight: 700, cursor: 'pointer', border: 'none', background: tab === t ? C.blue : 'transparent', color: tab === t ? '#fff' : C.muted, transition: 'all 0.15s' }}>
-              {t}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      <div style={{ padding: '13px 15px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
-          <div style={{ width: 88, height: 88, flexShrink: 0, position: 'relative' }}>
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie data={data.map(d => ({ name: d.label, value: d.pct }))}
-                  cx="50%" cy="50%" innerRadius={27} outerRadius={40}
-                  startAngle={90} endAngle={-270} dataKey="value" stroke="none">
-                  {data.map((d, i) => <Cell key={i} fill={d.color} />)}
-                </Pie>
-              </PieChart>
-            </ResponsiveContainer>
-            <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-              <span style={{ fontSize: 17, fontWeight: 800, color: C.text, lineHeight: 1, ...mono }}>4</span>
-              <span style={{ fontSize: 8, color: C.dim, marginTop: 1 }}>total</span>
-            </div>
-          </div>
-          <div style={{ flex: 1 }}>
-            {data.map(({ label, pct, color }, i) => (
-              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 7 }}>
-                <span style={{ width: 6, height: 6, borderRadius: 2, background: color, flexShrink: 0 }} />
-                <span style={{ fontSize: 10.5, color: C.muted, flex: 1 }}>{label}</span>
-                <span style={{ fontSize: 11.5, fontWeight: 700, color: C.text, minWidth: 28, textAlign: 'right', ...mono }}>{pct}%</span>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <div style={{ background: C.card2, border: `1px solid ${C.border}`, borderRadius: 8, padding: '10px 12px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 7 }}>
-            <span style={{ fontSize: 10, color: C.muted }}>Avg. visit frequency</span>
-            <span style={{ fontSize: 11.5, fontWeight: 700, color: C.text, ...mono }}>1.353 <span style={{ fontSize: 9, color: C.dim }}>visits/wk</span></span>
-          </div>
-          <Sparkline data={trendData} color={C.green} height={26} width={220} />
-        </div>
-      </div>
-    </div>
-  );
-}
-
-/* ═══════════════════════════════════════════════════════════════
-   CARD 4 — Recent Live Activity
-═══════════════════════════════════════════════════════════════ */
-function RecentLiveActivity() {
-  const [tab, setTab] = useState('Automated outreach');
-  const tabs = ['Automated outreach', 'Member action', 'Staff action'];
-  const evs = [
-    { name: 'James Okafor', action: 'returned via automation', time: 'just now',  type: 'returned' },
-    { name: 'Seffa Sharma', action: 'marked inactive',          time: '1 min ago', type: 'inactive' },
-    { name: 'Mal Zhang',    action: 'message sent',             time: 'just now',  type: 'message'  },
-  ];
-  const ts = {
-    returned: { color: C.green, Icon: RotateCcw },
-    inactive: { color: C.amber, Icon: AlertTriangle },
-    message:  { color: C.blue,  Icon: Send },
-  };
-
-  return (
-    <div style={{ ...card({ padding: 0 }) }}>
+    <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 10, overflow: 'hidden', marginBottom: 12 }}>
       {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '12px 14px 10px', borderBottom: `1px solid ${C.border}` }}>
-        <span style={{ width: 6, height: 6, borderRadius: '50%', background: C.green, flexShrink: 0 }} />
-        <span style={{ fontSize: 9, fontWeight: 700, letterSpacing: '0.09em', color: C.dim, textTransform: 'uppercase' }}>Live Activity</span>
+      <div style={{ padding: '12px 16px', borderBottom: `1px solid ${C.border}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
+          <div style={{ width: 26, height: 26, borderRadius: 7, background: C.redDim, border: `1px solid ${C.redBorder}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+            <Shield size={12} color={C.red} />
+          </div>
+          <div>
+            <div style={{ fontSize: 13, fontWeight: 700, color: C.text }}>At-Risk Action Center</div>
+            <div style={{ fontSize: 10, color: C.muted, marginTop: 1 }}>Prioritized At-Risk Profiles (Last 14 Days)</div>
+          </div>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '4px 11px', borderRadius: 20, background: C.orangeDim, border: `1px solid ${C.orangeBorder}` }}>
+            <span style={{ width: 5, height: 5, borderRadius: '50%', background: C.orange, flexShrink: 0 }} />
+            <span style={{ fontSize: 10.5, fontWeight: 700, color: C.orange }}>3 at risk</span>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '4px 10px', borderRadius: 7, background: C.card2, border: `1px solid ${C.border}`, cursor: 'pointer' }}>
+            <span style={{ fontSize: 10.5, fontWeight: 600, color: C.muted }}>Isoro</span>
+            <ChevronDown size={9} color={C.dim} />
+          </div>
+        </div>
       </div>
 
-      {/* Sub-tabs — matches Content Hub tab style */}
-      <div style={{ display: 'flex', borderBottom: `1px solid ${C.border}`, padding: '0 14px' }}>
-        {tabs.map(t => (
-          <button key={t} onClick={() => setTab(t)} style={{ padding: '6px 8px', background: 'none', border: 'none', borderBottom: tab === t ? `2px solid ${C.blue}` : '2px solid transparent', color: tab === t ? C.text : C.muted, fontSize: 10, fontWeight: tab === t ? 700 : 400, cursor: 'pointer', whiteSpace: 'nowrap', marginBottom: -1, transition: 'color 0.15s' }}>
-            {t}
-          </button>
+      {/* Table header */}
+      <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1.8fr', padding: '7px 16px', background: C.surface, borderBottom: `1px solid ${C.border}` }}>
+        {[
+          { h: 'MEMBER',           sort: true },
+          { h: 'LAST VISITED',     sort: true },
+          { h: 'RISK SCORE / BAND', sort: false },
+        ].map(({ h, sort }, i) => (
+          <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
+            <span style={{ fontSize: 9, fontWeight: 700, color: C.dim, letterSpacing: '0.09em', textTransform: 'uppercase' }}>{h}</span>
+            {sort && <ChevronDown size={8} color={C.dimmer} />}
+          </div>
         ))}
       </div>
 
-      {evs.map((ev, i) => {
-        const s = ts[ev.type];
-        return (
-          <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 9, padding: '10px 14px', borderBottom: i < evs.length - 1 ? `1px solid ${C.border}` : 'none' }}>
-            <Avatar name={ev.name} size={27} />
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontSize: 12, color: C.text, lineHeight: 1.35 }}>
-                <span style={{ fontWeight: 700 }}>{ev.name}</span>
-                <span style={{ color: ev.type === 'inactive' ? C.amber : C.muted }}> — {ev.action}</span>
+      {/* Rows */}
+      {members.map((m, i) => (
+        <div key={i} style={{
+          display: 'grid', gridTemplateColumns: '2fr 1fr 1.8fr',
+          padding: '14px 16px', alignItems: 'center',
+          borderBottom: i < members.length - 1 ? `1px solid ${C.border}` : 'none',
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <Avatar name={m.name} size={30} />
+            <span style={{ fontSize: 12.5, fontWeight: 600, color: C.text }}>{m.name}</span>
+          </div>
+          <div style={{ fontSize: 12, color: C.muted }}>{m.lastVisited}</div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <span style={{
+              fontSize: 11, fontWeight: 700, color: m.color,
+              background: `${m.color}1a`, border: `1px solid ${m.color}40`,
+              borderRadius: 20, padding: '2px 10px', minWidth: 52, textAlign: 'center', flexShrink: 0,
+            }}>{m.risk}</span>
+            <div style={{ flex: 1, maxWidth: 90 }}>
+              <div style={{ height: 6, background: C.dimmer, borderRadius: 3, overflow: 'hidden' }}>
+                <div style={{ width: `${m.riskPct}%`, height: '100%', background: m.color, borderRadius: 3 }} />
               </div>
-              <div style={{ fontSize: 9.5, color: C.dim, marginTop: 1 }}>{ev.time}</div>
-            </div>
-            <div style={{ display: 'flex', gap: 4 }}>
-              {[MessageSquare, Phone, Eye].map((Ic, j) => (
-                <div key={j} style={{ width: 22, height: 22, borderRadius: 6, background: C.card2, border: `1px solid ${C.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
-                  <Ic size={9} color={C.muted} />
-                </div>
-              ))}
             </div>
           </div>
-        );
-      })}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/* ─── Last 7 Days Win-backs ──────────────────────────────────── */
+function LastSevenDaysWinbacks() {
+  const spark = [1, 2, 2, 3, 3, 5, 7];
+  return (
+    <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 10, padding: '13px 14px' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+        <span style={{ fontSize: 12.5, fontWeight: 700, color: C.text }}>Last 7 Days Win-backs</span>
+        <MoreHorizontal size={13} color={C.dim} style={{ cursor: 'pointer' }} />
+      </div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+        <div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+            <div style={{ width: 28, height: 28, borderRadius: 8, background: C.greenDim, border: `1px solid ${C.greenBorder}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <RefreshCw size={12} color={C.green} />
+            </div>
+            <span style={{ fontSize: 34, fontWeight: 900, color: C.text, ...mono, letterSpacing: '-0.04em' }}>7</span>
+          </div>
+          <div style={{ fontSize: 11, color: C.muted }}>Members Recovered</div>
+        </div>
+        <div style={{ flex: 1 }}>
+          <Sparkline data={spark} color={C.green} height={44} width={110} />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ─── Live Pulse Feed ────────────────────────────────────────── */
+function LivePulseFeed() {
+  const events = [
+    { name: 'James Olafor', action: 'returned via automation', time: '3h ago' },
+    { name: 'Sarah Chen',   action: 'booked class via Nudge',  time: '5h ago' },
+  ];
+  return (
+    <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 10, overflow: 'hidden' }}>
+      <div style={{ padding: '11px 14px', borderBottom: `1px solid ${C.border}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+          <span style={{ width: 7, height: 7, borderRadius: '50%', background: C.green, flexShrink: 0 }} />
+          <span style={{ fontSize: 12, fontWeight: 700, color: C.text }}>Live Pulse Feed</span>
+        </div>
+        <MoreHorizontal size={13} color={C.dim} style={{ cursor: 'pointer' }} />
+      </div>
+      {events.map((ev, i) => (
+        <div key={i} style={{ padding: '11px 14px', borderBottom: i < events.length - 1 ? `1px solid ${C.border}` : 'none', display: 'flex', alignItems: 'center', gap: 9 }}>
+          <Avatar name={ev.name} size={28} />
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontSize: 11.5, color: C.text, lineHeight: 1.4 }}>
+              <span style={{ fontWeight: 700 }}>{ev.name}</span>
+              <span style={{ color: C.muted }}> – {ev.action}</span>
+            </div>
+            <div style={{ fontSize: 9.5, color: C.dim, marginTop: 2 }}>{ev.time}</div>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/* ─── Top Performing Posts ───────────────────────────────────── */
+function TopPerformingPosts() {
+  const posts = [
+    { title: 'HIIT Challenge V2',          tag: 'Engagement', count: 83, bg: '#1e3557', fg: '#3b82f6' },
+    { title: 'Nutrition Tip of the Week',  tag: 'Engagement', count: 32, bg: '#17382a', fg: '#22c55e' },
+    { title: 'Nutrition Tip of the We...', tag: 'Engagement', count: 10, bg: '#382617', fg: '#f97316' },
+  ];
+  return (
+    <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 10, overflow: 'hidden' }}>
+      <div style={{ padding: '12px 14px', borderBottom: `1px solid ${C.border}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+          <div style={{ width: 22, height: 22, borderRadius: 6, background: C.purpleDim, border: `1px solid ${C.purpleBorder}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <TrendingUp size={11} color={C.purple} />
+          </div>
+          <span style={{ fontSize: 12.5, fontWeight: 700, color: C.text }}>Top Performing Posts</span>
+        </div>
+        <MoreHorizontal size={13} color={C.dim} style={{ cursor: 'pointer' }} />
+      </div>
+      {posts.map((p, i) => (
+        <div key={i} style={{ padding: '11px 14px', borderBottom: i < posts.length - 1 ? `1px solid ${C.border}` : 'none', display: 'flex', alignItems: 'center', gap: 10 }}>
+          <div style={{ width: 42, height: 34, borderRadius: 7, background: p.bg, border: `1px solid ${p.fg}33`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+            <BarChart2 size={14} color={p.fg} />
+          </div>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontSize: 11.5, fontWeight: 600, color: C.text, marginBottom: 3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.title}</div>
+            <Badge label={p.tag} color="purple" small />
+          </div>
+          <span style={{ fontSize: 17, fontWeight: 800, color: C.text, ...mono, flexShrink: 0 }}>{p.count}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/* ─── Member Milestones ──────────────────────────────────────── */
+function MemberMilestones() {
+  const milestones = [
+    { name: 'Sarah A.', text: '30 Days Complete!',  emoji: '🏆' },
+    { name: 'Mike C.',  text: '30 Days Complete!',  emoji: '🏆' },
+    { name: 'Mike C.',  text: '100 Workout Club!',  emoji: '💪' },
+  ];
+  return (
+    <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 10, overflow: 'hidden' }}>
+      <div style={{ padding: '12px 14px 9px', borderBottom: `1px solid ${C.border}` }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 3 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+            <div style={{ width: 22, height: 22, borderRadius: 6, background: C.amberDim, border: `1px solid ${C.amberBorder}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <Trophy size={11} color={C.amber} />
+            </div>
+            <span style={{ fontSize: 12, fontWeight: 700, color: C.text }}>Member Milestones This Week</span>
+          </div>
+          <MoreHorizontal size={13} color={C.dim} style={{ cursor: 'pointer' }} />
+        </div>
+        <div style={{ fontSize: 9.5, color: C.muted, paddingLeft: 29 }}>Tracks and celebrating significant milestones</div>
+      </div>
+      {milestones.map((m, i) => (
+        <div key={i} style={{ padding: '10px 14px', borderBottom: i < milestones.length - 1 ? `1px solid ${C.border}` : 'none', display: 'flex', alignItems: 'center', gap: 9 }}>
+          <Avatar name={m.name} size={26} />
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontSize: 11.5, color: C.text }}>
+              <span style={{ fontWeight: 700 }}>{m.name}</span>
+              <span style={{ color: C.muted }}> – {m.text}</span>
+            </div>
+          </div>
+          <span style={{ fontSize: 15, flexShrink: 0 }}>{m.emoji}</span>
+        </div>
+      ))}
     </div>
   );
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   CARD 5 — Priority To-Dos
+   CARD — Priority To-Dos  (replaces Content Performance)
 ═══════════════════════════════════════════════════════════════ */
 function PriorityTodos() {
   const [filter, setFilter] = useState('High');
   const [bulkSel, setBulkSel] = useState(false);
   const filters = ['Critical', 'High', 'Medium'];
 
+  const filterColors = {
+    Critical: { fg: C.red,   bg: C.redDim,   bd: C.redBorder   },
+    High:     { fg: C.amber, bg: C.amberDim, bd: C.amberBorder },
+    Medium:   { fg: C.green, bg: C.greenDim, bd: C.greenBorder },
+  };
+
   const sections = [
     {
       title: 'At-Risk Calls',
-      items: [{ name: 'Sarah J.', detail: 'returned to the gym', sub: 'Automated outreach sent · 3 visits this month', badge: '2 tasks', badgeColor: 'amber' }],
+      items: [{
+        name: 'Sarah J.', detail: 'returned to the gym',
+        sub: 'Automated outreach sent · 3 visits this month',
+        badge: '2 tasks', badgeColor: 'amber',
+      }],
     },
     {
       title: 'Member Updates',
-      items: [{ name: 'Priya Sharma', detail: 'rejoined the programme', sub: 'Referred by John Doe', badge: '3 sent', badgeColor: 'blue' }],
+      items: [{
+        name: 'Priya Sharma', detail: 'rejoined the programme',
+        sub: 'Referred by John Doe',
+        badge: '3 sent', badgeColor: 'blue',
+      }],
     },
     {
       title: 'Anniversaries',
-      items: [{ name: 'Ann N', detail: 'Send anniversary kudos to members', sub: '', badge: null }],
+      items: [{
+        name: 'Ann N', detail: 'Send anniversary kudos to members',
+        sub: '', badge: null,
+      }],
     },
   ];
 
   return (
-    <div style={{ ...card({ padding: 0 }) }}>
+    <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 10, overflow: 'hidden' }}>
+      {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 14px', borderBottom: `1px solid ${C.border}` }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
           <div style={{ width: 22, height: 22, borderRadius: 6, background: C.amberDim, border: `1px solid ${C.amberBorder}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -583,19 +740,24 @@ function PriorityTodos() {
           </div>
           <span style={{ fontSize: 12.5, fontWeight: 700, color: C.text }}>Priority To-Dos</span>
         </div>
-        <button onClick={() => setBulkSel(!bulkSel)} style={{ padding: '5px 11px', borderRadius: 7, background: bulkSel ? C.blue : C.blueDim, border: `1px solid ${C.blueBorder}`, color: bulkSel ? '#fff' : C.blue, fontSize: 11, fontWeight: 700, cursor: 'pointer' }}>
+        <button
+          onClick={() => setBulkSel(!bulkSel)}
+          style={{ padding: '5px 11px', borderRadius: 7, background: bulkSel ? C.blue : C.blueDim, border: `1px solid ${C.blueBorder}`, color: bulkSel ? '#fff' : C.blue, fontSize: 11, fontWeight: 700, cursor: 'pointer' }}
+        >
           Bulk Message
         </button>
       </div>
 
-      {/* Filter pills — matches Content Hub tab strip */}
+      {/* Filter pills */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '7px 14px', borderBottom: `1px solid ${C.border}` }}>
         {filters.map(f => {
-          const fc = { Critical: C.red, High: C.amber, Medium: C.green }[f] || C.blue;
-          const fdim = { Critical: C.redDim, High: C.amberDim, Medium: C.greenDim }[f];
-          const fbd  = { Critical: C.redBorder, High: C.amberBorder, Medium: C.greenBorder }[f];
+          const { fg, bg, bd } = filterColors[f];
           return (
-            <button key={f} onClick={() => setFilter(f)} style={{ padding: '3px 10px', borderRadius: 20, cursor: 'pointer', fontSize: 10.5, fontWeight: 700, background: filter === f ? fdim : 'transparent', border: filter === f ? `1px solid ${fbd}` : '1px solid transparent', color: filter === f ? fc : C.muted }}>
+            <button
+              key={f}
+              onClick={() => setFilter(f)}
+              style={{ padding: '3px 10px', borderRadius: 20, cursor: 'pointer', fontSize: 10.5, fontWeight: 700, background: filter === f ? bg : 'transparent', border: filter === f ? `1px solid ${bd}` : '1px solid transparent', color: filter === f ? fg : C.muted }}
+            >
               {f}
             </button>
           );
@@ -603,16 +765,17 @@ function PriorityTodos() {
         <span style={{ marginLeft: 'auto', fontSize: 9.5, color: C.dim }}>Effort</span>
       </div>
 
+      {/* Sections */}
       {sections.map((sec, si) => (
         <div key={si}>
-          <div style={{ padding: '5px 14px 3px', fontSize: 9, fontWeight: 700, color: C.dim, letterSpacing: '0.09em', textTransform: 'uppercase', background: 'rgba(0,0,0,0.1)' }}>
+          <div style={{ padding: '5px 14px 3px', fontSize: 9, fontWeight: 700, color: C.dim, letterSpacing: '0.09em', textTransform: 'uppercase', background: 'rgba(0,0,0,0.12)' }}>
             {sec.title}
           </div>
           {sec.items.map((item, ii) => (
             <div key={ii} style={{ display: 'flex', alignItems: 'flex-start', gap: 9, padding: '10px 14px', borderBottom: `1px solid ${C.border}` }}>
               <Avatar name={item.name} size={26} />
               <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontSize: 12, fontWeight: 700, color: C.text, lineHeight: 1.35 }}>
+                <div style={{ fontSize: 12, fontWeight: 700, color: C.text, lineHeight: 1.4 }}>
                   {item.name}
                   <span style={{ color: C.muted, fontWeight: 400 }}> {item.detail}</span>
                 </div>
@@ -633,128 +796,9 @@ function PriorityTodos() {
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   CARD 6 — Facility Snapshots
+   MAIN EXPORT
 ═══════════════════════════════════════════════════════════════ */
-function FacilitySnapshots() {
-  const occupancy = 72;
-  return (
-    <div style={{ ...card({ padding: 0 }) }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '12px 14px', borderBottom: `1px solid ${C.border}` }}>
-        <div style={{ width: 22, height: 22, borderRadius: 6, background: C.greenDim, border: `1px solid ${C.greenBorder}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <Dumbbell size={11} color={C.green} />
-        </div>
-        <span style={{ fontSize: 12.5, fontWeight: 700, color: C.text }}>Facility Snapshots</span>
-      </div>
-
-      <div style={{ padding: '13px 14px' }}>
-        <div style={{ marginBottom: 14 }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
-            <span style={{ fontSize: 11, fontWeight: 600, color: C.text }}>Real-time class occupancy</span>
-            <span style={{ fontSize: 11, color: C.green, fontWeight: 700, ...mono }}>{occupancy}%</span>
-          </div>
-          <div style={{ position: 'relative', height: 16, background: C.card2, border: `1px solid ${C.border}`, borderRadius: 4, overflow: 'hidden' }}>
-            <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 8px', zIndex: 2 }}>
-              <span style={{ fontSize: 8.5, color: C.dim }}>Low</span>
-              <span style={{ fontSize: 8.5, color: C.dim }}>High</span>
-            </div>
-            <div style={{ width: `${occupancy}%`, height: '100%', background: C.green, opacity: 0.5, borderRadius: 4 }} />
-          </div>
-        </div>
-
-        <div style={{ marginBottom: 13 }}>
-          <div style={{ fontSize: 9, fontWeight: 700, color: C.dim, textTransform: 'uppercase', letterSpacing: '0.09em', marginBottom: 8 }}>Upcoming Classes</div>
-          <div style={{ background: C.card2, border: `1px solid ${C.border}`, borderRadius: 8, overflow: 'hidden' }}>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', padding: '6px 11px', borderBottom: `1px solid ${C.border}` }}>
-              {['CLASS','INSTRUCTOR','COVER'].map((h, i) => (
-                <span key={i} style={{ fontSize: 8.5, fontWeight: 700, color: C.dim, letterSpacing: '0.08em', textAlign: i > 0 ? 'center' : 'left' }}>{h}</span>
-              ))}
-            </div>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', padding: '10px 11px', alignItems: 'center' }}>
-              <div>
-                <div style={{ fontSize: 11, fontWeight: 700, color: C.text }}>Soccer — Day 1</div>
-                <div style={{ fontSize: 9.5, color: C.muted }}>7:39 pm</div>
-              </div>
-              <div style={{ textAlign: 'center' }}>
-                <div style={{ fontSize: 10.5, color: C.text }}>Raela Smith</div>
-              </div>
-              <div style={{ textAlign: 'center' }}>
-                <div style={{ fontSize: 10.5, color: C.text }}>Ariys Sham</div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 12px', background: C.card2, border: `1px solid ${C.border}`, borderRadius: 8 }}>
-          <div>
-            <div style={{ fontSize: 11, fontWeight: 700, color: C.text, marginBottom: 2 }}>Staff Presence</div>
-            <div style={{ fontSize: 10, color: C.muted }}>3 active vs. 4 scheduled</div>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-            <span style={{ width: 6, height: 6, borderRadius: '50%', background: C.green }} />
-            <span style={{ fontSize: 10.5, color: C.green, fontWeight: 700 }}>Active</span>
-            </div>
-            </div>
-            </div>
-            </div>
-            );
-            }
-
-function BusinessSnapshot() {
-  const kpis = [
-    { Icon: Users,      label: 'Total Members',      value: '87',     unit: '',  delta: '+4',   deltaUp: true,  sub: 'vs last month', color: C.blue,   dim: C.blueDim,   bd: C.blueBorder,   spark: [78,80,81,82,82,83,84,85,87] },
-    { Icon: DollarSign, label: 'Monthly MRR',         value: '$4,800', unit: '',  delta: '+$340',deltaUp: true,  sub: 'vs last month', color: C.green,  dim: C.greenDim,  bd: C.greenBorder,  spark: [4100,4200,4280,4350,4400,4500,4600,4700,4800] },
-    { Icon: Target,     label: 'Retention Rate',      value: '78',     unit: '%', delta: '-2%',  deltaUp: false, sub: 'vs last month', color: C.amber,  dim: C.amberDim,  bd: C.amberBorder,  spark: [82,81,80,81,80,79,80,79,78] },
-    { Icon: Zap,        label: 'Re-engagement Rate',  value: '35',     unit: '%', delta: '+5%',  deltaUp: true,  sub: 'vs last month', color: C.purple, dim: C.purpleDim, bd: C.purpleBorder, spark: [22,24,26,28,27,30,31,33,35] },
-  ];
-
-  return (
-    <div style={{ ...card({ padding: 0 }) }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 14px', borderBottom: `1px solid ${C.border}` }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
-          <div style={{ width: 22, height: 22, borderRadius: 6, background: C.purpleDim, border: `1px solid ${C.purpleBorder}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <BarChart2 size={11} color={C.purple} />
-          </div>
-          <span style={{ fontSize: 12.5, fontWeight: 700, color: C.text }}>Business Snapshot</span>
-        </div>
-        <span style={{ fontSize: 9.5, color: C.muted }}>30-day rolling</span>
-      </div>
-
-      <div style={{ padding: '10px 14px', display: 'flex', flexDirection: 'column', gap: 6 }}>
-        {kpis.map(({ Icon: Ic, label, value, unit, delta, deltaUp, sub, color, dim, bd, spark }, i) => (
-          <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', borderRadius: 8, background: C.card2, border: `1px solid ${C.border}` }}>
-            <div style={{ width: 28, height: 28, borderRadius: 7, background: dim, border: `1px solid ${bd}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-              <Ic size={12} color={color} />
-            </div>
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontSize: 9.5, color: C.muted, marginBottom: 2 }}>{label}</div>
-              <div style={{ fontSize: 17, fontWeight: 800, color: C.text, letterSpacing: '-0.02em', lineHeight: 1, ...mono }}>
-                {value}<span style={{ fontSize: 11, fontWeight: 500, color: C.muted }}>{unit}</span>
-              </div>
-            </div>
-            <div style={{ flexShrink: 0 }}>
-              <Sparkline data={spark} color={color} height={28} width={60} />
-            </div>
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', flexShrink: 0, minWidth: 44 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                {deltaUp ? <ChevronUp size={10} color={C.green} /> : <ChevronDown size={10} color={C.red} />}
-                <span style={{ fontSize: 10.5, fontWeight: 700, color: deltaUp ? C.green : C.red, ...mono }}>{delta}</span>
-              </div>
-              <span style={{ fontSize: 8.5, color: C.dim, marginTop: 1, textAlign: 'right' }}>{sub}</span>
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-/* ═══════════════════════════════════════════════════════════════
-   MAIN EXPORT — with Sidebar + TopBar shell
-═══════════════════════════════════════════════════════════════ */
-export default function TabOverview({
-  totalMembers = 87, atRisk = 3, mrr = 4800,
-  automationStats = { messagesSent: 83, reengaged: 29, mrrRetained: 940, reengagementRate: 35 },
-}) {
+export default function TabOverview() {
   useEffect(() => {
     const id = 'tab-ov-anim';
     if (!document.getElementById(id)) {
@@ -762,10 +806,11 @@ export default function TabOverview({
       el.id = id;
       el.textContent = `
         @keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
-        .ovr>*{animation:fadeUp 0.4s cubic-bezier(0.16,1,0.3,1) both}
+        .ovr>*{animation:fadeUp 0.35s cubic-bezier(0.16,1,0.3,1) both}
         .ovr>*:nth-child(1){animation-delay:0ms}
-        .ovr>*:nth-child(2){animation-delay:60ms}
-        .ovr>*:nth-child(3){animation-delay:120ms}
+        .ovr>*:nth-child(2){animation-delay:55ms}
+        .ovr>*:nth-child(3){animation-delay:110ms}
+        .ovr>*:nth-child(4){animation-delay:165ms}
       `;
       document.head.appendChild(el);
     }
@@ -776,26 +821,70 @@ export default function TabOverview({
       minHeight: '100vh', background: C.bg, color: C.text,
       fontFamily: "'Inter','DM Sans',system-ui,sans-serif",
       fontSize: 13, lineHeight: 1.5, WebkitFontSmoothing: 'antialiased',
-      overflowY: 'auto', padding: '16px 18px 40px',
+      display: 'flex', flexDirection: 'column',
     }}>
-      <div style={{ fontSize: 19, fontWeight: 800, color: C.text, letterSpacing: '-0.02em', display: 'flex', alignItems: 'baseline', gap: 6, marginBottom: 14 }}>
-        Overview
-        <span style={{ color: C.muted, fontWeight: 300, fontSize: 17 }}>/</span>
-        <span style={{ color: C.purple }}>Dashboard</span>
-      </div>
+      <TopBar />
 
-      <RetentionStatusCard />
+      <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
+        <Sidebar />
 
-      <div className="ovr" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12, marginBottom: 12, alignItems: 'start' }}>
-        <EngagementMetrics stats={automationStats} />
-        <MemberHealth />
-        <RecentLiveActivity />
-      </div>
+        <main style={{ flex: 1, padding: '16px 18px 40px', overflowY: 'auto' }}>
+          {/* Page title */}
+          <div style={{ fontSize: 19, fontWeight: 800, color: C.text, letterSpacing: '-0.02em', display: 'flex', alignItems: 'baseline', gap: 6, marginBottom: 14 }}>
+            Overview
+            <span style={{ color: C.muted, fontWeight: 300, fontSize: 17 }}>/</span>
+            <span style={{ color: C.purple }}>Dashboard</span>
+          </div>
 
-      <div className="ovr" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12, alignItems: 'start' }}>
-        <PriorityTodos />
-        <FacilitySnapshots />
-        <BusinessSnapshot />
+          {/* Two-column layout: main left | right sidebar */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 272px', gap: 14, alignItems: 'start' }}>
+
+            {/* ── Left main column ── */}
+            <div>
+              {/* Row 1: Gauge + 3 mini stats */}
+              <div className="ovr" style={{ display: 'grid', gridTemplateColumns: '1.25fr 1fr 1fr 1fr', gap: 10, marginBottom: 12 }}>
+                <MemberEngagementScore />
+                <MiniStatCard
+                  label="New Member Churn Risk"
+                  value="6"
+                  line1="Members at Risk"
+                  line2="12% churn rate"
+                  color={C.red}
+                />
+                <MiniStatCard
+                  label="Re-engagement Conversion"
+                  value="7%"
+                  line1="Win-backs"
+                  line2="45% Conversion"
+                  color={C.green}
+                />
+                <MiniStatCard
+                  label="Attendance Consistency"
+                  value="2.8"
+                  line1="Visits/Week Avg."
+                  color={C.blue}
+                />
+              </div>
+
+              {/* Row 2: At-Risk Action Center */}
+              <AtRiskActionCenter />
+
+              {/* Row 3: Priority To-Dos + Top Performing Posts */}
+              <div className="ovr" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                <PriorityTodos />
+                <TopPerformingPosts />
+              </div>
+            </div>
+
+            {/* ── Right sidebar ── */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              <ImmediateNudges />
+              <LastSevenDaysWinbacks />
+              <LivePulseFeed />
+              <MemberMilestones />
+            </div>
+          </div>
+        </main>
       </div>
     </div>
   );
