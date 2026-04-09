@@ -510,7 +510,7 @@ function ActionSidebar({ members, onFilter, onMessage }) {
             ))}
           </div>
           <div style={{ display: "flex", gap: 6, marginTop: 11 }}>
-            <button onClick={() => { onFilter("atRisk"); onMessage(highRisk[0]); }} style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 5, padding: "6px", borderRadius: 7, background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.25)", color: "#f87171", fontSize: 11.5, fontWeight: 700, cursor: "pointer" }}>
+            <button onClick={() => { onFilter("atRisk"); onMessage(highRisk[0]); }} style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 5, padding: "6px", borderRadius: 7, background: "#3b82f6", border: "none", color: "#fff", fontSize: 11.5, fontWeight: 700, cursor: "pointer" }}>
               <Send size={10} /> Message All
             </button>
             <button onClick={() => onFilter("atRisk")} style={{ padding: "6px 12px", borderRadius: 7, background: C.card, border: `1px solid ${C.border2}`, color: C.muted, fontSize: 11.5, fontWeight: 600, cursor: "pointer" }}>
@@ -545,7 +545,7 @@ function ActionSidebar({ members, onFilter, onMessage }) {
             ))}
           </div>
           <div style={{ display: "flex", gap: 6, marginTop: 11 }}>
-            <button onClick={() => onFilter("new")} style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 5, padding: "6px", borderRadius: 7, background: "rgba(59,130,246,0.1)", border: "1px solid rgba(59,130,246,0.25)", color: "#60a5fa", fontSize: 11.5, fontWeight: 700, cursor: "pointer" }}>
+            <button onClick={() => onFilter("new")} style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 5, padding: "6px", borderRadius: 7, background: "#3b82f6", border: "none", color: "#fff", fontSize: 11.5, fontWeight: 700, cursor: "pointer" }}>
               <Send size={10} /> Follow up
             </button>
             <button onClick={() => onFilter("new")} style={{ padding: "6px 12px", borderRadius: 7, background: C.card, border: `1px solid ${C.border2}`, color: C.muted, fontSize: 11.5, fontWeight: 600, cursor: "pointer" }}>
