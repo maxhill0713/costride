@@ -322,7 +322,6 @@ export default function Settings() {
               key="settings-panel"
               className="fixed inset-0 z-50"
               style={{
-                minHeight: '100vh',
                 minHeight: '100dvh',
                 background: 'linear-gradient(135deg, #02040a 0%, #0d2360 50%, #02040a 100%)',
                 color: '#fff',

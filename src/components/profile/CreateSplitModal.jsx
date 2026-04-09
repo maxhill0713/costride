@@ -653,7 +653,6 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser, openToA
               key="split-panel"
               className="fixed inset-0 z-50"
               style={{
-                minHeight: '100vh',
                 minHeight: '100dvh',
                 background: 'linear-gradient(to bottom right, #02040a, #0d2360, #02040a)',
                 WebkitAppearance: 'none',

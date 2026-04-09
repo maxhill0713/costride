@@ -12,7 +12,7 @@ import Layout from './Layout';
 
 const Home                = lazy(() => import('./pages/Home'));
 const Gyms                = lazy(() => import('./pages/Gyms'));
-const Progress            = lazy(() => import('./pages/Progress'));
+const Progress            = lazy(() => import('./pages/Progress.jsx'));
 const Profile             = lazy(() => import('./pages/Profile'));
 const Settings            = lazy(() => import('./pages/Settings'));
 const RedeemReward        = lazy(() => import('./pages/RedeemReward'));
