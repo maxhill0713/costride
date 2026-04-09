@@ -692,14 +692,13 @@ function FacilitySnapshots() {
           <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
             <span style={{ width: 6, height: 6, borderRadius: '50%', background: C.green }} />
             <span style={{ fontSize: 10.5, color: C.green, fontWeight: 700 }}>Active</span>
-          </div>
-    </div>
-  );
-}
+            </div>
+            </div>
+            </div>
+            </div>
+            );
+            }
 
-/* ═══════════════════════════════════════════════════════════════
-   CARD 7 — Business Snapshot
-═══════════════════════════════════════════════════════════════ */
 function BusinessSnapshot() {
   const kpis = [
     { Icon: Users,      label: 'Total Members',      value: '87',     unit: '',  delta: '+4',   deltaUp: true,  sub: 'vs last month', color: C.blue,   dim: C.blueDim,   bd: C.blueBorder,   spark: [78,80,81,82,82,83,84,85,87] },
