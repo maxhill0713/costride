@@ -85,11 +85,20 @@ Deno.serve(async (req) => {
       deleteAll(db.entities.Gym,           allGyms),
     ]);
 
-    // Mark user as deleted (can't delete User entity as it's built-in)
-    // Set display_name to empty and add a flag so they can't interact
+    // Reset all profile data so user goes through fresh onboarding on next sign-in
     await db.entities.User.update(userId, {
-      display_name: '[deleted]',
-      deleted_at: new Date().toISOString(),
+      onboarding_completed: false,
+      account_type: null,
+      primary_gym_id: null,
+      training_days: null,
+      custom_workout_types: null,
+      workout_split: null,
+      custom_split_name: null,
+      current_streak: 0,
+      streak_freezes: 0,
+      avatar_url: null,
+      display_name: null,
+      username: null,
     });
 
     console.log(`Account fully deleted for: ${userEmail}`);
