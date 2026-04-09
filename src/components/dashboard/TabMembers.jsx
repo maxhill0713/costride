@@ -808,7 +808,7 @@ export default function MembersPageAI() {
           </div>
 
           {/* Main table card */}
-          <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 10, overflow: "hidden" }}>
+          <div style={{ border: `1px solid ${C.border}`, borderRadius: 10, overflow: "hidden" }}>
             <FilterBar
               filter={filter} setFilter={setFilter}
               search={search} setSearch={setSearch}
