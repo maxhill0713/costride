@@ -679,48 +679,34 @@ export default function TabOverview() {
 
   return (
     <div style={{
-      display: 'flex', minHeight: '100vh', background: C.bg, color: C.text,
+      minHeight: '100vh', background: C.bg, color: C.text,
       fontFamily: "'Inter','DM Sans',system-ui,sans-serif",
       fontSize: 13, lineHeight: 1.5, WebkitFontSmoothing: 'antialiased',
     }}>
-      <Sidebar />
+      <div style={{ padding: '16px 18px 40px' }}>
 
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, overflow: 'hidden' }}>
-        <TopBar />
-
-        <div style={{ flex: 1, overflowY: 'auto', padding: '16px 18px 40px' }}>
-
-          {/* Page heading — identical pattern to all other pages */}
+          {/* Page heading */}
           <div style={{ fontSize: 19, fontWeight: 800, color: C.text, letterSpacing: '-0.02em', display: 'flex', alignItems: 'baseline', gap: 6, marginBottom: 14 }}>
             Overview
             <span style={{ color: C.muted, fontWeight: 300, fontSize: 17 }}>/</span>
             <span style={{ color: C.purple }}>Dashboard</span>
           </div>
 
-          {/* Two-column layout: main content | right sidebar */}
+          {/* Two-column layout */}
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 272px', gap: 14, alignItems: 'start' }}>
-
-            {/* Left main column */}
             <div>
-              {/* Row 1: gauge + 3 mini stats */}
               <div className="ovr" style={{ display: 'grid', gridTemplateColumns: '1.3fr 1fr 1fr 1fr', gap: 10, marginBottom: 12 }}>
                 <MemberEngagementScore />
-                <MiniStatCard label="New Member Churn Risk"       value="6"   line1="Members at Risk" line2="12% churn rate"   color={C.red}   />
-                <MiniStatCard label="Re-engagement Conversion"    value="7%"  line1="Win-backs"       line2="45% Conversion"  color={C.green} />
-                <MiniStatCard label="Attendance Consistency"      value="2.8" line1="Visits/Week Avg."                        color={C.blue}  />
+                <MiniStatCard label="New Member Churn Risk"    value="6"   line1="Members at Risk" line2="12% churn rate"  color={C.red}   />
+                <MiniStatCard label="Re-engagement Conversion" value="7%"  line1="Win-backs"       line2="45% Conversion" color={C.green} />
+                <MiniStatCard label="Attendance Consistency"   value="2.8" line1="Visits/Week Avg."                       color={C.blue}  />
               </div>
-
-              {/* Row 2: At-Risk Action Center */}
               <AtRiskActionCenter />
-
-              {/* Row 3: Priority To-Dos + Top Performing Posts */}
               <div className="ovr" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
                 <PriorityTodos />
                 <TopPerformingPosts />
               </div>
             </div>
-
-            {/* Right sidebar */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
               <ImmediateNudges />
               <LastSevenDaysWinbacks />
@@ -728,7 +714,6 @@ export default function TabOverview() {
               <MemberMilestones />
             </div>
           </div>
-        </div>
       </div>
     </div>
   );
