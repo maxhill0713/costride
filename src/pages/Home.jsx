@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useMemo } from 'react';
 import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import PullToRefresh from '../components/PullToRefresh';
@@ -445,7 +445,7 @@ export default function Home() {
     placeholderData: (prev) => prev,
   });
 
-  const friendIdList = friends.map((f) => f.friend_id);
+  const friendIdList = useMemo(() => friends.map((f) => f.friend_id), [friends]);
 
   const { data: allPosts = [] } = useQuery({
     queryKey: ['friendPosts', currentUser?.id, friendIdList.join(',')],
@@ -480,7 +480,10 @@ export default function Home() {
   });
 
   const POSTS_PER_PAGE = 4;
-  const knownUserIds = [...friends.map(f => f.friend_id), ...friendRequests.map(r => r.user_id), ...sentFriendRequests.map(r => r.friend_id)];
+  const knownUserIds = useMemo(
+    () => [...friends.map(f => f.friend_id), ...friendRequests.map(r => r.user_id), ...sentFriendRequests.map(r => r.friend_id)],
+    [friends, friendRequests, sentFriendRequests]
+  );
 
   const { data: friendUsersList = [] } = useQuery({
     queryKey: ['friendUsers', knownUserIds.join(',')],
@@ -555,8 +558,14 @@ export default function Home() {
     onSettled: () => { queryClient.invalidateQueries({ queryKey: ['sentFriendRequests', currentUser?.id] }); },
   });
 
-  const todayCheckInsForQuery = allCheckIns.filter((c) => isToday(new Date(c.check_in_date)));
-  const checkInUserIdsForQuery = [...new Set(todayCheckInsForQuery.map((c) => c.user_id))];
+  const todayCheckInsForQuery = useMemo(
+    () => allCheckIns.filter((c) => isToday(new Date(c.check_in_date))),
+    [allCheckIns]
+  );
+  const checkInUserIdsForQuery = useMemo(
+    () => [...new Set(todayCheckInsForQuery.map((c) => c.user_id))],
+    [todayCheckInsForQuery]
+  );
 
   const { data: checkInUsers = [] } = useQuery({
     queryKey: ['checkInUsers', checkInUserIdsForQuery.join(',')],
@@ -643,17 +652,20 @@ export default function Home() {
   }
 
   const memberGym = memberGymData || null;
-  const userCheckIns = allCheckIns.filter((c) => c.user_id === currentUser?.id);
+  const userCheckIns = useMemo(
+    () => allCheckIns.filter((c) => c.user_id === currentUser?.id),
+    [allCheckIns, currentUser?.id]
+  );
   const lastCheckIn = userCheckIns.length > 0 ? userCheckIns[0].check_in_date : null;
   const daysSinceCheckIn = lastCheckIn ? differenceInDays(new Date(), new Date(lastCheckIn)) : null;
 
-  const friendPosts = allPosts.filter((post) =>
+  const friendPosts = useMemo(() => allPosts.filter((post) =>
     friendIdList.includes(post.member_id) &&
     !post.is_system_generated &&
     !post.is_hidden &&
     !post.content?.includes('well done') &&
     !post.content?.includes('workout finished')
-  );
+  ), [allPosts, friendIdList]);
 
   const userStreak = currentUser?.current_streak || 0;
   const streakVariant = currentUser?.streak_variant || 'default';
@@ -688,7 +700,7 @@ export default function Home() {
     return streak;
   };
 
-  const friendsWithActivity = friends.map(friend => {
+  const friendsWithActivity = useMemo(() => friends.map(friend => {
     const friendCheckIns = allRecentCheckIns.filter(c => c.user_id === friend.friend_id);
     const lastCI = friendCheckIns.length > 0 ? friendCheckIns[0] : null;
     return {
@@ -705,18 +717,20 @@ export default function Home() {
     if (a.activity.daysSinceCheckIn === 0 && b.activity.daysSinceCheckIn !== 0) return -1;
     if (a.activity.daysSinceCheckIn !== 0 && b.activity.daysSinceCheckIn === 0) return 1;
     return (b.activity.streak || 0) - (a.activity.streak || 0);
-  });
+  }), [friends, allRecentCheckIns]);
 
-  const threeDaysAgo = new Date(Date.now() - 3 * 24 * 60 * 60 * 1000);
-  const socialFeedPosts = allPosts.filter(post =>
-    (friendIdList.includes(post.member_id) || post.member_id === currentUser?.id) &&
-    (post.content || post.image_url || post.video_url || post.workout_name) &&
-    !post.gym_join &&
-    !post.is_hidden &&
-    new Date(post.created_date) >= threeDaysAgo
-  );
+  const socialFeedPosts = useMemo(() => {
+    const threeDaysAgo = new Date(Date.now() - 3 * 24 * 60 * 60 * 1000);
+    return allPosts.filter(post =>
+      (friendIdList.includes(post.member_id) || post.member_id === currentUser?.id) &&
+      (post.content || post.image_url || post.video_url || post.workout_name) &&
+      !post.gym_join &&
+      !post.is_hidden &&
+      new Date(post.created_date) >= threeDaysAgo
+    );
+  }, [allPosts, friendIdList, currentUser?.id]);
 
-  const activityFeed = (() => {
+  const activityFeed = useMemo(() => {
     const activities = [];
     const exerciseNames = { bench_press: 'Bench Press', squat: 'Squat', deadlift: 'Deadlift', overhead_press: 'Overhead Press', barbell_row: 'Barbell Row', power_clean: 'Power Clean' };
 
@@ -780,21 +794,27 @@ export default function Home() {
     });
 
     return activities.sort((a, b) => b.timestamp - a.timestamp);
-  })();
+  }, [recentLifts, friendsWithActivity, friends, friendIdList, notifications]);
 
-  const activityCards = (() => {
+  const activityCards = useMemo(() => {
     const cards = [];
-    const lastCI = allCheckIns.filter(c => c.user_id === currentUser?.id)[0];
+    const lastCI = userCheckIns[0];
     const daysSince = lastCI ? differenceInDays(new Date(), new Date(lastCI.check_in_date)) : null;
     if (daysSince && daysSince >= 3) cards.push({ id: 'nudge-checkin', type: 'nudge', title: 'Time to Check In', message: `You haven't checked in in ${daysSince} days. Let's get back on track! 💪`, emoji: '⏰' });
     friendsWithActivity.forEach(friend => {
       if (friend.activity.daysSinceCheckIn >= 7) cards.push({ id: `inactive-${friend.friend_id}`, type: 'friend-inactive', title: `${friend.friend_name} Needs a Nudge`, message: `${friend.friend_name} hasn't checked in for ${friend.activity.daysSinceCheckIn} days.`, emoji: '👋' });
     });
     return cards;
-  })();
+  }, [userCheckIns, friendsWithActivity]);
 
-  const filteredActivityCards = activityCards.filter(c => !dismissedCardIds.has(c.id));
-  const filteredSearchResults = searchResults.filter(u => !friendIdList.includes(u.id));
+  const filteredActivityCards = useMemo(
+    () => activityCards.filter(c => !dismissedCardIds.has(c.id)),
+    [activityCards, dismissedCardIds]
+  );
+  const filteredSearchResults = useMemo(
+    () => searchResults.filter(u => !friendIdList.includes(u.id)),
+    [searchResults, friendIdList]
+  );
 
   const dismissCard = (id) => {
     const updated = new Set(dismissedCardIds).add(id);

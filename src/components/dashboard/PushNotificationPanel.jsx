@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Send, Check, AlertTriangle, ChevronRight, Bell } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 
@@ -26,6 +26,9 @@ export default function PushNotificationPanel({
   const [sending, setSending] = useState(false);
   const [sent, setSent] = useState(null);
   const [memberTab, setMemberTab] = useState('risk');
+  const sentTimerRef = useRef(null);
+
+  useEffect(() => () => { if (sentTimerRef.current) clearTimeout(sentTimerRef.current); }, []);
 
   const now = new Date();
   const gymName = selectedGym?.name || 'Your Gym';
@@ -52,7 +55,7 @@ export default function PushNotificationPanel({
       setSent({ count: memberIds.length });
     } catch { } finally {
       setSending(false);
-      setTimeout(() => setSent(null), 5000);
+      sentTimerRef.current = setTimeout(() => setSent(null), 5000);
     }
   };
 

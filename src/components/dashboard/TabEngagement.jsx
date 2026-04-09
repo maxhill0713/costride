@@ -614,8 +614,7 @@ export default function TabEngagement({ selectedGym, atRisk = 4, totalMembers = 
   }, []);
 
   /* Stub — replace with base44.entities.Gym.update(...) */
-  const persist = useCallback(async (updated) => {
-    console.log("[TabEngagement] persist:", updated);
+  const persist = useCallback(async (_updated) => {
   }, []);
 
   const addRule    = useCallback(r => { const u = [...rules, { ...r, id: `r_${Date.now()}` }]; setRules(u); persist(u); }, [rules, persist]);

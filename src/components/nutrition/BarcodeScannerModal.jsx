@@ -24,9 +24,6 @@ async function lookupOpenFoodFacts(barcode) {
       const n = data.product.nutriments || {};
       const p = data.product;
 
-      // Debug: log all relevant fields
-      console.log('[OFFApi] product_quantity:', p.product_quantity, '| quantity:', p.quantity, '| serving_size:', p.serving_size, '| serving_quantity:', p.serving_quantity, '| nutriments keys:', Object.keys(n).filter(k => k.includes('energy') || k.includes('kcal')));
-
       // Try multiple fields to get total product size
       const totalSize = parseFloat(p.product_quantity) || parseFloat(p.quantity) || null;
 
@@ -131,7 +128,6 @@ export default function BarcodeScannerModal({ onAdd, onClose }) {
     for (let i = 0; i < 20; i++) {
       await new Promise(r => setTimeout(r, 100));
       el = document.getElementById(divId);
-      console.log(`[BarcodeScanner] poll ${i}: el=${!!el} w=${el?.offsetWidth} h=${el?.offsetHeight}`);
       if (el && el.offsetWidth > 10 && el.offsetHeight > 10) break;
     }
 
@@ -150,32 +146,25 @@ export default function BarcodeScannerModal({ onAdd, onClose }) {
     }
 
     try {
-      console.log('[BarcodeScanner] creating Html5Qrcode on div:', divId, 'size:', el.offsetWidth, 'x', el.offsetHeight);
       const scanner = new Html5Qrcode(divId, {
         formatsToSupport: FOOD_FORMATS,
         verbose: true,
       });
       scannerRef.current = scanner;
 
-      console.log('[BarcodeScanner] calling scanner.start...');
       await scanner.start(
         { facingMode: 'environment' },
         { fps: 10, qrbox: { width: Math.min(el.offsetWidth - 40, 260), height: 140 } },
         (decoded) => {
-          console.log('[BarcodeScanner] decoded:', decoded);
           if (!activeRef.current) return;
           stopCamera();
           fetchFood(decoded);
         },
         (err) => {
-          // per-frame errors are normal — only log distinct ones
-          if (err && !String(err).includes('No MultiFormat')) {
-            console.log('[BarcodeScanner] frame:', err);
-          }
+          // per-frame "no barcode found" errors are normal — suppress them
         }
       );
 
-      console.log('[BarcodeScanner] scanner started successfully');
       activeRef.current = true;
 
       fallbackTimer.current = setTimeout(() => {
