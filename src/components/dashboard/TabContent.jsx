@@ -535,8 +535,6 @@ function ContentArea() {
 
   return (
     <div style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0, overflow: "hidden" }}>
-      <TopBar />
-
       <div style={{ flex: 1, display: "flex", overflow: "hidden" }}>
 
         {/* center column */}
@@ -608,7 +606,6 @@ export default function ContentPage() {
       fontFamily: "'Inter', 'DM Sans', system-ui, sans-serif",
       fontSize: 13, lineHeight: 1.5, WebkitFontSmoothing: "antialiased",
     }}>
-      <Sidebar />
       <ContentArea />
     </div>
   );
