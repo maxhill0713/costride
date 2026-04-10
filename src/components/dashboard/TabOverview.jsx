@@ -34,14 +34,15 @@ const C = {
 
 const FONT = "'DM Sans', 'Segoe UI', sans-serif";
 
-/* ─── RETENTION DATA ─────────────────────────────────────── */
-const RETENTION_DATA = [
-  { x: 'Nov', v: 0 },
-  { x: 'Dec', v: 8 },
-  { x: 'Jan', v: 20 },
-  { x: 'Feb', v: 35 },
-  { x: 'Mar', v: 55 },
-  { x: 'Apr', v: 96 },
+/* ─── TODAY'S SCHEDULE DATA ─────────────────────────────── */
+const SCHEDULE = [
+  { time: '06:00', label: 'Early Bird HIIT',    instructor: 'Alex T.',  capacity: 12, booked: 11, color: '#f59e0b' },
+  { time: '08:30', label: 'Morning Yoga Flow',  instructor: 'Sara M.',  capacity: 10, booked: 7,  color: '#14b8a6' },
+  { time: '10:00', label: 'Strength & Conditioning', instructor: 'Coach Dan', capacity: 8, booked: 8, color: '#ff4d6d' },
+  { time: '12:15', label: 'Lunchtime Spin',     instructor: 'Priya K.', capacity: 15, booked: 9,  color: '#6366f1' },
+  { time: '17:30', label: 'Peak Hour Open Gym', instructor: '',         capacity: 40, booked: 31, color: '#00e5c8' },
+  { time: '18:45', label: 'Boxing Basics',      instructor: 'Mike O.',  capacity: 12, booked: 12, color: '#ef4444' },
+  { time: '19:30', label: 'Evening HIIT',       instructor: 'Alex T.',  capacity: 12, booked: 6,  color: '#f59e0b' },
 ];
 
 /* ─── AVATAR ─────────────────────────────────────────────── */
@@ -369,60 +370,51 @@ export default function TabOverview({ openModal, setTab } = {}) {
           {/* CHART + PRIORITIES */}
           <div style={{ display: 'flex', gap: 11 }}>
 
-            {/* Retention Chart */}
+            {/* Today's Schedule */}
             <div style={{
               background: C.card, border: `1px solid ${C.brd}`,
               borderRadius: 10, padding: '16px 18px', flex: 1, minWidth: 0,
             }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-                <span style={{ fontSize: 13, fontWeight: 600, color: C.t1 }}>30-Day Retention Trend</span>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
+                <span style={{ fontSize: 13, fontWeight: 600, color: C.t1 }}>Today's Schedule</span>
                 <button style={{
                   padding: '5px 12px', borderRadius: 6,
                   background: C.cyanDim, border: `1px solid ${C.cyanBrd}`,
                   color: C.cyan, fontSize: 11, fontWeight: 600,
                   cursor: 'pointer', fontFamily: FONT,
-                }}>Ask AI Coach</button>
+                }}>+ Add Class</button>
               </div>
-              <div style={{ position: 'relative', height: 190 }}>
-                <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={RETENTION_DATA} margin={{ top: 16, right: 8, bottom: 0, left: -26 }}>
-                    <defs>
-                      <linearGradient id="retGrad" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor={C.cyan} stopOpacity={0.4} />
-                        <stop offset="100%" stopColor={C.cyan} stopOpacity={0.02} />
-                      </linearGradient>
-                    </defs>
-                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" vertical={false} />
-                    <XAxis dataKey="x" tick={{ fill: C.t3, fontSize: 10, fontFamily: FONT }} axisLine={false} tickLine={false} />
-                    <YAxis tick={{ fill: C.t3, fontSize: 10, fontFamily: FONT }} axisLine={false} tickLine={false} domain={[0, 100]} tickCount={5} />
-                    <Tooltip content={<ChartTip />} />
-                    <Area type="monotone" dataKey="v" stroke={C.cyan} strokeWidth={2}
-                      fill="url(#retGrad)" dot={false}
-                      activeDot={{ r: 4, fill: C.cyan, strokeWidth: 2, stroke: C.card }} />
-                  </AreaChart>
-                </ResponsiveContainer>
-
-                {/* Avatar overlays */}
-                <div style={{ position: 'absolute', top: '80%', left: '2%' }}>
-                  <Av name="A" size={20} />
-                </div>
-                <div style={{ position: 'absolute', top: '55%', left: '40%', display: 'flex' }}>
-                  {['J','K','L'].map((n, i) => <Av key={i} name={n} size={20} style={{ marginLeft: i > 0 ? -6 : 0 }} />)}
-                </div>
-                <div style={{ position: 'absolute', top: '28%', left: '74%', display: 'flex' }}>
-                  {['A','B','C'].map((n, i) => <Av key={i} name={n} size={20} style={{ marginLeft: i > 0 ? -6 : 0 }} />)}
-                </div>
-
-                {/* AI Insight bubble */}
-                <div style={{
-                  position: 'absolute', bottom: '14%', left: '36%',
-                  background: '#111c2a', border: '1px solid rgba(0,229,200,0.2)',
-                  borderRadius: 8, padding: '8px 11px', maxWidth: 185,
-                  fontSize: 11, color: C.t2, lineHeight: 1.45,
-                  boxShadow: '0 6px 20px rgba(0,0,0,0.5)',
-                }}>
-                  <span style={{ color: C.cyan, fontWeight: 700 }}>AI Insight:</span> Your HIIT challenge cohort is +31% more likely to stay
-                </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                {SCHEDULE.map((s, i) => {
+                  const pct = Math.round((s.booked / s.capacity) * 100);
+                  const full = s.booked >= s.capacity;
+                  return (
+                    <div key={i} style={{
+                      display: 'flex', alignItems: 'center', gap: 10,
+                      padding: '9px 11px', borderRadius: 8,
+                      background: 'rgba(255,255,255,0.02)',
+                      border: `1px solid ${C.brd}`,
+                      borderLeft: `3px solid ${s.color}`,
+                    }}>
+                      <div style={{ fontSize: 11, fontWeight: 700, color: C.t3, width: 36, flexShrink: 0, fontVariantNumeric: 'tabular-nums' }}>{s.time}</div>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontSize: 12.5, fontWeight: 600, color: C.t1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{s.label}</div>
+                        {s.instructor && <div style={{ fontSize: 10.5, color: C.t2, marginTop: 1 }}>{s.instructor}</div>}
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 7, flexShrink: 0 }}>
+                        <div style={{ width: 60 }}>
+                          <div style={{ height: 3, background: C.brd, borderRadius: 2, overflow: 'hidden' }}>
+                            <div style={{ width: `${pct}%`, height: '100%', background: full ? C.red : s.color, borderRadius: 2 }} />
+                          </div>
+                        </div>
+                        <span style={{ fontSize: 10.5, fontWeight: 700, color: full ? C.red : C.t2, minWidth: 32, textAlign: 'right' }}>
+                          {s.booked}/{s.capacity}
+                        </span>
+                        {full && <span style={{ fontSize: 9, fontWeight: 700, color: C.red, background: C.redDim, border: `1px solid ${C.red}40`, borderRadius: 4, padding: '1px 5px' }}>FULL</span>}
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             </div>
 
