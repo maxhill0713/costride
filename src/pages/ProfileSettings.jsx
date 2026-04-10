@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Link, useLocation } from 'react-router-dom';
 import { createPageUrl } from '../utils';
-import { ChevronLeft, Check, X } from 'lucide-react';
+import { ChevronLeft } from 'lucide-react';
 
 const PAGE_BG  = 'linear-gradient(135deg, #02040a 0%, #0d2360 50%, #02040a 100%)';
 const GROUP_BG = 'linear-gradient(135deg, rgba(30,35,60,0.72) 0%, rgba(8,10,20,0.88) 100%)';
@@ -24,20 +24,27 @@ function useSectionHighlight() {
   return highlighted;
 }
 
+// ── Header matches Settings page exactly ─────────────────────────────────────
 function PageShell({ title, children }) {
   return (
     <div style={{ minHeight: '100vh', background: PAGE_BG, color: '#fff', fontFamily: 'inherit' }}>
-      {/* Status bar colour fill — matches header bg so it bleeds to top of phone */}
       <div style={{ position: 'fixed', top: 0, left: 0, right: 0, height: 'env(safe-area-inset-top)', background: 'rgba(2,4,10,0.95)', zIndex: 20 }} />
-      <div style={{ position: 'sticky', top: 0, zIndex: 10, background: 'rgba(15, 23, 37, 0.95)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', borderBottom: '2px solid rgba(59, 130, 246, 0.4)', padding: '10px 16px', paddingTop: 'max(env(safe-area-inset-top), 10px)' }}>
-        <div style={{ maxWidth: 520, margin: '0 auto', display: 'flex', alignItems: 'center', gap: 4 }}>
-          <Link to={createPageUrl('Settings')} style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', padding: '4px 8px 4px 0' }}>
+      <div style={{
+        position: 'sticky', top: 0, zIndex: 10,
+        background: 'rgba(15, 23, 37, 0.95)',
+        backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
+        borderBottom: '2px solid rgba(59, 130, 246, 0.4)',
+        padding: '10px 16px',
+        paddingTop: 'max(env(safe-area-inset-top), 10px)',
+      }}>
+        <div style={{ maxWidth: 480, margin: '0 auto', display: 'flex', alignItems: 'center', gap: 12 }}>
+          <Link to={createPageUrl('Settings')} style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 4 }}>
             <ChevronLeft style={{ width: 22, height: 22, color: '#94a3b8' }} />
           </Link>
-          <span style={{ fontSize: 18, fontWeight: 800, letterSpacing: '-0.025em', color: '#fff' }}>{title}</span>
+          <span style={{ fontSize: 19, fontWeight: 900, letterSpacing: '-0.03em', color: '#fff' }}>{title}</span>
         </div>
       </div>
-      <div style={{ maxWidth: 520, margin: '0 auto', padding: '20px 16px 60px' }}>{children}</div>
+      <div style={{ maxWidth: 480, margin: '0 auto', padding: '20px 16px 60px' }}>{children}</div>
     </div>
   );
 }
@@ -49,7 +56,10 @@ function SectionLabel({ children }) {
 function Group({ sectionId, highlighted, children }) {
   const isHighlighted = highlighted === sectionId;
   return (
-    <div id={sectionId ? `section-${sectionId}` : undefined} style={{ background: GROUP_BG, border: '1px solid rgba(255,255,255,0.07)', borderRadius: 16, overflow: 'hidden', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', marginBottom: 20, transition: 'box-shadow 0.4s ease', boxShadow: isHighlighted ? '0 0 0 2px rgba(96,165,250,0.7), 0 0 24px rgba(96,165,250,0.2)' : 'none' }}>
+    <div
+      id={sectionId ? `section-${sectionId}` : undefined}
+      style={{ background: GROUP_BG, border: '1px solid rgba(255,255,255,0.07)', borderRadius: 16, overflow: 'hidden', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', marginBottom: 20, transition: 'box-shadow 0.4s ease', boxShadow: isHighlighted ? '0 0 0 2px rgba(96,165,250,0.7), 0 0 24px rgba(96,165,250,0.2)' : 'none' }}
+    >
       {children}
     </div>
   );
@@ -67,6 +77,58 @@ function Row({ label, sublabel, children, isLast }) {
     </div>
   );
 }
+
+// ── Reusable 3D press button ──────────────────────────────────────────────────
+function PressBtn({ onClick, disabled, variant, style, children }) {
+  const isBlue = variant === 'blue';
+  const base = {
+    face: isBlue
+      ? 'linear-gradient(to bottom, #3b82f6 0%, #2563eb 40%, #1d4ed8 100%)'
+      : 'linear-gradient(to bottom, #1e2535 0%, #151c2a 50%, #0f1520 100%)',
+    shadow: isBlue ? '#1a3fa8' : '#0a0f1a',
+    highlight: isBlue ? 'rgba(255,255,255,0.15)' : 'rgba(255,255,255,0.06)',
+    textColor: isBlue ? '#fff' : '#94a3b8',
+    border: isBlue ? 'none' : '1px solid rgba(255,255,255,0.08)',
+  };
+
+  const press = (e) => {
+    const btn = e.currentTarget;
+    btn.style.transform = 'translateY(4px)';
+    btn.style.boxShadow = 'none';
+  };
+  const release = (e) => {
+    const btn = e.currentTarget;
+    btn.style.transform = '';
+    btn.style.boxShadow = `0 4px 0 0 ${base.shadow}, inset 0 1px 0 ${base.highlight}`;
+  };
+
+  return (
+    <div style={{ position: 'relative', ...style }}>
+      <div style={{ position: 'absolute', inset: 0, borderRadius: 12, background: base.shadow, transform: 'translateY(4px)' }} />
+      <button
+        disabled={disabled}
+        onClick={onClick}
+        onMouseDown={press} onMouseUp={release} onMouseLeave={release}
+        onTouchStart={press} onTouchEnd={release} onTouchCancel={release}
+        style={{
+          position: 'relative', zIndex: 1, width: '100%',
+          padding: '10px 0', borderRadius: 12,
+          border: base.border,
+          background: disabled ? 'rgba(59,130,246,0.4)' : base.face,
+          color: base.textColor, fontSize: 13, fontWeight: 700,
+          cursor: disabled ? 'default' : 'pointer',
+          boxShadow: disabled ? 'none' : `0 4px 0 0 ${base.shadow}, inset 0 1px 0 ${base.highlight}`,
+          WebkitTapHighlightColor: 'transparent',
+          transition: 'transform 0.08s ease, box-shadow 0.08s ease',
+        }}
+      >
+        {children}
+      </button>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 
 function loadImage(src) {
   return new Promise((resolve, reject) => {
@@ -90,21 +152,19 @@ async function cropToBlob(imageSrc, cropRect, outputSize) {
 function CircleCropModal({ imageSrc, onConfirm, onCancel, uploading }) {
   const containerRef = useRef(null);
 
-  // All live state in refs so DOM listeners never close over stale values
   const natRef    = useRef({ w: 1, h: 1 });
   const scaleRef  = useRef(1);
-  const offsetRef = useRef({ x: 0, y: 0 }); // image-centre displacement from circle-centre
+  // offset = displacement of the IMAGE CENTRE from the CIRCLE CENTRE (screen px)
+  const offsetRef = useRef({ x: 0, y: 0 });
 
-  // Separate React state just for triggering re-renders
   const [renderState, setRenderState] = useState({ scale: 1, offset: { x: 0, y: 0 } });
+  const commit = () => setRenderState({ scale: scaleRef.current, offset: { ...offsetRef.current } });
 
-  const commit = () =>
-    setRenderState({ scale: scaleRef.current, offset: { ...offsetRef.current } });
+  const getMinScale = (nat) => Math.max(CROP_SIZE / nat.w, CROP_SIZE / nat.h);
 
-  const getMinScale = (nat) =>
-    Math.max(CROP_SIZE / nat.w, CROP_SIZE / nat.h);
-
-  // Clamp so the image always fully covers the circle
+  // Clamp so the image always fully covers the circle.
+  // At any offset, the image (centred at circle-centre + offset) must reach every
+  // edge of the circle. So |ox| ≤ halfScaledW - halfCircle, same for y.
   const clampOffset = (ox, oy, sc, nat) => {
     const maxX = (nat.w * sc) / 2 - CROP_SIZE / 2;
     const maxY = (nat.h * sc) / 2 - CROP_SIZE / 2;
@@ -114,13 +174,12 @@ function CircleCropModal({ imageSrc, onConfirm, onCancel, uploading }) {
     };
   };
 
-  // Load image → min scale, perfectly centred
+  // Load → min scale, centred
   useEffect(() => {
     loadImage(imageSrc).then(img => {
       const nat = { w: img.naturalWidth, h: img.naturalHeight };
-      const ms  = getMinScale(nat);
       natRef.current    = nat;
-      scaleRef.current  = ms;
+      scaleRef.current  = getMinScale(nat);
       offsetRef.current = { x: 0, y: 0 };
       commit();
     });
@@ -141,20 +200,18 @@ function CircleCropModal({ imageSrc, onConfirm, onCancel, uploading }) {
 
   const onPointerMove = (e) => {
     if (!dragRef.current || isPinching.current) return;
-    const clamped = clampOffset(
+    offsetRef.current = clampOffset(
       e.clientX - dragRef.current.startX,
       e.clientY - dragRef.current.startY,
-      scaleRef.current,
-      natRef.current,
+      scaleRef.current, natRef.current,
     );
-    offsetRef.current = clamped;
     commit();
   };
 
   const onPointerUp = () => { dragRef.current = null; };
 
-  // ── Non-passive touch & wheel (must be attached directly to DOM) ──────────
-  const pinchRef = useRef(null); // { dist }
+  // ── Non-passive touch & wheel ─────────────────────────────────────────────
+  const pinchRef = useRef(null);
 
   useEffect(() => {
     const el = containerRef.current;
@@ -172,47 +229,39 @@ function CircleCropModal({ imageSrc, onConfirm, onCancel, uploading }) {
     };
 
     const onTouchMove = (e) => {
-      e.preventDefault(); // always block page scroll/zoom while over the crop area
+      e.preventDefault();
 
       if (e.touches.length === 2 && pinchRef.current) {
-        // ── Zoom anchored to the circle centre ────────────────────────────────
-        // The "world point" at the circle centre must remain fixed after scaling.
-        // In our coordinate system the circle centre maps to the point:
+        // ── Zoom anchored to circle centre ──────────────────────────────────
+        // The world point sitting at the circle centre is:
         //   worldX = -offsetRef.current.x / oldScale
-        //   worldY = -offsetRef.current.y / oldScale
-        // After rescaling we set:
-        //   newOffset = worldPoint * newScale  (so the same world point stays centred)
-        // Simplifying: newOffset = oldOffset * (newScale / oldScale)
+        // After rescaling we want the same world point to stay at the centre:
+        //   newOffset = worldX * newScale = oldOffset * (newScale / oldScale)
         const dx      = e.touches[0].clientX - e.touches[1].clientX;
         const dy      = e.touches[0].clientY - e.touches[1].clientY;
         const newDist = Math.hypot(dx, dy);
         const ratio   = newDist / pinchRef.current.dist;
         pinchRef.current = { dist: newDist };
 
-        const nat        = natRef.current;
-        const oldScale   = scaleRef.current;
-        const newScale   = Math.max(getMinScale(nat), Math.min(4, oldScale * ratio));
-        const scaleDelta = newScale / oldScale;
-
-        const newOffset = clampOffset(
-          offsetRef.current.x * scaleDelta,
-          offsetRef.current.y * scaleDelta,
-          newScale,
-          nat,
-        );
+        const nat      = natRef.current;
+        const oldScale = scaleRef.current;
+        const newScale = Math.max(getMinScale(nat), Math.min(4, oldScale * ratio));
+        const delta    = newScale / oldScale;
 
         scaleRef.current  = newScale;
-        offsetRef.current = newOffset;
+        offsetRef.current = clampOffset(
+          offsetRef.current.x * delta,
+          offsetRef.current.y * delta,
+          newScale, nat,
+        );
         commit();
 
       } else if (e.touches.length === 1 && dragRef.current && !isPinching.current) {
-        const clamped = clampOffset(
+        offsetRef.current = clampOffset(
           e.touches[0].clientX - dragRef.current.startX,
           e.touches[0].clientY - dragRef.current.startY,
-          scaleRef.current,
-          natRef.current,
+          scaleRef.current, natRef.current,
         );
-        offsetRef.current = clamped;
         commit();
       }
     };
@@ -226,19 +275,16 @@ function CircleCropModal({ imageSrc, onConfirm, onCancel, uploading }) {
 
     const onWheel = (e) => {
       e.preventDefault();
-      const nat        = natRef.current;
-      const oldScale   = scaleRef.current;
-      // Natural scroll direction: scroll up = zoom in
-      const newScale   = Math.max(getMinScale(nat), Math.min(4, oldScale * (1 - e.deltaY * 0.001)));
-      const scaleDelta = newScale / oldScale;
-      const newOffset  = clampOffset(
-        offsetRef.current.x * scaleDelta,
-        offsetRef.current.y * scaleDelta,
-        newScale,
-        nat,
-      );
+      const nat      = natRef.current;
+      const oldScale = scaleRef.current;
+      const newScale = Math.max(getMinScale(nat), Math.min(4, oldScale * (1 - e.deltaY * 0.001)));
+      const delta    = newScale / oldScale;
       scaleRef.current  = newScale;
-      offsetRef.current = newOffset;
+      offsetRef.current = clampOffset(
+        offsetRef.current.x * delta,
+        offsetRef.current.y * delta,
+        newScale, nat,
+      );
       commit();
     };
 
@@ -246,37 +292,50 @@ function CircleCropModal({ imageSrc, onConfirm, onCancel, uploading }) {
     el.addEventListener('touchmove',  onTouchMove,  { passive: false });
     el.addEventListener('touchend',   onTouchEnd,   { passive: false });
     el.addEventListener('wheel',      onWheel,      { passive: false });
-
     return () => {
       el.removeEventListener('touchstart', onTouchStart);
       el.removeEventListener('touchmove',  onTouchMove);
       el.removeEventListener('touchend',   onTouchEnd);
       el.removeEventListener('wheel',      onWheel);
     };
-  }, []); // mount/unmount only — all state read via refs
+  }, []);
 
   // ── Crop export ───────────────────────────────────────────────────────────
   const handleConfirm = async () => {
     const { scale, offset } = renderState;
-    const nat  = natRef.current;
-    const imgW = nat.w * scale;
-    const imgH = nat.h * scale;
-    const imgLeft = CROP_SIZE / 2 + offset.x - imgW / 2;
-    const imgTop  = CROP_SIZE / 2 + offset.y - imgH / 2;
-    const scaleX  = nat.w / imgW;
-    const scaleY  = nat.h / imgH;
+    const nat = natRef.current;
+
+    // Image is rendered with its centre at (CROP_SIZE/2 + offset.x, CROP_SIZE/2 + offset.y)
+    // and size (nat.w * scale) × (nat.h * scale).
+    // Top-left of the scaled image in crop-canvas space:
+    const imgLeft = CROP_SIZE / 2 + offset.x - (nat.w * scale) / 2;
+    const imgTop  = CROP_SIZE / 2 + offset.y - (nat.h * scale) / 2;
+
+    // Scale factors to go from canvas px back to natural image px
+    const sx = nat.w / (nat.w * scale); // = 1/scale
+    const sy = nat.h / (nat.h * scale);
+
     const blob = await cropToBlob(
       imageSrc,
-      { x: -imgLeft * scaleX, y: -imgTop * scaleY, w: CROP_SIZE * scaleX, h: CROP_SIZE * scaleY },
+      {
+        x: -imgLeft * sx,
+        y: -imgTop  * sy,
+        w: CROP_SIZE * sx,
+        h: CROP_SIZE * sy,
+      },
       { w: 400, h: 400 },
     );
     onConfirm(blob);
   };
 
+  // ── Render ────────────────────────────────────────────────────────────────
   const { scale, offset } = renderState;
   const nat  = natRef.current;
   const imgW = nat.w * scale;
   const imgH = nat.h * scale;
+  // top-left of the image inside the clip circle
+  const imgLeft = CROP_SIZE / 2 + offset.x - imgW / 2;
+  const imgTop  = CROP_SIZE / 2 + offset.y - imgH / 2;
 
   return (
     <div style={{
@@ -288,7 +347,7 @@ function CircleCropModal({ imageSrc, onConfirm, onCancel, uploading }) {
       paddingBottom: 'env(safe-area-inset-bottom)',
     }}>
       <p style={{ color: '#94a3b8', fontSize: 13, fontWeight: 600, letterSpacing: '0.04em', textTransform: 'uppercase' }}>
-        Drag to position
+        Drag & pinch to position
       </p>
 
       <div
@@ -308,25 +367,73 @@ function CircleCropModal({ imageSrc, onConfirm, onCancel, uploading }) {
               position: 'absolute',
               width:  imgW,
               height: imgH,
-              left: CROP_SIZE / 2 + offset.x - imgW / 2,
-              top:  CROP_SIZE / 2 + offset.y - imgH / 2,
+              left:   imgLeft,
+              top:    imgTop,
               pointerEvents: 'none',
               userSelect: 'none',
             }}
           />
         </div>
 
-        {/* Circle border ring */}
+        {/* Border ring */}
         <div style={{ position: 'absolute', inset: 0, borderRadius: '50%', border: '2px solid rgba(255,255,255,0.6)', pointerEvents: 'none' }} />
       </div>
 
+      {/* Cancel / Save — 3D style, words only */}
       <div style={{ display: 'flex', gap: 12, width: CROP_SIZE }}>
-        <button onClick={onCancel} style={{ flex: 1, padding: '12px 0', borderRadius: 14, border: '1px solid rgba(255,255,255,0.12)', background: 'linear-gradient(to bottom, #1e2535 0%, #0f1520 100%)', color: '#94a3b8', fontSize: 14, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, boxShadow: '0 4px 0 0 #0a0f1a' }}>
-          <X style={{ width: 15, height: 15 }} /> Cancel
-        </button>
-        <button onClick={handleConfirm} disabled={uploading} style={{ flex: 1, padding: '12px 0', borderRadius: 14, border: 'none', background: uploading ? 'rgba(59,130,246,0.5)' : 'linear-gradient(to bottom, #3b82f6 0%, #1d4ed8 100%)', color: '#fff', fontSize: 14, fontWeight: 700, cursor: uploading ? 'default' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, boxShadow: uploading ? 'none' : '0 4px 0 0 #1a3fa8' }}>
-          {uploading ? 'Saving…' : <><Check style={{ width: 15, height: 15 }} /> Save</>}
-        </button>
+        {/* Cancel */}
+        <div style={{ position: 'relative', flex: 1 }}>
+          <div style={{ position: 'absolute', inset: 0, borderRadius: 14, background: '#0a0f1a', transform: 'translateY(4px)' }} />
+          <button
+            onClick={onCancel}
+            style={{
+              position: 'relative', zIndex: 1, width: '100%',
+              padding: '12px 0', borderRadius: 14,
+              border: '1px solid rgba(255,255,255,0.08)',
+              background: 'linear-gradient(to bottom, #1e2535 0%, #151c2a 50%, #0f1520 100%)',
+              color: '#94a3b8', fontSize: 14, fontWeight: 700, cursor: 'pointer',
+              boxShadow: '0 4px 0 0 #0a0f1a, inset 0 1px 0 rgba(255,255,255,0.06)',
+              WebkitTapHighlightColor: 'transparent',
+              transition: 'transform 0.08s ease, box-shadow 0.08s ease',
+            }}
+            onMouseDown={e => { e.currentTarget.style.transform = 'translateY(4px)'; e.currentTarget.style.boxShadow = 'none'; }}
+            onMouseUp={e => { e.currentTarget.style.transform = ''; e.currentTarget.style.boxShadow = '0 4px 0 0 #0a0f1a, inset 0 1px 0 rgba(255,255,255,0.06)'; }}
+            onMouseLeave={e => { e.currentTarget.style.transform = ''; e.currentTarget.style.boxShadow = '0 4px 0 0 #0a0f1a, inset 0 1px 0 rgba(255,255,255,0.06)'; }}
+            onTouchStart={e => { e.currentTarget.style.transform = 'translateY(4px)'; e.currentTarget.style.boxShadow = 'none'; }}
+            onTouchEnd={e => { e.currentTarget.style.transform = ''; e.currentTarget.style.boxShadow = '0 4px 0 0 #0a0f1a, inset 0 1px 0 rgba(255,255,255,0.06)'; }}
+          >
+            Cancel
+          </button>
+        </div>
+
+        {/* Save */}
+        <div style={{ position: 'relative', flex: 1 }}>
+          <div style={{ position: 'absolute', inset: 0, borderRadius: 14, background: uploading ? 'transparent' : '#1a3fa8', transform: 'translateY(4px)' }} />
+          <button
+            onClick={handleConfirm}
+            disabled={uploading}
+            style={{
+              position: 'relative', zIndex: 1, width: '100%',
+              padding: '12px 0', borderRadius: 14,
+              border: 'none',
+              background: uploading
+                ? 'rgba(59,130,246,0.5)'
+                : 'linear-gradient(to bottom, #3b82f6 0%, #2563eb 40%, #1d4ed8 100%)',
+              color: '#fff', fontSize: 14, fontWeight: 700,
+              cursor: uploading ? 'default' : 'pointer',
+              boxShadow: uploading ? 'none' : '0 4px 0 0 #1a3fa8, inset 0 1px 0 rgba(255,255,255,0.15)',
+              WebkitTapHighlightColor: 'transparent',
+              transition: 'transform 0.08s ease, box-shadow 0.08s ease',
+            }}
+            onMouseDown={e => { if (!uploading) { e.currentTarget.style.transform = 'translateY(4px)'; e.currentTarget.style.boxShadow = 'none'; } }}
+            onMouseUp={e => { if (!uploading) { e.currentTarget.style.transform = ''; e.currentTarget.style.boxShadow = '0 4px 0 0 #1a3fa8, inset 0 1px 0 rgba(255,255,255,0.15)'; } }}
+            onMouseLeave={e => { if (!uploading) { e.currentTarget.style.transform = ''; e.currentTarget.style.boxShadow = '0 4px 0 0 #1a3fa8, inset 0 1px 0 rgba(255,255,255,0.15)'; } }}
+            onTouchStart={e => { if (!uploading) { e.currentTarget.style.transform = 'translateY(4px)'; e.currentTarget.style.boxShadow = 'none'; } }}
+            onTouchEnd={e => { if (!uploading) { e.currentTarget.style.transform = ''; e.currentTarget.style.boxShadow = '0 4px 0 0 #1a3fa8, inset 0 1px 0 rgba(255,255,255,0.15)'; } }}
+          >
+            {uploading ? 'Saving…' : 'Save'}
+          </button>
+        </div>
       </div>
     </div>
   );
@@ -392,7 +499,7 @@ export default function ProfileSettings() {
   };
 
   const handleNameCancel = () => {
-    setLocalFullName(currentUser?.full_name || '');
+    setLocalFullName(currentUser?.display_name || currentUser?.full_name || '');
     setNameEditing(false);
   };
 
@@ -409,15 +516,39 @@ export default function ProfileSettings() {
         <Group sectionId="avatar" highlighted={highlighted}>
           <Row label="Photo" sublabel="Shown on your profile and posts" isLast>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              {/* Avatar preview */}
               <div style={{ width: 44, height: 44, borderRadius: '50%', overflow: 'hidden', background: 'rgba(255,255,255,0.08)', border: '2px solid rgba(255,255,255,0.12)', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 {currentUser.avatar_url
                   ? <img src={currentUser.avatar_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                   : <span style={{ fontSize: 18, fontWeight: 700, color: '#fff' }}>{currentUser.full_name?.charAt(0)?.toUpperCase()}</span>}
               </div>
-              <label style={{ cursor: 'pointer' }}>
+
+              {/* 3D blue Change button */}
+              <label style={{ cursor: 'pointer', display: 'block' }}>
                 <input type="file" accept="image/*" style={{ display: 'none' }} onChange={handleAvatarFileChange} />
-                <div style={{ padding: '7px 14px', background: 'rgba(96,165,250,0.15)', border: '1px solid rgba(96,165,250,0.3)', borderRadius: 10, fontSize: 13, fontWeight: 600, color: '#60a5fa', cursor: 'pointer', whiteSpace: 'nowrap' }}>
-                  Change
+                <div style={{ position: 'relative', display: 'inline-block' }}>
+                  {/* Shadow layer */}
+                  <div style={{ position: 'absolute', inset: 0, borderRadius: 10, background: '#1a3fa8', transform: 'translateY(3px)', pointerEvents: 'none' }} />
+                  {/* Face */}
+                  <div
+                    style={{
+                      position: 'relative', zIndex: 1,
+                      padding: '7px 16px', borderRadius: 10,
+                      background: 'linear-gradient(to bottom, #3b82f6 0%, #2563eb 40%, #1d4ed8 100%)',
+                      color: '#fff', fontSize: 13, fontWeight: 700,
+                      boxShadow: '0 3px 0 0 #1a3fa8, inset 0 1px 0 rgba(255,255,255,0.15)',
+                      transition: 'transform 0.08s ease, box-shadow 0.08s ease',
+                      userSelect: 'none', whiteSpace: 'nowrap',
+                      WebkitTapHighlightColor: 'transparent',
+                    }}
+                    onMouseDown={e => { e.currentTarget.style.transform = 'translateY(3px)'; e.currentTarget.style.boxShadow = 'none'; }}
+                    onMouseUp={e   => { e.currentTarget.style.transform = ''; e.currentTarget.style.boxShadow = '0 3px 0 0 #1a3fa8, inset 0 1px 0 rgba(255,255,255,0.15)'; }}
+                    onMouseLeave={e => { e.currentTarget.style.transform = ''; e.currentTarget.style.boxShadow = '0 3px 0 0 #1a3fa8, inset 0 1px 0 rgba(255,255,255,0.15)'; }}
+                    onTouchStart={e => { e.currentTarget.style.transform = 'translateY(3px)'; e.currentTarget.style.boxShadow = 'none'; }}
+                    onTouchEnd={e   => { e.currentTarget.style.transform = ''; e.currentTarget.style.boxShadow = '0 3px 0 0 #1a3fa8, inset 0 1px 0 rgba(255,255,255,0.15)'; }}
+                  >
+                    Change
+                  </div>
                 </div>
               </label>
             </div>
@@ -438,15 +569,34 @@ export default function ProfileSettings() {
             />
             {nameEditing && (
               <div style={{ display: 'flex', gap: 10, marginTop: 12 }}>
+                {/* Cancel */}
                 <div style={{ position: 'relative', flex: 1 }}>
                   <div style={{ position: 'absolute', inset: 0, borderRadius: 12, background: '#0a0f1a', transform: 'translateY(4px)' }} />
-                  <button onClick={handleNameCancel} style={{ position: 'relative', zIndex: 1, width: '100%', padding: '10px 0', borderRadius: 12, border: '1px solid rgba(255,255,255,0.08)', background: 'linear-gradient(to bottom, #1e2535 0%, #0f1520 100%)', color: '#94a3b8', fontSize: 13, fontWeight: 700, cursor: 'pointer', boxShadow: '0 4px 0 0 #0a0f1a, inset 0 1px 0 rgba(255,255,255,0.06)' }}>
+                  <button
+                    onClick={handleNameCancel}
+                    style={{ position: 'relative', zIndex: 1, width: '100%', padding: '10px 0', borderRadius: 12, border: '1px solid rgba(255,255,255,0.08)', background: 'linear-gradient(to bottom, #1e2535 0%, #151c2a 50%, #0f1520 100%)', color: '#94a3b8', fontSize: 13, fontWeight: 700, cursor: 'pointer', boxShadow: '0 4px 0 0 #0a0f1a, inset 0 1px 0 rgba(255,255,255,0.06)', WebkitTapHighlightColor: 'transparent', transition: 'transform 0.08s ease, box-shadow 0.08s ease' }}
+                    onMouseDown={e => { e.currentTarget.style.transform = 'translateY(4px)'; e.currentTarget.style.boxShadow = 'none'; }}
+                    onMouseUp={e   => { e.currentTarget.style.transform = ''; e.currentTarget.style.boxShadow = '0 4px 0 0 #0a0f1a, inset 0 1px 0 rgba(255,255,255,0.06)'; }}
+                    onMouseLeave={e => { e.currentTarget.style.transform = ''; e.currentTarget.style.boxShadow = '0 4px 0 0 #0a0f1a, inset 0 1px 0 rgba(255,255,255,0.06)'; }}
+                    onTouchStart={e => { e.currentTarget.style.transform = 'translateY(4px)'; e.currentTarget.style.boxShadow = 'none'; }}
+                    onTouchEnd={e   => { e.currentTarget.style.transform = ''; e.currentTarget.style.boxShadow = '0 4px 0 0 #0a0f1a, inset 0 1px 0 rgba(255,255,255,0.06)'; }}
+                  >
                     Cancel
                   </button>
                 </div>
+                {/* Save */}
                 <div style={{ position: 'relative', flex: 1 }}>
-                  <div style={{ position: 'absolute', inset: 0, borderRadius: 12, background: '#1a3fa8', transform: 'translateY(4px)' }} />
-                  <button onClick={handleNameSave} disabled={nameSaving || !localFullName.trim()} style={{ position: 'relative', zIndex: 1, width: '100%', padding: '10px 0', borderRadius: 12, border: 'none', background: nameSaving ? 'rgba(59,130,246,0.5)' : 'linear-gradient(to bottom, #3b82f6 0%, #1d4ed8 100%)', color: '#fff', fontSize: 13, fontWeight: 700, cursor: nameSaving || !localFullName.trim() ? 'default' : 'pointer', boxShadow: nameSaving ? 'none' : '0 4px 0 0 #1a3fa8, inset 0 1px 0 rgba(255,255,255,0.15)', opacity: !localFullName.trim() ? 0.5 : 1 }}>
+                  <div style={{ position: 'absolute', inset: 0, borderRadius: 12, background: nameSaving || !localFullName.trim() ? 'transparent' : '#1a3fa8', transform: 'translateY(4px)' }} />
+                  <button
+                    onClick={handleNameSave}
+                    disabled={nameSaving || !localFullName.trim()}
+                    style={{ position: 'relative', zIndex: 1, width: '100%', padding: '10px 0', borderRadius: 12, border: 'none', background: nameSaving ? 'rgba(59,130,246,0.5)' : 'linear-gradient(to bottom, #3b82f6 0%, #2563eb 40%, #1d4ed8 100%)', color: '#fff', fontSize: 13, fontWeight: 700, cursor: nameSaving || !localFullName.trim() ? 'default' : 'pointer', boxShadow: nameSaving || !localFullName.trim() ? 'none' : '0 4px 0 0 #1a3fa8, inset 0 1px 0 rgba(255,255,255,0.15)', opacity: !localFullName.trim() ? 0.5 : 1, WebkitTapHighlightColor: 'transparent', transition: 'transform 0.08s ease, box-shadow 0.08s ease' }}
+                    onMouseDown={e => { if (!nameSaving && localFullName.trim()) { e.currentTarget.style.transform = 'translateY(4px)'; e.currentTarget.style.boxShadow = 'none'; } }}
+                    onMouseUp={e   => { if (!nameSaving && localFullName.trim()) { e.currentTarget.style.transform = ''; e.currentTarget.style.boxShadow = '0 4px 0 0 #1a3fa8, inset 0 1px 0 rgba(255,255,255,0.15)'; } }}
+                    onMouseLeave={e => { if (!nameSaving && localFullName.trim()) { e.currentTarget.style.transform = ''; e.currentTarget.style.boxShadow = '0 4px 0 0 #1a3fa8, inset 0 1px 0 rgba(255,255,255,0.15)'; } }}
+                    onTouchStart={e => { if (!nameSaving && localFullName.trim()) { e.currentTarget.style.transform = 'translateY(4px)'; e.currentTarget.style.boxShadow = 'none'; } }}
+                    onTouchEnd={e   => { if (!nameSaving && localFullName.trim()) { e.currentTarget.style.transform = ''; e.currentTarget.style.boxShadow = '0 4px 0 0 #1a3fa8, inset 0 1px 0 rgba(255,255,255,0.15)'; } }}
+                  >
                     {nameSaving ? 'Saving…' : 'Save'}
                   </button>
                 </div>
