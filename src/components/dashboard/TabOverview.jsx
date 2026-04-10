@@ -167,25 +167,7 @@ function Sidebar() {
           <div style={{ fontSize: 10.5, color: C.t3, lineHeight: 1.15 }}>Fitness</div>
         </div>
       </div>
-
-      {/* Nav items */}
-      <nav style={{ flex: 1, padding: '0 10px' }}>
-        {NAV.map((n, i) => (
-          <div key={i} style={{
-            display: 'flex', alignItems: 'center', gap: 9,
-            padding: '8px 10px', borderRadius: 8, marginBottom: 2,
-            background: n.active ? C.cyanDim : 'transparent',
-            border: `1px solid ${n.active ? C.cyanBrd : 'transparent'}`,
-            cursor: 'pointer',
-          }}>
-            <n.icon style={{ width: 15, height: 15, color: n.active ? C.cyan : C.t3, strokeWidth: 1.8 }} />
-            <span style={{ fontSize: 13, fontWeight: n.active ? 600 : 400, color: n.active ? C.t1 : C.t2 }}>
-              {n.label}
-            </span>
-          </div>
-        ))}
-      </nav>
-
+    
       <div style={{ padding: '10px 10px 18px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 9, padding: '8px 10px', cursor: 'pointer' }}>
           <Settings style={{ width: 15, height: 15, color: C.t3, strokeWidth: 1.8 }} />
