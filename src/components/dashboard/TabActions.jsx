@@ -1,3 +1,5 @@
 export default function TabActions() {
-  return null;
+  return (
+    <div />
+  );
 }

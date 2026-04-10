@@ -42,6 +42,7 @@ const TabOverview = lazy(() => import('../components/dashboard/TabOverview'));
 const TabMembersComponent = lazy(() => import('../components/dashboard/TabMembers'));
 const TabContentComponent = lazy(() => import('../components/dashboard/TabContent'));
 const TabAnalyticsComponent = lazy(() => import('../components/dashboard/TabAnalytics'));
+const TabGym = lazy(() => import('../components/dashboard/TabGym'));
 const TabActions = lazy(() => import('../components/dashboard/TabActions'));
 const TabCoachSchedule = lazy(() => import('../components/dashboard/TabCoachSchedule'));
 const TabCoachMembers = lazy(() => import('../components/dashboard/TabCoachMembers'));
