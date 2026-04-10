@@ -1423,17 +1423,8 @@ export default function GymCommunity() {
       document.head.appendChild(tag);
     }
   }, []);
+
   useEffect(() => { window.scrollTo(0, 0); }, [gymId]);
-  useEffect(() => {
-    if (!gymId) return;
-    try {
-      const prev = JSON.parse(localStorage.getItem('recentlyViewedGyms') || '[]');
-      const updated = [gymId, ...prev.filter(id => id !== gymId)].slice(0, 3);
-      if (currentUser?.id) {
-  localStorage.setItem(`recentlyViewedGyms_${currentUser.id}`, JSON.stringify(updatedIds));
-}
-    } catch {}
-  }, [gymId]);
 
   const [showCreateEvent, setShowCreateEvent] = useState(false);
   const [showManageEquipment, setShowManageEquipment] = useState(false);
@@ -1537,6 +1528,20 @@ export default function GymCommunity() {
     }
     return map;
   }, [memberUsers, currentUser]);
+
+  // ── FIX: User-scoped recently viewed gyms ────────────────────────────────────
+  // This effect runs only after currentUser is loaded, and scopes the
+  // localStorage key to the user's ID so different accounts don't share history.
+  useEffect(() => {
+    if (!gymId || !currentUser?.id) return;
+    try {
+      const key = `recentlyViewedGyms_${currentUser.id}`;
+      const prev = JSON.parse(localStorage.getItem(key) || '[]');
+      const updated = [gymId, ...prev.filter(id => id !== gymId)].slice(0, 3);
+      localStorage.setItem(key, JSON.stringify(updated));
+    } catch {}
+  }, [gymId, currentUser?.id]);
+  // ─────────────────────────────────────────────────────────────────────────────
 
   const createEventMutation = useMutation({ mutationFn: eventData => base44.entities.Event.create({ ...eventData, gym_id: gymId, gym_name: gym?.name, attendees: 0 }), onMutate: async eventData => { await queryClient.cancelQueries({ queryKey: ['events', gymId] }); const previous = queryClient.getQueryData(['events', gymId]); queryClient.setQueryData(['events', gymId], (old=[]) => [{ ...eventData, id:`temp-${Date.now()}`, gym_id:gymId, gym_name:gym?.name, attendees:0 }, ...old]); return { previous }; }, onError: (err, vars, context) => { queryClient.setQueryData(['events', gymId], context.previous); }, onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['events', gymId] }); setShowCreateEvent(false); } });
   const rsvpMutation = useMutation({ mutationFn: ({ eventId, currentAttendees }) => base44.entities.Event.update(eventId, { attendees: currentAttendees + 1 }), onMutate: async ({ eventId, currentAttendees }) => { await queryClient.cancelQueries({ queryKey: ['events', gymId] }); const previous = queryClient.getQueryData(['events', gymId]); queryClient.setQueryData(['events', gymId], (old=[]) => old.map(e => e.id === eventId ? { ...e, attendees: currentAttendees + 1 } : e)); return { previous }; }, onError: (err, vars, context) => { queryClient.setQueryData(['events', gymId], context.previous); }, onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['events', gymId] }); } });
