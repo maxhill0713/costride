@@ -235,17 +235,27 @@ export default function CreateGymOwnerPostModal({ open, onClose, gym, onSuccess 
  if (!canSubmit) return;
  setSubmitting(true);
  try {
+ const user = await base44.auth.me();
  await base44.entities.Post.create({
- member_id: gym.id, member_name: gym.name, member_avatar: gym.image_url,
- content: content.trim(), image_url: imageUrl || null, likes: 0, comments: [],
- post_type: postType, tags, is_pinned: isPinned,
- scheduled_date: scheduledDate || null,
- call_to_action: callToAction.enabled && callToAction.text ? { text: callToAction.text, link: callToAction.link } : null,
+  member_id: user.id,
+  member_name: gym.name,
+  member_avatar: gym.logo_url || gym.image_url || null,
+  gym_id: gym.id,
+  content: content.trim(),
+  image_url: imageUrl || null,
+  likes: 0,
+  comments: [],
+  post_type: postType,
+  tags,
+  is_pinned: isPinned,
+  scheduled_date: scheduledDate || null,
+  call_to_action: callToAction.enabled && callToAction.text ? { text: callToAction.text, link: callToAction.link } : null,
  });
  onSuccess?.();
  reset();
  onClose();
- } catch {
+ } catch (e) {
+  console.error('Post creation failed:', e);
  } finally {
  setSubmitting(false);
  }
