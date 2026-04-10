@@ -358,7 +358,7 @@ function FeedCard({ item, memberAvatarMap, liked, onLike, index }) {
             fontSize: 13, fontWeight: 800, color: col.color,
             boxShadow: isPR ? '0 0 12px rgba(234,179,8,0.35)' : '0 2px 8px rgba(0,0,0,0.35)' }}>
             {avatar
-              ? <img src={avatar} alt={item.userName} loading="lazy" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              ? <img src={avatar} alt={item.userName} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
               : ini(item.userName)}
           </div>
           <div style={{ position: 'absolute', bottom: -2, right: -2,
@@ -1492,14 +1492,19 @@ export default function GymCommunity() {
     gcTime: 15*60*1000,
   });
 
+  const checkInUserIds = React.useMemo(() => {
+    const seen = new Set(members.map(m => m.user_id).filter(Boolean));
+    checkIns.forEach(c => { if (c.user_id) seen.add(c.user_id); });
+    return [...seen].slice(0, 100);
+  }, [members, checkIns]);
+
   const { data: memberUsers = [] } = useQuery({
-    queryKey: ['memberUsers', gymId, members.map(m => m.user_id).join(',')],
+    queryKey: ['memberUsers', gymId, checkInUserIds.join(',')],
     queryFn: async () => {
-      const userIds = [...new Set(members.map(m => m.user_id).filter(Boolean))].slice(0, 50);
-      if (userIds.length === 0) return [];
-      return base44.entities.User.filter({ id: { $in: userIds } });
+      if (checkInUserIds.length === 0) return [];
+      return base44.entities.User.filter({ id: { $in: checkInUserIds } });
     },
-    enabled: !!gymId && members.length > 0,
+    enabled: !!gymId && checkInUserIds.length > 0,
     staleTime: 5 * 60 * 1000,
     gcTime: 15 * 60 * 1000,
   });
