@@ -964,8 +964,8 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser, openToA
                                       Mirror Workout
                                     </button>
                                   )}
-                                  {isMirrored && (
-                                    <div className="flex items-center gap-1 flex-shrink-0">
+                                  <div className="flex items-center gap-1 flex-shrink-0">
+                                    {isMirrored && (
                                       <div
                                         className="inline-flex items-center justify-center whitespace-nowrap font-bold h-7 rounded-lg uppercase"
                                         style={{
@@ -979,6 +979,7 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser, openToA
                                         }}>
                                         Mirrored
                                       </div>
+                                    )}
                                       <div className="relative">
                                         <button
                                           onClick={(e) => { e.stopPropagation(); setDayDotsMenuOpen((prev) => ({ ...prev, [day]: !prev[day] })); }}
@@ -999,8 +1000,7 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser, openToA
                                           </>
                                         )}
                                       </div>
-                                    </div>
-                                  )}
+                                  </div>
                                 </div>
 
                                 <div className="flex gap-1.5 px-4 pb-3">
