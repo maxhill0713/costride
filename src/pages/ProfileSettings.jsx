@@ -142,27 +142,20 @@ async function cropToBlob(imageSrc, cropRect, outputSize) {
 
 // ─── Circle Crop Modal ────────────────────────────────────────────────────────
 function CircleCropModal({ imageSrc, onConfirm, onCancel, uploading }) {
-  const containerRef = useRef(null);
-
   const natRef    = useRef({ w: 1, h: 1 });
   const scaleRef  = useRef(1);
   // offset = displacement of the IMAGE CENTRE from the CIRCLE CENTRE (screen px)
   const offsetRef = useRef({ x: 0, y: 0 });
+  const dragRef   = useRef(null);
 
-  const [renderState, setRenderState] = useState({ scale: 1, offset: { x: 0, y: 0 } });
-  const commit = () => setRenderState({ scale: scaleRef.current, offset: { ...offsetRef.current } });
+  const [offset, setOffset] = useState({ x: 0, y: 0 });
 
-  const getMinScale = (nat) => Math.max(CROP_SIZE / nat.w, CROP_SIZE / nat.h);
-  const MAX_SCALE = 2.5;
+  const getScale = (nat) => Math.max(CROP_SIZE / nat.w, CROP_SIZE / nat.h);
 
-  // Clamp so the image always fully covers the circle on all four sides.
-  // Image centre sits at (CROP_SIZE/2 + ox, CROP_SIZE/2 + oy).
-  // Left edge of scaled image:  CROP_SIZE/2 + ox - imgW/2  must be ≤ 0
-  //   → ox ≤  imgW/2 - CROP_SIZE/2  →  ox ≤ maxX
-  // Right edge: CROP_SIZE/2 + ox + imgW/2  must be ≥ CROP_SIZE
-  //   → ox ≥ -(imgW/2 - CROP_SIZE/2) → ox ≥ -maxX
-  // Same logic for Y. Math.max(0,...) guards floating-point underflow at minScale.
-  const clampOffset = (ox, oy, sc, nat) => {
+  // Clamp so image always fully covers the circle on all four sides
+  const clampOffset = (ox, oy) => {
+    const nat  = natRef.current;
+    const sc   = scaleRef.current;
     const maxX = Math.max(0, (nat.w * sc) / 2 - CROP_SIZE / 2);
     const maxY = Math.max(0, (nat.h * sc) / 2 - CROP_SIZE / 2);
     return {
@@ -171,23 +164,19 @@ function CircleCropModal({ imageSrc, onConfirm, onCancel, uploading }) {
     };
   };
 
-  // Load → min scale, centred
+  // Load image → fit scale, centred
   useEffect(() => {
     loadImage(imageSrc).then(img => {
       const nat = { w: img.naturalWidth, h: img.naturalHeight };
       natRef.current    = nat;
-      scaleRef.current  = getMinScale(nat);
+      scaleRef.current  = getScale(nat);
       offsetRef.current = { x: 0, y: 0 };
-      commit();
+      setOffset({ x: 0, y: 0 });
     });
   }, [imageSrc]);
 
-  // ── Pointer drag ──────────────────────────────────────────────────────────
-  const dragRef    = useRef(null);
-  const isPinching = useRef(false);
-
+  // ── Pointer drag only — no zoom ───────────────────────────────────────────
   const onPointerDown = (e) => {
-    if (isPinching.current) return;
     e.currentTarget.setPointerCapture(e.pointerId);
     dragRef.current = {
       startX: e.clientX - offsetRef.current.x,
@@ -196,129 +185,36 @@ function CircleCropModal({ imageSrc, onConfirm, onCancel, uploading }) {
   };
 
   const onPointerMove = (e) => {
-    if (!dragRef.current || isPinching.current) return;
-    offsetRef.current = clampOffset(
+    if (!dragRef.current) return;
+    const clamped = clampOffset(
       e.clientX - dragRef.current.startX,
       e.clientY - dragRef.current.startY,
-      scaleRef.current, natRef.current,
     );
-    commit();
+    offsetRef.current = clamped;
+    setOffset(clamped);
   };
 
   const onPointerUp = () => { dragRef.current = null; };
 
-  // ── Non-passive touch & wheel ─────────────────────────────────────────────
-  const pinchRef = useRef(null);
-
-  useEffect(() => {
-    const el = containerRef.current;
-    if (!el) return;
-
-    const onTouchStart = (e) => {
-      if (e.touches.length === 2) {
-        e.preventDefault();
-        isPinching.current = true;
-        dragRef.current    = null;
-        const dx = e.touches[0].clientX - e.touches[1].clientX;
-        const dy = e.touches[0].clientY - e.touches[1].clientY;
-        pinchRef.current = { dist: Math.hypot(dx, dy) };
-      }
-    };
-
-    const onTouchMove = (e) => {
-      e.preventDefault();
-
-      if (e.touches.length === 2 && pinchRef.current) {
-        // ── Zoom anchored to circle centre ──────────────────────────────────
-        // The world point sitting at the circle centre is:
-        //   worldX = -offsetRef.current.x / oldScale
-        // After rescaling we want the same world point to stay at the centre:
-        //   newOffset = worldX * newScale = oldOffset * (newScale / oldScale)
-        const dx      = e.touches[0].clientX - e.touches[1].clientX;
-        const dy      = e.touches[0].clientY - e.touches[1].clientY;
-        const newDist = Math.hypot(dx, dy);
-        const ratio   = newDist / pinchRef.current.dist;
-        pinchRef.current = { dist: newDist };
-
-        const nat      = natRef.current;
-        const oldScale = scaleRef.current;
-        const newScale = Math.max(getMinScale(nat), Math.min(MAX_SCALE, oldScale * ratio));
-        const delta    = newScale / oldScale;
-
-        scaleRef.current  = newScale;
-        offsetRef.current = clampOffset(
-          offsetRef.current.x * delta,
-          offsetRef.current.y * delta,
-          newScale, nat,
-        );
-        commit();
-
-      } else if (e.touches.length === 1 && dragRef.current && !isPinching.current) {
-        offsetRef.current = clampOffset(
-          e.touches[0].clientX - dragRef.current.startX,
-          e.touches[0].clientY - dragRef.current.startY,
-          scaleRef.current, natRef.current,
-        );
-        commit();
-      }
-    };
-
-    const onTouchEnd = (e) => {
-      if (e.touches.length < 2) {
-        pinchRef.current = null;
-        setTimeout(() => { isPinching.current = false; }, 80);
-      }
-    };
-
-    const onWheel = (e) => {
-      e.preventDefault();
-      const nat      = natRef.current;
-      const oldScale = scaleRef.current;
-      const newScale = Math.max(getMinScale(nat), Math.min(MAX_SCALE, oldScale * (1 - e.deltaY * 0.001)));
-      const delta    = newScale / oldScale;
-      scaleRef.current  = newScale;
-      offsetRef.current = clampOffset(
-        offsetRef.current.x * delta,
-        offsetRef.current.y * delta,
-        newScale, nat,
-      );
-      commit();
-    };
-
-    el.addEventListener('touchstart', onTouchStart, { passive: false });
-    el.addEventListener('touchmove',  onTouchMove,  { passive: false });
-    el.addEventListener('touchend',   onTouchEnd,   { passive: false });
-    el.addEventListener('wheel',      onWheel,      { passive: false });
-    return () => {
-      el.removeEventListener('touchstart', onTouchStart);
-      el.removeEventListener('touchmove',  onTouchMove);
-      el.removeEventListener('touchend',   onTouchEnd);
-      el.removeEventListener('wheel',      onWheel);
-    };
-  }, []);
-
   // ── Crop export ───────────────────────────────────────────────────────────
   const handleConfirm = async () => {
-    const { scale, offset } = renderState;
-    const nat = natRef.current;
+    const nat   = natRef.current;
+    const sc    = scaleRef.current;
+    const ox    = offsetRef.current.x;
+    const oy    = offsetRef.current.y;
 
-    // Image is rendered with its centre at (CROP_SIZE/2 + offset.x, CROP_SIZE/2 + offset.y)
-    // and size (nat.w * scale) × (nat.h * scale).
-    // Top-left of the scaled image in crop-canvas space:
-    const imgLeft = CROP_SIZE / 2 + offset.x - (nat.w * scale) / 2;
-    const imgTop  = CROP_SIZE / 2 + offset.y - (nat.h * scale) / 2;
+    // Top-left of the scaled image in crop-canvas space
+    const imgLeft = CROP_SIZE / 2 + ox - (nat.w * sc) / 2;
+    const imgTop  = CROP_SIZE / 2 + oy - (nat.h * sc) / 2;
 
-    // Scale factors to go from canvas px back to natural image px
-    const sx = nat.w / (nat.w * scale); // = 1/scale
-    const sy = nat.h / (nat.h * scale);
-
+    // Convert back to natural image coordinates (sc = imgPx / natPx → natPx = imgPx / sc)
     const blob = await cropToBlob(
       imageSrc,
       {
-        x: -imgLeft * sx,
-        y: -imgTop  * sy,
-        w: CROP_SIZE * sx,
-        h: CROP_SIZE * sy,
+        x: -imgLeft / sc,
+        y: -imgTop  / sc,
+        w: CROP_SIZE / sc,
+        h: CROP_SIZE / sc,
       },
       { w: 400, h: 400 },
     );
@@ -326,11 +222,10 @@ function CircleCropModal({ imageSrc, onConfirm, onCancel, uploading }) {
   };
 
   // ── Render ────────────────────────────────────────────────────────────────
-  const { scale, offset } = renderState;
   const nat  = natRef.current;
-  const imgW = nat.w * scale;
-  const imgH = nat.h * scale;
-  // top-left of the image inside the clip circle
+  const sc   = scaleRef.current;
+  const imgW = nat.w * sc;
+  const imgH = nat.h * sc;
   const imgLeft = CROP_SIZE / 2 + offset.x - imgW / 2;
   const imgTop  = CROP_SIZE / 2 + offset.y - imgH / 2;
 
@@ -344,11 +239,10 @@ function CircleCropModal({ imageSrc, onConfirm, onCancel, uploading }) {
       paddingBottom: 'env(safe-area-inset-bottom)',
     }}>
       <p style={{ color: '#94a3b8', fontSize: 13, fontWeight: 600, letterSpacing: '0.04em', textTransform: 'uppercase' }}>
-        Drag & pinch to position
+        Drag to position
       </p>
 
       <div
-        ref={containerRef}
         style={{ position: 'relative', width: CROP_SIZE, height: CROP_SIZE, userSelect: 'none', touchAction: 'none' }}
         onPointerDown={onPointerDown}
         onPointerMove={onPointerMove}
