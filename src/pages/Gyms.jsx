@@ -135,9 +135,12 @@ export default function Gyms() {
     placeholderData: (prev) => prev
   });
   const recentlyViewedGymIds = React.useMemo(() => {
-    try {return JSON.parse(localStorage.getItem('recentlyViewedGyms') || '[]').slice(0, 3);}
+    if (!currentUser?.id) return [];
+    try {
+      return JSON.parse(localStorage.getItem(`recentlyViewedGyms_${currentUser.id}`) || '[]').slice(0, 3);
+    }
     catch {return [];}
-  }, []);
+  }, [currentUser?.id]);
   const memberGymIds = gymMemberships.map((m) => m.gym_id);
   const { data: userGymsData = [] } = useQuery({
     queryKey: ['memberGyms', currentUser?.id],
