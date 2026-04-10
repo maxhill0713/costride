@@ -123,11 +123,11 @@ function FriendsSection({
 
                   {/* ── Sent / pending requests ── */}
                   {sentFriendRequests.filter((req) => {
-                  const u = friendUsersList.find((u) => u.id === req.friend_id);
-                  return (u?.full_name || req.friend_name || '').toLowerCase().includes(friendsListSearchQuery.toLowerCase());
+                  // Use data stored on the Friend record — no User lookup needed
+                  return (req.friend_name || '').toLowerCase().includes(friendsListSearchQuery.toLowerCase());
                 }).map((request) => {
-                  const u = friendUsersList.find((u) => u.id === request.friend_id);
-                  const name = u?.display_name || u?.full_name || request.friend_name || 'User';
+                  const name = request.friend_name || 'User';
+                  const avatarUrl = request.friend_avatar;
                   const sentMs = Date.now() - new Date(request.created_date).getTime();
                   const sentHours = Math.floor(sentMs / (1000 * 60 * 60));
                   const sentDays = Math.floor(sentMs / (1000 * 60 * 60 * 24));
@@ -136,9 +136,9 @@ function FriendsSection({
                     <div key={`sent-${request.id}`} className="px-2.5 py-2 rounded-lg flex items-center gap-2 relative bg-slate-700/40">
                         <Link to={createPageUrl('UserProfile') + `?id=${request.friend_id}`} onClick={() => setShowFriendsModal(false)} className="flex items-center gap-2 min-w-0" style={{ flex: '0 1 auto' }}>
                           <div className="w-7 h-7 rounded-full bg-gradient-to-br from-slate-600 to-slate-700 flex items-center justify-center flex-shrink-0 overflow-hidden">
-                            {u?.avatar_url || request.friend_avatar ?
-                          <img src={u?.avatar_url || request.friend_avatar} alt={name} className="w-full h-full object-cover" /> :
-                          <span className="text-[10px] font-semibold text-white">{name?.charAt(0)?.toUpperCase()}</span>}
+                            {avatarUrl
+                              ? <img src={avatarUrl} alt={name} className="w-full h-full object-cover" />
+                              : <span className="text-[10px] font-semibold text-white">{name?.charAt(0)?.toUpperCase()}</span>}
                           </div>
                           <p className="font-semibold text-white text-xs truncate max-w-[90px]">{name}</p>
                         </Link>
@@ -190,16 +190,18 @@ function FriendsSection({
 
                   {/* ── Incoming friend requests ── */}
                   {friendRequests.filter((req) => {
-                  const u = friendUsersList.find((u) => u.id === req.user_id);
-                  return (u?.full_name || u?.display_name || req.user_name || '').toLowerCase().includes(friendsListSearchQuery.toLowerCase());
+                  return (req.user_name || '').toLowerCase().includes(friendsListSearchQuery.toLowerCase());
                 }).map((request) => {
-                  const u = friendUsersList.find((u) => u.id === request.user_id);
-                  const name = u?.display_name || u?.full_name || request.user_name || 'User';
+                  // Use data stored on the Friend record — no User lookup needed
+                  const name = request.user_name || 'User';
+                  const avatarUrl = request.user_avatar;
                   return (
                     <div key={request.id} className="px-2.5 py-2 rounded-lg bg-slate-700/40 flex items-center gap-2 relative">
                         <Link to={createPageUrl('UserProfile') + `?id=${request.user_id}`} onClick={() => setShowFriendsModal(false)} className="flex items-center gap-2 min-w-0 flex-1">
                           <div className="w-7 h-7 rounded-full bg-gradient-to-br from-slate-600 to-slate-700 flex items-center justify-center flex-shrink-0 overflow-hidden">
-                            {u?.avatar_url ? <img src={u.avatar_url} alt={name} className="w-full h-full object-cover" /> : <span className="text-[10px] font-semibold text-white">{name?.charAt(0)?.toUpperCase()}</span>}
+                            {avatarUrl
+                              ? <img src={avatarUrl} alt={name} className="w-full h-full object-cover" />
+                              : <span className="text-[10px] font-semibold text-white">{name?.charAt(0)?.toUpperCase()}</span>}
                           </div>
                           <p className="font-semibold text-white text-xs truncate max-w-[120px]">{name}</p>
                         </Link>
@@ -239,16 +241,18 @@ function FriendsSection({
                   {friends.length === 0 && friendRequests.length === 0 && sentFriendRequests.length === 0 ?
                 <p className="text-center text-slate-400 text-sm py-8">No friends yet</p> :
                 friendsWithActivity.filter((friend) => {
-                  const u = friendUsersList.find((u) => u.id === friend.friend_id);
-                  return (u?.full_name || friend.friend_name || '').toLowerCase().includes(friendsListSearchQuery.toLowerCase());
+                  return (friend.friend_name || '').toLowerCase().includes(friendsListSearchQuery.toLowerCase());
                 }).map((friend) => {
-                  const u = friendUsersList.find((u) => u.id === friend.friend_id);
-                  const name = u?.display_name || u?.full_name || friend.friend_name;
+                  // Use data stored on the Friend record — no User lookup needed (User.list is admin-only)
+                  const name = friend.friend_name;
+                  const avatarUrl = friend.friend_avatar;
                   return (
                     <div key={friend.id} className="p-2 rounded-lg bg-slate-700/40 flex items-center justify-between gap-2 relative">
                             <Link to={createPageUrl('UserProfile') + `?id=${friend.friend_id}`} className="flex items-center gap-2 flex-1 min-w-0" onClick={() => setShowFriendsModal(false)}>
                               <div className="w-8 h-8 rounded-full bg-gradient-to-br from-slate-600 to-slate-700 flex items-center justify-center flex-shrink-0 overflow-hidden">
-                                {u?.avatar_url ? <img src={u.avatar_url} alt={name} className="w-full h-full object-cover" /> : <span className="text-xs font-semibold text-white">{name?.charAt(0)?.toUpperCase()}</span>}
+                                {avatarUrl
+                                  ? <img src={avatarUrl} alt={name} className="w-full h-full object-cover" />
+                                  : <span className="text-xs font-semibold text-white">{name?.charAt(0)?.toUpperCase()}</span>}
                               </div>
                               <p className="font-semibold text-white text-xs truncate">{name}</p>
                             </Link>
@@ -260,7 +264,7 @@ function FriendsSection({
                         <>
                                   <div className="fixed inset-0 z-[10001]" onClick={() => setFriendMenuOpen(null)} />
                                   <div className="absolute right-0 top-8 z-[10002] bg-slate-800 border border-slate-700/50 rounded-lg shadow-[0_3px_0_0_#1e293b,0_8px_20px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.1)] overflow-hidden min-w-[110px]">
-                                    <button onClick={(e) => {e.stopPropagation();setFriendMenuOpen(null);const u2 = friendUsersList.find((u) => u.id === friend.friend_id);setConfirmRemoveFriend({ id: friend.friend_id, name: u2?.full_name || friend.friend_name });}} className="w-full px-4 py-2.5 text-left text-sm font-semibold text-red-400 hover:text-red-300 hover:bg-slate-700 transition-colors">
+                                    <button onClick={(e) => {e.stopPropagation();setFriendMenuOpen(null);setConfirmRemoveFriend({ id: friend.friend_id, name: friend.friend_name });}} className="w-full px-4 py-2.5 text-left text-sm font-semibold text-red-400 hover:text-red-300 hover:bg-slate-700 transition-colors">
                                       Remove
                                     </button>
                                   </div>

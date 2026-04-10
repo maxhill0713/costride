@@ -485,12 +485,9 @@ export default function Home() {
     [friends, friendRequests, sentFriendRequests]
   );
 
-  const { data: friendUsersList = [] } = useQuery({
-    queryKey: ['friendUsers', knownUserIds.join(',')],
-    queryFn: () => base44.entities.User.filter({ id: { $in: knownUserIds } }),
-    enabled: knownUserIds.length > 0,
-    staleTime: 2 * 60 * 1000,
-  });
+  // Note: User.list/filter is admin-only (403 for regular users).
+  // Friend names/avatars are stored directly on Friend records, so no User lookup needed.
+  const friendUsersList = [];
 
   const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
 
