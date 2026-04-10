@@ -1,40 +1,63 @@
 /**
- * TabEngagement — Rebuilt
- * "Your gym is running itself."
- *
- * Self-contained with mock data. To wire to your app:
- *   1. Replace MOCK_RULES with selectedGym?.automation_rules
- *   2. Swap persist() stub with your base44.entities.Gym.update(...)
+ * TabEngagement — Forge Fitness design system
+ * No sidebar / topbar — those are injected by the shell.
  */
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import {
   Zap, UserPlus, Trophy, Flame, CheckCircle, Plus, Trash2,
   ChevronRight, AlertTriangle, Star, Gift, Clock, Send, X,
-  Edit3, ToggleRight, ToggleLeft, ArrowRight, TrendingUp,
-  MessageCircle, ChevronDown, Bell,
-  ArrowUpRight, RefreshCw, DollarSign, Activity,
+  Edit3, ToggleRight, ToggleLeft, ArrowUpRight, TrendingUp,
+  MessageCircle, ChevronDown, Bell, RefreshCw, DollarSign, Activity,
 } from "lucide-react";
-import { AppButton } from "@/components/ui/AppButton";
-import { cn } from "@/lib/utils";
 
-/* ── Layout constant ────────────────────────────────────────────── */
-const CARD = 'bg-[#0a0f1e] border border-white/[0.04] rounded-2xl shadow-[inset_0_1px_0_rgba(255,255,255,0.012)] overflow-hidden';
+/* ─── TOKENS ─────────────────────────────────────────────────── */
+const C = {
+  bg:       "#000000",
+  card:     "#141416",
+  card2:    "#0f0f12",
+  inset:    "#0a0a0c",
+  brd:      "#222226",
+  brd2:     "#2a2a30",
+  t1:       "#ffffff",
+  t2:       "#8a8a94",
+  t3:       "#444450",
+  cyan:     "#00e5c8",
+  cyanDim:  "rgba(0,229,200,0.1)",
+  cyanBrd:  "rgba(0,229,200,0.25)",
+  red:      "#ff4d6d",
+  redDim:   "rgba(255,77,109,0.15)",
+  amber:    "#f59e0b",
+  amberDim: "rgba(245,158,11,0.15)",
+  green:    "#22c55e",
+  greenDim: "rgba(34,197,94,0.10)",
+  greenBrd: "rgba(34,197,94,0.22)",
+};
 
-/* ── Trigger catalogue ──────────────────────────────────────────── */
+const FONT = "'DM Sans','Segoe UI',system-ui,sans-serif";
+
+/* ─── CARD STYLE ─────────────────────────────────────────────── */
+const cardStyle = {
+  background: C.card,
+  border: `1px solid ${C.brd}`,
+  borderRadius: 12,
+  overflow: "hidden",
+};
+
+/* ─── TRIGGER CATALOGUE ──────────────────────────────────────── */
 const TRIGGERS = [
-  { id:"inactive_7",  Icon:Clock,         cat:"Retention",  label:"Inactive 7 days",   desc:"No visit for 7 days"           },
-  { id:"inactive_14", Icon:AlertTriangle, cat:"Retention",  label:"Inactive 14 days",  desc:"No visit for 14 days"          },
-  { id:"inactive_30", Icon:AlertTriangle, cat:"Retention",  label:"Inactive 30 days",  desc:"No visit for 30 days"          },
-  { id:"freq_drop",   Icon:TrendingUp,    cat:"Retention",  label:"Frequency drop",    desc:"Visits 50% less than usual"    },
-  { id:"new_member",  Icon:UserPlus,      cat:"Onboarding", label:"New member joined", desc:"Member joins for the first time"},
-  { id:"first_return",Icon:CheckCircle,   cat:"Onboarding", label:"First return visit", desc:"Member returns for 2nd visit" },
-  { id:"streak_7",    Icon:Flame,         cat:"Milestones", label:"7-day streak",      desc:"7 consecutive days"            },
-  { id:"streak_30",   Icon:Flame,         cat:"Milestones", label:"30-day streak",     desc:"30 consecutive days"           },
-  { id:"visits_10",   Icon:Star,          cat:"Milestones", label:"10th visit",        desc:"Member's 10th check-in"        },
-  { id:"visits_50",   Icon:Trophy,        cat:"Milestones", label:"50th visit",        desc:"Member's 50th check-in"        },
-  { id:"visits_100",  Icon:Trophy,        cat:"Milestones", label:"100th visit",       desc:"Member's 100th check-in"       },
-  { id:"birthday",    Icon:Gift,          cat:"Engagement", label:"Birthday",          desc:"It's a member's birthday"      },
+  { id:"inactive_7",   Icon:Clock,         cat:"Retention",  label:"Inactive 7 days",    desc:"No visit for 7 days"            },
+  { id:"inactive_14",  Icon:AlertTriangle, cat:"Retention",  label:"Inactive 14 days",   desc:"No visit for 14 days"           },
+  { id:"inactive_30",  Icon:AlertTriangle, cat:"Retention",  label:"Inactive 30 days",   desc:"No visit for 30 days"           },
+  { id:"freq_drop",    Icon:TrendingUp,    cat:"Retention",  label:"Frequency drop",     desc:"Visits 50% less than usual"     },
+  { id:"new_member",   Icon:UserPlus,      cat:"Onboarding", label:"New member joined",  desc:"Member joins for the first time"},
+  { id:"first_return", Icon:CheckCircle,   cat:"Onboarding", label:"First return visit", desc:"Member returns for 2nd visit"   },
+  { id:"streak_7",     Icon:Flame,         cat:"Milestones", label:"7-day streak",       desc:"7 consecutive days"             },
+  { id:"streak_30",    Icon:Flame,         cat:"Milestones", label:"30-day streak",      desc:"30 consecutive days"            },
+  { id:"visits_10",    Icon:Star,          cat:"Milestones", label:"10th visit",         desc:"Member's 10th check-in"         },
+  { id:"visits_50",    Icon:Trophy,        cat:"Milestones", label:"50th visit",         desc:"Member's 50th check-in"         },
+  { id:"visits_100",   Icon:Trophy,        cat:"Milestones", label:"100th visit",        desc:"Member's 100th check-in"        },
+  { id:"birthday",     Icon:Gift,          cat:"Engagement", label:"Birthday",           desc:"It's a member's birthday"       },
 ];
 
 const TEMPLATES = {
@@ -52,18 +75,18 @@ const TEMPLATES = {
   birthday:     (g,n) => `Happy Birthday, ${n}. From everyone at ${g} — we hope you have an amazing day.`,
 };
 
-/* ── Mock data ──────────────────────────────────────────────────── */
+/* ─── MOCK DATA ──────────────────────────────────────────────── */
 const MOCK_GYM = "Apex Fitness";
 
 const MOCK_RULES = [
-  { id:"r1", trigger_id:"inactive_14", message:TEMPLATES.inactive_14(MOCK_GYM,"{name}"), delay_hours:1,  enabled:true,  stats:{sent:24, returned:8,  rate:33, saved:480 }},
-  { id:"r2", trigger_id:"new_member",  message:TEMPLATES.new_member(MOCK_GYM,"{name}"),  delay_hours:0,  enabled:true,  stats:{sent:31, returned:19, rate:61, saved:340 }},
-  { id:"r3", trigger_id:"streak_7",    message:TEMPLATES.streak_7(MOCK_GYM,"{name}"),    delay_hours:0,  enabled:true,  stats:{sent:12, returned:0,  rate:0,  saved:0   }},
-  { id:"r4", trigger_id:"inactive_30", message:TEMPLATES.inactive_30(MOCK_GYM,"{name}"), delay_hours:6,  enabled:false, stats:{sent:7,  returned:2,  rate:29, saved:120 }},
-  { id:"r5", trigger_id:"visits_10",   message:TEMPLATES.visits_10(MOCK_GYM,"{name}"),   delay_hours:0,  enabled:false, stats:{sent:9,  returned:0,  rate:0,  saved:0   }},
+  { id:"r1", trigger_id:"inactive_14", message:TEMPLATES.inactive_14(MOCK_GYM,"{name}"), delay_hours:1,  enabled:true,  stats:{sent:24,returned:8, rate:33,saved:480} },
+  { id:"r2", trigger_id:"new_member",  message:TEMPLATES.new_member(MOCK_GYM,"{name}"),  delay_hours:0,  enabled:true,  stats:{sent:31,returned:19,rate:61,saved:340} },
+  { id:"r3", trigger_id:"streak_7",    message:TEMPLATES.streak_7(MOCK_GYM,"{name}"),    delay_hours:0,  enabled:true,  stats:{sent:12,returned:0, rate:0, saved:0  } },
+  { id:"r4", trigger_id:"inactive_30", message:TEMPLATES.inactive_30(MOCK_GYM,"{name}"), delay_hours:6,  enabled:false, stats:{sent:7, returned:2, rate:29,saved:120} },
+  { id:"r5", trigger_id:"visits_10",   message:TEMPLATES.visits_10(MOCK_GYM,"{name}"),   delay_hours:0,  enabled:false, stats:{sent:9, returned:0, rate:0, saved:0  } },
 ];
 
-const MOCK_ACTIVITY_SEED = [
+const MOCK_ACTIVITY = [
   { id:1,  type:"returned",  rule:"Inactive 14 days",  member:"Priya Sharma",    ago:"4 min ago",  isNew:true  },
   { id:2,  type:"triggered", rule:"7-day streak",       member:"Chloe Nakamura", ago:"11 min ago", isNew:false },
   { id:3,  type:"sent",      rule:"Inactive 14 days",   member:"Marcus Webb",    ago:"23 min ago", isNew:false },
@@ -77,329 +100,299 @@ const MOCK_ACTIVITY_SEED = [
 ];
 
 const LIVE_EVENTS = [
-  { type:"triggered", rule:"Inactive 14 days",  member:"Chris Park"    },
-  { type:"returned",  rule:"New member joined",  member:"Sam Rivera"    },
-  { type:"sent",      rule:"7-day streak",       member:"Mei Zhang"     },
-  { type:"triggered", rule:"Inactive 7 days",    member:"Sofia Reyes"   },
-  { type:"returned",  rule:"Inactive 14 days",   member:"James Okafor"  },
+  { type:"triggered", rule:"Inactive 14 days",  member:"Chris Park"   },
+  { type:"returned",  rule:"New member joined",  member:"Sam Rivera"   },
+  { type:"sent",      rule:"7-day streak",       member:"Mei Zhang"    },
+  { type:"triggered", rule:"Inactive 7 days",    member:"Sofia Reyes"  },
+  { type:"returned",  rule:"Inactive 14 days",   member:"James Okafor" },
 ];
 
 const RECOMMENDATIONS = [
-  {
-    id:"rec1",
-    title:"Add a day-1 welcome message",
-    body:"Members who receive a same-day welcome are 30% more likely to return in week 1.",
-    impact:"+30% 2nd-visit rate",
-    trigger_id:"new_member",
-    urgency:"high",
-    icon:UserPlus,
-  },
-  {
-    id:"rec2",
-    title:"Catch members going quiet in week 1",
-    body:"3 members in their first 2 weeks haven't been back. A habit-nudge on day 5 helps.",
-    impact:"+22% week-1 retention",
-    trigger_id:"inactive_7",
-    urgency:"medium",
-    icon:AlertTriangle,
-  },
-  {
-    id:"rec3",
-    title:"Celebrate your milestone members",
-    body:"2 members are approaching their 50th visit. Recognition converts to referrals.",
-    impact:"3× referral rate",
-    trigger_id:"visits_50",
-    urgency:"low",
-    icon:Trophy,
-  },
+  { id:"rec1", title:"Add a day-1 welcome message",      body:"Members who receive a same-day welcome are 30% more likely to return in week 1.", impact:"+30% 2nd-visit rate",   trigger_id:"new_member",  urgency:"high",   icon:UserPlus    },
+  { id:"rec2", title:"Catch members going quiet in week 1", body:"3 members in their first 2 weeks haven't been back. A habit-nudge on day 5 helps.", impact:"+22% week-1 retention", trigger_id:"inactive_7",  urgency:"medium", icon:AlertTriangle },
+  { id:"rec3", title:"Celebrate your milestone members",  body:"2 members are approaching their 50th visit. Recognition converts to referrals.",     impact:"3× referral rate",      trigger_id:"visits_50",   urgency:"low",    icon:Trophy      },
 ];
 
 const TEMPLATE_PACKS = [
-  { id:"tp1", label:"Win back inactive members",  desc:"14-day + 30-day re-engagement", icon:RefreshCw, triggers:["inactive_14","inactive_30"] },
-  { id:"tp2", label:"Welcome new members",         desc:"Day-1 welcome + return nudge",  icon:UserPlus,  triggers:["new_member","inactive_7"]   },
-  { id:"tp3", label:"Celebrate milestones",        desc:"10th, 50th, 100th visit",       icon:Trophy,    triggers:["visits_10","visits_50"]      },
-  { id:"tp4", label:"Streak recognition",          desc:"7-day and 30-day streaks",      icon:Flame,     triggers:["streak_7","streak_30"]       },
+  { id:"tp1", label:"Win back inactive members", desc:"14-day + 30-day re-engagement", icon:RefreshCw, triggers:["inactive_14","inactive_30"] },
+  { id:"tp2", label:"Welcome new members",       desc:"Day-1 welcome + return nudge",  icon:UserPlus,  triggers:["new_member","inactive_7"]   },
+  { id:"tp3", label:"Celebrate milestones",      desc:"10th, 50th, 100th visit",       icon:Trophy,    triggers:["visits_10","visits_50"]      },
+  { id:"tp4", label:"Streak recognition",        desc:"7-day and 30-day streaks",      icon:Flame,     triggers:["streak_7","streak_30"]       },
 ];
 
-/* ── Precomputed class helpers ───────────────────────────────────── */
-const urgencyBorderCls = { high: 'border-l-red-500', medium: 'border-l-amber-400', low: 'border-l-[#4b5578]' };
-const urgencyTextCls   = { high: 'text-red-500',     medium: 'text-amber-400',     low: 'text-[#4b5578]'     };
-
-const typeConfig = {
-  triggered: { textCls: 'text-blue-500',    bgCls: 'bg-blue-500/[0.10]',     brdCls: 'border-blue-500/[0.22]',    label: "Triggered",    Icon: Zap         },
-  sent:      { textCls: 'text-[#8b95b3]',   bgCls: 'bg-[#0d1225]',           brdCls: 'border-white/[0.04]',       label: "Message sent", Icon: Send        },
-  returned:  { textCls: 'text-emerald-500', bgCls: 'bg-emerald-500/[0.08]',  brdCls: 'border-emerald-500/[0.18]', label: "Returned 🎉",  Icon: CheckCircle },
+/* ─── URGENCY MAP ────────────────────────────────────────────── */
+const urgency = {
+  high:   { border: C.red,   text: C.red   },
+  medium: { border: C.amber, text: C.amber },
+  low:    { border: C.t3,    text: C.t3    },
 };
 
-/* ── Helpers ────────────────────────────────────────────────────── */
+/* ─── ACTIVITY TYPE MAP ──────────────────────────────────────── */
+const typeMap = {
+  triggered: { color: C.cyan,  bg: C.cyanDim,  brd: C.cyanBrd,            label: "Triggered",    Icon: Zap         },
+  sent:      { color: C.t2,    bg: "rgba(255,255,255,0.03)", brd: C.brd,   label: "Message sent", Icon: Send        },
+  returned:  { color: C.green, bg: C.greenDim, brd: C.greenBrd,            label: "Returned 🎉",  Icon: CheckCircle },
+};
+
+/* ─── COUNT-UP HOOK ──────────────────────────────────────────── */
 function useCountUp(target, delay = 0) {
   const [val, setVal] = useState(0);
-  const started = useRef(false);
   useEffect(() => {
-    const timeout = setTimeout(() => {
-      started.current = true;
-      const duration = 900;
-      let start = null;
-      const step = (ts) => {
+    const t = setTimeout(() => {
+      const dur = 900; let start = null;
+      const step = ts => {
         if (!start) start = ts;
-        const p = Math.min((ts - start) / duration, 1);
-        const ease = 1 - Math.pow(1 - p, 3);
-        setVal(Math.round(ease * target));
+        const p = Math.min((ts - start) / dur, 1);
+        setVal(Math.round((1 - Math.pow(1 - p, 3)) * target));
         if (p < 1) requestAnimationFrame(step);
       };
       requestAnimationFrame(step);
     }, delay);
-    return () => clearTimeout(timeout);
+    return () => clearTimeout(t);
   }, [target, delay]);
   return val;
 }
 
-/* ── Primitive components ───────────────────────────────────────── */
-function TinyBar({ pct, colorCls }) {
+/* ─── PRIMITIVES ─────────────────────────────────────────────── */
+function Pill({ label, color = C.cyan }) {
   return (
-    <div className="h-[3px] rounded-full bg-white/[0.03] flex-1">
-      <div className={cn('h-full rounded-full opacity-75', colorCls)} style={{ width: `${pct}%` }} />
+    <span style={{ padding: "2px 8px", borderRadius: 20, fontSize: 10, fontWeight: 700, color, background: `${color}18`, border: `1px solid ${color}40`, letterSpacing: "0.03em" }}>
+      {label}
+    </span>
+  );
+}
+
+function IconBox({ Icon, color = C.t3, size = 14, boxSize = 30 }) {
+  return (
+    <div style={{ width: boxSize, height: boxSize, borderRadius: 9, flexShrink: 0, background: "rgba(255,255,255,0.03)", border: `1px solid ${C.brd}`, display: "flex", alignItems: "center", justifyContent: "center" }}>
+      <Icon size={size} color={color} />
     </div>
   );
 }
 
-/* ── Animated stat card ─────────────────────────────────────────── */
+function Btn({ children, onClick, variant = "ghost", style: extraStyle = {} }) {
+  const base = { display: "flex", alignItems: "center", gap: 5, padding: "6px 12px", borderRadius: 7, fontSize: 12, fontWeight: 600, cursor: "pointer", border: "none", fontFamily: FONT, transition: "all 0.15s" };
+  const variants = {
+    primary:   { background: C.cyan,  color: "#000", border: "none", boxShadow: "0 0 16px rgba(0,229,200,0.25)" },
+    secondary: { background: "rgba(255,255,255,0.04)", color: C.t2, border: `1px solid ${C.brd}` },
+    ghost:     { background: "rgba(255,255,255,0.03)", color: C.t3, border: `1px solid ${C.brd}` },
+    danger:    { background: C.redDim, color: C.red, border: `1px solid rgba(255,77,109,0.3)` },
+    active:    { background: C.cyanDim, color: C.cyan, border: `1px solid ${C.cyanBrd}` },
+    green:     { background: C.greenDim, color: C.green, border: `1px solid ${C.greenBrd}` },
+  };
+  return <button onClick={onClick} style={{ ...base, ...variants[variant], ...extraStyle }}>{children}</button>;
+}
+
+function TinyBar({ pct, color = C.cyan }) {
+  return (
+    <div style={{ height: 3, borderRadius: 2, background: "rgba(255,255,255,0.04)", flex: 1 }}>
+      <div style={{ width: `${pct}%`, height: "100%", borderRadius: 2, background: color, opacity: 0.8 }} />
+    </div>
+  );
+}
+
+/* ─── STAT CARD ──────────────────────────────────────────────── */
 function StatCard({ icon: Icon, label, value, sub, prefix = "", delay = 0, highlight = false }) {
   const counted = useCountUp(typeof value === "number" ? value : 0, delay);
   const display = typeof value === "number" ? `${prefix}${counted.toLocaleString()}` : value;
   return (
-    <div className={cn(CARD, 'p-[18px_20px]')}>
-      <div className="flex items-start justify-between mb-3">
-        <div className="w-8 h-8 rounded-[10px] shrink-0 bg-[#0d1225] border border-white/[0.04] flex items-center justify-center">
-          <Icon size={14} className={highlight ? 'text-blue-500' : 'text-[#4b5578]'} />
-        </div>
-        <ArrowUpRight size={11} className="text-[#252d45]" />
+    <div style={{ ...cardStyle, padding: "14px 16px" }}>
+      <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 10 }}>
+        <IconBox Icon={Icon} color={highlight ? C.cyan : C.t3} />
+        <ArrowUpRight size={11} color={C.t3} />
       </div>
-      <div className={cn('text-[28px] font-bold tracking-[-0.04em] leading-none mb-[5px] tabular-nums', highlight ? 'text-blue-500' : 'text-[#eef2ff]')}>
+      <div style={{ fontSize: 28, fontWeight: 700, letterSpacing: "-0.04em", lineHeight: 1, marginBottom: 4, color: highlight ? C.cyan : C.t1 }}>
         {display}
       </div>
-      <div className="text-[11px] font-medium text-[#8b95b3]">{label}</div>
-      <div className="text-[10px] text-[#4b5578] mt-[2px]">{sub}</div>
+      <div style={{ fontSize: 11, fontWeight: 500, color: C.t2 }}>{label}</div>
+      <div style={{ fontSize: 10, color: C.t3, marginTop: 2 }}>{sub}</div>
     </div>
   );
 }
 
-/* ── Flow diagram ───────────────────────────────────────────────── */
+/* ─── FLOW DIAGRAM ───────────────────────────────────────────── */
 function FlowDiagram({ rule, trig }) {
-  const Icon = trig?.Icon || Zap;
-  const delayLabel = rule.delay_hours === 0 ? "immediately" : rule.delay_hours === 1 ? "after 1 hour" : `after ${rule.delay_hours} hours`;
-  const returnRate = rule.stats?.rate ?? 0;
-  const returnRateCls = returnRate >= 40 ? 'text-emerald-500' : returnRate > 0 ? 'text-amber-400' : 'text-[#4b5578]';
+  const delayLabel = rule.delay_hours === 0 ? "immediately" : rule.delay_hours === 1 ? "after 1 hour" : `after ${rule.delay_hours} hrs`;
+  const rate = rule.stats?.rate ?? 0;
+  const rateColor = rate >= 40 ? C.green : rate > 0 ? C.amber : C.t3;
 
-  const Step = ({ icon: StepIcon, label, sub, iconCls }) => (
-    <div className="flex items-center gap-[6px]">
-      <div className="w-7 h-7 rounded-[10px] shrink-0 bg-[#0d1225] border border-white/[0.04] flex items-center justify-center">
-        <StepIcon size={11} className={iconCls || 'text-[#4b5578]'} />
-      </div>
+  const Step = ({ Icon, label, sub, color = C.t3 }) => (
+    <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+      <IconBox Icon={Icon} color={color} boxSize={26} size={10} />
       <div>
-        <div className="text-[11px] font-medium text-[#eef2ff] leading-[1.2]">{label}</div>
-        <div className="text-[9px] text-[#4b5578] mt-[1px]">{sub}</div>
+        <div style={{ fontSize: 11, fontWeight: 500, color: C.t1, lineHeight: 1.2 }}>{label}</div>
+        <div style={{ fontSize: 9, color: C.t3, marginTop: 1 }}>{sub}</div>
       </div>
     </div>
   );
 
   return (
-    <div className="flex items-center gap-[6px] flex-wrap">
-      <Step icon={Icon}          label={trig?.label || "Trigger"} sub="trigger" />
-      <ChevronRight size={10} className="text-[#252d45] shrink-0 mt-[2px]" />
-      <Step icon={MessageCircle} label="Send message" sub={delayLabel} />
-      <ChevronRight size={10} className="text-[#252d45] shrink-0 mt-[2px]" />
-      <Step
-        icon={returnRate > 0 ? CheckCircle : Activity}
-        label={returnRate > 0 ? `${rule.stats.returned} returned` : "No data yet"}
-        sub={returnRate > 0 ? `${returnRate}% return rate` : "watching..."}
-        iconCls={returnRateCls}
-      />
+    <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
+      <Step Icon={trig?.Icon || Zap} label={trig?.label || "Trigger"} sub="trigger" />
+      <ChevronRight size={10} color={C.t3} />
+      <Step Icon={MessageCircle} label="Send message" sub={delayLabel} />
+      <ChevronRight size={10} color={C.t3} />
+      <Step Icon={rate > 0 ? CheckCircle : Activity} label={rate > 0 ? `${rule.stats.returned} returned` : "No data yet"} sub={rate > 0 ? `${rate}% return rate` : "watching..."} color={rateColor} />
     </div>
   );
 }
 
-/* ── Inline rule editor ─────────────────────────────────────────── */
+/* ─── INLINE RULE EDITOR ─────────────────────────────────────── */
 function RuleEditor({ rule, gymName, onSave, onCancel }) {
   const [msg, setMsg] = useState(rule.message || TEMPLATES[rule.trigger_id]?.(gymName, "{name}") || "");
   const [delay, setDelay] = useState(rule.delay_hours || 0);
   const DELAYS = [{ v:0,label:"Immediately" },{ v:1,label:"1 hour" },{ v:3,label:"3 hours" },{ v:6,label:"6 hours" },{ v:24,label:"24 hours" }];
-  const delayCls = v => delay === v
-    ? 'bg-blue-500/[0.10] text-blue-500 border-blue-500/[0.22]'
-    : 'bg-[#0d1225] text-[#4b5578] border-white/[0.04]';
 
   return (
-    <div className="px-[18px] py-4 border-t border-white/[0.04] bg-[#050810]">
-      <div className="text-[10px] font-semibold text-[#4b5578] uppercase tracking-[0.1em] mb-[6px]">
-        Message — use {"{name}"} for member's first name
+    <div style={{ padding: "14px 16px", borderTop: `1px solid ${C.brd}`, background: C.inset }}>
+      <div style={{ fontSize: 10, fontWeight: 600, color: C.t3, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 6 }}>
+        Message — use &#123;name&#125; for member's first name
       </div>
-      <textarea
-        value={msg} onChange={e => setMsg(e.target.value)} rows={3}
-        className="w-full box-border bg-[#0d1225] border border-white/[0.04] rounded-[10px] px-[10px] py-2 text-[#eef2ff] text-xs leading-[1.65] resize-y outline-none font-inherit mb-3 focus:border-white/[0.07] transition-colors"
-      />
-      <div className="text-[10px] font-semibold text-[#4b5578] uppercase tracking-[0.1em] mb-2">Send timing</div>
-      <div className="flex gap-[5px] flex-wrap mb-[14px]">
+      <textarea value={msg} onChange={e => setMsg(e.target.value)} rows={3} style={{
+        width: "100%", boxSizing: "border-box", background: "rgba(255,255,255,0.03)", border: `1px solid ${C.brd}`, borderRadius: 9,
+        padding: "8px 10px", color: C.t1, fontSize: 12, lineHeight: 1.65, resize: "vertical", outline: "none",
+        fontFamily: FONT, marginBottom: 12,
+      }} />
+      <div style={{ fontSize: 10, fontWeight: 600, color: C.t3, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 8 }}>Send timing</div>
+      <div style={{ display: "flex", gap: 5, flexWrap: "wrap", marginBottom: 14 }}>
         {DELAYS.map(d => (
-          <button key={d.v} onClick={() => setDelay(d.v)}
-            className={cn('px-[10px] py-1 rounded-[6px] text-[11px] font-medium cursor-pointer border transition-all', delayCls(d.v))}>
-            {d.label}
-          </button>
+          <button key={d.v} onClick={() => setDelay(d.v)} style={{
+            padding: "5px 10px", borderRadius: 6, fontSize: 11, fontWeight: 500, cursor: "pointer", fontFamily: FONT,
+            background: delay === d.v ? C.cyanDim : "rgba(255,255,255,0.03)",
+            border: `1px solid ${delay === d.v ? C.cyanBrd : C.brd}`,
+            color: delay === d.v ? C.cyan : C.t2,
+          }}>{d.label}</button>
         ))}
       </div>
-      <div className="flex gap-[7px]">
-        <AppButton variant="primary" size="sm" className="flex-1 justify-center" onClick={() => onSave({ message: msg, delay_hours: delay })}>
+      <div style={{ display: "flex", gap: 7 }}>
+        <Btn variant="primary" onClick={() => onSave({ message: msg, delay_hours: delay })} extraStyle={{ flex: 1, justifyContent: "center" }}>
           <CheckCircle size={11} /> Save changes
-        </AppButton>
-        <AppButton variant="secondary" size="sm" onClick={onCancel}>Cancel</AppButton>
+        </Btn>
+        <Btn variant="ghost" onClick={onCancel}>Cancel</Btn>
       </div>
     </div>
   );
 }
 
-/* ── Rule card ──────────────────────────────────────────────────── */
+/* ─── RULE CARD ──────────────────────────────────────────────── */
 function RuleCard({ rule, gymName, onToggle, onEdit, onDelete }) {
   const [open, setOpen] = useState(false);
   const [testSent, setTestSent] = useState(false);
   const trig = TRIGGERS.find(t => t.id === rule.trigger_id);
   if (!trig) return null;
 
-  const handleTest = () => {
-    setTestSent(true);
-    setTimeout(() => setTestSent(false), 2500);
-  };
-
-  const returnRate = rule.stats?.rate ?? 0;
-  const rateCls = returnRate >= 40
-    ? { text: 'text-emerald-500', bg: 'bg-emerald-500/[0.08]', brd: 'border-emerald-500/[0.18]', bar: 'bg-emerald-500' }
-    : returnRate >= 20
-    ? { text: 'text-amber-400',   bg: 'bg-amber-400/[0.08]',   brd: 'border-amber-400/[0.18]',   bar: 'bg-amber-400'   }
-    : { text: 'text-[#4b5578]',   bg: 'bg-[#0d1225]',           brd: 'border-white/[0.04]',        bar: 'bg-[#4b5578]'   };
+  const handleTest = () => { setTestSent(true); setTimeout(() => setTestSent(false), 2500); };
+  const rate = rule.stats?.rate ?? 0;
 
   return (
-    <div className={cn(
-      'bg-[#0a0f1e] rounded-2xl shadow-[inset_0_1px_0_rgba(255,255,255,0.012)] overflow-hidden transition-opacity border border-l-2',
-      rule.enabled ? 'border-white/[0.04] border-l-blue-500' : 'border-white/[0.03] border-l-white/[0.04] opacity-60',
-    )}>
-      {/* Main row */}
-      <div className="p-[14px_16px_14px_14px] flex gap-3 items-start">
+    <div style={{
+      ...cardStyle, borderLeft: `2px solid ${rule.enabled ? C.cyan : C.brd}`,
+      opacity: rule.enabled ? 1 : 0.6, transition: "opacity 0.2s",
+    }}>
+      <div style={{ padding: "14px 14px 14px 12px", display: "flex", gap: 12, alignItems: "flex-start" }}>
         {/* Icon */}
-        <div className="w-[34px] h-[34px] rounded-[10px] shrink-0 bg-[#0d1225] border border-white/[0.04] flex items-center justify-center mt-[1px]">
-          <trig.Icon size={14} className={rule.enabled ? 'text-[#8b95b3]' : 'text-[#4b5578]'} />
-        </div>
+        <IconBox Icon={trig.Icon} color={rule.enabled ? C.t2 : C.t3} boxSize={34} size={14} />
 
         {/* Content */}
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-[7px] mb-1">
-            <span className={cn('text-[13px] font-semibold', rule.enabled ? 'text-[#eef2ff]' : 'text-[#8b95b3]')}>{trig.label}</span>
-            <span className="text-[9px] font-semibold text-[#4b5578] bg-[#0d1225] border border-white/[0.04] rounded-[4px] px-[6px] py-[1px] uppercase tracking-[0.07em]">
-              {trig.cat}
-            </span>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 4 }}>
+            <span style={{ fontSize: 13, fontWeight: 600, color: rule.enabled ? C.t1 : C.t2 }}>{trig.label}</span>
+            <span style={{ fontSize: 9, fontWeight: 600, color: C.t3, background: "rgba(255,255,255,0.04)", border: `1px solid ${C.brd}`, borderRadius: 4, padding: "1px 6px", textTransform: "uppercase", letterSpacing: "0.07em" }}>{trig.cat}</span>
             {rule.enabled && (
-              <span className="ml-auto flex items-center gap-1">
-                <span className="w-[5px] h-[5px] rounded-full bg-emerald-500 inline-block animate-pulse" />
-                <span className="text-[9px] text-emerald-500">live</span>
+              <span style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 4 }}>
+                <span style={{ width: 5, height: 5, borderRadius: "50%", background: C.green, display: "inline-block" }} />
+                <span style={{ fontSize: 9, color: C.green }}>live</span>
               </span>
             )}
           </div>
 
-          <div className="text-[11px] text-[#4b5578] overflow-hidden text-ellipsis whitespace-nowrap mb-[10px] leading-[1.5]">
+          <div style={{ fontSize: 11, color: C.t3, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", marginBottom: 10, lineHeight: 1.5 }}>
             {(rule.message || "").replace("{name}", "member")}
           </div>
 
           <FlowDiagram rule={rule} trig={trig} />
 
-          {(rule.stats?.sent > 0) && (
-            <div className="flex gap-[14px] mt-3 pt-[10px] border-t border-white/[0.03]">
+          {rule.stats?.sent > 0 && (
+            <div style={{ display: "flex", gap: 16, marginTop: 10, paddingTop: 10, borderTop: `1px solid ${C.brd}`, alignItems: "center" }}>
               {[
-                { label: "Sent",          val: rule.stats.sent,                            hl: false },
-                { label: "Returned",      val: rule.stats.returned,                        hl: false },
-                { label: "Return rate",   val: `${rule.stats.rate}%`,                      hl: rule.stats.rate >= 30 },
+                { label: "Sent",         val: rule.stats.sent,          hl: false },
+                { label: "Returned",     val: rule.stats.returned,      hl: false },
+                { label: "Return rate",  val: `${rule.stats.rate}%`,    hl: rule.stats.rate >= 30 },
                 rule.stats.saved > 0 && { label: "Revenue saved", val: `$${rule.stats.saved}`, hl: true },
               ].filter(Boolean).map((s, i) => (
                 <div key={i}>
-                  <div className={cn('text-[13px] font-bold leading-none tabular-nums', s.hl ? 'text-[#eef2ff]' : 'text-[#8b95b3]')}>{s.val}</div>
-                  <div className="text-[9px] text-[#4b5578] mt-[2px]">{s.label}</div>
+                  <div style={{ fontSize: 13, fontWeight: 700, lineHeight: 1, color: s.hl ? C.cyan : C.t2 }}>{s.val}</div>
+                  <div style={{ fontSize: 9, color: C.t3, marginTop: 2 }}>{s.label}</div>
                 </div>
               ))}
-              {rule.stats.rate > 0 && (
-                <div className="flex-1 flex items-center ml-1">
-                  <TinyBar pct={rule.stats.rate} colorCls={rule.stats.rate >= 40 ? 'bg-emerald-500' : 'bg-amber-400'} />
-                </div>
-              )}
+              {rate > 0 && <TinyBar pct={rate} color={rate >= 40 ? C.green : C.amber} />}
             </div>
           )}
         </div>
 
-        {/* Action buttons */}
-        <div className="flex flex-col gap-1 shrink-0">
-          <button onClick={handleTest} className={cn(
-            'h-[26px] px-2 rounded-[5px] text-[9.5px] font-semibold cursor-pointer flex items-center gap-[3px] transition-all border',
-            testSent ? 'bg-emerald-500/[0.08] border-emerald-500/[0.18] text-emerald-500' : 'bg-[#0d1225] border-white/[0.04] text-[#4b5578]',
-          )}>
-            {testSent ? <><CheckCircle size={9} /> Sent</> : <><Send size={9} /> Test</>}
-          </button>
-          <button onClick={() => setOpen(v => !v)} className={cn(
-            'h-[26px] w-[26px] rounded-[5px] flex items-center justify-center cursor-pointer transition-all border',
-            open ? 'bg-blue-500/[0.10] border-blue-500/[0.22] text-blue-500' : 'bg-[#0d1225] border-white/[0.04] text-[#4b5578]',
-          )}>
-            <Edit3 size={10} />
-          </button>
-          <button onClick={onToggle} className={cn(
-            'h-[26px] w-[26px] rounded-[5px] flex items-center justify-center cursor-pointer transition-all border',
-            rule.enabled ? 'bg-emerald-500/[0.08] border-emerald-500/[0.18] text-emerald-500' : 'bg-[#0d1225] border-white/[0.04] text-[#4b5578]',
-          )}>
-            {rule.enabled ? <ToggleRight size={12} /> : <ToggleLeft size={12} />}
-          </button>
-          <button onClick={onDelete} className="h-[26px] w-[26px] rounded-[5px] flex items-center justify-center cursor-pointer transition-all border bg-[#0d1225] border-white/[0.04] text-[#4b5578] hover:bg-red-500/[0.08] hover:border-red-500/[0.18] hover:text-red-500">
-            <Trash2 size={10} />
-          </button>
+        {/* Action column */}
+        <div style={{ display: "flex", flexDirection: "column", gap: 4, flexShrink: 0 }}>
+          {[
+            {
+              label: testSent ? <><CheckCircle size={9} /> Sent</> : <><Send size={9} /> Test</>,
+              onClick: handleTest,
+              variant: testSent ? "green" : "ghost",
+              wide: true,
+            },
+            { label: <Edit3 size={10} />,    onClick: () => setOpen(v => !v), variant: open ? "active" : "ghost" },
+            { label: rule.enabled ? <ToggleRight size={12} /> : <ToggleLeft size={12} />, onClick: onToggle, variant: rule.enabled ? "green" : "ghost" },
+            { label: <Trash2 size={10} />,  onClick: onDelete, variant: "ghost", danger: true },
+          ].map((btn, i) => (
+            <button key={i} onClick={btn.onClick} style={{
+              height: 26, ...(btn.wide ? { padding: "0 8px" } : { width: 26 }),
+              borderRadius: 6, display: "flex", alignItems: "center", justifyContent: "center", gap: 3,
+              cursor: "pointer", fontSize: 9.5, fontWeight: 600, fontFamily: FONT,
+              border: `1px solid ${btn.variant === "active" ? C.cyanBrd : btn.variant === "green" ? C.greenBrd : C.brd}`,
+              background: btn.variant === "active" ? C.cyanDim : btn.variant === "green" ? C.greenDim : "rgba(255,255,255,0.03)",
+              color: btn.variant === "active" ? C.cyan : btn.variant === "green" ? C.green : C.t3,
+              transition: "all 0.15s",
+            }}
+              onMouseEnter={e => { if (btn.danger) { e.currentTarget.style.background = C.redDim; e.currentTarget.style.borderColor = "rgba(255,77,109,0.3)"; e.currentTarget.style.color = C.red; }}}
+              onMouseLeave={e => { if (btn.danger) { e.currentTarget.style.background = "rgba(255,255,255,0.03)"; e.currentTarget.style.borderColor = C.brd; e.currentTarget.style.color = C.t3; }}}
+            >
+              {btn.label}
+            </button>
+          ))}
         </div>
       </div>
 
-      {open && (
-        <RuleEditor
-          rule={rule} gymName={gymName}
-          onSave={u => { onEdit(u); setOpen(false); }}
-          onCancel={() => setOpen(false)}
-        />
-      )}
+      {open && <RuleEditor rule={rule} gymName={gymName} onSave={u => { onEdit(u); setOpen(false); }} onCancel={() => setOpen(false)} />}
     </div>
   );
 }
 
-/* ── AI recommendations ─────────────────────────────────────────── */
+/* ─── AI RECOMMENDATIONS ─────────────────────────────────────── */
 function Recommendations({ recs, existingIds, onAdd }) {
   const available = recs.filter(r => !existingIds.includes(r.trigger_id));
   if (!available.length) return null;
 
   return (
-    <div className="mb-4">
-      <div className="flex items-center gap-2 mb-[10px]">
-        <span className="text-[11px] font-semibold text-[#8b95b3] uppercase tracking-[0.1em]">Suggested for your gym</span>
-        <span className="text-[10px] font-semibold text-blue-500 bg-blue-500/[0.10] border border-blue-500/[0.22] px-[7px] py-[1px] rounded-full">AI</span>
+    <div style={{ marginBottom: 14 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
+        <span style={{ fontSize: 11, fontWeight: 600, color: C.t2, textTransform: "uppercase", letterSpacing: "0.1em" }}>Suggested for your gym</span>
+        <span style={{ fontSize: 10, fontWeight: 700, color: C.cyan, background: C.cyanDim, border: `1px solid ${C.cyanBrd}`, padding: "1px 7px", borderRadius: 20 }}>AI</span>
       </div>
-      <div className="flex gap-[10px] overflow-x-auto pb-1 [scrollbar-width:thin]">
+      <div style={{ display: "flex", gap: 10, overflowX: "auto", paddingBottom: 4 }}>
         {available.map(rec => {
           const Icon = rec.icon;
+          const u = urgency[rec.urgency];
           return (
-            <div key={rec.id} className={cn(
-              CARD, 'min-w-[240px] shrink-0 p-[14px_16px] border-l-2',
-              urgencyBorderCls[rec.urgency],
-            )}>
-              <div className="flex items-start gap-2 mb-2">
-                <div className="w-[26px] h-[26px] rounded-[6px] shrink-0 bg-[#0d1225] border border-white/[0.04] flex items-center justify-center">
-                  <Icon size={11} className={urgencyTextCls[rec.urgency]} />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="text-xs font-semibold text-[#eef2ff] leading-[1.3]">{rec.title}</div>
-                </div>
+            <div key={rec.id} style={{ ...cardStyle, minWidth: 240, flexShrink: 0, padding: "14px 16px", borderLeft: `2px solid ${u.border}` }}>
+              <div style={{ display: "flex", alignItems: "flex-start", gap: 8, marginBottom: 8 }}>
+                <IconBox Icon={Icon} color={u.text} boxSize={26} size={11} />
+                <div style={{ flex: 1, minWidth: 0, fontSize: 12, fontWeight: 600, color: C.t1, lineHeight: 1.3 }}>{rec.title}</div>
               </div>
-              <div className="text-[11px] text-[#4b5578] leading-[1.5] mb-[10px]">{rec.body}</div>
-              <div className="flex items-center justify-between">
-                <span className="text-[10px] text-emerald-500 font-semibold">{rec.impact}</span>
-                <AppButton variant="primary" size="sm" onClick={() => onAdd(rec)}>
+              <div style={{ fontSize: 11, color: C.t3, lineHeight: 1.5, marginBottom: 10 }}>{rec.body}</div>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                <span style={{ fontSize: 10, color: C.green, fontWeight: 600 }}>{rec.impact}</span>
+                <Btn variant="primary" onClick={() => onAdd(rec)}>
                   <Plus size={9} /> Create
-                </AppButton>
+                </Btn>
               </div>
             </div>
           );
@@ -409,55 +402,50 @@ function Recommendations({ recs, existingIds, onAdd }) {
   );
 }
 
-/* ── Live activity feed ─────────────────────────────────────────── */
+/* ─── LIVE ACTIVITY FEED ─────────────────────────────────────── */
 function ActivityFeed({ events }) {
   const feedRef = useRef(null);
   const prevLen = useRef(events.length);
-
   useEffect(() => {
-    if (events.length > prevLen.current && feedRef.current) {
-      feedRef.current.scrollTop = 0;
-    }
+    if (events.length > prevLen.current && feedRef.current) feedRef.current.scrollTop = 0;
     prevLen.current = events.length;
   }, [events.length]);
 
   return (
-    <div className={CARD}>
-      <div className="px-4 py-3 border-b border-white/[0.03] flex items-center justify-between">
-        <div className="flex items-center gap-[7px]">
-          <span className="w-[6px] h-[6px] rounded-full bg-emerald-500 inline-block animate-pulse" />
-          <span className="text-xs font-semibold text-[#eef2ff]">Live activity</span>
+    <div style={cardStyle}>
+      <div style={{ padding: "10px 14px", borderBottom: `1px solid ${C.brd}`, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
+          <span style={{ width: 6, height: 6, borderRadius: "50%", background: C.green, display: "inline-block" }} />
+          <span style={{ fontSize: 12, fontWeight: 600, color: C.t1 }}>Live activity</span>
         </div>
-        <span className="text-[10px] text-[#4b5578]">{events.length} events</span>
+        <span style={{ fontSize: 10, color: C.t3 }}>{events.length} events</span>
       </div>
-      <div ref={feedRef} className="max-h-[520px] overflow-y-auto py-[6px] [scrollbar-width:thin]">
+      <div ref={feedRef} style={{ maxHeight: 520, overflowY: "auto" }}>
         {events.map((ev, i) => {
-          const cfg = typeConfig[ev.type] || typeConfig.sent;
+          const cfg = typeMap[ev.type] || typeMap.sent;
           const Ic = cfg.Icon;
           return (
-            <div key={ev.id}
-              className={cn('px-[14px] py-[9px]', i < events.length - 1 && 'border-b border-white/[0.03]', ev.isNew && 'bg-blue-500/[0.024]')}
-              style={ev.isNew ? { animation: 'slideDown 0.3s ease' } : undefined}
-            >
-              <div className="flex gap-[9px] items-start">
-                <div className={cn('w-[22px] h-[22px] rounded-[6px] shrink-0 flex items-center justify-center mt-[1px] border', cfg.bgCls, cfg.brdCls)}>
-                  <Ic size={9} className={cfg.textCls} />
+            <div key={ev.id} style={{
+              padding: "9px 14px",
+              borderBottom: i < events.length - 1 ? `1px solid ${C.brd}` : "none",
+              background: ev.isNew ? C.cyanDim : "transparent",
+              animation: ev.isNew ? "slideDown 0.3s ease" : "none",
+            }}>
+              <div style={{ display: "flex", gap: 9, alignItems: "flex-start" }}>
+                <div style={{ width: 22, height: 22, borderRadius: 6, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", marginTop: 1, background: cfg.bg, border: `1px solid ${cfg.brd}` }}>
+                  <Ic size={9} color={cfg.color} />
                 </div>
-                <div className="flex-1 min-w-0">
-                  <div className="text-[11px] text-[#eef2ff] leading-[1.4]">
-                    <span className="font-semibold">{ev.member}</span>
-                    <span className="text-[#4b5578]">
-                      {ev.type === "returned" ? " returned after automation" :
-                       ev.type === "triggered" ? ` — ${ev.rule} triggered` :
-                       ` — message sent`}
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontSize: 11, color: C.t1, lineHeight: 1.4 }}>
+                    <span style={{ fontWeight: 600 }}>{ev.member}</span>
+                    <span style={{ color: C.t3 }}>
+                      {ev.type === "returned" ? " returned after automation" : ev.type === "triggered" ? ` — ${ev.rule} triggered` : " — message sent"}
                     </span>
                   </div>
-                  <div className="text-[9px] text-[#4b5578] mt-[2px]">{ev.ago}</div>
+                  <div style={{ fontSize: 9, color: C.t3, marginTop: 2 }}>{ev.ago}</div>
                 </div>
                 {ev.type === "returned" && (
-                  <span className="text-[9px] font-semibold text-emerald-500 bg-emerald-500/[0.08] border border-emerald-500/[0.18] rounded-[4px] px-[6px] py-[1px] shrink-0">
-                    win
-                  </span>
+                  <span style={{ fontSize: 9, fontWeight: 700, color: C.green, background: C.greenDim, border: `1px solid ${C.greenBrd}`, borderRadius: 4, padding: "1px 6px", flexShrink: 0 }}>win</span>
                 )}
               </div>
             </div>
@@ -468,27 +456,25 @@ function ActivityFeed({ events }) {
   );
 }
 
-/* ── Template packs ─────────────────────────────────────────────── */
+/* ─── TEMPLATE PACKS ─────────────────────────────────────────── */
 function TemplatePacks({ existingIds, onAddPack }) {
   return (
     <div>
-      <div className="flex items-center justify-between mb-[10px]">
-        <span className="text-[11px] font-semibold text-[#8b95b3] uppercase tracking-[0.1em]">Quick-start templates</span>
-      </div>
-      <div className="flex gap-2 overflow-x-auto pb-1 [scrollbar-width:thin]">
+      <div style={{ fontSize: 11, fontWeight: 600, color: C.t2, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 10 }}>Quick-start templates</div>
+      <div style={{ display: "flex", gap: 8, overflowX: "auto", paddingBottom: 4 }}>
         {TEMPLATE_PACKS.map(tp => {
           const Icon = tp.icon;
           const allAdded = tp.triggers.every(id => existingIds.includes(id));
           return (
-            <div key={tp.id} className={cn(CARD, 'min-w-[200px] shrink-0 p-[13px_15px]', allAdded && 'opacity-50')}>
-              <div className="flex items-center gap-[7px] mb-[6px]">
-                <Icon size={12} className="text-[#4b5578]" />
-                <span className="text-xs font-semibold text-[#eef2ff]">{tp.label}</span>
+            <div key={tp.id} style={{ ...cardStyle, minWidth: 195, flexShrink: 0, padding: "13px 14px", opacity: allAdded ? 0.5 : 1 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 6 }}>
+                <Icon size={12} color={C.t3} />
+                <span style={{ fontSize: 12, fontWeight: 600, color: C.t1 }}>{tp.label}</span>
               </div>
-              <div className="text-[10px] text-[#4b5578] mb-[10px] leading-[1.5]">{tp.desc}</div>
-              <AppButton variant="secondary" size="sm" className="w-full justify-center" onClick={() => !allAdded && onAddPack(tp)}>
+              <div style={{ fontSize: 10, color: C.t3, marginBottom: 10, lineHeight: 1.5 }}>{tp.desc}</div>
+              <Btn variant="ghost" onClick={() => !allAdded && onAddPack(tp)} style={{ width: "100%", justifyContent: "center" }}>
                 {allAdded ? "Already added" : <><Plus size={9} /> Add pack</>}
-              </AppButton>
+              </Btn>
             </div>
           );
         })}
@@ -497,97 +483,92 @@ function TemplatePacks({ existingIds, onAddPack }) {
   );
 }
 
-/* ── Add rule panel ─────────────────────────────────────────────── */
+/* ─── ADD RULE PANEL ─────────────────────────────────────────── */
 function AddRulePanel({ gymName, existingIds, onAdd, onClose }) {
-  const [cat, setCat]       = useState("All");
-  const [selected, setSelT] = useState(null);
-  const [msg, setMsg]       = useState("");
-  const [delay, setDelay]   = useState(0);
-  const CATS = ["All", "Retention", "Onboarding", "Milestones", "Engagement"];
+  const [cat, setCat]     = useState("All");
+  const [selected, setSel] = useState(null);
+  const [msg, setMsg]     = useState("");
+  const [delay, setDelay] = useState(0);
+  const CATS   = ["All", "Retention", "Onboarding", "Milestones", "Engagement"];
   const DELAYS = [{ v:0,label:"Immediately" },{ v:1,label:"1 hr" },{ v:3,label:"3 hrs" },{ v:6,label:"6 hrs" },{ v:24,label:"24 hrs" }];
   const available = TRIGGERS.filter(t => (cat === "All" || t.cat === cat) && !existingIds.includes(t.id));
-  const catCls = c => cat === c
-    ? 'bg-blue-500/[0.10] text-blue-500 border-blue-500/[0.22]'
-    : 'bg-[#0d1225] text-[#4b5578] border-white/[0.04]';
-  const delayCls = v => delay === v
-    ? 'bg-blue-500/[0.10] text-blue-500 border-blue-500/[0.22]'
-    : 'bg-[#0d1225] text-[#4b5578] border-white/[0.04]';
 
-  const pick = t => { setSelT(t); setMsg(TEMPLATES[t.id]?.(gymName, "{name}") || ""); };
+  const pick = t => { setSel(t); setMsg(TEMPLATES[t.id]?.(gymName, "{name}") || ""); };
 
   return (
-    <div className={cn(CARD, 'mb-4')}>
-      <div className="px-[18px] py-[14px] border-b border-white/[0.04] flex items-center justify-between">
+    <div style={{ ...cardStyle, marginBottom: 14 }}>
+      <div style={{ padding: "14px 16px", borderBottom: `1px solid ${C.brd}`, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
         <div>
-          <div className="text-[13px] font-bold text-[#eef2ff]">New automation rule</div>
-          <div className="text-[11px] text-[#4b5578] mt-[2px]">Choose a trigger, write a message, set timing.</div>
+          <div style={{ fontSize: 13, fontWeight: 600, color: C.t1 }}>New automation rule</div>
+          <div style={{ fontSize: 11, color: C.t3, marginTop: 2 }}>Choose a trigger, write a message, set timing.</div>
         </div>
-        <button onClick={onClose} className="w-[26px] h-[26px] rounded-[6px] bg-[#0d1225] border border-white/[0.04] flex items-center justify-center cursor-pointer text-[#4b5578] hover:text-[#8b95b3] transition-colors">
+        <button onClick={onClose} style={{ width: 26, height: 26, borderRadius: 6, background: "rgba(255,255,255,0.03)", border: `1px solid ${C.brd}`, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: C.t3 }}>
           <X size={11} />
         </button>
       </div>
-      <div className={cn('p-[16px_18px]', selected ? 'grid grid-cols-1 md:grid-cols-2 gap-[18px]' : '')}>
+
+      <div style={{ padding: "14px 16px", display: "grid", gridTemplateColumns: selected ? "1fr 1fr" : "1fr", gap: 18 }}>
+        {/* Left: trigger list */}
         <div>
-          <div className="flex gap-1 mb-3 flex-wrap">
+          <div style={{ display: "flex", gap: 5, flexWrap: "wrap", marginBottom: 12 }}>
             {CATS.map(c => (
-              <button key={c} onClick={() => setCat(c)}
-                className={cn('px-[10px] py-[3px] rounded-full text-[10px] font-semibold cursor-pointer border transition-all', catCls(c))}>
-                {c}
-              </button>
+              <button key={c} onClick={() => setCat(c)} style={{
+                padding: "3px 10px", borderRadius: 20, fontSize: 10, fontWeight: 600, cursor: "pointer", fontFamily: FONT,
+                background: cat === c ? C.cyanDim : "rgba(255,255,255,0.03)",
+                border: `1px solid ${cat === c ? C.cyanBrd : C.brd}`,
+                color: cat === c ? C.cyan : C.t2,
+              }}>{c}</button>
             ))}
           </div>
-          <div className="flex flex-col gap-[5px]">
+          <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
             {available.map(t => {
-              const Icon = t.Icon;
               const isSel = selected?.id === t.id;
               return (
-                <button key={t.id} onClick={() => pick(t)}
-                  className={cn(
-                    'flex items-center gap-[9px] px-[11px] py-[9px] rounded-[10px] cursor-pointer text-left transition-all border',
-                    isSel ? 'bg-blue-500/[0.10] border-blue-500/[0.22]' : 'bg-[#0d1225] border-white/[0.04] hover:border-white/[0.07]',
-                  )}>
-                  <div className={cn('w-[26px] h-[26px] rounded-[6px] shrink-0 flex items-center justify-center border', isSel ? 'bg-blue-500/[0.10] border-blue-500/[0.22]' : 'bg-[#0d1225] border-white/[0.04]')}>
-                    <Icon size={11} className={isSel ? 'text-blue-500' : 'text-[#4b5578]'} />
+                <button key={t.id} onClick={() => pick(t)} style={{
+                  display: "flex", alignItems: "center", gap: 9, padding: "9px 11px", borderRadius: 10,
+                  cursor: "pointer", textAlign: "left", fontFamily: FONT,
+                  background: isSel ? C.cyanDim : "rgba(255,255,255,0.03)",
+                  border: `1px solid ${isSel ? C.cyanBrd : C.brd}`,
+                }}>
+                  <IconBox Icon={t.Icon} color={isSel ? C.cyan : C.t3} boxSize={26} size={11} />
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: 12, fontWeight: 600, color: isSel ? C.t1 : C.t2 }}>{t.label}</div>
+                    <div style={{ fontSize: 10, color: C.t3 }}>{t.desc}</div>
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <div className={cn('text-xs font-semibold', isSel ? 'text-[#eef2ff]' : 'text-[#8b95b3]')}>{t.label}</div>
-                    <div className="text-[10px] text-[#4b5578]">{t.desc}</div>
-                  </div>
-                  {isSel && <ChevronRight size={11} className="text-blue-500" />}
+                  {isSel && <ChevronRight size={11} color={C.cyan} />}
                 </button>
               );
             })}
-            {available.length === 0 && (
-              <div className="py-5 text-center text-xs text-[#4b5578]">All triggers in this category are active.</div>
-            )}
+            {available.length === 0 && <div style={{ padding: "20px 0", textAlign: "center", fontSize: 12, color: C.t3 }}>All triggers in this category are active.</div>}
           </div>
         </div>
+
+        {/* Right: message editor */}
         {selected && (
           <div>
-            <div className="px-3 py-[10px] rounded-[10px] bg-blue-500/[0.10] border border-blue-500/[0.22] mb-[14px] flex items-center gap-2">
-              <selected.Icon size={12} className="text-blue-500" />
-              <span className="text-xs font-semibold text-[#eef2ff]">{selected.label}</span>
+            <div style={{ padding: "8px 12px", borderRadius: 9, background: C.cyanDim, border: `1px solid ${C.cyanBrd}`, marginBottom: 14, display: "flex", alignItems: "center", gap: 8 }}>
+              <selected.Icon size={12} color={C.cyan} />
+              <span style={{ fontSize: 12, fontWeight: 600, color: C.t1 }}>{selected.label}</span>
             </div>
-            <div className="text-[10px] font-semibold text-[#4b5578] uppercase tracking-[0.1em] mb-[6px]">Message</div>
-            <textarea value={msg} onChange={e => setMsg(e.target.value)} rows={4}
-              className="w-full box-border bg-[#0d1225] border border-white/[0.04] rounded-[10px] px-[10px] py-2 text-[#eef2ff] text-[11px] leading-[1.65] resize-y outline-none font-inherit mb-3 focus:border-white/[0.07] transition-colors"
-            />
-            <div className="text-[10px] font-semibold text-[#4b5578] uppercase tracking-[0.1em] mb-[6px]">Send timing</div>
-            <div className="flex gap-1 flex-wrap mb-[14px]">
+            <div style={{ fontSize: 10, fontWeight: 600, color: C.t3, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 6 }}>Message</div>
+            <textarea value={msg} onChange={e => setMsg(e.target.value)} rows={4} style={{
+              width: "100%", boxSizing: "border-box", background: "rgba(255,255,255,0.03)", border: `1px solid ${C.brd}`, borderRadius: 9,
+              padding: "8px 10px", color: C.t1, fontSize: 11.5, lineHeight: 1.65, resize: "vertical", outline: "none", fontFamily: FONT, marginBottom: 12,
+            }} />
+            <div style={{ fontSize: 10, fontWeight: 600, color: C.t3, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 8 }}>Send timing</div>
+            <div style={{ display: "flex", gap: 5, flexWrap: "wrap", marginBottom: 14 }}>
               {DELAYS.map(d => (
-                <button key={d.v} onClick={() => setDelay(d.v)}
-                  className={cn('px-[9px] py-1 rounded-[5px] text-[10px] font-medium cursor-pointer border transition-all', delayCls(d.v))}>
-                  {d.label}
-                </button>
+                <button key={d.v} onClick={() => setDelay(d.v)} style={{
+                  padding: "4px 9px", borderRadius: 6, fontSize: 10.5, fontWeight: 500, cursor: "pointer", fontFamily: FONT,
+                  background: delay === d.v ? C.cyanDim : "rgba(255,255,255,0.03)",
+                  border: `1px solid ${delay === d.v ? C.cyanBrd : C.brd}`,
+                  color: delay === d.v ? C.cyan : C.t2,
+                }}>{d.label}</button>
               ))}
             </div>
-            <AppButton
-              variant="primary" size="sm"
-              className={cn('w-full justify-center', !msg.trim() && 'opacity-50')}
-              onClick={() => { if (msg.trim()) { onAdd({ trigger_id: selected.id, message: msg.trim(), delay_hours: delay, enabled: true, stats: { sent: 0, returned: 0, rate: 0, saved: 0 } }); onClose(); }}}
-            >
+            <Btn variant="primary" onClick={() => { if (msg.trim()) { onAdd({ trigger_id: selected.id, message: msg.trim(), delay_hours: delay, enabled: true, stats: { sent:0,returned:0,rate:0,saved:0 } }); onClose(); }}} style={{ width: "100%", justifyContent: "center", opacity: msg.trim() ? 1 : 0.5 }}>
               <Plus size={11} /> Add rule
-            </AppButton>
+            </Btn>
           </div>
         )}
       </div>
@@ -595,198 +576,155 @@ function AddRulePanel({ gymName, existingIds, onAdd, onClose }) {
   );
 }
 
-/* ══════════════════════════════════════════════════════════════════
-   ROOT COMPONENT
-══════════════════════════════════════════════════════════════════ */
-export default function TabEngagement({ selectedGym, atRisk = 4, totalMembers = 8 }) {
+/* ─── ROOT ───────────────────────────────────────────────────── */
+export default function TabEngagement({ selectedGym }) {
   const gymName = selectedGym?.name || MOCK_GYM;
 
-  const [rules, setRules]   = useState(MOCK_RULES);
+  const [rules, setRules]     = useState(MOCK_RULES);
   const [showAdd, setShowAdd] = useState(false);
-  const [activity, setActivity] = useState(MOCK_ACTIVITY_SEED);
-  const [isMobile, setIsMobile] = useState(() => window.innerWidth < 768);
+  const [activity, setActivity] = useState(MOCK_ACTIVITY);
   const liveIdx = useRef(0);
 
-  useEffect(() => {
-    const fn = () => setIsMobile(window.innerWidth < 768);
-    window.addEventListener('resize', fn);
-    return () => window.removeEventListener('resize', fn);
-  }, []);
-
-  /* Stub — replace with base44.entities.Gym.update(...) */
-  const persist = useCallback(async (_updated) => {
-  }, []);
+  const persist = useCallback(async () => {}, []);
 
   const addRule    = useCallback(r => { const u = [...rules, { ...r, id: `r_${Date.now()}` }]; setRules(u); persist(u); }, [rules, persist]);
   const toggleRule = useCallback(id => { const u = rules.map(r => r.id === id ? { ...r, enabled: !r.enabled } : r); setRules(u); persist(u); }, [rules, persist]);
   const editRule   = useCallback((id, upd) => { const u = rules.map(r => r.id === id ? { ...r, ...upd } : r); setRules(u); persist(u); }, [rules, persist]);
   const deleteRule = useCallback(id => { const u = rules.filter(r => r.id !== id); setRules(u); persist(u); }, [rules, persist]);
 
-  /* Simulate live feed */
   useEffect(() => {
     const timer = setInterval(() => {
       if (liveIdx.current >= LIVE_EVENTS.length) return;
-      const ev = LIVE_EVENTS[liveIdx.current];
-      liveIdx.current++;
-      const newEv = { ...ev, id: Date.now(), ago: "just now", isNew: true };
-      setActivity(prev => [newEv, ...prev.slice(0, 14)]);
-      setTimeout(() => {
-        setActivity(prev => prev.map(e => e.id === newEv.id ? { ...e, isNew: false } : e));
-      }, 1200);
+      const ev = { ...LIVE_EVENTS[liveIdx.current++], id: Date.now(), ago: "just now", isNew: true };
+      setActivity(prev => [ev, ...prev.slice(0, 14)]);
+      setTimeout(() => setActivity(prev => prev.map(e => e.id === ev.id ? { ...e, isNew: false } : e)), 1200);
     }, 6000);
     return () => clearInterval(timer);
   }, []);
 
-  const enabled = rules.filter(r => r.enabled);
-  const paused  = rules.filter(r => !r.enabled);
-  const existingIds = rules.map(r => r.trigger_id);
-
-  const totalSent     = rules.reduce((s, r) => s + (r.stats?.sent ?? 0), 0);
-  const totalReturned = rules.reduce((s, r) => s + (r.stats?.returned ?? 0), 0);
-  const totalSaved    = rules.reduce((s, r) => s + (r.stats?.saved ?? 0), 0);
-  const churnPrevented = Math.floor(totalReturned * 0.4);
+  const enabled      = rules.filter(r => r.enabled);
+  const paused       = rules.filter(r => !r.enabled);
+  const existingIds  = rules.map(r => r.trigger_id);
+  const totalSent    = rules.reduce((s, r) => s + (r.stats?.sent ?? 0), 0);
+  const totalRet     = rules.reduce((s, r) => s + (r.stats?.returned ?? 0), 0);
+  const totalSaved   = rules.reduce((s, r) => s + (r.stats?.saved ?? 0), 0);
+  const churnPrev    = Math.floor(totalRet * 0.4);
 
   const addFromRec = useCallback(rec => {
-    const trig = TRIGGERS.find(t => t.id === rec.trigger_id);
-    if (!trig) return;
-    addRule({
-      trigger_id: rec.trigger_id,
-      message: TEMPLATES[rec.trigger_id]?.(gymName, "{name}") || "",
-      delay_hours: 0,
-      enabled: true,
-      stats: { sent: 0, returned: 0, rate: 0, saved: 0 },
-    });
+    addRule({ trigger_id: rec.trigger_id, message: TEMPLATES[rec.trigger_id]?.(gymName, "{name}") || "", delay_hours: 0, enabled: true, stats: { sent:0,returned:0,rate:0,saved:0 } });
   }, [addRule, gymName]);
 
   const addPack = useCallback(pack => {
-    pack.triggers
-      .filter(id => !existingIds.includes(id))
-      .forEach(id => {
-        addRule({
-          trigger_id: id,
-          message: TEMPLATES[id]?.(gymName, "{name}") || "",
-          delay_hours: id.startsWith("inactive") ? 1 : 0,
-          enabled: true,
-          stats: { sent: 0, returned: 0, rate: 0, saved: 0 },
-        });
-      });
+    pack.triggers.filter(id => !existingIds.includes(id)).forEach(id => {
+      addRule({ trigger_id: id, message: TEMPLATES[id]?.(gymName, "{name}") || "", delay_hours: id.startsWith("inactive") ? 1 : 0, enabled: true, stats: { sent:0,returned:0,rate:0,saved:0 } });
+    });
   }, [addRule, existingIds, gymName]);
 
   return (
-    <div className="min-h-screen bg-[#050810] text-[#eef2ff] text-[13px] leading-[1.5]">
-      {/* Minimal keyframes for live animations only */}
-      <style>{`
-        @keyframes slideDown { from{opacity:0;transform:translateY(-8px)} to{opacity:1;transform:translateY(0)} }
-      `}</style>
+    <div style={{ fontFamily: FONT, background: C.bg, minHeight: "100%", color: C.t1, fontSize: 13, lineHeight: 1.5 }}>
+      <style>{`@keyframes slideDown{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}`}</style>
 
-      <div className="max-w-[1320px] mx-auto px-4 sm:px-6 pt-5 sm:pt-6 pb-[60px]">
+      <div style={{ maxWidth: 1320, margin: "0 auto", padding: "16px 20px 60px" }}>
 
         {/* Page header */}
-        <div className="flex items-start justify-between mb-[22px] gap-3 flex-wrap">
+        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 16, gap: 12, flexWrap: "wrap" }}>
           <div>
-            <div className="flex items-center gap-[9px] mb-1">
-              <div className="w-7 h-7 rounded-[10px] bg-blue-500/[0.10] border border-blue-500/[0.22] flex items-center justify-center">
-                <Zap size={13} className="text-blue-500" />
+            <div style={{ display: "flex", alignItems: "center", gap: 9, marginBottom: 4 }}>
+              <div style={{ width: 28, height: 28, borderRadius: 9, background: C.cyanDim, border: `1px solid ${C.cyanBrd}`, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <Zap size={13} color={C.cyan} />
               </div>
-              <h2 className="text-[18px] font-bold text-[#eef2ff] m-0 tracking-[-0.03em]">Automated engagement</h2>
-              <span className="text-[10px] font-semibold text-emerald-500 bg-emerald-500/[0.08] border border-emerald-500/[0.18] px-2 py-[2px] rounded-full flex items-center gap-1">
-                <span className="w-[5px] h-[5px] rounded-full bg-emerald-500 inline-block animate-pulse" />
+              <h2 style={{ fontSize: 19, fontWeight: 700, color: C.t1, margin: 0, letterSpacing: "-0.02em" }}>Automated engagement</h2>
+              <span style={{ fontSize: 10, fontWeight: 700, color: C.green, background: C.greenDim, border: `1px solid ${C.greenBrd}`, padding: "2px 8px", borderRadius: 20, display: "flex", alignItems: "center", gap: 5 }}>
+                <span style={{ width: 5, height: 5, borderRadius: "50%", background: C.green, display: "inline-block" }} />
                 {enabled.length} running
               </span>
             </div>
-            <p className="text-xs text-[#4b5578] m-0 leading-[1.6]">
+            <p style={{ fontSize: 12, color: C.t2, margin: 0, lineHeight: 1.6 }}>
               Your gym is running itself. Messages go out automatically — no manual work required.
             </p>
           </div>
-          <div className="flex gap-[7px] shrink-0">
-            <AppButton variant="secondary" size="sm" onClick={() => setShowAdd(v => !v)}>
-              {showAdd ? <><X size={11} /> Cancel</> : <><Plus size={11} /> Add rule</>}
-            </AppButton>
-          </div>
+          <Btn variant={showAdd ? "ghost" : "primary"} onClick={() => setShowAdd(v => !v)}>
+            {showAdd ? <><X size={11} /> Cancel</> : <><Plus size={11} /> Add rule</>}
+          </Btn>
         </div>
 
-        {/* Performance summary */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-[10px] mb-4">
-          <StatCard icon={Send}        label="Messages sent"      sub="automatically this month" value={totalSent}      delay={0}   />
-          <StatCard icon={Activity}    label="Members re-engaged" sub="returned after a message"  value={totalReturned}  delay={120} />
-          <StatCard icon={DollarSign}  label="Revenue retained"   sub="from re-engaged members"  value={totalSaved}     delay={240} prefix="$" highlight />
-          <StatCard icon={Bell}        label="Churn prevented"    sub="estimated cancellations"   value={churnPrevented} delay={360} />
+        {/* KPI row */}
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 10, marginBottom: 14 }}>
+          <StatCard icon={Send}       label="Messages sent"      sub="automatically this month" value={totalSent}  delay={0}   />
+          <StatCard icon={Activity}   label="Members re-engaged" sub="returned after a message"  value={totalRet}  delay={120} />
+          <StatCard icon={DollarSign} label="Revenue retained"   sub="from re-engaged members"  value={totalSaved} delay={240} prefix="$" highlight />
+          <StatCard icon={Bell}       label="Churn prevented"    sub="estimated cancellations"   value={churnPrev} delay={360} />
         </div>
 
-        {/* AI recommendations */}
+        {/* AI recs */}
         <Recommendations recs={RECOMMENDATIONS} existingIds={existingIds} onAdd={addFromRec} />
 
         {/* Add rule panel */}
-        {showAdd && (
-          <AddRulePanel gymName={gymName} existingIds={existingIds} onAdd={addRule} onClose={() => setShowAdd(false)} />
-        )}
+        {showAdd && <AddRulePanel gymName={gymName} existingIds={existingIds} onAdd={r => { addRule(r); setShowAdd(false); }} onClose={() => setShowAdd(false)} />}
 
-        {/* Rules list + Live feed */}
-        <div className={cn('grid gap-[14px] items-start', isMobile ? 'grid-cols-1' : 'grid-cols-[1fr_284px]')}>
+        {/* Rules + feed */}
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 280px", gap: 14, alignItems: "start" }}>
 
-          {/* Left — rules list */}
-          <div className={cn('flex flex-col gap-[14px]', isMobile && 'order-2')}>
+          {/* Left: rules */}
+          <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
 
-            {/* Active rules */}
+            {/* Active */}
             <div>
-              <div className="flex items-center justify-between mb-[10px]">
-                <span className="text-[11px] font-semibold text-[#8b95b3] uppercase tracking-[0.1em]">Active automations</span>
-                <span className="text-[11px] text-[#4b5578]">{enabled.length} of {rules.length}</span>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
+                <span style={{ fontSize: 11, fontWeight: 600, color: C.t2, textTransform: "uppercase", letterSpacing: "0.1em" }}>Active automations</span>
+                <span style={{ fontSize: 11, color: C.t3 }}>{enabled.length} of {rules.length}</span>
               </div>
               {enabled.length === 0 ? (
-                <div className={cn(CARD, 'p-[36px_24px] text-center')}>
-                  <div className="w-9 h-9 rounded-2xl bg-[#0d1225] border border-white/[0.04] flex items-center justify-center mx-auto mb-[10px]">
-                    <Zap size={16} className="text-[#252d45]" />
+                <div style={{ ...cardStyle, padding: "36px 24px", textAlign: "center" }}>
+                  <div style={{ width: 36, height: 36, borderRadius: 10, background: C.cyanDim, border: `1px solid ${C.cyanBrd}`, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 10px" }}>
+                    <Zap size={16} color={C.cyan} />
                   </div>
-                  <div className="text-[13px] font-semibold text-[#8b95b3] mb-1">No active automations</div>
-                  <div className="text-[11px] text-[#4b5578] mb-[14px]">Add your first rule to start running on autopilot.</div>
-                  <AppButton variant="secondary" size="sm" onClick={() => setShowAdd(true)}>
-                    <Plus size={11} /> Add rule
-                  </AppButton>
+                  <div style={{ fontSize: 13, fontWeight: 600, color: C.t2, marginBottom: 4 }}>No active automations</div>
+                  <div style={{ fontSize: 11, color: C.t3, marginBottom: 14 }}>Add your first rule to start running on autopilot.</div>
+                  <Btn variant="primary" onClick={() => setShowAdd(true)}><Plus size={11} /> Add rule</Btn>
                 </div>
               ) : (
-                <div className="flex flex-col gap-2">
+                <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                   {enabled.map(rule => (
                     <RuleCard key={rule.id} rule={rule} gymName={gymName}
                       onToggle={() => toggleRule(rule.id)}
                       onEdit={u => editRule(rule.id, u)}
-                      onDelete={() => deleteRule(rule.id)}
-                    />
+                      onDelete={() => deleteRule(rule.id)} />
                   ))}
                 </div>
               )}
             </div>
 
-            {/* Paused rules */}
+            {/* Paused */}
             {paused.length > 0 && (
               <div>
-                <div className="flex items-center gap-[6px] mb-[10px]">
-                  <span className="text-[10px] font-semibold text-[#4b5578] uppercase tracking-[0.1em]">Paused</span>
-                  <span className="text-[9px] text-[#252d45]">{paused.length}</span>
+                <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 10 }}>
+                  <span style={{ fontSize: 10, fontWeight: 600, color: C.t3, textTransform: "uppercase", letterSpacing: "0.1em" }}>Paused</span>
+                  <span style={{ fontSize: 9, color: C.t3 }}>{paused.length}</span>
                 </div>
-                <div className="flex flex-col gap-[7px]">
+                <div style={{ display: "flex", flexDirection: "column", gap: 7 }}>
                   {paused.map(rule => (
                     <RuleCard key={rule.id} rule={rule} gymName={gymName}
                       onToggle={() => toggleRule(rule.id)}
                       onEdit={u => editRule(rule.id, u)}
-                      onDelete={() => deleteRule(rule.id)}
-                    />
+                      onDelete={() => deleteRule(rule.id)} />
                   ))}
                 </div>
               </div>
             )}
 
             {/* Templates */}
-            <div className="border-t border-white/[0.03] pt-[18px]">
+            <div style={{ borderTop: `1px solid ${C.brd}`, paddingTop: 18 }}>
               <TemplatePacks existingIds={existingIds} onAddPack={addPack} />
             </div>
           </div>
 
-          {/* Right — live feed */}
-          <div className={cn(isMobile ? 'order-1' : 'sticky top-6')}>
+          {/* Right: live feed */}
+          <div style={{ position: "sticky", top: 16 }}>
             <ActivityFeed events={activity} />
           </div>
         </div>
+
       </div>
     </div>
   );
