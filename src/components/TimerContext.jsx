@@ -2,6 +2,8 @@ import React, { createContext, useContext, useState, useEffect, useRef } from 'r
 
 const TimerContext = createContext(null);
 
+const TIMER_STORAGE_KEY = 'rest_timer_state';
+
 export function TimerProvider({ children }) {
   const [restTimer, setRestTimer]           = useState(90);
   const [isTimerActive, setIsTimerActive]   = useState(false);
@@ -10,11 +12,54 @@ export function TimerProvider({ children }) {
   const [timerWorkout, setTimerWorkout]     = useState(null); // today's workout for cardio routines
 
   const intervalRef = useRef(null);
+  const lastUpdateRef = useRef(Date.now());
+
+  // Load persisted timer state on mount
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem(TIMER_STORAGE_KEY);
+      if (stored) {
+        const { restTimer: savedTimer, initialRestTime: savedInitial, isTimerActive: wasActive, savedAt } = JSON.parse(stored);
+        if (wasActive && savedAt) {
+          const elapsedMs = Date.now() - savedAt;
+          const elapsedSecs = Math.floor(elapsedMs / 1000);
+          const remaining = Math.max(0, savedTimer - elapsedSecs);
+          setRestTimer(remaining);
+          setInitialRestTime(savedInitial);
+          // Auto-resume if timer was active
+          if (remaining > 0) {
+            setIsTimerActive(true);
+          }
+        } else if (savedTimer > 0) {
+          setRestTimer(savedTimer);
+          setInitialRestTime(savedInitial);
+        }
+      }
+    } catch (e) {
+      console.error('Failed to load timer state:', e);
+    }
+  }, []);
+
+  // Persist timer state whenever it changes
+  useEffect(() => {
+    try {
+      const timerState = {
+        restTimer: typeof restTimer === 'number' ? restTimer : parseInt(restTimer) || 0,
+        initialRestTime: typeof initialRestTime === 'number' ? initialRestTime : parseInt(initialRestTime) || 90,
+        isTimerActive,
+        savedAt: Date.now()
+      };
+      localStorage.setItem(TIMER_STORAGE_KEY, JSON.stringify(timerState));
+    } catch (e) {
+      console.error('Failed to save timer state:', e);
+    }
+  }, [restTimer, initialRestTime, isTimerActive]);
 
   useEffect(() => {
     if (isTimerActive) {
       const current = typeof restTimer === 'number' ? restTimer : parseInt(restTimer) || 0;
       if (current <= 0) return;
+      lastUpdateRef.current = Date.now();
       intervalRef.current = setInterval(() => {
         setRestTimer(prev => {
           const p = typeof prev === 'number' ? prev : parseInt(prev) || 0;
