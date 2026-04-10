@@ -734,88 +734,76 @@ export default function MembersPageAI() {
   const handleMsg = useCallback(m => { setMsgTarget(m); setPreview(null); }, []);
 
   return (
-    <div style={{ display: "flex", height: "100vh", background: C.bg, color: C.t1, fontFamily: FONT, overflow: "hidden" }}>
-      <Sidebar />
-      <div style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0, overflow: "hidden" }}>
-        <TopBar />
-        <div style={{ flex: 1, display: "flex", overflow: "hidden" }}>
-          {/* Center */}
-          <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden", minWidth: 0 }}>
-            {/* Page header */}
-            <div style={{ padding: "14px 18px 12px", display: "flex", alignItems: "center", justifyContent: "space-between", borderBottom: `1px solid ${C.brd}` }}>
-              <div>
-                <div style={{ fontSize: 18, fontWeight: 700, color: C.t1, letterSpacing: "-0.02em" }}>
-                  Members <span style={{ color: C.t3, fontWeight: 300 }}>/</span> <span style={{ color: C.cyan }}>CRM</span>
-                </div>
-                <div style={{ fontSize: 11, color: C.t3, marginTop: 2 }}>AI-powered retention · know who needs you, act instantly</div>
-              </div>
-              <div style={{ display: "flex", gap: 8 }}>
-                <div style={{ display: "flex", gap: 8 }}>
-                  <select value={sort} onChange={e => setSort(e.target.value)} style={{
-                    padding: "6px 10px", borderRadius: 7, background: C.card, border: `1px solid ${C.brd}`,
-                    color: C.t2, fontSize: 11.5, outline: "none", cursor: "pointer", fontFamily: FONT,
-                  }}>
-                    <option value="churnDesc">Highest risk</option>
-                    <option value="lastVisit">Recently active</option>
-                    <option value="value">Highest value</option>
-                    <option value="name">Name A–Z</option>
-                  </select>
-                </div>
-                <button style={{
-                  display: "flex", alignItems: "center", gap: 6, padding: "6px 14px",
-                  borderRadius: 7, background: C.cyan, border: "none",
-                  color: "#000", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: FONT,
-                }}>
-                  <Plus style={{ width: 12, height: 12 }} /> Invite Member
-                </button>
-              </div>
+    <div style={{ display: "flex", height: "100%", background: C.bg, color: C.t1, fontFamily: FONT, overflow: "hidden" }}>
+      {/* Center */}
+      <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden", minWidth: 0 }}>
+        {/* Page header */}
+        <div style={{ padding: "14px 18px 12px", display: "flex", alignItems: "center", justifyContent: "space-between", borderBottom: `1px solid ${C.brd}` }}>
+          <div>
+            <div style={{ fontSize: 18, fontWeight: 700, color: C.t1, letterSpacing: "-0.02em" }}>
+              Members <span style={{ color: C.t3, fontWeight: 300 }}>/</span> <span style={{ color: C.cyan }}>CRM</span>
             </div>
-
-            {/* Filter tabs */}
-            <FilterTabs filter={filter} setFilter={setFilter} counts={counts} />
-
-            {/* Table */}
-            <div style={{ flex: 1, overflowY: "auto" }}>
-              <TableHead sort={sort} setSort={setSort} />
-              {visible.length === 0 ? (
-                <div style={{ padding: "48px 16px", textAlign: "center" }}>
-                  <Users style={{ width: 28, height: 28, color: C.t3, margin: "0 auto 10px", display: "block" }} />
-                  <div style={{ fontSize: 13, fontWeight: 700, color: C.t2 }}>No members match</div>
-                </div>
-              ) : (
-                visible.map((m, i) => (
-                  <MemberRow
-                    key={m.id} m={m}
-                    isSel={selected.has(m.id)}
-                    isPrev={preview?.id === m.id}
-                    onSelect={toggleRow}
-                    onPreview={mm => setPreview(preview?.id === mm.id ? null : mm)}
-                    onMessage={handleMsg}
-                    isLast={i === visible.length - 1}
-                  />
-                ))
-              )}
-              <BulkBar selected={selected} members={members} onClear={() => setSelected(new Set())} onMsg={handleMsg} />
-
-              {/* Pagination */}
-              <div style={{ padding: "8px 16px", borderTop: `1px solid ${C.brd}`, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                <div style={{ display: "flex", gap: 4 }}>
-                  {[ChevronLeft, ChevronRight].map((Icon, i) => (
-                    <button key={i} style={{ width: 24, height: 24, borderRadius: 6, background: "transparent", border: `1px solid ${C.brd}`, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", opacity: 0.4 }}>
-                      <Icon style={{ width: 10, height: 10, color: C.t2 }} />
-                    </button>
-                  ))}
-                  <button style={{ width: 24, height: 24, borderRadius: 6, background: C.cyanDim, border: `1px solid ${C.cyanBrd}`, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", fontSize: 11, fontWeight: 700, color: C.cyan }}>1</button>
-                </div>
-                <span style={{ fontSize: 10.5, color: C.t3 }}>{visible.length} members · page 1 of 1</span>
-              </div>
-            </div>
+            <div style={{ fontSize: 11, color: C.t3, marginTop: 2 }}>AI-powered retention · know who needs you, act instantly</div>
           </div>
+          <div style={{ display: "flex", gap: 8 }}>
+            <select value={sort} onChange={e => setSort(e.target.value)} style={{
+              padding: "6px 10px", borderRadius: 7, background: C.card, border: `1px solid ${C.brd}`,
+              color: C.t2, fontSize: 11.5, outline: "none", cursor: "pointer", fontFamily: FONT,
+            }}>
+              <option value="churnDesc">Highest risk</option>
+              <option value="lastVisit">Recently active</option>
+              <option value="value">Highest value</option>
+              <option value="name">Name A–Z</option>
+            </select>
+            <button style={{
+              display: "flex", alignItems: "center", gap: 6, padding: "6px 14px",
+              borderRadius: 7, background: C.cyan, border: "none",
+              color: "#000", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: FONT,
+            }}>
+              <Plus style={{ width: 12, height: 12 }} /> Invite Member
+            </button>
+          </div>
+        </div>
 
-          {/* Right panel */}
-          <RightPanel members={members} onFilter={setFilter} onMessage={handleMsg} />
+        <FilterTabs filter={filter} setFilter={setFilter} counts={counts} />
+
+        <div style={{ flex: 1, overflowY: "auto" }}>
+          <TableHead sort={sort} setSort={setSort} />
+          {visible.length === 0 ? (
+            <div style={{ padding: "48px 16px", textAlign: "center" }}>
+              <Users style={{ width: 28, height: 28, color: C.t3, margin: "0 auto 10px", display: "block" }} />
+              <div style={{ fontSize: 13, fontWeight: 700, color: C.t2 }}>No members match</div>
+            </div>
+          ) : (
+            visible.map((m, i) => (
+              <MemberRow
+                key={m.id} m={m}
+                isSel={selected.has(m.id)}
+                isPrev={preview?.id === m.id}
+                onSelect={toggleRow}
+                onPreview={mm => setPreview(preview?.id === mm.id ? null : mm)}
+                onMessage={handleMsg}
+                isLast={i === visible.length - 1}
+              />
+            ))
+          )}
+          <BulkBar selected={selected} members={members} onClear={() => setSelected(new Set())} onMsg={handleMsg} />
+          <div style={{ padding: "8px 16px", borderTop: `1px solid ${C.brd}`, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+            <div style={{ display: "flex", gap: 4 }}>
+              {[ChevronLeft, ChevronRight].map((Icon, i) => (
+                <button key={i} style={{ width: 24, height: 24, borderRadius: 6, background: "transparent", border: `1px solid ${C.brd}`, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", opacity: 0.4 }}>
+                  <Icon style={{ width: 10, height: 10, color: C.t2 }} />
+                </button>
+              ))}
+              <button style={{ width: 24, height: 24, borderRadius: 6, background: C.cyanDim, border: `1px solid ${C.cyanBrd}`, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", fontSize: 11, fontWeight: 700, color: C.cyan }}>1</button>
+            </div>
+            <span style={{ fontSize: 10.5, color: C.t3 }}>{visible.length} members · page 1 of 1</span>
+          </div>
         </div>
       </div>
+
+      {/* Right panel */}
+      <RightPanel members={members} onFilter={setFilter} onMessage={handleMsg} />
 
       {preview && <MemberPreview m={preview} onClose={() => setPreview(null)} onMessage={handleMsg} />}
       {msgTarget && <MessageToast member={msgTarget} onClose={() => setMsgTarget(null)} />}
