@@ -708,7 +708,7 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
               {todayWorkout.exercises && todayWorkout.exercises.length > 0 ?
             <div className="px-2 space-y-2">
 
-                  {/* ── Column headers — static, no separate animation ── */}
+                  {/* ── Column headers ── */}
                   <div
                     className="grid gap-1 mb-1.5 items-end"
                     style={{ gridTemplateColumns: exerciseGridCols }}>
@@ -732,7 +732,8 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                       key={group.key}
                       initial={false}
                       animate={{}}
-                      className="bg-white/5 pt-2 py-2 pl-2 rounded-xl backdrop-blur-md border border-white/10 shadow-lg shadow-black/10 grid gap-1 items-center hover:border-white/20 transition-all -ml-[2%] -mr-[2%]"
+                      // CHANGED: pt-2 py-2 → pt-1 py-1 for more compact rows
+                      className="bg-white/5 pt-1 py-1 pl-2 rounded-xl backdrop-blur-md border border-white/10 shadow-lg shadow-black/10 grid gap-1 items-center hover:border-white/20 transition-all -ml-[2%] -mr-[2%]"
                       style={{ gridTemplateColumns: isEditing ? '1fr' : exerciseGridCols }}>
                           {isEditing ?
                       <div className="col-span-full rounded-2xl p-4" style={{ background: 'rgba(15,20,40,0.7)', border: '1px solid rgba(255,255,255,0.06)' }}>
@@ -793,16 +794,19 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                               <div className="">
                                 <div className="text-sm font-bold text-white leading-tight ml-1">{exercise.exercise || '-'}</div>
                               </div>
-                              <div className="bg-white/10 text-slate-300 py-1 text-sm font-semibold text-center rounded-lg flex items-center justify-center" style={{ width: '36px' }}>
+                              {/* CHANGED: py-1 → py-0.5 for uniform chip height */}
+                              <div className="bg-white/10 text-slate-300 py-0.5 text-sm font-semibold text-center rounded-lg flex items-center justify-center" style={{ width: '36px' }}>
                                 {exercise.sets || exercise.setsReps?.split('x')?.[0] || '-'}
                               </div>
                               <div className="text-slate-400 text-xs font-bold flex items-center justify-center -ml-2">×</div>
-                              <div className="bg-white/10 text-slate-300 py-1 text-sm font-semibold text-center rounded-lg flex items-center justify-center" style={{ width: '36px' }}>
+                              {/* CHANGED: py-1 → py-0.5 for uniform chip height */}
+                              <div className="bg-white/10 text-slate-300 py-0.5 text-sm font-semibold text-center rounded-lg flex items-center justify-center" style={{ width: '36px' }}>
                                 {exercise.reps || exercise.setsReps?.split('x')?.[1] || '-'}
                               </div>
                               <div className="flex items-center gap- ml-1 mr-2">
                                 <div className="flex items-center gap-2">
-                                  <div className="bg-gradient-to-r text-white mx-auto pb-1 pl-1 pt-1 text-sm font-black text-center opacity-100 rounded-2xl from-blue-700/90 to-blue-900/90 shadow-md shadow-blue-900/20 min-w-[55px]">
+                                  {/* CHANGED: pb-1 pt-1 → pb-0.5 pt-0.5 to match chip height */}
+                                  <div className="bg-gradient-to-r text-white mx-auto pb-0.5 pl-1 pt-0.5 text-sm font-black text-center opacity-100 rounded-2xl from-blue-700/90 to-blue-900/90 shadow-md shadow-blue-900/20 min-w-[55px]">
                                     {exercise.weight || '-'}<span className="text-[10px] font-bold">kg</span>
                                   </div>
                                   {lastWorkout?.exercises?.[index] && getProgressIndicator(exercise, index)}
@@ -831,7 +835,8 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                     key={group.key}
                     initial={false}
                     animate={{}}
-                    className="bg-white/5 pt-2 pb-2 pl-2 rounded-xl backdrop-blur-md border border-white/10 shadow-lg shadow-black/10 hover:border-white/20 transition-all -ml-[2%] -mr-[2%]">
+                    // CHANGED: pt-2 pb-2 → pt-1 pb-1 for compact grouped rows
+                    className="bg-white/5 pt-1 pb-1 pl-2 rounded-xl backdrop-blur-md border border-white/10 shadow-lg shadow-black/10 hover:border-white/20 transition-all -ml-[2%] -mr-[2%]">
 
                         {sorted.map(({ exercise, index }, setIdx) => {
                       const setLabel = `Set ${setIdx + 1}`;
@@ -842,7 +847,8 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                           <div key={index} className="rounded-2xl p-4 mr-2 mb-1" style={{ background: 'rgba(15,20,40,0.7)', border: '1px solid rgba(255,255,255,0.06)' }}>
                                 <div className="flex items-center gap-2 mb-3">
                                   <div className="text-sm font-bold text-white">{group.name}</div>
-                                  <div className="inline-flex items-center justify-center px-3 py-1 rounded-lg bg-white/10 border border-white/10 text-[12px] font-black text-slate-200">
+                                  {/* CHANGED: py-1 → py-0.5 for uniform chip height */}
+                                  <div className="inline-flex items-center justify-center px-3 py-0.5 rounded-lg bg-white/10 border border-white/10 text-[12px] font-black text-slate-200">
                                     {setLabel}
                                   </div>
                                 </div>
@@ -876,15 +882,18 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                                   <div />
                                 )}
                               </div>
-                              <div className="bg-white/10 text-slate-300 py-1 text-[11px] font-bold text-center rounded-lg flex items-center justify-center" style={{ width: '36px' }}>
+                              {/* CHANGED: py-1 → py-0.5 for uniform "Set N" chip height */}
+                              <div className="bg-white/10 text-slate-300 py-0.5 text-[11px] font-bold text-center rounded-lg flex items-center justify-center" style={{ width: '36px' }}>
                                 {setLabel}
                               </div>
                               <div className="text-slate-400 text-xs font-bold flex items-center justify-center -ml-2">×</div>
-                              <div className="bg-white/10 text-slate-300 py-1 text-sm font-semibold text-center rounded-lg flex items-center justify-center" style={{ width: '36px' }}>
+                              {/* CHANGED: py-1 → py-0.5 for uniform reps chip height */}
+                              <div className="bg-white/10 text-slate-300 py-0.5 text-sm font-semibold text-center rounded-lg flex items-center justify-center" style={{ width: '36px' }}>
                                 {exercise.reps || exercise.setsReps?.split('x')?.[1] || '-'}
                               </div>
                               <div className="flex items-center gap-1 ml-1">
-                                <div className="bg-gradient-to-r from-blue-700/90 to-blue-900/90 text-white pb-1 pl-1 pt-1 text-sm font-black text-center rounded-2xl shadow-md shadow-blue-900/20 min-w-[55px]">
+                                {/* CHANGED: pb-1 pt-1 → pb-0.5 pt-0.5 to match chip height */}
+                                <div className="bg-gradient-to-r from-blue-700/90 to-blue-900/90 text-white pb-0.5 pl-1 pt-0.5 text-sm font-black text-center rounded-2xl shadow-md shadow-blue-900/20 min-w-[55px]">
                                   {exercise.weight || '-'}<span className="text-[10px] font-bold">kg</span>
                                 </div>
                                 {lastWorkout?.exercises?.[index] && getProgressIndicator(exercise, index)}
@@ -906,7 +915,7 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                   {/* Cardio Rows */}
                   {todayWorkout.cardio && todayWorkout.cardio.length > 0 &&
               <div className="mt-3">
-                      {/* ── Cardio column headers — static, no separate animation ── */}
+                      {/* ── Cardio column headers ── */}
                       <div
                         className="grid gap-1 mb-1.5 items-end px-1"
                         style={{ gridTemplateColumns: cardioGridCols }}>
