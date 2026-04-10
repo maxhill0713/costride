@@ -494,6 +494,23 @@ function DeleteBtn({ onClick }) {
   );
 }
 
+/* ─── SCHEDULED TAB ─────────────────────────────────────────── */
+function ScheduledRow({ row, last }) {
+  const [checked, setChecked] = useState(false);
+  return <TableRow row={row} checked={checked} onToggle={() => setChecked(p => !p)} last={last} />;
+}
+
+function ScheduledTab() {
+  return (
+    <div style={{ background: C.card, border: `1px solid ${C.brd}`, borderRadius: 10, overflow: "hidden" }}>
+      <TableHeader />
+      {TABLE_ROWS.map((row, i) => (
+        <ScheduledRow key={row.id} row={row} last={i === TABLE_ROWS.length - 1} />
+      ))}
+    </div>
+  );
+}
+
 /* ─── CONTENT AREA ───────────────────────────────────────────── */
 function ContentArea({ events = [], challenges = [], polls = [], posts = [], openModal, onDeleteEvent, onDeleteChallenge, onDeletePost }) {
   const [tab, setTab] = useState("Drafts");
@@ -562,15 +579,7 @@ function ContentArea({ events = [], challenges = [], polls = [], posts = [], ope
           )}
 
           {/* ── SCHEDULED ── */}
-          {tab === "Scheduled" && (
-            <div style={{ background: C.card, border: `1px solid ${C.brd}`, borderRadius: 10, overflow: "hidden" }}>
-              <TableHeader />
-              {TABLE_ROWS.map((row, i) => {
-                const [checked, setChecked] = useState(false);
-                return <TableRow key={row.id} row={row} checked={checked} onToggle={() => setChecked(p => !p)} last={i === TABLE_ROWS.length - 1} />;
-              })}
-            </div>
-          )}
+          {tab === "Scheduled" && <ScheduledTab />}
 
           {/* ── EVENTS ── */}
           {tab === "Events" && (
