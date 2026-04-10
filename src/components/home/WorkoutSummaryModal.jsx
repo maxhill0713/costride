@@ -157,31 +157,24 @@ export default function WorkoutSummaryModal({ summaryLog, onClose }) {
                     );
                   }
 
-                  // ── Grouped (multi-set) card — same grid as single rows ──
+                  // ── Grouped (multi-set) card — Set N boxes prominent ──
                   const sorted = [...group.items].sort((a, b) => (parseFloat(b.ex.weight) || 0) - (parseFloat(a.ex.weight) || 0));
                   return (
                     <div key={group.key} className="bg-white/5 pt-1 pb-1 pl-2 rounded-xl border border-white/10">
+                      <div className="text-sm font-bold text-white leading-tight ml-1 mb-1">{group.name}</div>
                       {sorted.map(({ ex, index }, setIdx) => {
                         const { reps, weight } = parseEx(ex);
-                        const setLabel = `Set ${setIdx + 1}`;
                         return (
-                          <div key={index} className="grid gap-1 items-center pr-2 mb-0.5" style={{ gridTemplateColumns: '1fr 44px 12px 44px auto' }}>
-                            <div className="ml-1">
-                              {setIdx === 0
-                                ? <div className="text-sm font-bold text-white leading-tight">{group.name}</div>
-                                : <div />}
+                          <div key={index} className="flex items-center gap-1 pr-2 mb-0.5 ml-1">
+                            <div className="bg-white/10 text-slate-300 py-0.5 px-2.5 text-[11px] font-bold text-center rounded-lg flex-shrink-0">
+                              Set {setIdx + 1}
                             </div>
-                            <div className="bg-white/10 text-slate-300 py-0.5 text-[11px] font-bold text-center rounded-lg flex items-center justify-center" style={{ width: '36px' }}>
-                              {setLabel}
-                            </div>
-                            <div className="text-slate-400 text-xs font-bold flex items-center justify-center -ml-2">×</div>
-                            <div className="bg-white/10 text-slate-300 py-0.5 text-sm font-semibold text-center rounded-lg flex items-center justify-center" style={{ width: '36px' }}>
+                            <div className="text-slate-400 text-xs font-bold">×</div>
+                            <div className="bg-white/10 text-slate-300 py-0.5 text-sm font-semibold text-center rounded-lg flex items-center justify-center flex-shrink-0" style={{ width: '36px' }}>
                               {reps}
                             </div>
-                            <div className="ml-1 mr-2">
-                              <div className="bg-gradient-to-r from-blue-700/90 to-blue-900/90 text-white pb-0.5 pl-1 pt-0.5 text-sm font-black text-center rounded-2xl shadow-md shadow-blue-900/20 min-w-[55px]">
-                                {weight}<span className="text-[10px] font-bold">kg</span>
-                              </div>
+                            <div className="bg-gradient-to-r from-blue-700/90 to-blue-900/90 text-white pb-0.5 pl-1 pt-0.5 text-sm font-black text-center rounded-2xl shadow-md shadow-blue-900/20 min-w-[55px]">
+                              {weight}<span className="text-[10px] font-bold">kg</span>
                             </div>
                           </div>
                         );
