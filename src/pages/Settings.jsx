@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { ChevronLeft, ChevronRight, Search, LogOut, Trash2, Loader2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -44,41 +44,37 @@ const GROUPS = [
 
 const MAX_SEARCH_LENGTH = 30;
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Exact animation variants from CreateSplitModal
-// ─────────────────────────────────────────────────────────────────────────────
+// ── Slide-in animation — only used when entering from Profile ─────────────────
 const pageSlideVariants = {
-  hidden: {
-    x: '100%',
-    opacity: 1,
-  },
+  hidden:  { x: '100%', opacity: 1 },
   visible: {
-    x: 0,
-    opacity: 1,
-    transition: {
-      type: 'spring',
-      stiffness: 380,
-      damping: 36,
-      mass: 1,
-    },
+    x: 0, opacity: 1,
+    transition: { type: 'spring', stiffness: 380, damping: 36, mass: 1 },
   },
   exit: {
-    x: '100%',
-    opacity: 1,
-    transition: {
-      type: 'spring',
-      stiffness: 420,
-      damping: 40,
-      mass: 0.9,
-    },
+    x: '100%', opacity: 1,
+    transition: { type: 'spring', stiffness: 420, damping: 40, mass: 0.9 },
   },
 };
 
-// Subtle background dim that fades in independently
+// No-animation variant — instant appear/disappear when returning from a sub-page
+const noAnimVariants = {
+  hidden:  { opacity: 1 },
+  visible: { opacity: 1, transition: { duration: 0 } },
+  exit:    { opacity: 1, transition: { duration: 0 } },
+};
+
 const overlayVariants = {
-  hidden: { opacity: 0 },
+  hidden:  { opacity: 0 },
   visible: { opacity: 1, transition: { duration: 0.18 } },
-  exit: { opacity: 0, transition: { duration: 0.2 } },
+  exit:    { opacity: 0, transition: { duration: 0.2 } },
+};
+
+// No-op overlay when returning from sub-page
+const noOverlayVariants = {
+  hidden:  { opacity: 0 },
+  visible: { opacity: 0, transition: { duration: 0 } },
+  exit:    { opacity: 0, transition: { duration: 0 } },
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -210,17 +206,17 @@ function DeleteAccountDialog({ open, onClose, onConfirm, isPending, isGymOwner }
 }
 
 export default function Settings() {
-  const navigate = useNavigate();
+  const navigate  = useNavigate();
+  const location  = useLocation();
   const queryClient = useQueryClient();
+
+  // ?back=true means we're returning from a sub-settings page — skip the slide-in
+  const isReturningFromSubPage = new URLSearchParams(location.search).get('back') === 'true';
+
   const [searchQuery, setSearchQuery] = useState('');
   const [showLogoutDialog, setShowLogoutDialog] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [deletePending, setDeletePending] = useState(false);
-
-  // Controls whether the page is "mounted" for AnimatePresence.
-  // Since this is a routed page (not a modal), we treat it as always open
-  // so the slide-in fires on mount. Set to false to trigger exit animation
-  // before navigating away (optional — wired up in handleBack below).
   const [isVisible, setIsVisible] = useState(true);
 
   const { data: currentUser } = useQuery({
@@ -247,12 +243,9 @@ export default function Settings() {
     setShowDeleteDialog(false);
     try {
       await base44.functions.invoke('deleteUserAccount');
-      // Clear all cached query data so fresh data is loaded on next sign-in
       queryClient.clear();
-      // Clear localStorage/sessionStorage to reset all cached app data
       localStorage.clear();
       sessionStorage.clear();
-      // Force logout
       await base44.auth.logout();
     } catch (error) {
       console.error('Delete account error:', error);
@@ -262,7 +255,6 @@ export default function Settings() {
     }
   };
 
-  // Trigger exit animation then navigate back
   const handleBack = () => {
     setIsVisible(false);
     setTimeout(() => navigate(createPageUrl('Profile')), 320);
@@ -309,23 +301,25 @@ export default function Settings() {
     );
   }
 
+  // Choose variants based on whether we're sliding in fresh or returning from a sub-page
+  const panelVariants  = isReturningFromSubPage ? noAnimVariants  : pageSlideVariants;
+  const overlayVars    = isReturningFromSubPage ? noOverlayVariants : overlayVariants;
+
   return (
     <>
       <AnimatePresence>
         {isVisible && (
           <>
-            {/* ── Dim overlay: fades independently (matches CreateSplitModal) ── */}
             <motion.div
               key="settings-overlay"
               className="fixed inset-0 z-40"
               style={{ background: 'rgba(0,0,0,0.45)' }}
-              variants={overlayVariants}
+              variants={overlayVars}
               initial="hidden"
               animate="visible"
               exit="exit"
             />
 
-            {/* ── Main panel: slides in from right (matches CreateSplitModal exactly) ── */}
             <motion.div
               key="settings-panel"
               className="fixed inset-0 z-50"
@@ -336,7 +330,7 @@ export default function Settings() {
                 fontFamily: 'inherit',
                 overflowY: 'auto',
               }}
-              variants={pageSlideVariants}
+              variants={panelVariants}
               initial="hidden"
               animate="visible"
               exit="exit"
@@ -344,7 +338,6 @@ export default function Settings() {
               {/* ── Sticky Header ── */}
               <div style={{ position: 'sticky', top: 0, zIndex: 10, background: 'rgba(15, 23, 37, 0.95)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', borderBottom: '2px solid rgba(59, 130, 246, 0.4)', padding: '10px 16px', paddingTop: 'max(env(safe-area-inset-top), 10px)' }}>
                 <div style={{ maxWidth: 480, margin: '0 auto', display: 'flex', alignItems: 'center', gap: 12 }}>
-                  {/* Use button + handleBack so exit animation fires before navigation */}
                   <button
                     onClick={handleBack}
                     style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
