@@ -517,9 +517,8 @@ function LastSevenDaysWinbacks() {
           <Sparkline data={[1, 2, 2, 3, 3, 5, 7]} color={C.green} height={44} width={110} />
         </div>
       </div>
-      </div>
-      );
-      }
+    </div>
+  );
 }
 
 /* ═══════════════════════════════════════════════════════════════
@@ -604,6 +603,8 @@ export default function TabOverview() {
               <MemberMilestones />
             </div>
           </div>
+        </div>
+      </div>
     </div>
   );
 }
