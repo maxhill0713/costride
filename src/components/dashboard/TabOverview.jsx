@@ -924,34 +924,39 @@ export default function TabOverview({
   openModal, setTab,
   ...rest
 } = {}) {
-  /* Fallback to mock data */
+  /* Fallback to mock data — coerce all primitives to prevent object-as-child errors */
+  const num = (v, fb) => (typeof v === 'number' ? v : fb);
+  const str = (v, fb) => (typeof v === 'string' ? v : fb);
+  const arr = (v, fb) => (Array.isArray(v) ? v : fb);
+  const obj = (v, fb) => (v && typeof v === 'object' && !Array.isArray(v) ? v : fb);
+
   const d = {
-    gymName: gymName ?? MOCK.gymName,
-    ownerName: ownerName ?? MOCK.ownerName,
-    todayCI: todayCI ?? MOCK.todayCI,
-    yesterdayCI: yesterdayCI ?? MOCK.yesterdayCI,
-    todayVsYest: todayVsYest ?? MOCK.todayVsYest,
-    totalMembers: totalMembers ?? MOCK.totalMembers,
-    activeThisWeek: activeThisWeek ?? MOCK.activeThisWeek,
-    activeLastWeek: activeLastWeek ?? MOCK.activeLastWeek,
-    currentlyInGym: currentlyInGym ?? MOCK.currentlyInGym,
-    peakHours: peakHours ?? MOCK.peakHours,
-    atRisk: atRisk ?? MOCK.atRisk,
-    atRiskMembers: atRiskMembers ?? MOCK.atRiskMembers,
-    newSignUps: newSignUps ?? MOCK.newSignUps,
-    cancelledEst: cancelledEst ?? MOCK.cancelledEst,
-    retentionRate: retentionRate ?? MOCK.retentionRate,
-    mrr: mrr ?? MOCK.mrr,
-    newRevenue: newRevenue ?? MOCK.newRevenue,
-    lostRevenue: lostRevenue ?? MOCK.lostRevenue,
-    week1ReturnRate: week1ReturnRate ?? MOCK.week1ReturnRate,
-    retentionBreakdown: retentionBreakdown ?? MOCK.retentionBreakdown,
-    chartDays: chartDays ?? MOCK.chartDays,
-    monthGrowthData: monthGrowthData ?? MOCK.monthGrowthData,
-    recentActivity: recentActivity ?? MOCK.recentActivity,
-    topPosts: topPosts ?? MOCK.topPosts,
-    nudges: nudges ?? MOCK.nudges,
-    newNoReturnCount: newNoReturnCount ?? 2,
+    gymName: str(gymName, MOCK.gymName),
+    ownerName: str(ownerName, MOCK.ownerName),
+    todayCI: num(todayCI, MOCK.todayCI),
+    yesterdayCI: num(yesterdayCI, MOCK.yesterdayCI),
+    todayVsYest: num(todayVsYest, MOCK.todayVsYest),
+    totalMembers: num(totalMembers, MOCK.totalMembers),
+    activeThisWeek: num(activeThisWeek, MOCK.activeThisWeek),
+    activeLastWeek: num(activeLastWeek, MOCK.activeLastWeek),
+    currentlyInGym: num(currentlyInGym, MOCK.currentlyInGym),
+    peakHours: str(peakHours, MOCK.peakHours),
+    atRisk: num(atRisk, MOCK.atRisk),
+    atRiskMembers: arr(atRiskMembers, MOCK.atRiskMembers),
+    newSignUps: num(newSignUps, MOCK.newSignUps),
+    cancelledEst: num(cancelledEst, MOCK.cancelledEst),
+    retentionRate: num(retentionRate, MOCK.retentionRate),
+    mrr: num(mrr, MOCK.mrr),
+    newRevenue: num(newRevenue, MOCK.newRevenue),
+    lostRevenue: num(lostRevenue, MOCK.lostRevenue),
+    week1ReturnRate: num(week1ReturnRate, MOCK.week1ReturnRate),
+    retentionBreakdown: obj(retentionBreakdown, MOCK.retentionBreakdown),
+    chartDays: arr(chartDays, MOCK.chartDays),
+    monthGrowthData: arr(monthGrowthData, MOCK.monthGrowthData),
+    recentActivity: arr(recentActivity, MOCK.recentActivity),
+    topPosts: arr(topPosts, MOCK.topPosts),
+    nudges: arr(nudges, MOCK.nudges),
+    newNoReturnCount: num(newNoReturnCount, 2),
   };
 
   const now = new Date();
