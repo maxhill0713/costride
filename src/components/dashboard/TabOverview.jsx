@@ -13,7 +13,7 @@ import {
 } from 'recharts';
 import {
   LayoutDashboard, Users, FileText, BarChart2, MessageCircle,
-  Zap, BrainCircuit, Settings, QrCode, Search, Plus,
+  Zap, BrainCircuit, Settings, QrCode, Search, Plus, Bell,
   ChevronRight, ArrowUpRight, Eye,
 } from 'lucide-react';
 
@@ -145,6 +145,55 @@ const NAV = [
   { icon: BrainCircuit,    label: 'AI Coach' },
 ];
 
+
+/* ─── SIDEBAR ────────────────────────────────────────────── */
+function Sidebar() {
+  return (
+    <div style={{
+      width: 200, flexShrink: 0, background: C.sidebar,
+      borderRight: `1px solid ${C.divider}`,
+      display: 'flex', flexDirection: 'column', padding: '20px 0',
+    }}>
+      <div style={{ padding: '0 16px 20px', fontSize: 15, fontWeight: 700, color: C.t1, letterSpacing: '-0.02em' }}>Forge Fitness</div>
+      {NAV.map((item, i) => (
+        <div key={i} style={{
+          display: 'flex', alignItems: 'center', gap: 9,
+          padding: '9px 16px', cursor: 'pointer',
+          background: item.active ? 'rgba(0,229,200,0.08)' : 'transparent',
+          borderLeft: item.active ? `2px solid ${C.cyan}` : '2px solid transparent',
+          color: item.active ? C.t1 : C.t2,
+          fontSize: 13, fontWeight: item.active ? 600 : 400,
+          transition: 'background .15s',
+        }}>
+          <item.icon style={{ width: 14, height: 14, flexShrink: 0 }} />
+          {item.label}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/* ─── TOP BAR ────────────────────────────────────────────── */
+function TopBar() {
+  return (
+    <div style={{
+      height: 52, flexShrink: 0, background: C.topbar,
+      borderBottom: `1px solid ${C.divider}`,
+      display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+      padding: '0 20px', gap: 12,
+    }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, flex: 1, maxWidth: 320, background: 'rgba(255,255,255,0.04)', border: `1px solid ${C.divider}`, borderRadius: 7, padding: '6px 10px' }}>
+        <Search style={{ width: 13, height: 13, color: C.t3, flexShrink: 0 }} />
+        <span style={{ fontSize: 12.5, color: C.t3 }}>Search…</span>
+      </div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+        <QrCode style={{ width: 16, height: 16, color: C.t2, cursor: 'pointer' }} />
+        <Bell style={{ width: 16, height: 16, color: C.t2, cursor: 'pointer' }} />
+        <Settings style={{ width: 16, height: 16, color: C.t2, cursor: 'pointer' }} />
+      </div>
+    </div>
+  );
+}
 
 /* ─── HERO HEADER ────────────────────────────────────────── */
 function HeroHeader() {
