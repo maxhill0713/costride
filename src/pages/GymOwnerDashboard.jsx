@@ -42,7 +42,7 @@ const TabOverview = lazy(() => import('../components/dashboard/TabOverview'));
 const TabMembersComponent = lazy(() => import('../components/dashboard/TabMembers'));
 const TabContentComponent = lazy(() => import('../components/dashboard/TabContent'));
 const TabAnalyticsComponent = lazy(() => import('../components/dashboard/TabAnalytics'));
-const TabGym = lazy(() => import('../components/dashboard/TabGym'));
+const TabActions = lazy(() => import('../components/dashboard/TabActions'));
 const TabCoachSchedule = lazy(() => import('../components/dashboard/TabCoachSchedule'));
 const TabCoachMembers = lazy(() => import('../components/dashboard/TabCoachMembers'));
 const TabCoachContent = lazy(() => import('../components/dashboard/TabCoachContent'));
@@ -73,7 +73,7 @@ const ALL_NAV = [
 { id: 'analytics', label: 'Analytics', icon: BarChart3, roles: ['gym_owner'] },
 { id: 'profile', label: 'Profile', icon: Crown, roles: ['coach'] },
 { id: 'engagement', label: 'Automations', icon: Zap, roles: ['gym_owner'] },
-{ id: 'gym', label: 'Settings', icon: Settings, roles: ['gym_owner'] }];
+{ id: 'actions', label: 'Actions', icon: Settings, roles: ['gym_owner'] }];
 
 /* ─── Sparkline ─────────────────────────────────────────────────── */
 const Spark = ({ data = [], color = HEX.blue, height = 32 }) => {
@@ -518,8 +518,8 @@ export default function GymOwnerDashboard() {
       content = <TabCoachProfile selectedGym={selectedGym} currentUser={currentUser} />;
     } else if (item.id === 'engagement') {
       content = <TabEngagement selectedGym={selectedGym} allMemberships={effectiveMemberships} atRisk={atRisk} totalMembers={totalMembers} />;
-    } else if (item.id === 'gym') {
-      content = <TabGym selectedGym={selectedGym} classes={classes} coaches={coaches} openModal={openModal} checkIns={checkIns} allMemberships={allMemberships} atRisk={atRisk} retentionRate={retentionRate} rewards={rewards} onCreateReward={(d) => createRewardM.mutate(d)} onDeleteReward={(id) => deleteRewardM.mutate(id)} isLoading={createRewardM.isPending} />;
+    } else if (item.id === 'actions') {
+      content = <TabActions />;
     }
     return { id: item.id, content };
   }).filter((p) => p.content !== null);
