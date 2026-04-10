@@ -24,27 +24,19 @@ function useSectionHighlight() {
   return highlighted;
 }
 
-// ── Header matches Settings page exactly ─────────────────────────────────────
+// ── Header matches AccountSettings exactly ────────────────────────────────────
 function PageShell({ title, children }) {
   return (
     <div style={{ minHeight: '100vh', background: PAGE_BG, color: '#fff', fontFamily: 'inherit' }}>
-      <div style={{ position: 'fixed', top: 0, left: 0, right: 0, height: 'env(safe-area-inset-top)', background: 'rgba(2,4,10,0.95)', zIndex: 20 }} />
-      <div style={{
-        position: 'sticky', top: 0, zIndex: 10,
-        background: 'rgba(15, 23, 37, 0.95)',
-        backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
-        borderBottom: '2px solid rgba(59, 130, 246, 0.4)',
-        padding: '10px 16px',
-        paddingTop: 'max(env(safe-area-inset-top), 10px)',
-      }}>
-        <div style={{ maxWidth: 480, margin: '0 auto', display: 'flex', alignItems: 'center', gap: 12 }}>
-          <Link to={createPageUrl('Settings')} style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 4 }}>
+      <div style={{ position: 'sticky', top: 'env(safe-area-inset-top)', zIndex: 10, background: 'rgba(15, 23, 37, 0.95)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', borderBottom: '2px solid rgba(59, 130, 246, 0.4)', padding: '10px 16px' }}>
+        <div style={{ maxWidth: 520, margin: '0 auto', display: 'flex', alignItems: 'center', gap: 4 }}>
+          <Link to={createPageUrl('Settings')} style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', padding: '4px 8px 4px 0' }}>
             <ChevronLeft style={{ width: 22, height: 22, color: '#94a3b8' }} />
           </Link>
-          <span style={{ fontSize: 19, fontWeight: 900, letterSpacing: '-0.03em', color: '#fff' }}>{title}</span>
+          <span style={{ fontSize: 18, fontWeight: 800, letterSpacing: '-0.025em', color: '#fff' }}>{title}</span>
         </div>
       </div>
-      <div style={{ maxWidth: 480, margin: '0 auto', padding: '20px 16px 60px' }}>{children}</div>
+      <div style={{ maxWidth: 520, margin: '0 auto', padding: '20px 16px 60px' }}>{children}</div>
     </div>
   );
 }
@@ -161,13 +153,18 @@ function CircleCropModal({ imageSrc, onConfirm, onCancel, uploading }) {
   const commit = () => setRenderState({ scale: scaleRef.current, offset: { ...offsetRef.current } });
 
   const getMinScale = (nat) => Math.max(CROP_SIZE / nat.w, CROP_SIZE / nat.h);
+  const MAX_SCALE = 2.5;
 
-  // Clamp so the image always fully covers the circle.
-  // At any offset, the image (centred at circle-centre + offset) must reach every
-  // edge of the circle. So |ox| ≤ halfScaledW - halfCircle, same for y.
+  // Clamp so the image always fully covers the circle on all four sides.
+  // Image centre sits at (CROP_SIZE/2 + ox, CROP_SIZE/2 + oy).
+  // Left edge of scaled image:  CROP_SIZE/2 + ox - imgW/2  must be ≤ 0
+  //   → ox ≤  imgW/2 - CROP_SIZE/2  →  ox ≤ maxX
+  // Right edge: CROP_SIZE/2 + ox + imgW/2  must be ≥ CROP_SIZE
+  //   → ox ≥ -(imgW/2 - CROP_SIZE/2) → ox ≥ -maxX
+  // Same logic for Y. Math.max(0,...) guards floating-point underflow at minScale.
   const clampOffset = (ox, oy, sc, nat) => {
-    const maxX = (nat.w * sc) / 2 - CROP_SIZE / 2;
-    const maxY = (nat.h * sc) / 2 - CROP_SIZE / 2;
+    const maxX = Math.max(0, (nat.w * sc) / 2 - CROP_SIZE / 2);
+    const maxY = Math.max(0, (nat.h * sc) / 2 - CROP_SIZE / 2);
     return {
       x: Math.max(-maxX, Math.min(maxX, ox)),
       y: Math.max(-maxY, Math.min(maxY, oy)),
@@ -245,7 +242,7 @@ function CircleCropModal({ imageSrc, onConfirm, onCancel, uploading }) {
 
         const nat      = natRef.current;
         const oldScale = scaleRef.current;
-        const newScale = Math.max(getMinScale(nat), Math.min(4, oldScale * ratio));
+        const newScale = Math.max(getMinScale(nat), Math.min(MAX_SCALE, oldScale * ratio));
         const delta    = newScale / oldScale;
 
         scaleRef.current  = newScale;
@@ -277,7 +274,7 @@ function CircleCropModal({ imageSrc, onConfirm, onCancel, uploading }) {
       e.preventDefault();
       const nat      = natRef.current;
       const oldScale = scaleRef.current;
-      const newScale = Math.max(getMinScale(nat), Math.min(4, oldScale * (1 - e.deltaY * 0.001)));
+      const newScale = Math.max(getMinScale(nat), Math.min(MAX_SCALE, oldScale * (1 - e.deltaY * 0.001)));
       const delta    = newScale / oldScale;
       scaleRef.current  = newScale;
       offsetRef.current = clampOffset(
