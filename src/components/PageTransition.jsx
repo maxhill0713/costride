@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { motion } from 'framer-motion';
 import { useLocation } from 'react-router-dom';
 
@@ -16,12 +16,22 @@ const NO_ANIMATE_PAGES = new Set([
 
 // Module-level set — persists across navigations, resets on full page reload
 const visitedPaths = new Set();
+let previousPath = null;
 
 export default function PageTransition({ children }) {
   const { pathname } = useLocation();
   const isFirstVisit = !visitedPaths.has(pathname);
 
+  const comingFromSubSettings = NO_ANIMATE_PAGES.has(previousPath);
+  previousPath = pathname;
+  visitedPaths.add(pathname);
+
   if (NO_ANIMATE_PAGES.has(pathname)) {
+    return <>{children}</>;
+  }
+
+  // Skip animation when returning to /Settings from a sub-settings page
+  if (pathname === '/Settings' && comingFromSubSettings) {
     return <>{children}</>;
   }
 
