@@ -526,7 +526,7 @@ export default function GymOwnerDashboard() {
 
   /* ── Splash screen (loading / error states) ── */
   const Splash = ({ children }) => (
-    <div className="min-h-screen flex items-center justify-center bg-[#050810]">
+    <div className="min-h-screen flex items-center justify-center bg-black">
       <div className="bg-[#0a0f1e] border border-white/[0.04] rounded-2xl p-6 sm:p-9 max-w-[380px] w-full text-center">
         {children}
       </div>
@@ -624,7 +624,7 @@ export default function GymOwnerDashboard() {
 
   // ── MOBILE ────────────────────────────────────────────────────────────────
   if (isMobile) return (
-    <div className="flex flex-col bg-[#050810] overflow-hidden" style={{ height: '100dvh' }}>
+    <div className="flex flex-col bg-black overflow-hidden" style={{ height: '100dvh' }}>
       <header className="shrink-0 bg-[#050810] border-b border-white/[0.04] px-3.5 py-[10px] flex items-center justify-between">
         <div className="flex items-center gap-[9px]">
           <div className="w-[30px] h-[30px] rounded-lg bg-[#0a0f1e] border border-white/[0.04] flex items-center justify-center">
@@ -682,7 +682,7 @@ export default function GymOwnerDashboard() {
 
   // ── DESKTOP ───────────────────────────────────────────────────────────────
   return (
-    <div className="flex h-screen overflow-hidden bg-[#050810]">
+    <div className="flex h-screen overflow-hidden bg-black">
 
       {/* ── SIDEBAR ── */}
       <aside
