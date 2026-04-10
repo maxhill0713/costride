@@ -91,7 +91,7 @@ Deno.serve(async (req) => {
         user_avatar:   user.avatar_url || '',
         friend_id:     friendId,
         friend_name:   requesterData?.display_name || requesterData?.full_name || friendRequest[0].user_name || '',
-        friend_avatar: friendRequest[0].user_avatar || '',
+        friend_avatar: requesterData?.avatar_url || friendRequest[0].user_avatar || '',
         status:        'accepted',
       });
 
