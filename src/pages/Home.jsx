@@ -457,7 +457,7 @@ export default function Home() {
         200
       );
     },
-    enabled: !!currentUser && friendIdList.length > 0,
+    enabled: !!currentUser,
     staleTime: 1 * 60 * 1000,
     gcTime: 5 * 60 * 1000,
     placeholderData: (prev) => prev,
