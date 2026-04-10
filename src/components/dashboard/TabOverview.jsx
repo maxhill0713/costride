@@ -258,14 +258,7 @@ const ChartTip = ({ active, payload }) => {
 /* ─── MAIN OVERVIEW ──────────────────────────────────────── */
 export default function TabOverview({ openModal, setTab } = {}) {
   return (
-    <div style={{ display: 'flex', height: '100vh', background: C.bg, fontFamily: FONT }}>
-      <Sidebar />
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, overflow: 'hidden' }}>
-        <TopBar />
-        <div style={{
-          flex: 1, overflowY: 'auto', padding: '16px 20px',
-          display: 'flex', flexDirection: 'column', gap: 11,
-        }}>
+    <div style={{ fontFamily: FONT, display: 'flex', flexDirection: 'column', gap: 11, padding: '16px 20px' }}>
 
           {/* HERO */}
           <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
@@ -518,8 +511,6 @@ export default function TabOverview({ openModal, setTab } = {}) {
             </div>
           </div>
 
-        </div>
-      </div>
     </div>
   );
 }
