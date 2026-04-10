@@ -706,8 +706,16 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser, openToA
                         </button>
                       </>
                     )}
-                    {step === 'preview' && <SetActiveButton onClick={() => setShowSetActiveModal(true)} />}
-                    {step === 'configure' && editingSplitId && <SetActiveButton onClick={() => setShowSetActiveModal(true)} />}
+                    {step === 'preview' && (
+                      activeSplitId === previewSplit?.id
+                        ? <div className="inline-flex items-center justify-center whitespace-nowrap font-bold h-7 rounded-lg uppercase" style={{ background: 'rgba(168,85,247,0.12)', border: '1px solid rgba(168,85,247,0.30)', color: 'rgba(216,180,254,0.85)', boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.07), 0 1px 3px rgba(0,0,0,0.35)', fontSize: '9px', letterSpacing: '0.07em', padding: '0 8px' }}>Active Workout</div>
+                        : <SetActiveButton onClick={() => setShowSetActiveModal(true)} />
+                    )}
+                    {step === 'configure' && editingSplitId && (
+                      activeSplitId === editingSplitId
+                        ? <div className="inline-flex items-center justify-center whitespace-nowrap font-bold h-7 rounded-lg uppercase" style={{ background: 'rgba(168,85,247,0.12)', border: '1px solid rgba(168,85,247,0.30)', color: 'rgba(216,180,254,0.85)', boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.07), 0 1px 3px rgba(0,0,0,0.35)', fontSize: '9px', letterSpacing: '0.07em', padding: '0 8px' }}>Active Workout</div>
+                        : <SetActiveButton onClick={() => setShowSetActiveModal(true)} />
+                    )}
                   </div>
                 </div>
 
