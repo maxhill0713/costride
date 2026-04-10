@@ -94,37 +94,6 @@ function WorkoutSwitcherModal({ open, onClose, currentUser, activeDayKey, onSele
     </>);
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// buildExerciseGroups
-// Groups exercises by name. Within each group, items are ordered by their
-// original position in the array (which mirrors the edit view order, i.e.
-// the order the user added them). Set labels are Set 1, Set 2, ... in that
-// same positional order — exactly matching what CreateSplitModal shows.
-// ─────────────────────────────────────────────────────────────────────────────
-function buildExerciseGroups(exercises) {
-  const groups = [];
-  const nameToGroupIdx = {};
-
-  (exercises || []).forEach((exercise, index) => {
-    const key = (exercise.exercise || '').trim().toLowerCase();
-
-    if (!key) {
-      // Empty-name exercises are never grouped
-      groups.push({ key: `__empty_${index}`, name: exercise.exercise || '', items: [{ exercise, index }] });
-      return;
-    }
-
-    if (nameToGroupIdx[key] === undefined) {
-      nameToGroupIdx[key] = groups.length;
-      groups.push({ key, name: exercise.exercise, items: [{ exercise, index }] });
-    } else {
-      groups[nameToGroupIdx[key]].items.push({ exercise, index });
-    }
-  });
-
-  return groups;
-}
-
 export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutStart, onWorkoutLogged, onOverrideDayChange, checkedInToday = false }) {
   const { restTimer, setRestTimer, isTimerActive, setIsTimerActive, initialRestTime, setInitialRestTime, openTimerBar, setOpenTimerBar, setTimerWorkout } = useTimer();
   const [editingIndex, setEditingIndex] = useState(null);
@@ -568,6 +537,25 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
   { label: 'Plate calculator', text: 'Use the calculator icon to see which plates to load on the bar.' },
   { label: 'Log completion', text: 'Hit "Log Workout" when finished to save your progress and update your streak.' }];
 
+  const buildExerciseGroups = (exercises) => {
+    const groups = [];
+    const nameToGroupIdx = {};
+    (exercises || []).forEach((exercise, index) => {
+      const key = (exercise.exercise || '').trim().toLowerCase();
+      if (!key) {
+        groups.push({ key: `__empty_${index}`, name: exercise.exercise || '', items: [{ exercise, index }] });
+        return;
+      }
+      if (nameToGroupIdx[key] === undefined) {
+        nameToGroupIdx[key] = groups.length;
+        groups.push({ key, name: exercise.exercise, items: [{ exercise, index }] });
+      } else {
+        groups[nameToGroupIdx[key]].items.push({ exercise, index });
+      }
+    });
+    return groups;
+  };
+
   return (
     <>
       <Card
@@ -720,7 +708,7 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
               {todayWorkout.exercises && todayWorkout.exercises.length > 0 ?
             <div className="px-2 space-y-2">
 
-                  {/* ── Column headers ── */}
+                  {/* ── Column headers — static, no separate animation ── */}
                   <div
                     className="grid gap-1 mb-1.5 items-end"
                     style={{ gridTemplateColumns: exerciseGridCols }}>
@@ -834,10 +822,10 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                         </motion.div>);
                 }
 
-                // ── Grouped (multi-set) exercises ────────────────────────────────────
-                // Display in positional order (same as the edit view / how user added them).
-                // Set 1 = first in array, Set 2 = second, etc.
-                // (No weight-based sorting — that was the old approach which caused mismatch.)
+                const sorted = [...group.items].sort(
+                  (a, b) => (parseFloat(b.exercise.weight) || 0) - (parseFloat(a.exercise.weight) || 0)
+                );
+
                 return (
                   <motion.div
                     key={group.key}
@@ -845,8 +833,7 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                     animate={{}}
                     className="bg-white/5 pt-2 pb-2 pl-2 rounded-xl backdrop-blur-md border border-white/10 shadow-lg shadow-black/10 hover:border-white/20 transition-all -ml-[2%] -mr-[2%]">
 
-                        {group.items.map(({ exercise, index }, setIdx) => {
-                      // Set label matches positional order — Set 1, Set 2, etc.
+                        {sorted.map(({ exercise, index }, setIdx) => {
                       const setLabel = `Set ${setIdx + 1}`;
                       const isEditingThis = editingGroupedSet?.index === index;
 
@@ -889,8 +876,7 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                                   <div />
                                 )}
                               </div>
-                              {/* Sets column shows the set label ("Set 1", "Set 2", etc.) */}
-                              <div className="bg-white/10 text-slate-300 py-1 text-[10px] font-bold text-center rounded-lg flex items-center justify-center leading-tight" style={{ width: '36px', whiteSpace: 'nowrap', fontSize: '9px' }}>
+                              <div className="bg-white/10 text-slate-300 py-1 text-[11px] font-bold text-center rounded-lg flex items-center justify-center" style={{ width: '36px' }}>
                                 {setLabel}
                               </div>
                               <div className="text-slate-400 text-xs font-bold flex items-center justify-center -ml-2">×</div>
@@ -920,7 +906,7 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                   {/* Cardio Rows */}
                   {todayWorkout.cardio && todayWorkout.cardio.length > 0 &&
               <div className="mt-3">
-                      {/* ── Cardio column headers ── */}
+                      {/* ── Cardio column headers — static, no separate animation ── */}
                       <div
                         className="grid gap-1 mb-1.5 items-end px-1"
                         style={{ gridTemplateColumns: cardioGridCols }}>
