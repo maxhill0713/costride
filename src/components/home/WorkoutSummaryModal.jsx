@@ -125,15 +125,15 @@ export default function WorkoutSummaryModal({ summaryLog, onClose }) {
               <p className="text-xs font-black text-slate-500 uppercase tracking-widest mb-2">Exercises</p>
 
               {/* Column headers */}
-              <div className="grid gap-1 mb-1.5 items-end px-2" style={{ gridTemplateColumns: '1fr 44px 12px 44px auto' }}>
+              <div className="grid gap-1 mb-1.5 items-end px-2" style={{ gridTemplateColumns: '1fr 36px 12px 36px auto' }}>
                 <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest ml-1">Exercise</div>
-                <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest text-center -ml-5">Sets</div>
+                <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest text-center -ml-3">Sets</div>
                 <div />
-                <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest text-center -ml-5">Reps</div>
+                <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest text-center -ml-3">Reps</div>
                 <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest pl-2">Weight</div>
               </div>
 
-              <div className="space-y-1 -mx-2">
+              <div className="space-y-2 -mx-2">
                 {groups.map((group) => {
                   const isGrouped = group.items.length > 1;
 
@@ -143,13 +143,13 @@ export default function WorkoutSummaryModal({ summaryLog, onClose }) {
                     const exName = ex.exercise || ex.name || `Exercise ${index + 1}`;
                     const { sets, reps, weight } = parseEx(ex);
                     return (
-                      <div key={group.key} className="bg-white/5 pt-1 pb-1 pl-2 rounded-xl border border-white/10 grid gap-1 items-center" style={{ gridTemplateColumns: '1fr 44px 12px 44px auto' }}>
+                      <div key={group.key} className="bg-white/5 pt-2 pb-2 pl-2 rounded-xl border border-white/10 grid gap-1 items-center" style={{ gridTemplateColumns: '1fr 36px 12px 36px auto' }}>
                         <div className="text-sm font-bold text-white leading-tight ml-1">{exName}</div>
-                        <div className="bg-white/10 text-slate-300 py-0.5 text-sm font-semibold text-center rounded-lg flex items-center justify-center" style={{ width: '36px' }}>{sets}</div>
+                        <div className="bg-white/10 text-slate-300 py-1 text-sm font-semibold text-center rounded-lg flex items-center justify-center" style={{ width: '36px' }}>{sets}</div>
                         <div className="text-slate-400 text-xs font-bold flex items-center justify-center -ml-2">×</div>
-                        <div className="bg-white/10 text-slate-300 py-0.5 text-sm font-semibold text-center rounded-lg flex items-center justify-center" style={{ width: '36px' }}>{reps}</div>
+                        <div className="bg-white/10 text-slate-300 py-1 text-sm font-semibold text-center rounded-lg flex items-center justify-center" style={{ width: '36px' }}>{reps}</div>
                         <div className="ml-1 mr-2">
-                          <div className="bg-gradient-to-r from-blue-700/90 to-blue-900/90 text-white pb-0.5 pl-1 pt-0.5 text-sm font-black text-center rounded-2xl shadow-md shadow-blue-900/20 min-w-[55px]">
+                          <div className="bg-gradient-to-r from-blue-700/90 to-blue-900/90 text-white pb-1 pl-1 pt-1 text-sm font-black text-center rounded-2xl shadow-md shadow-blue-900/20 min-w-[55px]">
                             {weight}<span className="text-[10px] font-bold">kg</span>
                           </div>
                         </div>
@@ -157,23 +157,22 @@ export default function WorkoutSummaryModal({ summaryLog, onClose }) {
                     );
                   }
 
-                  // ── Grouped (multi-set) card — Set N boxes prominent ──
+                  // ── Grouped (multi-set) card ──
                   const sorted = [...group.items].sort((a, b) => (parseFloat(b.ex.weight) || 0) - (parseFloat(a.ex.weight) || 0));
                   return (
-                    <div key={group.key} className="bg-white/5 pt-1 pb-1 pl-2 rounded-xl border border-white/10">
+                    <div key={group.key} className="bg-white/5 pt-2 pb-2 pl-2 rounded-xl border border-white/10">
                       <div className="text-sm font-bold text-white leading-tight ml-1 mb-1">{group.name}</div>
                       {sorted.map(({ ex, index }, setIdx) => {
                         const { reps, weight } = parseEx(ex);
                         return (
-                          <div key={index} className="flex items-center gap-1 pr-2 mb-0.5 ml-1">
-                            <div className="bg-white/10 text-slate-300 py-0.5 px-2.5 text-[11px] font-bold text-center rounded-lg flex-shrink-0">
+                          <div key={index} className="flex items-center gap-2 mb-1 pr-2 ml-1">
+                            <div className="bg-white/10 text-slate-300 py-1 text-[11px] font-bold text-center rounded-lg flex items-center justify-center flex-shrink-0" style={{ width: '44px' }}>
                               Set {setIdx + 1}
                             </div>
-                            <div className="text-slate-400 text-xs font-bold">×</div>
-                            <div className="bg-white/10 text-slate-300 py-0.5 text-sm font-semibold text-center rounded-lg flex items-center justify-center flex-shrink-0" style={{ width: '36px' }}>
+                            <div className="bg-white/10 text-slate-300 py-1 text-sm font-semibold text-center rounded-lg flex items-center justify-center flex-shrink-0" style={{ width: '36px' }}>
                               {reps}
                             </div>
-                            <div className="bg-gradient-to-r from-blue-700/90 to-blue-900/90 text-white pb-0.5 pl-1 pt-0.5 text-sm font-black text-center rounded-2xl shadow-md shadow-blue-900/20 min-w-[55px]">
+                            <div className="bg-gradient-to-r from-blue-700/90 to-blue-900/90 text-white pb-1 pl-1 pt-1 text-sm font-black text-center rounded-2xl shadow-md shadow-blue-900/20 min-w-[55px]">
                               {weight}<span className="text-[10px] font-bold">kg</span>
                             </div>
                           </div>
