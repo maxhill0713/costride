@@ -306,10 +306,14 @@ export default function GymSignup() {
     try {
       const code = Math.floor(100000 + Math.random() * 900000).toString();
       setGenCode(code);
-      await base44.functions.invoke('sendEmail', { to: bizEmail, subject: 'Your CoStride Verification Code', body: `Hi,\n\nYour CoStride gym verification code is:\n\n${code}\n\nEnter this code to verify ownership of ${formData.name}.\n\nThis code expires in 10 minutes.\n\n— The CoStride Team` });
+      await base44.integrations.Core.SendEmail({
+        to: bizEmail,
+        subject: 'Your CoStride Verification Code',
+        body: `Hi,\n\nYour CoStride gym verification code is:\n\n${code}\n\nEnter this code to verify ownership of ${formData.name}.\n\nThis code expires in 10 minutes.\n\n— The CoStride Team`
+      });
       setCodeSent(true);
       toast.success(`Code sent to ${bizEmail}`);
-    } catch { toast.error('Failed to send code. Please try again.'); } finally { setSendingCode(false); }
+    } catch (e) { toast.error('Failed to send code. Please try again.'); } finally { setSendingCode(false); }
   };
 
   const verifyCode = async () => {
