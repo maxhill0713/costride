@@ -576,45 +576,6 @@ export default function Home() {
     };
   }, [showStreakCelebration]);
 
-  if (userLoading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-blue-950 to-slate-950">
-        <div className="max-w-4xl mx-auto flex items-center justify-between px-4 py-3">
-          <div className="flex items-center gap-2">
-            <div className="w-12 h-12 rounded-full bg-slate-700/60 animate-pulse" />
-            <div className="w-8 h-5 rounded bg-slate-700/60 animate-pulse" />
-          </div>
-          <div className="w-32 h-5 rounded bg-slate-700/60 animate-pulse" />
-          <div className="w-9 h-9 rounded-full bg-slate-700/60 animate-pulse" />
-        </div>
-        <div className="max-w-4xl mx-auto px-4 space-y-4 pb-4">
-          <div className="rounded-2xl bg-slate-800/60 animate-pulse h-40" />
-          <div className="flex gap-3 overflow-hidden">
-            {[...Array(5)].map((_, i) => (
-              <div key={i} className="flex flex-col items-center gap-1.5 flex-shrink-0">
-                <div className="w-14 h-14 rounded-full bg-slate-700/60 animate-pulse" />
-                <div className="w-10 h-2.5 rounded bg-slate-700/60 animate-pulse" />
-              </div>
-            ))}
-          </div>
-          {[...Array(3)].map((_, i) => (
-            <div key={i} className="rounded-2xl bg-slate-800/60 p-4 space-y-3 animate-pulse">
-              <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-full bg-slate-700/60" />
-                <div className="space-y-1.5 flex-1">
-                  <div className="h-3 rounded bg-slate-700/60 w-1/3" />
-                  <div className="h-2.5 rounded bg-slate-700/60 w-1/5" />
-                </div>
-              </div>
-              <div className="h-3 rounded bg-slate-700/60 w-5/6" />
-              <div className="h-3 rounded bg-slate-700/60 w-2/3" />
-            </div>
-          ))}
-        </div>
-      </div>
-    );
-  }
-
   const memberGym = memberGymData || null;
   const userCheckIns = useMemo(
     () => allCheckIns.filter((c) => c.user_id === currentUser?.id),
@@ -631,9 +592,6 @@ export default function Home() {
     !post.content?.includes('workout finished')
   ), [allPosts, friendIdList]);
 
-  const userStreak = currentUser?.current_streak || 0;
-  const streakVariant = currentUser?.streak_variant || 'default';
-
   const effectiveToday = (() => {
     const now = new Date();
     if (now.getHours() < 3) {
@@ -644,6 +602,8 @@ export default function Home() {
     return now.toISOString().split('T')[0];
   })();
 
+  const userStreak = currentUser?.current_streak || 0;
+  const streakVariant = currentUser?.streak_variant || 'default';
   const todayDowAdjusted = (() => { const d = new Date().getDay(); return d === 0 ? 7 : d; })();
   const workoutLoggedToday = weeklyWorkoutLogs.some(log => log.completed_date === effectiveToday) || justLoggedDay === todayDowAdjusted;
   const todayIsRestDay = !(currentUser?.training_days || []).includes(todayDowAdjusted);
@@ -779,6 +739,45 @@ export default function Home() {
     () => searchResults.filter(u => !friendIdList.includes(u.id)),
     [searchResults, friendIdList]
   );
+
+  if (userLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-blue-950 to-slate-950">
+        <div className="max-w-4xl mx-auto flex items-center justify-between px-4 py-3">
+          <div className="flex items-center gap-2">
+            <div className="w-12 h-12 rounded-full bg-slate-700/60 animate-pulse" />
+            <div className="w-8 h-5 rounded bg-slate-700/60 animate-pulse" />
+          </div>
+          <div className="w-32 h-5 rounded bg-slate-700/60 animate-pulse" />
+          <div className="w-9 h-9 rounded-full bg-slate-700/60 animate-pulse" />
+        </div>
+        <div className="max-w-4xl mx-auto px-4 space-y-4 pb-4">
+          <div className="rounded-2xl bg-slate-800/60 animate-pulse h-40" />
+          <div className="flex gap-3 overflow-hidden">
+            {[...Array(5)].map((_, i) => (
+              <div key={i} className="flex flex-col items-center gap-1.5 flex-shrink-0">
+                <div className="w-14 h-14 rounded-full bg-slate-700/60 animate-pulse" />
+                <div className="w-10 h-2.5 rounded bg-slate-700/60 animate-pulse" />
+              </div>
+            ))}
+          </div>
+          {[...Array(3)].map((_, i) => (
+            <div key={i} className="rounded-2xl bg-slate-800/60 p-4 space-y-3 animate-pulse">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-full bg-slate-700/60" />
+                <div className="space-y-1.5 flex-1">
+                  <div className="h-3 rounded bg-slate-700/60 w-1/3" />
+                  <div className="h-2.5 rounded bg-slate-700/60 w-1/5" />
+                </div>
+              </div>
+              <div className="h-3 rounded bg-slate-700/60 w-5/6" />
+              <div className="h-3 rounded bg-slate-700/60 w-2/3" />
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   const dismissCard = (id) => {
     const updated = new Set(dismissedCardIds).add(id);
