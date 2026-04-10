@@ -85,7 +85,7 @@ export default function MemberSignup() {
           gym_name: gym.name,
           status: 'active',
           join_date: new Date().toISOString().split('T')[0],
-          membership_type: 'member'
+          membership_type: 'monthly'
         });
         // Auto-set as primary gym if user has no primary gym yet
         if (!user.primary_gym_id) {

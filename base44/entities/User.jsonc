@@ -6,22 +6,98 @@
       "type": "string",
       "enum": [
         "admin",
-        "user",
+        "user"
+      ],
+      "default": "user",
+      "description": "Platform role (admin = full access, user = regular member)"
+    },
+    "account_type": {
+      "type": "string",
+      "enum": [
+        "personal",
+        "gym_owner",
         "coach",
         "staff"
       ],
-      "default": "user",
-      "description": "User role in the platform"
+      "description": "What kind of account this user has. 'personal' = regular gym member. Set during onboarding."
+    },
+    "onboarding_completed": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether the user has completed the onboarding flow"
+    },
+    "username": {
+      "type": "string",
+      "description": "Unique display handle (lowercase, letters/numbers/underscores/dots)"
+    },
+    "bio": {
+      "type": "string",
+      "description": "Short profile bio"
+    },
+    "avatar_url": {
+      "type": "string",
+      "description": "Profile photo URL"
+    },
+    "primary_gym_id": {
+      "type": "string",
+      "description": "The gym shown on the user's home page feed"
     },
     "streak": {
       "type": "number",
       "default": 0,
-      "description": "Current workout streak count"
+      "description": "Current workout streak count (legacy field \u2014 prefer current_streak)"
+    },
+    "current_streak": {
+      "type": "number",
+      "default": 0,
+      "description": "Current active workout streak"
+    },
+    "previous_streak": {
+      "type": "number",
+      "default": 0,
+      "description": "Previous streak value before it was lost (used to show loss animation)"
     },
     "streak_freezes": {
       "type": "number",
       "default": 3,
-      "description": "Number of streak freezes available. Used automatically when a planned workout day is missed."
+      "description": "Number of streak freezes available"
+    },
+    "last_streak_loss_animation_shown": {
+      "type": "string",
+      "description": "ISO date string of when streak loss animation was last shown (prevents repeat)"
+    },
+    "unlocked_streak_variants": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": [],
+      "description": "Array of unlocked streak icon variants"
+    },
+    "training_days": {
+      "type": "array",
+      "items": {
+        "type": "number"
+      },
+      "description": "Days of the week the user plans to train (1=Mon, 7=Sun)"
+    },
+    "goal_days_per_week": {
+      "type": "number",
+      "default": 3,
+      "description": "How many days per week the user aims to train"
+    },
+    "workout_split": {
+      "type": "string",
+      "description": "ID of the selected workout split (e.g. 'bro', 'ppl', 'upper_lower')"
+    },
+    "custom_split_name": {
+      "type": "string",
+      "description": "Display name of the selected workout split"
+    },
+    "custom_workout_types": {
+      "type": "object",
+      "description": "Map of day number \u2192 workout definition for the selected split",
+      "additionalProperties": true
     },
     "monthly_challenge_progress": {
       "type": "object",
@@ -44,13 +120,9 @@
         }
       }
     },
-    "unlocked_streak_variants": {
-      "type": "array",
-      "items": {
-        "type": "string"
-      },
-      "default": [],
-      "description": "Array of unlocked streak icon variants (e.g., spartan)"
+    "display_name": {
+      "type": "string",
+      "description": "Optional override display name (if different from full_name)"
     }
   },
   "required": []
