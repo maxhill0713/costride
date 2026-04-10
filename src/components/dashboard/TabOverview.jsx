@@ -521,6 +521,64 @@ function LastSevenDaysWinbacks() {
   );
 }
 
+/* ─── Live Pulse Feed ───────────────────────────────────────── */
+function LivePulseFeed() {
+  const events = [
+    { name: 'Emma W.',  action: 'just checked in',     time: '2m ago',  color: C.green  },
+    { name: 'James T.', action: 'completed a workout', time: '11m ago', color: C.blue   },
+    { name: 'Lily R.',  action: 'rejoined the gym',    time: '34m ago', color: C.purple },
+  ];
+  return (
+    <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 10, overflow: 'hidden' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 14px', borderBottom: `1px solid ${C.border}` }}>
+        <span style={{ fontSize: 12.5, fontWeight: 700, color: C.text }}>Live Pulse Feed</span>
+        <span style={{ width: 7, height: 7, borderRadius: '50%', background: C.green, boxShadow: `0 0 6px ${C.green}`, display: 'inline-block' }} />
+      </div>
+      {events.map((e, i) => (
+        <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 9, padding: '9px 14px', borderBottom: i < events.length - 1 ? `1px solid ${C.border}` : 'none' }}>
+          <Avatar name={e.name} size={24} />
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <span style={{ fontSize: 11, fontWeight: 700, color: C.text }}>{e.name}</span>
+            <span style={{ fontSize: 11, color: C.muted }}> {e.action}</span>
+          </div>
+          <span style={{ fontSize: 9.5, color: C.dim, flexShrink: 0 }}>{e.time}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/* ─── Member Milestones ──────────────────────────────────────── */
+function MemberMilestones() {
+  const milestones = [
+    { name: 'Tom H.',   milestone: '100th visit',   icon: '🏆' },
+    { name: 'Sara L.',  milestone: '6 month streak', icon: '🔥' },
+    { name: 'Chris M.', milestone: '1 year member',  icon: '⭐' },
+  ];
+  return (
+    <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 10, overflow: 'hidden' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 14px', borderBottom: `1px solid ${C.border}` }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <Trophy size={13} color={C.amber} />
+          <span style={{ fontSize: 12.5, fontWeight: 700, color: C.text }}>Member Milestones</span>
+        </div>
+        <MoreHorizontal size={13} color={C.dim} style={{ cursor: 'pointer' }} />
+      </div>
+      {milestones.map((m, i) => (
+        <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 9, padding: '9px 14px', borderBottom: i < milestones.length - 1 ? `1px solid ${C.border}` : 'none' }}>
+          <span style={{ fontSize: 16, flexShrink: 0 }}>{m.icon}</span>
+          <Avatar name={m.name} size={24} />
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontSize: 11.5, fontWeight: 700, color: C.text }}>{m.name}</div>
+            <div style={{ fontSize: 10, color: C.muted }}>{m.milestone}</div>
+          </div>
+          <Badge label="Celebrate" color="amber" small />
+        </div>
+      ))}
+    </div>
+  );
+}
+
 /* ═══════════════════════════════════════════════════════════════
    ROOT
 ═══════════════════════════════════════════════════════════════ */
