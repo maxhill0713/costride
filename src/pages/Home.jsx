@@ -163,71 +163,38 @@ function injectStreakStyles() {
   document.head.appendChild(style);
 }
 
-function trigAnim(el, name, dur, easing) {
-  if (!el) return;
-  el.style.animation = 'none';
-  void el.offsetWidth;
-  el.style.animation = `${name} ${dur}ms ${easing} forwards`;
+// ── ArrowButton defined outside Home to avoid hook-count violations ──────────
+function ArrowButton({ direction, disabled, onPress }) {
+  const [pressed, setPressed] = useState(false);
+  const facePoints = direction === 'left' ? '8,1 1,6.5 8,12' : '1,1 8,6.5 1,12';
+  const shadowPoints = direction === 'left' ? '9,2 2,7.5 9,13' : '0,2 7,7.5 0,13';
+  const highlightPoints = direction === 'left' ? '8,1 1,6.5' : '1,1 8,6.5';
+  const shadowEdgePoints = direction === 'left' ? '1,6.5 8,12' : '8,6.5 1,12';
+  return (
+    <button
+      onPointerDown={() => { if (!disabled) setPressed(true); }}
+      onPointerUp={() => { if (!disabled && pressed) { setPressed(false); onPress(); } }}
+      onPointerLeave={() => setPressed(false)}
+      onPointerCancel={() => setPressed(false)}
+      style={{
+        width: 20, height: 52, background: 'none', border: 'none', padding: 0,
+        cursor: disabled ? 'default' : 'pointer',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        WebkitTapHighlightColor: 'transparent', touchAction: 'manipulation', outline: 'none',
+        opacity: disabled ? 0 : pressed ? 0.4 : 1,
+        transition: 'opacity 0.1s ease',
+        pointerEvents: disabled ? 'none' : 'auto',
+      }}>
+      <svg width="10" height="14" viewBox="0 0 10 14" fill="none">
+        <polygon points={shadowPoints} fill="rgba(0,0,0,0.4)" transform="translate(0.6,1.4)" />
+        <polygon points={facePoints} fill="#64748b" />
+        <polyline points={highlightPoints} stroke="rgba(148,163,184,0.5)" strokeWidth="1.2" strokeLinecap="round" fill="none" />
+        <polyline points={shadowEdgePoints} stroke="rgba(0,0,0,0.35)" strokeWidth="1" strokeLinecap="round" fill="none" />
+      </svg>
+    </button>
+  );
 }
-
-function spawnParticles() {
-  const cols = ['#f97316', '#fb923c', '#fbbf24', '#ef4444', '#ffffff', '#fdba74'];
-  for (let i = 0; i < 18; i++) {
-    const p = document.createElement('div');
-    const ang = i / 18 * 360;
-    const d = 70 + Math.random() * 70;
-    const tx = Math.cos(ang * Math.PI / 180) * d;
-    const ty = Math.sin(ang * Math.PI / 180) * d;
-    const sz = 5 + Math.random() * 7;
-    p.style.cssText = [
-      'position:fixed', 'border-radius:50%', 'pointer-events:none', 'z-index:9999',
-      `width:${sz}px`, `height:${sz}px`,
-      `left:calc(50% - ${sz / 2}px)`, `top:36%`,
-      `background:${cols[i % cols.length]}`,
-      `--tx:${tx}px`, `--ty:${ty}px`,
-      `animation:streakParticleBurst ${0.7 + Math.random() * 0.35}s ease-out forwards`,
-      `animation-delay:${Math.random() * 0.05}s`,
-    ].join(';');
-    document.body.appendChild(p);
-    setTimeout(() => p.remove(), 1200);
-  }
-}
-
-function runStreakAnimation(newStreak, audioCtxRef, celebTimers) {
-  const stage = document.getElementById('streak-anim-stage');
-  const p1 = document.getElementById('streak-anim-p1');
-  const p2 = document.getElementById('streak-anim-p2');
-  const num = document.getElementById('streak-anim-num');
-  const lbl = document.getElementById('streak-anim-lbl');
-  if (!stage || !p1 || !p2 || !num || !lbl) return;
-  const actx = audioCtxRef.current;
-  if (actx) soundBounceIn(actx);
-  trigAnim(stage, 'streakBounceIn', 600, 'cubic-bezier(0.34,1.5,0.64,1)');
-  const t1 = setTimeout(() => {
-    if (actx) soundNumPop(actx);
-    trigAnim(num, 'streakNumPop', 420, 'cubic-bezier(0.34,1.6,0.64,1)');
-  }, 500);
-  const t2 = setTimeout(() => {
-    stage.style.opacity = '1';
-    trigAnim(stage, 'streakWindup', 280, 'ease-in-out');
-  }, 1300);
-  const t3 = setTimeout(() => {
-    if (actx) soundPoseSwap(actx);
-    p1.style.display = 'none';
-    p2.style.display = 'block';
-    p2.style.opacity = '1';
-    void p2.offsetWidth;
-    p2.style.animation = 'streakIconPop 480ms cubic-bezier(0.34,1.8,0.64,1) forwards';
-    if (actx) soundNumPop(actx);
-    if (navigator.vibrate) navigator.vibrate([40, 60, 80]);
-    num.textContent = String(newStreak);
-    trigAnim(num, 'streakNumPop', 380, 'cubic-bezier(0.34,1.8,0.64,1)');
-  }, 1580);
-  const t4 = setTimeout(() => {
-    if (actx) soundTransition(actx);
-  }, 2800);
-  celebTimers.current = [t1, t2, t3, t4];
-}
+// ─────────────────────────────────────────────────────────────────────────────
 
 export default function Home() {
   const navigate = useNavigate();
@@ -952,77 +919,6 @@ export default function Home() {
       </button>
     </div>
   );
-
-  // ── ArrowButton — subtle slate-grey to match page chevrons ──
-  const ArrowButton = ({ direction, disabled, onPress }) => {
-    const [pressed, setPressed] = useState(false);
-    const facePoints = direction === 'left'
-      ? '8,1 1,6.5 8,12'
-      : '1,1 8,6.5 1,12';
-    const shadowPoints = direction === 'left'
-      ? '9,2 2,7.5 9,13'
-      : '0,2 7,7.5 0,13';
-    const highlightPoints = direction === 'left'
-      ? '8,1 1,6.5'
-      : '1,1 8,6.5';
-    const shadowEdgePoints = direction === 'left'
-      ? '1,6.5 8,12'
-      : '8,6.5 1,12';
-    return (
-      <button
-        onPointerDown={() => { if (!disabled) setPressed(true); }}
-        onPointerUp={() => { if (!disabled && pressed) { setPressed(false); onPress(); } }}
-        onPointerLeave={() => setPressed(false)}
-        onPointerCancel={() => setPressed(false)}
-        style={{
-          width: 20,
-          height: 52,
-          background: 'none',
-          border: 'none',
-          padding: 0,
-          cursor: disabled ? 'default' : 'pointer',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          WebkitTapHighlightColor: 'transparent',
-          touchAction: 'manipulation',
-          outline: 'none',
-          opacity: disabled ? 0 : pressed ? 0.4 : 1,
-          transition: 'opacity 0.1s ease',
-          pointerEvents: disabled ? 'none' : 'auto',
-        }}>
-        <svg width="10" height="14" viewBox="0 0 10 14" fill="none">
-          {/* Drop shadow — shifted for 3D depth */}
-          <polygon
-            points={shadowPoints}
-            fill="rgba(0,0,0,0.4)"
-            transform="translate(0.6,1.4)"
-          />
-          {/* Main face — subtle slate grey matching page chevrons */}
-          <polygon
-            points={facePoints}
-            fill="#64748b"
-          />
-          {/* Top highlight bevel */}
-          <polyline
-            points={highlightPoints}
-            stroke="rgba(148,163,184,0.5)"
-            strokeWidth="1.2"
-            strokeLinecap="round"
-            fill="none"
-          />
-          {/* Bottom shadow bevel */}
-          <polyline
-            points={shadowEdgePoints}
-            stroke="rgba(0,0,0,0.35)"
-            strokeWidth="1"
-            strokeLinecap="round"
-            fill="none"
-          />
-        </svg>
-      </button>
-    );
-  };
 
   return (
     <PullToRefresh onRefresh={triggerRefresh}>
