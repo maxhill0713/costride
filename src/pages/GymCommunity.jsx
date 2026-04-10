@@ -1429,7 +1429,9 @@ export default function GymCommunity() {
     try {
       const prev = JSON.parse(localStorage.getItem('recentlyViewedGyms') || '[]');
       const updated = [gymId, ...prev.filter(id => id !== gymId)].slice(0, 3);
-      localStorage.setItem('recentlyViewedGyms', JSON.stringify(updated));
+      if (currentUser?.id) {
+  localStorage.setItem(`recentlyViewedGyms_${currentUser.id}`, JSON.stringify(updatedIds));
+}
     } catch {}
   }, [gymId]);
 
