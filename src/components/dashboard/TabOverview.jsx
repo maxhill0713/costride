@@ -514,29 +514,18 @@ function CommunityHighlights({ openModal }) {
 /* ─── MAIN PAGE ──────────────────────────────────────────── */
 export default function TabOverview({ openModal, setTab } = {}) {
   return (
-    <div style={{
-      display: 'flex', minHeight: '100vh',
-      background: C.bg, fontFamily: FONT, color: C.t1,
-    }}>
-      <Sidebar />
+    <div style={{ fontFamily: FONT, color: C.t1, padding: '22px 26px', display: 'flex', flexDirection: 'column', gap: 0 }}>
+      <HeroHeader />
+      <AlertBanner />
+      <KpiRow />
 
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
-        <TopBar />
-
-        <div style={{ flex: 1, overflowY: 'auto', padding: '22px 26px', display: 'flex', flexDirection: 'column', gap: 0 }}>
-          <HeroHeader />
-          <AlertBanner />
-          <KpiRow />
-
-          {/* Chart + Priorities */}
-          <div style={{ display: 'flex', gap: 14, marginBottom: 16 }}>
-            <RetentionChart />
-            <TodaysPriorities openModal={openModal} />
-          </div>
-
-          <CommunityHighlights openModal={openModal} />
-        </div>
+      {/* Chart + Priorities */}
+      <div style={{ display: 'flex', gap: 14, marginBottom: 16 }}>
+        <RetentionChart />
+        <TodaysPriorities openModal={openModal} />
       </div>
+
+      <CommunityHighlights openModal={openModal} />
     </div>
   );
 }
