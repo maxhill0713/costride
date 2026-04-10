@@ -759,7 +759,7 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser, openToA
                                     return <span key={d} className={`text-[10.35px] font-bold w-[30px] py-0.5 rounded-md bg-gradient-to-r ${grad} text-white opacity-80 text-center inline-block`}>{DAY_NAMES[d - 1]}</span>;
                                   })}</div>
                                   </div>
-                                  {isActive && <div className="w-[34px] h-[34px] rounded-xl bg-purple-600/90 backdrop-blur-md flex items-center justify-center shadow-lg border border-purple-500/50 flex-shrink-0 -m"><Star className="w-[19px] h-[19px] text-white" /></div>}
+                                  {isActive && <div className="w-[34px] h-[34px] rounded-xl bg-purple-600/90 backdrop-blur-md flex items-center justify-center shadow-lg border border-purple-500/50 flex-shrink-0"><Star className="w-[19px] h-[19px] text-white" /></div>}
                                   <ChevronRight className="w-5 h-5 text-slate-500 flex-shrink-0" />
                                 </div>
                               </SplitCard>);
