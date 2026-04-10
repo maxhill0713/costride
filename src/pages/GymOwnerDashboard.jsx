@@ -686,7 +686,7 @@ export default function GymOwnerDashboard() {
 
       {/* ── SIDEBAR ── */}
       <aside
-        className="shrink-0 h-full overflow-hidden bg-[#050810] border-r border-white/[0.04] flex flex-col transition-[width] duration-[220ms] ease-[cubic-bezier(0.4,0,0.2,1)]"
+        className="shrink-0 h-full overflow-hidden bg-[#161618] border-r border-white/[0.04] flex flex-col transition-[width] duration-[220ms] ease-[cubic-bezier(0.4,0,0.2,1)]"
         style={{ width: collapsed ? 56 : 220 }}
       >
         {/* Gym header */}
@@ -831,7 +831,7 @@ export default function GymOwnerDashboard() {
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
 
         {/* ── TOP BAR ── */}
-        <header className="h-[54px] shrink-0 flex items-center justify-between px-5 bg-[#050810] border-b border-white/[0.04]">
+        <header className="h-[54px] shrink-0 flex items-center justify-between px-5 bg-[#161618] border-b border-white/[0.04]">
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
             <div className="text-[13px] font-semibold text-slate-400 tracking-[-0.01em]">
               {new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' })}
