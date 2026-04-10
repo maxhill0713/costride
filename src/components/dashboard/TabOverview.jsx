@@ -16,7 +16,7 @@ import {
 
 /* ─── TOKENS ─────────────────────────────────────────────── */
 const C = {
-  bg:       '#0b0b0d',
+  bg:       '#000000',
   sidebar:  '#0f0f12',
   card:     '#141416',
   brd:      '#222226',
@@ -258,7 +258,7 @@ const ChartTip = ({ active, payload }) => {
 /* ─── MAIN OVERVIEW ──────────────────────────────────────── */
 export default function TabOverview({ openModal, setTab } = {}) {
   return (
-    <div style={{ fontFamily: FONT, display: 'flex', flexDirection: 'column', gap: 11, padding: '16px 20px' }}>
+    <div style={{ fontFamily: FONT, display: 'flex', flexDirection: 'column', gap: 11, padding: '16px 20px', background: '#000', minHeight: '100%' }}>
 
           {/* HERO */}
           <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
