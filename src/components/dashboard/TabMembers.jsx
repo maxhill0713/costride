@@ -644,11 +644,8 @@ export default function MembersPageAI() {
   const handleMsg = useCallback(m => { setMsgTarget(m); setPreview(null); }, []);
 
   return (
-    <div style={{ display: "flex", height: "100vh", background: C.bg, color: C.t1, fontFamily: FONT, overflow: "hidden" }}>
-      <Sidebar />
-      <div style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0, overflow: "hidden" }}>
-        <TopBar />
-        <div style={{ flex: 1, display: "flex", overflow: "hidden" }}>
+    <div style={{ display: "flex", height: "100%", background: C.bg, color: C.t1, fontFamily: FONT, overflow: "hidden" }}>
+      <div style={{ flex: 1, display: "flex", overflow: "hidden" }}>
 
           {/* Center */}
           <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden", minWidth: 0 }}>
@@ -716,7 +713,6 @@ export default function MembersPageAI() {
 
           <RightPanel members={members} />
         </div>
-      </div>
 
       {preview   && <MemberPreview m={preview} onClose={() => setPreview(null)} onMessage={handleMsg} />}
       {msgTarget && <MessageToast member={msgTarget} onClose={() => setMsgTarget(null)} />}
