@@ -516,10 +516,10 @@ function LastSevenDaysWinbacks() {
         <div style={{ flex: 1 }}>
           <Sparkline data={[1, 2, 2, 3, 3, 5, 7]} color={C.green} height={44} width={110} />
         </div>
-        </div>
-        </div>
-        </div>
-        );
+      </div>
+      </div>
+      );
+      }
 }
 
 /* ═══════════════════════════════════════════════════════════════
