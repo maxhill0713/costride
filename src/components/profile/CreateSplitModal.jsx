@@ -512,12 +512,13 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser, openToA
 
   const toggleDay = (dayNum) => {
     if (selectedDays.includes(dayNum)) {
+      // Keep workout data in state so it's restored if the day is re-added
       setSelectedDays((prev) => prev.filter((d) => d !== dayNum));
-      setWorkouts((prev) => { const n = { ...prev }; delete n[dayNum]; return n; });
       setMirroredPairs((prev) => prev.filter(([a, b]) => a !== dayNum && b !== dayNum));
     } else {
       setSelectedDays((prev) => [...prev, dayNum].sort((a, b) => a - b));
-      setWorkouts((prev) => ({ ...prev, [dayNum]: { name: '', color: 'blue', exercises: [] } }));
+      // Only initialise a fresh workout if one doesn't already exist
+      setWorkouts((prev) => prev[dayNum] ? prev : { ...prev, [dayNum]: { name: '', color: 'blue', exercises: [] } });
     }
   };
 
