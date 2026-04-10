@@ -40,8 +40,10 @@ Deno.serve(async (req) => {
     }
 
     // Fraud detection: check rapid posting (max 10 posts per hour)
+    // Use asServiceRole to avoid RLS failing for new users who have no gym memberships yet.
+    // The filter is scoped to user.id so this is safe.
     const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
-    const recentPosts = await base44.entities.Post.filter({ member_id: user.id, created_date: { $gte: oneHourAgo } });
+    const recentPosts = await base44.asServiceRole.entities.Post.filter({ member_id: user.id, created_date: { $gte: oneHourAgo } });
     if (recentPosts.length >= 10) {
       console.warn(`RATE_LIMIT: User ${user.id} posted ${recentPosts.length} times in the last hour`);
       return Response.json({ error: 'Posting too frequently. Please wait before posting again.' }, { status: 429 });

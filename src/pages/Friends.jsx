@@ -787,8 +787,9 @@ export default function Friends() {
                             <div className="w-8 h-8 rounded-full bg-gradient-to-br from-slate-600 to-slate-700 flex items-center justify-center flex-shrink-0 overflow-hidden">
                               {(() => {
                                 const fu = allUsers.find((u) => u.id === friend.friend_id);
-                                return fu?.avatar_url ? (
-                                  <img src={fu.avatar_url} alt={currentName} className="w-full h-full object-cover" loading="lazy" />
+                                const avatarUrl = fu?.avatar_url || friend.friend_avatar;
+                                return avatarUrl ? (
+                                  <img src={avatarUrl} alt={currentName} className="w-full h-full object-cover" loading="lazy" />
                                 ) : (
                                   <span className="text-xs font-semibold text-white">
                                     {currentName?.charAt(0)?.toUpperCase()}
