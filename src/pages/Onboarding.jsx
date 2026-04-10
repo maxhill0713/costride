@@ -554,7 +554,7 @@ export default function Onboarding() {
     if (displayName.trim()) payload.full_name = displayName.trim();
     if (username.trim()) payload.username = username.trim();
     if (selectedSplit) { payload.workout_split = selectedSplit.id; payload.custom_split_name = selectedSplit.name; payload.training_days = selectedSplit.days; payload.custom_workout_types = selectedSplit.workouts; }
-    if (avatarFile) { try { const u = await base44.storage.uploadFile(avatarFile); payload.avatar_url = u.url; } catch { } }
+    if (avatarFile) { try { const { file_url } = await base44.integrations.Core.UploadFile({ file: avatarFile }); payload.avatar_url = file_url; } catch { } }
     await updateMeMutation.mutateAsync(payload);
     navigate(createPageUrl('Home'));
   }

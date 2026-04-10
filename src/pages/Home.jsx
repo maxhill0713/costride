@@ -452,7 +452,7 @@ export default function Home() {
     queryFn: () => {
       const authorIds = [...friendIdList, currentUser?.id].filter(Boolean);
       return base44.entities.Post.filter(
-        { member_id: { $in: authorIds }, is_system_generated: false },
+        { member_id: { $in: authorIds }, is_system_generated: { $ne: true } },
         '-created_date',
         200
       );
