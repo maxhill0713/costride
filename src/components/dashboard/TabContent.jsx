@@ -683,16 +683,12 @@ function ContentArea({ events = [], challenges = [], polls = [], posts = [], ope
 /* ─── ROOT ───────────────────────────────────────────────────── */
 export default function ContentPage({ events = [], challenges = [], polls = [], posts = [], openModal, onDeleteEvent, onDeleteChallenge, onDeletePost }) {
   return (
-    <div style={{ display: "flex", minHeight: "100vh", background: C.bg, color: C.t1, fontFamily: FONT, fontSize: 13, lineHeight: 1.5, WebkitFontSmoothing: "antialiased" }}>
-      <Sidebar />
-      <div style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0 }}>
-        <TopBar />
-        <ContentArea
+    <div style={{ display: "flex", minHeight: "100%", background: C.bg, color: C.t1, fontFamily: FONT, fontSize: 13, lineHeight: 1.5, WebkitFontSmoothing: "antialiased" }}>
+      <ContentArea
           events={events} challenges={challenges} polls={polls} posts={posts}
           openModal={openModal} onDeleteEvent={onDeleteEvent}
           onDeleteChallenge={onDeleteChallenge} onDeletePost={onDeletePost}
         />
-      </div>
     </div>
   );
 }
