@@ -1492,20 +1492,6 @@ export default function GymCommunity() {
     gcTime: 15*60*1000,
   });
 
-  const memberAvatarMap = React.useMemo(() => {
-    const map = {};
-    members.forEach(m => {
-      if (!m.user_id) return;
-      const avatar = m.avatar_url || m.user_avatar || m.profile_picture || null;
-      if (avatar) map[m.user_id] = avatar;
-    });
-    if (currentUser?.id) {
-      const myAvatar = currentUser.avatar_url || currentUser.profile_picture || currentUser.photo_url || null;
-      if (myAvatar) map[currentUser.id] = myAvatar;
-    }
-    return map;
-  }, [members, currentUser]);
-
   const { data: memberUsers = [] } = useQuery({
     queryKey: ['memberUsers', gymId, members.map(m => m.user_id).join(',')],
     queryFn: async () => {
@@ -1517,6 +1503,26 @@ export default function GymCommunity() {
     staleTime: 5 * 60 * 1000,
     gcTime: 15 * 60 * 1000,
   });
+
+  const memberAvatarMap = React.useMemo(() => {
+    const map = {};
+    members.forEach(m => {
+      if (!m.user_id) return;
+      const avatar = m.avatar_url || m.user_avatar || m.profile_picture || null;
+      if (avatar) map[m.user_id] = avatar;
+    });
+    // Overlay with User entity avatars (most up-to-date)
+    memberUsers.forEach(u => {
+      if (!u.id) return;
+      const avatar = u.avatar_url || u.profile_picture || u.photo_url || null;
+      if (avatar) map[u.id] = avatar;
+    });
+    if (currentUser?.id) {
+      const myAvatar = currentUser.avatar_url || currentUser.profile_picture || currentUser.photo_url || null;
+      if (myAvatar) map[currentUser.id] = myAvatar;
+    }
+    return map;
+  }, [members, memberUsers, currentUser]);
 
   const memberNameMap = React.useMemo(() => {
     const map = {};
