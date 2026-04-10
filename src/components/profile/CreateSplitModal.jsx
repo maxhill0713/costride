@@ -41,13 +41,10 @@ const sanitiseTimeDigits = (raw) => {
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Helper: reorder exercises so duplicates (by name) are adjacent
-// Called whenever exercise names change or a new exercise is added
 // ─────────────────────────────────────────────────────────────────────────────
 function reorderExercisesAdjacent(exercises) {
-  // We want to preserve the first-occurrence order of unique names,
-  // but group all exercises with the same name together.
-  const firstOccurrence = []; // tracks first-seen order of normalised names
-  const groups = {};           // name -> [exercises]
+  const firstOccurrence = [];
+  const groups = {};
 
   exercises.forEach((ex) => {
     const key = (ex.exercise || '').trim().toLowerCase();
@@ -62,33 +59,18 @@ function reorderExercisesAdjacent(exercises) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Animation variants (mirrored from Settings.jsx)
+// Animation variants
 // ─────────────────────────────────────────────────────────────────────────────
 
 const pageSlideVariants = {
-  hidden: {
-    x: '100%',
-    opacity: 1,
-  },
+  hidden: { x: '100%', opacity: 1 },
   visible: {
-    x: 0,
-    opacity: 1,
-    transition: {
-      type: 'spring',
-      stiffness: 380,
-      damping: 36,
-      mass: 1,
-    },
+    x: 0, opacity: 1,
+    transition: { type: 'spring', stiffness: 380, damping: 36, mass: 1 },
   },
   exit: {
-    x: '100%',
-    opacity: 1,
-    transition: {
-      type: 'spring',
-      stiffness: 420,
-      damping: 40,
-      mass: 0.9,
-    },
+    x: '100%', opacity: 1,
+    transition: { type: 'spring', stiffness: 420, damping: 40, mass: 0.9 },
   },
 };
 
@@ -344,12 +326,10 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser, openToA
   const [deleteWorkoutDay, setDeleteWorkoutDay] = useState(null);
   const [dayDotsMenuOpen, setDayDotsMenuOpen] = useState({});
 
-  // ── Animation closing state ───────────────────────────────────────────────
   const [isClosing, setIsClosing] = useState(false);
 
   const queryClient = useQueryClient();
 
-  // ── Animated close: triggers exit animation then calls onClose ────────────
   const handleAnimatedClose = () => {
     setIsClosing(true);
     setTimeout(() => {
@@ -358,7 +338,6 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser, openToA
     }, 320);
   };
 
-  // ── Mirror helpers ────────────────────────────────────────────────────────
   const getMirrorDay = (day) => {
     for (const [a, b] of mirroredPairs) {
       if (a === day) return b;
@@ -568,15 +547,10 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser, openToA
     });
   };
 
-  // ── When an exercise name changes, check if it matches another exercise
-  //    name and if so reorder so all same-named exercises are adjacent ────────
   const updateExercise = (day, idx, field, value) => setWorkouts((prev) => {
     const exs = [...(prev[day]?.exercises || [])];
     exs[idx] = { ...exs[idx], [field]: value };
-
-    // When the name field changes, reorder for adjacency
     const reordered = field === 'exercise' ? reorderExercisesAdjacent(exs) : exs;
-
     const mirror = getMirrorDay(day);
     if (mirror !== null) {
       const mExs = [...(prev[mirror]?.exercises || [])];
@@ -648,29 +622,21 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser, openToA
   };
   const handleTimeChange = (day, idx, field, raw) => updateCardio(day, idx, field, sanitiseTimeDigits(raw));
 
-  // ── Build grouped exercise data for a day's exercise list ─────────────────
-  // Returns exercises with a setLabel and isDupe flag injected, in display order.
   const buildDayExerciseRows = (exercises) => {
-    // Count how many times each name appears (normalised)
     const nameCounts = {};
     exercises.forEach((ex) => {
       const key = (ex.exercise || '').trim().toLowerCase();
       if (key) nameCounts[key] = (nameCounts[key] || 0) + 1;
     });
-
-    // Track running set index per name
     const nameSetCounter = {};
-
     return exercises.map((ex, idx) => {
       const key = (ex.exercise || '').trim().toLowerCase();
       const isDupe = key && nameCounts[key] > 1;
-
       let setLabel = null;
       if (isDupe) {
         nameSetCounter[key] = (nameSetCounter[key] || 0) + 1;
         setLabel = `Set ${nameSetCounter[key]}`;
       }
-
       return { ex, idx, isDupe, setLabel };
     });
   };
@@ -686,13 +652,11 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser, openToA
     { label: 'Different Weights Per Set', text: 'To use different weights or reps for individual sets of the same exercise, add the same exercise multiple times with the exact same name. They will automatically be grouped as Set 1, Set 2, etc. and will display that way on your Today\'s Workout card too.' },
   ];
 
-  // ── Render ────────────────────────────────────────────────────────────────
   return (
     <>
       <AnimatePresence>
         {isOpen && !isClosing && (
           <>
-            {/* ── Dim overlay: fades independently ── */}
             <motion.div
               key="split-overlay"
               className="fixed inset-0 z-40"
@@ -704,7 +668,6 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser, openToA
               onClick={handleAnimatedClose}
             />
 
-            {/* ── Main panel: slides in from right ── */}
             <motion.div
               key="split-panel"
               className="fixed inset-0 z-50"
@@ -927,7 +890,6 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser, openToA
                             const showMirrorBtn = mirrorPair !== null;
                             const isDayDotsOpen = !!dayDotsMenuOpen[day];
 
-                            // Build rows with set labels
                             const exerciseRows = buildDayExerciseRows(exs);
 
                             return (
@@ -1011,8 +973,8 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser, openToA
 
                                 {exerciseRows.length > 0 && (
                                   <div className="border-t border-slate-800 pl-4 pr-10 pt-3 pb-2 space-y-2.5">
-                                    {/* Column headers */}
-                                    <div className="grid gap-2 items-center" style={{ gridTemplateColumns: '1fr 68px 52px 68px' }}>
+                                    {/* ── CHANGE 1: narrower sets (52px), reps (46px), weight (56px) → more room for exercise name ── */}
+                                    <div className="grid gap-2 items-center" style={{ gridTemplateColumns: '1fr 52px 46px 56px' }}>
                                       <span className="text-[9px] font-black text-slate-600 uppercase tracking-wider">Exercise</span>
                                       <span className="text-[9px] font-black text-slate-600 uppercase tracking-wider text-center">Sets</span>
                                       <span className="text-[9px] font-black text-slate-600 uppercase tracking-wider text-center">Reps</span>
@@ -1021,8 +983,9 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser, openToA
 
                                     {exerciseRows.map(({ ex, idx, isDupe, setLabel }) => (
                                       <div key={idx} className="relative">
-                                        <div className="grid gap-2 items-center" style={{ gridTemplateColumns: '1fr 68px 52px 68px' }}>
-                                          {/* Exercise name input */}
+                                        {/* ── CHANGE 2: same grid on data rows ── */}
+                                        <div className="grid gap-2 items-center" style={{ gridTemplateColumns: '1fr 52px 46px 56px' }}>
+                                          {/* Exercise name */}
                                           <input
                                             type="text"
                                             value={ex.exercise || ''}
@@ -1036,7 +999,7 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser, openToA
                                             className="px-2.5 py-2 bg-slate-800/70 border border-slate-700/40 rounded-lg text-[12px] text-white placeholder-slate-600 focus:outline-none focus:border-blue-500/50 w-full"
                                           />
 
-                                          {/* Sets column: show "Set N" label if duplicate, else normal input */}
+                                          {/* Sets */}
                                           {isDupe ? (
                                             <div
                                               className="w-full px-2 py-2 bg-slate-800/30 border border-slate-700/20 rounded-lg text-[11px] text-slate-400 text-center font-bold select-none truncate"
@@ -1088,10 +1051,10 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser, openToA
                                           </div>
                                         </div>
 
-                                        {/* Delete button */}
+                                        {/* ── CHANGE 3: bin shifted right from -32px → -26px ── */}
                                         <button
                                           onClick={() => removeExercise(day, idx)}
-                                          className="absolute right-[-32px] top-1/2 -translate-y-1/2 w-7 h-7 flex items-center justify-center rounded-lg text-slate-600 hover:text-red-400 hover:bg-red-400/10 transition-colors active:scale-90"
+                                          className="absolute right-[-26px] top-1/2 -translate-y-1/2 w-7 h-7 flex items-center justify-center rounded-lg text-slate-600 hover:text-red-400 hover:bg-red-400/10 transition-colors active:scale-90"
                                         >
                                           <Trash2 className="w-3.5 h-3.5" />
                                         </button>
@@ -1180,7 +1143,7 @@ export default function CreateSplitModal({ isOpen, onClose, currentUser, openToA
                 )}
               </div>
 
-              {/* ── Modals rendered inside the panel ── */}
+              {/* ── Modals ── */}
               <SetActiveSplitModal open={showSetActiveModal} onClose={() => setShowSetActiveModal(false)} allSplits={allSplitsForModal} activeSplitId={activeSplitId} onSave={handleSetActiveFromModal} isSaving={setActiveMutation.isPending} />
 
               <MirrorConfirmDialog
