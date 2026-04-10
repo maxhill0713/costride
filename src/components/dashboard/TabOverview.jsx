@@ -29,9 +29,17 @@ const C = {
 const mono = { fontVariantNumeric: 'tabular-nums', fontFeatureSettings: '"tnum"' };
 
 /* ─── Primitives ─────────────────────────────────────────────── */
-function Avatar({ name = '?', size = 28 }) {
+function Avatar({ name = '?', size = 28, src }) {
   const initials = name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
   const hue = [...name].reduce((a, c) => a + c.charCodeAt(0), 0) % 360;
+  if (src) {
+    return (
+      <img src={src} alt={name} style={{
+        width: size, height: size, borderRadius: '50%', flexShrink: 0,
+        objectFit: 'cover', border: `1.5px solid rgba(255,255,255,0.12)`,
+      }} />
+    );
+  }
   return (
     <div style={{
       width: size, height: size, borderRadius: '50%', flexShrink: 0,
@@ -234,9 +242,9 @@ function KpiCard({ label, value, subLabel, detail, color }) {
 ═══════════════════════════════════════════════════════════════ */
 function AtRiskActionCenter() {
   const members = [
-    { name: 'Alex Rivers',   lastVisited: '14 hrs ago',  risk: 'Low',    pct: 18, color: C.green },
-    { name: 'Sarah Chen',    lastVisited: '3 days ago',  risk: 'Medium', pct: 52, color: C.amber },
-    { name: 'Mike Thompson', lastVisited: '12 days ago', risk: 'High',   pct: 86, color: C.red   },
+    { name: 'Alex Rivers',   lastVisited: '14 hrs ago',  risk: 'Low',    pct: 18, color: C.green, src: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=80&h=80&fit=crop&crop=face' },
+    { name: 'Sarah Chen',    lastVisited: '3 days ago',  risk: 'Medium', pct: 52, color: C.amber, src: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=80&h=80&fit=crop&crop=face' },
+    { name: 'Mike Thompson', lastVisited: '12 days ago', risk: 'High',   pct: 86, color: C.red,   src: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=80&h=80&fit=crop&crop=face' },
   ];
 
   return (
@@ -278,7 +286,7 @@ function AtRiskActionCenter() {
       {members.map((m, i) => (
         <div key={i} style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1.8fr', padding: '13px 16px', alignItems: 'center', borderBottom: i < members.length - 1 ? `1px solid ${C.border}` : 'none' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <Avatar name={m.name} size={30} />
+            <Avatar name={m.name} src={m.src} size={30} />
             <span style={{ fontSize: 12.5, fontWeight: 600, color: C.text }}>{m.name}</span>
           </div>
           <div style={{ fontSize: 12, color: C.muted }}>{m.lastVisited}</div>
@@ -319,6 +327,7 @@ function PriorityTodos() {
         name: 'Sarah J.', detail: 'returned to the gym',
         sub: 'Automated outreach sent · 3 visits this month',
         badge: '2 tasks', bc: 'amber',
+        src: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=80&h=80&fit=crop&crop=face',
       }],
     },
     {
@@ -327,6 +336,7 @@ function PriorityTodos() {
         name: 'Priya Sharma', detail: 'rejoined the programme',
         sub: 'Referred by John Doe',
         badge: '3 sent', bc: 'blue',
+        src: 'https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=80&h=80&fit=crop&crop=face',
       }],
     },
     {
@@ -334,6 +344,7 @@ function PriorityTodos() {
       items: [{
         name: 'Ann N', detail: 'Send anniversary kudos to members',
         sub: '', badge: null,
+        src: 'https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?w=80&h=80&fit=crop&crop=face',
       }],
     },
   ];
@@ -378,7 +389,7 @@ function PriorityTodos() {
           </div>
           {sec.items.map((item, ii) => (
             <div key={ii} style={{ display: 'flex', alignItems: 'flex-start', gap: 9, padding: '10px 14px', borderBottom: `1px solid ${C.border}` }}>
-              <Avatar name={item.name} size={26} />
+              <Avatar name={item.name} src={item.src} size={26} />
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ fontSize: 11.5, fontWeight: 700, color: C.text, lineHeight: 1.4 }}>
                   {item.name}
@@ -444,9 +455,9 @@ function ImmediateNudges() {
   const [sent, setSent] = useState({});
 
   const members = [
-    { name: 'Sarah K.', sub: 'Risk just crossed' },
-    { name: 'John D.',  sub: 'Risk just crossed' },
-    { name: 'Mike P.',  sub: 'Risk just crossed' },
+    { name: 'Sarah K.', sub: 'Risk just crossed', src: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=80&h=80&fit=crop&crop=face' },
+    { name: 'John D.',  sub: 'Risk just crossed', src: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=80&h=80&fit=crop&crop=face' },
+    { name: 'Mike P.',  sub: 'Risk just crossed', src: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=80&h=80&fit=crop&crop=face' },
   ];
 
   return (
@@ -476,7 +487,7 @@ function ImmediateNudges() {
           <div style={{ width: 16, height: 16, borderRadius: '50%', background: C.card2, border: `1px solid ${C.border2}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 8.5, fontWeight: 800, color: C.muted, flexShrink: 0 }}>
             {i + 1}
           </div>
-          <Avatar name={m.name} size={26} />
+          <Avatar name={m.name} src={m.src} size={26} />
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ fontSize: 11.5, fontWeight: 700, color: C.text }}>{m.name}</div>
             <div style={{ fontSize: 10, color: C.muted, marginTop: 1 }}>{m.sub}</div>
@@ -540,8 +551,8 @@ function LastSevenDaysWinbacks() {
 /* ─── Live Pulse Feed ────────────────────────────────────────── */
 function LivePulseFeed() {
   const events = [
-    { name: 'James Olafor', action: 'returned via automation', time: '3h ago' },
-    { name: 'Sarah Chen',   action: 'booked class via Nudge',  time: '5h ago' },
+    { name: 'James Olafor', action: 'returned via automation', time: '3h ago', src: 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=80&h=80&fit=crop&crop=face' },
+    { name: 'Sarah Chen',   action: 'booked class via Nudge',  time: '5h ago', src: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=80&h=80&fit=crop&crop=face' },
   ];
 
   return (
@@ -555,7 +566,7 @@ function LivePulseFeed() {
       </div>
       {events.map((ev, i) => (
         <div key={i} style={{ padding: '11px 14px', borderBottom: i < events.length - 1 ? `1px solid ${C.border}` : 'none', display: 'flex', alignItems: 'center', gap: 9 }}>
-          <Avatar name={ev.name} size={27} />
+          <Avatar name={ev.name} src={ev.src} size={27} />
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ fontSize: 11.5, color: C.text, lineHeight: 1.4 }}>
               <span style={{ fontWeight: 700 }}>{ev.name}</span>
@@ -572,9 +583,9 @@ function LivePulseFeed() {
 /* ─── Member Milestones ──────────────────────────────────────── */
 function MemberMilestones() {
   const list = [
-    { name: 'Sarah A.', text: '30 Days Complete!', Icon: Trophy, color: C.amber  },
-    { name: 'Mike C.',  text: '30 Days Complete!', Icon: Trophy, color: C.amber  },
-    { name: 'Mike C.',  text: '100 Workout Club!', Icon: Award,  color: C.purple },
+    { name: 'Sarah A.', text: '30 Days Complete!', Icon: Trophy, color: C.amber,  src: 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=80&h=80&fit=crop&crop=face' },
+    { name: 'Mike C.',  text: '30 Days Complete!', Icon: Trophy, color: C.amber,  src: 'https://images.unsplash.com/photo-1566753323558-f4e0952af115?w=80&h=80&fit=crop&crop=face' },
+    { name: 'Chris W.', text: '100 Workout Club!', Icon: Award,  color: C.purple, src: 'https://images.unsplash.com/photo-1519345182560-3f2917c472ef?w=80&h=80&fit=crop&crop=face' },
   ];
 
   return (
@@ -593,7 +604,7 @@ function MemberMilestones() {
       </div>
       {list.map((m, i) => (
         <div key={i} style={{ padding: '10px 14px', borderBottom: i < list.length - 1 ? `1px solid ${C.border}` : 'none', display: 'flex', alignItems: 'center', gap: 9 }}>
-          <Avatar name={m.name} size={26} />
+          <Avatar name={m.name} src={m.src} size={26} />
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ fontSize: 11.5, color: C.text }}>
               <span style={{ fontWeight: 700 }}>{m.name}</span>
