@@ -1146,10 +1146,28 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
         currentUser={currentUser}
         activeDayKey={activeDayKey}
         onSelect={(dayKey) => {
-          const newOverride = dayKey === adjustedDay ? null : dayKey;
-          setOverrideDayKey(newOverride);
+          // If user selects a rest day while on a training day, swap them for this week
+          const trainingDays = currentUser?.training_days || [];
+          const todayIsTraining = trainingDays.includes(adjustedDay);
+          const selectedIsRest = !trainingDays.includes(dayKey);
+
+          if (todayIsTraining && selectedIsRest) {
+            // Swap: today becomes rest, selected day gets today's workout
+            setOverrideDayKey(dayKey);
+            // Store the reverse swap so the rest day gets today's workout
+            try {
+              const swaps = JSON.parse(localStorage.getItem('workoutSwaps') || '{}');
+              swaps[dayKey] = adjustedDay;
+              localStorage.setItem('workoutSwaps', JSON.stringify(swaps));
+            } catch {}
+          } else {
+            // Normal override for single day
+            const newOverride = dayKey === adjustedDay ? null : dayKey;
+            setOverrideDayKey(newOverride);
+          }
+          
           setEditingIndex(null);
-          onOverrideDayChange?.(newOverride);
+          onOverrideDayChange?.(dayKey);
         }} />
     </>);
 }
