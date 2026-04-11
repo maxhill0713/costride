@@ -20,8 +20,8 @@ Deno.serve(async (req) => {
     }
 
     const gyms         = await base44.asServiceRole.entities.Gym.list();
-    const gymsToUpdate = gyms.filter(g => g.google_place_id && !g.image_url);
-    const results      = { total: gymsToUpdate.length, updated: 0, failed: 0, no_photos: 0 };
+    const gymsToUpdate = gyms.filter(g => g.google_place_id);
+    const results      = { total: gymsToUpdate.length, updated: 0, failed: 0, no_photos: 0, skipped: 0 };
 
     console.log(`Found ${gymsToUpdate.length} gyms to update`);
 
@@ -43,11 +43,20 @@ Deno.serve(async (req) => {
         if (data.photos?.length > 0) {
           const photoName = data.photos[0].name;
           const photoUrl  = `https://places.googleapis.com/v1/${photoName}/media?key=${apiKey}&maxHeightPx=800&maxWidthPx=800`;
-          await base44.asServiceRole.entities.Gym.update(gym.id, { image_url: photoUrl });
-          results.updated++;
-          console.log(`✓ Updated photo for ${gym.name}`);
+          // Only update if it's a new gym (no existing image) or if we have a new photo
+          if (!gym.image_url) {
+            await base44.asServiceRole.entities.Gym.update(gym.id, { image_url: photoUrl });
+            results.updated++;
+            console.log(`✓ Updated photo for ${gym.name}`);
+          } else {
+            results.skipped++; // Already has a photo
+          }
         } else {
-          results.no_photos++;
+          if (!gym.image_url) {
+            results.no_photos++; // No photo from Google Places, gym has no image
+          } else {
+            results.skipped++; // Keep existing photo, Google Places has none
+          }
         }
 
         await new Promise(resolve => setTimeout(resolve, 200));
