@@ -554,7 +554,15 @@ export default function Onboarding() {
     if (displayName.trim()) payload.full_name = displayName.trim();
     if (username.trim()) payload.username = username.trim();
     if (selectedSplit) { payload.workout_split = selectedSplit.id; payload.custom_split_name = selectedSplit.name; payload.training_days = selectedSplit.days; payload.custom_workout_types = selectedSplit.workouts; }
-    if (avatarFile) { try { const { file_url } = await base44.integrations.Core.UploadFile({ file: avatarFile }); payload.avatar_url = file_url; } catch { } }
+    if (avatarFile) {
+      try { const { file_url } = await base44.integrations.Core.UploadFile({ file: avatarFile }); payload.avatar_url = file_url; } catch { }
+    } else {
+      // Default avatar — dark grey background with a head-and-shoulders silhouette
+      const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200"><rect width="200" height="200" fill="#374151"/><circle cx="100" cy="78" r="34" fill="#6b7280"/><path d="M30 180 Q30 130 100 130 Q170 130 170 180Z" fill="#6b7280"/></svg>`;
+      const blob = new Blob([svg], { type: 'image/svg+xml' });
+      const file = new File([blob], 'default-avatar.svg', { type: 'image/svg+xml' });
+      try { const { file_url } = await base44.integrations.Core.UploadFile({ file }); payload.avatar_url = file_url; } catch { }
+    }
     await updateMeMutation.mutateAsync(payload);
     navigate(createPageUrl('Home'));
   }
