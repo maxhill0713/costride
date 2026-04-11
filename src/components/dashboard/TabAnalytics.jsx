@@ -550,12 +550,8 @@ export default function TabAnalytics() {
   const [range, setRange] = useState("30D");
 
   return (
-    <div style={{ display: "flex", height: "100vh", background: C.bg, color: C.t1, fontFamily: FONT, overflow: "hidden" }}>
-      <Sidebar />
-      <div style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0, overflow: "hidden" }}>
-        <TopBar range={range} setRange={setRange} />
-
-        <div style={{ flex: 1, overflowY: "auto", padding: "16px 18px", display: "flex", flexDirection: "column", gap: 12 }}>
+    <div style={{ background: C.bg, color: C.t1, fontFamily: FONT }}>
+      <div style={{ padding: "16px 18px", display: "flex", flexDirection: "column", gap: 12 }}>
 
           {/* Page header */}
           <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between" }}>
@@ -601,7 +597,6 @@ export default function TabAnalytics() {
             <RightPanel />
           </div>
         </div>
-      </div>
     </div>
   );
 }
