@@ -22,10 +22,10 @@ Deno.serve(async (req) => {
     // Only return safe public fields — no sensitive data
     const safeUsers = users.map(u => ({
       id: u.id,
+      username: u.username || u.full_name || 'Unknown',
       full_name: u.full_name,
       display_name: u.display_name || null,
       avatar_url: u.avatar_url || u.profile_picture || u.photo_url || null,
-      username: u.username || null,
     }));
 
     return Response.json({ users: safeUsers });

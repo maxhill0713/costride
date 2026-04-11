@@ -16,6 +16,7 @@ Deno.serve(async (req) => {
     const avatars = {};
     users.forEach(user => {
       avatars[user.id] = {
+        username: user.username || user.full_name || 'Unknown',
         full_name: user.full_name || 'Unknown',
         avatar_url: user.avatar_url || null
       };
