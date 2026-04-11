@@ -1469,6 +1469,7 @@ export default function GymCommunity() {
   const rewards = gymActivityData.rewards || [];
   const challenges = gymActivityData.challenges || [];
   const polls = gymActivityData.polls || [];
+  const backendMemberAvatars = gymActivityData.memberAvatars || {};
   const gymChallenges = challenges.filter(c => c.status === 'active' || c.status === 'upcoming');
   const { data: allGyms = [] } = useQuery({ queryKey: ['gyms'], queryFn: () => base44.entities.Gym.filter({ status: 'approved' }, 'name', 50), enabled: showCreateChallenge, staleTime: 10*60*1000, gcTime: 30*60*1000 });
   const { data: gymMembership } = useQuery({ queryKey: ['gymMembership', currentUser?.id, gymId], queryFn: () => base44.entities.GymMembership.filter({ user_id: currentUser.id, gym_id: gymId, status: 'active' }).then(r => r[0]), enabled: !!currentUser && !!gymId, staleTime: 5*60*1000, gcTime: 15*60*1000, placeholderData: prev => prev });
@@ -1492,53 +1493,29 @@ export default function GymCommunity() {
     gcTime: 15*60*1000,
   });
 
-  const checkInUserIds = React.useMemo(() => {
-    const seen = new Set(members.map(m => m.user_id).filter(Boolean));
-    checkIns.forEach(c => { if (c.user_id) seen.add(c.user_id); });
-    return [...seen].slice(0, 100);
-  }, [members, checkIns]);
-
-  const { data: memberUsers = [] } = useQuery({
-    queryKey: ['memberUsers', gymId, checkInUserIds.join(',')],
-    queryFn: async () => {
-      if (checkInUserIds.length === 0) return [];
-      return base44.entities.User.filter({ id: { $in: checkInUserIds } });
-    },
-    enabled: !!gymId && checkInUserIds.length > 0,
-    staleTime: 5 * 60 * 1000,
-    gcTime: 15 * 60 * 1000,
-  });
-
   const memberAvatarMap = React.useMemo(() => {
-    const map = {};
+    const map = { ...backendMemberAvatars };
+    // Also merge from GymMember records as a fallback
     members.forEach(m => {
       if (!m.user_id) return;
       const avatar = m.avatar_url || m.user_avatar || m.profile_picture || null;
-      if (avatar) map[m.user_id] = avatar;
+      if (avatar && !map[m.user_id]) map[m.user_id] = avatar;
     });
-    // Overlay with User entity avatars (most up-to-date)
-    memberUsers.forEach(u => {
-      if (!u.id) return;
-      const avatar = u.avatar_url || u.profile_picture || u.photo_url || null;
-      if (avatar) map[u.id] = avatar;
-    });
+    // Always use the current user's own avatar (most accurate)
     if (currentUser?.id) {
       const myAvatar = currentUser.avatar_url || currentUser.profile_picture || currentUser.photo_url || null;
       if (myAvatar) map[currentUser.id] = myAvatar;
     }
     return map;
-  }, [members, memberUsers, currentUser]);
+  }, [backendMemberAvatars, members, currentUser]);
 
   const memberNameMap = React.useMemo(() => {
     const map = {};
-    memberUsers.forEach(u => {
-      if (u.id) map[u.id] = u.display_name || u.full_name || null;
-    });
     if (currentUser?.id) {
       map[currentUser.id] = currentUser.display_name || currentUser.full_name || null;
     }
     return map;
-  }, [memberUsers, currentUser]);
+  }, [currentUser]);
 
   // ── FIX: User-scoped recently viewed gyms ────────────────────────────────────
   // This effect runs only after currentUser is loaded, and scopes the

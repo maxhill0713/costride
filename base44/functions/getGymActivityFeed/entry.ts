@@ -59,17 +59,38 @@ Deno.serve(async (req) => {
       ),
     ]);
 
-    // Get unique user IDs from check-ins to fetch workout logs
-    const userIds = [...new Set(checkIns.map(c => c.user_id).filter(Boolean))].slice(0, 50);
+    // Get all unique user IDs across check-ins and posts
+    const allUserIds = [...new Set([
+      ...checkIns.map(c => c.user_id),
+      ...posts.map(p => p.member_id),
+      ...achievements.map(a => a.user_id),
+    ].filter(Boolean))].slice(0, 150);
+
+    const userIds = allUserIds.slice(0, 50);
 
     let workoutLogs = [];
-    if (userIds.length > 0) {
-      workoutLogs = await base44.asServiceRole.entities.WorkoutLog.filter(
-        { user_id: { $in: userIds }, completed_date: { $gte: sevenDaysAgo } },
-        '-created_date',
-        200
-      );
-    }
+    let memberAvatars = {};
+
+    const [workoutLogsResult, memberUsersResult] = await Promise.all([
+      userIds.length > 0
+        ? base44.asServiceRole.entities.WorkoutLog.filter(
+            { user_id: { $in: userIds }, completed_date: { $gte: sevenDaysAgo } },
+            '-created_date',
+            200
+          )
+        : Promise.resolve([]),
+      allUserIds.length > 0
+        ? base44.asServiceRole.entities.User.filter({ id: { $in: allUserIds } })
+        : Promise.resolve([]),
+    ]);
+
+    workoutLogs = workoutLogsResult;
+
+    // Build avatar map keyed by user ID
+    memberUsersResult.forEach(u => {
+      const avatar = u.avatar_url || u.profile_picture || u.photo_url || null;
+      if (avatar) memberAvatars[u.id] = avatar;
+    });
 
     return Response.json({
       checkIns,
@@ -81,6 +102,7 @@ Deno.serve(async (req) => {
       events,
       rewards,
       polls,
+      memberAvatars,
     });
   } catch (error) {
     console.error('getGymActivityFeed error:', error);
