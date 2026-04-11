@@ -409,7 +409,7 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
       if (!durationSecs && currentUser?.id) {
         try {
           const recentCIs = await base44.entities.CheckIn.filter({ user_id: currentUser.id }, '-check_in_date', 5);
-          const todayCI = recentCIs.find(c => {
+          const todayCI = recentCIs.find((c) => {
             const d = new Date(c.check_in_date);
             const now2 = new Date();
             return d.getFullYear() === now2.getFullYear() && d.getMonth() === now2.getMonth() && d.getDate() === now2.getDate();
@@ -599,7 +599,7 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
         <div className="space-y-2 mb-3 relative z-10">
           <div className="flex items-center gap-2">
             <div className="flex items-center gap-1.5 whitespace-nowrap flex-shrink-0">
-              <h3 className="text-[11px] font-bold text-slate-100 tracking-tight uppercase">Today's Workout</h3>
+              <h3 className="text-[13px] font-bold text-slate-100 tracking-tight uppercase">TODAY'S WORKOUT</h3>
               <motion.button
                 onClick={(e) => {e.stopPropagation();setShowInfo(!showInfo);}}
                 whileTap={{ scale: 0.78, y: 1 }}
@@ -675,67 +675,67 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
 
         {/* COLLAPSED STATE */}
         <AnimatePresence initial={false}>
-          {!isExpanded && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.15 }}
-              className="flex flex-col items-center gap-2 pb-1"
-            >
+          {!isExpanded &&
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.15 }}
+            className="flex flex-col items-center gap-2 pb-1">
+            
               {alreadyLoggedToday &&
-                <Button
-                  onClick={(e) => {e.stopPropagation();setSummaryLog(todayLog);}}
-                  size="sm"
-                  className="hover:bg-primary/90 inline-flex items-center gap-2 whitespace-nowrap ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 bg-gradient-to-b from-blue-500 via-blue-600 to-blue-700 backdrop-blur-md text-white font-bold rounded-lg px-3 w-full h-7 text-[10px] justify-center border border-transparent shadow-[0_3px_0_0_#1a3fa8,0_8px_20px_rgba(0,0,100,0.5),inset_0_1px_0_rgba(255,255,255,0.15),inset_0_0_20px_rgba(255,255,255,0.03)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 transform-gpu">
+            <Button
+              onClick={(e) => {e.stopPropagation();setSummaryLog(todayLog);}}
+              size="sm"
+              className="hover:bg-primary/90 inline-flex items-center gap-2 whitespace-nowrap ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 bg-gradient-to-b from-blue-500 via-blue-600 to-blue-700 backdrop-blur-md text-white font-bold rounded-lg px-3 w-full h-7 text-[10px] justify-center border border-transparent shadow-[0_3px_0_0_#1a3fa8,0_8px_20px_rgba(0,0,100,0.5),inset_0_1px_0_rgba(255,255,255,0.15),inset_0_0_20px_rgba(255,255,255,0.03)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 transform-gpu">
                   View Summary
                 </Button>
-              }
+            }
               <motion.button
-                onClick={(e) => {e.stopPropagation();setIsExpanded(true);}}
-                className="flex items-center justify-center text-slate-500 hover:text-slate-300 transition-colors duration-200 p-1"
-                animate={{ y: [0, 4, 0] }}
-                transition={{ repeat: Infinity, duration: 1.4, ease: 'easeInOut' }}>
+              onClick={(e) => {e.stopPropagation();setIsExpanded(true);}}
+              className="flex items-center justify-center text-slate-500 hover:text-slate-300 transition-colors duration-200 p-1"
+              animate={{ y: [0, 4, 0] }}
+              transition={{ repeat: Infinity, duration: 1.4, ease: 'easeInOut' }}>
                 <ChevronDown className="w-5 h-5" />
               </motion.button>
             </motion.div>
-          )}
+          }
         </AnimatePresence>
 
         <AnimatePresence>
-          {isExpanded && (
-            <motion.div
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: 'auto', opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
+          {isExpanded &&
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{
+              type: 'spring',
+              stiffness: 200,
+              damping: 26,
+              mass: 1.1,
+              opacity: { duration: 0.2 }
+            }}
+            style={{ overflow: 'hidden', transformOrigin: 'top' }}>
+            
+              <motion.div
+              initial={{ y: -12 }}
+              animate={{ y: 0 }}
+              exit={{ y: -12 }}
               transition={{
                 type: 'spring',
                 stiffness: 200,
                 damping: 26,
-                mass: 1.1,
-                opacity: { duration: 0.2 }
-              }}
-              style={{ overflow: 'hidden', transformOrigin: 'top' }}
-            >
-              <motion.div
-                initial={{ y: -12 }}
-                animate={{ y: 0 }}
-                exit={{ y: -12 }}
-                transition={{
-                  type: 'spring',
-                  stiffness: 200,
-                  damping: 26,
-                  mass: 1.1
-                }}
-              >
+                mass: 1.1
+              }}>
+              
 
               {todayWorkout.exercises && todayWorkout.exercises.length > 0 ?
-            <div className="px-2 space-y-2">
+              <div className="px-2 space-y-2">
 
                   {/* ── Column headers ── */}
                   <div
-                    className="grid gap-1 mb-1.5 items-end"
-                    style={{ gridTemplateColumns: exerciseGridCols }}>
+                  className="grid gap-1 mb-1.5 items-end"
+                  style={{ gridTemplateColumns: exerciseGridCols }}>
                     <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest ml-1">Exercise</div>
                     <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest text-center -ml-5">Sets</div>
                     <div></div>
@@ -746,21 +746,21 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
 
                   {/* Exercise groups */}
                   {buildExerciseGroups(todayWorkout.exercises).map((group) => {
-                const isGrouped = group.items.length > 1;
+                  const isGrouped = group.items.length > 1;
 
-                if (!isGrouped) {
-                  const { exercise, index } = group.items[0];
-                  const isEditing = editingIndex === index;
-                  return (
-                    <motion.div
-                      key={group.key}
-                      initial={false}
-                      animate={{}}
-                      // CHANGED: pt-2 py-2 → pt-1 py-1 for more compact rows
-                      className="bg-white/5 pt-1 py-1 pl-2 rounded-xl backdrop-blur-md border border-white/10 shadow-lg shadow-black/10 grid gap-1 items-center hover:border-white/20 transition-all -ml-[2%] -mr-[2%]"
-                      style={{ gridTemplateColumns: isEditing ? '1fr' : exerciseGridCols }}>
+                  if (!isGrouped) {
+                    const { exercise, index } = group.items[0];
+                    const isEditing = editingIndex === index;
+                    return (
+                      <motion.div
+                        key={group.key}
+                        initial={false}
+                        animate={{}}
+                        // CHANGED: pt-2 py-2 → pt-1 py-1 for more compact rows
+                        className="bg-white/5 pt-1 py-1 pl-2 rounded-xl backdrop-blur-md border border-white/10 shadow-lg shadow-black/10 grid gap-1 items-center hover:border-white/20 transition-all -ml-[2%] -mr-[2%]"
+                        style={{ gridTemplateColumns: isEditing ? '1fr' : exerciseGridCols }}>
                           {isEditing ?
-                      <div className="col-span-full rounded-2xl p-4" style={{ background: 'rgba(15,20,40,0.7)', border: '1px solid rgba(255,255,255,0.06)' }}>
+                        <div className="col-span-full rounded-2xl p-4" style={{ background: 'rgba(15,20,40,0.7)', border: '1px solid rgba(255,255,255,0.06)' }}>
                               <div className="flex items-center justify-between mb-3">
                                 <div className="flex items-center gap-2">
                                   <button onClick={handleCancel} className="text-slate-400 hover:text-slate-200 transition-colors" />
@@ -769,7 +769,7 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                               </div>
 
                               {isDefaultSplit() ?
-                        <div className="space-y-2.5">
+                          <div className="space-y-2.5">
                                   <div className="flex gap-2">
                                     <div className="flex-1">
                                       <label className="text-[9px] text-slate-400 font-bold uppercase block mb-1.5 text-xs">SETS</label>
@@ -786,7 +786,7 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                                   </div>
                                 </div> :
 
-                        <div className="space-y-2.5">
+                          <div className="space-y-2.5">
                                   <div className="flex gap-2">
                                     <div className="flex-1">
                                       <label className="text-[9px] text-slate-400 font-bold uppercase block mb-1.5">Sets</label>
@@ -802,7 +802,7 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                                     </div>
                                   </div>
                                 </div>
-                        }
+                          }
 
                               <div className="flex gap-1 mt-3">
                                 <Button onClick={() => handleSave(index)} size="sm" disabled={updateWorkoutMutation.isPending} className="ease-in-out hover:bg-primary/90 inline-flex items-center justify-center gap-2 whitespace-nowrap font-bold transition-all focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 rounded-md px-3 text-xs flex-1 h-7 bg-gradient-to-b from-blue-500 via-blue-600 to-blue-700 backdrop-blur-md text-white border border-transparent shadow-[0_3px_0_0_#1a3fa8,0_8px_20px_rgba(0,0,100,0.5),inset_0_1px_0_rgba(255,255,255,0.15),inset_0_0_20px_rgba(255,255,255,0.03)] active:shadow-none active:translate-y-[3px] active:scale-95 duration-100 transform-gpu">
@@ -814,7 +814,7 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                               </div>
                             </div> :
 
-                      <>
+                        <>
                               <div className="">
                                 <div className="text-sm font-bold text-white leading-tight ml-1">{exercise.exercise || '-'}</div>
                               </div>
@@ -836,39 +836,39 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                                   {lastWorkout?.exercises?.[index] && getProgressIndicator(exercise, index)}
                                 </div>
                                 {!alreadyLoggedToday &&
-                          <motion.button
-                            onClick={() => handleEdit(index, exercise)}
-                            whileTap={{ scale: 0.78, y: 1 }}
-                            transition={{ type: 'spring', stiffness: 500, damping: 22 }}
-                            className="inline-flex items-center justify-center w-6 h-6 text-slate-400 hover:text-orange-400 hover:bg-orange-500/10 rounded-md transition-all shrink-0 ml-1 -mr-[12%]">
+                            <motion.button
+                              onClick={() => handleEdit(index, exercise)}
+                              whileTap={{ scale: 0.78, y: 1 }}
+                              transition={{ type: 'spring', stiffness: 500, damping: 22 }}
+                              className="inline-flex items-center justify-center w-6 h-6 text-slate-400 hover:text-orange-400 hover:bg-orange-500/10 rounded-md transition-all shrink-0 ml-1 -mr-[12%]">
                                     <Edit2 className="w-3.5 h-3.5" />
                                   </motion.button>
-                          }
+                            }
                               </div>
                             </>
-                      }
+                        }
                         </motion.div>);
-                }
+                  }
 
-                const sorted = [...group.items].sort(
-                  (a, b) => (parseFloat(b.exercise.weight) || 0) - (parseFloat(a.exercise.weight) || 0)
-                );
+                  const sorted = [...group.items].sort(
+                    (a, b) => (parseFloat(b.exercise.weight) || 0) - (parseFloat(a.exercise.weight) || 0)
+                  );
 
-                return (
-                  <motion.div
-                    key={group.key}
-                    initial={false}
-                    animate={{}}
-                    // CHANGED: pt-2 pb-2 → pt-1 pb-1 for compact grouped rows
-                    className="bg-white/5 pt-1 pb-1 pl-2 rounded-xl backdrop-blur-md border border-white/10 shadow-lg shadow-black/10 hover:border-white/20 transition-all -ml-[2%] -mr-[2%]">
+                  return (
+                    <motion.div
+                      key={group.key}
+                      initial={false}
+                      animate={{}}
+                      // CHANGED: pt-2 pb-2 → pt-1 pb-1 for compact grouped rows
+                      className="bg-white/5 pt-1 pb-1 pl-2 rounded-xl backdrop-blur-md border border-white/10 shadow-lg shadow-black/10 hover:border-white/20 transition-all -ml-[2%] -mr-[2%]">
 
                         {sorted.map(({ exercise, index }, setIdx) => {
-                      const setLabel = `Set ${setIdx + 1}`;
-                      const isEditingThis = editingGroupedSet?.index === index;
+                        const setLabel = `Set ${setIdx + 1}`;
+                        const isEditingThis = editingGroupedSet?.index === index;
 
-                      if (isEditingThis) {
-                        return (
-                          <div key={index} className="rounded-2xl p-4 mr-2 mb-1" style={{ background: 'rgba(15,20,40,0.7)', border: '1px solid rgba(255,255,255,0.06)' }}>
+                        if (isEditingThis) {
+                          return (
+                            <div key={index} className="rounded-2xl p-4 mr-2 mb-1" style={{ background: 'rgba(15,20,40,0.7)', border: '1px solid rgba(255,255,255,0.06)' }}>
                                 <div className="flex items-center gap-2 mb-3">
                                   <div className="text-sm font-bold text-white">{group.name}</div>
                                   {/* CHANGED: py-1 → py-0.5 for uniform chip height */}
@@ -895,16 +895,16 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                                   </Button>
                                 </div>
                               </div>);
-                      }
+                        }
 
-                      return (
-                        <div key={index} className="grid gap-1 items-center pr-2 mb-1" style={{ gridTemplateColumns: exerciseGridCols }}>
+                        return (
+                          <div key={index} className="grid gap-1 items-center pr-2 mb-1" style={{ gridTemplateColumns: exerciseGridCols }}>
                               <div className="ml-1">
-                                {setIdx === 0 ? (
-                                  <div className="text-sm font-bold text-white leading-tight">{group.name}</div>
-                                ) : (
-                                  <div />
-                                )}
+                                {setIdx === 0 ?
+                              <div className="text-sm font-bold text-white leading-tight">{group.name}</div> :
+
+                              <div />
+                              }
                               </div>
                               {/* CHANGED: py-1 → py-0.5 for uniform "Set N" chip height */}
                               <div className="bg-white/10 text-slate-300 py-0.5 text-[11px] font-bold text-center rounded-lg flex items-center justify-center" style={{ width: '36px' }}>
@@ -922,27 +922,27 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                                 </div>
                                 {lastWorkout?.exercises?.[index] && getProgressIndicator(exercise, index)}
                               </div>
-                              {!alreadyLoggedToday && (
-                                <motion.button
-                                  onClick={() => handleEditGroupedSet(index, exercise, setLabel)}
-                                  whileTap={{ scale: 0.78, y: 1 }}
-                                  transition={{ type: 'spring', stiffness: 500, damping: 22 }}
-                                  className="inline-flex items-center justify-center w-6 h-6 text-slate-400 hover:text-orange-400 hover:bg-orange-500/10 rounded-md transition-all shrink-0">
+                              {!alreadyLoggedToday &&
+                            <motion.button
+                              onClick={() => handleEditGroupedSet(index, exercise, setLabel)}
+                              whileTap={{ scale: 0.78, y: 1 }}
+                              transition={{ type: 'spring', stiffness: 500, damping: 22 }}
+                              className="inline-flex items-center justify-center w-6 h-6 text-slate-400 hover:text-orange-400 hover:bg-orange-500/10 rounded-md transition-all shrink-0">
                                   <Edit2 className="w-3.5 h-3.5" />
                                 </motion.button>
-                              )}
+                            }
                             </div>);
-                    })}
+                      })}
                       </motion.div>);
-              })}
+                })}
 
                   {/* Cardio Rows */}
                   {todayWorkout.cardio && todayWorkout.cardio.length > 0 &&
-              <div className="mt-3">
+                <div className="mt-3">
                       {/* ── Cardio column headers ── */}
                       <div
-                        className="grid gap-1 mb-1.5 items-end px-1"
-                        style={{ gridTemplateColumns: cardioGridCols }}>
+                    className="grid gap-1 mb-1.5 items-end px-1"
+                    style={{ gridTemplateColumns: cardioGridCols }}>
                         <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Exercise</div>
                         <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest text-center -ml-16">Rounds</div>
                         <div />
@@ -951,12 +951,12 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                       </div>
 
                       {todayWorkout.cardio.map((c, index) =>
-                <motion.div
-                  key={`cardio-${index}`}
-                  className="bg-white/5 pt-2 py-2 pl-2 rounded-xl backdrop-blur-md border border-white/10 shadow-lg shadow-black/10 items-center hover:border-white/20 transition-all -ml-[2%] -mr-[2%] mb-2"
-                  style={{ display: editingCardioIndex === index ? 'block' : 'grid', gridTemplateColumns: cardioGridCols, gap: '4px' }}>
+                  <motion.div
+                    key={`cardio-${index}`}
+                    className="bg-white/5 pt-2 py-2 pl-2 rounded-xl backdrop-blur-md border border-white/10 shadow-lg shadow-black/10 items-center hover:border-white/20 transition-all -ml-[2%] -mr-[2%] mb-2"
+                    style={{ display: editingCardioIndex === index ? 'block' : 'grid', gridTemplateColumns: cardioGridCols, gap: '4px' }}>
                           {editingCardioIndex === index ?
-                  <div className="col-span-full rounded-2xl p-4" style={{ background: 'rgba(15,20,40,0.7)', border: '1px solid rgba(255,255,255,0.06)' }}>
+                    <div className="col-span-full rounded-2xl p-4" style={{ background: 'rgba(15,20,40,0.7)', border: '1px solid rgba(255,255,255,0.06)' }}>
                               <div className="text-sm font-bold text-white mb-3">{c.exercise || 'Cardio'}</div>
                               <div className="flex gap-2">
                                 <div className="flex-1">
@@ -981,7 +981,7 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                                 </Button>
                               </div>
                             </div> :
-                  <>
+                    <>
                               <div className="text-sm font-bold text-white leading-tight ml-1">{c.exercise || '—'}</div>
                               <div className="bg-white/10 text-slate-300 py-1 text-sm font-semibold text-center rounded-lg flex items-center justify-center -ml-5" style={{ width: '36px' }}>
                                 {c.rounds || '—'}
@@ -994,69 +994,69 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                                 {parseInt(c.rounds) > 1 && c.rest ? formatTime(c.rest) : '—'}
                               </div>
                               {!alreadyLoggedToday &&
-                    <motion.button
-                      onClick={() => handleEditCardio(index, c)}
-                      whileTap={{ scale: 0.78, y: 1 }}
-                      transition={{ type: 'spring', stiffness: 500, damping: 22 }}
-                      className="inline-flex items-center justify-center w-8 h-6 text-slate-400 hover:text-orange-400 hover:bg-orange-500/10 rounded-md transition-all shrink-0 ml-1 -mr-[12%]">
+                      <motion.button
+                        onClick={() => handleEditCardio(index, c)}
+                        whileTap={{ scale: 0.78, y: 1 }}
+                        transition={{ type: 'spring', stiffness: 500, damping: 22 }}
+                        className="inline-flex items-center justify-center w-8 h-6 text-slate-400 hover:text-orange-400 hover:bg-orange-500/10 rounded-md transition-all shrink-0 ml-1 -mr-[12%]">
                                 <Edit2 className="lucide lucide-pen w-4 h-3.5 -ml-6" />
                               </motion.button>
-                    }
+                      }
                             </>
-                  }
+                    }
                         </motion.div>
-                )}
+                  )}
                     </div>
-              }
+                }
 
                   {/* Log Workout Button */}
                   {!alreadyLoggedToday && checkedInToday &&
-              <div className="mb-3 space-y-2">
+                <div className="mb-3 space-y-2">
                       {workoutStartTime &&
-                <div className="flex items-center justify-center gap-2 py-2 px-3 bg-amber-500/10 border border-amber-500/30 rounded-lg mb-2">
+                  <div className="flex items-center justify-center gap-2 py-2 px-3 bg-amber-500/10 border border-amber-500/30 rounded-lg mb-2">
                           <Clock className="w-4 h-4 text-amber-400" />
                           <span className="text-[11px] text-amber-300 font-semibold">
                             {Math.floor(workoutDuration / 60)}:{(workoutDuration % 60).toString().padStart(2, '0')}
                           </span>
                         </div>
-                }
+                  }
                       <Button
-                  onClick={() => {
-                    setIsExpanded(false);
-                    window.scrollTo({ top: 0, behavior: 'smooth' });
-                    const captured = workoutDuration;
-                    frozenDurationRef.current = captured;
-                    setFrozenDuration(captured);
-                    logWorkoutMutation.mutate();
-                  }}
-                  disabled={logWorkoutMutation.isPending}
-                  size="sm"
-                  className="hover:bg-primary/90 inline-flex items-center justify-center gap-2 whitespace-nowrap transition-all duration-100 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 text-white px-3 w-full h-8 text-[10px] font-bold bg-gradient-to-b from-blue-700 via-blue-800 to-blue-900 backdrop-blur-md rounded-lg border border-slate-500/50 shadow-[0_3px_0_0_#1a3fa8,0_8px_20px_rgba(0,0,100,0.5),inset_0_1px_0_rgba(255,255,255,0.15),inset_0_0_20px_rgba(255,255,255,0.03)] active:shadow-none active:translate-y-[3px] active:scale-95 transform-gpu">
+                    onClick={() => {
+                      setIsExpanded(false);
+                      window.scrollTo({ top: 0, behavior: 'smooth' });
+                      const captured = workoutDuration;
+                      frozenDurationRef.current = captured;
+                      setFrozenDuration(captured);
+                      logWorkoutMutation.mutate();
+                    }}
+                    disabled={logWorkoutMutation.isPending}
+                    size="sm"
+                    className="hover:bg-primary/90 inline-flex items-center justify-center gap-2 whitespace-nowrap transition-all duration-100 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 text-white px-3 w-full h-8 text-[10px] font-bold bg-gradient-to-b from-blue-700 via-blue-800 to-blue-900 backdrop-blur-md rounded-lg border border-slate-500/50 shadow-[0_3px_0_0_#1a3fa8,0_8px_20px_rgba(0,0,100,0.5),inset_0_1px_0_rgba(255,255,255,0.15),inset_0_0_20px_rgba(255,255,255,0.03)] active:shadow-none active:translate-y-[3px] active:scale-95 transform-gpu">
                         {logWorkoutMutation.isPending ? 'Logging...' : 'Log Workout'}
                       </Button>
                     </div>
-              }
+                }
 
                   {/* View Summary */}
                   {alreadyLoggedToday &&
-              <Button
-                onClick={() => setSummaryLog(todayLog)}
-                size="sm"
-                className="hover:bg-primary/90 inline-flex items-center gap-2 whitespace-nowrap ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 bg-gradient-to-b from-blue-500 via-blue-600 to-blue-700 backdrop-blur-md text-white font-bold rounded-lg px-3 w-full h-7 text-[10px] justify-center border border-transparent shadow-[0_3px_0_0_#1a3fa8,0_8px_20px_rgba(0,0,100,0.5),inset_0_1px_0_rgba(255,255,255,0.15),inset_0_0_20px_rgba(255,255,255,0.03)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 transform-gpu">
+                <Button
+                  onClick={() => setSummaryLog(todayLog)}
+                  size="sm"
+                  className="hover:bg-primary/90 inline-flex items-center gap-2 whitespace-nowrap ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 bg-gradient-to-b from-blue-500 via-blue-600 to-blue-700 backdrop-blur-md text-white font-bold rounded-lg px-3 w-full h-7 text-[10px] justify-center border border-transparent shadow-[0_3px_0_0_#1a3fa8,0_8px_20px_rgba(0,0,100,0.5),inset_0_1px_0_rgba(255,255,255,0.15),inset_0_0_20px_rgba(255,255,255,0.03)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 transform-gpu">
                       View Summary
                     </Button>
-              }
+                }
 
                   {/* Timer & Tools */}
                   <div className="mt-4 pt-3 border-t border-slate-600/30 flex items-center justify-between gap-3 pb-4">
                     <div className="flex-1 flex items-center gap-2">
                       <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setOpenTimerBar(true);
-                    }}
-                    style={{ height: '51px', flex: 0.8 }}
-                    className="relative flex items-center justify-center gap-2 px-4 rounded-2xl bg-gradient-to-b from-slate-700 via-slate-800 to-slate-900 backdrop-blur-xl border border-transparent shadow-[0_3px_0_0_#0f172a,0_8px_20px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.08)] hover:from-slate-600 hover:via-slate-700 hover:to-slate-800 active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 transform-gpu">
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setOpenTimerBar(true);
+                      }}
+                      style={{ height: '51px', flex: 0.8 }}
+                      className="relative flex items-center justify-center gap-2 px-4 rounded-2xl bg-gradient-to-b from-slate-700 via-slate-800 to-slate-900 backdrop-blur-xl border border-transparent shadow-[0_3px_0_0_#0f172a,0_8px_20px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.08)] hover:from-slate-600 hover:via-slate-700 hover:to-slate-800 active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 transform-gpu">
                         <Clock className="w-4 h-4 text-blue-400 flex-shrink-0" />
                         <span className="text-blue-300 font-black text-xl leading-none">
                           Timer
@@ -1072,56 +1072,61 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                         <BookOpen className="w-3.5 h-3.5" />
                       </Button>
                       <CollapseChevron
-                    onClick={(e) => {e.stopPropagation();setIsExpanded(false);setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 100);}}
-                    className="w-10 h-6" />
+                      onClick={(e) => {e.stopPropagation();setIsExpanded(false);setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 100);}}
+                      className="w-10 h-6" />
                     </div>
                   </div>
                 </div> : (
 
-            /* REST DAY or EMPTY SPLIT */
-            <div className="px-2">
+              /* REST DAY or EMPTY SPLIT */
+              <div className="px-2">
               {(() => {
-                const trainingDays = currentUser?.training_days || [];
-                const isTrainingDay = overrideDayKey !== null || trainingDays.includes(adjustedDay);
-                const hasNoExercises = (!todayWorkout.exercises || todayWorkout.exercises.length === 0) && (!todayWorkout.cardio || todayWorkout.cardio.length === 0);
-                const isEmptySplit = isTrainingDay && hasNoExercises && todayWorkout.name !== 'Rest Day';
+                  const trainingDays = currentUser?.training_days || [];
+                  const isTrainingDay = overrideDayKey !== null || trainingDays.includes(adjustedDay);
+                  const hasNoExercises = (!todayWorkout.exercises || todayWorkout.exercises.length === 0) && (!todayWorkout.cardio || todayWorkout.cardio.length === 0);
+                  const isEmptySplit = isTrainingDay && hasNoExercises && todayWorkout.name !== 'Rest Day';
 
-                if (isEmptySplit) {
-                  return (
-                    <div className="p-5 bg-gradient-to-br from-blue-500/10 via-slate-900/40 to-slate-950/50 rounded-lg border border-blue-500/20 text-center mb-4">
+                  if (isEmptySplit) {
+                    return (
+                      <div className="p-5 bg-gradient-to-br from-blue-500/10 via-slate-900/40 to-slate-950/50 rounded-lg border border-blue-500/20 text-center mb-4">
                       <p className="text-slate-200 text-sm font-bold mb-1">No exercises set for today</p>
                       <p className="text-slate-400 text-xs font-medium leading-relaxed mb-4">You don't have a workout routine set for today. Edit your custom split and add some exercises.</p>
                       <Link
-                        to="/Profile?editSplit=true"
-                        onClick={(e) => e.stopPropagation()}
-                        className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm text-white
+                          to="/Profile?editSplit=true"
+                          onClick={(e) => e.stopPropagation()}
+                          className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm text-white
                           bg-gradient-to-b from-blue-500 via-blue-600 to-blue-700
                           border border-transparent
                           shadow-[0_3px_0_0_#1a3fa8,0_6px_16px_rgba(37,99,235,0.35),inset_0_1px_0_rgba(255,255,255,0.15)]
                           active:shadow-none active:translate-y-[3px] active:scale-95
                           transition-all duration-100 transform-gpu">
+
+
+
+
+                          
                         <Pencil className="w-4 h-4" />
                         Edit Split
                       </Link>
                     </div>);
-                }
+                  }
 
-                return (
-                  <div className="p-5 bg-gradient-to-br from-green-500/10 via-slate-900/40 to-slate-950/50 rounded-lg border border-green-500/30 text-center mb-4">
+                  return (
+                    <div className="p-5 bg-gradient-to-br from-green-500/10 via-slate-900/40 to-slate-950/50 rounded-lg border border-green-500/30 text-center mb-4">
                     <p className="text-green-300 text-sm font-semibold mb-1">Enjoy your rest day! 🌿</p>
                     <p className="text-slate-400 text-xs font-medium leading-relaxed">Recovery is when your muscles grow. You've worked hard—rest is part of your progress.</p>
                   </div>);
-              })()}
+                })()}
               <div className="flex justify-center mb-4">
                 <CollapseChevron
-                  onClick={(e) => {e.stopPropagation();setIsExpanded(false);setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 100);}} />
+                    onClick={(e) => {e.stopPropagation();setIsExpanded(false);setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 100);}} />
               </div>
             </div>)
-            }
+              }
 
               </motion.div>
             </motion.div>
-          )}
+          }
         </AnimatePresence>
 
         <PlateCalculatorModal isOpen={showCalculator} onClose={() => setShowCalculator(false)} />
@@ -1146,28 +1151,10 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
         currentUser={currentUser}
         activeDayKey={activeDayKey}
         onSelect={(dayKey) => {
-          // If user selects a rest day while on a training day, swap them for this week
-          const trainingDays = currentUser?.training_days || [];
-          const todayIsTraining = trainingDays.includes(adjustedDay);
-          const selectedIsRest = !trainingDays.includes(dayKey);
-
-          if (todayIsTraining && selectedIsRest) {
-            // Swap: today becomes rest, selected day gets today's workout
-            setOverrideDayKey(dayKey);
-            // Store the reverse swap so the rest day gets today's workout
-            try {
-              const swaps = JSON.parse(localStorage.getItem('workoutSwaps') || '{}');
-              swaps[dayKey] = adjustedDay;
-              localStorage.setItem('workoutSwaps', JSON.stringify(swaps));
-            } catch {}
-          } else {
-            // Normal override for single day
-            const newOverride = dayKey === adjustedDay ? null : dayKey;
-            setOverrideDayKey(newOverride);
-          }
-          
+          const newOverride = dayKey === adjustedDay ? null : dayKey;
+          setOverrideDayKey(newOverride);
           setEditingIndex(null);
-          onOverrideDayChange?.(dayKey);
+          onOverrideDayChange?.(newOverride);
         }} />
     </>);
 }
