@@ -453,7 +453,9 @@ export default function Home() {
 
   const { data: friendUsersList = [] } = useQuery({
     queryKey: ['friendUsersList', allFriendAndRequestIds.join(',')],
-    queryFn: () => allFriendAndRequestIds.length > 0 ? base44.entities.User.filter({ id: { $in: allFriendAndRequestIds } }) : Promise.resolve([]),
+    queryFn: () => allFriendAndRequestIds.length > 0
+      ? base44.functions.invoke('getFriendUsers', { userIds: allFriendAndRequestIds }).then(r => r.data?.users || [])
+      : Promise.resolve([]),
     enabled: allFriendAndRequestIds.length > 0,
     staleTime: 5 * 60 * 1000,
     gcTime: 15 * 60 * 1000,
