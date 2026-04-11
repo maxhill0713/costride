@@ -186,42 +186,640 @@ function ArrowButton({ direction, disabled, onPress }) {
         transition: 'opacity 0.1s ease',
         pointerEvents: disabled ? 'none' : 'auto',
       }}>
-      {isRestDay ? (
-        isPastOrTodayRestDay ? (
-          <svg width={isTodayCircle ? 32 : 26} height={isTodayCircle ? 32 : 26} viewBox="0 0 100 100" fill="none">
-            <line x1="50" y1="95" x2="50" y2="30" stroke="#15803d" strokeWidth="3" strokeLinecap="round" />
-            <path d="M50 8 C44 20 40 28 42 36 C45 40 55 40 58 36 C60 28 56 20 50 8Z" fill="#4ade80" stroke="#22c55e" strokeWidth="1" />
-            <path d="M50 30 C42 22 32 18 22 22 C20 28 24 36 32 38 C40 40 48 36 50 30Z" fill="#4ade80" stroke="#22c55e" strokeWidth="1" />
-            <path d="M50 30 C58 22 68 18 78 22 C80 28 76 36 68 38 C60 40 52 36 50 30Z" fill="#4ade80" stroke="#22c55e" strokeWidth="1" />
-            <path d="M50 50 C40 42 28 40 16 46 C16 52 22 60 32 60 C42 60 50 54 50 50Z" fill="#4ade80" stroke="#22c55e" strokeWidth="1" />
-            <path d="M50 50 C60 42 72 40 84 46 C84 52 78 60 68 60 C58 60 50 54 50 50Z" fill="#4ade80" stroke="#22c55e" strokeWidth="1" />
-          </svg>
-        ) : (
-          <svg width={isTodayCircle ? 32 : 26} height={isTodayCircle ? 32 : 26} viewBox="0 0 100 100" fill="none">
-            <line x1="50" y1="95" x2="50" y2="30" stroke="rgba(148,163,184,0.35)" strokeWidth="3" strokeLinecap="round" />
-            <path d="M50 8 C44 20 40 28 42 36 C45 40 55 40 58 36 C60 28 56 20 50 8Z" fill="none" stroke="rgba(148,163,184,0.55)" strokeWidth="1.5" />
-            <path d="M50 30 C42 22 32 18 22 22 C20 28 24 36 32 38 C40 40 48 36 50 30Z" fill="none" stroke="rgba(148,163,184,0.55)" strokeWidth="1.5" />
-            <path d="M50 30 C58 22 68 18 78 22 C80 28 76 36 68 38 C60 40 52 36 50 30Z" fill="none" stroke="rgba(148,163,184,0.55)" strokeWidth="1.5" />
-            <path d="M50 50 C40 42 28 40 16 46 C16 52 22 60 32 60 C42 60 50 54 50 50Z" fill="none" stroke="rgba(148,163,184,0.55)" strokeWidth="1.5" />
-            <path d="M50 50 C60 42 72 40 84 46 C84 52 78 60 68 60 C58 60 50 54 50 50Z" fill="none" stroke="rgba(148,163,184,0.55)" strokeWidth="1.5" />
-          </svg>
-        )
-      ) : done ? (
-        <svg width={isTodayCircle ? 20 : 16} height={isTodayCircle ? 20 : 16} viewBox="0 0 20 20" fill="none">
-          <path d="M4 10.5l4.5 4.5 7.5-9" stroke="white" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
-        </svg>
-      ) : isMissed ? (
-        <svg width={isTodayCircle ? 18 : 14} height={isTodayCircle ? 18 : 14} viewBox="0 0 20 20" fill="none">
-          <path d="M5 5l10 10M15 5L5 15" stroke="rgba(255,255,255,0.85)" strokeWidth="2.2" strokeLinecap="round" />
-        </svg>
-      ) : (
-        <div style={{ width: isTodayCircle ? 18 : 14, height: isTodayCircle ? 18 : 14, borderRadius: '50%', border: isTodayCircle ? '2px solid rgba(148,163,184,0.6)' : '2px solid rgba(100,116,139,0.35)', background: isTodayCircle ? 'rgba(255,255,255,0.05)' : 'transparent', boxShadow: isTodayCircle ? 'inset 0 1px 3px rgba(0,0,0,0.4)' : 'none' }} />
-      )}
-      </button>
-      <AnimatePresence>
-      </AnimatePresence>
+      <svg width="10" height="14" viewBox="0 0 10 14" fill="none">
+        <polygon points={shadowPoints} fill="rgba(0,0,0,0.4)" transform="translate(0.6,1.4)" />
+        <polygon points={facePoints} fill="#64748b" />
+        <polyline points={highlightPoints} stroke="rgba(148,163,184,0.5)" strokeWidth="1.2" strokeLinecap="round" fill="none" />
+        <polyline points={shadowEdgePoints} stroke="rgba(0,0,0,0.35)" strokeWidth="1" strokeLinecap="round" fill="none" />
+      </svg>
+    </button>
+  );
+}
+// ─────────────────────────────────────────────────────────────────────────────
+
+export default function Home() {
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const [showJoinModal, setShowJoinModal] = useState(false);
+  const [showStreakVariants, setShowStreakVariants] = useState(false);
+  const [showSplitModal, setShowSplitModal] = useState(false);
+  const [showFriendsModal, setShowFriendsModal] = useState(false);
+  const [showAddFriendModal, setShowAddFriendModal] = useState(false);
+  const [confirmRemoveFriend, setConfirmRemoveFriend] = useState(null);
+  const [friendMenuOpen, setFriendMenuOpen] = useState(null);
+  const [pendingMenuOpen, setPendingMenuOpen] = useState(null);
+  const [friendSearchQuery, setFriendSearchQuery] = useState('');
+  const [debouncedFriendSearch, setDebouncedFriendSearch] = useState('');
+  const [friendsListSearchQuery, setFriendsListSearchQuery] = useState('');
+  const [dismissedCardIds, setDismissedCardIds] = useState(() => {
+    try { const s = localStorage.getItem('friendsFeedDismissedCards'); return new Set(s ? JSON.parse(s) : []); }
+    catch { return new Set(); }
+  });
+  const [friendsModalViewed, setFriendsModalViewed] = useState(false);
+  const [workoutStartTime, setWorkoutStartTime] = useState(null);
+  const [workoutOverrideDay, setWorkoutOverrideDay] = useState(null);
+  const [showStreakCelebration, setShowStreakCelebration] = useState(false);
+  const [showChallengesCelebration, setShowChallengesCelebration] = useState(false);
+  const [showShareWorkout, setShowShareWorkout] = useState(false);
+  const [showDaysCelebration, setShowDaysCelebration] = useState(false);
+  const [showFreezeAnimation, setShowFreezeAnimation] = useState(false);
+  const [freezeAnimationData, setFreezeAnimationData] = useState({ freezesLostCount: 0, finalFreezeCount: 0 });
+  const [showStreakLossAnimation, setShowStreakLossAnimation] = useState(false);
+  const [streakLossAnimationData, setStreakLossAnimationData] = useState({ previousStreak: 0 });
+  const [celebrationStreakNum, setCelebrationStreakNum] = useState(0);
+  const [celebrationChallenges, setCelebrationChallenges] = useState([]);
+  const [celebrationExercises, setCelebrationExercises] = useState([]);
+  const [celebrationWorkoutName, setCelebrationWorkoutName] = useState('');
+  const [celebrationPreviousExercises, setCelebrationPreviousExercises] = useState([]);
+  const [celebrationDurationMinutes, setCelebrationDurationMinutes] = useState(0);
+  const [justLoggedDay, setJustLoggedDay] = useState(null);
+  const [activeCircleDay, setActiveCircleDay] = useState(null);
+  const [bubblePos, setBubblePos] = useState(null);
+  const [summaryLog, setSummaryLog] = useState(null);
+  const [viewWorkoutDay, setViewWorkoutDay] = useState(null);
+  const [pressedDay, setPressedDay] = useState(null);
+  const [weekOffset, setWeekOffset] = useState(0);
+  const [slideDirection, setSlideDirection] = useState(0);
+  const [, forceUpdateSwaps] = useState(0);
+  const audioCtxRef = useRef(null);
+  const celebTimers = useRef([]);
+
+  const [headerState, setHeaderState] = useState('top');
+  const lastScrollY = useRef(0);
+  const ticking = useRef(false);
+
+  useEffect(() => {
+    lastScrollY.current = window.scrollY;
+    const handleScroll = () => {
+      if (ticking.current) return;
+      ticking.current = true;
+      requestAnimationFrame(() => {
+        const currentY = window.scrollY;
+        const prev = lastScrollY.current;
+        if (currentY <= 10) {
+          setHeaderState('top');
+        } else if (currentY > prev) {
+          setHeaderState('hidden');
+        } else {
+          setHeaderState('visible');
+        }
+        lastScrollY.current = currentY;
+        ticking.current = false;
+      });
+    };
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  useEffect(() => {
+    const handleSwapChanged = () => forceUpdateSwaps(n => n + 1);
+    window.addEventListener('weekSwapChanged', handleSwapChanged);
+    return () => window.removeEventListener('weekSwapChanged', handleSwapChanged);
+  }, []);
+
+  useEffect(() => {
+    const prev = document.body.style.backgroundColor;
+    document.body.style.backgroundColor = '#020817';
+    document.documentElement.style.backgroundColor = '#020817';
+    return () => {
+      document.body.style.backgroundColor = prev;
+      document.documentElement.style.backgroundColor = '';
+    };
+  }, []);
+
+  const triggerRefresh = async () => {
+    await Promise.all([
+      queryClient.invalidateQueries({ queryKey: ['currentUser'] }),
+      queryClient.invalidateQueries({ queryKey: ['checkIns'] }),
+      queryClient.invalidateQueries({ queryKey: ['friendPosts'] }),
+      queryClient.invalidateQueries({ queryKey: ['notifications'] }),
+      queryClient.invalidateQueries({ queryKey: ['friends'] }),
+      queryClient.invalidateQueries({ queryKey: ['weeklyWorkoutLogs'] }),
+    ]);
+  };
+
+  useEffect(() => {
+    const onHomeButtonClick = () => {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      triggerRefresh();
+    };
+    window.addEventListener('homeButtonClicked', onHomeButtonClick);
+    return () => window.removeEventListener('homeButtonClicked', onHomeButtonClick);
+  }, [queryClient]);
+
+  const { data: currentUser, isLoading: userLoading } = useQuery({
+    queryKey: ['currentUser'],
+    queryFn: async () => {
+      try { return await base44.auth.me(); }
+      catch (error) { console.error('Auth error:', error); return null; }
+    },
+    staleTime: 0, // always fetch fresh user data to catch onboarding_completed resets
+    gcTime: 10 * 60 * 1000,
+  });
+
+  useEffect(() => {
+    injectStreakStyles();
+    if (!currentUser) return;
+    const todayDow = new Date().getDay();
+    const todayAdjustedDay = todayDow === 0 ? 7 : todayDow;
+    const trainingDaysForCheck = currentUser?.training_days || [];
+    const isTodayRestDay = trainingDaysForCheck.length > 0 && !trainingDaysForCheck.includes(todayAdjustedDay);
+    if (isTodayRestDay) return;
+
+    const checkMissedWorkouts = async () => {
+      try {
+        const result = await base44.functions.invoke('checkMissedWorkoutsAndConsumeFreezes', {});
+        if (result.data?.shouldShowAnimation) {
+          setFreezeAnimationData({
+            freezesLostCount: result.data.freezesLostCount,
+            finalFreezeCount: result.data.currentFreezes,
+          });
+          setShowFreezeAnimation(true);
+        }
+      } catch (error) {
+        console.error('Error checking missed workouts:', error);
+      }
+    };
+    const checkStreakLoss = async () => {
+      try {
+        const result = await base44.functions.invoke('checkStreakLoss', {});
+        if (result.data?.shouldShowAnimation) {
+          setStreakLossAnimationData({
+            previousStreak: result.data.previousStreak,
+          });
+          setShowStreakLossAnimation(true);
+        }
+      } catch (error) {
+        console.error('Error checking streak loss:', error);
+      }
+    };
+    checkMissedWorkouts();
+    checkStreakLoss();
+  }, [currentUser?.id]);
+
+  useEffect(() => {
+    return () => { celebTimers.current.forEach(clearTimeout); };
+  }, []);
+
+  useEffect(() => {
+    const t = setTimeout(() => setDebouncedFriendSearch(sanitiseUsernameQuery(friendSearchQuery)), 300);
+    return () => clearTimeout(t);
+  }, [friendSearchQuery]);
+
+  const { data: gymMemberships = [] } = useQuery({
+    queryKey: ['gymMemberships', currentUser?.id],
+    queryFn: () => base44.entities.GymMembership.filter({ user_id: currentUser?.id, status: 'active' }),
+    enabled: !!currentUser?.id,
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
+    placeholderData: (prev) => prev,
+  });
+
+  const primaryGymIdForQuery = currentUser?.primary_gym_id || (gymMemberships.length > 0 ? gymMemberships[0]?.gym_id : null);
+
+  const { data: allMemberGyms = [] } = useQuery({
+    queryKey: ['memberGyms', gymMemberships.map(m => m.gym_id).join(',')],
+    queryFn: () => {
+      const gymIds = gymMemberships.map(m => m.gym_id);
+      return gymIds.length > 0 ? base44.entities.Gym.filter({ id: { $in: gymIds } }) : Promise.resolve([]);
+    },
+    enabled: gymMemberships.length > 0,
+    staleTime: 10 * 60 * 1000,
+    gcTime: 30 * 60 * 1000,
+    placeholderData: (prev) => prev,
+  });
+
+  const memberGymData = allMemberGyms.find(g => g.id === primaryGymIdForQuery) || allMemberGyms[0] || null;
+
+  const { data: allCheckIns = [] } = useQuery({
+    queryKey: ['checkIns', currentUser?.id],
+    queryFn: () => base44.entities.CheckIn.filter({ user_id: currentUser?.id }, '-check_in_date', 100),
+    enabled: !!currentUser,
+    staleTime: 1 * 60 * 1000,
+    gcTime: 5 * 60 * 1000,
+    placeholderData: (prev) => prev,
+  });
+
+  const { data: notifications = [] } = useQuery({
+    queryKey: ['notifications', currentUser?.id],
+    queryFn: () => base44.entities.Notification.filter({ user_id: currentUser?.id }, '-created_date', 5),
+    enabled: !!currentUser,
+    staleTime: 2 * 60 * 1000,
+    gcTime: 5 * 60 * 1000,
+    refetchInterval: 60 * 1000,
+    refetchIntervalInBackground: false,
+    placeholderData: (prev) => prev,
+  });
+
+  const { data: friends = [] } = useQuery({
+    queryKey: ['friends', currentUser?.id],
+    queryFn: () => base44.entities.Friend.filter({ user_id: currentUser?.id, status: 'accepted' }, '-created_date', 200),
+    enabled: !!currentUser,
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
+    placeholderData: (prev) => prev,
+  });
+
+  const friendIdList = useMemo(() => friends.map((f) => f.friend_id), [friends]);
+
+  const { data: allPosts = [] } = useQuery({
+    queryKey: ['friendPosts', currentUser?.id, friendIdList.join(',')],
+    queryFn: () =>
+      base44.functions.invoke('getFriendPosts', {
+        friendIds: friendIdList,
+        limit: 200,
+      }).then(res => res.data?.posts || []),
+    enabled: !!currentUser,
+    staleTime: 1 * 60 * 1000,
+    gcTime: 5 * 60 * 1000,
+    placeholderData: (prev) => prev,
+  });
+
+  // ── Friend requests ─────────────────────────────────────────────────────
+  const { data: friendRequests = [] } = useQuery({
+    queryKey: ['friendRequests', currentUser?.id],
+    queryFn: () => base44.entities.Friend.filter({ friend_id: currentUser?.id, status: 'pending' }, '-created_date', 50),
+    enabled: !!currentUser,
+    staleTime: 2 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
+    placeholderData: (prev) => prev,
+  });
+
+  const { data: sentFriendRequests = [] } = useQuery({
+    queryKey: ['sentFriendRequests', currentUser?.id],
+    queryFn: () => base44.entities.Friend.filter({ user_id: currentUser?.id, status: 'pending' }, '-created_date', 50),
+    enabled: !!currentUser,
+    staleTime: 2 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
+    placeholderData: (prev) => prev,
+  });
+
+  const allFriendAndRequestIds = useMemo(() => {
+    const ids = new Set([...friends.map(f => f.friend_id), ...friendRequests.map(r => r.user_id), ...sentFriendRequests.map(r => r.friend_id)]);
+    return Array.from(ids);
+  }, [friends, friendRequests, sentFriendRequests]);
+
+  const { data: friendUsersList = [] } = useQuery({
+    queryKey: ['friendUsersList', allFriendAndRequestIds.join(',')],
+    queryFn: () => allFriendAndRequestIds.length > 0
+      ? base44.functions.invoke('getFriendUsers', { userIds: allFriendAndRequestIds }).then(r => r.data?.users || [])
+      : Promise.resolve([]),
+    enabled: allFriendAndRequestIds.length > 0,
+    staleTime: 5 * 60 * 1000,
+    gcTime: 15 * 60 * 1000,
+    placeholderData: (prev) => prev,
+  });
+
+  const { data: searchResults = [] } = useQuery({
+    queryKey: ['userSearch', debouncedFriendSearch],
+    queryFn: () => base44.functions.invoke('searchUsers', { query: debouncedFriendSearch }).then(r => r.data?.users || []),
+    enabled: debouncedFriendSearch.trim().length >= 2,
+    staleTime: 30 * 1000,
+    gcTime: 2 * 60 * 1000,
+  });
+
+  const { data: recentLifts = [] } = useQuery({
+    queryKey: ['recentLifts', friendIdList.join(',')],
+    queryFn: () => friendIdList.length > 0
+      ? base44.entities.Lift.filter({ member_id: { $in: friendIdList }, is_pr: true }, '-created_date', 50)
+      : Promise.resolve([]),
+    enabled: friendIdList.length > 0,
+    staleTime: 10 * 60 * 1000,
+    gcTime: 30 * 60 * 1000,
+    placeholderData: (prev) => prev,
+  });
+
+  // ── Check-in users for community card ────────────────────────────────────
+  const todayStr = new Date().toISOString().split('T')[0];
+  const todayCheckInsForQuery = useMemo(
+    () => allCheckIns.filter(c => c.check_in_date?.startsWith(todayStr) && c.gym_id === primaryGymIdForQuery),
+    [allCheckIns, todayStr, primaryGymIdForQuery]
+  );
+  const checkInUsers = useMemo(() => {
+    const seen = new Set();
+    return allCheckIns
+      .filter(c => c.check_in_date?.startsWith(todayStr) && c.gym_id === primaryGymIdForQuery)
+      .filter(c => { if (seen.has(c.user_id)) return false; seen.add(c.user_id); return true; })
+      .map(c => ({ user_id: c.user_id, display_name: c.user_name, username: c.user_name, avatar_url: null }));
+  }, [allCheckIns, todayStr, primaryGymIdForQuery]);
+
+  const checkInUserIds = useMemo(() => checkInUsers.map(u => u.user_id), [checkInUsers]);
+  const { data: checkInAvatars = {} } = useQuery({
+    queryKey: ['checkInAvatars', checkInUserIds.join(',')],
+    queryFn: async () => {
+      if (checkInUserIds.length === 0) return {};
+      const res = await base44.functions.invoke('getUserAvatars', { userIds: checkInUserIds });
+      return res.data?.avatars || {};
+    },
+    enabled: checkInUserIds.length > 0,
+    staleTime: 5 * 60 * 1000,
+    gcTime: 15 * 60 * 1000,
+  });
+  const enrichedCheckInUsers = useMemo(() => checkInUsers.map(u => ({
+    ...u,
+    avatar_url: checkInAvatars[u.user_id]?.avatar_url || null,
+    display_name: checkInAvatars[u.user_id]?.full_name || u.display_name,
+  })), [checkInUsers, checkInAvatars]);
+
+  // ── Friend mutations ──────────────────────────────────────────────────────
+  const acceptFriendMutation = useMutation({
+    mutationFn: async (userId) => {
+      const req = friendRequests.find(r => r.user_id === userId);
+      if (req) await base44.entities.Friend.update(req.id, { status: 'accepted' });
+      await base44.entities.Friend.create({ user_id: currentUser.id, friend_id: userId, user_name: currentUser.full_name, friend_name: req?.user_name || '', status: 'accepted' });
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['friends'] })
+      .then(() => queryClient.invalidateQueries({ queryKey: ['friendRequests'] })),
+  });
+
+  const rejectFriendMutation = useMutation({
+    mutationFn: async (userId) => {
+      const req = friendRequests.find(r => r.user_id === userId);
+      if (req) await base44.entities.Friend.delete(req.id);
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['friendRequests'] }),
+  });
+
+  const removeFriendMutation = useMutation({
+    mutationFn: async (friendId) => {
+      const f1 = friends.find(f => f.friend_id === friendId);
+      if (f1) await base44.entities.Friend.delete(f1.id);
+      const f2 = await base44.entities.Friend.filter({ user_id: friendId, friend_id: currentUser.id, status: 'accepted' });
+      if (f2.length) await base44.entities.Friend.delete(f2[0].id);
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['friends'] }),
+  });
+
+  const cancelFriendMutation = useMutation({
+    mutationFn: async (friendId) => {
+      const req = sentFriendRequests.find(r => r.friend_id === friendId);
+      if (req) await base44.entities.Friend.delete(req.id);
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['sentFriendRequests'] }),
+  });
+
+  const addFriendMutation = useMutation({
+    mutationFn: async (user) => {
+      await base44.entities.Friend.create({ user_id: currentUser.id, friend_id: user.id, user_name: currentUser.full_name, friend_name: user.display_name || user.full_name, friend_avatar: user.avatar_url || null, status: 'pending' });
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['sentFriendRequests'] }),
+  });
+
+  // ── Streak animation helper ───────────────────────────────────────────────
+  const runStreakAnimation = (streakNum, audioRef, timers) => {
+    if (!audioRef.current) return;
+    const ctx = audioRef.current;
+    try { soundBounceIn(ctx); } catch {}
+    const t1 = setTimeout(() => { try { soundNumPop(ctx); } catch {} }, 500);
+    const t2 = setTimeout(() => { try { soundGlowPulse(ctx); } catch {} }, 900);
+    timers.current.push(t1, t2);
+  };
+
+  useEffect(() => {
+    if (currentUser && !currentUser.onboarding_completed && !currentUser.deleted_at) {
+      navigate(createPageUrl('Onboarding'), { replace: true });
+    }
+  }, [currentUser?.onboarding_completed, currentUser?.deleted_at, navigate]);
+
+  useEffect(() => {
+    if (!showStreakCelebration) return;
+    const init = setTimeout(() => {
+      runStreakAnimation(celebrationStreakNum, audioCtxRef, celebTimers);
+    }, 50);
+    return () => {
+      clearTimeout(init);
+      celebTimers.current.forEach(clearTimeout);
+    };
+  }, [showStreakCelebration]);
+
+  const memberGym = memberGymData || null;
+  const userCheckIns = useMemo(
+    () => allCheckIns.filter((c) => c.user_id === currentUser?.id),
+    [allCheckIns, currentUser?.id]
+  );
+  const lastCheckIn = userCheckIns.length > 0 ? userCheckIns[0].check_in_date : null;
+  const daysSinceCheckIn = lastCheckIn ? differenceInDays(new Date(), new Date(lastCheckIn)) : null;
+
+  const friendPosts = useMemo(() => allPosts.filter((post) =>
+    friendIdList.includes(post.member_id) &&
+    !post.is_system_generated &&
+    !post.content?.includes('well done') &&
+    !post.content?.includes('workout finished')
+  ), [allPosts, friendIdList]);
+
+  const effectiveToday = (() => {
+    const now = new Date();
+    if (now.getHours() < 3) {
+      const yesterday = new Date(now);
+      yesterday.setDate(yesterday.getDate() - 1);
+      return yesterday.toISOString().split('T')[0];
+    }
+    return now.toISOString().split('T')[0];
+  })();
+
+  const { data: allRecentCheckIns = [] } = useQuery({
+    queryKey: ['friendCheckIns', friendIdList.join(',')],
+    queryFn: () => base44.functions.invoke('getFriendCheckIns', { friendIds: friendIdList, sinceDate: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0] }).then(r => r.data?.checkIns || []),
+    enabled: !!currentUser?.id && friendIdList.length > 0,
+    staleTime: 2 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
+    placeholderData: (prev) => prev,
+  });
+
+  const { data: weeklyWorkoutLogs = [] } = useQuery({
+    queryKey: ['weeklyWorkoutLogs', currentUser?.id, weekOffset],
+    queryFn: () => {
+      const base = startOfWeek(new Date(), { weekStartsOn: 1 });
+      base.setDate(base.getDate() + weekOffset * 7);
+      const monday = base.toISOString().split('T')[0];
+      const sunday = new Date(base);
+      sunday.setDate(base.getDate() + 6);
+      const sundayStr = sunday.toISOString().split('T')[0];
+      return base44.entities.WorkoutLog.filter({
+        user_id: currentUser?.id,
+        completed_date: { $gte: monday, $lte: sundayStr },
+      });
+    },
+    enabled: !!currentUser?.id,
+    staleTime: 1 * 60 * 1000,
+    gcTime: 5 * 60 * 1000,
+    placeholderData: (prev) => prev,
+  });
+
+  const userStreak = currentUser?.current_streak || 0;
+  const streakVariant = currentUser?.streak_variant || 'default';
+  const todayDowAdjusted = (() => { const d = new Date().getDay(); return d === 0 ? 7 : d; })();
+  const workoutLoggedToday = weeklyWorkoutLogs.some(log => log.completed_date === effectiveToday) || justLoggedDay === todayDowAdjusted;
+  const todayIsRestDay = !(currentUser?.training_days || []).includes(todayDowAdjusted);
+  const showCheckInButton = !todayIsRestDay || workoutOverrideDay !== null;
+
+  const calculateFriendStreak = (checkIns) => {
+    if (checkIns.length === 0) return 0;
+    const today = startOfDay(new Date());
+    const lastCI = startOfDay(new Date(checkIns[0].check_in_date));
+    if (differenceInDays(today, lastCI) > 1) return 0;
+    let streak = 1;
+    for (let i = 0; i < checkIns.length - 1; i++) {
+      const cur = startOfDay(new Date(checkIns[i].check_in_date));
+      const nxt = startOfDay(new Date(checkIns[i + 1].check_in_date));
+      const diff = differenceInDays(cur, nxt);
+      if (diff === 1 || diff === 2) streak++; else break;
+    }
+    return streak;
+  };
+
+  const friendsWithActivity = useMemo(() => friends.map(friend => {
+    const friendCheckIns = allRecentCheckIns.filter(c => c.user_id === friend.friend_id);
+    const lastCI = friendCheckIns.length > 0 ? friendCheckIns[0] : null;
+    return {
+      ...friend,
+      activity: {
+        checkIns: friendCheckIns,
+        streak: calculateFriendStreak(friendCheckIns),
+        lastCheckIn: lastCI,
+        daysSinceCheckIn: lastCI ? differenceInDays(new Date(), new Date(lastCI.check_in_date)) : null,
+        totalCheckIns: friendCheckIns.length,
+      }
+    };
+  }).sort((a, b) => {
+    if (a.activity.daysSinceCheckIn === 0 && b.activity.daysSinceCheckIn !== 0) return -1;
+    if (a.activity.daysSinceCheckIn !== 0 && b.activity.daysSinceCheckIn === 0) return 1;
+    return (b.activity.streak || 0) - (a.activity.streak || 0);
+  }), [friends, allRecentCheckIns]);
+
+  const socialFeedPosts = useMemo(() => {
+    const threeDaysAgo = new Date(Date.now() - 3 * 24 * 60 * 60 * 1000);
+    return allPosts.filter(post =>
+      (friendIdList.includes(post.member_id) || post.member_id === currentUser?.id) &&
+      (post.content || post.image_url || post.video_url || post.workout_name) &&
+      !post.gym_join &&
+      new Date(post.created_date) >= threeDaysAgo
+    );
+  }, [allPosts, friendIdList, currentUser?.id]);
+
+  const activityFeed = useMemo(() => {
+    const activities = [];
+    const exerciseNames = { bench_press: 'Bench Press', squat: 'Squat', deadlift: 'Deadlift', overhead_press: 'Overhead Press', barbell_row: 'Barbell Row', power_clean: 'Power Clean' };
+
+    // PRs
+    const friendPRs = recentLifts.filter(l => l.is_pr && friendIdList.includes(l.member_id));
+    friendPRs.forEach(lift => {
+      const friend = friends.find(f => f.friend_id === lift.member_id);
+      if (differenceInDays(new Date(), new Date(lift.created_date)) <= 7) {
+        activities.push({
+          id: `pr-${lift.id}`,
+          type: 'pr',
+          friendId: lift.member_id,
+          friendName: friend?.friend_name || lift.member_name,
+          friendAvatar: friend?.friend_avatar,
+          message: `just hit a new PR — ${lift.weight_lbs}lbs ${exerciseNames[lift.exercise] || lift.exercise}`,
+          timestamp: new Date(lift.created_date),
+        });
+      }
+    });
+
+    // Leaderboard rank changes — friends with top streaks get a spotlight moment
+    friendsWithActivity.forEach((friend, idx) => {
+      const streak = friend.activity?.streak || 0;
+      if (streak > 0 && friend.activity?.daysSinceCheckIn === 0) {
+        const rank = idx + 1;
+        if (rank <= 3) {
+          activities.push({
+            id: `leaderboard-${friend.friend_id}`,
+            type: 'leaderboard_rank',
+            friendId: friend.friend_id,
+            friendName: friend.friend_name,
+            friendAvatar: friend.friend_avatar,
+            rank,
+            message: rank === 1
+              ? `just took #1 on the weekly consistency leaderboard 👑`
+              : `is sitting at #${rank} on the consistency leaderboard`,
+            timestamp: new Date(Date.now() - rank * 60000),
+          });
+        } else if (streak >= 7 && streak % 7 === 0) {
+          // Streak milestone
+          activities.push({
+            id: `streak-${friend.friend_id}`,
+            type: 'streak',
+            friendId: friend.friend_id,
+            friendName: friend.friend_name,
+            friendAvatar: friend.friend_avatar,
+            streakCount: streak,
+            message: `just hit a ${streak}-day streak! 🔥`,
+            timestamp: new Date(Date.now() - 120000),
+          });
+        }
+      }
+    });
+
+    // Notifications
+    notifications.forEach(n => {
+      const text = (n.message || n.title || '').toLowerCase();
+      if (differenceInDays(new Date(), new Date(n.created_date)) <= 7 && !text.includes('accepted') && !text.includes('friend request') && !text.includes('official') && !text.includes('gym request')) {
+        activities.push({ id: `notif-${n.id}`, type: 'notification', message: n.message || n.title, timestamp: new Date(n.created_date) });
+      }
+    });
+
+    return activities.sort((a, b) => b.timestamp - a.timestamp);
+  }, [recentLifts, friendsWithActivity, friends, friendIdList, notifications]);
+
+  const activityCards = useMemo(() => {
+    const cards = [];
+    const lastCI = userCheckIns[0];
+    const daysSince = lastCI ? differenceInDays(new Date(), new Date(lastCI.check_in_date)) : null;
+    if (daysSince && daysSince >= 3) cards.push({ id: 'nudge-checkin', type: 'nudge', title: 'Time to Check In', message: `You haven't checked in in ${daysSince} days. Let's get back on track! 💪`, emoji: '⏰' });
+    friendsWithActivity.forEach(friend => {
+      if (friend.activity.daysSinceCheckIn >= 7) cards.push({ id: `inactive-${friend.friend_id}`, type: 'friend-inactive', title: `${friend.friend_name} Needs a Nudge`, message: `${friend.friend_name} hasn't checked in for ${friend.activity.daysSinceCheckIn} days.`, emoji: '👋' });
+    });
+    return cards;
+  }, [userCheckIns, friendsWithActivity]);
+
+  const filteredActivityCards = useMemo(
+    () => activityCards.filter(c => !dismissedCardIds.has(c.id)),
+    [activityCards, dismissedCardIds]
+  );
+  const filteredSearchResults = useMemo(
+    () => searchResults.filter(u => !friendIdList.includes(u.id)),
+    [searchResults, friendIdList]
+  );
+
+  if (userLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-blue-950 to-slate-950">
+        <div className="max-w-4xl mx-auto flex items-center justify-between px-4 py-3">
+          <div className="flex items-center gap-2">
+            <div className="w-12 h-12 rounded-full bg-slate-700/60 animate-pulse" />
+            <div className="w-8 h-5 rounded bg-slate-700/60 animate-pulse" />
+          </div>
+          <div className="w-32 h-5 rounded bg-slate-700/60 animate-pulse" />
+          <div className="w-9 h-9 rounded-full bg-slate-700/60 animate-pulse" />
+        </div>
+        <div className="max-w-4xl mx-auto px-4 space-y-4 pb-4">
+          <div className="rounded-2xl bg-slate-800/60 animate-pulse h-40" />
+          <div className="flex gap-3 overflow-hidden">
+            {[...Array(5)].map((_, i) => (
+              <div key={i} className="flex flex-col items-center gap-1.5 flex-shrink-0">
+                <div className="w-14 h-14 rounded-full bg-slate-700/60 animate-pulse" />
+                <div className="w-10 h-2.5 rounded bg-slate-700/60 animate-pulse" />
+              </div>
+            ))}
+          </div>
+          {[...Array(3)].map((_, i) => (
+            <div key={i} className="rounded-2xl bg-slate-800/60 p-4 space-y-3 animate-pulse">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-full bg-slate-700/60" />
+                <div className="space-y-1.5 flex-1">
+                  <div className="h-3 rounded bg-slate-700/60 w-1/3" />
+                  <div className="h-2.5 rounded bg-slate-700/60 w-1/5" />
+                </div>
+              </div>
+              <div className="h-3 rounded bg-slate-700/60 w-5/6" />
+              <div className="h-3 rounded bg-slate-700/60 w-2/3" />
+            </div>
+          ))}
+        </div>
       </div>
-      );
+    );
   }
 
   const dismissCard = (id) => {
@@ -695,43 +1293,47 @@ function ArrowButton({ direction, disabled, onPress }) {
                                 willChange: 'opacity', cursor: 'pointer', padding: 0, outline: 'none',
                                 WebkitTapHighlightColor: 'transparent', userSelect: 'none',
                                 touchAction: 'manipulation',
-                              }}
-                              onPointerDown={(e) => {
-                                setPressedDay(day);
-                                const rect = e.currentTarget.getBoundingClientRect();
-                                const dayDate = new Date(mondayBase);
-                                dayDate.setDate(mondayBase.getDate() + (day - 1));
-                                const dateStr = dayDate.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' });
-                                let bubbleColor = 'rgba(71,85,105,0.85)';
-                                if (isRestDay) bubbleColor = isPastOrTodayRestDay ? 'rgba(74,222,128,0.85)' : 'rgba(71,85,105,0.85)';
-                                else if (done) bubbleColor = 'rgba(96,165,250,0.85)';
-                                else if (isMissed) bubbleColor = 'rgba(248,113,113,0.85)';
-                                setBubblePos({
-                                  buttonCenterX: rect.left + rect.width / 2,
-                                  buttonBottom: rect.bottom,
-                                  day,
-                                  workoutLog: workoutLog || null,
-                                  done,
-                                  isRestDay,
-                                  isMissed,
-                                  isPastOrTodayRestDay,
-                                  isTodayCircle,
-                                  showViewWorkout,
-                                  hasBubbleBtn,
-                                  solidColor: bubbleColor,
-                                  dateLabel: dateStr,
-                                  popupLabel: isPreJoin ? '' : (() => {
-                                    if (isRestDay) return 'Rest Day';
-                                    if (isMissed) return 'No Workout';
-                                    if (done && workoutLog) return workoutLog.workout_name || workoutLog.title || workoutLog.workout_type || workoutLog.name || workoutLog.split_name || 'Workout';
-                                    if (done) return 'Workout';
-                                    const customTypes = currentUser?.custom_workout_types;
-                                    const splitDay = customTypes ? Array.isArray(customTypes) ? customTypes.find((s) => s.day === day || s.day_of_week === day) : customTypes[day] : null;
-                                    return splitDay?.name || splitDay?.title || splitDay?.workout_type || 'Training Day';
-                                  })(),
-                                });
                               }}>
                               {isRestDay ? (
+                                isPastOrTodayRestDay ? (
+                                  <svg width={isTodayCircle ? 32 : 26} height={isTodayCircle ? 32 : 26} viewBox="0 0 100 100" fill="none">
+                                    <line x1="50" y1="95" x2="50" y2="30" stroke="#15803d" strokeWidth="3" strokeLinecap="round" />
+                                    <path d="M50 8 C44 20 40 28 42 36 C45 40 55 40 58 36 C60 28 56 20 50 8Z" fill="#4ade80" stroke="#22c55e" strokeWidth="1" />
+                                    <path d="M50 30 C42 22 32 18 22 22 C20 28 24 36 32 38 C40 40 48 36 50 30Z" fill="#4ade80" stroke="#22c55e" strokeWidth="1" />
+                                    <path d="M50 30 C58 22 68 18 78 22 C80 28 76 36 68 38 C60 40 52 36 50 30Z" fill="#4ade80" stroke="#22c55e" strokeWidth="1" />
+                                    <path d="M50 50 C40 42 28 40 16 46 C16 52 22 60 32 60 C42 60 50 54 50 50Z" fill="#4ade80" stroke="#22c55e" strokeWidth="1" />
+                                    <path d="M50 50 C60 42 72 40 84 46 C84 52 78 60 68 60 C58 60 50 54 50 50Z" fill="#4ade80" stroke="#22c55e" strokeWidth="1" />
+                                    <line x1="50" y1="30" x2="36" y2="39" stroke="#15803d" strokeWidth="1.2" strokeLinecap="round" />
+                                    <line x1="50" y1="30" x2="64" y2="39" stroke="#15803d" strokeWidth="1.2" strokeLinecap="round" />
+                                    <line x1="50" y1="50" x2="32" y2="57" stroke="#15803d" strokeWidth="1.2" strokeLinecap="round" />
+                                    <line x1="50" y1="50" x2="68" y2="57" stroke="#15803d" strokeWidth="1.2" strokeLinecap="round" />
+                                  </svg>
+                                ) : (
+                                  <svg width={isTodayCircle ? 32 : 26} height={isTodayCircle ? 32 : 26} viewBox="0 0 100 100" fill="none">
+                                    <line x1="50" y1="95" x2="50" y2="30" stroke="rgba(148,163,184,0.35)" strokeWidth="3" strokeLinecap="round" />
+                                    <path d="M50 8 C44 20 40 28 42 36 C45 40 55 40 58 36 C60 28 56 20 50 8Z" fill="none" stroke="rgba(148,163,184,0.55)" strokeWidth="1.5" />
+                                    <path d="M50 30 C42 22 32 18 22 22 C20 28 24 36 32 38 C40 40 48 36 50 30Z" fill="none" stroke="rgba(148,163,184,0.55)" strokeWidth="1.5" />
+                                    <path d="M50 30 C58 22 68 18 78 22 C80 28 76 36 68 38 C60 40 52 36 50 30Z" fill="none" stroke="rgba(148,163,184,0.55)" strokeWidth="1.5" />
+                                    <path d="M50 50 C40 42 28 40 16 46 C16 52 22 60 32 60 C42 60 50 54 50 50Z" fill="none" stroke="rgba(148,163,184,0.55)" strokeWidth="1.5" />
+                                    <path d="M50 50 C60 42 72 40 84 46 C84 52 78 60 68 60 C58 60 50 54 50 50Z" fill="none" stroke="rgba(148,163,184,0.55)" strokeWidth="1.5" />
+                                    <line x1="50" y1="30" x2="36" y2="39" stroke="rgba(148,163,184,0.3)" strokeWidth="1.2" strokeLinecap="round" />
+                                    <line x1="50" y1="30" x2="64" y2="39" stroke="rgba(148,163,184,0.3)" strokeWidth="1.2" strokeLinecap="round" />
+                                    <line x1="50" y1="50" x2="32" y2="57" stroke="rgba(148,163,184,0.3)" strokeWidth="1.2" strokeLinecap="round" />
+                                    <line x1="50" y1="50" x2="68" y2="57" stroke="rgba(148,163,184,0.3)" strokeWidth="1.2" strokeLinecap="round" />
+                                  </svg>
+                                )
+                              ) : done ? (
+                                <svg width={isTodayCircle ? 20 : 16} height={isTodayCircle ? 20 : 16} viewBox="0 0 20 20" fill="none">
+                                  <path d="M4 10.5l4.5 4.5 7.5-9" stroke="white" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+                                </svg>
+                              ) : isMissed ? (
+                                <svg width={isTodayCircle ? 18 : 14} height={isTodayCircle ? 18 : 14} viewBox="0 0 20 20" fill="none">
+                                  <path d="M5 5l10 10M15 5L5 15" stroke="rgba(255,255,255,0.85)" strokeWidth="2.2" strokeLinecap="round" />
+                                </svg>
+                              ) : (
+                                <div style={{ width: isTodayCircle ? 18 : 14, height: isTodayCircle ? 18 : 14, borderRadius: '50%', border: isTodayCircle ? '2px solid rgba(148,163,184,0.6)' : '2px solid rgba(100,116,139,0.35)', background: isTodayCircle ? 'rgba(255,255,255,0.05)' : 'transparent', boxShadow: isTodayCircle ? 'inset 0 1px 3px rgba(0,0,0,0.4)' : 'none' }} />
+                              )}
+                            </button>
                             <AnimatePresence>
                             </AnimatePresence>
                           </div>
