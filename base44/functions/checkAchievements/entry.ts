@@ -52,7 +52,7 @@ Deno.serve(async (req) => {
 
     for (const check of checks) {
       if (check.check()) {
-        const achievement = await base44.entities.Achievement.create({
+        const achievement = await base44.asServiceRole.entities.Achievement.create({
           user_id:          userId,
           user_name:        user.full_name,
           achievement_type: check.type,
