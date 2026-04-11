@@ -1124,6 +1124,8 @@ export default function Home() {
             const allDays = [1, 2, 3, 4, 5, 6, 7];
             const todayDow = new Date().getDay();
             const todayDay = todayDow === 0 ? 7 : todayDow;
+            // If user switched workout via the switcher, highlight that day's circle instead
+            const activeTodayDay = weekOffset === 0 && workoutOverrideDay !== null ? workoutOverrideDay : todayDay;
             const isFutureWeek = weekOffset > 0;
 
             return (
@@ -1184,7 +1186,7 @@ export default function Home() {
                       {allDays.map((day, i) => {
                         const done = loggedDays.has(day);
                         const bounce = justLoggedDay === day && weekOffset === 0;
-                        const isTodayCircle = day === todayDay && weekOffset === 0;
+                        const isTodayCircle = day === activeTodayDay && weekOffset === 0;
                         const joinDate = currentUser?.created_date || currentUser?.created_at || null;
                         const mondayThisWeek = startOfWeek(new Date(), { weekStartsOn: 1 });
                         const joinedThisWeek = joinDate && new Date(joinDate) >= mondayThisWeek;

@@ -20,11 +20,17 @@ import { recordTrainedOnRestDay, useRestDayCredit, hasRestDayCredit } from '../.
 const DAY_NAMES_FULL = ['', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 
 // ── Workout Switcher Modal ───────────────────────────────────────────────────
-function WorkoutSwitcherModal({ open, onClose, currentUser, activeDayKey, adjustedDay, onSelect }) {
+function WorkoutSwitcherModal({ open, onClose, currentUser, activeDayKey, adjustedDay, onSelect, overrideDayKey }) {
   if (!open) return null;
 
   const workoutTypes = currentUser?.custom_workout_types || {};
   const trainingDays = currentUser?.training_days || [];
+
+  // Whether the user has switched away from their natural day
+  const naturalDayIsRest = !trainingDays.includes(adjustedDay);
+  const hasOverride = overrideDayKey !== null;
+  // Show "Rest Day" option if: user switched to a workout on a rest day, OR user switched to a different workout day and wants to go back to rest
+  const showRestDayOption = hasOverride || naturalDayIsRest;
 
   const activeSplitId = currentUser?.active_split_id;
   const activeSplit = (currentUser?.saved_splits || []).find((s) => s.id === activeSplitId);
@@ -52,12 +58,11 @@ function WorkoutSwitcherModal({ open, onClose, currentUser, activeDayKey, adjust
       return a.dayKey - b.dayKey;
     });
 
-  // Rest day credit: show future rest days as swappable if user trained on a rest day earlier
   const creditAvailable = hasRestDayCredit();
   const futureFreeRestDays = creditAvailable
     ? [1, 2, 3, 4, 5, 6, 7].filter((d) => {
         if (trainingDays.includes(d)) return false;
-        if (d <= adjustedDay) return false; // must be future
+        if (d <= adjustedDay) return false;
         return true;
       })
     : [];
@@ -74,6 +79,22 @@ function WorkoutSwitcherModal({ open, onClose, currentUser, activeDayKey, adjust
           <h3 className="text-xl font-black text-white tracking-tight text-center">Switch Workout</h3>
         </div>
         <div className="px-3 pb-4 space-y-1.5 max-h-[60vh] overflow-y-auto">
+          {/* Rest Day option — shown when user can switch back to rest */}
+          {showRestDayOption && (
+            <button
+              onClick={() => { onSelect(null, 'rest'); onClose(); }}
+              className={`w-full text-left rounded-2xl border transition-all duration-200 px-4 py-3 ${
+                !hasOverride && naturalDayIsRest
+                  ? 'border-green-500/60 bg-green-500/10'
+                  : 'border-slate-700/40 bg-slate-800/50 hover:border-green-500/40 hover:bg-green-500/10'
+              }`}>
+              <p className="text-base font-black text-green-300">Rest Day 🌿</p>
+              <p className="text-xs text-green-400/70 mt-0.5">Switch back to rest for today</p>
+            </button>
+          )}
+          {(showRestDayOption && (futureFreeRestDays.length > 0 || workoutDays.length > 0)) && (
+            <div className="border-t border-slate-700/40 pt-1" />
+          )}
           {futureFreeRestDays.length > 0 && (
             <>
               <p className="text-xs text-slate-400 font-semibold px-1 pt-1 pb-0.5">Make a rest day a training day</p>
@@ -89,8 +110,7 @@ function WorkoutSwitcherModal({ open, onClose, currentUser, activeDayKey, adjust
               <div className="border-t border-slate-700/40 pt-1" />
             </>
           )}
-
-          {workoutDays.length === 0 && (
+          {workoutDays.length === 0 && !showRestDayOption && (
             <p className="text-slate-400 text-sm text-center py-4">No workouts configured yet.</p>
           )}
           {workoutDays.map((wd) => {
@@ -1178,11 +1198,17 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
         currentUser={currentUser}
         activeDayKey={activeDayKey}
         adjustedDay={adjustedDay}
+        overrideDayKey={overrideDayKey}
         onSelect={(dayKey, mode) => {
           if (mode === 'rest-to-training') {
             // User is spending their rest-day credit to swap a future rest day to a training day
             useRestDayCredit(dayKey);
             window.dispatchEvent(new Event('weekSwapChanged'));
+          } else if (mode === 'rest') {
+            // Switch back to rest day — clear the override
+            setOverrideDayKey(null);
+            setEditingIndex(null);
+            onOverrideDayChange?.(null);
           } else {
             const newOverride = dayKey === adjustedDay ? null : dayKey;
             setOverrideDayKey(newOverride);
