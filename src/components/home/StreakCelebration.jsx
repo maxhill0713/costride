@@ -25,6 +25,7 @@ function StreakCelebration({
   setShowDaysCelebration,
   setJustLoggedDay,
 }) {
+
   return (
     <>
       {/* STAGE 1 — Streak animation */}
@@ -62,6 +63,7 @@ function StreakCelebration({
               padding: '0 16px',
             }}>
 
+            {/* Header */}
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 18 }}>
               <span style={{ fontSize: 20 }}>🏆</span>
               <span style={{ color: 'white', fontSize: 18, fontWeight: 900, letterSpacing: '-0.03em' }}>Challenge Progress</span>
@@ -150,6 +152,7 @@ function StreakCelebration({
                 );
               })}
             </div>
+
           </motion.div>
         )}
       </AnimatePresence>
