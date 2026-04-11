@@ -1,0 +1,80 @@
+{
+  "name": "UserProfile",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string",
+      "description": "Reference to the User entity (user.id)"
+    },
+    "display_name": {
+      "type": "string",
+      "description": "Public display name"
+    },
+    "avatar_url": {
+      "type": "string",
+      "description": "Profile picture URL"
+    },
+    "bio": {
+      "type": "string",
+      "description": "Short public bio"
+    },
+    "username": {
+      "type": "string",
+      "description": "Unique username/handle"
+    },
+    "account_type": {
+      "type": "string",
+      "enum": [
+        "user",
+        "gym_owner",
+        "coach"
+      ],
+      "default": "user",
+      "description": "Type of account"
+    },
+    "primary_gym_id": {
+      "type": "string",
+      "description": "ID of the user's primary gym"
+    },
+    "primary_gym_name": {
+      "type": "string",
+      "description": "Name of the user's primary gym"
+    },
+    "current_streak": {
+      "type": "number",
+      "default": 0,
+      "description": "Current workout streak (days)"
+    },
+    "workout_split": {
+      "type": "string",
+      "description": "Current workout split name"
+    },
+    "equipped_badges": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Badge IDs displayed on profile"
+    },
+    "is_public": {
+      "type": "boolean",
+      "default": true,
+      "description": "Whether this profile is publicly visible"
+    }
+  },
+  "required": [
+    "user_id"
+  ],
+  "rls": {
+    "create": {
+      "data.user_id": "{{user.id}}"
+    },
+    "read": {},
+    "update": {
+      "data.user_id": "{{user.id}}"
+    },
+    "delete": {
+      "data.user_id": "{{user.id}}"
+    }
+  }
+}
