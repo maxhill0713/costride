@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Camera } from 'lucide-react';
@@ -36,15 +36,52 @@ export default function ProfileSettingsContent() {
     queryFn: () => base44.auth.me()
   });
 
+  // ── Auto-create UserProfile if it doesn't exist yet (migration for existing users) ──
+  useEffect(() => {
+    if (!currentUser?.id) return;
+    base44.entities.UserProfile.filter({ user_id: currentUser.id }).then((existing) => {
+      if (existing.length === 0) {
+        base44.entities.UserProfile.create({
+          user_id: currentUser.id,
+          display_name: currentUser.full_name || '',
+          avatar_url: currentUser.avatar_url || null,
+          bio: currentUser.bio || null,
+          username: currentUser.username || null,
+          account_type: currentUser.account_type || 'user',
+          primary_gym_id: currentUser.primary_gym_id || null,
+          primary_gym_name: currentUser.primary_gym_name || null,
+          current_streak: currentUser.current_streak || 0,
+          equipped_badges: currentUser.equipped_badges || [],
+          is_public: true,
+        }).catch(() => {});
+      }
+    }).catch(() => {});
+  }, [currentUser?.id]);
+
   const updateSettingsMutation = useMutation({
     mutationFn: async (settings) => {
+      // 1. Always keep User entity in sync (backwards compat)
       await base44.auth.updateMe(settings);
+      // 2. Mirror public fields to UserProfile (upsert)
+      const profileFields = {};
+      if (settings.full_name !== undefined)   profileFields.display_name = settings.full_name;
+      if (settings.avatar_url !== undefined)  profileFields.avatar_url   = settings.avatar_url;
+      if (settings.bio !== undefined)         profileFields.bio          = settings.bio;
+      if (Object.keys(profileFields).length > 0 && currentUser?.id) {
+        const existing = await base44.entities.UserProfile.filter({ user_id: currentUser.id });
+        if (existing.length > 0) {
+          await base44.entities.UserProfile.update(existing[0].id, profileFields);
+        } else {
+          await base44.entities.UserProfile.create({ user_id: currentUser.id, ...profileFields });
+        }
+      }
       return base44.auth.me();
     },
     onSuccess: (updatedUser) => {
       queryClient.setQueryData(['currentUser'], updatedUser);
       queryClient.invalidateQueries({ queryKey: ['currentUser'] });
       queryClient.invalidateQueries({ queryKey: ['user'] });
+      queryClient.invalidateQueries({ queryKey: ['userProfile', currentUser?.id] });
     }
   });
 
