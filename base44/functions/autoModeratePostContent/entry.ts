@@ -11,10 +11,7 @@ const SPAM_PATTERNS = [
   /(?:http|www)[^\s]+/gi,
 ];
 
-const INAPPROPRIATE_PATTERNS = [
-  /(?:hate|kill|die)[^a-z]|[^a-z](?:hate|kill|die)/gi,
-  /(?:slur|offensive\s+term)/gi,
-];
+const INAPPROPRIATE_PATTERNS = [];
 
 function isBlatantSpam(content = '') {
   const urlCount = (content.match(/https?:\/\/|www\./gi) || []).length;
@@ -58,13 +55,13 @@ Deno.serve(async (req) => {
 
     const content = post.content || '';
 
-    if (isBlatantSpam(content) || isInappropriate(content)) {
+    if (isBlatantSpam(content)) {
       await base44.asServiceRole.entities.Post.update(postId, { is_hidden: true });
       console.log(JSON.stringify({ event: 'AUDIT', action: 'post_auto_hidden', resource_type: 'post', resource_id: postId, reason: isBlatantSpam(content) ? 'spam' : 'inappropriate', timestamp: new Date().toISOString() }));
       return Response.json({
         action:  'hidden',
         post_id: postId,
-        reason:  isBlatantSpam(content) ? 'spam' : 'inappropriate',
+        reason:  'spam',
       });
     }
 
