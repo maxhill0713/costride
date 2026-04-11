@@ -431,7 +431,13 @@ function PostCard({ post, onLike, onComment, onSave, onDelete, fullWidth = false
     queryKey: ['reactedUsers', reactedUserIds.join(',')],
     queryFn: async () => {
       if (reactedUserIds.length === 0) return [];
-      return base44.entities.User.filter({ id: { $in: reactedUserIds } });
+      const res = await base44.functions.invoke('getUserAvatars', { userIds: reactedUserIds });
+      return reactedUserIds.map(id => ({
+        id,
+        display_name: res.data.avatars[id]?.full_name || 'Unknown',
+        full_name: res.data.avatars[id]?.full_name || 'Unknown',
+        avatar_url: res.data.avatars[id]?.avatar_url
+      }));
     },
     enabled: showReactionsModal && reactedUserIds.length > 0,
     staleTime: 10 * 60 * 1000,
