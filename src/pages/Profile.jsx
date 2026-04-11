@@ -324,7 +324,10 @@ export default function Profile() {
       return { previous };
     },
     onError: (err, data, context) => { queryClient.setQueryData(['userPosts', currentUser?.id], context.previous); },
-    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['userPosts', currentUser?.id] }); },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['userPosts', currentUser?.id] });
+      queryClient.invalidateQueries({ queryKey: ['friendPosts'] });
+    },
   });
 
   if (!currentUser) {
@@ -702,7 +705,7 @@ export default function Profile() {
                 <div className="flex flex-col gap-3">
                   <button
                     onClick={() => createPostMutation.mutate({ content: postContent, image_url: postImage, video_url: postVideo, share_with_community: shareWithCommunity })}
-                    disabled={(!postImage && !postVideo && !postContent.trim()) || createPostMutation.isPending}
+                    disabled={(!postImage && !postVideo && !postContent.trim()) || uploading || createPostMutation.isPending}
                     className={`w-full font-black text-base rounded-2xl border border-transparent flex items-center justify-center transition-all duration-100 ${
                       (postImage || postVideo || postContent.trim()) && !createPostMutation.isPending
                         ? 'bg-gradient-to-b from-blue-400 via-blue-500 to-blue-600 text-white shadow-[0_4px_0_0_#1a3fa8,0_8px_20px_rgba(59,130,246,0.4)] active:shadow-none active:translate-y-[4px] active:scale-95'

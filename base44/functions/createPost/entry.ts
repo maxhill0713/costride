@@ -29,14 +29,12 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { content, image_url, video_url, allow_gym_repost, share_with_community, workout_name } = await req.json();
+    const { content, image_url, video_url, allow_gym_repost, share_with_community, workout_name, gym_id, gym_name } = await req.json();
 
     const safeContent = sanitise(content, 2000);
-    if (!safeContent) {
-      return Response.json({ error: 'Content is required' }, { status: 400 });
-    }
-    if (safeContent.length < 3) {
-      return Response.json({ error: 'Post content too short (minimum 3 characters)' }, { status: 400 });
+    // Content is optional if an image or video is provided
+    if (!safeContent && !image_url && !video_url) {
+      return Response.json({ error: 'Please add a caption, photo, or video.' }, { status: 400 });
     }
 
     // Fraud detection: check rapid posting (max 10 posts per hour)
@@ -58,17 +56,30 @@ Deno.serve(async (req) => {
 
     console.log(JSON.stringify({ event: 'AUDIT', action: 'post_created', user_id: user.id, user_email: user.email, resource_type: 'post', status: 'success', timestamp: new Date().toISOString() }));
 
+    // Resolve gym_id if not provided — look up user's primary gym membership
+    let resolvedGymId = gym_id || null;
+    let resolvedGymName = gym_name || null;
+    if (!resolvedGymId) {
+      const memberships = await base44.asServiceRole.entities.GymMembership.filter({ user_id: user.id, status: 'active' });
+      if (memberships.length > 0) {
+        resolvedGymId = memberships[0].gym_id;
+        resolvedGymName = memberships[0].gym_name || null;
+      }
+    }
+
     const post = await base44.asServiceRole.entities.Post.create({
-      member_id:         user.id,
-      member_name:       user.full_name,
-      member_avatar:     user.avatar_url || null,
-      content:           safeContent,
-      image_url:         image_url || null,
-      video_url:         video_url || null,
-      likes:             0,
-      comments:          [],
-      reactions:         {},
-      allow_gym_repost:  allow_gym_repost === true,
+      member_id:     user.id,
+      member_name:   user.full_name,
+      member_avatar: user.avatar_url || null,
+      content:       safeContent || '',
+      image_url:     image_url || null,
+      video_url:     video_url || null,
+      likes:         0,
+      comments:      [],
+      reactions:     {},
+      allow_gym_repost: allow_gym_repost === true,
+      gym_id:        resolvedGymId,
+      gym_name:      resolvedGymName,
     });
 
     // Track "Witness My Gains" challenge — only if it's a workout summary shared with community

@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Camera, X, ChevronDown, ChevronUp } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
+import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 
 // ─── How many exercises to show before expand chevron ───────────────────────
@@ -179,6 +180,7 @@ export default function ShareWorkoutScreen({ workoutName, exercises, previousExe
   const [exercisesExpanded, setExercisesExpanded] = useState(false);
   const [shareWithCommunity, setShareWithCommunity] = useState(false);
   const fileInputRef = useRef(null);
+  const queryClient = useQueryClient();
 
   useEffect(() => {
     setPostTitle(workoutName || '');
@@ -254,6 +256,8 @@ export default function ShareWorkoutScreen({ workoutName, exercises, previousExe
       }
 
       toast.success('Workout shared with your friends! 🔥');
+      queryClient.invalidateQueries({ queryKey: ['friendPosts'] });
+      queryClient.invalidateQueries({ queryKey: ['userPosts'] });
       onContinue();
     } catch (err) {
       console.error('[ShareWorkout] failed:', err);
