@@ -20,8 +20,8 @@ Deno.serve(async (req) => {
     }
 
     const gyms         = await base44.asServiceRole.entities.Gym.list();
-    const gymsToUpdate = gyms.filter(g => g.google_place_id);
-    const results      = { total: gymsToUpdate.length, updated: 0, failed: 0, no_photos: 0, skipped: 0 };
+    const gymsToUpdate = gyms.filter(g => g.google_place_id && !g.image_url);
+    const results      = { total: gymsToUpdate.length, updated: 0, failed: 0, no_photos: 0 };
 
     console.log(`Found ${gymsToUpdate.length} gyms to update`);
 
@@ -47,12 +47,7 @@ Deno.serve(async (req) => {
           results.updated++;
           console.log(`✓ Updated photo for ${gym.name}`);
         } else {
-          // Only count as no_photos if gym didn't already have an image
-          if (!gym.image_url) {
-            results.no_photos++;
-          } else {
-            results.skipped++;
-          }
+          results.no_photos++;
         }
 
         await new Promise(resolve => setTimeout(resolve, 200));
