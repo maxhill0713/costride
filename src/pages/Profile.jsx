@@ -142,7 +142,7 @@ export default function Profile() {
   });
   const { data: userPosts = [] } = useQuery({
     queryKey: ['userPosts', currentUser?.id],
-    queryFn: () => base44.entities.Post.filter({ member_id: currentUser?.id }, '-created_date', 50),
+    queryFn: () => base44.functions.invoke('getUserPosts', { memberId: currentUser?.id, limit: 50 }).then(r => r.data?.posts || []),
     enabled: !!currentUser?.id,
     staleTime: 2 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
