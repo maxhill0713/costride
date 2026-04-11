@@ -45,6 +45,12 @@ const slideDownVariants = {
   }
 };
 
+const fadeVariants = {
+  hidden: { opacity: 0, scale: 0.97 },
+  visible: { opacity: 1, scale: 1, transition: { duration: 0.15 } },
+  exit: { opacity: 0, scale: 0.97, transition: { duration: 0.12 } }
+};
+
 function FriendsSection({
   showFriendsModal,
   setShowFriendsModal,
@@ -298,7 +304,7 @@ function FriendsSection({
             <motion.div
             key="add-friend-panel"
             className="fixed inset-x-0 top-0 z-[9999] flex justify-center"
-            variants={slideDownVariants}
+            variants={fadeVariants}
             initial="hidden"
             animate="visible"
             exit="exit">
