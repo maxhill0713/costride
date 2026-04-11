@@ -1,970 +1,606 @@
 /**
- * TabAnalytics — Gym Operating System (Calm Edition)
- *
- * HIERARCHY RULES:
- *  1. Today's Focus — max 3 cards. ONE can be red. Others are neutral/blue.
- *  2. Core KPIs — clean, scan-friendly. No CTAs. No color on values unless threshold.
- *  3. Churn & Revenue Risk — single combined panel. ONE strong CTA.
- *  4. Trends & Analytics — pure insight. Zero alerts.
- *  5. Behaviour & Performance — subtle. No aggressive badges.
- *  6. Action Queue — ONLY 2–3 items. Each with £ impact.
- *
- * COLOR DISCIPLINE:
- *  - Red (danger) → used at most ONCE per viewport. True urgency only.
- *  - Warn (amber) → at most once per section. "Needs attention" not "at risk".
- *  - Accent (blue) → interactive, CTAs, active states only.
- *  - Green (success) → only when a threshold is crossed positively.
- *  - t1/t2/t3 → everything else. Silence = safety.
+ * TabAnalytics — Forge Fitness design system
+ * Clean, minimal, owner-focused analytics.
+ * Dependencies: recharts, lucide-react
  */
 
-import React, { useMemo, useState, useEffect } from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { base44 } from '@/api/base44Client';
-import { format, differenceInDays, subDays, isWithinInterval } from 'date-fns';
+import { useState, useMemo } from "react";
 import {
-  Activity, TrendingUp, TrendingDown, Users, Zap, ArrowUpRight,
-  Calendar, Clock, AlertTriangle, Shield, Target, Award,
-  UserPlus, RefreshCw, CheckCircle,
-  Send, ChevronRight,
-} from 'lucide-react';
+  LayoutDashboard, Users, FileText, BarChart2, Zap, Settings,
+  Eye, QrCode, BrainCircuit, MessageCircle, TrendingUp,
+  TrendingDown, ArrowUpRight, ArrowDownRight, Activity,
+  AlertTriangle, Shield, Clock, Calendar, Target, Send,
+  ChevronRight, ChevronDown,
+} from "lucide-react";
 import {
-  ResponsiveContainer, AreaChart, Area, CartesianGrid,
-  XAxis, YAxis, Tooltip, BarChart, Bar, Cell,
-} from 'recharts';
-import { AppButton } from '@/components/ui/AppButton';
-import { AppBadge } from '@/components/ui/AppBadge';
-import { cn } from '@/lib/utils';
+  AreaChart, Area, BarChart, Bar, XAxis, YAxis, Tooltip,
+  ResponsiveContainer, CartesianGrid, Cell, LineChart, Line,
+} from "recharts";
 
-const MVM = 40;
-const CARD = 'bg-[#0a0f1e] border border-white/[0.04] rounded-2xl shadow-[inset_0_1px_0_rgba(255,255,255,0.012)] overflow-hidden relative';
-const tick = { fill: '#4b5578', fontSize: 10, fontFamily: 'system-ui, sans-serif' };
+/* ─── TOKENS ─────────────────────────────────────────────────── */
+const C = {
+  bg:      "#0b0b0d",
+  sidebar: "#0f0f12",
+  card:    "#141416",
+  card2:   "#18181b",
+  brd:     "#222226",
+  brd2:    "#2a2a30",
+  t1:      "#ffffff",
+  t2:      "#8a8a94",
+  t3:      "#444450",
+  cyan:    "#00e5c8",
+  cyanD:   "rgba(0,229,200,0.08)",
+  cyanB:   "rgba(0,229,200,0.22)",
+  red:     "#ff4d6d",
+  redD:    "rgba(255,77,109,0.1)",
+  redB:    "rgba(255,77,109,0.25)",
+  amber:   "#f59e0b",
+  amberD:  "rgba(245,158,11,0.1)",
+  green:   "#22c55e",
+  greenD:  "rgba(34,197,94,0.1)",
+  blue:    "#3b82f6",
+};
+const FONT = "'DM Sans','Segoe UI',sans-serif";
+const tick = { fill: C.t3, fontSize: 9.5, fontFamily: FONT };
 
-/* ─── CHART PRIMITIVES ─── */
-const ChartTip = ({ active, payload, label }) => {
+/* ─── MOCK DATA ──────────────────────────────────────────────── */
+const CHECK_IN_TREND = [
+  { w: "W1 Jan", v: 112 }, { w: "W2",     v: 128 }, { w: "W3",     v: 119 },
+  { w: "W4",     v: 134 }, { w: "W1 Feb", v: 141 }, { w: "W2",     v: 136 },
+  { w: "W3",     v: 158 }, { w: "W4",     v: 162 }, { w: "W1 Mar", v: 170 },
+  { w: "W2",     v: 155 }, { w: "W3",     v: 178 }, { w: "W4 Apr", v: 192 },
+];
+
+const RETENTION_TREND = [
+  { m: "Nov", ret: 71, churn: 18 }, { m: "Dec", ret: 74, churn: 15 },
+  { m: "Jan", ret: 78, churn: 14 }, { m: "Feb", ret: 76, churn: 16 },
+  { m: "Mar", ret: 82, churn: 11 }, { m: "Apr", ret: 88, churn: 8  },
+];
+
+const MEMBER_GROWTH = [
+  { m: "Nov", new: 6  }, { m: "Dec", new: 9  }, { m: "Jan", new: 14 },
+  { m: "Feb", new: 11 }, { m: "Mar", new: 18 }, { m: "Apr", new: 22 },
+];
+
+const DROP_OFF = [
+  { label: "Week 1–2", count: 12 },
+  { label: "Week 3–4", count: 8  },
+  { label: "Month 2",  count: 5  },
+  { label: "Month 3+", count: 3  },
+];
+
+const PEAK_DAYS = [
+  { day: "Mon", pct: 68 }, { day: "Tue", pct: 82 }, { day: "Wed", pct: 74 },
+  { day: "Thu", pct: 91 }, { day: "Fri", pct: 78 }, { day: "Sat", pct: 55 },
+  { day: "Sun", pct: 38 },
+];
+
+const PEAK_HOURS = [
+  { h: "6–7a",  v: 14 }, { h: "7–8a",  v: 28 }, { h: "8–9a",  v: 22 },
+  { h: "12–1p", v: 18 }, { h: "5–6p",  v: 34 }, { h: "6–7p",  v: 42 },
+  { h: "7–8p",  v: 38 }, { h: "8–9p",  v: 20 },
+];
+
+const SEGMENTS = [
+  { label: "Super active", sub: "15+ visits/mo", val: 8,  col: C.cyan,  pct: 21 },
+  { label: "Active",       sub: "8–14 visits",   val: 14, col: C.blue,  pct: 37 },
+  { label: "Casual",       sub: "1–7 visits",    val: 11, col: C.t2,    pct: 29 },
+  { label: "Disengaged",   sub: "No visits",     val: 5,  col: C.amber, pct: 13 },
+];
+
+const TOP_CLASSES = [
+  { name: "HIIT Circuit",    fill: 94, avg: 19, trend: +12 },
+  { name: "Morning Flow",    fill: 78, avg: 16, trend: +4  },
+  { name: "Strength Forge",  fill: 71, avg: 14, trend: -3  },
+  { name: "Spin Express",    fill: 55, avg: 11, trend: +8  },
+  { name: "Recovery Yoga",   fill: 38, avg: 8,  trend: -7  },
+];
+
+const CHURN_MEMBERS = [
+  { name: "Marcus Webb",   days: 22, risk: 84 },
+  { name: "Devon Osei",    days: 19, risk: 78 },
+  { name: "Priya Sharma",  days: 16, risk: 71 },
+  { name: "Sam Rivera",    days: 14, risk: 55 },
+];
+
+/* ─── HELPERS ────────────────────────────────────────────────── */
+function riskCol(p) { return p >= 70 ? C.red : p >= 40 ? C.amber : C.green; }
+function fillCol(p) { return p >= 75 ? C.cyan : p < 40 ? C.red : C.t2; }
+
+/* ─── SHARED TOOLTIP ─────────────────────────────────────────── */
+function Tip({ active, payload, label, suffix = "", prefix = "" }) {
   if (!active || !payload?.length) return null;
   return (
-    <div className="bg-[#060c18] border border-white/[0.07] rounded-[8px] px-[11px] py-[7px] shadow-[0_6px_20px_rgba(0,0,0,0.5)]">
-      <p className="text-[#4b5578] text-[10px] m-0 mb-0.5">{label}</p>
-      <p className="text-[#eef2ff] font-bold text-sm m-0">{payload[0].value}</p>
-    </div>
-  );
-};
-
-const barTip = ({ active, payload, label }) => active && payload?.length
-  ? <div className="bg-[#060c18] border border-white/[0.07] rounded-[8px] px-[11px] py-[7px]">
-      <p className="text-[#4b5578] text-[10px] m-0 mb-0.5">{label}</p>
-      <p className="text-[#eef2ff] font-bold text-[13px] m-0">{payload[0].value}</p>
-    </div>
-  : null;
-
-const AreaGrad = ({ id }) => (
-  <defs>
-    <linearGradient id={id} x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%"   stopColor="#3b82f6" stopOpacity={0.18} />
-      <stop offset="100%" stopColor="#3b82f6" stopOpacity={0} />
-    </linearGradient>
-  </defs>
-);
-
-function Spark({ data = [], w = 58, h = 24 }) {
-  if (!data || data.length < 2) return <div style={{ width: w, height: h }} />;
-  const max = Math.max(...data, 1), min = Math.min(...data, 0), range = max - min || 1;
-  const pts = data.map((v, i) => {
-    const x = (i / (data.length - 1)) * w;
-    const y = h - 3 - ((v - min) / range) * (h - 6);
-    return `${x.toFixed(1)},${y.toFixed(1)}`;
-  }).join(' ');
-  const firstX = pts.split(' ')[0].split(',')[0];
-  const lastX  = pts.split(' ').slice(-1)[0].split(',')[0];
-  return (
-    <svg width={w} height={h} viewBox={`0 0 ${w} ${h}`} className="block shrink-0" preserveAspectRatio="none">
-      <defs>
-        <linearGradient id="spk" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%"   stopColor="#3b82f6" stopOpacity=".15" />
-          <stop offset="100%" stopColor="#3b82f6" stopOpacity="0"   />
-        </linearGradient>
-      </defs>
-      <polygon points={`${firstX},${h} ${pts} ${lastX},${h}`} fill="url(#spk)" />
-      <polyline points={pts} fill="none" stroke="#3b82f6" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  );
-}
-
-function SectionHead({ title, sub, right }) {
-  return (
-    <div className={cn('flex items-center justify-between mb-4', sub && 'items-start')}>
-      <div>
-        <div className="text-xs font-semibold text-[#8b95b3]">{title}</div>
-        {sub && <div className="text-[11px] text-[#4b5578] mt-0.5">{sub}</div>}
-      </div>
-      {right}
+    <div style={{ background: "#111c2a", border: `1px solid ${C.cyanB}`, borderRadius: 7, padding: "5px 10px", fontSize: 11.5, color: C.t1, fontFamily: FONT }}>
+      {label && <div style={{ fontSize: 10, color: C.t3, marginBottom: 2 }}>{label}</div>}
+      {payload.map((p, i) => (
+        <div key={i} style={{ color: p.color || C.cyan, fontWeight: 700 }}>{prefix}{p.value}{suffix}</div>
+      ))}
     </div>
   );
 }
 
-/* ─── TODAY'S FOCUS ─── */
-function TodaysFocus({ churnSignals = [], atRisk = 0, newSignUps = 0, ci30 = [], now, totalMembers = 0, isMobile = false }) {
-  const cards = useMemo(() => {
-    const list = [];
+/* ─── SIDEBAR ────────────────────────────────────────────────── */
+const NAV = [
+  { Icon: LayoutDashboard, label: "Overview"    },
+  { Icon: Eye,             label: "Views"       },
+  { Icon: Users,           label: "Members"     },
+  { Icon: FileText,        label: "Content"     },
+  { Icon: BarChart2,       label: "Analytics", active: true },
+  { Icon: MessageCircle,   label: "Community"   },
+  { Icon: Zap,             label: "Automations" },
+  { Icon: BrainCircuit,    label: "AI Coach"    },
+];
 
-    if (churnSignals.length > 0) {
-      const weeks3 = churnSignals.filter(m => m.daysSince >= 21).length;
-      list.push({
-        slot: 'danger', icon: AlertTriangle,
-        title: `${churnSignals.length} quiet members`,
-        insight: weeks3 > 0
-          ? `${weeks3} haven't visited in 3+ weeks — worth a personal message`
-          : 'Engagement has dropped — a check-in usually brings half back',
-        cta: 'Message now', rev: churnSignals.length * MVM,
-      });
-    } else if (atRisk > 0) {
-      list.push({
-        slot: 'danger', icon: AlertTriangle,
-        title: `${atRisk} members need attention`,
-        insight: 'No check-in in 14+ days — drop-off risk increases after 3 weeks',
-        cta: 'Review', rev: atRisk * MVM,
-      });
-    }
-
-    const activeThisWeek = new Set(ci30.filter(c => differenceInDays(now, new Date(c.check_in_date)) <= 7).map(c => c.user_id));
-    const newInactive = Math.max(0, newSignUps - activeThisWeek.size);
-    if (newInactive > 0) {
-      list.push({
-        slot: 'neutral', icon: UserPlus,
-        title: `${newInactive} new members not active yet`,
-        insight: 'First visit within 7 days doubles week-4 retention',
-        cta: 'Send welcome',
-      });
-    }
-
-    const retWeek  = ci30.filter(c => differenceInDays(now, new Date(c.check_in_date)) <= 7).length;
-    const prevWeek = ci30.filter(c => { const d = differenceInDays(now, new Date(c.check_in_date)); return d > 7 && d <= 14; }).length;
-    if (prevWeek > 0 && retWeek >= prevWeek * 1.1) {
-      list.push({ slot: 'positive', icon: TrendingUp, title: 'Check-ins up this week', insight: `${retWeek} visits vs ${prevWeek} last week — good momentum`, cta: null });
-    } else {
-      list.push({ slot: 'neutral', icon: Calendar, title: 'Evening slots have capacity', insight: '6–8pm is typically underused — a targeted post or promotion can fill it', cta: null });
-    }
-
-    return list.slice(0, 3);
-  }, [churnSignals, atRisk, newSignUps, ci30, now, totalMembers]);
-
-  const slotBorder = { danger: 'border-l-2 border-l-red-500', warn: 'border-l-2 border-l-amber-400', neutral: 'border-l-2 border-l-white/[0.07]', positive: 'border-l-2 border-l-emerald-500' };
-  const slotIcon   = { danger: 'text-red-500', warn: 'text-amber-400', neutral: 'text-[#4b5578]', positive: 'text-emerald-500' };
-
-  if (!cards.length) return null;
+function Sidebar() {
   return (
-    <div>
-      <div className="flex items-center gap-2 mb-[10px]">
-        <span className="text-[10.5px] font-bold text-[#4b5578] tracking-[0.12em] uppercase">Today's Focus</span>
-        <span className="text-[10px] text-[#252d45]">· {format(new Date(), 'EEE d MMM')}</span>
+    <div style={{ width: 188, flexShrink: 0, background: C.sidebar, borderRight: `1px solid ${C.brd}`, display: "flex", flexDirection: "column", height: "100vh", fontFamily: FONT }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "14px", borderBottom: `1px solid ${C.brd}` }}>
+        <div style={{ width: 28, height: 28, borderRadius: 8, background: "linear-gradient(135deg,#00e5c8,#00a896)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13 }}>🔥</div>
+        <div>
+          <div style={{ fontSize: 13, fontWeight: 700, color: C.t1, letterSpacing: "-0.02em" }}>Forge Fitness</div>
+          <div style={{ fontSize: 10, color: C.t2 }}>GYM OWNER</div>
+        </div>
       </div>
-      <div
-        className={cn('grid gap-[10px]', isMobile ? 'grid-cols-1' : '')}
-        style={isMobile ? undefined : { gridTemplateColumns: `repeat(${cards.length}, 1fr)` }}
-      >
-        {cards.map((card, i) => (
-          <div key={i} className={cn('bg-[#0d1225] rounded-2xl p-[14px_16px] border border-white/[0.04] shadow-[inset_0_1px_0_rgba(255,255,255,0.012)]', slotBorder[card.slot] || slotBorder.neutral)}>
-            <div className={cn('flex items-start gap-[10px]', card.cta && 'mb-3')}>
-              <card.icon className={cn('w-[13px] h-[13px] shrink-0 mt-0.5', slotIcon[card.slot] || slotIcon.neutral)} />
-              <div>
-                <div className="text-[12.5px] font-bold text-[#eef2ff] mb-1">{card.title}</div>
-                <div className="text-[11px] text-[#4b5578] leading-relaxed">{card.insight}</div>
-                {card.slot === 'danger' && card.rev > 0 && (
-                  <div className="text-[10px] text-[#4b5578] mt-[5px]">~£{card.rev}/month if unaddressed</div>
-                )}
-              </div>
-            </div>
-            {card.cta && <AppButton variant="primary" size="sm" onClick={() => {}}>{card.cta}</AppButton>}
+      <div style={{ padding: "10px 8px", flex: 1 }}>
+        <div style={{ fontSize: 9.5, fontWeight: 600, color: C.t3, letterSpacing: "0.08em", textTransform: "uppercase", padding: "4px 8px 8px" }}>Navigation</div>
+        {NAV.map(item => (
+          <div key={item.label} style={{ display: "flex", alignItems: "center", gap: 8, padding: "7px 8px", borderRadius: 7, cursor: "pointer", marginBottom: 1, background: item.active ? C.cyanD : "transparent", borderLeft: item.active ? `2px solid ${C.cyan}` : "2px solid transparent", color: item.active ? C.t1 : C.t2, fontSize: 12.5, fontWeight: item.active ? 600 : 400 }}>
+            <item.Icon style={{ width: 13, height: 13, flexShrink: 0 }} />
+            {item.label}
           </div>
         ))}
       </div>
-    </div>
-  );
-}
-
-/* ─── KPI STRIP ─── */
-function KpiStrip({ totalMembers, activeThisMonth, atRisk, retentionRate, monthChangePct, ci30, now, weekTrend }) {
-  const active7d = useMemo(() =>
-    new Set(ci30.filter(c => differenceInDays(now, new Date(c.check_in_date)) <= 7).map(c => c.user_id)).size
-  , [ci30, now]);
-
-  const engagePct = totalMembers > 0 ? Math.round((activeThisMonth / totalMembers) * 100) : 0;
-  const sparkData = weekTrend.slice(-7).map(d => d.value);
-
-  const kpis = [
-    { icon: Users,         label: 'Active members (7d)', value: active7d,           unit: `of ${totalMembers} total`,  spark: sparkData, trend: null,          valueClass: 'text-[#eef2ff]', sub: active7d > 0 ? `${Math.round((active7d / Math.max(totalMembers, 1)) * 100)}% of members` : null },
-    { icon: Activity,      label: 'Engagement rate',     value: `${engagePct}%`,    unit: 'active this month',          spark: null,      trend: monthChangePct, valueClass: 'text-[#eef2ff]', sub: monthChangePct > 0 ? 'Growing' : monthChangePct < 0 ? 'Declining' : 'Flat' },
-    { icon: Shield,        label: 'Retention rate',      value: `${retentionRate}%`, unit: '30-day cohort',             spark: null,      trend: null,           valueClass: retentionRate >= 80 ? 'text-emerald-500' : retentionRate < 60 ? 'text-red-500' : 'text-[#eef2ff]', sub: retentionRate >= 80 ? 'Strong' : retentionRate < 60 ? 'Needs attention' : 'Average' },
-    { icon: AlertTriangle, label: 'Inactive members',    value: atRisk,             unit: '14+ days absent',            spark: null,      trend: null,           valueClass: atRisk > totalMembers * 0.2 ? 'text-red-500' : 'text-[#eef2ff]', sub: atRisk > 0 ? `${Math.round((atRisk / Math.max(totalMembers, 1)) * 100)}% of members` : 'All clear' },
-  ];
-
-  return (
-    <div className="grid grid-cols-2 sm:grid-cols-4 gap-[10px]">
-      {kpis.map((k, i) => {
-        const trendUp = k.trend > 0, trendDown = k.trend < 0;
-        return (
-          <div key={i} className={cn(CARD, 'p-[12px_14px] sm:p-[16px_18px] flex flex-col')}>
-            <div className="flex items-center justify-between mb-2 sm:mb-3 gap-1 min-w-0">
-              <span className="text-[9.5px] sm:text-[10.5px] font-bold text-[#4b5578] tracking-[0.12em] uppercase truncate">{k.label}</span>
-              <k.icon className="w-3 h-3 text-[#4b5578] shrink-0" />
-            </div>
-            <div className="flex items-end justify-between mb-2">
-              <div>
-                <div className={cn('text-[22px] sm:text-[28px] font-bold leading-none tracking-[-0.04em]', k.valueClass)}>{k.value}</div>
-                {k.unit && <div className="text-[9.5px] sm:text-[10.5px] text-[#4b5578] mt-1">{k.unit}</div>}
-              </div>
-              {k.spark && <Spark data={k.spark} />}
-            </div>
-            <div className="flex items-center gap-[7px]">
-              {k.trend != null && (
-                <span className={cn('inline-flex items-center gap-[3px] px-1.5 py-[2px] rounded-[5px] text-[9.5px] font-semibold border', trendUp ? 'text-emerald-500 bg-emerald-500/[0.08] border-emerald-500/[0.2]' : trendDown ? 'text-red-500 bg-red-500/[0.07] border-red-500/[0.2]' : 'text-[#4b5578] bg-white/[0.04] border-white/[0.04]')}>
-                  {trendUp ? <ArrowUpRight className="w-2 h-2" /> : trendDown ? <TrendingDown className="w-2 h-2" /> : null}
-                  {trendUp ? '+' : ''}{k.trend}%
-                </span>
-              )}
-              {k.sub && <span className="text-[10px] text-[#4b5578]">{k.sub}</span>}
-            </div>
-          </div>
-        );
-      })}
-    </div>
-  );
-}
-
-/* ─── CHURN & REVENUE PANEL ─── */
-function ChurnRevenuePanel({ churnSignals = [], atRisk = 0, totalMembers = 0 }) {
-  const churnCount = churnSignals.length;
-  const totalRev   = churnCount * MVM;
-  const riskLabel  = s => s >= 90 ? 'Critical' : s >= 70 ? 'High' : s >= 50 ? 'Medium' : 'Low';
-  const hasData    = churnCount > 0;
-
-  return (
-    <div className={cn(CARD, 'p-5')}>
-      <div className="flex items-start justify-between mb-[18px]">
-        <div>
-          <div className="text-xs font-semibold text-[#8b95b3]">Churn & Revenue Risk</div>
-          <div className="text-[11px] text-[#4b5578] mt-0.5">Members showing low engagement patterns</div>
+      <div style={{ padding: "8px", borderTop: `1px solid ${C.brd}` }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "7px 8px", borderRadius: 7, cursor: "pointer", color: C.t2, fontSize: 12.5 }}>
+          <Settings style={{ width: 13, height: 13 }} /> Settings
         </div>
-        {hasData && (
-          <div className="text-right">
-            <div className="text-[18px] font-bold text-red-500 tracking-[-0.03em] leading-none">£{totalRev}</div>
-            <div className="text-[9.5px] text-[#4b5578] mt-0.5">est. monthly exposure</div>
-          </div>
-        )}
       </div>
-
-      {!hasData ? (
-        <div className="flex items-center gap-[9px] px-3 py-[10px] rounded-[8px] bg-[#0d1225] border border-white/[0.04]">
-          <CheckCircle className="w-[11px] h-[11px] text-emerald-500 shrink-0" />
-          <div>
-            <div className="text-xs font-medium text-[#eef2ff]">No churn signals detected</div>
-            <div className="text-[10px] text-[#4b5578] mt-0.5">All tracked members showing healthy engagement</div>
-          </div>
-        </div>
-      ) : (
-        <>
-          <div className="grid grid-cols-2 gap-2 mb-[14px]">
-            <div className="px-3 py-[10px] rounded-[8px] bg-[#0d1225] border border-white/[0.04]">
-              <div className="text-[20px] font-bold text-red-500 tracking-[-0.03em]">{churnCount}</div>
-              <div className="text-[10px] text-[#4b5578] mt-0.5">quiet members</div>
-            </div>
-            <div className="px-3 py-[10px] rounded-[8px] bg-[#0d1225] border border-white/[0.04]">
-              <div className="text-[20px] font-bold text-[#eef2ff] tracking-[-0.03em]">
-                {totalMembers > 0 ? `${Math.round((churnCount / totalMembers) * 100)}%` : '—'}
-              </div>
-              <div className="text-[10px] text-[#4b5578] mt-0.5">of membership</div>
-            </div>
-          </div>
-
-          <div className="flex flex-col gap-px mb-4">
-            {churnSignals.slice(0, 5).map((m, i) => (
-              <div key={i} className={cn('flex items-center justify-between py-[7px]', i < Math.min(churnSignals.length, 5) - 1 && 'border-b border-white/[0.03]')}>
-                <div className="flex items-center gap-2">
-                  <span className="text-[9px] font-semibold text-[#252d45] w-10">{riskLabel(m.score)}</span>
-                  <span className="text-xs font-semibold text-[#eef2ff]">{m.name}</span>
-                </div>
-                <span className="text-[10px] text-[#4b5578]">{m.daysSince < 999 ? `${m.daysSince}d ago` : 'No visits'}</span>
-              </div>
-            ))}
-          </div>
-
-          <AppButton variant="primary" size="sm" className="w-full justify-center" onClick={() => {}}>
-            <ChevronRight className="w-[10px] h-[10px]" /> Review members
-          </AppButton>
-        </>
-      )}
     </div>
   );
 }
 
-/* ─── HEATMAP ─── */
-function HeatmapChart({ gymId }) {
-  const [weeks, setWeeks] = React.useState(4);
-  const { data: raw = [] } = useQuery({
-    queryKey: ['heatmapCI', gymId, weeks],
-    queryFn: () => {
-      if (weeks === 0) return base44.entities.CheckIn.filter({ gym_id: gymId }, '-check_in_date', 5000);
-      const cutoff = new Date(); cutoff.setDate(cutoff.getDate() - weeks * 7);
-      return base44.entities.CheckIn.filter({ gym_id: gymId, check_in_date: { $gte: cutoff.toISOString() } }, '-check_in_date', 5000);
-    },
-    enabled: !!gymId, staleTime: 5 * 60 * 1000,
-  });
-
-  const days  = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-  const slots = [
-    { label: '6–8a',  hours: [6,7]   }, { label: '8–10a',  hours: [8,9]   },
-    { label: '10–12', hours: [10,11] }, { label: '12–2p',  hours: [12,13] },
-    { label: '2–4p',  hours: [14,15] }, { label: '4–6p',   hours: [16,17] },
-    { label: '6–8p',  hours: [18,19] }, { label: '8–10p',  hours: [20,21] },
-  ];
-
-  const grid = useMemo(() => {
-    const mat = Array.from({ length: 7 }, () => Array(slots.length).fill(0));
-    raw.forEach(c => {
-      const d = new Date(c.check_in_date), dow = (d.getDay() + 6) % 7, h = d.getHours();
-      const si = slots.findIndex(s => s.hours.includes(h));
-      if (si >= 0) mat[dow][si]++;
-    });
-    return mat;
-  }, [raw]);
-
-  const maxVal = Math.max(...grid.flat(), 1);
-  let peakDay = 0, peakSlot = 0;
-  grid.forEach((row, di) => row.forEach((val, si) => { if (val > grid[peakDay][peakSlot]) { peakDay = di; peakSlot = si; } }));
-
-  // Cell colors are data-driven hex values — kept as inline styles (legitimate exception)
-  const cell = (val, di, si) => {
-    const pct = val / maxVal, isPeak = di === peakDay && si === peakSlot && val > 0;
-    if (!val)       return { bg: 'rgba(255,255,255,0.03)', brd: 'rgba(255,255,255,0.04)', txt: 'transparent' };
-    if (isPeak)     return { bg: '#3b82f6',                brd: '#3b82f6',                txt: '#fff' };
-    if (pct < 0.25) return { bg: '#3b82f614',              brd: '#3b82f622',              txt: '#4b5578' };
-    if (pct < 0.5)  return { bg: '#3b82f630',              brd: '#3b82f644',              txt: '#8b95b3' };
-    if (pct < 0.75) return { bg: '#3b82f660',              brd: '#3b82f680',              txt: '#eef2ff' };
-    return               { bg: '#3b82f6cc',              brd: '#3b82f6',                txt: '#fff' };
-  };
-
-  const eveningTotal = grid.reduce((s, row) => s + row[6] + row[7], 0);
-  const morningTotal = grid.reduce((s, row) => s + row[0] + row[1], 0);
-  const eveningNote  = raw.length > 20 && eveningTotal < morningTotal * 0.6;
-  const COL = `44px repeat(${slots.length}, 1fr)`;
-
+/* ─── TOPBAR ─────────────────────────────────────────────────── */
+function TopBar({ range, setRange }) {
+  const ranges = ["7D", "30D", "90D", "6M"];
   return (
-    <div>
-      {raw.length > 20 && (
-        <div className="flex items-center gap-3 mb-3">
-          <span className="text-[10.5px] text-[#8b95b3]">
-            Peak: <span className="text-[#eef2ff] font-semibold">{days[peakDay]} {slots[peakSlot]?.label}</span>
-          </span>
-          {eveningNote && <span className="text-[10px] text-[#4b5578]">· Evenings have capacity to fill</span>}
+    <div style={{ height: 46, background: C.sidebar, borderBottom: `1px solid ${C.brd}`, display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 18px", gap: 12, flexShrink: 0, fontFamily: FONT }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+        <span style={{ fontSize: 13, fontWeight: 600, color: C.t2 }}>Analytics</span>
+        <div style={{ display: "flex", alignItems: "center", gap: 5, padding: "5px 10px", borderRadius: 7, background: "rgba(255,255,255,0.04)", border: `1px solid ${C.brd}`, fontSize: 11.5, color: C.t2 }}>
+          📅 Friday 10 April 2026
         </div>
-      )}
-
-      <div className="flex items-center gap-0.5 mb-3">
-        {[{ l: '4W', v: 4 }, { l: '12W', v: 12 }, { l: 'All', v: 0 }].map(o => (
-          <button key={o.v} onClick={() => setWeeks(o.v)} className={cn('text-[10.5px] px-[10px] py-1 rounded-[5px] cursor-pointer border transition-all', weeks === o.v ? 'font-semibold bg-[#0d1225] text-[#eef2ff] border-white/[0.07]' : 'font-normal bg-transparent text-[#4b5578] border-transparent')}>
-            {o.l}
+      </div>
+      <div style={{ display: "flex", gap: 3 }}>
+        {ranges.map(r => (
+          <button key={r} onClick={() => setRange(r)} style={{ padding: "5px 11px", borderRadius: 6, cursor: "pointer", background: range === r ? C.cyanD : "transparent", border: range === r ? `1px solid ${C.cyanB}` : `1px solid transparent`, color: range === r ? C.cyan : C.t3, fontSize: 11.5, fontWeight: range === r ? 700 : 400, fontFamily: FONT }}>
+            {r}
           </button>
         ))}
-        <span className="text-[10px] text-[#4b5578] ml-1.5">{raw.length.toLocaleString()} check-ins</span>
-      </div>
-
-      <div className="grid gap-[3px] mb-[3px]" style={{ gridTemplateColumns: COL }}>
-        <div />
-        {slots.map(s => <div key={s.label} className="text-[9px] text-[#4b5578] text-center">{s.label}</div>)}
-      </div>
-
-      <div className="flex flex-col gap-[3px]">
-        {days.map((day, di) => (
-          <div key={day} className="grid gap-[3px] items-center" style={{ gridTemplateColumns: COL }}>
-            <div className="text-[11px] text-[#8b95b3]">{day}</div>
-            {grid[di].map((val, si) => {
-              const { bg, brd, txt } = cell(val, di, si);
-              return (
-                <div key={si} title={val > 0 ? `${day} ${slots[si].label}: ${val}` : undefined}
-                     className="h-7 rounded-[5px] flex items-center justify-center"
-                     style={{ background: bg, border: `1px solid ${brd}` }}>
-                  {val > 0 && <span className="text-[9px] font-semibold" style={{ color: txt }}>{val}</span>}
-                </div>
-              );
-            })}
-          </div>
-        ))}
-      </div>
-
-      <div className="flex items-center justify-end gap-1 mt-[10px]">
-        <span className="text-[9px] text-[#4b5578]">Low</span>
-        {['rgba(255,255,255,0.03)', '#3b82f614', '#3b82f640', '#3b82f680', '#3b82f6'].map((bg, i) => (
-          <div key={i} className="w-[11px] h-[6px] rounded-[2px]" style={{ background: bg }} />
-        ))}
-        <span className="text-[9px] text-[#4b5578]">High</span>
       </div>
     </div>
   );
 }
 
-/* ─── RETENTION FUNNEL ─── */
-function RetentionFunnel({ retentionFunnel = [] }) {
-  const icons   = [UserPlus, RefreshCw, Activity, CheckCircle];
-  const hasData = retentionFunnel.length > 0 && retentionFunnel[0]?.val > 0;
-
-  const worstDrop = useMemo(() => {
-    if (!hasData) return null;
-    let worst = null, worstPct = 0;
-    retentionFunnel.forEach((stage, i) => {
-      if (i === 0) return;
-      const conv = retentionFunnel[i-1].val > 0 ? Math.round((stage.val / retentionFunnel[i-1].val) * 100) : 100;
-      const drop = 100 - conv;
-      if (drop > worstPct) { worstPct = drop; worst = { label: stage.label, drop }; }
-    });
-    return worst;
-  }, [retentionFunnel, hasData]);
-
+/* ─── KPI STRIP ──────────────────────────────────────────────── */
+function KpiCard({ label, value, sub, trend, trendLabel, accent }) {
+  const up = trend > 0, down = trend < 0;
+  const trendColor = up ? C.cyan : down ? C.red : C.t3;
   return (
-    <div className={cn(CARD, 'p-5')}>
-      <SectionHead title="Retention Funnel" sub={worstDrop ? `Biggest drop-off: ${worstDrop.label} (${worstDrop.drop}% lost)` : 'Member lifecycle progression'} right={<Target className="w-3 h-3 text-[#4b5578]" />} />
-      {!hasData ? (
-        <div className="px-3 py-[10px] rounded-[8px] bg-[#0d1225] border border-white/[0.04]">
-          <div className="text-[11px] text-[#4b5578]">Populates after members have joined and checked in.</div>
-        </div>
-      ) : (
-        <div className="flex flex-col">
-          {retentionFunnel.map((stage, i) => {
-            const Icon    = icons[i] || CheckCircle;
-            const pct     = retentionFunnel[0].val > 0 ? Math.round((stage.val / retentionFunnel[0].val) * 100) : 0;
-            const conv    = i > 0 && retentionFunnel[i-1].val > 0 ? Math.round((stage.val / retentionFunnel[i-1].val) * 100) : null;
-            const isWorst = conv !== null && worstDrop?.label === stage.label;
-            return (
-              <div key={i}>
-                <div className="flex items-center gap-[10px] py-[9px]">
-                  <div className="w-7 h-7 rounded-[7px] shrink-0 bg-[#0d1225] border border-white/[0.04] flex items-center justify-center">
-                    <Icon className="w-[11px] h-[11px] text-[#4b5578]" />
-                  </div>
-                  <div className="flex-1">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-semibold text-[#eef2ff]">{stage.label}</span>
-                      <div className="flex items-baseline gap-[5px]">
-                        <span className="text-[15px] font-bold text-[#eef2ff] tracking-[-0.03em]">{stage.val}</span>
-                        <span className="text-[10px] text-[#4b5578]">{pct}%</span>
-                      </div>
-                    </div>
-                    {stage.desc && <div className="text-[10px] text-[#4b5578] mt-0.5">{stage.desc}</div>}
-                  </div>
-                </div>
-                {i < retentionFunnel.length - 1 && (
-                  <div className="flex items-center gap-2 pl-[42px] mb-0.5">
-                    <div className="w-px h-3 bg-white/[0.04]" />
-                    {conv !== null && (
-                      <span className={cn('text-[9px]', isWorst ? 'text-amber-400 font-semibold' : 'text-[#4b5578]')}>
-                        {conv}% continued · {100 - conv}% dropped{isWorst ? ' ← biggest gap' : ''}
-                      </span>
-                    )}
-                  </div>
-                )}
-              </div>
-            );
-          })}
+    <div style={{ background: C.card, border: `1px solid ${C.brd}`, borderRadius: 10, padding: "12px 16px" }}>
+      <div style={{ fontSize: 10, color: C.t3, textTransform: "uppercase", letterSpacing: "0.07em", marginBottom: 6, fontWeight: 600 }}>{label}</div>
+      <div style={{ fontSize: 28, fontWeight: 700, color: accent || C.t1, letterSpacing: "-0.03em", lineHeight: 1 }}>{value}</div>
+      {sub && <div style={{ fontSize: 10.5, color: C.t3, marginTop: 4 }}>{sub}</div>}
+      {trend !== undefined && (
+        <div style={{ display: "flex", alignItems: "center", gap: 3, fontSize: 11, color: trendColor, fontWeight: 600, marginTop: 6 }}>
+          {up ? <ArrowUpRight style={{ width: 11, height: 11 }} /> : down ? <ArrowDownRight style={{ width: 11, height: 11 }} /> : null}
+          {up ? "+" : ""}{trend}% {trendLabel || "vs last month"}
         </div>
       )}
     </div>
   );
 }
 
-/* ─── DROP-OFF CHART ─── */
-function DropOffChart({ dropOffBuckets = [] }) {
-  const total = dropOffBuckets.reduce((s, d) => s + d.count, 0);
-  if (total === 0) return null;
-  const worst = [...dropOffBuckets].sort((a, b) => b.count - a.count)[0];
-
+/* ─── SECTION LABEL ──────────────────────────────────────────── */
+function SLabel({ children, right }) {
   return (
-    <div className={cn(CARD, 'p-5')}>
-      <SectionHead title="Drop-off Pattern" sub={`Most members go quiet at ${worst?.label || '—'} — a well-timed message recovers ~30%`} />
+    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
+      <span style={{ fontSize: 12.5, fontWeight: 600, color: C.t1 }}>{children}</span>
+      {right && <span style={{ fontSize: 10.5, color: C.t3 }}>{right}</span>}
+    </div>
+  );
+}
+
+/* ─── DIVIDER ────────────────────────────────────────────────── */
+const Div = () => <div style={{ height: 1, background: C.brd, margin: "0 -16px" }} />;
+
+/* ─── CARD WRAPPER ───────────────────────────────────────────── */
+function Card({ children, style }) {
+  return (
+    <div style={{ background: C.card, border: `1px solid ${C.brd}`, borderRadius: 10, padding: "16px", ...style }}>
+      {children}
+    </div>
+  );
+}
+
+/* ─── CHECK-IN TREND CHART ───────────────────────────────────── */
+function CheckInChart() {
+  return (
+    <Card>
+      <SLabel right="12-week rolling">Check-in Trend</SLabel>
+      <div style={{ display: "flex", alignItems: "baseline", gap: 10, marginBottom: 16 }}>
+        <span style={{ fontSize: 32, fontWeight: 700, color: C.cyan, letterSpacing: "-0.03em", lineHeight: 1 }}>192</span>
+        <span style={{ fontSize: 12, color: C.cyan, fontWeight: 600 }}>+12% this week</span>
+      </div>
+      <ResponsiveContainer width="100%" height={140}>
+        <AreaChart data={CHECK_IN_TREND} margin={{ top: 4, right: 4, bottom: 0, left: -28 }}>
+          <defs>
+            <linearGradient id="cig" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor={C.cyan} stopOpacity={0.3} />
+              <stop offset="100%" stopColor={C.cyan} stopOpacity={0.02} />
+            </linearGradient>
+          </defs>
+          <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" vertical={false} />
+          <XAxis dataKey="w" tick={tick} axisLine={false} tickLine={false} interval={2} />
+          <YAxis tick={tick} axisLine={false} tickLine={false} domain={[80, 220]} />
+          <Tooltip content={<Tip suffix=" check-ins" />} />
+          <Area type="monotone" dataKey="v" stroke={C.cyan} strokeWidth={2} fill="url(#cig)" dot={false}
+            activeDot={{ r: 4, fill: C.cyan, strokeWidth: 2, stroke: C.card }} />
+        </AreaChart>
+      </ResponsiveContainer>
+    </Card>
+  );
+}
+
+/* ─── RETENTION CHART ────────────────────────────────────────── */
+function RetentionChart() {
+  return (
+    <Card>
+      <SLabel right="6 months">Retention vs Churn Rate</SLabel>
+      <div style={{ display: "flex", gap: 16, marginBottom: 16 }}>
+        <div>
+          <div style={{ fontSize: 24, fontWeight: 700, color: C.cyan, letterSpacing: "-0.03em", lineHeight: 1 }}>88%</div>
+          <div style={{ fontSize: 10.5, color: C.t3, marginTop: 3 }}>Retention rate</div>
+        </div>
+        <div>
+          <div style={{ fontSize: 24, fontWeight: 700, color: C.red, letterSpacing: "-0.03em", lineHeight: 1 }}>8%</div>
+          <div style={{ fontSize: 10.5, color: C.t3, marginTop: 3 }}>Churn rate</div>
+        </div>
+        <div style={{ marginLeft: "auto", textAlign: "right" }}>
+          <div style={{ fontSize: 11, color: C.cyan, fontWeight: 600, display: "flex", alignItems: "center", gap: 3 }}>
+            <ArrowUpRight style={{ width: 11, height: 11 }} /> Best month yet
+          </div>
+          <div style={{ fontSize: 10.5, color: C.t3, marginTop: 2 }}>vs 82% in March</div>
+        </div>
+      </div>
+      <ResponsiveContainer width="100%" height={120}>
+        <LineChart data={RETENTION_TREND} margin={{ top: 4, right: 4, bottom: 0, left: -28 }}>
+          <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" vertical={false} />
+          <XAxis dataKey="m" tick={tick} axisLine={false} tickLine={false} />
+          <YAxis tick={tick} axisLine={false} tickLine={false} domain={[0, 100]} />
+          <Tooltip content={({ active, payload, label }) => {
+            if (!active || !payload?.length) return null;
+            return (
+              <div style={{ background: "#111c2a", border: `1px solid ${C.cyanB}`, borderRadius: 7, padding: "6px 10px", fontSize: 11, fontFamily: FONT }}>
+                <div style={{ color: C.t3, marginBottom: 3 }}>{label}</div>
+                {payload.map((p, i) => <div key={i} style={{ color: p.color, fontWeight: 700 }}>{p.name}: {p.value}%</div>)}
+              </div>
+            );
+          }} />
+          <Line type="monotone" dataKey="ret"   name="Retention" stroke={C.cyan} strokeWidth={2} dot={false} activeDot={{ r: 3, fill: C.cyan,  stroke: C.card, strokeWidth: 2 }} />
+          <Line type="monotone" dataKey="churn" name="Churn"     stroke={C.red}  strokeWidth={2} dot={false} activeDot={{ r: 3, fill: C.red,   stroke: C.card, strokeWidth: 2 }} strokeDasharray="4 3" />
+        </LineChart>
+      </ResponsiveContainer>
+      <div style={{ display: "flex", gap: 14, marginTop: 10 }}>
+        {[{ col: C.cyan, label: "Retention" }, { col: C.red, label: "Churn" }].map((l, i) => (
+          <div key={i} style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 10.5, color: C.t3 }}>
+            <div style={{ width: 18, height: 2, background: l.col, borderRadius: 1 }} /> {l.label}
+          </div>
+        ))}
+      </div>
+    </Card>
+  );
+}
+
+/* ─── MEMBER GROWTH ──────────────────────────────────────────── */
+function MemberGrowthChart() {
+  return (
+    <Card>
+      <SLabel right="monthly sign-ups">Member Growth</SLabel>
+      <div style={{ display: "flex", alignItems: "baseline", gap: 10, marginBottom: 14 }}>
+        <span style={{ fontSize: 24, fontWeight: 700, color: C.cyan, letterSpacing: "-0.03em" }}>22</span>
+        <span style={{ fontSize: 11, color: C.cyan, fontWeight: 600 }}>new this month</span>
+        <span style={{ fontSize: 11, color: C.t3, marginLeft: "auto" }}>+22% vs Mar</span>
+      </div>
       <ResponsiveContainer width="100%" height={100}>
-        <BarChart data={dropOffBuckets} margin={{ top: 4, right: 0, left: 0, bottom: 0 }} barSize={22}>
-          <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.03)" vertical={false} />
-          <XAxis dataKey="label" tick={tick} axisLine={{ stroke: 'rgba(255,255,255,0.04)' }} tickLine={false} />
-          <YAxis tick={tick} axisLine={false} tickLine={false} width={22} allowDecimals={false} />
-          <Tooltip content={barTip} cursor={{ fill: 'rgba(255,255,255,.02)' }} />
-          <Bar dataKey="count" radius={[3, 3, 0, 0]}>
-            {dropOffBuckets.map((d, i) => <Cell key={i} fill={d.label === worst?.label ? '#3b82f6' : '#3b82f650'} />)}
+        <BarChart data={MEMBER_GROWTH} barSize={18} margin={{ top: 2, right: 4, bottom: 0, left: -28 }}>
+          <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" vertical={false} />
+          <XAxis dataKey="m" tick={tick} axisLine={false} tickLine={false} />
+          <YAxis tick={tick} axisLine={false} tickLine={false} />
+          <Tooltip content={<Tip suffix=" new members" />} />
+          <Bar dataKey="new" radius={[3, 3, 0, 0]}>
+            {MEMBER_GROWTH.map((d, i) => (
+              <Cell key={i} fill={i === MEMBER_GROWTH.length - 1 ? C.cyan : C.cyan + "50"} />
+            ))}
           </Bar>
         </BarChart>
       </ResponsiveContainer>
-      <div className="mt-[10px] flex flex-col gap-1">
-        {dropOffBuckets.filter(d => d.count > 0).sort((a, b) => b.count - a.count).map((d, i, arr) => (
-          <div key={i} className={cn('flex items-center gap-2 py-[5px]', i < arr.length - 1 && 'border-b border-white/[0.03]')}>
-            <span className={cn('flex-1 text-[11px]', i === 0 ? 'text-[#eef2ff] font-semibold' : 'text-[#8b95b3]')}>{d.label}</span>
-            <span className={cn('text-[11px] font-semibold', i === 0 ? 'text-blue-500' : 'text-[#4b5578]')}>{d.count}</span>
-            <span className="text-[10px] text-[#4b5578] min-w-[28px] text-right">{Math.round((d.count / total) * 100)}%</span>
+    </Card>
+  );
+}
+
+/* ─── DROP-OFF PATTERN ───────────────────────────────────────── */
+function DropOffChart() {
+  const max = Math.max(...DROP_OFF.map(d => d.count));
+  return (
+    <Card>
+      <SLabel>When Members Drop Off</SLabel>
+      <div style={{ fontSize: 11, color: C.t3, marginBottom: 14, lineHeight: 1.5 }}>
+        Most drop-off happens in <span style={{ color: C.amber, fontWeight: 600 }}>weeks 1–2</span> — a targeted welcome sequence recovers ~30%
+      </div>
+      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+        {DROP_OFF.map((d, i) => (
+          <div key={i} style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <span style={{ fontSize: 11, color: C.t2, width: 64, flexShrink: 0 }}>{d.label}</span>
+            <div style={{ flex: 1, height: 6, background: C.brd, borderRadius: 3, overflow: "hidden" }}>
+              <div style={{ width: `${(d.count / max) * 100}%`, height: "100%", background: i === 0 ? C.amber : C.cyan, borderRadius: 3, opacity: i === 0 ? 1 : 0.5 }} />
+            </div>
+            <span style={{ fontSize: 11.5, fontWeight: 700, color: i === 0 ? C.amber : C.t2, width: 24, textAlign: "right" }}>{d.count}</span>
           </div>
         ))}
       </div>
-    </div>
+    </Card>
   );
 }
 
-/* ─── WEEKLY TREND ─── */
-function WeeklyTrendChart({ weekTrend = [], monthChangePct = 0 }) {
-  if (!weekTrend.some(d => d.value > 0)) return null;
+/* ─── PEAK DAYS BAR ──────────────────────────────────────────── */
+function PeakDaysChart() {
+  const max = Math.max(...PEAK_DAYS.map(d => d.pct));
   return (
-    <div className={cn(CARD, 'p-5')}>
-      <SectionHead title="Check-in Trend" sub="12-week rolling view" right={
-        <div className="flex items-center gap-1.5">
-          <AppBadge variant="neutral">{weekTrend.reduce((s,d) => s+d.value, 0)} total</AppBadge>
-          {monthChangePct !== 0 && (
-            <span className={cn('text-[10px] font-semibold', monthChangePct > 0 ? 'text-emerald-500' : 'text-red-500')}>
-              {monthChangePct > 0 ? '+' : ''}{monthChangePct}% vs last month
-            </span>
-          )}
-        </div>
-      } />
-      <ResponsiveContainer width="100%" height={160}>
-        <AreaChart data={weekTrend} margin={{ top: 6, right: 6, left: 0, bottom: 0 }}>
-          <AreaGrad id="wtg" />
-          <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.03)" vertical={false} />
-          <XAxis dataKey="label" tick={tick} axisLine={{ stroke: 'rgba(255,255,255,0.04)' }} tickLine={false} interval={2} />
-          <YAxis tick={tick} axisLine={{ stroke: 'rgba(255,255,255,0.04)' }} tickLine={false} width={26} allowDecimals={false} />
-          <Tooltip content={<ChartTip />} cursor={{ stroke: 'rgba(59,130,246,0.18)', strokeWidth: 1, strokeDasharray: '4 4' }} />
-          <Area type="monotone" dataKey="value" stroke="#3b82f6" strokeWidth={1.5} fill="url(#wtg)" dot={false} activeDot={{ r: 3, fill: '#3b82f6', stroke: '#0a0f1e', strokeWidth: 2 }} />
-        </AreaChart>
-      </ResponsiveContainer>
-    </div>
-  );
-}
-
-/* ─── MEMBER GROWTH ─── */
-function MemberGrowthChart({ monthGrowthData = [], newSignUps = 0 }) {
-  if (!monthGrowthData?.length) return null;
-  return (
-    <div className={cn(CARD, 'p-5')}>
-      <SectionHead title="Member Growth" sub="Monthly sign-ups" right={<AppBadge variant="success">+{newSignUps} this month</AppBadge>} />
-      <ResponsiveContainer width="100%" height={110}>
-        <BarChart data={monthGrowthData} barSize={14} margin={{ top: 4, right: 6, left: 0, bottom: 0 }}>
-          <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.03)" vertical={false} />
-          <XAxis dataKey="label" tick={tick} axisLine={{ stroke: 'rgba(255,255,255,0.04)' }} tickLine={false} />
-          <YAxis tick={tick} axisLine={{ stroke: 'rgba(255,255,255,0.04)' }} tickLine={false} width={26} allowDecimals={false} />
-          <Tooltip content={barTip} cursor={{ fill: 'rgba(255,255,255,.02)' }} />
-          <Bar dataKey="value" fill="#3b82f6" fillOpacity={0.7} radius={[3, 3, 0, 0]} />
-        </BarChart>
-      </ResponsiveContainer>
-    </div>
-  );
-}
-
-/* ─── CLASS PERFORMANCE ─── */
-function ClassPerformance({ classes, ci30, now }) {
-  const data = useMemo(() => (classes || []).map(cls => {
-    const clsCI    = ci30.filter(c => c.class_id === cls.id || c.class_name === cls.name);
-    const cap      = cls.max_capacity || cls.capacity || 20;
-    const sessions = Math.max(4, Math.ceil(clsCI.length / Math.max(cap * 0.5, 1)));
-    const avgAtt   = sessions > 0 ? Math.round(clsCI.length / sessions) : 0;
-    const fillRate = Math.min(100, Math.round((avgAtt / cap) * 100));
-    const first15  = ci30.filter(c => { const d = differenceInDays(now, new Date(c.check_in_date)); return (c.class_id === cls.id || c.class_name === cls.name) && d > 15; }).length;
-    const last15   = ci30.filter(c => { const d = differenceInDays(now, new Date(c.check_in_date)); return (c.class_id === cls.id || c.class_name === cls.name) && d <= 15; }).length;
-    const trend    = first15 === 0 ? 0 : Math.round(((last15 - first15) / first15) * 100);
-    return { ...cls, avgAtt, fillRate, trend, cap };
-  }).sort((a, b) => b.fillRate - a.fillRate), [classes, ci30, now]);
-
-  if (!data.length) return null;
-
-  const fillText = r => r >= 75 ? 'text-emerald-500' : r < 35 ? 'text-red-500' : 'text-[#8b95b3]';
-  const dotCls   = r => r >= 75 ? 'bg-emerald-500'   : r < 35 ? 'bg-red-500'   : 'bg-[#8b95b3]';
-
-  return (
-    <div className={cn(CARD, 'p-5')}>
-      <SectionHead title="Class Performance" sub="Fill rates and attendance · last 30 days" />
-      <div className="flex flex-col">
-        {data.map((cls, i) => (
-          <div key={cls.id || i} className={cn('flex items-center justify-between py-2', i < data.length - 1 && 'border-b border-white/[0.03]')}>
-            <div className="flex items-center gap-2">
-              <div className={cn('w-1 h-1 rounded-full shrink-0', dotCls(cls.fillRate))} />
-              <span className="text-xs font-semibold text-[#eef2ff]">{cls.name}</span>
-              {cls.trend !== 0 && <span className={cn('text-[9px] font-semibold', cls.trend > 0 ? 'text-emerald-500' : 'text-[#4b5578]')}>{cls.trend > 0 ? '+' : ''}{cls.trend}%</span>}
-            </div>
-            <div className="flex items-baseline gap-1.5">
-              <span className="text-[10px] text-[#4b5578]">~{cls.avgAtt}/{cls.cap}</span>
-              <span className={cn('text-xs font-bold', fillText(cls.fillRate))}>{cls.fillRate}%</span>
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-/* ─── STAFF PERFORMANCE ─── */
-function StaffPerformance({ coaches, checkIns, ci30, classes, now }) {
-  const data = useMemo(() => (coaches || []).map(coach => {
-    const coachCI       = ci30.filter(c => c.coach_id === coach.id || c.coach_name === coach.name);
-    const uniqueMembers = new Set(coachCI.map(c => c.user_id)).size;
-    const coachedIds    = new Set(coachCI.map(c => c.user_id));
-    const retained      = [...coachedIds].filter(id => {
-      const last = checkIns.filter(c => c.user_id === id).sort((a, b) => new Date(b.check_in_date) - new Date(a.check_in_date))[0];
-      return last && differenceInDays(now, new Date(last.check_in_date)) <= 14;
-    }).length;
-    const retentionPct = coachedIds.size > 0 ? Math.round((retained / coachedIds.size) * 100) : 0;
-    const myClasses    = (classes || []).filter(c => c.instructor === coach.name || c.coach_id === coach.id);
-    const score        = Math.min(100, Math.round((retentionPct * 0.5) + (Math.min(uniqueMembers / 20, 1) * 100 * 0.3) + (Math.min(myClasses.length / 5, 1) * 100 * 0.2)));
-    return { ...coach, uniqueMembers, retentionPct, myClasses, score };
-  }).sort((a, b) => b.score - a.score), [coaches, checkIns, ci30, classes, now]);
-
-  if (!data.length) return null;
-
-  const ini      = (n = '') => (n || '?').split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
-  const retClass = s => s >= 70 ? 'text-emerald-500' : s < 45 ? 'text-red-500' : 'text-[#8b95b3]';
-
-  return (
-    <div className={cn(CARD, 'p-5')}>
-      <SectionHead title="Staff Performance" sub="Engagement score, members coached and retention" />
-      <div className="grid gap-2 pb-1.5 border-b border-white/[0.03] mb-1.5" style={{ gridTemplateColumns: '1fr 52px 52px 52px' }}>
-        <div className="text-[9px] font-semibold text-[#4b5578] uppercase tracking-[0.08em]">Coach</div>
-        {['Members','Classes','Retain'].map(h => <div key={h} className="text-[9px] font-semibold text-[#4b5578] uppercase tracking-[0.08em] text-center">{h}</div>)}
-      </div>
-      <div className="flex flex-col gap-0.5">
-        {data.map((coach, i) => (
-          <div key={coach.id || i} className={cn('px-[10px] py-[9px] rounded-[8px] border', i === 0 ? 'bg-[#0d1225] border-white/[0.07]' : 'bg-transparent border-transparent')}>
-            <div className="grid gap-2 items-center" style={{ gridTemplateColumns: '1fr 52px 52px 52px' }}>
-              <div className="flex items-center gap-2">
-                <div className="w-7 h-7 rounded-full shrink-0 bg-[#0d1225] border border-white/[0.04] flex items-center justify-center text-[9.5px] font-bold text-[#8b95b3] overflow-hidden">
-                  {coach.avatar_url ? <img src={coach.avatar_url} alt="" className="w-full h-full object-cover" /> : ini(coach.name)}
-                </div>
-                <div>
-                  <div className="text-xs font-semibold text-[#eef2ff]">{coach.name}</div>
-                  <div className="text-[9px] text-[#4b5578] mt-px">Score {coach.score}</div>
-                </div>
-              </div>
-              {[coach.uniqueMembers, coach.myClasses.length].map((v, j) => (
-                <div key={j} className="text-center text-[13px] font-bold text-[#eef2ff]">{v}</div>
-              ))}
-              <div className={cn('text-center text-[13px] font-bold', retClass(coach.retentionPct))}>{coach.retentionPct}%</div>
-            </div>
-            <div className="mt-[7px] flex items-center gap-1.5">
-              <span className="text-[9px] text-[#4b5578]">Score</span>
-              <div className="flex-1 h-[2px] rounded-[2px] bg-white/[0.03]">
-                <div className={cn('h-full rounded-[2px] opacity-65', coach.score < 45 ? 'bg-red-500' : 'bg-blue-500')} style={{ width: `${coach.score}%` }} />
-              </div>
-              <span className={cn('text-[9.5px] font-semibold', coach.score < 45 ? 'text-red-500' : 'text-[#8b95b3]')}>{coach.score}</span>
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-/* ─── MEMBER SEGMENTS ─── */
-function MemberSegments({ totalMembers, superActive, active, casual, inactive }) {
-  const segs = [
-    { label: 'Super active', sub: '15+/mo',   val: superActive, dotClass: 'bg-emerald-500' },
-    { label: 'Active',       sub: '8–14',     val: active,      dotClass: 'bg-blue-500'    },
-    { label: 'Casual',       sub: '1–7',      val: casual,      dotClass: 'bg-[#4b5578]'   },
-    { label: 'Disengaged',   sub: '0 visits', val: inactive,    dotClass: inactive > totalMembers * 0.25 ? 'bg-red-500' : 'bg-[#4b5578]' },
-  ];
-  return (
-    <div className={cn(CARD, 'p-5')}>
-      <SectionHead title="Member Segments" />
-      <div className="flex flex-col">
-        {segs.map((s, i) => {
-          const pct = totalMembers > 0 ? Math.round((s.val / totalMembers) * 100) : 0;
+    <Card>
+      <SLabel>Busiest Days</SLabel>
+      <div style={{ display: "flex", gap: 4, alignItems: "flex-end", height: 80 }}>
+        {PEAK_DAYS.map((d, i) => {
+          const isPeak = d.pct === max;
+          const h = Math.round((d.pct / max) * 72);
           return (
-            <div key={i} className={cn('flex justify-between items-center py-[7px]', i < segs.length - 1 && 'border-b border-white/[0.03]')}>
-              <div className="flex items-center gap-[7px]">
-                <div className={cn('w-1 h-1 rounded-full shrink-0', s.dotClass)} />
-                <span className="text-[11.5px] text-[#8b95b3]">{s.label}</span>
-                <span className="text-[9.5px] text-[#4b5578]">{s.sub}</span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <span className="text-xs font-bold text-[#eef2ff]">{s.val}</span>
-                <span className="text-[9.5px] text-[#4b5578] min-w-[26px] text-right">{pct}%</span>
-              </div>
+            <div key={i} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 4 }}>
+              <div style={{ width: "100%", height: h, background: isPeak ? C.cyan : C.cyan + "30", borderRadius: "3px 3px 0 0", transition: "height 0.3s" }} />
+              <span style={{ fontSize: 9.5, color: isPeak ? C.cyan : C.t3, fontWeight: isPeak ? 700 : 400 }}>{d.day}</span>
             </div>
           );
         })}
       </div>
-    </div>
+      <div style={{ marginTop: 10, fontSize: 10.5, color: C.t3 }}>
+        Peak: <span style={{ color: C.cyan, fontWeight: 600 }}>Thursday</span> · Quietest: <span style={{ color: C.t2 }}>Sunday</span>
+      </div>
+    </Card>
   );
 }
 
-/* ─── ACTION QUEUE ─── */
-function ActionQueue({ churnSignals = [], atRisk = 0, newSignUps = 0, ci30 = [], now, retentionRate = 0 }) {
-  const actions = useMemo(() => {
-    const list = [];
-    if (churnSignals.length > 0)   list.push({ icon: Send,     title: `Message ${churnSignals.length} quiet members`,  impact: `Save ~£${churnSignals.length * MVM}/month`,       cta: 'Message all'   });
-    else if (atRisk > 0)           list.push({ icon: Send,     title: `Reach out to ${atRisk} inactive members`,       impact: 'Personal messages recover 30–40%',                cta: 'Message now'   });
-    const newInactive = Math.max(0, newSignUps - new Set(ci30.filter(c => differenceInDays(now, new Date(c.check_in_date)) <= 7).map(c => c.user_id)).size);
-    if (newInactive > 0)           list.push({ icon: UserPlus, title: `Welcome ${newInactive} new members`,            impact: 'Week-1 contact doubles month-1 retention',        cta: 'Send welcome'  });
-    if (retentionRate < 65)        list.push({ icon: Target,   title: 'Fix onboarding flow',                           impact: `Retention at ${retentionRate}% — target is 70%+`, cta: 'Review funnel' });
-    return list.slice(0, 3);
-  }, [churnSignals, atRisk, newSignUps, ci30, now, retentionRate]);
-
-  if (!actions.length) return null;
-
+/* ─── PEAK HOURS ─────────────────────────────────────────────── */
+function PeakHoursChart() {
+  const max = Math.max(...PEAK_HOURS.map(d => d.v));
   return (
-    <div className={cn(CARD, 'p-5')}>
-      <div className="flex items-center gap-[7px] mb-[14px]">
-        <Zap className="w-[11px] h-[11px] text-[#4b5578]" />
-        <span className="text-xs font-semibold text-[#8b95b3]">Action Queue</span>
-        <span className="text-[10px] text-[#252d45] ml-auto">{actions.length} item{actions.length !== 1 ? 's' : ''}</span>
+    <Card>
+      <SLabel>Peak Hours</SLabel>
+      <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+        {PEAK_HOURS.map((d, i) => {
+          const isPeak = d.v === max;
+          return (
+            <div key={i} style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <span style={{ fontSize: 10.5, color: isPeak ? C.t1 : C.t2, width: 36, flexShrink: 0, fontWeight: isPeak ? 600 : 400 }}>{d.h}</span>
+              <div style={{ flex: 1, height: 4, background: C.brd, borderRadius: 2, overflow: "hidden" }}>
+                <div style={{ width: `${(d.v / max) * 100}%`, height: "100%", background: isPeak ? C.cyan : C.cyan + "50", borderRadius: 2 }} />
+              </div>
+              <span style={{ fontSize: 10.5, fontWeight: isPeak ? 700 : 400, color: isPeak ? C.cyan : C.t3, width: 22, textAlign: "right" }}>{d.v}</span>
+            </div>
+          );
+        })}
       </div>
-      <div className="flex flex-col gap-1.5">
-        {actions.map((a, i) => (
-          <div key={i} className={cn('px-[14px] py-3 rounded-[9px] bg-[#0d1225] border border-white/[0.04]', i === 0 && 'border-l-2 border-l-blue-500')}>
-            <div className="flex items-start gap-[9px] mb-[10px]">
-              <a.icon className={cn('w-[11px] h-[11px] shrink-0 mt-0.5', i === 0 ? 'text-blue-500' : 'text-[#4b5578]')} />
+    </Card>
+  );
+}
+
+/* ─── MEMBER SEGMENTS ────────────────────────────────────────── */
+function MemberSegmentsCard() {
+  return (
+    <Card>
+      <SLabel right="38 total">Member Segments</SLabel>
+      <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
+        {SEGMENTS.map((s, i) => (
+          <div key={i} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "9px 0", borderBottom: i < SEGMENTS.length - 1 ? `1px solid ${C.brd}` : "none" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <div style={{ width: 7, height: 7, borderRadius: "50%", background: s.col, flexShrink: 0 }} />
               <div>
-                <div className="text-[11.5px] font-semibold text-[#eef2ff] mb-0.5">{a.title}</div>
-                <div className="text-[10px] text-[#4b5578] leading-snug">{a.impact}</div>
+                <div style={{ fontSize: 12, fontWeight: 600, color: C.t1 }}>{s.label}</div>
+                <div style={{ fontSize: 10, color: C.t3, marginTop: 1 }}>{s.sub}</div>
               </div>
             </div>
-            <AppButton variant="primary" size="sm" className="w-full justify-center" onClick={() => {}}>{a.cta}</AppButton>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-/* ─── WEEK-1 RETURN CARD ─── */
-function Week1ReturnCard({ week1ReturnTrend = [] }) {
-  const data   = week1ReturnTrend;
-  const latest = data[data.length - 1]?.pct || 0;
-  const prev   = data[data.length - 2]?.pct  || 0;
-  const delta  = latest - prev;
-  const vClass = latest < 40 ? 'text-red-500' : latest >= 60 ? 'text-emerald-500' : 'text-[#eef2ff]';
-  return (
-    <div className={cn(CARD, 'p-5')}>
-      <SectionHead title="Week-1 Return Rate" sub="New member cohort" right={
-        <div className="flex items-baseline gap-[5px]">
-          <span className={cn('text-[18px] font-bold tracking-[-0.03em]', vClass)}>{latest}%</span>
-          {delta !== 0 && <span className={cn('text-[9.5px] font-semibold', delta > 0 ? 'text-emerald-500' : 'text-red-500')}>{delta > 0 ? '+' : ''}{delta}%</span>}
-        </div>
-      } />
-      {data.length >= 2 && (
-        <ResponsiveContainer width="100%" height={48}>
-          <AreaChart data={data} margin={{ top: 2, right: 0, left: 0, bottom: 0 }}>
-            <defs><linearGradient id="w1g" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#3b82f6" stopOpacity={0.15} /><stop offset="100%" stopColor="#3b82f6" stopOpacity={0} /></linearGradient></defs>
-            <Area type="monotone" dataKey="pct" stroke="#3b82f6" strokeWidth={1.5} fill="url(#w1g)" dot={false} />
-          </AreaChart>
-        </ResponsiveContainer>
-      )}
-      <div className={cn('mt-2 text-[10px] leading-snug', vClass)}>
-        {latest < 40 ? 'Below target — follow up with new members in week 1' : latest < 60 ? 'Room to improve — a personal welcome message helps' : 'Strong week-1 return'}
-      </div>
-    </div>
-  );
-}
-
-/* ─── MILESTONE CARD ─── */
-function MilestoneCard({ checkIns }) {
-  const milestones = useMemo(() => {
-    const acc = {};
-    checkIns.forEach(c => { if (!acc[c.user_name]) acc[c.user_name] = 0; acc[c.user_name]++; });
-    return Object.entries(acc).map(([name, total]) => {
-      const next = [10, 25, 50, 100, 200, 500].find(n => n > total) || null;
-      return { name, total, next, toNext: next ? next - total : 0 };
-    }).filter(m => m.next && m.toNext <= 5).sort((a, b) => a.toNext - b.toNext).slice(0, 4);
-  }, [checkIns]);
-  if (!milestones.length) return null;
-  return (
-    <div className={cn(CARD, 'p-5')}>
-      <div className="flex items-center gap-[7px] mb-[14px]">
-        <Award className="w-[11px] h-[11px] text-[#4b5578]" />
-        <span className="text-xs font-semibold text-[#8b95b3]">Upcoming Milestones</span>
-      </div>
-      <div className="flex flex-col">
-        {milestones.map((m, i) => (
-          <div key={m.name} className={cn('flex items-center gap-[9px] py-[7px]', i < milestones.length - 1 && 'border-b border-white/[0.03]')}>
-            <div className="w-[26px] h-[26px] rounded-[6px] shrink-0 bg-[#0d1225] border border-white/[0.04] flex items-center justify-center text-[9.5px] font-bold text-[#8b95b3]">{m.total}</div>
-            <div className="flex-1 min-w-0">
-              <div className="text-xs font-semibold text-[#eef2ff] overflow-hidden text-ellipsis whitespace-nowrap">{m.name}</div>
-              <div className={cn('text-[9.5px] mt-px', m.toNext === 1 ? 'text-blue-500' : 'text-[#4b5578]')}>{m.toNext === 1 ? '1 visit away 🎯' : `${m.toNext} to ${m.next}`}</div>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <div style={{ width: 60, height: 3, background: C.brd, borderRadius: 2, overflow: "hidden" }}>
+                <div style={{ width: `${s.pct}%`, height: "100%", background: s.col, borderRadius: 2, opacity: 0.8 }} />
+              </div>
+              <span style={{ fontSize: 13, fontWeight: 700, color: C.t1, width: 18, textAlign: "right" }}>{s.val}</span>
+              <span style={{ fontSize: 10.5, color: C.t3, width: 30, textAlign: "right" }}>{s.pct}%</span>
             </div>
           </div>
         ))}
       </div>
-    </div>
+    </Card>
   );
 }
 
-/* ─── RANKED LIST ─── */
-function RankedList({ title, icon: Icon, items, emptyLabel }) {
+/* ─── CLASS PERFORMANCE ──────────────────────────────────────── */
+function ClassPerformanceCard() {
   return (
-    <div className={cn(CARD, 'p-5')}>
-      <SectionHead title={title} right={<Icon className="w-[11px] h-[11px] text-[#4b5578]" />} />
-      {items.every(d => !d.count) ? (
-        <div className="flex flex-col items-center py-6 gap-2">
-          <Icon className="w-4 h-4 text-[#252d45]" />
-          <span className="text-[11px] text-[#4b5578]">{emptyLabel || 'No data yet'}</span>
+    <Card>
+      <SLabel right="last 30 days">Class Performance</SLabel>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 48px 48px 52px", gap: 8, padding: "0 0 7px", borderBottom: `1px solid ${C.brd}`, marginBottom: 4 }}>
+        {["CLASS", "AVG", "FILL", "TREND"].map((h, i) => (
+          <div key={i} style={{ fontSize: 9, fontWeight: 600, color: C.t3, letterSpacing: "0.07em", textAlign: i > 0 ? "center" : "left" }}>{h}</div>
+        ))}
+      </div>
+      {TOP_CLASSES.map((cls, i) => (
+        <div key={i} style={{ display: "grid", gridTemplateColumns: "1fr 48px 48px 52px", gap: 8, padding: "8px 0", borderBottom: i < TOP_CLASSES.length - 1 ? `1px solid ${C.brd}` : "none", alignItems: "center" }}>
+          <div style={{ fontSize: 12, fontWeight: 600, color: C.t1 }}>{cls.name}</div>
+          <div style={{ fontSize: 12, fontWeight: 600, color: C.t2, textAlign: "center" }}>{cls.avg}</div>
+          <div style={{ fontSize: 12, fontWeight: 700, color: fillCol(cls.fill), textAlign: "center" }}>{cls.fill}%</div>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 2, fontSize: 11, fontWeight: 600, color: cls.trend > 0 ? C.cyan : C.red }}>
+            {cls.trend > 0
+              ? <TrendingUp style={{ width: 10, height: 10 }} />
+              : <TrendingDown style={{ width: 10, height: 10 }} />}
+            {cls.trend > 0 ? "+" : ""}{cls.trend}%
+          </div>
         </div>
-      ) : (
-        <div className="flex flex-col">
-          {items.map((h, i) => (
-            <div key={h.label || h.name} className={cn('flex items-center justify-between py-1.5', i < items.length - 1 && 'border-b border-white/[0.03]')}>
-              <div className="flex items-center gap-[7px]">
-                <span className="text-[9px] font-semibold text-[#252d45] w-[13px] text-right shrink-0">#{i+1}</span>
-                <span className="text-xs text-[#eef2ff]">{h.label || h.name}</span>
-              </div>
-              <span className="text-xs font-semibold text-[#8b95b3]">{h.count}</span>
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
+      ))}
+    </Card>
   );
 }
 
-/* ─── MONTH COMPARE ─── */
-function MonthCompare({ ci30, ciPrev30, retentionRate, atRisk }) {
-  const thisActive = useMemo(() => new Set(ci30.map(c => c.user_id)).size, [ci30]);
-  const prevActive = useMemo(() => ciPrev30?.length ? new Set(ciPrev30.map(c => c.user_id)).size : null, [ciPrev30]);
-  const rows = [
-    { label: 'Check-ins',      curr: ci30.length,         prev: ciPrev30?.length || 0, valueClass: 'text-[#eef2ff]' },
-    { label: 'Active members', curr: thisActive,           prev: prevActive,            valueClass: 'text-[#eef2ff]' },
-    { label: 'Retention',      curr: `${retentionRate}%`,  prev: null,                  valueClass: retentionRate < 60 ? 'text-red-500' : retentionRate >= 80 ? 'text-emerald-500' : 'text-[#eef2ff]' },
-    { label: 'Low engagement', curr: atRisk,               prev: null,                  valueClass: atRisk > 0 ? 'text-amber-400' : 'text-[#eef2ff]' },
+/* ─── AT-RISK CARD ───────────────────────────────────────────── */
+function AtRiskCard() {
+  const totalRev = CHURN_MEMBERS.length * 75;
+  return (
+    <Card>
+      <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 12 }}>
+        <div>
+          <div style={{ fontSize: 12.5, fontWeight: 600, color: C.t1, marginBottom: 2 }}>Churn Risk</div>
+          <div style={{ fontSize: 10.5, color: C.t3 }}>{CHURN_MEMBERS.length} members need attention</div>
+        </div>
+        <div style={{ textAlign: "right" }}>
+          <div style={{ fontSize: 18, fontWeight: 700, color: C.red, letterSpacing: "-0.03em", lineHeight: 1 }}>£{totalRev}</div>
+          <div style={{ fontSize: 9.5, color: C.t3, marginTop: 2 }}>monthly risk</div>
+        </div>
+      </div>
+      <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
+        {CHURN_MEMBERS.map((m, i) => (
+          <div key={i} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "8px 0", borderBottom: i < CHURN_MEMBERS.length - 1 ? `1px solid ${C.brd}` : "none" }}>
+            <div>
+              <div style={{ fontSize: 12, fontWeight: 600, color: C.t1 }}>{m.name}</div>
+              <div style={{ fontSize: 10, color: C.t3, marginTop: 1 }}>Last seen {m.days}d ago</div>
+            </div>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <div style={{ fontSize: 12, fontWeight: 700, color: riskCol(m.risk) }}>{m.risk}%</div>
+              <button style={{ padding: "3px 9px", borderRadius: 5, background: "transparent", border: `1px solid ${C.brd2}`, color: C.t2, fontSize: 10.5, fontWeight: 600, cursor: "pointer", fontFamily: FONT }}>
+                Nudge
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
+      <button style={{ marginTop: 12, width: "100%", padding: "8px", borderRadius: 7, background: C.redD, border: `1px solid ${C.redB}`, color: C.red, fontSize: 11.5, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 5, fontFamily: FONT }}>
+        <Send style={{ width: 10, height: 10 }} /> Message All At-Risk
+      </button>
+    </Card>
+  );
+}
+
+/* ─── RETENTION FUNNEL ───────────────────────────────────────── */
+function RetentionFunnelCard() {
+  const stages = [
+    { label: "Joined",      val: 38, pct: 100 },
+    { label: "Week 1 visit", val: 31, pct: 82  },
+    { label: "Month 1 active", val: 24, pct: 63 },
+    { label: "Month 3 retained", val: 19, pct: 50 },
   ];
   return (
-    <div className={cn(CARD, 'p-5')}>
-      <SectionHead title="Month Comparison" sub="This vs last month" />
-      {rows.map((r, i) => {
-        const diff = r.prev !== null && typeof r.curr === 'number' ? r.curr - r.prev : null;
-        const up = diff > 0;
-        return (
-          <div key={i} className={cn('flex items-center justify-between py-[7px]', i < rows.length - 1 && 'border-b border-white/[0.03]')}>
-            <span className="text-xs text-[#8b95b3]">{r.label}</span>
-            <div className="flex items-center gap-[7px]">
-              {diff !== null && diff !== 0 && (
-                <span className={cn('text-[9px] font-semibold px-[5px] py-[1px] rounded border', up ? 'text-emerald-500 bg-emerald-500/[0.08] border-emerald-500/[0.2]' : 'text-red-500 bg-red-500/[0.07] border-red-500/[0.2]')}>
-                  {up ? '+' : ''}{diff}
-                </span>
-              )}
-              <span className={cn('text-[13px] font-semibold', r.valueClass)}>{r.curr}</span>
+    <Card>
+      <SLabel>Retention Funnel</SLabel>
+      <div style={{ fontSize: 10.5, color: C.t3, marginBottom: 14 }}>
+        Biggest drop: <span style={{ color: C.amber, fontWeight: 600 }}>Month 1 → Month 3 (−13%)</span>
+      </div>
+      {stages.map((s, i) => (
+        <div key={i}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 5 }}>
+            <span style={{ fontSize: 12, color: C.t1, fontWeight: i === 0 ? 700 : 400 }}>{s.label}</span>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <span style={{ fontSize: 13, fontWeight: 700, color: C.t1 }}>{s.val}</span>
+              <span style={{ fontSize: 10.5, color: C.t3, width: 32, textAlign: "right" }}>{s.pct}%</span>
             </div>
           </div>
-        );
-      })}
+          <div style={{ height: 4, background: C.brd, borderRadius: 2, overflow: "hidden", marginBottom: i < stages.length - 1 ? 12 : 0 }}>
+            <div style={{ width: `${s.pct}%`, height: "100%", background: s.pct === 100 ? C.cyan : s.pct >= 75 ? C.cyan + "cc" : s.pct >= 50 ? C.amber : C.red, borderRadius: 2 }} />
+          </div>
+          {i < stages.length - 1 && (
+            <div style={{ fontSize: 9.5, color: C.t3, marginBottom: 8, paddingLeft: 2 }}>
+              ↓ {stages[i].pct - stages[i + 1].pct}% drop-off
+            </div>
+          )}
+        </div>
+      ))}
+    </Card>
+  );
+}
+
+/* ─── RIGHT PANEL ────────────────────────────────────────────── */
+function RightPanel() {
+  return (
+    <div style={{ width: 244, flexShrink: 0, display: "flex", flexDirection: "column", gap: 12, fontFamily: FONT }}>
+      <AtRiskCard />
+      <MemberSegmentsCard />
+      <PeakHoursChart />
+      <RetentionFunnelCard />
     </div>
   );
 }
 
-/* ─── MAIN EXPORT ─── */
-export default function TabAnalytics({
-  checkIns, ci30, ciPrev30 = [], totalMembers, monthCiPer, monthChangePct,
-  monthGrowthData, retentionRate, activeThisMonth, newSignUps, atRisk, gymId,
-  allMemberships = [], classes = [], coaches = [], avatarMap = {},
-  isCoach = false, myClasses = [],
-  weekTrend: weekTrendProp = [], peakHours: peakHoursProp = [], busiestDays: busiestDaysProp = [],
-  returnRate: returnRateProp = 0, dailyAvg: dailyAvgProp = 0, engagementSegments = {},
-  retentionFunnel: retentionFunnelProp = [], dropOffBuckets: dropOffBucketsProp = [],
-  churnSignals: churnSignalsProp = [], week1ReturnTrend: week1ReturnTrendProp = [],
-  posts = [], polls = [],
-}) {
-  const now = new Date();
-  const [isMobile, setIsMobile] = useState(() => window.innerWidth < 768);
-  useEffect(() => {
-    const fn = () => setIsMobile(window.innerWidth < 768);
-    window.addEventListener('resize', fn); return () => window.removeEventListener('resize', fn);
-  }, []);
-
-  const weekTrend   = weekTrendProp.length  > 0 ? weekTrendProp   : [];
-  const busiestDays = busiestDaysProp.length > 0 ? busiestDaysProp : [];
-  const peakHours   = peakHoursProp.length  > 0 ? peakHoursProp   : [];
-
-  const superActive = engagementSegments.superActive ?? (monthCiPer || []).filter(v => v >= 15).length;
-  const active      = engagementSegments.active      ?? (monthCiPer || []).filter(v => v >= 8 && v < 15).length;
-  const casual      = engagementSegments.casual      ?? (monthCiPer || []).filter(v => v >= 1 && v < 8).length;
-  const inactive    = engagementSegments.inactive    ?? Math.max(0, totalMembers - (monthCiPer || []).length);
-
-  if (isCoach) {
-    const classWeeklyTrend = Array.from({ length: 8 }, (_, i) => {
-      const s = subDays(now, (7 - i) * 7), e = subDays(now, (6 - i) * 7);
-      return { label: format(s, 'MMM d'), value: checkIns.filter(c => isWithinInterval(new Date(c.check_in_date), { start: s, end: e })).length };
-    });
-    return (
-      <div className="flex flex-col gap-[18px]">
-        <TodaysFocus churnSignals={churnSignalsProp} atRisk={atRisk} newSignUps={newSignUps} ci30={ci30} now={now} totalMembers={totalMembers} isMobile={isMobile} />
-        <div className={cn('grid gap-[18px] items-start', isMobile ? 'grid-cols-1' : 'grid-cols-[1fr_264px]')}>
-          <div className="flex flex-col gap-[14px]">
-            <KpiStrip totalMembers={totalMembers} activeThisMonth={activeThisMonth} atRisk={atRisk} retentionRate={retentionRate} monthChangePct={monthChangePct} ci30={ci30} now={now} weekTrend={weekTrend} />
-            <div className={cn(CARD, 'p-5')}>
-              <SectionHead title="Class Attendance Trend" sub="8-week view" />
-              <ResponsiveContainer width="100%" height={160}>
-                <AreaChart data={classWeeklyTrend} margin={{ top: 6, right: 6, left: 0, bottom: 0 }}>
-                  <AreaGrad id="cag" />
-                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.03)" vertical={false} />
-                  <XAxis dataKey="label" tick={tick} axisLine={{ stroke: 'rgba(255,255,255,0.04)' }} tickLine={false} interval={1} />
-                  <YAxis tick={tick} axisLine={{ stroke: 'rgba(255,255,255,0.04)' }} tickLine={false} width={26} allowDecimals={false} />
-                  <Tooltip content={<ChartTip />} />
-                  <Area type="monotone" dataKey="value" stroke="#3b82f6" strokeWidth={1.5} fill="url(#cag)" dot={false} />
-                </AreaChart>
-              </ResponsiveContainer>
-            </div>
-            <div className={cn(CARD, 'p-5')}>
-              <SectionHead title="Traffic Heatmap" sub="Check-in density by time and day" />
-              <HeatmapChart gymId={gymId} />
-            </div>
-          </div>
-          <div className="flex flex-col gap-3">
-            <ActionQueue churnSignals={churnSignalsProp} atRisk={atRisk} newSignUps={newSignUps} ci30={ci30} now={now} retentionRate={retentionRate} />
-            <MemberSegments totalMembers={totalMembers} superActive={superActive} active={active} casual={casual} inactive={inactive} />
-            <RankedList title="Busiest Days" icon={Calendar} items={busiestDays.map(d => ({ ...d, label: d.name }))} emptyLabel="No data yet" />
-            <RankedList title="Peak Hours"   icon={Clock}    items={peakHours.slice(0, 5)} emptyLabel="No check-in data yet" />
-          </div>
-        </div>
-      </div>
-    );
-  }
+/* ─── ROOT ───────────────────────────────────────────────────── */
+export default function TabAnalytics() {
+  const [range, setRange] = useState("30D");
 
   return (
-    <div className="flex flex-col gap-5">
+    <div style={{ display: "flex", height: "100vh", background: C.bg, color: C.t1, fontFamily: FONT, overflow: "hidden" }}>
+      <Sidebar />
+      <div style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0, overflow: "hidden" }}>
+        <TopBar range={range} setRange={setRange} />
 
-      <TodaysFocus churnSignals={churnSignalsProp} atRisk={atRisk} newSignUps={newSignUps} ci30={ci30} now={now} totalMembers={totalMembers} />
+        <div style={{ flex: 1, overflowY: "auto", padding: "16px 18px", display: "flex", flexDirection: "column", gap: 12 }}>
 
-      {isMobile && (
-        <ActionQueue churnSignals={churnSignalsProp} atRisk={atRisk} newSignUps={newSignUps} ci30={ci30} now={now} retentionRate={retentionRate} />
-      )}
-
-      <div className={cn('grid gap-[18px] items-start', isMobile ? 'grid-cols-1' : 'grid-cols-[1fr_272px]')}>
-
-        <div className="flex flex-col gap-4">
-          {checkIns.length >= 3 ? (
-            <KpiStrip totalMembers={totalMembers} activeThisMonth={activeThisMonth} atRisk={atRisk} retentionRate={retentionRate} monthChangePct={monthChangePct} ci30={ci30} now={now} weekTrend={weekTrend} />
-          ) : (
-            <div className={cn(CARD, 'p-[18px]')}>
-              <div className="flex items-center gap-[10px]">
-                <Activity className="w-[13px] h-[13px] text-[#4b5578] shrink-0" />
-                <div>
-                  <div className="text-xs font-semibold text-[#eef2ff]">KPIs loading</div>
-                  <div className="text-[11px] text-[#4b5578] mt-0.5 leading-relaxed">Metrics populate after your first 7 days of check-ins.</div>
-                </div>
+          {/* Page header */}
+          <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between" }}>
+            <div>
+              <div style={{ fontSize: 18, fontWeight: 700, color: C.t1, letterSpacing: "-0.02em" }}>
+                Analytics <span style={{ color: C.t3, fontWeight: 300 }}>/</span> <span style={{ color: C.cyan }}>Overview</span>
               </div>
+              <div style={{ fontSize: 11, color: C.t3, marginTop: 2 }}>Your gym's performance at a glance</div>
             </div>
-          )}
-
-          <ChurnRevenuePanel churnSignals={churnSignalsProp} atRisk={atRisk} totalMembers={totalMembers} />
-          <WeeklyTrendChart weekTrend={weekTrend} monthChangePct={monthChangePct} />
-          <MemberGrowthChart monthGrowthData={monthGrowthData} newSignUps={newSignUps} />
-          <RetentionFunnel retentionFunnel={retentionFunnelProp} />
-          <DropOffChart dropOffBuckets={dropOffBucketsProp} />
-
-          <div className={cn(CARD, 'p-5')}>
-            <SectionHead title="Traffic Heatmap" sub="Check-in density by day and time" />
-            <HeatmapChart gymId={gymId} />
+            <div style={{ display: "flex", alignItems: "center", gap: 5, padding: "5px 10px", borderRadius: 7, background: C.amberD, border: `1px solid rgba(245,158,11,0.25)`, fontSize: 11.5, color: C.amber, fontWeight: 600 }}>
+              <AlertTriangle style={{ width: 11, height: 11 }} /> 4 members need attention
+            </div>
           </div>
 
-          <ClassPerformance classes={classes} ci30={ci30} now={now} />
-          <StaffPerformance coaches={coaches} checkIns={checkIns} ci30={ci30} classes={classes} now={now} />
-        </div>
+          {/* KPI row */}
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 10 }}>
+            <KpiCard label="Total Members"      value={38}    sub="2 new this week"     trend={+12}  accent={C.cyan} />
+            <KpiCard label="Weekly Check-ins"   value={192}   sub="avg 27/day"          trend={+8}                  />
+            <KpiCard label="Retention Rate"     value="88%"   sub="30-day cohort"       trend={+6}   accent={C.cyan} />
+            <KpiCard label="Avg Monthly Value"  value="£82"   sub="per member"          trend={+5}                  />
+          </div>
 
-        <div className="flex flex-col gap-3">
-          {!isMobile && <ActionQueue churnSignals={churnSignalsProp} atRisk={atRisk} newSignUps={newSignUps} ci30={ci30} now={now} retentionRate={retentionRate} />}
-          <Week1ReturnCard week1ReturnTrend={week1ReturnTrendProp} />
-          <MilestoneCard checkIns={checkIns} />
-          <MemberSegments totalMembers={totalMembers} superActive={superActive} active={active} casual={casual} inactive={inactive} />
-          <MonthCompare ci30={ci30} ciPrev30={ciPrev30} retentionRate={retentionRate} atRisk={atRisk} />
-          <RankedList title="Busiest Days" icon={Calendar} items={busiestDays.map(d => ({ ...d, label: d.name }))} emptyLabel="No data yet" />
-          <RankedList title="Peak Hours"   icon={Clock}    items={peakHours.slice(0, 5)} emptyLabel="No check-in data" />
-        </div>
+          {/* Main content + right panel */}
+          <div style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
 
+            {/* Left/center content */}
+            <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 12, minWidth: 0 }}>
+              <CheckInChart />
+
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+                <RetentionChart />
+                <MemberGrowthChart />
+              </div>
+
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+                <DropOffChart />
+                <PeakDaysChart />
+              </div>
+
+              <ClassPerformanceCard />
+            </div>
+
+            <RightPanel />
+          </div>
+        </div>
       </div>
     </div>
   );
