@@ -122,8 +122,6 @@ export default function WorkoutSummaryModal({ summaryLog, onClose }) {
           {/* Exercises — mirrors TodayWorkout card exactly */}
           {exercises.length > 0 && (
             <div className="space-y-2 mb-4">
-              <p className="text-xs font-black text-slate-500 uppercase tracking-widest mb-2">Exercises</p>
-
               {/* Column headers */}
               <div className="grid gap-1 mb-1.5 items-end px-2" style={{ gridTemplateColumns: '1fr 36px 12px 36px auto' }}>
                 <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest ml-1">Exercise</div>
