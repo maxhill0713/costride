@@ -64,8 +64,13 @@ Deno.serve(async (req) => {
     }
 
     if (photoUrl) {
-      await base44.asServiceRole.entities.Gym.update(gym_id, { image_url: photoUrl });
-      return Response.json({ success: true, photo_url: photoUrl });
+      // Only update if gym doesn't already have an image to preserve existing ones
+      if (!gym.image_url) {
+        await base44.asServiceRole.entities.Gym.update(gym_id, { image_url: photoUrl });
+        return Response.json({ success: true, photo_url: photoUrl });
+      } else {
+        return Response.json({ success: false, message: 'Gym already has an image' });
+      }
     } else {
       return Response.json({ success: false, message: 'No photos available for this gym' });
     }
