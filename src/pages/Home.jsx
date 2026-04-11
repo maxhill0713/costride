@@ -510,6 +510,26 @@ export default function Home() {
     return (b.activity.streak || 0) - (a.activity.streak || 0);
   }), [friends, allRecentCheckIns]);
 
+  const { data: weeklyWorkoutLogs = [] } = useQuery({
+    queryKey: ['weeklyWorkoutLogs', currentUser?.id, weekOffset],
+    queryFn: () => {
+      const base = startOfWeek(new Date(), { weekStartsOn: 1 });
+      base.setDate(base.getDate() + weekOffset * 7);
+      const monday = base.toISOString().split('T')[0];
+      const sunday = new Date(base);
+      sunday.setDate(base.getDate() + 6);
+      const sundayStr = sunday.toISOString().split('T')[0];
+      return base44.entities.WorkoutLog.filter({
+        user_id: currentUser?.id,
+        completed_date: { $gte: monday, $lte: sundayStr },
+      });
+    },
+    enabled: !!currentUser?.id,
+    staleTime: 1 * 60 * 1000,
+    gcTime: 5 * 60 * 1000,
+    placeholderData: (prev) => prev,
+  });
+
   const socialFeedPosts = useMemo(() => {
     const threeDaysAgo = new Date(Date.now() - 3 * 24 * 60 * 60 * 1000);
     return allPosts.filter(post =>
