@@ -1202,6 +1202,7 @@ export default function Home() {
                         const hasBubbleBtn = (done && !isRestDay && workoutLog) || showViewWorkout;
 
                         const getBg = () => {
+                          if (isPreJoin) return 'linear-gradient(to bottom, #2d3748 0%, #1a202c 50%, #0f172a 100%)';
                           if (isRestDay) {
                             if (isPastOrTodayRestDay) return 'linear-gradient(to bottom, #4ade80 0%, #22c55e 40%, #16a34a 100%)';
                             return 'linear-gradient(to bottom, #2d3748 0%, #1a202c 50%, #0f172a 100%)';
@@ -1211,6 +1212,7 @@ export default function Home() {
                           return 'linear-gradient(to bottom, #2d3748 0%, #1a202c 50%, #0f172a 100%)';
                         };
                         const getBorder = () => {
+                          if (isPreJoin) return '1px solid rgba(71,85,105,0.7)';
                           if (isRestDay) {
                             if (isPastOrTodayRestDay) return '1px solid rgba(74,222,128,0.5)';
                             return '1px solid rgba(71,85,105,0.7)';
@@ -1220,6 +1222,7 @@ export default function Home() {
                           return '1px solid rgba(71,85,105,0.7)';
                         };
                         const getBoxShadow = () => {
+                          if (isPreJoin) return '0 4px 0 0 #111827, 0 6px 14px rgba(15,20,35,0.5), inset 0 1px 0 rgba(255,255,255,0.1), inset 0 -1px 0 rgba(0,0,0,0.25), inset 0 0 10px rgba(255,255,255,0.02)';
                           if (isRestDay) {
                             if (isPastOrTodayRestDay) return '0 3px 0 0 #15803d, 0 5px 12px rgba(0,80,0,0.3), inset 0 1px 0 rgba(255,255,255,0.2), inset 0 -1px 0 rgba(0,0,0,0.15), inset 0 0 12px rgba(255,255,255,0.04)';
                             return '0 4px 0 0 #111827, 0 6px 14px rgba(15,20,35,0.5), inset 0 1px 0 rgba(255,255,255,0.1), inset 0 -1px 0 rgba(0,0,0,0.25), inset 0 0 10px rgba(255,255,255,0.02)';
@@ -1257,7 +1260,7 @@ export default function Home() {
                                   isTodayCircle,
                                   showViewWorkout,
                                   hasBubbleBtn,
-                                  popupLabel: (() => {
+                                  popupLabel: isPreJoin ? '' : (() => {
                                     if (isRestDay) return 'Rest Day';
                                     if (isMissed) return 'No Workout';
                                     if (done && workoutLog) return workoutLog.workout_name || workoutLog.title || workoutLog.workout_type || workoutLog.name || workoutLog.split_name || 'Workout';
@@ -1266,14 +1269,6 @@ export default function Home() {
                                     const splitDay = customTypes ? Array.isArray(customTypes) ? customTypes.find((s) => s.day === day || s.day_of_week === day) : customTypes[day] : null;
                                     return splitDay?.name || splitDay?.title || splitDay?.workout_type || 'Training Day';
                                   })(),
-                                  dateLabel: done && workoutLog?.completed_date
-                                    ? new Date(workoutLog.completed_date).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'short' })
-                                    : (() => {
-                                        const sd = new Date(mondayBase);
-                                        sd.setDate(mondayBase.getDate() + (day - 1));
-                                        return sd.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'short' });
-                                      })(),
-                                  solidColor: isPastOrTodayRestDay ? '#16a34a' : isRestDay ? '#1e2535' : done ? '#3b82f6' : isMissed ? '#dc2626' : isTodayCircle ? '#263244' : '#1e2535',
                                 });
                               }}
                               onPointerUp={() => {
