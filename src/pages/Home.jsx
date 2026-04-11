@@ -412,29 +412,30 @@ export default function Home() {
     placeholderData: (prev) => prev,
   });
 
+  const friendIdList = useMemo(() => friends.map((f) => f.friend_id), [friends]);
+
+  const { data: allPosts = [] } = useQuery({
+    queryKey: ['friendPosts', currentUser?.id, friendIdList.join(',')],
+    queryFn: () => {
+      const authorIds = [...friendIdList, currentUser?.id].filter(Boolean);
+      return base44.entities.Post.filter(
+        { member_id: { $in: authorIds }, is_system_generated: { $ne: true } },
+        '-created_date',
+        200
+      );
+    },
+    enabled: !!currentUser,
+    staleTime: 1 * 60 * 1000,
+    gcTime: 5 * 60 * 1000,
+    placeholderData: (prev) => prev,
+  });
+
   const { data: friendRequests = [] } = useQuery({
     queryKey: ['friendRequests', currentUser?.id],
     queryFn: () => base44.entities.Friend.filter({ friend_id: currentUser?.id, status: 'pending' }, '-created_date', 50),
     enabled: !!currentUser,
     staleTime: 2 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
-  });
-
-  const friendIdList = useMemo(() => friends.map((f) => f.friend_id), [friends]);
-
-  const { data: allPosts = [] } = useQuery({
-    queryKey: ['friendPosts', currentUser?.id, friendIdList.join(',')],
-    queryFn: () => {
-      const threeDaysAgo = new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString();
-      return base44.functions.invoke('getFriendPosts', {
-        friendIds: friendIdList,
-        since: threeDaysAgo,
-      }).then(res => res.data?.posts || []);
-    },
-    enabled: !!currentUser,
-    staleTime: 1 * 60 * 1000,
-    gcTime: 5 * 60 * 1000,
-    placeholderData: (prev) => prev,
   });
 
   const { data: sentFriendRequests = [] } = useQuery({
