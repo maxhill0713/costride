@@ -582,7 +582,6 @@ export default function Home() {
   const friendPosts = useMemo(() => allPosts.filter((post) =>
     friendIdList.includes(post.member_id) &&
     !post.is_system_generated &&
-    !post.is_hidden &&
     !post.content?.includes('well done') &&
     !post.content?.includes('workout finished')
   ), [allPosts, friendIdList]);
@@ -644,7 +643,6 @@ export default function Home() {
       (friendIdList.includes(post.member_id) || post.member_id === currentUser?.id) &&
       (post.content || post.image_url || post.video_url || post.workout_name) &&
       !post.gym_join &&
-      !post.is_hidden &&
       new Date(post.created_date) >= threeDaysAgo
     );
   }, [allPosts, friendIdList, currentUser?.id]);
