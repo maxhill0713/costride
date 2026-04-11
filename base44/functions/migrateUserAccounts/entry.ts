@@ -20,7 +20,9 @@ Deno.serve(async (req) => {
     }
 
     const allUsers = await base44.asServiceRole.entities.User.list('created_date', 5000);
-    const results = { account_type_fixed: 0, streak_defaults_set: 0, onboarding_flag_set: 0, skipped: 0, total: allUsers.length };
+    const allProfiles = await base44.asServiceRole.entities.UserProfile.list('created_date', 5000);
+    const profilesByUserId = new Map(allProfiles.map(p => [p.user_id, p]));
+    const results = { account_type_fixed: 0, streak_defaults_set: 0, onboarding_flag_set: 0, user_profiles_created: 0, skipped: 0, total: allUsers.length };
 
     for (const u of allUsers) {
       const updates = {};
@@ -63,6 +65,20 @@ Deno.serve(async (req) => {
         console.log(`Migrated user ${u.id} (${u.email}):`, Object.keys(updates).join(', '));
       } else {
         results.skipped++;
+      }
+
+      // Upsert UserProfile — create if missing, update if stale
+      const existingProfile = profilesByUserId.get(u.id);
+      if (!existingProfile) {
+        await base44.asServiceRole.entities.UserProfile.create({
+          user_id:      u.id,
+          display_name: u.display_name || u.full_name || '',
+          avatar_url:   u.avatar_url || null,
+          bio:          u.bio || null,
+          is_public:    true,
+        });
+        results.user_profiles_created++;
+        console.log(`Created UserProfile for user ${u.id} (${u.email})`);
       }
     }
 
