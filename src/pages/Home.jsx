@@ -469,10 +469,6 @@ export default function Home() {
     return now.toISOString().split('T')[0];
   })();
 
-  const userStreak = currentUser?.current_streak || 0;
-  const streakVariant = currentUser?.streak_variant || 'default';
-  const todayDowAdjusted = (() => { const d = new Date().getDay(); return d === 0 ? 7 : d; })();
-
   const { data: weeklyWorkoutLogs = [] } = useQuery({
     queryKey: ['weeklyWorkoutLogs', currentUser?.id, weekOffset],
     queryFn: () => {
@@ -493,6 +489,9 @@ export default function Home() {
     placeholderData: (prev) => prev,
   });
 
+  const userStreak = currentUser?.current_streak || 0;
+  const streakVariant = currentUser?.streak_variant || 'default';
+  const todayDowAdjusted = (() => { const d = new Date().getDay(); return d === 0 ? 7 : d; })();
   const workoutLoggedToday = weeklyWorkoutLogs.some(log => log.completed_date === effectiveToday) || justLoggedDay === todayDowAdjusted;
   const todayIsRestDay = !(currentUser?.training_days || []).includes(todayDowAdjusted);
   const showCheckInButton = !todayIsRestDay || workoutOverrideDay !== null;
