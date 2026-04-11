@@ -304,10 +304,9 @@ function FriendsSection({
             <motion.div
             key="add-friend-panel"
             className="fixed inset-x-0 top-0 z-[9999] flex justify-center"
-            variants={fadeVariants}
-            initial="hidden"
-            animate="visible"
-            exit="exit">
+            initial={{ opacity: 1 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 1 }}>
             
               <div
                 className="w-11/12 max-w-2xl h-[50vh] flex flex-col bg-slate-900/60 backdrop-blur-md border border-slate-700/20 rounded-3xl shadow-2xl shadow-black/20 text-white overflow-hidden"
