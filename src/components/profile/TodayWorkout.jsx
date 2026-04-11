@@ -115,9 +115,33 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
   const [frozenDuration, setFrozenDuration] = useState(0);
   const frozenDurationRef = React.useRef(0);
   const [summaryLog, setSummaryLog] = useState(null);
-  const [overrideDayKey, setOverrideDayKey] = useState(null);
 
-  const [editingGroupedSet, setEditingGroupedSet] = useState(null);
+  // Load overrideDayKey from localStorage, but only if it was saved for today
+  const [overrideDayKey, setOverrideDayKey] = useState(() => {
+    try {
+      const stored = localStorage.getItem('workoutOverrideDay');
+      const storedDate = localStorage.getItem('workoutOverrideDayDate');
+      const todayStr = new Date().toISOString().split('T')[0];
+      if (stored && storedDate === todayStr) return parseInt(stored);
+      return null;
+    } catch {
+      return null;
+    }
+  });
+
+  // Persist overrideDayKey to localStorage whenever it changes
+  useEffect(() => {
+    try {
+      const todayStr = new Date().toISOString().split('T')[0];
+      if (overrideDayKey === null) {
+        localStorage.removeItem('workoutOverrideDay');
+        localStorage.removeItem('workoutOverrideDayDate');
+      } else {
+        localStorage.setItem('workoutOverrideDay', String(overrideDayKey));
+        localStorage.setItem('workoutOverrideDayDate', todayStr);
+      }
+    } catch {}
+  }, [overrideDayKey]);
 
   const queryClient = useQueryClient();
 
