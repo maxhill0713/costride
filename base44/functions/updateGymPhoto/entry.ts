@@ -67,7 +67,8 @@ Deno.serve(async (req) => {
       await base44.asServiceRole.entities.Gym.update(gym_id, { image_url: photoUrl });
       return Response.json({ success: true, photo_url: photoUrl });
     } else {
-      return Response.json({ success: false, message: 'No photos available for this gym' });
+      // Don't overwrite existing image if Google Places has no photos
+      return Response.json({ success: false, message: 'No new photos available - keeping existing image' });
     }
   } catch (error) {
     console.error('Error updating gym photo:', error);
