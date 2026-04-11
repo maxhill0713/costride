@@ -6,25 +6,13 @@
       "type": "string",
       "description": "User who sent/accepted the friend request"
     },
-    "user_name": {
-      "type": "string",
-      "description": "Sender name"
-    },
-    "user_avatar": {
-      "type": "string",
-      "description": "Sender avatar URL"
-    },
     "friend_id": {
       "type": "string",
       "description": "The friend user ID"
     },
     "friend_name": {
       "type": "string",
-      "description": "Friend's name"
-    },
-    "friend_avatar": {
-      "type": "string",
-      "description": "Friend's avatar URL"
+      "description": "Friend's display name \u2014 kept as a lightweight fallback only. Source of truth is UserProfile."
     },
     "status": {
       "type": "string",
@@ -38,8 +26,7 @@
   },
   "required": [
     "user_id",
-    "friend_id",
-    "friend_name"
+    "friend_id"
   ],
   "rls": {
     "create": {
