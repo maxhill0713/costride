@@ -418,10 +418,11 @@ export default function Home() {
     queryKey: ['friendPosts', currentUser?.id, friendIdList.join(',')],
     queryFn: () => {
       const authorIds = [...friendIdList, currentUser?.id].filter(Boolean);
-      return base44.functions.invoke('getFriendPosts', {
-        authorIds,
-        since: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
-      }).then(res => res.data?.posts || []);
+      return base44.entities.Post.filter(
+        { member_id: { $in: authorIds }, is_system_generated: { $ne: true } },
+        '-created_date',
+        200
+      );
     },
     enabled: !!currentUser,
     staleTime: 1 * 60 * 1000,
