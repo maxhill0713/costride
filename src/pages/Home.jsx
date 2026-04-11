@@ -472,6 +472,27 @@ export default function Home() {
   const userStreak = currentUser?.current_streak || 0;
   const streakVariant = currentUser?.streak_variant || 'default';
   const todayDowAdjusted = (() => { const d = new Date().getDay(); return d === 0 ? 7 : d; })();
+
+  const { data: weeklyWorkoutLogs = [] } = useQuery({
+    queryKey: ['weeklyWorkoutLogs', currentUser?.id, weekOffset],
+    queryFn: () => {
+      const base = startOfWeek(new Date(), { weekStartsOn: 1 });
+      base.setDate(base.getDate() + weekOffset * 7);
+      const monday = base.toISOString().split('T')[0];
+      const sunday = new Date(base);
+      sunday.setDate(base.getDate() + 6);
+      const sundayStr = sunday.toISOString().split('T')[0];
+      return base44.entities.WorkoutLog.filter({
+        user_id: currentUser?.id,
+        completed_date: { $gte: monday, $lte: sundayStr },
+      });
+    },
+    enabled: !!currentUser?.id,
+    staleTime: 1 * 60 * 1000,
+    gcTime: 5 * 60 * 1000,
+    placeholderData: (prev) => prev,
+  });
+
   const workoutLoggedToday = weeklyWorkoutLogs.some(log => log.completed_date === effectiveToday) || justLoggedDay === todayDowAdjusted;
   const todayIsRestDay = !(currentUser?.training_days || []).includes(todayDowAdjusted);
   const showCheckInButton = !todayIsRestDay || workoutOverrideDay !== null;
@@ -509,26 +530,6 @@ export default function Home() {
     if (a.activity.daysSinceCheckIn !== 0 && b.activity.daysSinceCheckIn === 0) return 1;
     return (b.activity.streak || 0) - (a.activity.streak || 0);
   }), [friends, allRecentCheckIns]);
-
-  const { data: weeklyWorkoutLogs = [] } = useQuery({
-    queryKey: ['weeklyWorkoutLogs', currentUser?.id, weekOffset],
-    queryFn: () => {
-      const base = startOfWeek(new Date(), { weekStartsOn: 1 });
-      base.setDate(base.getDate() + weekOffset * 7);
-      const monday = base.toISOString().split('T')[0];
-      const sunday = new Date(base);
-      sunday.setDate(base.getDate() + 6);
-      const sundayStr = sunday.toISOString().split('T')[0];
-      return base44.entities.WorkoutLog.filter({
-        user_id: currentUser?.id,
-        completed_date: { $gte: monday, $lte: sundayStr },
-      });
-    },
-    enabled: !!currentUser?.id,
-    staleTime: 1 * 60 * 1000,
-    gcTime: 5 * 60 * 1000,
-    placeholderData: (prev) => prev,
-  });
 
   const socialFeedPosts = useMemo(() => {
     const threeDaysAgo = new Date(Date.now() - 3 * 24 * 60 * 60 * 1000);
