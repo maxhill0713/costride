@@ -35,6 +35,7 @@ const BEACH_ICON_URL = 'https://media.base44.com/images/public/694b637358644e1c2
 const MOCK_MODE = false;
 
 import LocationBasedCheckInButton from '../components/gym/LocationBasedCheckInButton';
+import { getSwappedRestDay } from '../lib/weekSwaps.js';
 
 function playTone(ctx, freq, startTime, duration, gainVal, type = 'sine') {
   const osc = ctx.createOscillator();
@@ -239,6 +240,7 @@ export default function Home() {
   const [pressedDay, setPressedDay] = useState(null);
   const [weekOffset, setWeekOffset] = useState(0);
   const [slideDirection, setSlideDirection] = useState(0);
+  const [, forceUpdateSwaps] = useState(0);
   const audioCtxRef = useRef(null);
   const celebTimers = useRef([]);
 
@@ -267,6 +269,12 @@ export default function Home() {
     };
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  useEffect(() => {
+    const handleSwapChanged = () => forceUpdateSwaps(n => n + 1);
+    window.addEventListener('weekSwapChanged', handleSwapChanged);
+    return () => window.removeEventListener('weekSwapChanged', handleSwapChanged);
   }, []);
 
   useEffect(() => {
@@ -1079,7 +1087,12 @@ export default function Home() {
 
           {/* ── Weekly workout circles with week navigation ── */}
           {memberGym?.id && (() => {
-            const trainingDays = (currentUser?.training_days || []).filter((d) => d >= 1 && d <= 7);
+            const baseTrainingDays = (currentUser?.training_days || []).filter((d) => d >= 1 && d <= 7);
+            // Apply week-level rest→training swap if applicable (current week only)
+            const swappedRestDay = weekOffset === 0 ? getSwappedRestDay() : null;
+            const trainingDays = swappedRestDay && !baseTrainingDays.includes(swappedRestDay)
+              ? [...baseTrainingDays, swappedRestDay]
+              : baseTrainingDays;
             if (trainingDays.length === 0) return null;
             const mondayBase = startOfWeek(new Date(), { weekStartsOn: 1 });
             mondayBase.setDate(mondayBase.getDate() + weekOffset * 7);

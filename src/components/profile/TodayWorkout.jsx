@@ -15,44 +15,52 @@ import HomeSummaryModal from '../home/WorkoutSummaryModal.jsx';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 
 import { useTimer } from '../TimerContext';
+import { recordTrainedOnRestDay, useRestDayCredit, hasRestDayCredit } from '../../lib/weekSwaps.js';
+
+const DAY_NAMES_FULL = ['', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 
 // ── Workout Switcher Modal ───────────────────────────────────────────────────
-function WorkoutSwitcherModal({ open, onClose, currentUser, activeDayKey, onSelect }) {
+function WorkoutSwitcherModal({ open, onClose, currentUser, activeDayKey, adjustedDay, onSelect }) {
   if (!open) return null;
 
   const workoutTypes = currentUser?.custom_workout_types || {};
-  const DAY_NAMES = ['', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+  const trainingDays = currentUser?.training_days || [];
 
   const activeSplitId = currentUser?.active_split_id;
   const activeSplit = (currentUser?.saved_splits || []).find((s) => s.id === activeSplitId);
   const mirroredPairs = activeSplit?.mirrored_pairs || [];
-
   const mirroredSecondDays = new Set();
-  mirroredPairs.forEach(([dayA, dayB]) => {
-    mirroredSecondDays.add(Math.max(dayA, dayB));
-  });
+  mirroredPairs.forEach(([dayA, dayB]) => mirroredSecondDays.add(Math.max(dayA, dayB)));
 
   const seenNames = new Set();
+  const workoutDays = Object.entries(workoutTypes)
+    .map(([dayKey, workout]) => ({
+      dayKey: parseInt(dayKey),
+      name: workout?.name || DAY_NAMES_FULL[parseInt(dayKey)] || `Day ${dayKey}`,
+      exercises: workout?.exercises || [],
+    }))
+    .filter((d) => {
+      if (d.exercises.length === 0) return false;
+      if (mirroredSecondDays.has(d.dayKey)) return false;
+      if (seenNames.has(d.name)) return false;
+      seenNames.add(d.name);
+      return true;
+    })
+    .sort((a, b) => {
+      if (a.dayKey === activeDayKey) return -1;
+      if (b.dayKey === activeDayKey) return 1;
+      return a.dayKey - b.dayKey;
+    });
 
-  const workoutDays = Object.entries(workoutTypes).
-  map(([dayKey, workout]) => ({
-    dayKey: parseInt(dayKey),
-    name: workout?.name || DAY_NAMES[parseInt(dayKey)] || `Day ${dayKey}`,
-    exercises: workout?.exercises || [],
-    dayName: DAY_NAMES[parseInt(dayKey)] || `Day ${dayKey}`
-  })).
-  filter((d) => {
-    if (d.exercises.length === 0) return false;
-    if (mirroredSecondDays.has(d.dayKey)) return false;
-    if (seenNames.has(d.name)) return false;
-    seenNames.add(d.name);
-    return true;
-  }).
-  sort((a, b) => {
-    if (a.dayKey === activeDayKey) return -1;
-    if (b.dayKey === activeDayKey) return 1;
-    return a.dayKey - b.dayKey;
-  });
+  // Rest day credit: show future rest days as swappable if user trained on a rest day earlier
+  const creditAvailable = hasRestDayCredit();
+  const futureFreeRestDays = creditAvailable
+    ? [1, 2, 3, 4, 5, 6, 7].filter((d) => {
+        if (trainingDays.includes(d)) return false;
+        if (d <= adjustedDay) return false; // must be future
+        return true;
+      })
+    : [];
 
   return (
     <>
@@ -60,38 +68,52 @@ function WorkoutSwitcherModal({ open, onClose, currentUser, activeDayKey, onSele
         className="fixed z-[10005] bg-slate-950/70 backdrop-blur-sm"
         style={{ top: 0, left: 0, right: 0, bottom: 0, position: 'fixed' }}
         onClick={onClose} />
-      
+
       <div className="fixed left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2 w-11/12 max-w-sm z-[10006] bg-slate-900/90 backdrop-blur-xl border border-slate-700/40 rounded-3xl shadow-2xl shadow-black/60 text-white overflow-hidden">
         <div className="px-5 pt-5 pb-3">
           <h3 className="text-xl font-black text-white tracking-tight text-center">Switch Workout</h3>
         </div>
-        <div className="px-3 pb-2 space-y-1.5 max-h-[60vh] overflow-y-auto">
-          {workoutDays.length === 0 &&
-          <p className="text-slate-400 text-sm text-center py-4">No workouts configured yet.</p>
-          }
+        <div className="px-3 pb-4 space-y-1.5 max-h-[60vh] overflow-y-auto">
+          {futureFreeRestDays.length > 0 && (
+            <>
+              <p className="text-xs text-slate-400 font-semibold px-1 pt-1 pb-0.5">Make a rest day a training day</p>
+              {futureFreeRestDays.map((d) => (
+                <button
+                  key={`rest-${d}`}
+                  onClick={() => { onSelect(d, 'rest-to-training'); onClose(); }}
+                  className="w-full text-left rounded-2xl border border-green-500/40 bg-green-500/10 hover:bg-green-500/20 transition-all duration-200 px-4 py-3">
+                  <p className="text-base font-black text-green-300">{DAY_NAMES_FULL[d]}</p>
+                  <p className="text-xs text-green-400/70 mt-0.5">Swap to training day this week</p>
+                </button>
+              ))}
+              <div className="border-t border-slate-700/40 pt-1" />
+            </>
+          )}
+
+          {workoutDays.length === 0 && (
+            <p className="text-slate-400 text-sm text-center py-4">No workouts configured yet.</p>
+          )}
           {workoutDays.map((wd) => {
             const isActive = wd.dayKey === activeDayKey;
             return (
               <button
                 key={wd.dayKey}
-                onClick={() => {onSelect(wd.dayKey);onClose();}}
+                onClick={() => { onSelect(wd.dayKey, 'workout'); onClose(); }}
                 className={`w-full text-left rounded-2xl border transition-all duration-200 px-4 py-3 ${
-                isActive ?
-                'border-blue-500/60 bg-blue-500/10' :
-                'border-slate-700/40 bg-slate-800/50 hover:border-slate-500/60 hover:bg-slate-700/50'}`
-                }>
-                <div className="flex items-center justify-between gap-3">
-                  <div className="flex-1 min-w-0">
-                    <p className={`text-base font-black truncate ${isActive ? 'text-white' : 'text-slate-200'}`}>
-                      {wd.name}
-                    </p>
-                  </div>
-                </div>
-              </button>);
+                  isActive
+                    ? 'border-blue-500/60 bg-blue-500/10'
+                    : 'border-slate-700/40 bg-slate-800/50 hover:border-slate-500/60 hover:bg-slate-700/50'
+                }`}>
+                <p className={`text-base font-black truncate ${isActive ? 'text-white' : 'text-slate-200'}`}>
+                  {wd.name}
+                </p>
+              </button>
+            );
           })}
         </div>
       </div>
-    </>);
+    </>
+  );
 }
 
 export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutStart, onWorkoutLogged, onOverrideDayChange, checkedInToday = false }) {
@@ -488,6 +510,11 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
       return { previousStreak: currentUser.current_streak || 0, newStreak, challengesData, weekendWarriorJustCompleted };
     },
     onSuccess: (data) => {
+      // If today was originally a rest day and the user logged a workout, grant them a rest-day swap credit
+      const todayTrainingDays = currentUser?.training_days || [];
+      if (!todayTrainingDays.includes(adjustedDay)) {
+        recordTrainedOnRestDay(adjustedDay);
+      }
       setShowSummary(false);
       setIsExpanded(false);
       queryClient.invalidateQueries({ queryKey: ['workoutLog', currentUser?.id, activeDayKey] });
@@ -1150,11 +1177,18 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
         onClose={() => setShowSwitcher(false)}
         currentUser={currentUser}
         activeDayKey={activeDayKey}
-        onSelect={(dayKey) => {
-          const newOverride = dayKey === adjustedDay ? null : dayKey;
-          setOverrideDayKey(newOverride);
-          setEditingIndex(null);
-          onOverrideDayChange?.(newOverride);
+        adjustedDay={adjustedDay}
+        onSelect={(dayKey, mode) => {
+          if (mode === 'rest-to-training') {
+            // User is spending their rest-day credit to swap a future rest day to a training day
+            useRestDayCredit(dayKey);
+            window.dispatchEvent(new Event('weekSwapChanged'));
+          } else {
+            const newOverride = dayKey === adjustedDay ? null : dayKey;
+            setOverrideDayKey(newOverride);
+            setEditingIndex(null);
+            onOverrideDayChange?.(newOverride);
+          }
         }} />
     </>);
 }
