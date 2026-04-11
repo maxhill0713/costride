@@ -393,8 +393,8 @@ export default function Gyms() {
         {/* ── Fixed header ── */}
         <div className="fixed top-0 left-0 right-0 z-20 bg-slate-900/95 backdrop-blur-xl border-b-2 border-blue-700/40 px-3 md:px-4 pb-4" style={{ paddingTop: 'calc(1.5rem + env(safe-area-inset-top))' }}>
           <div className="max-w-6xl mx-auto">
-            <div className="flex items-center h-10 gap-3">
-              <TabsList className="flex justify-start bg-transparent p-0 h-10 gap-6 border-0 flex-1">
+            <div className="relative flex items-center justify-center h-10">
+              <TabsList className="flex bg-transparent p-0 h-10 gap-6 border-0">
                 <TabsTrigger value="my-gyms" className="data-[state=active]:text-blue-400 data-[state=active]:border-b-2 data-[state=active]:border-blue-400 data-[state=active]:bg-transparent text-slate-400 hover:text-slate-300 border-b-2 border-transparent rounded-none px-0 py-3 transition-colors bg-transparent text-sm justify-center">
                   <Users className="w-4 h-4 mr-1.5" />My Gyms
                 </TabsTrigger>
@@ -402,18 +402,20 @@ export default function Gyms() {
                   <MapPin className="w-4 h-4 mr-1.5" />Explore
                 </TabsTrigger>
               </TabsList>
-              <TabsContent value="my-gyms" className="mt-0 p-0 m-0 flex-shrink-0">
-                {userGyms.length > 0 &&
-                <Button onClick={() => setShowPrimaryGymModal(true)} className="ease-in-out hover:bg-primary/90 inline-flex items-center justify-center whitespace-nowrap font-bold transition-all duration-100 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 py-2 bg-gradient-to-b from-purple-400 via-purple-500 to-purple-600 backdrop-blur-md text-white border border-transparent rounded-lg text-xs h-8 px-2 shadow-[0_3px_0_0_#5b21b6,inset_0_1px_0_rgba(255,255,255,0.2),inset_0_0_20px_rgba(255,255,255,0.05)] active:shadow-none active:translate-y-[3px] active:scale-95 transform-gpu">
-                  Set Home
-                </Button>
-                }
-              </TabsContent>
-              <TabsContent value="explore" className="mt-0 p-0 m-0 flex-shrink-0">
-                <Button onClick={() => setShowJoinWithCode(true)} className="inline-flex items-center justify-center whitespace-nowrap font-bold transition-all duration-100 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 py-2 bg-gradient-to-b from-blue-500 via-blue-600 to-blue-700 backdrop-blur-md text-white border border-transparent rounded-lg text-xs h-8 px-2.5 shadow-[0_3px_0_0_#1a3fa8,0_8px_20px_rgba(0,0,100,0.5),inset_0_1px_0_rgba(255,255,255,0.15),inset_0_0_20px_rgba(255,255,255,0.03)] active:shadow-none active:translate-y-[3px] active:scale-95 transform-gpu">
-                  Gym Key
-                </Button>
-              </TabsContent>
+              <div className="absolute right-0 flex items-center">
+                <TabsContent value="my-gyms" className="mt-0 p-0 m-0">
+                  {userGyms.length > 0 &&
+                  <Button onClick={() => setShowPrimaryGymModal(true)} className="ease-in-out hover:bg-primary/90 inline-flex items-center justify-center whitespace-nowrap font-bold transition-all duration-100 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 py-2 bg-gradient-to-b from-purple-400 via-purple-500 to-purple-600 backdrop-blur-md text-white border border-transparent rounded-lg text-xs h-8 px-2 shadow-[0_3px_0_0_#5b21b6,inset_0_1px_0_rgba(255,255,255,0.2),inset_0_0_20px_rgba(255,255,255,0.05)] active:shadow-none active:translate-y-[3px] active:scale-95 transform-gpu">
+                    Set Home
+                  </Button>
+                  }
+                </TabsContent>
+                <TabsContent value="explore" className="mt-0 p-0 m-0">
+                  <Button onClick={() => setShowJoinWithCode(true)} className="inline-flex items-center justify-center whitespace-nowrap font-bold transition-all duration-100 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 py-2 bg-gradient-to-b from-blue-500 via-blue-600 to-blue-700 backdrop-blur-md text-white border border-transparent rounded-lg text-xs h-8 px-2.5 shadow-[0_3px_0_0_#1a3fa8,0_8px_20px_rgba(0,0,100,0.5),inset_0_1px_0_rgba(255,255,255,0.15),inset_0_0_20px_rgba(255,255,255,0.03)] active:shadow-none active:translate-y-[3px] active:scale-95 transform-gpu">
+                    Gym Key
+                  </Button>
+                </TabsContent>
+              </div>
             </div>
           </div>
         </div>
