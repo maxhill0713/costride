@@ -412,6 +412,14 @@ export default function Home() {
     placeholderData: (prev) => prev,
   });
 
+  const { data: friendRequests = [] } = useQuery({
+    queryKey: ['friendRequests', currentUser?.id],
+    queryFn: () => base44.entities.Friend.filter({ friend_id: currentUser?.id, status: 'pending' }, '-created_date', 50),
+    enabled: !!currentUser,
+    staleTime: 2 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
+  });
+
   const friendIdList = useMemo(() => friends.map((f) => f.friend_id), [friends]);
 
   const { data: allPosts = [] } = useQuery({
