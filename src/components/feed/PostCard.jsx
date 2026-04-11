@@ -471,7 +471,7 @@ function PostCard({ post, onLike, onComment, onSave, onDelete, fullWidth = false
 
   const { data: postAuthor } = useQuery({
     queryKey: ['postAuthor', post.member_id],
-    queryFn: () => base44.entities.User.filter({ id: post.member_id }).then(r => r[0]),
+    queryFn: () => base44.functions.invoke('getFriendUsers', { userIds: [post.member_id] }).then(r => r.data?.users?.[0] || null),
     enabled: !!post.member_id,
     staleTime: 10 * 60 * 1000,
     gcTime: 30 * 60 * 1000,
