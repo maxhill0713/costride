@@ -46,9 +46,9 @@ const slideDownVariants = {
 };
 
 const fadeVariants = {
-  hidden: { opacity: 0, scale: 0.97 },
-  visible: { opacity: 1, scale: 1, transition: { duration: 0.15 } },
-  exit: { opacity: 0, scale: 0.97, transition: { duration: 0.12 } }
+  hidden: { opacity: 0 },
+  visible: { opacity: 1, transition: { duration: 0.15 } },
+  exit: { opacity: 0, transition: { duration: 0.12 } }
 };
 
 function FriendsSection({
