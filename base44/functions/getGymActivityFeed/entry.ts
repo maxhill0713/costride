@@ -86,10 +86,13 @@ Deno.serve(async (req) => {
 
     workoutLogs = workoutLogsResult;
 
-    // Build avatar map keyed by user ID
+    // Build avatar + name maps keyed by user ID
+    const memberNames = {};
     memberUsersResult.forEach(u => {
       const avatar = u.avatar_url || u.profile_picture || u.photo_url || null;
       if (avatar) memberAvatars[u.id] = avatar;
+      const name = u.display_name || u.full_name || null;
+      if (name) memberNames[u.id] = name;
     });
 
     return Response.json({
@@ -103,6 +106,7 @@ Deno.serve(async (req) => {
       rewards,
       polls,
       memberAvatars,
+      memberNames,
     });
   } catch (error) {
     console.error('getGymActivityFeed error:', error);
