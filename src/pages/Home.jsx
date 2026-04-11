@@ -460,11 +460,10 @@ export default function Home() {
 
   const { data: allRecentCheckIns = [] } = useQuery({
     queryKey: ['checkIns', 'friendFeed', friendIdList.join(',')],
-    queryFn: () => friendIdList.length === 0 ? [] : base44.entities.CheckIn.filter(
-      { user_id: { $in: friendIdList }, check_in_date: { $gte: thirtyDaysAgo } },
-      '-check_in_date',
-      200
-    ),
+    queryFn: () => base44.functions.invoke('getFriendCheckIns', {
+      friendIds: friendIdList,
+      since: thirtyDaysAgo,
+    }).then(res => res.data?.checkIns || []),
     enabled: !!currentUser && friendIdList.length > 0,
     staleTime: 2 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
@@ -473,13 +472,9 @@ export default function Home() {
 
   const sevenDaysAgoLifts = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
 
-  const { data: recentLifts = [] } = useQuery({
-    queryKey: ['recentLifts', 'friends'],
-    queryFn: () => base44.entities.Lift.filter({ is_pr: true, created_date: { $gte: sevenDaysAgoLifts } }, '-created_date', 50),
-    enabled: !!currentUser && friends.length > 0,
-    staleTime: 5 * 60 * 1000,
-    gcTime: 15 * 60 * 1000,
-  });
+  // recentLifts: regular users can only see their own lifts under RLS, so friend PRs
+  // are fetched via getGymActivityFeed (service role) — disable this direct query.
+  const recentLifts = [];
 
   const { data: searchResults = [] } = useQuery({
     queryKey: ['searchUsers', debouncedFriendSearch],
@@ -533,7 +528,7 @@ export default function Home() {
 
   const { data: checkInUsers = [] } = useQuery({
     queryKey: ['checkInUsers', checkInUserIdsForQuery.join(',')],
-    queryFn: () => base44.entities.User.filter({ id: { $in: checkInUserIdsForQuery } }),
+    queryFn: () => base44.entities.UserProfile.filter({ user_id: { $in: checkInUserIdsForQuery } }),
     enabled: checkInUserIdsForQuery.length > 0,
     staleTime: 2 * 60 * 1000,
     gcTime: 5 * 60 * 1000,
@@ -960,22 +955,22 @@ export default function Home() {
               <div className="flex flex-col items-center justify-center gap-2">
                 <div className="flex items-center -space-x-2">
                   {(() => {
-                    const friendCheckInUsers = checkInUsers.filter((u) => friendIdList.includes(u.id));
+                    const friendCheckInUsers = checkInUsers.filter((u) => friendIdList.includes(u.user_id));
                     const displayedUsers = friendCheckInUsers.slice(0, 5);
                     const remainingCount = Math.max(0, friendCheckInUsers.length - 5);
                     return (
                       <>
-                        {displayedUsers.map((user) => (
-                          <div key={user.id} className="relative group">
-                            {user.avatar_url ? (
-                              <img src={user.avatar_url} alt={user.full_name} className="w-8 h-8 rounded-full object-cover border-2 border-green-700" loading="lazy" />
+                        {displayedUsers.map((u) => (
+                          <div key={u.user_id} className="relative group">
+                            {u.avatar_url ? (
+                              <img src={u.avatar_url} alt={u.display_name || u.username} className="w-8 h-8 rounded-full object-cover border-2 border-green-700" loading="lazy" />
                             ) : (
                               <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-400 to-cyan-400 flex items-center justify-center text-white text-xs font-bold border-2 border-green-700">
-                                {user.full_name?.[0] || 'U'}
+                                {(u.display_name || u.username || 'U')[0]}
                               </div>
                             )}
                             <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-slate-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
-                              {user.full_name}
+                              {u.display_name || u.username}
                             </span>
                           </div>
                         ))}
@@ -1039,13 +1034,13 @@ export default function Home() {
                       </span>
                       <div className="flex items-center gap-2">
                         <div className="flex items-center -space-x-2">
-                          {checkInUsers.slice(0, 2).map((user) => (
-                            <div key={user.id} className="relative">
-                              {user.avatar_url ? (
-                                <img src={user.avatar_url} alt={user.full_name} className="w-6 h-6 rounded-full object-cover border-2 border-slate-700" loading="lazy" />
+                          {checkInUsers.slice(0, 2).map((u) => (
+                            <div key={u.user_id} className="relative">
+                              {u.avatar_url ? (
+                                <img src={u.avatar_url} alt={u.display_name || u.username} className="w-6 h-6 rounded-full object-cover border-2 border-slate-700" loading="lazy" />
                               ) : (
                                 <div className="w-6 h-6 rounded-full bg-gradient-to-br from-blue-400 to-cyan-400 flex items-center justify-center text-white text-[9px] font-bold border-2 border-slate-700">
-                                  {user.full_name?.[0] || 'U'}
+                                  {(u.display_name || u.username || 'U')[0]}
                                 </div>
                               )}
                             </div>
@@ -1431,6 +1426,7 @@ export default function Home() {
         celebrationPreviousExercises={celebrationPreviousExercises}
         celebrationDurationMinutes={celebrationDurationMinutes}
         currentUser={currentUser}
+        gymId={primaryGymIdForQuery}
         showDaysCelebration={showDaysCelebration}
         weeklyWorkoutLogs={weeklyWorkoutLogs}
         todayDowAdjusted={todayDowAdjusted}

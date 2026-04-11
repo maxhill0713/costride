@@ -170,7 +170,7 @@ function SwipeablePanels({ photoUrl, uploading, onPhotoClick, onRemovePhoto, exe
 }
 
 // ─── Main component ──────────────────────────────────────────────────────────
-export default function ShareWorkoutScreen({ workoutName, exercises, previousExercises = [], currentUser, gymName, onContinue, durationMinutes }) {
+export default function ShareWorkoutScreen({ workoutName, exercises, previousExercises = [], currentUser, gymName, gymId, onContinue, durationMinutes }) {
   const [comment, setComment] = useState('');
   const [postTitle, setPostTitle] = useState(workoutName || '');
   const [photoUrl, setPhotoUrl] = useState(null);
@@ -211,7 +211,7 @@ export default function ShareWorkoutScreen({ workoutName, exercises, previousExe
       }, 0);
       const volumeStr = totalVolume > 0 ? `${Math.round(totalVolume).toLocaleString()} kg` : null;
 
-      await base44.asServiceRole.entities.Post.create({
+      await base44.entities.Post.create({
         member_id: currentUser.id,
         member_name: currentUser.full_name || currentUser.email?.split('@')[0] || 'Member',
         member_avatar: currentUser.avatar_url || '',
@@ -231,6 +231,7 @@ export default function ShareWorkoutScreen({ workoutName, exercises, previousExe
         }),
         workout_duration: durationMinutes > 0 ? `${durationMinutes}m` : null,
         workout_volume: volumeStr,
+        gym_id: gymId || null,
         gym_name: gymName || null,
       });
 

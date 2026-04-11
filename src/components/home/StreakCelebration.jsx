@@ -17,6 +17,7 @@ function StreakCelebration({
   celebrationPreviousExercises,
   celebrationDurationMinutes,
   currentUser,
+  gymId,
   showDaysCelebration,
   weeklyWorkoutLogs,
   todayDowAdjusted,
@@ -162,6 +163,7 @@ function StreakCelebration({
             previousExercises={celebrationPreviousExercises}
             durationMinutes={celebrationDurationMinutes}
             currentUser={currentUser}
+            gymId={gymId}
             onContinue={() => {
               setShowShareWorkout(false);
               setTimeout(() => setShowDaysCelebration(true), 200);
