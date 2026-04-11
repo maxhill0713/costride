@@ -601,13 +601,16 @@ export default function Gyms() {
                         <div className="absolute inset-x-0 top-0 h-px pointer-events-none z-10"
                     style={{ background: 'linear-gradient(90deg, transparent 10%, rgba(255,255,255,0.1) 50%, transparent 90%)' }} />
                         <div className="relative w-full h-48 bg-gradient-to-br from-slate-700 to-slate-800 overflow-hidden">
-                          {gym.image_url && <img src={gym.image_url} alt={gym.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" loading="lazy" />}
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-                          <Link to={createPageUrl('GymCommunity') + '?id=' + gym.id} className="absolute inset-0 flex items-center justify-center transition-opacity duration-300">
-                            <Button className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md font-bold focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 py-2 bg-gradient-to-b from-blue-500 via-blue-600 to-blue-700 backdrop-blur-md text-white border border-transparent text-xs h-8 px-3 shadow-[0_3px_0_0_#1a3fa8,0_8px_20px_rgba(0,0,100,0.5),inset_0_1px_0_rgba(255,255,255,0.15)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 transform-gpu">
-                              <Dumbbell className="w-3 h-3 mr-1.5" />Enter Gym
-                            </Button>
-                          </Link>
+                          {gym.image_url ? (
+                            <img src={gym.image_url} alt={gym.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" loading="lazy" />
+                          ) : (
+                            <div className="w-full h-full bg-gradient-to-br from-slate-600 to-slate-700 flex items-center justify-center">
+                              <div className="text-slate-500 text-center">
+                                <Dumbbell className="w-8 h-8 mx-auto mb-2 opacity-60" />
+                                <p className="text-xs font-medium opacity-60">No photo</p>
+                              </div>
+                            </div>
+                          )}
                           {(gym.claim_status === 'claimed' || gym.admin_id || gym.owner_email) &&
                       <div className="absolute top-3 left-3"><Badge className="bg-green-500 text-white text-xs shadow-lg font-semibold"><BadgeCheck className="w-3 h-3 mr-1" />Official</Badge></div>
                       }
