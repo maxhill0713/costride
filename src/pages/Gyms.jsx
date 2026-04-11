@@ -391,27 +391,27 @@ export default function Gyms() {
 
       <Tabs defaultValue="my-gyms" className="w-full">
         {/* ── Fixed header ── */}
-        <div className="fixed top-0 left-0 right-0 z-20 bg-slate-900/95 backdrop-blur-xl border-b-2 border-blue-700/40 px-3 md:px-4 pb-4" style={{ paddingTop: 'calc(1.5rem + env(safe-area-inset-top))' }}>
+        <div className="fixed top-0 left-0 right-0 z-20 bg-slate-900/95 backdrop-blur-xl border-b-2 border-blue-700/40 px-3 md:px-4 pb-2" style={{ paddingTop: 'calc(0.4rem + env(safe-area-inset-top))' }}>
           <div className="max-w-6xl mx-auto">
-            <div className="relative flex items-center justify-center h-10">
-              <TabsList className="flex bg-transparent p-0 h-10 gap-6 border-0">
-                <TabsTrigger value="my-gyms" className="data-[state=active]:text-blue-400 data-[state=active]:border-b-2 data-[state=active]:border-blue-400 data-[state=active]:bg-transparent text-slate-400 hover:text-slate-300 border-b-2 border-transparent rounded-none px-0 py-3 transition-colors bg-transparent text-sm justify-center">
+            <div className="relative flex items-center justify-center h-9">
+              <TabsList className="flex bg-transparent p-0 h-9 gap-6 border-0">
+                <TabsTrigger value="my-gyms" className="data-[state=active]:text-blue-400 data-[state=active]:border-b-2 data-[state=active]:border-blue-400 data-[state=active]:bg-transparent text-slate-400 hover:text-slate-300 border-b-2 border-transparent rounded-none px-0 py-2 transition-colors bg-transparent text-sm justify-center">
                   <Users className="w-4 h-4 mr-1.5" />My Gyms
                 </TabsTrigger>
-                <TabsTrigger value="explore" className="data-[state=active]:text-blue-400 data-[state=active]:border-b-2 data-[state=active]:border-blue-400 data-[state=active]:bg-transparent text-slate-400 hover:text-slate-300 border-b-2 border-transparent rounded-none px-0 py-3 transition-colors bg-transparent text-sm justify-center">
+                <TabsTrigger value="explore" className="data-[state=active]:text-blue-400 data-[state=active]:border-b-2 data-[state=active]:border-blue-400 data-[state=active]:bg-transparent text-slate-400 hover:text-slate-300 border-b-2 border-transparent rounded-none px-0 py-2 transition-colors bg-transparent text-sm justify-center">
                   <MapPin className="w-4 h-4 mr-1.5" />Explore
                 </TabsTrigger>
               </TabsList>
               <div className="absolute right-0 flex items-center">
                 <TabsContent value="my-gyms" className="mt-0 p-0 m-0">
                   {userGyms.length > 0 &&
-                  <Button onClick={() => setShowPrimaryGymModal(true)} className="ease-in-out hover:bg-primary/90 inline-flex items-center justify-center whitespace-nowrap font-bold transition-all duration-100 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 py-2 bg-gradient-to-b from-purple-400 via-purple-500 to-purple-600 backdrop-blur-md text-white border border-transparent rounded-lg text-xs h-8 px-2 shadow-[0_3px_0_0_#5b21b6,inset_0_1px_0_rgba(255,255,255,0.2),inset_0_0_20px_rgba(255,255,255,0.05)] active:shadow-none active:translate-y-[3px] active:scale-95 transform-gpu">
+                  <Button onClick={() => setShowPrimaryGymModal(true)} className="ease-in-out hover:bg-primary/90 inline-flex items-center justify-center whitespace-nowrap font-bold transition-all duration-100 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 bg-gradient-to-b from-purple-400 via-purple-500 to-purple-600 backdrop-blur-md text-white border border-transparent rounded-md text-[10px] h-6 px-1.5 shadow-[0_2px_0_0_#5b21b6,inset_0_1px_0_rgba(255,255,255,0.2),inset_0_0_20px_rgba(255,255,255,0.05)] active:shadow-none active:translate-y-[2px] active:scale-95 transform-gpu">
                     Set Home
                   </Button>
                   }
                 </TabsContent>
                 <TabsContent value="explore" className="mt-0 p-0 m-0">
-                  <Button onClick={() => setShowJoinWithCode(true)} className="inline-flex items-center justify-center whitespace-nowrap font-bold transition-all duration-100 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 py-2 bg-gradient-to-b from-blue-500 via-blue-600 to-blue-700 backdrop-blur-md text-white border border-transparent rounded-lg text-xs h-8 px-2.5 shadow-[0_3px_0_0_#1a3fa8,0_8px_20px_rgba(0,0,100,0.5),inset_0_1px_0_rgba(255,255,255,0.15),inset_0_0_20px_rgba(255,255,255,0.03)] active:shadow-none active:translate-y-[3px] active:scale-95 transform-gpu">
+                  <Button onClick={() => setShowJoinWithCode(true)} className="inline-flex items-center justify-center whitespace-nowrap font-bold transition-all duration-100 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 bg-gradient-to-b from-blue-500 via-blue-600 to-blue-700 backdrop-blur-md text-white border border-transparent rounded-md text-[10px] h-6 px-1.5 shadow-[0_2px_0_0_#1a3fa8,0_8px_20px_rgba(0,0,100,0.5),inset_0_1px_0_rgba(255,255,255,0.15),inset_0_0_20px_rgba(255,255,255,0.03)] active:shadow-none active:translate-y-[2px] active:scale-95 transform-gpu">
                     Gym Key
                   </Button>
                 </TabsContent>
@@ -421,9 +421,9 @@ export default function Gyms() {
         </div>
 
         {/* ── Spacer that exactly matches the fixed header height ── */}
-        <div style={{ height: 'calc(4.5rem + env(safe-area-inset-top))' }} />
+        <div style={{ height: 'calc(2.75rem + env(safe-area-inset-top))' }} />
 
-        <TabsContent value="my-gyms" className="mt-0 px-3 md:px-4 py-4">
+        <TabsContent value="my-gyms" className="mt-0 px-3 md:px-4 py-2">
             <div className="max-w-6xl mx-auto">
               {userGyms.length === 0 ?
             <div className="text-center py-12"><p className="text-slate-400">No gym memberships yet</p></div> :
@@ -519,7 +519,7 @@ export default function Gyms() {
             }
             </div>
           </TabsContent>
-        <TabsContent value="explore" className="mt-0 px-3 md:px-4 py-4">
+        <TabsContent value="explore" className="mt-0 px-3 md:px-4 py-2">
           <div className="max-w-6xl mx-auto">
             <div className="space-y-2 mb-4">
               <div className="flex items-center gap-2">
