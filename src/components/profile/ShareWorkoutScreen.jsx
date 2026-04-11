@@ -211,7 +211,7 @@ export default function ShareWorkoutScreen({ workoutName, exercises, previousExe
       }, 0);
       const volumeStr = totalVolume > 0 ? `${Math.round(totalVolume).toLocaleString()} kg` : null;
 
-      await base44.entities.Post.create({
+      await base44.asServiceRole.entities.Post.create({
         member_id: currentUser.id,
         member_name: currentUser.full_name || currentUser.email?.split('@')[0] || 'Member',
         member_avatar: currentUser.avatar_url || '',

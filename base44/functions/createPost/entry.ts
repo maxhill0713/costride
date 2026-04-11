@@ -58,7 +58,7 @@ Deno.serve(async (req) => {
 
     console.log(JSON.stringify({ event: 'AUDIT', action: 'post_created', user_id: user.id, user_email: user.email, resource_type: 'post', status: 'success', timestamp: new Date().toISOString() }));
 
-    const post = await base44.entities.Post.create({
+    const post = await base44.asServiceRole.entities.Post.create({
       member_id:         user.id,
       member_name:       user.full_name,
       member_avatar:     user.avatar_url || null,
