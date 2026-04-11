@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Search, ChevronRight, UserPlus, MoreVertical, Loader2 } from 'lucide-react';
@@ -54,6 +54,15 @@ function FriendsSection({
   cancelFriendMutation,
   addFriendMutation
 }) {
+  // Build a fast lookup map: userId → resolved avatar
+  const userAvatarMap = useMemo(() => {
+    const map = {};
+    (friendUsersList || []).forEach(u => {
+      if (u.id) map[u.id] = u.avatar_url || null;
+    });
+    return map;
+  }, [friendUsersList]);
+
   // Either modal being open means the whole sheet is visible
   const isOpen = showFriendsModal || showAddFriendModal;
 
@@ -145,7 +154,7 @@ function FriendsSection({
                       (req.friend_name || '').toLowerCase().includes(friendsListSearchQuery.toLowerCase())
                     ).map((request) => {
                       const name = request.friend_name || 'User';
-                      const avatarUrl = request.friend_avatar;
+                      const avatarUrl = userAvatarMap[request.friend_id] || request.friend_avatar;
                       const sentMs = Date.now() - new Date(request.created_date).getTime();
                       const sentHours = Math.floor(sentMs / (1000 * 60 * 60));
                       const sentDays = Math.floor(sentMs / (1000 * 60 * 60 * 24));
@@ -202,7 +211,7 @@ function FriendsSection({
                       (req.user_name || '').toLowerCase().includes(friendsListSearchQuery.toLowerCase())
                     ).map((request) => {
                       const name = request.user_name || 'User';
-                      const avatarUrl = request.user_avatar;
+                      const avatarUrl = userAvatarMap[request.user_id] || request.user_avatar;
                       return (
                         <div key={request.id} className="px-2.5 py-2 rounded-lg bg-slate-700/40 flex items-center gap-2 relative">
                           <Link to={createPageUrl('UserProfile') + `?id=${request.user_id}`} onClick={closeAll} className="flex items-center gap-2 min-w-0 flex-1">
@@ -252,7 +261,7 @@ function FriendsSection({
                           (friend.friend_name || '').toLowerCase().includes(friendsListSearchQuery.toLowerCase())
                         ).map((friend) => {
                           const name = friend.friend_name;
-                          const avatarUrl = friend.friend_avatar;
+                          const avatarUrl = userAvatarMap[friend.friend_id] || friend.friend_avatar;
                           return (
                             <div key={friend.id} className="p-2 rounded-lg bg-slate-700/40 flex items-center justify-between gap-2 relative">
                               <Link to={createPageUrl('UserProfile') + `?id=${friend.friend_id}`} className="flex items-center gap-2 flex-1 min-w-0" onClick={closeAll}>
