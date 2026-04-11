@@ -503,6 +503,24 @@ export default function Home() {
       .map(c => ({ user_id: c.user_id, display_name: c.user_name, username: c.user_name, avatar_url: null }));
   }, [allCheckIns, todayStr, primaryGymIdForQuery]);
 
+  const checkInUserIds = useMemo(() => checkInUsers.map(u => u.user_id), [checkInUsers]);
+  const { data: checkInAvatars = {} } = useQuery({
+    queryKey: ['checkInAvatars', checkInUserIds.join(',')],
+    queryFn: async () => {
+      if (checkInUserIds.length === 0) return {};
+      const res = await base44.functions.invoke('getUserAvatars', { userIds: checkInUserIds });
+      return res.data?.avatars || {};
+    },
+    enabled: checkInUserIds.length > 0,
+    staleTime: 5 * 60 * 1000,
+    gcTime: 15 * 60 * 1000,
+  });
+  const enrichedCheckInUsers = useMemo(() => checkInUsers.map(u => ({
+    ...u,
+    avatar_url: checkInAvatars[u.user_id]?.avatar_url || null,
+    display_name: checkInAvatars[u.user_id]?.full_name || u.display_name,
+  })), [checkInUsers, checkInAvatars]);
+
   // ── Friend mutations ──────────────────────────────────────────────────────
   const acceptFriendMutation = useMutation({
     mutationFn: async (userId) => {
@@ -985,7 +1003,7 @@ export default function Home() {
               <div className="flex flex-col items-center justify-center gap-2">
                 <div className="flex items-center -space-x-2">
                   {(() => {
-                    const friendCheckInUsers = checkInUsers.filter((u) => friendIdList.includes(u.user_id));
+                    const friendCheckInUsers = enrichedCheckInUsers.filter((u) => friendIdList.includes(u.user_id));
                     const displayedUsers = friendCheckInUsers.slice(0, 5);
                     const remainingCount = Math.max(0, friendCheckInUsers.length - 5);
                     return (
@@ -1064,7 +1082,7 @@ export default function Home() {
                       </span>
                       <div className="flex items-center gap-2">
                         <div className="flex items-center -space-x-2">
-                          {checkInUsers.slice(0, 2).map((u) => (
+                          {enrichedCheckInUsers.slice(0, 2).map((u) => (
                             <div key={u.user_id} className="relative">
                               {u.avatar_url ? (
                                 <img src={u.avatar_url} alt={u.display_name || u.username} className="w-6 h-6 rounded-full object-cover border-2 border-slate-700" loading="lazy" />
