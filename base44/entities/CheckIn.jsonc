@@ -52,14 +52,11 @@
           "data.gym_id": {
             "$in": {
               "$map": {
-                "input": "{{user.gymMemberships}}",
+                "input": { "$ifNull": ["{{user.gymMemberships}}", []] },
                 "as": "m",
                 "in": "$$m.data.gym_id"
               }
             }
-          },
-          "user_condition": {
-            "account_type": "gym_owner"
           }
         },
         {

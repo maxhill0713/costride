@@ -29,11 +29,12 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { content, image_url, video_url, allow_gym_repost, share_with_community, workout_name, gym_id, gym_name } = await req.json();
+    const { content, image_url, video_url, allow_gym_repost, share_with_community, workout_name, gym_id, gym_name, workout_exercises, workout_duration, workout_volume } = await req.json();
 
     const safeContent = sanitise(content, 2000);
-    // Content is optional if an image or video is provided
-    if (!safeContent && !image_url && !video_url) {
+    const hasWorkout = Array.isArray(workout_exercises) && workout_exercises.length > 0;
+    // Content is optional if an image, video, or workout summary is provided
+    if (!safeContent && !image_url && !video_url && !hasWorkout) {
       return Response.json({ error: 'Please add a caption, photo, or video.' }, { status: 400 });
     }
 
@@ -67,19 +68,32 @@ Deno.serve(async (req) => {
       }
     }
 
+    const safeWorkoutExercises = hasWorkout
+      ? workout_exercises.slice(0, 50).map((e: any) => ({
+          name:   sanitise(e?.name, 100),
+          sets:   sanitise(String(e?.sets ?? ''), 20),
+          reps:   sanitise(String(e?.reps ?? ''), 20),
+          weight: sanitise(String(e?.weight ?? ''), 20),
+        }))
+      : [];
+
     const post = await base44.asServiceRole.entities.Post.create({
-      member_id:     user.id,
-      member_name:   user.full_name,
-      member_avatar: user.avatar_url || null,
-      content:       safeContent || '',
-      image_url:     image_url || null,
-      video_url:     video_url || null,
-      likes:         0,
-      comments:      [],
-      reactions:     {},
+      member_id:        user.id,
+      member_name:      user.full_name,
+      member_avatar:    user.avatar_url || null,
+      content:          safeContent || '',
+      image_url:        image_url || null,
+      video_url:        video_url || null,
+      likes:            0,
+      comments:         [],
+      reactions:        {},
       allow_gym_repost: allow_gym_repost === true,
-      gym_id:        resolvedGymId,
-      gym_name:      resolvedGymName,
+      gym_id:           resolvedGymId,
+      gym_name:         resolvedGymName,
+      workout_name:     workout_name ? sanitise(workout_name, 100) : null,
+      workout_exercises: safeWorkoutExercises,
+      workout_duration: workout_duration ? sanitise(String(workout_duration), 20) : null,
+      workout_volume:   workout_volume ? sanitise(String(workout_volume), 30) : null,
     });
 
     // Track "Witness My Gains" challenge — only if it's a workout summary shared with community

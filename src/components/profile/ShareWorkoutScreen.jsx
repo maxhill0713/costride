@@ -213,15 +213,10 @@ export default function ShareWorkoutScreen({ workoutName, exercises, previousExe
       }, 0);
       const volumeStr = totalVolume > 0 ? `${Math.round(totalVolume).toLocaleString()} kg` : null;
 
-      await base44.entities.Post.create({
-        member_id: currentUser.id,
-        member_name: currentUser.full_name || currentUser.email?.split('@')[0] || 'Member',
-        member_avatar: currentUser.avatar_url || '',
+      const res = await base44.functions.invoke('createPost', {
         content,
         image_url: photoUrl || null,
         video_url: null,
-        likes: 0, comments: [], reactions: {},
-        is_system_generated: false,
         allow_gym_repost: false,
         share_with_community: shareWithCommunity,
         workout_name: postTitle.trim() || workoutName || null,
@@ -236,24 +231,7 @@ export default function ShareWorkoutScreen({ workoutName, exercises, previousExe
         gym_id: gymId || null,
         gym_name: gymName || null,
       });
-
-      // Track "Witness My Gains" only if shared with community
-      if (shareWithCommunity) {
-        const now = new Date();
-        const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
-        const prevProgress = currentUser.monthly_challenge_progress || {};
-        const isNewMonth = prevProgress.month !== currentMonth;
-        const currentCount = isNewMonth ? 0 : (prevProgress.witness_my_gains || 0);
-        if (currentCount < 4) {
-          await base44.auth.updateMe({
-            monthly_challenge_progress: {
-              ...prevProgress,
-              month: currentMonth,
-              witness_my_gains: currentCount + 1,
-            },
-          });
-        }
-      }
+      if (res?.error) throw new Error(res.error);
 
       toast.success('Workout shared with your friends! 🔥');
       queryClient.invalidateQueries({ queryKey: ['friendPosts'] });
