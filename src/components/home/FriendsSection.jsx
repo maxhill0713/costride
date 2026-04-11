@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
@@ -45,10 +45,10 @@ const slideDownVariants = {
   }
 };
 
-const fadeVariants = {
-  hidden: { opacity: 0 },
-  visible: { opacity: 1, transition: { duration: 0.15 } },
-  exit: { opacity: 0, transition: { duration: 0.12 } }
+const noAnimVariants = {
+  hidden: { opacity: 1, y: 0 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0 } },
+  exit: { opacity: 1, y: 0, transition: { duration: 0 } }
 };
 
 function FriendsSection({
@@ -78,6 +78,33 @@ function FriendsSection({
   cancelFriendMutation,
   addFriendMutation
 }) {
+  // true = switching between the two modals, false = closing to home
+  const switchingModals = useRef(false);
+
+  const openAddFriend = () => {
+    switchingModals.current = true;
+    setShowAddFriendModal(true);
+    setShowFriendsModal(false);
+  };
+
+  const backToFriends = () => {
+    switchingModals.current = true;
+    setShowAddFriendModal(false);
+    setShowFriendsModal(true);
+    setFriendSearchQuery('');
+  };
+
+  const closeAddFriend = () => {
+    switchingModals.current = false;
+    setShowAddFriendModal(false);
+    setFriendSearchQuery('');
+  };
+
+  const closeFriends = () => {
+    switchingModals.current = false;
+    setShowFriendsModal(false);
+  };
+
   return (
     <>
       {/* ── Friends Modal ── */}
@@ -91,12 +118,12 @@ function FriendsSection({
             initial="hidden"
             animate="visible"
             exit="exit"
-            onClick={() => setShowFriendsModal(false)} />
+            onClick={closeFriends} />
           
             <motion.div
             key="friends-panel"
             className="fixed inset-x-0 top-0 z-[9999] flex justify-center"
-            variants={slideDownVariants}
+            variants={switchingModals.current ? noAnimVariants : slideDownVariants}
             initial="hidden"
             animate="visible"
             exit="exit">
@@ -120,7 +147,7 @@ function FriendsSection({
                     className="pl-8 bg-white/10 border border-white/20 hover:border-white/40 focus-visible:outline-none focus-visible:border-blue-400 text-white placeholder:text-slate-300 rounded-xl text-sm h-9" />
                   
                   </div>
-                  <Button onClick={() => {setShowAddFriendModal(true);setShowFriendsModal(false);}}
+                  <Button onClick={openAddFriend}
                 className="bg-gradient-to-b from-blue-500 via-blue-600 to-blue-700 text-white border-transparent h-8 w-8 p-0 flex-shrink-0 shadow-[0_3px_0_0_#1a3fa8] active:shadow-none active:translate-y-[3px]">
                     <UserPlus className="w-4 h-4" />
                   </Button>
@@ -129,7 +156,6 @@ function FriendsSection({
 
                   {/* ── Sent / pending requests ── */}
                   {sentFriendRequests.filter((req) => {
-                  // Use data stored on the Friend record — no User lookup needed
                   return (req.friend_name || '').toLowerCase().includes(friendsListSearchQuery.toLowerCase());
                 }).map((request) => {
                   const name = request.friend_name || 'User';
@@ -140,7 +166,7 @@ function FriendsSection({
                   const timeAgo = sentDays >= 3 ? `${sentDays}d ago` : sentHours <= 0 ? 'Just now' : `${sentHours}h ago`;
                   return (
                     <div key={`sent-${request.id}`} className="px-2.5 py-2 rounded-lg flex items-center gap-2 relative bg-slate-700/40">
-                        <Link to={createPageUrl('UserProfile') + `?id=${request.friend_id}`} onClick={() => setShowFriendsModal(false)} className="flex items-center gap-2 min-w-0" style={{ flex: '0 1 auto' }}>
+                        <Link to={createPageUrl('UserProfile') + `?id=${request.friend_id}`} onClick={closeFriends} className="flex items-center gap-2 min-w-0" style={{ flex: '0 1 auto' }}>
                           <div className="w-7 h-7 rounded-full bg-gradient-to-br from-slate-600 to-slate-700 flex items-center justify-center flex-shrink-0 overflow-hidden">
                             {avatarUrl
                               ? <img src={avatarUrl} alt={name} className="w-full h-full object-cover" />
@@ -198,12 +224,11 @@ function FriendsSection({
                   {friendRequests.filter((req) => {
                   return (req.user_name || '').toLowerCase().includes(friendsListSearchQuery.toLowerCase());
                 }).map((request) => {
-                  // Use data stored on the Friend record — no User lookup needed
                   const name = request.user_name || 'User';
                   const avatarUrl = request.user_avatar;
                   return (
                     <div key={request.id} className="px-2.5 py-2 rounded-lg bg-slate-700/40 flex items-center gap-2 relative">
-                        <Link to={createPageUrl('UserProfile') + `?id=${request.user_id}`} onClick={() => setShowFriendsModal(false)} className="flex items-center gap-2 min-w-0 flex-1">
+                        <Link to={createPageUrl('UserProfile') + `?id=${request.user_id}`} onClick={closeFriends} className="flex items-center gap-2 min-w-0 flex-1">
                           <div className="w-7 h-7 rounded-full bg-gradient-to-br from-slate-600 to-slate-700 flex items-center justify-center flex-shrink-0 overflow-hidden">
                             {avatarUrl
                               ? <img src={avatarUrl} alt={name} className="w-full h-full object-cover" />
@@ -249,12 +274,11 @@ function FriendsSection({
                 friendsWithActivity.filter((friend) => {
                   return (friend.friend_name || '').toLowerCase().includes(friendsListSearchQuery.toLowerCase());
                 }).map((friend) => {
-                  // Use data stored on the Friend record — no User lookup needed (User.list is admin-only)
                   const name = friend.friend_name;
                   const avatarUrl = friend.friend_avatar;
                   return (
                     <div key={friend.id} className="p-2 rounded-lg bg-slate-700/40 flex items-center justify-between gap-2 relative">
-                            <Link to={createPageUrl('UserProfile') + `?id=${friend.friend_id}`} className="flex items-center gap-2 flex-1 min-w-0" onClick={() => setShowFriendsModal(false)}>
+                            <Link to={createPageUrl('UserProfile') + `?id=${friend.friend_id}`} className="flex items-center gap-2 flex-1 min-w-0" onClick={closeFriends}>
                               <div className="w-8 h-8 rounded-full bg-gradient-to-br from-slate-600 to-slate-700 flex items-center justify-center flex-shrink-0 overflow-hidden">
                                 {avatarUrl
                                   ? <img src={avatarUrl} alt={name} className="w-full h-full object-cover" />
@@ -299,7 +323,7 @@ function FriendsSection({
             initial="hidden"
             animate="visible"
             exit="exit"
-            onClick={() => {setShowAddFriendModal(false);setFriendSearchQuery('');}} />
+            onClick={closeAddFriend} />
           
             <motion.div
             key="add-friend-panel"
@@ -327,7 +351,7 @@ function FriendsSection({
                     className="pl-8 bg-white/10 border border-white/20 text-white placeholder:text-slate-300 rounded-xl text-sm h-9" />
                   
                   </div>
-                  <button onClick={() => {setShowAddFriendModal(false);setShowFriendsModal(true);setFriendSearchQuery('');}} className="w-8 h-8 flex items-center justify-center text-white/70 hover:text-white active:scale-90 active:opacity-60 transition-all duration-100 transform-gpu flex-shrink-0">
+                  <button onClick={backToFriends} className="w-8 h-8 flex items-center justify-center text-white/70 hover:text-white active:scale-90 active:opacity-60 transition-all duration-100 transform-gpu flex-shrink-0">
                     <ChevronRight className="w-5 h-5" />
                   </button>
                 </div>
@@ -343,7 +367,7 @@ function FriendsSection({
                               </div>
                               <div><div className="font-semibold text-white text-sm">{user.display_name || user.full_name}</div><div className="text-xs text-slate-400">{user.username ? `@${user.username}` : ''}</div></div>
                             </div>
-                            <Button size="sm" onClick={() => {addFriendMutation.mutate(user, { onSuccess: () => {setShowAddFriendModal(false);setShowFriendsModal(true);} });}} disabled={addFriendMutation.isPending} className="bg-gradient-to-b from-blue-500 via-blue-600 to-blue-700 text-white rounded-lg font-semibold shadow-[0_2px_0_0_#1a3fa8,0_4px_12px_rgba(59,130,246,0.25)] active:shadow-none active:translate-y-[2px] active:scale-95 transition-all duration-100">
+                            <Button size="sm" onClick={() => {addFriendMutation.mutate(user, { onSuccess: () => { backToFriends(); } });}} disabled={addFriendMutation.isPending} className="bg-gradient-to-b from-blue-500 via-blue-600 to-blue-700 text-white rounded-lg font-semibold shadow-[0_2px_0_0_#1a3fa8,0_4px_12px_rgba(59,130,246,0.25)] active:shadow-none active:translate-y-[2px] active:scale-95 transition-all duration-100">
                               <UserPlus className="w-4 h-4" />
                             </Button>
                           </div>
