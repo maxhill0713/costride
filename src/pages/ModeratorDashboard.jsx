@@ -4,12 +4,13 @@ import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { AlertCircle, Eye, Trash2, EyeOff } from 'lucide-react';
+import { AlertCircle, Eye, Trash2, EyeOff, Wrench } from 'lucide-react';
 import { format } from 'date-fns';
 
 export default function ModeratorDashboard() {
   const queryClient = useQueryClient();
   const [filter, setFilter] = useState('hidden');
+  const [migrationResult, setMigrationResult] = useState(null);
 
   // SECURITY: All moderation actions now go through the moderatePost backend function
   // which enforces server-side admin role check. Previously used asServiceRole directly
@@ -36,6 +37,12 @@ export default function ModeratorDashboard() {
   const deleteMutation = useMutation({
     mutationFn: (postId) => base44.functions.invoke('moderatePost', { postId, action: 'delete' }),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['hiddenPosts'] }),
+  });
+
+  const migrationMutation = useMutation({
+    mutationFn: () => base44.functions.invoke('fixOrphanedPosts'),
+    onSuccess: (res) => setMigrationResult(res.data || res),
+    onError: (err) => setMigrationResult({ error: err.message }),
   });
 
   const handleUnhide = (postId) => unhideMutation.mutate(postId);
@@ -75,6 +82,37 @@ export default function ModeratorDashboard() {
           <h1 className="text-3xl font-bold text-white mb-2">Moderation Dashboard</h1>
           <p className="text-slate-300">Review and manage flagged posts</p>
         </div>
+
+        {/* Data Migrations */}
+        <Card className="bg-slate-800/50 border-slate-700 mb-8">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-white text-lg flex items-center gap-2">
+              <Wrench className="w-5 h-5 text-amber-400" />
+              Data Migrations
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <p className="text-slate-200 text-sm font-medium">Fix Orphaned Posts</p>
+                <p className="text-slate-400 text-xs mt-0.5">Back-fills gym_id on posts missing it, and soft-hides posts with no owner. Safe to run multiple times.</p>
+              </div>
+              <Button
+                size="sm"
+                onClick={() => migrationMutation.mutate()}
+                disabled={migrationMutation.isPending}
+                className="bg-amber-600 hover:bg-amber-500 text-white shrink-0"
+              >
+                {migrationMutation.isPending ? 'Running…' : 'Run'}
+              </Button>
+            </div>
+            {migrationResult && (
+              <pre className="text-xs bg-slate-900 rounded p-3 text-slate-300 overflow-x-auto whitespace-pre-wrap">
+                {JSON.stringify(migrationResult, null, 2)}
+              </pre>
+            )}
+          </CardContent>
+        </Card>
 
         <div className="mb-6 flex gap-2">
           <Badge variant="outline" className="bg-slate-800 text-blue-300 border-blue-500/50">
