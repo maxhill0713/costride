@@ -117,5 +117,77 @@
     "goal_type",
     "start_date",
     "end_date"
-  ]
+  ],
+  "rls": {
+    "create": {
+      "$or": [
+        {
+          "data.gym_id": {
+            "$in": {
+              "$map": {
+                "input": { "$ifNull": ["{{user.gymMemberships}}", []] },
+                "as": "m",
+                "in": "$$m.data.gym_id"
+              }
+            }
+          },
+          "user_condition": {
+            "account_type": "gym_owner"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "read": {},
+    "update": {
+      "$or": [
+        {
+          "data.gym_id": {
+            "$in": {
+              "$map": {
+                "input": { "$ifNull": ["{{user.gymMemberships}}", []] },
+                "as": "m",
+                "in": "$$m.data.gym_id"
+              }
+            }
+          },
+          "user_condition": {
+            "account_type": "gym_owner"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "data.gym_id": {
+            "$in": {
+              "$map": {
+                "input": { "$ifNull": ["{{user.gymMemberships}}", []] },
+                "as": "m",
+                "in": "$$m.data.gym_id"
+              }
+            }
+          },
+          "user_condition": {
+            "account_type": "gym_owner"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
 }
