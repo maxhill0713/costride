@@ -427,6 +427,126 @@ export default function Home() {
     placeholderData: (prev) => prev,
   });
 
+  // ── Friend requests ─────────────────────────────────────────────────────
+  const { data: friendRequests = [] } = useQuery({
+    queryKey: ['friendRequests', currentUser?.id],
+    queryFn: () => base44.entities.Friend.filter({ friend_id: currentUser?.id, status: 'pending' }, '-created_date', 50),
+    enabled: !!currentUser,
+    staleTime: 2 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
+    placeholderData: (prev) => prev,
+  });
+
+  const { data: sentFriendRequests = [] } = useQuery({
+    queryKey: ['sentFriendRequests', currentUser?.id],
+    queryFn: () => base44.entities.Friend.filter({ user_id: currentUser?.id, status: 'pending' }, '-created_date', 50),
+    enabled: !!currentUser,
+    staleTime: 2 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
+    placeholderData: (prev) => prev,
+  });
+
+  const allFriendAndRequestIds = useMemo(() => {
+    const ids = new Set([...friends.map(f => f.friend_id), ...friendRequests.map(r => r.user_id), ...sentFriendRequests.map(r => r.friend_id)]);
+    return Array.from(ids);
+  }, [friends, friendRequests, sentFriendRequests]);
+
+  const { data: friendUsersList = [] } = useQuery({
+    queryKey: ['friendUsersList', allFriendAndRequestIds.join(',')],
+    queryFn: () => allFriendAndRequestIds.length > 0 ? base44.entities.User.filter({ id: { $in: allFriendAndRequestIds } }) : Promise.resolve([]),
+    enabled: allFriendAndRequestIds.length > 0,
+    staleTime: 5 * 60 * 1000,
+    gcTime: 15 * 60 * 1000,
+    placeholderData: (prev) => prev,
+  });
+
+  const { data: searchResults = [] } = useQuery({
+    queryKey: ['userSearch', debouncedFriendSearch],
+    queryFn: () => base44.functions.invoke('searchUsers', { query: debouncedFriendSearch }).then(r => r.data?.users || []),
+    enabled: debouncedFriendSearch.trim().length >= 2,
+    staleTime: 30 * 1000,
+    gcTime: 2 * 60 * 1000,
+  });
+
+  const { data: recentLifts = [] } = useQuery({
+    queryKey: ['recentLifts', friendIdList.join(',')],
+    queryFn: () => friendIdList.length > 0
+      ? base44.entities.Lift.filter({ member_id: { $in: friendIdList }, is_pr: true }, '-created_date', 50)
+      : Promise.resolve([]),
+    enabled: friendIdList.length > 0,
+    staleTime: 10 * 60 * 1000,
+    gcTime: 30 * 60 * 1000,
+    placeholderData: (prev) => prev,
+  });
+
+  // ── Check-in users for community card ────────────────────────────────────
+  const todayStr = new Date().toISOString().split('T')[0];
+  const todayCheckInsForQuery = useMemo(
+    () => allCheckIns.filter(c => c.check_in_date?.startsWith(todayStr) && c.gym_id === primaryGymIdForQuery),
+    [allCheckIns, todayStr, primaryGymIdForQuery]
+  );
+  const checkInUsers = useMemo(() => {
+    const seen = new Set();
+    return allCheckIns
+      .filter(c => c.check_in_date?.startsWith(todayStr) && c.gym_id === primaryGymIdForQuery)
+      .filter(c => { if (seen.has(c.user_id)) return false; seen.add(c.user_id); return true; })
+      .map(c => ({ user_id: c.user_id, display_name: c.user_name, username: c.user_name, avatar_url: null }));
+  }, [allCheckIns, todayStr, primaryGymIdForQuery]);
+
+  // ── Friend mutations ──────────────────────────────────────────────────────
+  const acceptFriendMutation = useMutation({
+    mutationFn: async (userId) => {
+      const req = friendRequests.find(r => r.user_id === userId);
+      if (req) await base44.entities.Friend.update(req.id, { status: 'accepted' });
+      await base44.entities.Friend.create({ user_id: currentUser.id, friend_id: userId, user_name: currentUser.full_name, friend_name: req?.user_name || '', status: 'accepted' });
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['friends'] })
+      .then(() => queryClient.invalidateQueries({ queryKey: ['friendRequests'] })),
+  });
+
+  const rejectFriendMutation = useMutation({
+    mutationFn: async (userId) => {
+      const req = friendRequests.find(r => r.user_id === userId);
+      if (req) await base44.entities.Friend.delete(req.id);
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['friendRequests'] }),
+  });
+
+  const removeFriendMutation = useMutation({
+    mutationFn: async (friendId) => {
+      const f1 = friends.find(f => f.friend_id === friendId);
+      if (f1) await base44.entities.Friend.delete(f1.id);
+      const f2 = await base44.entities.Friend.filter({ user_id: friendId, friend_id: currentUser.id, status: 'accepted' });
+      if (f2.length) await base44.entities.Friend.delete(f2[0].id);
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['friends'] }),
+  });
+
+  const cancelFriendMutation = useMutation({
+    mutationFn: async (friendId) => {
+      const req = sentFriendRequests.find(r => r.friend_id === friendId);
+      if (req) await base44.entities.Friend.delete(req.id);
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['sentFriendRequests'] }),
+  });
+
+  const addFriendMutation = useMutation({
+    mutationFn: async (user) => {
+      await base44.entities.Friend.create({ user_id: currentUser.id, friend_id: user.id, user_name: currentUser.full_name, friend_name: user.display_name || user.full_name, friend_avatar: user.avatar_url || null, status: 'pending' });
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['sentFriendRequests'] }),
+  });
+
+  // ── Streak animation helper ───────────────────────────────────────────────
+  const runStreakAnimation = (streakNum, audioRef, timers) => {
+    if (!audioRef.current) return;
+    const ctx = audioRef.current;
+    try { soundBounceIn(ctx); } catch {}
+    const t1 = setTimeout(() => { try { soundNumPop(ctx); } catch {} }, 500);
+    const t2 = setTimeout(() => { try { soundGlowPulse(ctx); } catch {} }, 900);
+    timers.current.push(t1, t2);
+  };
+
   useEffect(() => {
     if (currentUser && !currentUser.onboarding_completed && !currentUser.deleted_at) {
       navigate(createPageUrl('Onboarding'), { replace: true });
