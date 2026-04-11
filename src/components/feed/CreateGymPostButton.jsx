@@ -49,9 +49,14 @@ export default function CreateGymPostButton({ gym, currentUser, onPostCreated })
       await base44.entities.Post.create({
         member_id: currentUser.id,
         member_name: gym.name,
-        member_avatar: gym.image_url,
+        member_avatar: gym.image_url || gym.logo_url || null,
+        gym_id: gym.id,
+        gym_name: gym.name,
         content,
-        image_url: imageUrl || null
+        image_url: imageUrl || null,
+        likes: 0,
+        comments: [],
+        reactions: {},
       });
       
       toast.success('Post created successfully');

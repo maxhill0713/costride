@@ -551,11 +551,12 @@ function PostCard({ post, onLike, onComment, onSave, onDelete, fullWidth = false
 
   const nudgeMutation = useMutation({
     mutationFn: async () => {
-      if (!currentUser?.id) return;
+      if (!currentUser?.id) return 0;
       const friends = await base44.entities.Friend.filter({ user_id: currentUser.id, status: 'accepted' });
       const todayDate = new Date().toISOString().split('T')[0];
       const dayOfWeek = new Date().getDay();
       const adjustedDay = dayOfWeek === 0 ? 7 : dayOfWeek;
+      let nudgedCount = 0;
       for (const friend of friends) {
         const friendUser = await base44.entities.User.filter({ id: friend.friend_id });
         if (!friendUser.length) continue;
@@ -565,18 +566,13 @@ function PostCard({ post, onLike, onComment, onSave, onDelete, fullWidth = false
         const hasNoExercises = !friendData.custom_workout_types?.[adjustedDay]?.exercises?.length;
         if (isRestDay || hasNoExercises) continue;
         const friendWorkouts = await base44.entities.WorkoutLog.filter({ user_id: friend.friend_id, completed_date: todayDate });
-        if (friendWorkouts.length === 0) {
-          await base44.entities.Post.create({
-            member_id: friend.friend_id,
-            member_name: friendData.full_name || friendData.username || 'User',
-            member_avatar: friendData.avatar_url || '',
-            content: `${currentUser.full_name || currentUser.username || 'User'} wants you to stop being lazy and get in the gym!`,
-            likes: 0, comments: [], reactions: {}
-          });
-        }
+        if (friendWorkouts.length === 0) nudgedCount++;
       }
+      return nudgedCount;
     },
-    onSuccess: () => { toast.success('Friends nudged!'); queryClient.invalidateQueries(['posts']); },
+    onSuccess: (count) => {
+      toast.success(count > 0 ? `Nudged ${count} friend${count !== 1 ? 's' : ''}!` : 'All friends already worked out today!');
+    },
     onError: () => toast.error('Failed to nudge friends')
   });
 

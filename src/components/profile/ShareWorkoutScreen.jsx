@@ -204,7 +204,7 @@ export default function ShareWorkoutScreen({ workoutName, exercises, previousExe
     }
     setSharing(true);
     try {
-      const content = comment ? comment.trim() : null;
+      const content = comment ? comment.trim() : '';
       const totalVolume = exercises?.reduce((acc, ex) => {
         const s = parseFloat(ex.sets) || 0;
         const r = parseFloat(ex.reps || ex.setsReps?.split('x')?.[1]) || 0;
