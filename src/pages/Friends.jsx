@@ -64,10 +64,10 @@ export default function Friends() {
   ];
 
   const { data: allUsers = [] } = useQuery({
-    queryKey: ['friendUsers', knownUserIds.join(',')],
+    queryKey: ['friendUserProfiles', knownUserIds.join(',')],
     queryFn: async () => {
       if (knownUserIds.length === 0) return [];
-      return base44.entities.User.filter({ id: { $in: knownUserIds } });
+      return base44.entities.UserProfile.filter({ user_id: { $in: knownUserIds } });
     },
     enabled: knownUserIds.length > 0,
     staleTime: 5 * 60 * 1000,
@@ -766,14 +766,14 @@ export default function Friends() {
                 ) : (
                   friendsWithActivity
                     .filter((friend) => {
-                      const friendUser = allUsers.find((u) => u.id === friend.friend_id);
-                      const displayName = friendUser?.full_name || friend.friend_name;
+                      const friendUser = allUsers.find((u) => u.user_id === friend.friend_id);
+                      const displayName = friendUser?.display_name || friend.friend_name;
                       return displayName.toLowerCase().includes(friendsSearchQuery.toLowerCase());
                     })
                     .map((friend) => {
                       const { activity } = friend;
-                      const friendUser = allUsers.find((u) => u.id === friend.friend_id);
-                      const currentName = friendUser?.full_name || friend.friend_name;
+                      const friendUser = allUsers.find((u) => u.user_id === friend.friend_id);
+                      const currentName = friendUser?.display_name || friend.friend_name;
                       return (
                         <div
                           key={friend.id}
@@ -786,7 +786,7 @@ export default function Friends() {
                           >
                             <div className="w-8 h-8 rounded-full bg-gradient-to-br from-slate-600 to-slate-700 flex items-center justify-center flex-shrink-0 overflow-hidden">
                               {(() => {
-                                const fu = allUsers.find((u) => u.id === friend.friend_id);
+                                const fu = allUsers.find((u) => u.user_id === friend.friend_id);
                                 const avatarUrl = fu?.avatar_url || friend.friend_avatar;
                                 return avatarUrl ? (
                                   <img src={avatarUrl} alt={currentName} className="w-full h-full object-cover" loading="lazy" />
