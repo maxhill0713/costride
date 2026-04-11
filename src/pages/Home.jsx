@@ -469,6 +469,15 @@ export default function Home() {
     return now.toISOString().split('T')[0];
   })();
 
+  const { data: allRecentCheckIns = [] } = useQuery({
+    queryKey: ['friendCheckIns', friendIdList.join(',')],
+    queryFn: () => base44.functions.invoke('getFriendCheckIns', { friendIds: friendIdList, sinceDate: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0] }).then(r => r.data?.checkIns || []),
+    enabled: !!currentUser?.id && friendIdList.length > 0,
+    staleTime: 2 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
+    placeholderData: (prev) => prev,
+  });
+
   const { data: weeklyWorkoutLogs = [] } = useQuery({
     queryKey: ['weeklyWorkoutLogs', currentUser?.id, weekOffset],
     queryFn: () => {
