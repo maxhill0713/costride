@@ -2,11 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { ChevronLeft, ChevronRight, Mail } from 'lucide-react';
+import { APP_CONFIG } from '../lib/appConfig';
 
 const PAGE_BG  = 'linear-gradient(135deg, #02040a 0%, #0d2360 50%, #02040a 100%)';
 const GROUP_BG = 'linear-gradient(135deg, rgba(30,35,60,0.72) 0%, rgba(8,10,20,0.88) 100%)';
 const DIVIDER  = 'rgba(255,255,255,0.06)';
-const SUPPORT_EMAIL = 'support@gymfuel.app';
+const SUPPORT_EMAIL = APP_CONFIG.SUPPORT_EMAIL;
 
 function useSectionHighlight() {
   const { search } = useLocation();

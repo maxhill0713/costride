@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation } from '@tanstack/react-query';
+import { APP_CONFIG } from '../lib/appConfig';
 import { base44 } from '@/api/base44Client';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -151,9 +152,9 @@ export default function Premium() {
   ];
 
   const handleSubscribe = () => {
-    const priceId = billingCycle === 'yearly' 
-      ? 'price_1SsCqKBzxbKKg1zZ5INp9GWN' 
-      : 'price_1SsCGXBzxbKKg1zZT7cHR7uh';
+    const priceId = billingCycle === 'yearly'
+      ? APP_CONFIG.STRIPE_PRICE_YEARLY
+      : APP_CONFIG.STRIPE_PRICE_MONTHLY;
     checkoutMutation.mutate(priceId);
   };
 
