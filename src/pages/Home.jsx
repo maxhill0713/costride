@@ -222,6 +222,18 @@ export default function Home() {
   const lastScrollY = useRef(0);
   const ticking = useRef(false);
 
+  // Lock scroll and jump to top during any celebration animation
+  const anyCelebrationActive = showStreakCelebration || showChallengesCelebration || showShareWorkout || showDaysCelebration || showFreezeAnimation || showStreakLossAnimation;
+  useEffect(() => {
+    if (anyCelebrationActive) {
+      window.scrollTo({ top: 0, behavior: 'instant' });
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => { document.body.style.overflow = ''; };
+  }, [anyCelebrationActive]);
+
   useEffect(() => {
     lastScrollY.current = window.scrollY;
     const handleScroll = () => {
