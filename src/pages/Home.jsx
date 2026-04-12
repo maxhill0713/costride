@@ -857,10 +857,9 @@ export default function Home() {
     const freshUser = queryClient.getQueryData(['currentUser']);
     const newStreak = freshUser?.current_streak || userStreak + 1;
     setCelebrationStreakNum(newStreak);
-    // Build celebration data from the active app challenges (Discipline Builder, Witness My Gains, Weekend Warrior)
+
     const currentMonth = `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}`;
-    const latestUser = queryClient.getQueryData(['currentUser']);
-    const monthlyProgress = latestUser?.monthly_challenge_progress || {};
+    const monthlyProgress = freshUser?.monthly_challenge_progress || {};
     const isCurrentMonth = monthlyProgress.month === currentMonth;
 
     const realChallenges = activeAppChallenges.map(ch => {
@@ -879,24 +878,24 @@ export default function Home() {
         previous_value: previousProgress,
         new_value:      currentProgress,
       };
-    });
+    }).filter(ch => ch.new_value > 0);
+
     const finalChallenges = realChallenges.length > 0 ? realChallenges : challengesData;
     setCelebrationChallenges(finalChallenges);
     setCelebrationExercises(exercises);
     setCelebrationWorkoutName(workoutName);
     setCelebrationPreviousExercises(previousExercises);
     setCelebrationDurationMinutes(durationMins > 0 ? durationMins : 0);
-    const showShare = () => { setShowShareWorkout(true); };
+
     setShowStreakCelebration(true);
-    const celebT1 = setTimeout(() => {
+    setTimeout(() => {
       setShowStreakCelebration(false);
       if (finalChallenges.length > 0) {
         setShowChallengesCelebration(true);
       } else {
-        showShare();
+        setShowShareWorkout(true);
       }
     }, 3500);
-    celebTimers.current.push(celebT1);
   };
 
   const handleStreakVariantSelect = (variant) => {
