@@ -4,6 +4,12 @@ Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
 
+    // Require authenticated user
+    const user = await base44.auth.me();
+    if (!user) {
+      return Response.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     const body = await req.json();
     const { gymId } = body;
 
@@ -80,18 +86,18 @@ Deno.serve(async (req) => {
           )
         : Promise.resolve([]),
       allUserIds.length > 0
-        ? base44.asServiceRole.entities.User.filter({ id: { $in: allUserIds } })
+        ? base44.asServiceRole.entities.User.filter({ id: { $in: allUserIds } }, null, 150)
         : Promise.resolve([]),
     ]);
 
     workoutLogs = workoutLogsResult;
 
-    // Build avatar + name maps keyed by user ID
+    // Build avatar + name maps keyed by user ID — only expose public profile fields
     const memberNames = {};
     memberUsersResult.forEach(u => {
-      const avatar = u.avatar_url || u.profile_picture || u.photo_url || null;
+      const avatar = u.avatar_url || null;
       if (avatar) memberAvatars[u.id] = avatar;
-      const name = u.display_name || u.full_name || null;
+      const name = u.full_name || null;
       if (name) memberNames[u.id] = name;
     });
 
