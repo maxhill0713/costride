@@ -197,21 +197,19 @@ function StreakCelebration({
             <button
               onClick={btnEnabled ? onChallengesContinue : undefined}
               disabled={!btnEnabled}
-              onMouseDown={(e) => { if (btnEnabled) { e.currentTarget.style.transform = 'translateY(4px)'; e.currentTarget.style.boxShadow = 'none'; e.currentTarget.style.borderBottom = '1px solid #1a3fa8'; } }}
-              onMouseUp={(e) => { e.currentTarget.style.transform = ''; e.currentTarget.style.boxShadow = ''; e.currentTarget.style.borderBottom = ''; }}
-              onMouseLeave={(e) => { e.currentTarget.style.transform = ''; e.currentTarget.style.boxShadow = ''; e.currentTarget.style.borderBottom = ''; }}
-              onTouchStart={(e) => { if (btnEnabled) { e.currentTarget.style.transform = 'translateY(4px)'; e.currentTarget.style.boxShadow = 'none'; e.currentTarget.style.borderBottom = '1px solid #1a3fa8'; } }}
-              onTouchEnd={(e) => { e.currentTarget.style.transform = ''; e.currentTarget.style.boxShadow = ''; e.currentTarget.style.borderBottom = ''; }}
+              className="w-full max-w-sm"
               style={{
-                width: '100%', maxWidth: '24rem', padding: '14px 0', borderRadius: 16,
-                background: 'linear-gradient(to bottom, #60a5fa, #3b82f6, #1d4ed8)',
-                border: 'none', borderBottom: '4px solid #1a3fa8',
-                boxShadow: btnEnabled ? '0 4px 0 0 #1d4ed8, 0 8px 20px rgba(37,99,235,0.4), inset 0 1px 0 rgba(255,255,255,0.2)' : 'none',
+                padding: '14px 0', borderRadius: 16,
+                background: btnEnabled ? 'linear-gradient(to bottom, #60a5fa, #3b82f6, #1d4ed8)' : 'rgba(59,130,246,0.25)',
+                border: 'none',
+                borderBottom: btnEnabled ? '4px solid #1a3fa8' : '4px solid rgba(26,63,168,0.4)',
+                boxShadow: btnEnabled ? '0 4px 0 0 #1e40af, inset 0 1px 0 rgba(255,255,255,0.2)' : 'none',
                 color: '#fff', fontSize: 16, fontWeight: 900,
                 cursor: btnEnabled ? 'pointer' : 'not-allowed',
-                opacity: btnEnabled ? 1 : 0.4,
-                transition: 'opacity 0.4s ease, box-shadow 0.2s ease',
+                opacity: btnEnabled ? 1 : 0.45,
+                transition: 'opacity 0.4s ease, background 0.3s ease, box-shadow 0.3s ease, border-bottom 0.3s ease',
                 letterSpacing: '-0.01em',
+                WebkitTapHighlightColor: 'transparent',
               }}
             >
               Continue

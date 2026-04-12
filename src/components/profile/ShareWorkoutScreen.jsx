@@ -401,12 +401,27 @@ export default function ShareWorkoutScreen({ workoutName, exercises, previousExe
           className="w-full h-13 bg-gradient-to-b from-orange-400 via-orange-500 to-orange-600 text-white font-black text-base rounded-2xl shadow-[0_4px_0_0_#c2410c,0_8px_20px_rgba(234,88,12,0.4)] active:shadow-none active:translate-y-[4px] active:scale-95 transition-all duration-100 border border-transparent flex items-center justify-center">
           {sharing ? 'Sharing...' : 'Share Workout'}
         </Button>
-        <Button
+        <button
           onClick={onContinue}
-          variant="ghost"
-          className="w-full h-12 text-slate-400 hover:text-white font-semibold text-base rounded-2xl border border-white/10 hover:border-white/20 transition-all flex items-center justify-center">
+          style={{
+            width: '100%', padding: '12px 0', borderRadius: 16,
+            background: 'rgba(20,28,50,0.8)',
+            border: '1px solid rgba(255,255,255,0.12)',
+            borderBottom: '3px solid rgba(0,0,0,0.5)',
+            boxShadow: '0 2px 0 rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.07)',
+            color: 'rgba(255,255,255,0.55)', fontSize: 15, fontWeight: 700,
+            cursor: 'pointer', letterSpacing: '0.01em',
+            WebkitTapHighlightColor: 'transparent',
+            transition: 'transform 0.08s ease, box-shadow 0.08s ease',
+          }}
+          onMouseDown={(e) => { e.currentTarget.style.transform = 'translateY(3px)'; e.currentTarget.style.boxShadow = 'none'; }}
+          onMouseUp={(e) => { e.currentTarget.style.transform = ''; e.currentTarget.style.boxShadow = ''; }}
+          onMouseLeave={(e) => { e.currentTarget.style.transform = ''; e.currentTarget.style.boxShadow = ''; }}
+          onTouchStart={(e) => { e.currentTarget.style.transform = 'translateY(3px)'; e.currentTarget.style.boxShadow = 'none'; }}
+          onTouchEnd={(e) => { e.currentTarget.style.transform = ''; e.currentTarget.style.boxShadow = ''; }}
+        >
           Continue
-        </Button>
+        </button>
       </motion.div>
     </motion.div>
   );

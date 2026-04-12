@@ -264,8 +264,7 @@ export default function WorkoutDaysCelebration({
         WebkitBackdropFilter: backdropExiting ? 'blur(0px)' : 'blur(4px)',
         transition: `background ${BACKDROP_FADE}ms ease-in-out, backdrop-filter ${BACKDROP_FADE}ms ease-in-out`,
         display: 'flex', alignItems: 'flex-start', justifyContent: 'center',
-        // ── Shifted down ──
-        paddingTop: 'calc(env(safe-area-inset-top) + 398px)',
+        paddingTop: 'calc(env(safe-area-inset-top) + 375px)',
         pointerEvents: 'none',
       }}
     >
