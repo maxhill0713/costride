@@ -1,948 +1,1200 @@
-import React, { useState, useMemo, useEffect } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import React, { useState, useEffect } from 'react';
+import { ChevronLeft, ChevronRight, Plus, Trash2, Edit2, Check, Lock, MoreVertical, Star, Loader2, Info } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
-import { MapPin, Star, Users, Dumbbell, Filter, Gift, BadgeCheck, Edit, Key, Heart, Images, Plus, Search, Building2, Loader2, Crown, CheckCircle, X, MoreVertical, LogOut, SlidersHorizontal } from 'lucide-react';
-import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Link, useNavigate } from 'react-router-dom';
-import { createPageUrl } from '../utils';
-import EditHeroImageModal from '../components/gym/EditHeroImageModal';
-import JoinWithCodeModal from '../components/gym/JoinWithCodeModal';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { motion, AnimatePresence } from 'framer-motion';
 
-// ─── Dialog animation override ────────────────────────────────────────────────
-const PRIMARY_GYM_DIALOG_STYLES = `
-  @keyframes pgDialogIn {
-    0%   { transform: translate(-50%, calc(-50% + 20px)) scale(0.95); opacity: 0; }
-    65%  { transform: translate(-50%, calc(-50% - 3px))  scale(1.01); opacity: 1; }
-    100% { transform: translate(-50%, -50%) scale(1.0);               opacity: 1; }
-  }
-  @keyframes pgDialogOut {
-    0%   { transform: translate(-50%, -50%) scale(1.0);  opacity: 1; }
-    100% { transform: translate(-50%, calc(-50% + 14px)) scale(0.95); opacity: 0; }
-  }
-  @keyframes pgOverlayIn  { from { opacity: 0; } to { opacity: 1; } }
-  @keyframes pgOverlayOut { from { opacity: 1; } to { opacity: 0; } }
-  @keyframes pgItemIn {
-    0%   { transform: translateY(10px); opacity: 0; }
-    65%  { transform: translateY(-2px); opacity: 1; }
-    100% { transform: translateY(0);    opacity: 1; }
-  }
-
-  [data-primary-gym-dialog][data-state="open"] {
-    animation: pgDialogIn 320ms cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards !important;
-  }
-  [data-primary-gym-dialog][data-state="closed"] {
-    animation: pgDialogOut 200ms cubic-bezier(0.4, 0, 1, 1) forwards !important;
-  }
-
-  .pg-item-in {
-    opacity: 0;
-    animation: pgItemIn 360ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
-  }
-`;
-
-function usePrimaryGymDialogStyles() {
-  useEffect(() => {
-    const id = 'primary-gym-dialog-anim';
-    if (!document.getElementById(id)) {
-      const tag = document.createElement('style');
-      tag.id = id;
-      tag.textContent = PRIMARY_GYM_DIALOG_STYLES;
-      document.head.appendChild(tag);
-    }
-  }, []);
-}
-
-// ─── Gym search sanitiser ─────────────────────────────────────────────────────
-const sanitiseGymSearch = (v) =>
-  v.replace(/[<>{};`\\]/g, '').slice(0, 60);
+// ─────────────────────────────────────────────────────────────────────────────
+// Input sanitisation helpers
 // ─────────────────────────────────────────────────────────────────────────────
 
-export default function Gyms() {
-  const navigate = useNavigate();
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedType, setSelectedType] = useState('all');
-  const [maxDistance, setMaxDistance] = useState('all');
-  const [selectedEquipment, setSelectedEquipment] = useState('all');
-  const [editingGym, setEditingGym] = useState(null);
-  const [showJoinWithCode, setShowJoinWithCode] = useState(false);
-  const [showFilterModal, setShowFilterModal] = useState(false);
-  const [savedGyms, setSavedGyms] = useState([]);
-  const [equipmentGym, setEquipmentGym] = useState(null);
-  const [galleryGym, setGalleryGym] = useState(null);
-  const [placesResults, setPlacesResults] = useState([]);
-  const [searchingPlaces, setSearchingPlaces] = useState(false);
-  const [showAddGymModal, setShowAddGymModal] = useState(false);
-  const [selectedPlaceGym, setSelectedPlaceGym] = useState(null);
-  const [isOwner, setIsOwner] = useState(false);
-  const [gymType, setGymType] = useState('general');
-  const [showPrimaryGymModal, setShowPrimaryGymModal] = useState(false);
-  const [selectedPrimaryGym, setSelectedPrimaryGym] = useState(null);
-  const [confirmLeaveGym, setConfirmLeaveGym] = useState(null);
+const SPLIT_NAME_ALLOWED = /[^a-zA-Z0-9\s\-\/,'.]/g;
+const sanitiseSplitName = (v) => v.replace(SPLIT_NAME_ALLOWED, '').slice(0, 40);
+const sanitiseDayName = (v) => v.replace(SPLIT_NAME_ALLOWED, '').slice(0, 25);
+const sanitiseExerciseName = (v) => v.replace(/[^a-zA-Z\s]/g, '').slice(0, 35);
+const sanitiseSets = (v) => v.replace(/\D/g, '').slice(0, 2);
+const sanitiseReps = (v) => v.replace(/\D/g, '').slice(0, 3);
+const sanitiseRounds = (v) => v.replace(/\D/g, '').slice(0, 2);
+
+const sanitiseWeight = (v) => {
+  let s = v.replace(/[^0-9.]/g, '');
+  const parts = s.split('.');
+  if (parts.length > 2) s = parts[0] + '.' + parts.slice(1).join('');
+  if (s.includes('.')) {
+    const [whole, dec] = s.split('.');
+    s = whole + '.' + dec.slice(0, 2);
+  }
+  return s.slice(0, 7);
+};
+
+const sanitiseTimeDigits = (raw) => {
+  const digits = raw.replace(/\D/g, '').slice(0, 4);
+  if (digits.length < 2) return digits;
+  const secs = parseInt(digits.slice(-2), 10);
+  if (secs > 59) return digits.slice(0, digits.length - 2) + '59';
+  return digits;
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Helper: reorder exercises so duplicates (by name) are adjacent
+// ─────────────────────────────────────────────────────────────────────────────
+function reorderExercisesAdjacent(exercises) {
+  const firstOccurrence = [];
+  const groups = {};
+
+  exercises.forEach((ex) => {
+    const key = (ex.exercise || '').trim().toLowerCase();
+    if (!groups[key]) {
+      groups[key] = [];
+      firstOccurrence.push(key);
+    }
+    groups[key].push(ex);
+  });
+
+  return firstOccurrence.flatMap((key) => groups[key]);
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Animation variants
+// ─────────────────────────────────────────────────────────────────────────────
+
+const pageSlideVariants = {
+  hidden: { x: '100%', opacity: 1 },
+  visible: {
+    x: 0, opacity: 1,
+    transition: { type: 'spring', stiffness: 380, damping: 36, mass: 1 }
+  },
+  exit: {
+    x: '100%', opacity: 1,
+    transition: { type: 'spring', stiffness: 420, damping: 40, mass: 0.9 }
+  }
+};
+
+const overlayVariants = {
+  hidden: { opacity: 0 },
+  visible: { opacity: 1, transition: { duration: 0.18 } },
+  exit: { opacity: 0, transition: { duration: 0.2 } }
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+
+const DEFAULT_SPLITS = [
+{
+  id: 'bro', name: 'Bro Split', description: '5 days · one muscle group per day',
+  blurb: 'You train one muscle group per day — for example chest on Monday, back on Tuesday — giving each muscle a full week to recover before hitting it again. The upside is that you can really focus on and exhaust one area each session, which many people find satisfying. The downside is that if you miss a day, that muscle only gets trained once that week, and beginners may not need a full 7 days of rest between sessions.',
+  icon: '💪', color: 'from-purple-500 to-indigo-600', accentColor: 'rgba(168,85,247,0.45)', glowColor: 'rgba(168,85,247,0.35)', days: [1, 2, 3, 4, 5],
+  workouts: {
+    1: { name: 'Chest', color: 'blue', exercises: [{ exercise: 'Barbell Bench Press', sets: '4', reps: '6', weight: '' }, { exercise: 'Incline Dumbbell Press', sets: '4', reps: '10', weight: '' }, { exercise: 'Cable Fly', sets: '3', reps: '12', weight: '' }, { exercise: 'Dips', sets: '3', reps: '10', weight: '' }, { exercise: 'Push-Ups', sets: '3', reps: '15', weight: '' }, { exercise: 'Pec Deck', sets: '3', reps: '12', weight: '' }] },
+    2: { name: 'Back', color: 'purple', exercises: [{ exercise: 'Deadlift', sets: '4', reps: '5', weight: '' }, { exercise: 'Pull-Ups', sets: '4', reps: '8', weight: '' }, { exercise: 'Barbell Row', sets: '4', reps: '8', weight: '' }, { exercise: 'Lat Pulldown', sets: '3', reps: '12', weight: '' }, { exercise: 'Cable Row', sets: '3', reps: '12', weight: '' }, { exercise: 'Dumbbell Row', sets: '3', reps: '10', weight: '' }] },
+    3: { name: 'Shoulders', color: 'cyan', exercises: [{ exercise: 'Overhead Press', sets: '4', reps: '8', weight: '' }, { exercise: 'Dumbbell Lateral Raise', sets: '4', reps: '15', weight: '' }, { exercise: 'Front Raises', sets: '3', reps: '12', weight: '' }, { exercise: 'Face Pulls', sets: '3', reps: '15', weight: '' }, { exercise: 'Arnold Press', sets: '3', reps: '10', weight: '' }, { exercise: 'Shrugs', sets: '3', reps: '15', weight: '' }] },
+    4: { name: 'Arms', color: 'pink', exercises: [{ exercise: 'Barbell Curl', sets: '4', reps: '10', weight: '' }, { exercise: 'Hammer Curls', sets: '3', reps: '12', weight: '' }, { exercise: 'Incline Curl', sets: '3', reps: '12', weight: '' }, { exercise: 'Skull Crushers', sets: '4', reps: '10', weight: '' }, { exercise: 'Tricep Pushdown', sets: '3', reps: '12', weight: '' }, { exercise: 'Overhead Tricep', sets: '3', reps: '12', weight: '' }] },
+    5: { name: 'Legs', color: 'green', exercises: [{ exercise: 'Barbell Squat', sets: '4', reps: '6', weight: '' }, { exercise: 'Romanian Deadlift', sets: '4', reps: '8', weight: '' }, { exercise: 'Leg Press', sets: '3', reps: '12', weight: '' }, { exercise: 'Leg Curl', sets: '3', reps: '12', weight: '' }, { exercise: 'Leg Extension', sets: '3', reps: '15', weight: '' }, { exercise: 'Calf Raises', sets: '4', reps: '20', weight: '' }] }
+  }
+},
+{
+  id: 'upper_lower', name: 'Upper / Lower', description: '4 days · upper & lower alternating',
+  blurb: 'You split your body into upper (chest, back, shoulders, arms) and lower (legs, glutes) sessions, training each twice per week. This is a great step up from full-body training and works well for building both strength and size because each muscle gets hit more frequently. The main drawback is that upper-body days can feel long since you are covering a lot of muscles in one session.',
+  icon: '⚡', color: 'from-blue-500 to-cyan-500', accentColor: 'rgba(59,130,246,0.45)', glowColor: 'rgba(59,130,246,0.35)', days: [1, 2, 4, 5],
+  workouts: {
+    1: { name: 'Upper A', color: 'blue', exercises: [{ exercise: 'Barbell Bench Press', sets: '4', reps: '6', weight: '' }, { exercise: 'Barbell Row', sets: '4', reps: '6', weight: '' }, { exercise: 'Overhead Press', sets: '3', reps: '8', weight: '' }, { exercise: 'Pull-Ups', sets: '3', reps: '8', weight: '' }, { exercise: 'Lateral Raises', sets: '3', reps: '15', weight: '' }, { exercise: 'Tricep Pushdown', sets: '3', reps: '12', weight: '' }] },
+    2: { name: 'Lower A', color: 'green', exercises: [{ exercise: 'Barbell Squat', sets: '4', reps: '6', weight: '' }, { exercise: 'Romanian Deadlift', sets: '4', reps: '8', weight: '' }, { exercise: 'Leg Press', sets: '3', reps: '10', weight: '' }, { exercise: 'Leg Curl', sets: '3', reps: '12', weight: '' }, { exercise: 'Leg Extension', sets: '3', reps: '12', weight: '' }, { exercise: 'Calf Raises', sets: '4', reps: '20', weight: '' }] },
+    4: { name: 'Upper B', color: 'cyan', exercises: [{ exercise: 'Incline Dumbbell Press', sets: '4', reps: '10', weight: '' }, { exercise: 'Cable Row', sets: '4', reps: '10', weight: '' }, { exercise: 'Dumbbell Shoulder Press', sets: '3', reps: '10', weight: '' }, { exercise: 'Lat Pulldown', sets: '3', reps: '12', weight: '' }, { exercise: 'Barbell Curl', sets: '3', reps: '12', weight: '' }, { exercise: 'Skull Crushers', sets: '3', reps: '12', weight: '' }] },
+    5: { name: 'Lower B', color: 'purple', exercises: [{ exercise: 'Deadlift', sets: '4', reps: '5', weight: '' }, { exercise: 'Bulgarian Split Squat', sets: '3', reps: '10', weight: '' }, { exercise: 'Hack Squat', sets: '3', reps: '10', weight: '' }, { exercise: 'Leg Curl', sets: '3', reps: '12', weight: '' }, { exercise: 'Leg Extension', sets: '3', reps: '12', weight: '' }, { exercise: 'Calf Raises', sets: '4', reps: '20', weight: '' }] }
+  }
+},
+{
+  id: 'ppl', name: 'Push / Pull / Legs', description: '6 days · PPL ×2',
+  blurb: 'Push Pull Legs groups muscles by how they move — push days cover chest, shoulders and triceps; pull days cover back and biceps; leg days cover everything below the waist. Running the cycle twice a week means each muscle gets trained twice, which is ideal for maximising growth. The downside is the 6-day commitment, which can be tough to maintain and leaves little room for rest if life gets busy.',
+  icon: '🔄', color: 'from-cyan-500 to-teal-500', accentColor: 'rgba(20,184,166,0.45)', glowColor: 'rgba(20,184,166,0.35)', days: [1, 2, 3, 5, 6, 7],
+  workouts: {
+    1: { name: 'Push A', color: 'orange', exercises: [{ exercise: 'Barbell Bench Press', sets: '4', reps: '6', weight: '' }, { exercise: 'Overhead Press', sets: '4', reps: '8', weight: '' }, { exercise: 'Incline Dumbbell Press', sets: '3', reps: '10', weight: '' }, { exercise: 'Cable Fly', sets: '3', reps: '12', weight: '' }, { exercise: 'Lateral Raises', sets: '3', reps: '15', weight: '' }, { exercise: 'Tricep Pushdown', sets: '3', reps: '12', weight: '' }] },
+    2: { name: 'Pull A', color: 'blue', exercises: [{ exercise: 'Deadlift', sets: '4', reps: '5', weight: '' }, { exercise: 'Pull-Ups', sets: '4', reps: '8', weight: '' }, { exercise: 'Barbell Row', sets: '4', reps: '8', weight: '' }, { exercise: 'Face Pulls', sets: '3', reps: '15', weight: '' }, { exercise: 'Barbell Curl', sets: '3', reps: '12', weight: '' }, { exercise: 'Hammer Curls', sets: '3', reps: '12', weight: '' }] },
+    3: { name: 'Legs A', color: 'green', exercises: [{ exercise: 'Barbell Squat', sets: '4', reps: '6', weight: '' }, { exercise: 'Romanian Deadlift', sets: '4', reps: '8', weight: '' }, { exercise: 'Leg Press', sets: '3', reps: '12', weight: '' }, { exercise: 'Leg Curl', sets: '3', reps: '12', weight: '' }, { exercise: 'Leg Extension', sets: '3', reps: '12', weight: '' }, { exercise: 'Calf Raises', sets: '4', reps: '20', weight: '' }] },
+    5: { name: 'Push B', color: 'orange', exercises: [{ exercise: 'Incline Barbell Press', sets: '4', reps: '8', weight: '' }, { exercise: 'Dumbbell Shoulder Press', sets: '4', reps: '10', weight: '' }, { exercise: 'Cable Fly', sets: '3', reps: '12', weight: '' }, { exercise: 'Lateral Raises', sets: '4', reps: '15', weight: '' }, { exercise: 'Skull Crushers', sets: '3', reps: '12', weight: '' }, { exercise: 'Overhead Tricep', sets: '3', reps: '12', weight: '' }] },
+    6: { name: 'Pull B', color: 'blue', exercises: [{ exercise: 'Lat Pulldown', sets: '4', reps: '10', weight: '' }, { exercise: 'Cable Row', sets: '4', reps: '10', weight: '' }, { exercise: 'Dumbbell Row', sets: '3', reps: '10', weight: '' }, { exercise: 'Rear Delt Fly', sets: '3', reps: '15', weight: '' }, { exercise: 'Incline Curl', sets: '3', reps: '12', weight: '' }, { exercise: 'Hammer Curls', sets: '3', reps: '12', weight: '' }] },
+    7: { name: 'Legs B', color: 'green', exercises: [{ exercise: 'Front Squat', sets: '4', reps: '8', weight: '' }, { exercise: 'Bulgarian Split Squat', sets: '3', reps: '10', weight: '' }, { exercise: 'Hack Squat', sets: '3', reps: '10', weight: '' }, { exercise: 'Leg Curl', sets: '3', reps: '12', weight: '' }, { exercise: 'Leg Extension', sets: '3', reps: '12', weight: '' }, { exercise: 'Calf Raises', sets: '4', reps: '20', weight: '' }] }
+  }
+},
+{
+  id: 'full_body', name: 'Full Body', description: '3 days · total body each session',
+  blurb: 'Every session trains your whole body — squats, pressing, pulling and more all in one workout, three times a week. This is widely considered the best option for beginners because you practice every movement pattern frequently, which speeds up learning and early strength gains. The trade-off is that sessions can feel tiring, and as you get stronger the workouts become harder to complete in a reasonable time.',
+  icon: '🏋️', color: 'from-emerald-500 to-green-600', accentColor: 'rgba(16,185,129,0.45)', glowColor: 'rgba(16,185,129,0.35)', days: [1, 3, 5],
+  workouts: {
+    1: { name: 'Full Body A', color: 'green', exercises: [{ exercise: 'Barbell Squat', sets: '4', reps: '6', weight: '' }, { exercise: 'Barbell Bench Press', sets: '4', reps: '8', weight: '' }, { exercise: 'Barbell Row', sets: '4', reps: '8', weight: '' }, { exercise: 'Overhead Press', sets: '3', reps: '10', weight: '' }, { exercise: 'Barbell Curl', sets: '3', reps: '12', weight: '' }, { exercise: 'Calf Raises', sets: '3', reps: '15', weight: '' }] },
+    3: { name: 'Full Body B', color: 'cyan', exercises: [{ exercise: 'Deadlift', sets: '4', reps: '5', weight: '' }, { exercise: 'Incline Dumbbell Press', sets: '4', reps: '10', weight: '' }, { exercise: 'Pull-Ups', sets: '4', reps: '8', weight: '' }, { exercise: 'Dumbbell Shoulder Press', sets: '3', reps: '10', weight: '' }, { exercise: 'Tricep Pushdown', sets: '3', reps: '12', weight: '' }, { exercise: 'Leg Curl', sets: '3', reps: '12', weight: '' }] },
+    5: { name: 'Full Body C', color: 'blue', exercises: [{ exercise: 'Front Squat', sets: '4', reps: '8', weight: '' }, { exercise: 'Dumbbell Bench Press', sets: '4', reps: '10', weight: '' }, { exercise: 'Cable Row', sets: '4', reps: '10', weight: '' }, { exercise: 'Lateral Raises', sets: '3', reps: '15', weight: '' }, { exercise: 'Hammer Curls', sets: '3', reps: '12', weight: '' }, { exercise: 'Calf Raises', sets: '3', reps: '20', weight: '' }] }
+  }
+}];
+
+const COLOR_OPTIONS = [
+{ value: 'blue', gradient: 'from-blue-500 to-blue-600' },
+{ value: 'purple', gradient: 'from-purple-500 to-purple-600' },
+{ value: 'cyan', gradient: 'from-cyan-500 to-cyan-600' },
+{ value: 'green', gradient: 'from-green-500 to-green-600' },
+{ value: 'orange', gradient: 'from-orange-500 to-orange-600' },
+{ value: 'pink', gradient: 'from-pink-500 to-pink-600' },
+{ value: 'red', gradient: 'from-red-500 to-red-600' },
+{ value: 'yellow', gradient: 'from-yellow-400 to-yellow-500' }];
+
+
+const DAY_NAMES = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+function colorGradient(c) {
+  return COLOR_OPTIONS.find((o) => o.value === c)?.gradient || 'from-blue-500 to-blue-600';
+}
+const INPUT_BASE = { fontSize: '16px', WebkitAppearance: 'none', MozAppearance: 'textfield' };
+
+function SetActiveButton({ onClick }) {
+  return (
+    <button
+      onClick={onClick}
+      className="inline-flex items-center justify-center whitespace-nowrap font-bold transition-all duration-100 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50 py-2 bg-gradient-to-b from-purple-400 via-purple-500 to-purple-600 backdrop-blur-md text-white border border-transparent rounded-lg text-xs h-8 px-2.5 shadow-[0_3px_0_0_#5b21b6,inset_0_1px_0_rgba(255,255,255,0.15)] active:shadow-none active:translate-y-[3px] active:scale-95 transform-gpu">
+      Set Active
+    </button>);
+
+}
+
+function ReadOnlyDayCard({ day, workout, weights, onWeightChange, sets, onSetsChange, reps, onRepsChange }) {
+  const grad = colorGradient(workout.color);
+  return (
+    <div className="rounded-2xl overflow-hidden" style={{ background: 'rgba(12,16,32,0.8)', border: '1px solid rgba(255,255,255,0.06)' }}>
+      <div className="flex items-center gap-3 px-4 pt-3.5 pb-2.5">
+        <div className={`w-8 h-8 rounded-xl bg-gradient-to-br ${grad} flex items-center justify-center flex-shrink-0 shadow`}>
+          <span className="text-[11px] font-black text-white">{DAY_NAMES[day - 1]}</span>
+        </div>
+        <p className="flex-1 text-white text-[14px] font-bold">{workout.name}</p>
+      </div>
+      <div className="flex gap-1.5 px-4 pb-3">
+        {COLOR_OPTIONS.map((c) =>
+        <div key={c.value} className={`w-6 h-6 rounded-lg bg-gradient-to-br ${c.gradient} ${workout.color === c.value ? 'ring-2 ring-white ring-offset-1 ring-offset-[#0b0f1c]' : 'opacity-20'}`} />
+        )}
+      </div>
+      {workout.exercises?.length > 0 &&
+      <div className="border-t border-slate-800 px-4 pt-3 pb-2 space-y-2.5">
+          <div className="grid gap-2 items-center" style={{ gridTemplateColumns: '1fr 52px 52px 60px' }}>
+            <span className="text-[9px] font-black text-slate-600 uppercase tracking-wider">Exercise</span>
+            <span className="text-[9px] font-black text-slate-600 uppercase tracking-wider text-center">Sets</span>
+            <span className="text-[9px] font-black text-slate-600 uppercase tracking-wider text-center">Reps</span>
+            <span className="text-[9px] font-black text-slate-600 uppercase tracking-wider text-center">Weight</span>
+          </div>
+          {workout.exercises.map((ex, idx) =>
+        <div key={idx} className="grid gap-2 items-center" style={{ gridTemplateColumns: '1fr 52px 52px 60px' }}>
+              <p className="px-2.5 py-2 bg-slate-800/70 border border-slate-700/40 rounded-lg text-[12px] text-slate-300 truncate">{ex.exercise}</p>
+              <input type="text" inputMode="numeric" value={sets?.[idx] ?? ex.sets ?? ''} onChange={(e) => onSetsChange(idx, sanitiseSets(e.target.value))} placeholder={ex.sets || '—'} maxLength={2} autoComplete="off" style={{ fontSize: '16px', WebkitAppearance: 'none' }} className="w-full px-2 py-2 bg-slate-800/70 border border-slate-700/40 rounded-lg text-[13px] text-white text-center focus:outline-none focus:border-blue-500/50 placeholder-slate-600" />
+              <input type="text" inputMode="numeric" value={reps?.[idx] ?? ex.reps ?? ''} onChange={(e) => onRepsChange(idx, sanitiseReps(e.target.value))} placeholder={ex.reps || '—'} maxLength={3} autoComplete="off" style={{ fontSize: '16px', WebkitAppearance: 'none' }} className="w-full px-2 py-2 bg-slate-800/70 border border-slate-700/40 rounded-lg text-[13px] text-white text-center focus:outline-none focus:border-blue-500/50 placeholder-slate-600" />
+              <div className="relative">
+                <input type="text" inputMode="decimal" value={weights?.[idx] ?? ''} onChange={(e) => onWeightChange(idx, sanitiseWeight(e.target.value))} placeholder="—" maxLength={6} autoComplete="off" style={{ fontSize: '16px', WebkitAppearance: 'none' }} className="w-full px-2 py-2 bg-slate-800/70 border border-slate-700/40 rounded-lg text-[13px] text-white text-center focus:outline-none focus:border-blue-500/50 placeholder-slate-600" />
+                <span className="absolute right-1.5 top-1/2 -translate-y-1/2 text-[8px] text-slate-500 font-bold pointer-events-none">kg</span>
+              </div>
+            </div>
+        )}
+        </div>
+      }
+    </div>);
+
+}
+
+function SplitCard({ onClick, isActive, glowColor, children }) {
+  const [pressed, setPressed] = useState(false);
+  return (
+    <div onClick={onClick} onMouseDown={() => setPressed(true)} onMouseUp={() => setPressed(false)} onMouseLeave={() => setPressed(false)} onTouchStart={() => setPressed(true)} onTouchEnd={() => setPressed(false)} onTouchCancel={() => setPressed(false)}
+    className="relative overflow-hidden rounded-2xl cursor-pointer"
+    style={{
+      background: 'linear-gradient(135deg, rgba(30,35,60,0.82) 0%, rgba(8,10,20,0.96) 100%)',
+      border: '1px solid rgba(255,255,255,0.07)',
+      backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)',
+      transform: pressed ? 'scale(0.977) translateY(2px)' : 'scale(1)',
+      boxShadow: pressed ? `0 2px 8px rgba(0,0,0,0.5), 0 0 22px 2px ${glowColor || 'rgba(99,102,241,0.35)'}` : `0 4px 24px rgba(0,0,0,0.4)`,
+      transition: pressed ? 'transform 0.08s ease, box-shadow 0.08s ease' : 'transform 0.22s cubic-bezier(0.34,1.3,0.64,1), box-shadow 0.22s ease'
+    }}>
+      <div className="absolute inset-x-0 top-0 h-px pointer-events-none" style={{ background: 'linear-gradient(90deg, transparent 10%, rgba(255,255,255,0.1) 50%, transparent 90%)' }} />
+      <div className="absolute inset-0 pointer-events-none rounded-2xl" style={{ background: `radial-gradient(ellipse at 25% 35%, ${glowColor || 'rgba(99,102,241,0.35)'} 0%, transparent 60%)`, opacity: pressed ? 0.22 : isActive ? 0.14 : 0.09, transition: 'opacity 0.1s ease' }} />
+      {children}
+    </div>);
+
+}
+
+function SetActiveSplitModal({ open, onClose, allSplits, activeSplitId, onSave, isSaving }) {
+  const [selected, setSelected] = useState(null);
+  useEffect(() => {if (open) setSelected(null);}, [open]);
+  const effectiveActive = selected ?? activeSplitId;
+  return (
+    <Dialog open={open} onOpenChange={onClose}>
+      <DialogContent className="fixed left-[50%] top-[50%] z-[60] grid w-full translate-x-[-50%] translate-y-[-50%] gap-4 p-6 duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%] max-w-lg max-h-[80vh] overflow-y-auto [&>button]:hidden bg-slate-800/30 backdrop-blur-md border border-slate-700/20 rounded-3xl shadow-2xl shadow-black/20 text-white">
+        <DialogHeader>
+          <DialogTitle className="text-xl font-bold flex items-center gap-2"><Star className="w-5 h-5 text-purple-400" />Set Active Split</DialogTitle>
+        </DialogHeader>
+        <div className="space-y-4">
+          <div className="bg-purple-500/10 border border-purple-400/30 rounded-xl p-2.5">
+            <p className="text-purple-200 text-xs">Your active split is the workout plan shown on your Home page and used when you log training sessions.</p>
+          </div>
+          <div className="space-y-2">
+            {allSplits.map((entry, i) => {
+              const isPrimary = effectiveActive === entry.id;
+              return (
+                <button key={entry.id} onClick={() => setSelected(entry.id)} className={`w-full text-left p-2 rounded-xl border-2 transition-all ${isPrimary ? 'bg-purple-500/20 border-purple-400/50' : 'bg-slate-800/50 border-slate-700/50 hover:border-purple-400/30'}`} style={{ animationDelay: `${140 + i * 55}ms` }}>
+                  <div className="flex items-center justify-between">
+                    <div><h4 className="font-bold text-white text-sm">{entry.name}</h4><p className="text-xs text-slate-400 mt-0.5">{entry.description || `${(entry.training_days || []).length} days · custom`}</p></div>
+                    {isPrimary && <Badge className="bg-purple-500 text-white flex-shrink-0"><Star className="w-3 h-3 mr-1" />Active</Badge>}
+                  </div>
+                </button>);
+
+            })}
+          </div>
+          <div className="flex gap-3">
+            <Button onClick={onClose} className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg text-sm font-bold transition-all duration-100 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 py-2 bg-gradient-to-b from-slate-600 via-slate-700 to-slate-800 backdrop-blur-md text-white border border-slate-500/40 h-9 px-4 flex-1 shadow-[0_3px_0_0_#1e293b,inset_0_1px_0_rgba(255,255,255,0.12)] active:shadow-none active:translate-y-[3px] active:scale-95 transform-gpu">Cancel</Button>
+            <Button onClick={() => {if (selected) onSave(selected);else onClose();}} disabled={isSaving} className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg text-sm font-bold transition-all duration-100 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 py-2 bg-gradient-to-b from-purple-400 via-purple-500 to-purple-600 backdrop-blur-md text-white border border-transparent h-9 px-4 flex-1 shadow-[0_3px_0_0_#5b21b6,inset_0_1px_0_rgba(255,255,255,0.15)] active:shadow-none active:translate-y-[3px] active:scale-95 transform-gpu">
+              {isSaving ? <><Loader2 className="w-4 h-4 animate-spin mr-2" />Saving...</> : 'Save'}
+            </Button>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>);
+
+}
+
+function MirrorConfirmDialog({ open, onClose, onConfirm }) {
+  if (!open) return null;
+  return (
+    <>
+      <div className="fixed inset-0 z-[10003] bg-slate-950/60 backdrop-blur-sm" onClick={onClose} />
+      <div className="fixed left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2 w-11/12 max-w-sm z-[10004] bg-slate-900/80 backdrop-blur-md border border-slate-700/30 rounded-3xl shadow-2xl shadow-black/40 text-white p-6">
+        <h3 className="text-xl font-black text-white mb-2">Mirror Workout?</h3>
+        <p className="text-slate-300 text-sm mb-6">
+          The workout with more exercises will be copied to the other day. Any future changes you make to one will automatically sync to both.
+        </p>
+        <div className="flex gap-3">
+          <button onClick={onClose} className="flex-1 py-2.5 rounded-xl font-bold text-sm text-slate-200 bg-gradient-to-b from-slate-600 via-slate-700 to-slate-800 border border-slate-500/40 shadow-[0_3px_0_0_#1e293b,0_6px_16px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.08)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 transform-gpu">
+            Cancel
+          </button>
+          <button onClick={onConfirm} className="flex-1 py-2.5 rounded-xl font-bold text-sm text-white bg-gradient-to-b from-slate-500 via-slate-600 to-slate-700 shadow-[0_3px_0_0_#0f172a,0_6px_16px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.12)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 transform-gpu">
+            Mirror
+          </button>
+        </div>
+      </div>
+    </>);
+
+}
+
+function DeleteWorkoutDialog({ open, onClose, onConfirm, dayName }) {
+  if (!open) return null;
+  return (
+    <>
+      <div className="fixed inset-0 z-[10003] bg-slate-950/60 backdrop-blur-sm" onClick={onClose} />
+      <div className="fixed left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2 w-11/12 max-w-sm z-[10004] bg-slate-900/80 backdrop-blur-md border border-slate-700/30 rounded-3xl shadow-2xl shadow-black/40 text-white p-6">
+        <h3 className="text-xl font-black text-white mb-2">Delete Workout?</h3>
+        <p className="text-slate-300 text-sm mb-1">
+          This will clear all exercises and cardio from <span className="text-white font-bold">{dayName}</span>.
+        </p>
+        <p className="text-slate-500 text-xs mb-6">The day will remain selected but the workout will be empty.</p>
+        <div className="flex gap-3">
+          <button onClick={onClose} className="flex-1 py-2.5 rounded-xl font-bold text-sm text-slate-200 bg-gradient-to-b from-slate-600 via-slate-700 to-slate-800 border border-slate-500/40 shadow-[0_3px_0_0_#1e293b,0_6px_16px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.08)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 transform-gpu">
+            Cancel
+          </button>
+          <button onClick={onConfirm} className="flex-1 py-2.5 rounded-xl font-bold text-sm text-white bg-gradient-to-b from-red-500 to-red-600 shadow-[0_3px_0_0_#7f1d1d,0_6px_16px_rgba(220,38,38,0.25),inset_0_1px_0_rgba(255,255,255,0.12)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 transform-gpu">
+            Delete
+          </button>
+        </div>
+      </div>
+    </>);
+
+}
+
+export default function CreateSplitModal({ isOpen, onClose, currentUser, openToActiveSplit = false }) {
+  const [step, setStep] = useState('pick');
+  const [previewSplit, setPreviewSplit] = useState(null);
+  const [splitName, setSplitName] = useState('');
+  const [selectedDays, setSelectedDays] = useState([]);
+  const [workouts, setWorkouts] = useState({});
+  const [previewWeights, setPreviewWeights] = useState({});
+  const [previewSets, setPreviewSets] = useState({});
+  const [previewReps, setPreviewReps] = useState({});
+  const [weightsDirty, setWeightsDirty] = useState(false);
+  const [dotsMenuOpen, setDotsMenuOpen] = useState(false);
+  const [confirmDeleteSplitId, setConfirmDeleteSplitId] = useState(null);
+  const [editingSplitId, setEditingSplitId] = useState(null);
+  const [savedSplits, setSavedSplits] = useState([]);
+  const [activeSplitId, setActiveSplitId] = useState('');
+  const [showSetActiveModal, setShowSetActiveModal] = useState(false);
+  const [showConfigureInfo, setShowConfigureInfo] = useState(false);
+  const [mirroredPairs, setMirroredPairs] = useState([]);
+  const [pendingMirrorPair, setPendingMirrorPair] = useState(null);
+  const [showMirrorConfirm, setShowMirrorConfirm] = useState(false);
+  const [deleteWorkoutDay, setDeleteWorkoutDay] = useState(null);
+  const [dayDotsMenuOpen, setDayDotsMenuOpen] = useState({});
+
+  const [isClosing, setIsClosing] = useState(false);
+
   const queryClient = useQueryClient();
 
-  const prefetchGymData = (gymId) => {
-    queryClient.prefetchQuery({
-      queryKey: ['gym', gymId],
-      queryFn: () => base44.entities.Gym.filter({ id: gymId }).then(r => r[0]),
-      staleTime: 5 * 60 * 1000,
-    });
-    queryClient.prefetchQuery({
-      queryKey: ['gymActivityFeed', gymId],
-      queryFn: () => base44.functions.invoke('getGymActivityFeed', { gymId }).then(r => r.data),
-      staleTime: 2 * 60 * 1000,
-    });
-    queryClient.prefetchQuery({
-      queryKey: ['leaderboards', gymId],
-      queryFn: () => base44.functions.invoke('getGymLeaderboards', { gymId }).then(r => r.data),
-      staleTime: 5 * 60 * 1000,
-    });
+  const handleAnimatedClose = () => {
+    setIsClosing(true);
+    setTimeout(() => {
+      setIsClosing(false);
+      onClose();
+    }, 320);
   };
 
-  usePrimaryGymDialogStyles();
+  const getMirrorDay = (day) => {
+    for (const [a, b] of mirroredPairs) {
+      if (a === day) return b;
+      if (b === day) return a;
+    }
+    return null;
+  };
 
-  // ── Overscroll background fix ──
+  const getMirrorablePartner = (day) => {
+    const nameA = (workouts[day]?.name || '').trim().toLowerCase();
+    if (!nameA) return null;
+    for (const other of selectedDays) {
+      if (other === day) continue;
+      const nameB = (workouts[other]?.name || '').trim().toLowerCase();
+      if (nameB !== nameA) continue;
+      const alreadyMirrored = mirroredPairs.some(
+        ([x, y]) => x === day && y === other || x === other && y === day
+      );
+      if (!alreadyMirrored) {
+        return day < other ? [day, other] : [other, day];
+      }
+    }
+    return null;
+  };
+
+  const handleConfirmMirror = () => {
+    if (!pendingMirrorPair) return;
+    const [a, b] = pendingMirrorPair;
+    setWorkouts((prev) => {
+      const exCountA = (prev[a]?.exercises || []).length;
+      const exCountB = (prev[b]?.exercises || []).length;
+      const [src, dst] = exCountA >= exCountB ? [a, b] : [b, a];
+      return {
+        ...prev,
+        [dst]: {
+          ...prev[dst],
+          exercises: JSON.parse(JSON.stringify(prev[src]?.exercises || [])),
+          cardio: JSON.parse(JSON.stringify(prev[src]?.cardio || []))
+        }
+      };
+    });
+    setMirroredPairs((prev) => [...prev, pendingMirrorPair]);
+    setPendingMirrorPair(null);
+    setShowMirrorConfirm(false);
+    toast.success('Workouts mirrored!');
+  };
+
   useEffect(() => {
-    document.body.style.backgroundColor = '#02040a';
-    document.documentElement.style.backgroundColor = '#02040a';
-    return () => {
-      document.body.style.backgroundColor = '';
-      document.documentElement.style.backgroundColor = '';
-    };
-  }, []);
+    if (!isOpen) return;
+    const saved = currentUser?.saved_splits || [];
+    setSavedSplits(saved);
+    const storedActiveId = currentUser?.active_split_id || '';
+    if (storedActiveId) {
+      setActiveSplitId(storedActiveId);
+    } else {
+      const activeName = currentUser?.custom_split_name || '';
+      const activeByName = saved.find((s) => s.name === activeName);
+      setActiveSplitId(activeByName?.id || currentUser?.workout_split || '');
+    }
+    setPreviewSplit(null);setPreviewWeights({});setWeightsDirty(false);
+    setDotsMenuOpen(false);setShowSetActiveModal(false);
+    setMirroredPairs([]);setPendingMirrorPair(null);setShowMirrorConfirm(false);
+    setDeleteWorkoutDay(null);setDayDotsMenuOpen({});
+    setShowConfigureInfo(false);
 
-  const { data: currentUser } = useQuery({
-    queryKey: ['currentUser'],
-    queryFn: () => base44.auth.me().catch(() => null),
-    staleTime: 5 * 60 * 1000,
-    gcTime: 10 * 60 * 1000
-  });
-  useEffect(() => {
-    if (currentUser && !currentUser.onboarding_completed) {
-      navigate(createPageUrl('Onboarding'));
-    }
-  }, [currentUser, navigate]);
-  React.useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const joinCode = urlParams.get('joinCode');
-    if (joinCode && currentUser) {
-      setShowJoinWithCode(true);
-    }
-  }, [currentUser]);
-  const { data: gymMemberships = [] } = useQuery({
-    queryKey: ['gymMemberships', currentUser?.id],
-    queryFn: () => base44.entities.GymMembership.filter({ user_id: currentUser?.id, status: 'active' }),
-    enabled: !!currentUser?.id,
-    staleTime: 5 * 60 * 1000,
-    gcTime: 15 * 60 * 1000,
-    placeholderData: (prev) => prev
-  });
-  const { data: gyms = [] } = useQuery({
-    queryKey: ['gyms'],
-    queryFn: () => base44.entities.Gym.filter({ status: 'approved' }, 'name', 100),
-    staleTime: 10 * 60 * 1000,
-    gcTime: 30 * 60 * 1000,
-    placeholderData: (prev) => prev
-  });
-  const recentlyViewedGymIds = React.useMemo(() => {
-    if (!currentUser?.id) return [];
-    try {
-      return JSON.parse(localStorage.getItem(`recentlyViewedGyms_${currentUser.id}`) || '[]').slice(0, 3);
-    }
-    catch { return []; }
-  }, [currentUser?.id]);
-  const memberGymIds = gymMemberships.map((m) => m.gym_id);
-  const { data: userGymsData = [] } = useQuery({
-    queryKey: ['memberGyms', currentUser?.id],
-    queryFn: () => {
-      if (memberGymIds.length === 0) return [];
-      return base44.entities.Gym.filter({ id: { $in: memberGymIds } });
-    },
-    enabled: !!currentUser && gymMemberships.length > 0,
-    staleTime: 10 * 60 * 1000,
-    gcTime: 30 * 60 * 1000,
-    placeholderData: (prev) => prev
-  });
-  const updateGymImageMutation = useMutation({
-    mutationFn: ({ gymId, image_url }) => base44.entities.Gym.update(gymId, { image_url }),
-    onMutate: async ({ gymId, image_url }) => {
-      await queryClient.cancelQueries({ queryKey: ['gyms'] });
-      const previous = queryClient.getQueryData(['gyms']);
-      queryClient.setQueryData(['gyms'], (old = []) =>
-        old.map((gym) => gym.id === gymId ? { ...gym, image_url } : gym)
-      );
-      return { previous };
-    },
-    onError: (err, variables, context) => {
-      if (context?.previous) {
-        queryClient.setQueryData(['gyms'], context.previous);
-      }
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['gyms'] });
-      queryClient.invalidateQueries({ queryKey: ['memberGyms'] });
-      setEditingGym(null);
-    }
-  });
-  const updatePrimaryGymMutation = useMutation({
-    mutationFn: (gymId) => base44.auth.updateMe({ primary_gym_id: gymId }),
-    onMutate: async (gymId) => {
-      const previous = queryClient.getQueryData(['currentUser']);
-      queryClient.setQueryData(['currentUser'], (old) => old ? { ...old, primary_gym_id: gymId } : old);
-      return { previous };
-    },
-    onError: (err, gymId, context) => {
-      queryClient.setQueryData(['currentUser'], context.previous);
-    },
-    onSuccess: () => {
-      setShowPrimaryGymModal(false);
-      setSelectedPrimaryGym(null);
-    }
-  });
-  const leaveGymMutation = useMutation({
-    mutationFn: async (gymId) => {
-      const memberships = await base44.entities.GymMembership.filter({ gym_id: gymId, user_id: currentUser?.id });
-      if (memberships.length > 0) {
-        await base44.entities.GymMembership.delete(memberships[0].id);
-      }
-    },
-    onMutate: async (gymId) => {
-      await queryClient.cancelQueries({ queryKey: ['gymMemberships', currentUser?.id] });
-      const previous = queryClient.getQueryData(['gymMemberships', currentUser?.id]);
-      queryClient.setQueryData(['gymMemberships', currentUser?.id], (old = []) =>
-        old.filter((m) => m.gym_id !== gymId)
-      );
-      return { previous };
-    },
-    onError: (err, gymId, context) => {
-      queryClient.setQueryData(['gymMemberships', currentUser?.id], context.previous);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['gymMemberships', currentUser?.id] });
-      queryClient.invalidateQueries({ queryKey: ['memberGyms', currentUser?.id] });
-      queryClient.invalidateQueries({ queryKey: ['currentUser'] });
-    }
-  });
-  const userGyms = [...userGymsData].sort((a, b) => {
-    if (a.id === currentUser?.primary_gym_id) return -1;
-    if (b.id === currentUser?.primary_gym_id) return 1;
-    return 0;
-  });
-  const recentlyViewedGyms = useMemo(() => {
-    return recentlyViewedGymIds.map(id => gyms.find(g => g.id === id)).filter(Boolean).slice(0, 3);
-  }, [recentlyViewedGymIds, gyms]);
-
-  const filteredGyms = gyms.filter((gym) => {
-    const matchesSearch = gym.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      gym.city?.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesType = selectedType === 'all' || gym.type === selectedType;
-    const matchesDistance = maxDistance === 'all' || gym.distance_km && gym.distance_km <= parseFloat(maxDistance);
-    const matchesEquipment = selectedEquipment === 'all' ||
-      gym.equipment && gym.equipment.includes(selectedEquipment);
-    const isGhostOrApproved = gym.status === 'approved' || !gym.admin_id && !gym.owner_email;
-    return matchesSearch && matchesType && matchesDistance && matchesEquipment && isGhostOrApproved;
-  });
-  const toggleSave = (gymId) => {
-    setSavedGyms((prev) =>
-      prev.includes(gymId) ? prev.filter((id) => id !== gymId) : [...prev, gymId]
-    );
-  };
-  const searchPlaces = async (query) => {
-    const safe = query.trim();
-    if (!safe || safe.length < 2) {
-      setPlacesResults([]);
-      return;
-    }
-    setSearchingPlaces(true);
-    try {
-      const response = await base44.functions.invoke('searchGymsPlaces', { input: safe });
-      const results = response.data.results || [];
-      const existingPlaceIds = gyms.map((g) => g.google_place_id).filter(Boolean);
-      const newPlaces = results.filter((place) => !existingPlaceIds.includes(place.place_id));
-      setPlacesResults(newPlaces);
-    } catch (error) {
-      console.error('Places search failed:', error);
-      setPlacesResults([]);
-    } finally {
-      setSearchingPlaces(false);
-    }
-  };
-  const handleSelectPlace = (place) => {
-    setSelectedPlaceGym(place);
-    setShowAddGymModal(true);
-  };
-  const [showConfirmJoin, setShowConfirmJoin] = useState(false);
-  const [pendingGymData, setPendingGymData] = useState(null);
-  const createGymMutation = useMutation({
-    mutationFn: async (gymData) => {
-      const existingGyms = await base44.entities.Gym.filter({ google_place_id: gymData.google_place_id });
-      if (existingGyms.length > 0) {
-        return { exists: true, gym: existingGyms[0] };
-      }
-      const newGym = await base44.entities.Gym.create(gymData);
-      return { exists: false, gym: newGym };
-    },
-    onSuccess: (result) => {
-      queryClient.invalidateQueries({ queryKey: ['gyms'] });
-      queryClient.invalidateQueries({ queryKey: ['gymMemberships'] });
-      setShowAddGymModal(false);
-      setShowConfirmJoin(false);
-      setSelectedPlaceGym(null);
-      setPendingGymData(null);
-      setPlacesResults([]);
-      setSearchQuery('');
-    }
-  });
-  const handleCreateGym = async () => {
-    if (!selectedPlaceGym) return;
-    if (gymMemberships.length >= 3 && !isOwner) {
-      alert('You can only be a member of up to 3 gyms. Please leave a gym before joining a new one.');
-      return;
-    }
-    if (!isOwner) {
-      const userCreatedGhostGyms = gyms.filter((g) =>
-        g.created_by === currentUser?.email && !g.admin_id && !g.owner_email
-      );
-      if (userCreatedGhostGyms.length >= 3) {
-        alert('You have reached the limit of 3 ghost gyms you can create. Please claim ownership if you manage this gym.');
+    if (openToActiveSplit) {
+      const activeId = currentUser?.active_split_id || '';
+      const customSplits = (currentUser?.saved_splits || []).filter((s) => !s.preset_id || s.preset_id === 'custom');
+      const activeSplit = customSplits.find((s) => s.id === activeId);
+      if (activeSplit) {
+        setSplitName(activeSplit.name || '');
+        setSelectedDays(activeSplit.training_days || []);
+        setWorkouts(activeSplit.workouts || {});
+        setEditingSplitId(activeSplit.id);
+        setMirroredPairs(activeSplit.mirrored_pairs || []);
+        setStep('configure');
         return;
       }
     }
-    const addressParts = selectedPlaceGym.address.split(',');
-    const city = addressParts.length >= 2 ? addressParts[addressParts.length - 2].trim() : selectedPlaceGym.address;
-    const gymData = {
-      name: selectedPlaceGym.name,
-      address: selectedPlaceGym.address,
-      city: city,
-      google_place_id: selectedPlaceGym.place_id,
-      latitude: selectedPlaceGym.latitude,
-      longitude: selectedPlaceGym.longitude,
-      type: gymType,
-      claim_status: isOwner ? 'claimed' : 'unclaimed',
-      admin_id: isOwner ? currentUser?.id : null,
-      owner_email: isOwner ? currentUser?.email : null,
-      verified: isOwner,
-      status: 'approved',
-      members_count: 0,
-      image_url: selectedPlaceGym.photo_url || null
+
+    setStep('pick');setSplitName('');setSelectedDays([]);setWorkouts({});setEditingSplitId(null);
+  }, [isOpen]);
+
+  const saveMutation = useMutation({
+    mutationFn: (data) => base44.auth.updateMe(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['currentUser'], refetchType: 'all' });
+      toast.success('Split saved!');
+      setSplitName('');setSelectedDays([]);setWorkouts({});setMirroredPairs([]);setStep('pick');
+    }
+  });
+
+  const setActiveMutation = useMutation({
+    mutationFn: (data) => base44.auth.updateMe(data),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['currentUser'], refetchType: 'all' }),
+    onError: () => toast.error('Failed to update — please try again')
+  });
+
+  const handleBack = () => {
+    if (step === 'preview') {setStep('pick');setPreviewSplit(null);} else
+    if (step === 'configure') {setDotsMenuOpen(false);setEditingSplitId(null);setMirroredPairs([]);setStep('pick');} else
+    {handleAnimatedClose();}
+  };
+
+  const allSplitsForModal = [
+  ...DEFAULT_SPLITS.map((def) => ({ id: def.id, name: def.name, description: def.description, preset_id: def.id, training_days: def.days, workouts: def.workouts })),
+  ...savedSplits.filter((s) => !s.preset_id || s.preset_id === 'custom').map((s) => ({ id: s.id, name: s.name, description: null, preset_id: 'custom', training_days: s.training_days, workouts: s.workouts }))];
+
+
+  const handleSetActiveFromModal = (splitId) => {
+    const entry = allSplitsForModal.find((s) => s.id === splitId);
+    if (!entry) return;
+    setActiveSplitId(entry.id);
+    toast.success(`"${entry.name}" set as active!`);
+    const updated = [...savedSplits.filter((s) => s.id !== entry.id), { ...entry, created_at: new Date().toISOString() }];
+    setSavedSplits(updated);
+    setActiveMutation.mutate({ active_split_id: entry.id, workout_split: entry.preset_id || 'custom', custom_split_name: entry.name, training_days: entry.training_days, custom_workout_types: entry.workouts, saved_splits: updated });
+    setShowSetActiveModal(false);
+  };
+
+  const customSavedSplits = savedSplits.filter((s) => !s.preset_id || s.preset_id === 'custom');
+
+  const openDefaultPreview = (def) => {
+    setPreviewSplit(def);
+    const savedVersion = savedSplits.find((s) => s.id === def.id);
+    if (savedVersion?.workouts) {
+      setPreviewWeights(Object.fromEntries(Object.entries(savedVersion.workouts).map(([day, wt]) => [day, Object.fromEntries((wt.exercises || []).map((ex, idx) => [idx, ex.weight || '']))])));
+      setPreviewSets(Object.fromEntries(Object.entries(savedVersion.workouts).map(([day, wt]) => [day, Object.fromEntries((wt.exercises || []).map((ex, idx) => [idx, ex.sets || '']))])));
+      setPreviewReps(Object.fromEntries(Object.entries(savedVersion.workouts).map(([day, wt]) => [day, Object.fromEntries((wt.exercises || []).map((ex, idx) => [idx, ex.reps || '']))])));
+    } else {setPreviewWeights({});setPreviewSets({});setPreviewReps({});}
+    setWeightsDirty(false);setStep('preview');
+  };
+
+  const openEditCustom = (split) => {
+    setSplitName(split.name || '');
+    setSelectedDays(split.training_days || []);
+    setWorkouts(split.workouts || {});
+    setEditingSplitId(split.id);
+    setDotsMenuOpen(false);
+    setMirroredPairs(split.mirrored_pairs || []);
+    setPendingMirrorPair(null);
+    setShowMirrorConfirm(false);
+    setDeleteWorkoutDay(null);
+    setDayDotsMenuOpen({});
+    setShowConfigureInfo(false);
+    setStep('configure');
+  };
+
+  const openCustomConfigure = () => {
+    setSplitName('');setSelectedDays([]);setWorkouts({});setEditingSplitId(null);
+    setDotsMenuOpen(false);setMirroredPairs([]);setPendingMirrorPair(null);setShowMirrorConfirm(false);
+    setDeleteWorkoutDay(null);setDayDotsMenuOpen({});
+    setShowConfigureInfo(false);
+    setStep('configure');
+  };
+
+  const handleSave = () => {
+    const safeName = splitName.trim() || 'My Split';
+    const newSplit = {
+      id: editingSplitId || Date.now().toString(),
+      preset_id: 'custom',
+      name: safeName,
+      training_days: selectedDays,
+      workouts,
+      mirrored_pairs: mirroredPairs,
+      created_at: new Date().toISOString()
     };
-    if (isOwner && gymMemberships.length > 0) {
-      setPendingGymData(gymData);
-      setShowConfirmJoin(true);
+    const updated = [...savedSplits.filter((s) => s.id !== newSplit.id), newSplit];
+    setSavedSplits(updated);
+    saveMutation.mutate({ workout_split: 'custom', custom_split_name: newSplit.name, training_days: selectedDays, custom_workout_types: workouts, saved_splits: updated });
+  };
+
+  const toggleDay = (dayNum) => {
+    if (selectedDays.includes(dayNum)) {
+      // Keep workout data in state so it's restored if the day is re-added
+      setSelectedDays((prev) => prev.filter((d) => d !== dayNum));
+      setMirroredPairs((prev) => prev.filter(([a, b]) => a !== dayNum && b !== dayNum));
     } else {
-      createGymMutation.mutate(gymData);
+      setSelectedDays((prev) => [...prev, dayNum].sort((a, b) => a - b));
+      // Only initialise a fresh workout if one doesn't already exist
+      setWorkouts((prev) => prev[dayNum] ? prev : { ...prev, [dayNum]: { name: '', color: 'blue', exercises: [] } });
     }
   };
-  const handleConfirmJoin = () => {
-    if (pendingGymData) {
-      createGymMutation.mutate(pendingGymData);
+
+  const handleWorkoutNameChange = (day, newName) => {
+    const sanitised = sanitiseDayName(newName);
+    const mirrorDay = getMirrorDay(day);
+    if (mirrorDay !== null) {
+      setMirroredPairs((prev) => prev.filter(([a, b]) => !(a === day && b === mirrorDay) && !(a === mirrorDay && b === day)));
+      toast('Mirror unlinked — names now differ', { icon: '🔓' });
     }
+    setWorkouts((prev) => ({ ...prev, [day]: { ...prev[day], name: sanitised } }));
   };
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      searchPlaces(searchQuery);
-    }, 500);
-    return () => clearTimeout(timer);
-  }, [searchQuery, gyms]);
-  const GymCard = ({ gym }) => {
-    const isOwner = currentUser && currentUser.email === gym.owner_email && currentUser.account_type === 'gym_owner';
-    return (
-      <div className="group cursor-pointer">
-        <div className="bg-slate-800/80 backdrop-blur-md border border-slate-700/50 rounded-2xl overflow-hidden hover:border-blue-500/50 transition-all duration-300 hover:shadow-xl">
-          <div className="relative w-full h-40 bg-gradient-to-br from-slate-700 to-slate-800 overflow-hidden">
-            {gym.image_url ?
-              <img src={gym.image_url} alt={gym.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" loading="lazy" /> :
-              <div className="w-full h-full bg-gradient-to-br from-blue-900/60 via-slate-800 to-slate-900 flex items-center justify-center"><Dumbbell className="w-10 h-10 text-slate-600" /></div>
-            }
-            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center gap-3">
-              <Link to={createPageUrl('GymCommunity') + '?id=' + gym.id} className="w-full px-4">
-                <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white">View Community</Button>
-              </Link>
-            </div>
-            <div className="absolute top-3 left-3 flex gap-2">
-              {gym.verified && <Badge className="bg-green-500/90 text-white text-xs"><BadgeCheck className="w-3 h-3 mr-1" />Verified</Badge>}
-            </div>
-            <div className="absolute top-3 right-3 flex gap-2">
-              <button onClick={() => setEquipmentGym(gym)} className="w-8 h-8 rounded-full bg-slate-900/80 backdrop-blur flex items-center justify-center hover:bg-slate-800 transition-colors">
-                <Dumbbell className="w-4 h-4 text-slate-300" />
-              </button>
-              <button onClick={() => toggleSave(gym.id)} className="w-8 h-8 rounded-full bg-slate-900/80 backdrop-blur flex items-center justify-center hover:bg-slate-800 transition-colors">
-                <Heart className={`w-4 h-4 ${savedGyms.includes(gym.id) ? 'fill-red-500 text-red-500' : 'text-slate-300'}`} />
-              </button>
-              {isOwner && <button onClick={() => setEditingGym(gym)} className="w-8 h-8 rounded-full bg-slate-900/80 backdrop-blur flex items-center justify-center hover:bg-slate-800 transition-colors"><Edit className="w-4 h-4 text-slate-300" /></button>}
-            </div>
-          </div>
-          <div className="p-4 space-y-3">
-            <div>
-              <h3 className="text-lg font-bold text-slate-100 line-clamp-2">{gym.name}</h3>
-              <div className="flex items-center gap-2 mt-1 text-sm text-slate-400">
-                <MapPin className="w-4 h-4 flex-shrink-0" />
-                <span className="line-clamp-1">{gym.address || gym.city}</span>
-              </div>
-            </div>
-            <div className="flex items-center gap-2 flex-wrap">
-              {gym.type && <Badge className="bg-blue-600/30 text-blue-200 border border-blue-500/30 text-xs capitalize">{gym.type}</Badge>}
-              {gym.distance_km && <Badge className="bg-slate-700/50 text-slate-300 border border-slate-600/50 text-xs">{gym.distance_km} km</Badge>}
-            </div>
-            <div className="flex items-center gap-4 pt-2 border-t border-slate-700/50">
-              {gym.rating > 0 && <div className="flex items-center gap-1.5"><Star className="w-4 h-4 fill-yellow-400 text-yellow-400" /><span className="font-semibold text-slate-100 text-sm">{gym.rating}/5</span></div>}
-              {gym.members_count > 0 && <div className="flex items-center gap-1.5 text-sm text-slate-400"><Users className="w-4 h-4" /><span>{gym.members_count}</span></div>}
-            </div>
-            {gym.reward_offer && <div className="bg-orange-600/20 border border-orange-500/30 rounded-lg p-2.5 flex items-center gap-2"><Gift className="w-4 h-4 text-orange-400 flex-shrink-0" /><span className="text-sm font-medium text-orange-200 line-clamp-1">{gym.reward_offer}</span></div>}
-          </div>
-        </div>
-      </div>);
+
+  const updateWorkout = (day, field, value) => setWorkouts((prev) => {
+    const mirror = getMirrorDay(day);
+    if (mirror !== null) return { ...prev, [day]: { ...prev[day], [field]: value }, [mirror]: { ...prev[mirror], [field]: value } };
+    return { ...prev, [day]: { ...prev[day], [field]: value } };
+  });
+
+  const addExercise = (day) => {
+    const newEx = { exercise: '', sets: '3', reps: '10', weight: '' };
+    setWorkouts((prev) => {
+      const mirror = getMirrorDay(day);
+      const updated = { ...prev, [day]: { ...prev[day], exercises: [...(prev[day]?.exercises || []), newEx] } };
+      if (mirror !== null) updated[mirror] = { ...prev[mirror], exercises: [...(prev[mirror]?.exercises || []), { ...newEx }] };
+      return updated;
+    });
   };
+
+  const updateExercise = (day, idx, field, value) => setWorkouts((prev) => {
+    const exs = [...(prev[day]?.exercises || [])];
+    exs[idx] = { ...exs[idx], [field]: value };
+    const reordered = field === 'exercise' ? reorderExercisesAdjacent(exs) : exs;
+    const mirror = getMirrorDay(day);
+    if (mirror !== null) {
+      const mExs = [...(prev[mirror]?.exercises || [])];
+      if (mExs[idx] !== undefined) mExs[idx] = { ...mExs[idx], [field]: value };
+      const mReordered = field === 'exercise' ? reorderExercisesAdjacent(mExs) : mExs;
+      return { ...prev, [day]: { ...prev[day], exercises: reordered }, [mirror]: { ...prev[mirror], exercises: mReordered } };
+    }
+    return { ...prev, [day]: { ...prev[day], exercises: reordered } };
+  });
+
+  const removeExercise = (day, idx) => setWorkouts((prev) => {
+    const exs = [...(prev[day]?.exercises || [])];exs.splice(idx, 1);
+    const mirror = getMirrorDay(day);
+    if (mirror !== null) {
+      const mExs = [...(prev[mirror]?.exercises || [])];mExs.splice(idx, 1);
+      return { ...prev, [day]: { ...prev[day], exercises: exs }, [mirror]: { ...prev[mirror], exercises: mExs } };
+    }
+    return { ...prev, [day]: { ...prev[day], exercises: exs } };
+  });
+
+  const addCardio = (day) => {
+    const newCardio = { exercise: '', rounds: '1', time: '', rest: '' };
+    setWorkouts((prev) => {
+      const mirror = getMirrorDay(day);
+      const updated = { ...prev, [day]: { ...prev[day], cardio: [...(prev[day]?.cardio || []), newCardio] } };
+      if (mirror !== null) updated[mirror] = { ...prev[mirror], cardio: [...(prev[mirror]?.cardio || []), { ...newCardio }] };
+      return updated;
+    });
+  };
+
+  const updateCardio = (day, idx, field, value) => setWorkouts((prev) => {
+    const arr = [...(prev[day]?.cardio || [])];arr[idx] = { ...arr[idx], [field]: value };
+    const mirror = getMirrorDay(day);
+    if (mirror !== null) {
+      const mArr = [...(prev[mirror]?.cardio || [])];
+      if (mArr[idx] !== undefined) mArr[idx] = { ...mArr[idx], [field]: value };
+      return { ...prev, [day]: { ...prev[day], cardio: arr }, [mirror]: { ...prev[mirror], cardio: mArr } };
+    }
+    return { ...prev, [day]: { ...prev[day], cardio: arr } };
+  });
+
+  const removeCardio = (day, idx) => setWorkouts((prev) => {
+    const arr = [...(prev[day]?.cardio || [])];arr.splice(idx, 1);
+    const mirror = getMirrorDay(day);
+    if (mirror !== null) {
+      const mArr = [...(prev[mirror]?.cardio || [])];mArr.splice(idx, 1);
+      return { ...prev, [day]: { ...prev[day], cardio: arr }, [mirror]: { ...prev[mirror], cardio: mArr } };
+    }
+    return { ...prev, [day]: { ...prev[day], cardio: arr } };
+  });
+
+  const handleDeleteWorkout = (day) => {
+    setWorkouts((prev) => ({
+      ...prev,
+      [day]: { ...prev[day], name: prev[day]?.name || '', color: prev[day]?.color || 'blue', exercises: [], cardio: [] }
+    }));
+    setMirroredPairs((prev) => prev.filter(([a, b]) => a !== day && b !== day));
+    setDeleteWorkoutDay(null);
+    toast.success('Workout cleared');
+  };
+
+  const formatTime = (raw) => {
+    const digits = (raw || '').replace(/\D/g, '').slice(0, 4);
+    if (!digits) return '';
+    const padded = digits.padStart(3, '0');
+    const mins = parseInt(padded.slice(0, padded.length - 2), 10);
+    const secs = padded.slice(-2);
+    return `${parseInt(mins, 10)}:${secs}`;
+  };
+  const handleTimeChange = (day, idx, field, raw) => updateCardio(day, idx, field, sanitiseTimeDigits(raw));
+
+  const buildDayExerciseRows = (exercises) => {
+    const nameCounts = {};
+    exercises.forEach((ex) => {
+      const key = (ex.exercise || '').trim().toLowerCase();
+      if (key) nameCounts[key] = (nameCounts[key] || 0) + 1;
+    });
+    const nameSetCounter = {};
+    return exercises.map((ex, idx) => {
+      const key = (ex.exercise || '').trim().toLowerCase();
+      const isDupe = key && nameCounts[key] > 1;
+      let setLabel = null;
+      if (isDupe) {
+        nameSetCounter[key] = (nameSetCounter[key] || 0) + 1;
+        setLabel = `Set ${nameSetCounter[key]}`;
+      }
+      return { ex, idx, isDupe, setLabel };
+    });
+  };
+
+  const btnPrimary = "bg-gradient-to-b from-blue-500 via-blue-600 to-blue-700 text-white font-black rounded-full px-6 py-2.5 shadow-[0_3px_0_0_#1a3fa8,0_6px_20px_rgba(59,130,246,0.35)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 text-sm transform-gpu";
+  const btnSecondary = "bg-slate-800/70 border border-slate-600/50 text-slate-300 font-bold rounded-full px-5 py-2.5 shadow-[0_3px_0_0_#0f172a] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 text-sm transform-gpu";
+  const headerTitle = step === 'preview' ? previewSplit?.name : step === 'configure' ? 'Custom Split' : 'My Splits';
+
+  const configureInfoBullets = [
+  { label: 'Set Active', text: 'To make this routine appear daily on your Today\'s Workout card, tap the Set Active button in the top right of this page and select this routine.' },
+  { label: 'Delete Split', text: 'To delete this routine, press the three dots (⋮) on the right side of the screen and select "Delete Split".' },
+  { label: 'Mirror Workouts', text: 'If two or more of your workouts in a week repeat the same session, give them the same name and a Mirror button will appear. Press it to sync exercises across both days — edit one and it updates the other automatically.' },
+  { label: 'Different Weights Per Set', text: 'To use different weights or reps for individual sets of the same exercise, add the same exercise multiple times with the exact same name. They will automatically be grouped as Set 1, Set 2, etc. and will display that way on your Today\'s Workout card too.' }];
+
 
   return (
-    <div className="min-h-screen" style={{ background: 'linear-gradient(to bottom right, #02040a, #0d2360, #02040a)' }}>
-      {/* Fixed background — covers rubber-band overscroll area on iOS/Android */}
-      <div style={{ position: 'fixed', inset: 0, zIndex: -1, background: 'linear-gradient(to bottom right, #02040a, #0d2360, #02040a)' }} />
-
-      <Tabs defaultValue="my-gyms" className="w-full">
-        {/* ── Fixed header — ~15% taller: h-[2.6rem], pb-2.5 ── */}
-        <div className="fixed top-0 left-0 right-0 z-20 bg-slate-900/95 backdrop-blur-xl border-b-2 border-blue-700/40 px-3 md:px-4 pb-2.5" style={{ paddingTop: 'calc(0.4rem + env(safe-area-inset-top))' }}>
-          <div className="max-w-6xl mx-auto">
-            <div className="relative flex items-center justify-center h-[2.6rem]">
-              <TabsList className="flex bg-transparent p-0 h-[2.6rem] gap-6 border-0">
-                <TabsTrigger value="my-gyms" className="data-[state=active]:text-blue-400 data-[state=active]:border-b-2 data-[state=active]:border-blue-400 data-[state=active]:bg-transparent text-slate-400 hover:text-slate-300 border-b-2 border-transparent rounded-none px-0 py-2 transition-colors bg-transparent text-sm justify-center">
-                  <Users className="w-4 h-4 mr-1.5" />My Gyms
-                </TabsTrigger>
-                <TabsTrigger value="explore" className="data-[state=active]:text-blue-400 data-[state=active]:border-b-2 data-[state=active]:border-blue-400 data-[state=active]:bg-transparent text-slate-400 hover:text-slate-300 border-b-2 border-transparent rounded-none px-0 py-2 transition-colors bg-transparent text-sm justify-center">
-                  <MapPin className="w-4 h-4 mr-1.5" />Explore
-                </TabsTrigger>
-              </TabsList>
-              <div className="absolute right-0 flex items-center">
-                <TabsContent value="my-gyms" className="mt-0 p-0 m-0">
-                  {userGyms.length > 0 &&
-                    <Button onClick={() => setShowPrimaryGymModal(true)} className="ease-in-out hover:bg-primary/90 inline-flex items-center justify-center whitespace-nowrap font-bold transition-all duration-100 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 bg-gradient-to-b from-purple-400 via-purple-500 to-purple-600 backdrop-blur-md text-white border border-transparent rounded-md text-[10px] h-6 px-1.5 shadow-[0_2px_0_0_#5b21b6,inset_0_1px_0_rgba(255,255,255,0.2),inset_0_0_20px_rgba(255,255,255,0.05)] active:shadow-none active:translate-y-[2px] active:scale-95 transform-gpu">
-                      Set Home
-                    </Button>
-                  }
-                </TabsContent>
-                <TabsContent value="explore" className="mt-0 p-0 m-0">
-                  <Button onClick={() => setShowJoinWithCode(true)} className="inline-flex items-center justify-center whitespace-nowrap font-bold transition-all duration-100 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 bg-gradient-to-b from-blue-500 via-blue-600 to-blue-700 backdrop-blur-md text-white border border-transparent rounded-md text-[10px] h-6 px-1.5 shadow-[0_2px_0_0_#1a3fa8,0_8px_20px_rgba(0,0,100,0.5),inset_0_1px_0_rgba(255,255,255,0.15),inset_0_0_20px_rgba(255,255,255,0.03)] active:shadow-none active:translate-y-[2px] active:scale-95 transform-gpu">
-                    Gym Key
-                  </Button>
-                </TabsContent>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* ── Spacer matching the taller fixed header ── */}
-        <div style={{ height: 'calc(3.1rem + env(safe-area-inset-top))' }} />
-
-        <TabsContent value="my-gyms" className="mt-0 px-3 md:px-4 py-2">
-          <div className="max-w-6xl mx-auto">
-            {userGyms.length === 0 ?
-              <div className="text-center py-12"><p className="text-slate-400">No gym memberships yet</p></div> :
-              <div className="grid md:grid-cols-2 gap-4">
-                {userGyms.map((gym) =>
-                  <div key={gym.id} className="group relative">
-                    <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-purple-500/20 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-all duration-500" />
-                    <div
-                      className="relative rounded-2xl overflow-hidden transition-all duration-300"
-                      style={{
-                        background: 'linear-gradient(135deg, rgba(30,35,60,0.72) 0%, rgba(8,10,20,0.88) 100%)',
-                        border: '1px solid rgba(255,255,255,0.07)',
-                        backdropFilter: 'blur(16px)',
-                        WebkitBackdropFilter: 'blur(16px)',
-                        boxShadow: '0 4px 24px rgba(0,0,0,0.4)'
-                      }}>
-                      <div
-                        className="absolute inset-x-0 top-0 h-px pointer-events-none z-10"
-                        style={{
-                          background: 'linear-gradient(90deg, transparent 10%, rgba(255,255,255,0.1) 50%, transparent 90%)'
-                        }} />
-                      <div className="relative w-full h-48 bg-gradient-to-br from-slate-700 to-slate-800 overflow-hidden">
-                        {gym.image_url ?
-                          <img src={gym.image_url} alt={gym.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" loading="lazy" /> :
-                          <div className="w-full h-full bg-gradient-to-br from-blue-900/60 via-slate-800 to-slate-900 flex items-center justify-center"><Dumbbell className="w-12 h-12 text-slate-600" /></div>
-                        }
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-                        <Link to={createPageUrl('GymCommunity') + '?id=' + gym.id} onMouseEnter={() => prefetchGymData(gym.id)} onMouseDown={() => prefetchGymData(gym.id)} className="absolute inset-0 flex items-center justify-center transition-opacity duration-300">
-                          <Button className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md font-bold focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 py-2 bg-gradient-to-b from-blue-500 via-blue-600 to-blue-700 backdrop-blur-md text-white border border-transparent text-xs h-8 px-3 shadow-[0_3px_0_0_#1a3fa8,0_8px_20px_rgba(0,0,100,0.5),inset_0_1px_0_rgba(255,255,255,0.15),inset_0_0_20px_rgba(255,255,255,0.03)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 transform-gpu">
-                            <Dumbbell className="w-3 h-3 mr-1.5" />Enter Gym
-                          </Button>
-                        </Link>
-                        <div className="absolute top-3 left-3 flex gap-2 flex-wrap">
-                          {gym.claim_status === 'claimed' || gym.admin_id || gym.owner_email ?
-                            <Badge className="bg-green-500 text-white text-xs shadow-lg font-semibold"><BadgeCheck className="w-3 h-3 mr-1" />Official</Badge> :
-                            <Badge className="inline-flex items-center rounded-md border px-2.5 py-0.5 transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 border-transparent hover:bg-slate-600 bg-slate-700/95 text-slate-200 text-xs shadow-lg font-semibold">Unofficial</Badge>
-                          }
-                          {currentUser && currentUser.email === gym.owner_email &&
-                            <Badge className="bg-gradient-to-r from-purple-600 to-pink-600 text-white text-xs shadow-lg font-bold">Owner</Badge>
-                          }
-                        </div>
-                        {currentUser?.primary_gym_id === gym.id &&
-                          <div className="absolute bottom-3 left-3">
-                            <div className="w-9 h-9 rounded-xl bg-purple-600/90 backdrop-blur-md flex items-center justify-center shadow-lg border border-purple-500/50">
-                              <Star className="w-5 h-5 text-white" />
-                            </div>
-                          </div>
-                        }
-                        <div className="absolute top-3 right-3 flex gap-3">
-                          <button onClick={(e) => { e.preventDefault(); setGalleryGym(gym); }} className="flex items-center justify-center hover:scale-110 transition-all">
-                            <Images className="w-5 h-5 text-slate-400 drop-shadow-lg" />
-                          </button>
-                          <button onClick={(e) => { e.preventDefault(); setEquipmentGym(gym); }} className="flex items-center justify-center hover:scale-110 transition-all">
-                            <Dumbbell className="w-5 h-5 text-slate-400 drop-shadow-lg" />
-                          </button>
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <button onClick={(e) => e.preventDefault()} className="flex items-center justify-center hover:scale-110 transition-all">
-                                <MoreVertical className="w-5 h-5 text-slate-400 drop-shadow-lg" />
-                              </button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" className="z-50 min-w-[8rem] overflow-hidden p-1 text-popover-foreground data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 bg-slate-800 border border-slate-700/50 rounded-lg transition-all duration-100 shadow-[0_3px_0_0_#1e293b,0_8px_20px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.1),inset_0_0_20px_rgba(255,255,255,0.02)] active:shadow-none active:translate-y-[2px] active:scale-95 transform-gpu">
-                              {currentUser && currentUser.email === gym.owner_email &&
-                                <DropdownMenuItem onClick={(e) => { e.preventDefault(); setEditingGym(gym); }} className="text-slate-300 hover:text-white hover:bg-slate-700 cursor-pointer">
-                                  <Edit className="w-4 h-4 mr-2" />Edit Gym
-                                </DropdownMenuItem>
-                              }
-                              <DropdownMenuItem onClick={(e) => { e.preventDefault(); e.stopPropagation(); setConfirmLeaveGym(gym); }} disabled={leaveGymMutation.isPending} className="text-red-400 hover:text-red-300 hover:bg-slate-700 cursor-pointer">
-                                <LogOut className="w-4 h-4 mr-2" />Leave Gym
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </div>
-                      </div>
-                      <div className="p-4 space-y-2">
-                        <div>
-                          <h3 className="text-xl font-black text-white mb-1 line-clamp-1">{gym.name}</h3>
-                          <div className="flex items-center gap-2 text-sm text-slate-400">
-                            <MapPin className="w-4 h-4 flex-shrink-0" />
-                            <span className="line-clamp-1">{gym.address || gym.city}</span>
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-4 pt-2 border-t border-slate-700/50">
-                          {gym.rating > 0 && <div className="flex items-center gap-1.5"><Star className="w-4 h-4 fill-yellow-400 text-yellow-400" /><span className="font-bold text-white text-sm">{gym.rating}/5</span></div>}
-                          {gym.members_count > 0 && <div className="flex items-center gap-1.5 text-sm text-slate-400"><Users className="w-4 h-4" /><span className="font-semibold">{gym.members_count}</span></div>}
-                        </div>
-                        {gym.type && <div className="flex justify-center pt-1"><Badge className="bg-gradient-to-r from-blue-600/30 to-purple-600/30 text-blue-200 border border-blue-500/30 text-xs capitalize">{gym.type}</Badge></div>}
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
-            }
-          </div>
-        </TabsContent>
-        <TabsContent value="explore" className="mt-0 px-3 md:px-4 py-2">
-          <div className="max-w-6xl mx-auto">
-            <div className="space-y-2 mb-4">
-              <div className="flex items-center gap-2">
-                <div className="relative flex-1">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
-                  <Input
-                    placeholder="Search gyms or add new..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(sanitiseGymSearch(e.target.value))}
-                    maxLength={60}
-                    autoComplete="off"
-                    autoCorrect="off"
-                    spellCheck="false"
-                    style={{ fontSize: '16px' }}
-                    className="flex w-full px-3 py-1 text-base shadow-sm file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm h-9 pl-10 pr-10 bg-white/10 border border-white/20 hover:border-white/40 focus-visible:outline-none focus-visible:border-blue-400 focus-visible:bg-white/15 text-white placeholder:text-slate-300 rounded-xl transition-all duration-200" />
-                  {searchingPlaces && <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-blue-400 animate-spin" />}
-                </div>
-                <button onClick={() => setShowFilterModal(true)} className="relative flex-shrink-0 w-11 h-9 rounded-xl flex items-center justify-center border transition-all bg-white/10 border-white/20 hover:border-white/40 text-slate-400">
-                  <Filter className="w-5 h-5" />
-                  {(selectedType !== 'all' || maxDistance !== 'all' || selectedEquipment !== 'all') && <span className="absolute -top-1 -right-1 w-3 h-3 bg-blue-500 rounded-full" />}
-                </button>
-              </div>
-              {searchingPlaces && searchQuery.length >= 2 &&
-                <div className="rounded-xl p-3 space-y-2 bg-slate-800/90 border border-slate-700/50 animate-pulse">
-                  <div className="h-4 w-40 bg-slate-700/60 rounded-lg" />
-                  <div className="space-y-2">
-                    {[...Array(3)].map((_, i) =>
-                      <div key={i} className="rounded-xl bg-slate-700/50 border border-slate-600/40 overflow-hidden flex items-stretch gap-0">
-                        <div className="w-20 h-20 flex-shrink-0 bg-slate-600/60" />
-                        <div className="flex-1 p-3 flex flex-col justify-center gap-2">
-                          <div className="h-4 bg-slate-600/60 rounded w-3/4" />
-                          <div className="h-3 bg-slate-600/40 rounded w-1/2" />
-                          <div className="h-3 bg-slate-600/30 rounded w-16" />
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              }
-              {!searchingPlaces && searchQuery.length >= 2 && placesResults.length > 0 &&
-                <div className="rounded-xl p-3 space-y-2 bg-slate-900/95 border border-slate-800/60 shadow-xl">
-                  <p className="text-xs font-semibold flex items-center gap-2">
-                    <Plus className="w-3 h-3 text-green-400" />
-                    <span className="text-green-400">Found {placesResults.length} gyms on Google Places</span>
-                  </p>
-                  <div className="space-y-2">
-                    {placesResults.slice(0, 5).map((place) =>
-                      <button key={place.place_id} onClick={() => handleSelectPlace(place)} className="w-full text-left rounded-xl bg-slate-700/50 border border-slate-600/40 hover:border-green-500/50 hover:bg-slate-700/80 transition-all overflow-hidden">
-                        <div className="flex items-stretch gap-0">
-                          <div className="w-20 h-20 flex-shrink-0 bg-gradient-to-br from-slate-600 to-slate-700 overflow-hidden">
-                            {place.photo_url ? <img src={place.photo_url} alt={place.name} className="w-full h-full object-cover" loading="lazy" /> : <div className="w-full h-full flex items-center justify-center"><Dumbbell className="w-6 h-6 text-slate-500" /></div>}
-                          </div>
-                          <div className="flex-1 min-w-0 p-3 flex flex-col justify-center">
-                            <h4 className="font-semibold text-white text-sm mb-0.5 truncate">{place.name}</h4>
-                            <div className="flex items-center gap-1 text-slate-400 text-xs"><MapPin className="w-3 h-3 flex-shrink-0" /><span className="truncate">{place.address}</span></div>
-                            {place.rating && <div className="flex items-center gap-1 mt-1"><Star className="w-3 h-3 fill-yellow-400 text-yellow-400" /><span className="text-slate-300 text-xs">{place.rating}</span></div>}
-                          </div>
-                          <div className="flex items-center pr-3">
-                            <Badge className="inline-flex items-center justify-center rounded-lg px-2.5 py-0.5 text-xs font-bold transition-all duration-100 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring gap-2 bg-gradient-to-b from-green-400 via-green-500 to-green-600 backdrop-blur-md text-white border border-transparent shadow-[0_3px_0_0_#065f46,0_2px_5px_rgba(16,185,129,0.3),inset_0_1px_0_rgba(255,255,255,0.2),inset_0_0_20px_rgba(255,255,255,0.05)] active:shadow-none active:translate-y-[2px] active:scale-95 transform-gpu">Add</Badge>
-                          </div>
-                        </div>
-                      </button>
-                    )}
-                  </div>
-                </div>
-              }
-            </div>
-            {!searchQuery && recentlyViewedGyms.length > 0 &&
-              <div className="mb-4">
-                <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">Recently Viewed</p>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  {recentlyViewedGyms.slice(0, 3).map((gym) =>
-                    <div key={gym.id} className="group relative">
-                      <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-purple-500/20 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-all duration-500" />
-                      <div
-                        className="relative rounded-2xl overflow-hidden transition-all duration-300"
-                        style={{
-                          background: 'linear-gradient(135deg, rgba(30,35,60,0.72) 0%, rgba(8,10,20,0.88) 100%)',
-                          border: '1px solid rgba(255,255,255,0.07)',
-                          backdropFilter: 'blur(16px)',
-                          WebkitBackdropFilter: 'blur(16px)',
-                          boxShadow: '0 4px 24px rgba(0,0,0,0.4)'
-                        }}>
-                        <div className="absolute inset-x-0 top-0 h-px pointer-events-none z-10"
-                          style={{ background: 'linear-gradient(90deg, transparent 10%, rgba(255,255,255,0.1) 50%, transparent 90%)' }} />
-                        <div className="relative w-full h-48 bg-gradient-to-br from-slate-700 to-slate-800 overflow-hidden">
-                          {gym.image_url ? (
-                            <img src={gym.image_url} alt={gym.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" loading="lazy" />
-                          ) : (
-                            <div className="w-full h-full bg-gradient-to-br from-slate-600 to-slate-700 flex items-center justify-center">
-                              <div className="text-slate-500 text-center">
-                                <Dumbbell className="w-8 h-8 mx-auto mb-2 opacity-60" />
-                                <p className="text-xs font-medium opacity-60">No photo</p>
-                              </div>
-                            </div>
-                          )}
-                          {(gym.claim_status === 'claimed' || gym.admin_id || gym.owner_email) &&
-                            <div className="absolute top-3 left-3"><Badge className="bg-green-500 text-white text-xs shadow-lg font-semibold"><BadgeCheck className="w-3 h-3 mr-1" />Official</Badge></div>
-                          }
-                        </div>
-                        <div className="p-4 space-y-2">
-                          <div>
-                            <h3 className="text-xl font-black text-white mb-1 line-clamp-1">{gym.name}</h3>
-                            <div className="flex items-center gap-2 text-sm text-slate-400"><MapPin className="w-4 h-4 flex-shrink-0" /><span className="line-clamp-1">{gym.address || gym.city}</span></div>
-                          </div>
-                          <div className="flex items-center gap-4 pt-2 border-t border-slate-700/50">
-                            {gym.rating > 0 && <div className="flex items-center gap-1.5"><Star className="w-4 h-4 fill-yellow-400 text-yellow-400" /><span className="font-bold text-white text-sm">{gym.rating}/5</span></div>}
-                            {gym.members_count > 0 && <div className="flex items-center gap-1.5 text-sm text-slate-400"><Users className="w-4 h-4" /><span className="font-semibold">{gym.members_count}</span></div>}
-                          </div>
-                          {gym.type && <div className="flex justify-center pt-1"><Badge className="bg-gradient-to-r from-blue-600/30 to-purple-600/30 text-blue-200 border border-blue-500/30 text-xs capitalize">{gym.type}</Badge></div>}
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-            }
-            {filteredGyms.length === 0 &&
-              <div className="text-center py-12">
-                <Dumbbell className="w-12 h-12 mx-auto mb-3 text-slate-600" />
-                <p className="text-slate-400">No gyms found</p>
-                <p className="text-sm text-slate-500 mt-1">Try adjusting your filters</p>
-              </div>
-            }
-            {filteredGyms.length > 0 &&
-              <div className="grid md:grid-cols-2 gap-4">
-                {filteredGyms.map((gym) =>
-                  <div key={gym.id} className="group relative">
-                    <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-purple-500/20 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-all duration-500" />
-                    <div
-                      className="relative rounded-2xl overflow-hidden transition-all duration-300"
-                      style={{
-                        background: 'linear-gradient(135deg, rgba(30,35,60,0.72) 0%, rgba(8,10,20,0.88) 100%)',
-                        border: '1px solid rgba(255,255,255,0.07)',
-                        backdropFilter: 'blur(16px)',
-                        WebkitBackdropFilter: 'blur(16px)',
-                        boxShadow: '0 4px 24px rgba(0,0,0,0.4)'
-                      }}>
-                      <div
-                        className="absolute inset-x-0 top-0 h-px pointer-events-none z-10"
-                        style={{
-                          background: 'linear-gradient(90deg, transparent 10%, rgba(255,255,255,0.1) 50%, transparent 90%)'
-                        }} />
-                      <div className="relative w-full h-48 bg-gradient-to-br from-slate-700 to-slate-800 overflow-hidden">
-                        {gym.image_url ? (
-                          <img src={gym.image_url} alt={gym.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" loading="eager" fetchpriority="high" />
-                        ) : (
-                          <div className="w-full h-full bg-gradient-to-br from-slate-600 to-slate-700 flex items-center justify-center">
-                            <div className="text-slate-500 text-center">
-                              <Dumbbell className="w-8 h-8 mx-auto mb-2 opacity-60" />
-                              <p className="text-xs font-medium opacity-60">No photo</p>
-                            </div>
-                          </div>
-                        )}
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-                        <Link to={createPageUrl('GymCommunity') + '?id=' + gym.id} onMouseEnter={() => prefetchGymData(gym.id)} onMouseDown={() => prefetchGymData(gym.id)} className="absolute inset-0 flex items-center justify-center transition-opacity duration-300">
-                          <Button className="hover:bg-primary/90 inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md font-bold focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 py-2 bg-gradient-to-b from-blue-500 via-blue-600 to-blue-700 backdrop-blur-md text-white border border-transparent text-xs h-8 px-3 shadow-[0_3px_0_0_#1a3fa8,0_8px_20px_rgba(0,0,100,0.5),inset_0_1px_0_rgba(255,255,255,0.15),inset_0_0_20px_rgba(255,255,255,0.03)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 transform-gpu">
-                            <Dumbbell className="w-3 h-3 mr-1.5" />Enter Gym
-                          </Button>
-                        </Link>
-                        <div className="absolute top-3 left-3 flex gap-2 flex-wrap">
-                          {(gym.claim_status === 'claimed' || gym.admin_id || gym.owner_email) && <Badge className="bg-green-500 text-white text-xs shadow-lg font-semibold"><BadgeCheck className="w-3 h-3 mr-1" />Official</Badge>}
-                        </div>
-                        <div className="absolute top-3 right-3 flex gap-3">
-                          <button onClick={(e) => { e.preventDefault(); setGalleryGym(gym); }} className="flex items-center justify-center hover:scale-110 transition-all"><Images className="w-5 h-5 text-slate-400 drop-shadow-lg" /></button>
-                          <button onClick={(e) => { e.preventDefault(); setEquipmentGym(gym); }} className="flex items-center justify-center hover:scale-110 transition-all"><Dumbbell className="w-5 h-5 text-slate-400 drop-shadow-lg" /></button>
-                          {currentUser && currentUser.email === gym.owner_email && <button onClick={() => setEditingGym(gym)} className="flex items-center justify-center hover:scale-110 transition-all"><Edit className="w-5 h-5 text-slate-400 drop-shadow-lg" /></button>}
-                        </div>
-                      </div>
-                      <div className="p-4 space-y-2">
-                        <div>
-                          <h3 className="text-xl font-black text-white mb-1 line-clamp-1">{gym.name}</h3>
-                          <div className="flex items-center gap-2 text-sm text-slate-400"><MapPin className="w-4 h-4 flex-shrink-0" /><span className="line-clamp-1">{gym.address || gym.city}</span></div>
-                        </div>
-                        <div className="flex items-center gap-4 pt-2 border-t border-slate-700/50">
-                          {gym.rating > 0 && <div className="flex items-center gap-1.5"><Star className="w-4 h-4 fill-yellow-400 text-yellow-400" /><span className="font-bold text-white text-sm">{gym.rating}/5</span></div>}
-                          {gym.members_count > 0 && <div className="flex items-center gap-1.5 text-sm text-slate-400"><Users className="w-4 h-4" /><span className="font-semibold">{gym.members_count}</span></div>}
-                        </div>
-                        {gym.type && <div className="flex justify-center pt-1"><Badge className="bg-gradient-to-r from-blue-600/30 to-purple-600/30 text-blue-200 border border-blue-500/30 text-xs capitalize">{gym.type}</Badge></div>}
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
-            }
-          </div>
-        </TabsContent>
-      </Tabs>
-
-      <EditHeroImageModal open={!!editingGym} onClose={() => setEditingGym(null)} currentImageUrl={editingGym?.image_url} onSave={(image_url) => updateGymImageMutation.mutate({ gymId: editingGym.id, image_url })} isLoading={updateGymImageMutation.isPending} />
-      <JoinWithCodeModal open={showJoinWithCode} onClose={() => setShowJoinWithCode(false)} currentUser={currentUser} gymCount={userGyms.length} />
-
-      <Dialog open={!!equipmentGym} onOpenChange={() => setEquipmentGym(null)}>
-        <DialogContent className="fixed left-[50%] top-[50%] z-50 grid w-full translate-x-[-50%] translate-y-[-50%] gap-4 p-6 duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%] max-w-lg max-h-[80vh] overflow-y-auto [&>button]:hidden bg-slate-800/30 backdrop-blur-md border border-slate-700/20 rounded-3xl shadow-2xl shadow-black/20 text-white">
-          <DialogHeader>
-            <DialogTitle className="text-lg font-bold text-center">Equipment</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-3">
-            {equipmentGym?.equipment && equipmentGym.equipment.length > 0 ?
-              <div className="grid grid-cols-2 gap-2">
-                {equipmentGym.equipment.map((item, idx) =>
-                  <div key={idx} className="flex items-center gap-2 p-2 bg-slate-800/60 rounded-lg border border-slate-700/50">
-                    <div className="w-1.5 h-1.5 rounded-full bg-blue-400 flex-shrink-0" />
-                    <span className="text-slate-200 text-sm">{item}</span>
-                  </div>
-                )}
-              </div> :
-              <div className="text-center py-8 text-slate-400"><Dumbbell className="w-12 h-12 mx-auto mb-2 opacity-50" /><p>No equipment information available</p></div>
-            }
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      <Dialog open={!!galleryGym} onOpenChange={() => setGalleryGym(null)}>
-        <DialogContent className="fixed left-[50%] top-[50%] z-50 grid w-full translate-x-[-50%] translate-y-[-50%] gap-4 p-6 duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%] max-w-4xl max-h-[110vh] overflow-y-auto [&>button]:hidden bg-slate-800/30 backdrop-blur-md border border-slate-700/20 rounded-3xl shadow-2xl shadow-black/20 text-white">
-          <div>
-            {galleryGym?.gallery && galleryGym.gallery.length > 0 ?
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                {galleryGym.gallery.map((imageUrl, idx) =>
-                  <div key={idx} className="aspect-square rounded-lg overflow-hidden bg-slate-700/50 border border-slate-600/50">
-                    <img src={imageUrl} alt={`${galleryGym.name} photo ${idx + 1}`} className="w-full h-full object-cover hover:scale-110 transition-transform duration-300" loading="lazy" />
-                  </div>
-                )}
-              </div> :
-              <div className="text-center py-12 text-slate-400"><Images className="w-16 h-16 mx-auto mb-3 opacity-50" /><p>No photos available</p></div>
-            }
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      {/* ── Set Primary Gym modal ── */}
-      <Dialog open={showPrimaryGymModal} onOpenChange={setShowPrimaryGymModal}>
-        <DialogContent
-          data-primary-gym-dialog
-          className="fixed left-[50%] top-[50%] z-50 grid w-full translate-x-[-50%] translate-y-[-50%] gap-4 p-6 duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%] max-w-lg max-h-[80vh] overflow-y-auto [&>button]:hidden bg-slate-800/30 backdrop-blur-md border border-slate-700/20 rounded-3xl shadow-2xl shadow-black/20 text-white">
-          <DialogHeader>
-            <DialogTitle className="text-xl font-bold flex items-center gap-2 pg-item-in" style={{ animationDelay: '60ms' }}>
-              <Star className="w-5 h-5 text-purple-400" />Set Primary Gym
-            </DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div className="bg-purple-500/10 border border-purple-400/30 rounded-xl p-3 pg-item-in" style={{ animationDelay: '100ms' }}>
-              <p className="text-purple-200 text-sm">Your primary gym is the default community shown on the Home page and accessed via the Community navigation button.</p>
-            </div>
-            <div className="space-y-2">
-              {userGyms.map((gym, i) => {
-                const isPrimary = selectedPrimaryGym === gym.id || !selectedPrimaryGym && currentUser?.primary_gym_id === gym.id;
-                return (
-                  <button
-                    key={gym.id}
-                    onClick={() => setSelectedPrimaryGym(gym.id)}
-                    className={`pg-item-in w-full text-left p-4 rounded-xl border-2 transition-all ${isPrimary ? 'bg-purple-500/20 border-purple-400/50' : 'bg-slate-800/50 border-slate-700/50 hover:border-purple-400/30'}`}
-                    style={{ animationDelay: `${140 + i * 55}ms` }}>
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <div>
-                          <h4 className="font-bold text-white">{gym.name}</h4>
-                          <p className="text-xs text-slate-400">{gym.city}</p>
-                        </div>
-                      </div>
-                      {isPrimary && <Badge className="bg-purple-500 text-white"><Star className="w-3 h-3 mr-1" />Primary</Badge>}
-                    </div>
-                  </button>);
-              })}
-            </div>
-            <div
-              className="flex gap-3 pg-item-in"
-              style={{ animationDelay: `${140 + userGyms.length * 55}ms` }}>
-              <Button onClick={() => { setShowPrimaryGymModal(false); setSelectedPrimaryGym(null); }} className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg text-sm font-bold transition-all duration-100 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 py-2 bg-gradient-to-b from-slate-600 via-slate-700 to-slate-800 backdrop-blur-md text-white border border-slate-500/40 h-9 px-4 flex-1 shadow-[0_3px_0_0_#1e293b,0_8px_20px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.12),inset_0_0_20px_rgba(255,255,255,0.03)] active:shadow-none active:translate-y-[3px] active:scale-95 transform-gpu hover:from-slate-500 hover:via-slate-600 hover:to-slate-700">Cancel</Button>
-              <Button onClick={() => { if (selectedPrimaryGym) { updatePrimaryGymMutation.mutate(selectedPrimaryGym); } else { setShowPrimaryGymModal(false); setSelectedPrimaryGym(null); } }} disabled={updatePrimaryGymMutation.isPending} className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg text-sm font-bold transition-all duration-100 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 py-2 bg-gradient-to-b from-purple-400 via-purple-500 to-purple-600 backdrop-blur-md text-white border border-transparent h-9 px-4 flex-1 shadow-[0_3px_0_0_#5b21b6,0_8px_20px_rgba(120,40,220,0.4),inset_0_1px_0_rgba(255,255,255,0.2),inset_0_0_20px_rgba(255,255,255,0.05)] active:shadow-none active:translate-y-[3px] active:scale-95 transform-gpu">
-                {updatePrimaryGymMutation.isPending ? <><Loader2 className="w-4 h-4 animate-spin mr-2" />Saving...</> : 'Save'}
-              </Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      <Dialog open={showConfirmJoin} onOpenChange={() => { setShowConfirmJoin(false); setPendingGymData(null); }}>
-        <DialogContent className="bg-slate-900 border-slate-700 text-white max-w-md [&>button]:hidden">
-          <DialogHeader>
-            <DialogTitle className="text-xl font-bold">{gymMemberships.length > 0 ? 'Replace Primary Gym?' : 'Join This Community?'}</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
-            {gymMemberships.length > 0 ?
-              <p className="text-slate-300 text-sm">You're currently a member of <span className="font-semibold text-white">{gymMemberships[0]?.gym_name}</span>. Joining <span className="font-semibold text-white">{selectedPlaceGym?.name}</span> will replace your primary gym.</p> :
-              <p className="text-slate-300 text-sm">Are you sure you want to join <span className="font-semibold text-white">{selectedPlaceGym?.name}</span>? This is an unclaimed community gym.</p>
-            }
-            <div className="flex gap-3 pt-2">
-              <Button onClick={() => { setShowConfirmJoin(false); setPendingGymData(null); }} variant="outline" className="flex-1 border-slate-600 text-slate-300 hover:bg-slate-800">Cancel</Button>
-              <Button onClick={handleConfirmJoin} disabled={createGymMutation.isPending} className="flex-1 bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600">
-                {createGymMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Confirm'}
-              </Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      <Dialog open={!!confirmLeaveGym} onOpenChange={() => setConfirmLeaveGym(null)}>
-        <DialogContent className="bg-slate-900 border-slate-700 text-white max-w-md [&>button]:hidden">
-          <DialogHeader>
-            <DialogTitle className="text-xl font-bold">Leave {confirmLeaveGym?.name}?</DialogTitle>
-          </DialogHeader>
-          <p className="text-slate-300 text-sm">Are you sure you want to leave this gym? You'll lose access to its community.</p>
-          <div className="flex gap-3 pt-2">
-            <Button onClick={() => setConfirmLeaveGym(null)} className="flex-1 bg-gradient-to-b from-slate-700 via-slate-800 to-slate-900 text-slate-200 border border-slate-600/50 font-bold rounded-lg shadow-[0_3px_0_0_rgba(0,0,0,0.5),0_6px_16px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.08)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 transform-gpu hover:from-slate-600 hover:via-slate-700 hover:to-slate-800">Cancel</Button>
-            <Button onClick={() => { leaveGymMutation.mutate(confirmLeaveGym.id); setConfirmLeaveGym(null); }} disabled={leaveGymMutation.isPending} className="flex-1 bg-red-600 hover:bg-red-700 text-white">
-              {leaveGymMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Leave Gym'}
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      {showFilterModal &&
+    <>
+      <AnimatePresence>
+        {isOpen && !isClosing &&
         <>
-          <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm" onClick={() => setShowFilterModal(false)} />
-          <div className="fixed bottom-24 left-0 right-0 z-50 bg-slate-800/30 backdrop-blur-md border-t border-slate-700/20 rounded-3xl p-5 space-y-2 shadow-2xl shadow-black/20" style={{ paddingBottom: 'calc(1.5rem + env(safe-area-inset-bottom))' }}>
-            <div className="flex items-center justify-between">
-              <h3 className="text-lg font-bold text-white text-center absolute left-1/2 -translate-x-1/2">Filters</h3>
-              <div className="flex items-center gap-3">
-                {(selectedType !== 'all' || maxDistance !== 'all' || selectedEquipment !== 'all') &&
-                  <button onClick={() => { setSelectedType('all'); setMaxDistance('all'); setSelectedEquipment('all'); }} className="text-xs text-blue-400 font-semibold">Clear all</button>
-                }
-              </div>
-            </div>
-            <div className="space-y-4">
-              <div>
-                <label className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2 block">Gym Type</label>
-                <div className="flex flex-wrap gap-2">
-                  {[['all', 'All Types'], ['powerlifting', 'Powerlifting'], ['bodybuilding', 'Bodybuilding'], ['crossfit', 'CrossFit'], ['boxing', 'Boxing'], ['mma', 'MMA'], ['general', 'General']].map(([val, label]) =>
-                    <button key={val} onClick={() => setSelectedType(val)} className={`px-3 py-1.5 rounded-xl text-sm font-semibold transition-all ${selectedType === val ? 'bg-blue-600 text-white' : 'bg-slate-700/60 text-slate-300 hover:bg-slate-700'}`}>{label}</button>
-                  )}
-                </div>
-              </div>
-              <div>
-                <label className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2 block">Distance</label>
-                <div className="flex flex-wrap gap-2">
-                  {[['all', 'Any Distance'], ['5', 'Within 5 km'], ['10', 'Within 10 km'], ['20', 'Within 20 km'], ['50', 'Within 50 km']].map(([val, label]) =>
-                    <button key={val} onClick={() => setMaxDistance(val)} className={`px-3 py-1.5 rounded-xl text-sm font-semibold transition-all ${maxDistance === val ? 'bg-blue-600 text-white' : 'bg-slate-700/60 text-slate-300 hover:bg-slate-700'}`}>{label}</button>
-                  )}
-                </div>
-              </div>
-              <div>
-                <label className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2 block">Equipment</label>
-                <div className="flex flex-wrap gap-2">
-                  {[['all', 'All Equipment'], ['Power Racks', 'Power Racks'], ['Barbells', 'Barbells'], ['Dumbbells', 'Dumbbells'], ['Cable Machines', 'Cable Machines'], ['Cardio Equipment', 'Cardio'], ['Olympic Platforms', 'Olympic Platforms']].map(([val, label]) =>
-                    <button key={val} onClick={() => setSelectedEquipment(val)} className={`px-3 py-1.5 rounded-xl text-sm font-semibold transition-all ${selectedEquipment === val ? 'bg-blue-600 text-white' : 'bg-slate-700/60 text-slate-300 hover:bg-slate-700'}`}>{label}</button>
-                  )}
-                </div>
-              </div>
-            </div>
-          </div>
-        </>
-      }
+            <motion.div
+            key="split-overlay"
+            className="fixed inset-0 z-40"
+            style={{ background: 'rgba(0,0,0,0.45)' }}
+            variants={overlayVariants}
+            initial="hidden"
+            animate="visible"
+            exit="exit"
+            onClick={handleAnimatedClose} />
+          
 
-      <Dialog open={showAddGymModal} onOpenChange={() => { setShowAddGymModal(false); setSelectedPlaceGym(null); setIsOwner(false); setGymType('general'); }}>
-        <DialogContent className="fixed left-[50%] top-[50%] z-50 grid w-full translate-x-[-50%] translate-y-[-50%] gap-4 p-6 duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%] max-w-lg max-h-[80vh] overflow-y-auto [&>button]:hidden bg-slate-800/30 backdrop-blur-md border border-slate-700/20 rounded-3xl shadow-2xl shadow-black/20 text-white">
-          <DialogHeader>
-            <DialogTitle className="text-xl font-bold">Add Gym to CoStride</DialogTitle>
-          </DialogHeader>
-          {selectedPlaceGym &&
-            <div className="space-y-4">
-              <div className="bg-slate-800/60 border border-slate-700/40 rounded-xl p-4">
-                <div className="flex items-start gap-3">
-                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center flex-shrink-0">
-                    <Building2 className="w-6 h-6 text-white" />
+            <motion.div
+            key="split-panel"
+            className="fixed inset-0 z-50"
+            style={{
+              minHeight: '100dvh',
+              background: 'linear-gradient(to bottom right, #02040a, #0d2360, #02040a)',
+              WebkitAppearance: 'none',
+              paddingTop: 'env(safe-area-inset-top)'
+            }}
+            variants={pageSlideVariants}
+            initial="hidden"
+            animate="visible"
+            exit="exit">
+            
+              <div className="flex flex-col h-full w-full max-w-2xl mx-auto">
+
+                {/* ── HEADER ── */}
+                <div className="relative flex items-center px-4 py-[14.7px] border-b border-slate-700/40 flex-shrink-0">
+                  <div className="flex-shrink-0">
+                    <button onClick={handleBack} className="flex items-center justify-center active:scale-90 transition-transform">
+                      <ChevronLeft className="w-6 h-6 text-slate-300" />
+                    </button>
                   </div>
-                  <div className="flex-1">
-                    <h3 className="font-bold text-white text-lg mb-1">{selectedPlaceGym.name}</h3>
-                    <div className="flex items-start gap-2 text-slate-300 text-sm mb-2"><MapPin className="w-4 h-4 flex-shrink-0 mt-0.5" /><span>{selectedPlaceGym.address}</span></div>
-                    {selectedPlaceGym.rating && <div className="flex items-center gap-1"><Star className="w-4 h-4 fill-yellow-400 text-yellow-400" /><span className="text-slate-300 text-sm">{selectedPlaceGym.rating} rating</span></div>}
+                  <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                    <h2 className="text-[22px] font-black text-white leading-tight tracking-tight">{headerTitle}</h2>
+                  </div>
+                  <div className="flex-shrink-0 flex items-center justify-end gap-1.5 ml-auto">
+                    {step === 'pick' &&
+                  <>
+                        <button onClick={() => setShowSetActiveModal(true)} className="w-8 h-8 flex items-center justify-center rounded-lg transition-all duration-150 transform-gpu bg-gradient-to-b from-purple-400 via-purple-500 to-purple-600 shadow-[0_2px_0_0_#5b21b6,0_4px_8px_rgba(120,40,220,0.2),inset_0_1px_0_rgba(255,255,255,0.15)] active:shadow-none active:translate-y-[3px] active:scale-90">
+                          <Star className="w-4 h-4 text-white" />
+                        </button>
+                        <button onClick={openCustomConfigure} className="w-8 h-8 flex items-center justify-center rounded-lg transition-all duration-150 transform-gpu bg-gradient-to-b from-blue-400 to-blue-600 shadow-[0_2px_0_0_#1a3fa8,0_4px_8px_rgba(59,130,246,0.2),inset_0_1px_0_rgba(255,255,255,0.15)] active:shadow-none active:translate-y-[3px] active:scale-90">
+                          <Plus className="w-4 h-4 text-white" strokeWidth={2.5} />
+                        </button>
+                      </>
+                  }
+                    {step === 'preview' && (
+                  activeSplitId === previewSplit?.id ?
+                  <div className="inline-flex items-center justify-center whitespace-nowrap font-bold h-7 rounded-lg uppercase" style={{ background: 'rgba(109,40,217,0.28)', border: '1px solid rgba(139,92,246,0.45)', color: 'rgba(196,156,248,0.9)', boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.07), 0 1px 3px rgba(0,0,0,0.35)', fontSize: '9px', letterSpacing: '0.07em', padding: '0 3px' }}>Active Workout</div> :
+                  <SetActiveButton onClick={() => setShowSetActiveModal(true)} />)
+                  }
+                    {step === 'configure' && editingSplitId && (
+                  activeSplitId === editingSplitId ?
+                  <div className="inline-flex items-center justify-center whitespace-nowrap font-bold h-7 rounded-lg uppercase" style={{ background: 'rgba(109,40,217,0.28)', border: '1px solid rgba(139,92,246,0.45)', color: 'rgba(196,156,248,0.9)', boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.07), 0 1px 3px rgba(0,0,0,0.35)', fontSize: '9px', letterSpacing: '0.07em', padding: '0 3px' }}>Active Workout</div> :
+                  <SetActiveButton onClick={() => setShowSetActiveModal(true)} />)
+                  }
                   </div>
                 </div>
-              </div>
-              <div>
-                <label className="text-slate-300 text-sm font-semibold mb-2 block">Gym Type</label>
-                <Select value={gymType} onValueChange={setGymType}>
-                  <SelectTrigger className="bg-slate-800/60 border-slate-600/40 text-white"><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="general">General Fitness</SelectItem>
-                    <SelectItem value="powerlifting">Powerlifting</SelectItem>
-                    <SelectItem value="bodybuilding">Bodybuilding</SelectItem>
-                    <SelectItem value="crossfit">CrossFit</SelectItem>
-                    <SelectItem value="boxing">Boxing</SelectItem>
-                    <SelectItem value="mma">MMA</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              {currentUser?.account_type === 'gym_owner' &&
-                <div className="bg-gradient-to-r from-purple-500/20 to-pink-500/20 border-2 border-purple-400/40 rounded-xl p-3">
-                  <label className="flex items-start gap-3 cursor-pointer">
-                    <input type="checkbox" checked={isOwner} onChange={(e) => setIsOwner(e.target.checked)} className="mt-1 w-5 h-5 rounded border-purple-400 text-purple-600 focus:ring-purple-500" />
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-1"><span className="text-white font-semibold text-sm">I am the owner/manager of this gym</span><Crown className="w-4 h-4 text-purple-400" /></div>
-                      <p className="text-slate-300 text-xs">Check this if you own or manage this gym. You'll have full control over the gym's profile.</p>
+
+                {/* ── SCROLLABLE BODY ── */}
+                <div className="overflow-y-auto flex-1 pb-4">
+
+                  {/* PICK */}
+                  {step === 'pick' &&
+                <div className="p-4 space-y-2">
+                      {(() => {
+                    const allSplits = [...DEFAULT_SPLITS.map((def) => ({ type: 'default', id: def.id, def })), ...customSavedSplits.map((split) => ({ type: 'custom', id: split.id, split }))];
+                    allSplits.sort((a, b) => {if (a.id === activeSplitId) return -1;if (b.id === activeSplitId) return 1;return 0;});
+                    return allSplits.map((item) => {
+                      const isActive = activeSplitId === item.id;
+                      if (item.type === 'default') {
+                        const def = item.def;
+                        return (
+                          <SplitCard key={def.id} onClick={() => openDefaultPreview(def)} isActive={isActive} glowColor={def.glowColor}>
+                                <div className="flex items-center gap-4 p-4">
+                                  <div className="flex-1 min-w-0">
+                                    <p className="text-[18.2px] font-black text-white">{def.name}</p>
+                                    <p className="text-[11.55px] text-slate-400 mt-0.5"><span className="text-slate-500">Default - </span>{def.description}</p>
+                                    <div className="flex gap-1 mt-1.5 flex-wrap">{def.days.map((d) => <span key={d} className={`text-[10.35px] font-bold w-[30px] py-0.5 rounded-md bg-gradient-to-r ${def.color} text-white opacity-80 text-center inline-block`}>{DAY_NAMES[d - 1]}</span>)}</div>
+                                  </div>
+                                  {isActive && <div className="w-[34px] h-[34px] rounded-xl bg-purple-600/90 backdrop-blur-md flex items-center justify-center shadow-lg border border-purple-500/50 flex-shrink-0 -mr-1"><Star className="w-[19px] h-[19px] text-white" /></div>}
+                                  <ChevronRight className="w-5 h-5 text-slate-500 flex-shrink-0" />
+                                </div>
+                              </SplitCard>);
+
+                      } else {
+                        const split = item.split;
+                        return (
+                          <SplitCard key={split.id} onClick={() => openEditCustom(split)} isActive={isActive} glowColor="rgba(99,102,241,0.35)">
+                                <div className="flex items-center gap-4 p-4">
+                                  <div className="flex-1 min-w-0">
+                                    <p className="text-[18.2px] font-black text-white truncate">{split.name}</p>
+                                    <p className="text-[11.55px] text-slate-400 mt-0.5">{(split.training_days || []).length} days · custom</p>
+                                    <div className="flex gap-1 mt-1.5 flex-wrap">{(split.training_days || []).map((d) => {
+                                    const dayColor = split.workouts?.[d]?.color;
+                                    const grad = dayColor ? colorGradient(dayColor) : 'from-slate-600 to-slate-700';
+                                    return <span key={d} className={`text-[10.35px] font-bold w-[30px] py-0.5 rounded-md bg-gradient-to-r ${grad} text-white opacity-80 text-center inline-block`}>{DAY_NAMES[d - 1]}</span>;
+                                  })}</div>
+                                  </div>
+                                  {isActive && <div className="w-[34px] h-[34px] rounded-xl bg-purple-600/90 backdrop-blur-md flex items-center justify-center shadow-lg border border-purple-500/50 flex-shrink-0 -mr-1"><Star className="w-[19px] h-[19px] text-white" /></div>}
+                                  <ChevronRight className="w-5 h-5 text-slate-500 flex-shrink-0" />
+                                </div>
+                              </SplitCard>);
+
+                      }
+                    });
+                  })()}
                     </div>
-                  </label>
+                }
+
+                  {/* PREVIEW */}
+                  {step === 'preview' && previewSplit &&
+                <div className="p-4 space-y-3">
+                      <div className="p-4 rounded-2xl" style={{ background: 'rgba(15,20,40,0.7)', border: '1px solid rgba(255,255,255,0.06)' }}>
+                        <p className="text-[13px] font-black text-white">{previewSplit.description}</p>
+                        <div className="flex gap-1.5 mt-1.5 flex-wrap">{previewSplit.days.map((d) => <span key={d} className={`text-[10.35px] font-bold w-[30px] py-0.5 rounded-md bg-gradient-to-r ${previewSplit.color} text-white opacity-80 text-center inline-block`}>{DAY_NAMES[d - 1]}</span>)}</div>
+                        {previewSplit.blurb && <p className="text-[11px] text-slate-400 leading-relaxed mt-3">{previewSplit.blurb}</p>}
+                      </div>
+                      {previewSplit.days.map((day) => {
+                    const wt = previewSplit.workouts[day];
+                    if (!wt) return null;
+                    return (
+                      <ReadOnlyDayCard key={day} day={day} workout={wt} weights={previewWeights[day] || {}} onWeightChange={(idx, val) => {setPreviewWeights((prev) => ({ ...prev, [day]: { ...(prev[day] || {}), [idx]: val } }));setWeightsDirty(true);}} sets={previewSets[day] || {}} onSetsChange={(idx, val) => {setPreviewSets((prev) => ({ ...prev, [day]: { ...(prev[day] || {}), [idx]: val } }));setWeightsDirty(true);}} reps={previewReps[day] || {}} onRepsChange={(idx, val) => {setPreviewReps((prev) => ({ ...prev, [day]: { ...(prev[day] || {}), [idx]: val } }));setWeightsDirty(true);}} />);
+
+                  })}
+                    </div>
+                }
+
+                  {/* CONFIGURE */}
+                  {step === 'configure' &&
+                <div className="p-4 space-y-4">
+
+                      {/* ── Split Name ── */}
+                      <div className="space-y-1.5">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-1.5">
+                            <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Split Name</label>
+                            <motion.button
+                          onClick={() => setShowConfigureInfo((v) => !v)}
+                          whileTap={{ scale: 0.78, y: 1 }}
+                          transition={{ type: 'spring', stiffness: 500, damping: 22 }}
+                          style={{
+                            background: 'none', border: 'none', padding: 0,
+                            cursor: 'pointer',
+                            color: showConfigureInfo ? '#818cf8' : '#475569',
+                            display: 'flex', alignItems: 'center',
+                            transition: 'color 0.15s'
+                          }}>
+                              <Info size={16} />
+                            </motion.button>
+                          </div>
+
+                          {editingSplitId &&
+                      <div className="relative">
+                              <button onClick={() => setDotsMenuOpen((prev) => !prev)} className="w-8 h-8 flex items-center justify-center active:scale-90 transition-transform">
+                                <MoreVertical className="w-[18px] h-[18px] text-slate-400" />
+                              </button>
+                              {dotsMenuOpen &&
+                        <div className="absolute right-0 top-9 z-20 rounded-xl overflow-hidden shadow-xl" style={{ background: 'rgba(30,35,55,0.98)', border: '1px solid rgba(255,255,255,0.08)' }}>
+                                  <button onClick={() => {setDotsMenuOpen(false);setConfirmDeleteSplitId(editingSplitId);}} className="flex items-center gap-2 px-4 py-2.5 text-[13px] font-bold text-slate-300 hover:bg-slate-700/60 transition-colors w-full whitespace-nowrap">
+                                    Delete Split
+                                  </button>
+                                </div>
+                        }
+                            </div>
+                      }
+                        </div>
+
+                        {/* ── Info Box ── */}
+                        <AnimatePresence>
+                          {showConfigureInfo &&
+                      <motion.div
+                        initial={{ opacity: 0, height: 0, marginBottom: 0 }}
+                        animate={{ opacity: 1, height: 'auto', marginBottom: 8 }}
+                        exit={{ opacity: 0, height: 0, marginBottom: 0 }}
+                        transition={{ duration: 0.22, ease: [0.25, 0.46, 0.45, 0.94] }}
+                        style={{ overflow: 'hidden' }}>
+                        
+                              <div style={{
+                          position: 'relative',
+                          background: 'linear-gradient(135deg, rgba(129,140,248,0.07) 0%, rgba(99,102,241,0.04) 100%)',
+                          border: '1px solid rgba(129,140,248,0.16)',
+                          borderRadius: 10,
+                          padding: '10px 13px',
+                          overflow: 'hidden'
+                        }}>
+                                <div style={{
+                            position: 'absolute', top: 0, left: '15%', right: '15%', height: '1px',
+                            background: 'linear-gradient(90deg, transparent, rgba(129,140,248,0.35), transparent)'
+                          }} />
+                                <p style={{ fontSize: 11, fontWeight: 700, color: '#a5b4fc', margin: '0 0 7px', letterSpacing: '0.02em' }}>
+                                  How to use
+                                </p>
+                                <ul style={{ margin: 0, padding: 0, listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 5 }}>
+                                  {configureInfoBullets.map(({ label, text }) =>
+                            <li key={label} style={{ display: 'flex', gap: 5, alignItems: 'flex-start' }}>
+                                      <span style={{ color: '#475569', fontSize: 11, lineHeight: 1.55, flexShrink: 0 }}>•</span>
+                                      <span style={{ fontSize: 11, color: '#94a3b8', lineHeight: 1.55, fontWeight: 500 }}>
+                                        <span style={{ color: '#a5b4fc', fontWeight: 700 }}>{label}:</span>{' '}{text}
+                                      </span>
+                                    </li>
+                            )}
+                                </ul>
+                              </div>
+                            </motion.div>
+                      }
+                        </AnimatePresence>
+
+                        <input type="text" value={splitName} onChange={(e) => setSplitName(sanitiseSplitName(e.target.value))} placeholder="My Training Split" maxLength={40} autoComplete="off" autoCorrect="off" spellCheck="false" style={{ fontSize: '16px' }} className="w-full px-4 py-3 bg-slate-900/60 border border-slate-700/50 rounded-xl text-[14px] text-white placeholder-slate-600 focus:outline-none focus:border-blue-500/60 transition-colors" />
+                      </div>
+
+                      {/* ── Training Days ── */}
+                      <div className="space-y-2">
+                        <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Training Days</label>
+                        <div className="grid grid-cols-7 gap-1.5">
+                          {DAY_NAMES.map((name, i) => {
+                        const d = i + 1;const on = selectedDays.includes(d);
+                        return (
+                          <button key={d} onClick={() => toggleDay(d)} className={`flex flex-col items-center gap-0.5 py-2.5 rounded-xl border-2 font-bold text-[10px] transition-all active:scale-90 ${on ? 'bg-gradient-to-b from-blue-500 to-blue-700 border-blue-400/50 text-white shadow-[0_2px_0_0_#1a3fa8]' : 'bg-slate-900/60 border-slate-700/40 text-slate-600'}`}>
+                                {name}{on && <div className="w-1 h-1 rounded-full bg-blue-200 opacity-70" />}
+                              </button>);
+
+                      })}
+                        </div>
+                        <p className="text-[10px] text-slate-600 font-medium">{selectedDays.length} training · {7 - selectedDays.length} rest</p>
+                      </div>
+
+                      {/* ── Day Details ── */}
+                      {selectedDays.length > 0 &&
+                  <div className="space-y-3">
+                          {selectedDays.map((day) => {
+                      const wt = workouts[day] || { name: '', color: 'blue', exercises: [] };
+                      const exs = wt.exercises || [];
+                      const mirrorDay = getMirrorDay(day);
+                      const isMirrored = mirrorDay !== null;
+                      const mirrorPair = !isMirrored ? getMirrorablePartner(day) : null;
+                      const showMirrorBtn = mirrorPair !== null;
+                      const isDayDotsOpen = !!dayDotsMenuOpen[day];
+
+                      const exerciseRows = buildDayExerciseRows(exs);
+
+                      return (
+                        <div key={day} className="rounded-2xl overflow-hidden" style={{
+                          background: 'rgba(12,16,32,0.8)',
+                          border: '1px solid rgba(255,255,255,0.06)'
+                        }}>
+                                <div className="flex items-center gap-3 px-4 pt-3.5 pb-2.5">
+                                  <div className={`w-8 h-8 rounded-xl bg-gradient-to-br ${colorGradient(wt.color)} flex items-center justify-center flex-shrink-0 shadow`}>
+                                    <span className="text-[11px] font-black text-white">{DAY_NAMES[day - 1]}</span>
+                                  </div>
+                                  <input
+                              type="text"
+                              value={wt.name || ''}
+                              onChange={(e) => handleWorkoutNameChange(day, e.target.value)}
+                              placeholder={`Day ${day} workout…`}
+                              maxLength={25}
+                              autoComplete="off"
+                              autoCorrect="off"
+                              spellCheck="false"
+                              style={{ fontSize: '16px' }}
+                              className="flex-1 bg-transparent border-none text-white text-[14px] font-bold placeholder-slate-600 focus:outline-none min-w-0" />
+                            
+                                  {showMirrorBtn &&
+                            <button
+                              onClick={() => {setPendingMirrorPair(mirrorPair);setShowMirrorConfirm(true);}}
+                              className="inline-flex items-center justify-center whitespace-nowrap font-bold transition-all duration-100 focus-visible:outline-none text-xs h-8 px-2.5 rounded-lg flex-shrink-0 transform-gpu active:translate-y-[3px] active:scale-95 active:shadow-none"
+                              style={{
+                                background: 'linear-gradient(to bottom, #4b5563, #374151, #1f2937)',
+                                color: 'rgba(226,232,240,0.9)',
+                                border: '1px solid rgba(255,255,255,0.10)',
+                                boxShadow: '0 3px 0 0 #111827, inset 0 1px 0 rgba(255,255,255,0.12), 0 1px 3px rgba(0,0,0,0.4)'
+                              }}>
+                                      Mirror Workout
+                                    </button>
+                            }
+                                  <div className="flex items-center gap-1 flex-shrink-0">
+                                    {isMirrored &&
+                              <div
+                                className="inline-flex items-center justify-center whitespace-nowrap font-bold h-7 rounded-lg uppercase"
+                                style={{
+                                  background: 'rgba(255,255,255,0.04)',
+                                  border: '1px solid rgba(255,255,255,0.10)',
+                                  color: 'rgba(148,163,184,0.65)',
+                                  boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.07), 0 1px 3px rgba(0,0,0,0.35)',
+                                  fontSize: '9px',
+                                  letterSpacing: '0.07em',
+                                  padding: '0 6px'
+                                }}>
+                                        Mirrored
+                                      </div>
+                              }
+                                      <div className="relative">
+                                        <button
+                                  onClick={(e) => {e.stopPropagation();setDayDotsMenuOpen((prev) => ({ ...prev, [day]: !prev[day] }));}}
+                                  className="w-7 h-7 flex items-center justify-center rounded-lg text-slate-500 hover:text-slate-300 transition-colors active:scale-90">
+                                          <MoreVertical className="w-4 h-4" />
+                                        </button>
+                                        {isDayDotsOpen &&
+                                <>
+                                            <div className="fixed inset-0 z-[15]" onClick={() => setDayDotsMenuOpen((prev) => ({ ...prev, [day]: false }))} />
+                                            <div className="absolute right-0 top-8 z-[16] rounded-xl overflow-hidden shadow-xl" style={{ background: 'rgba(30,35,55,0.98)', border: '1px solid rgba(255,255,255,0.08)', minWidth: '140px' }}>
+                                              <button
+                                      onClick={(e) => {e.stopPropagation();setDayDotsMenuOpen((prev) => ({ ...prev, [day]: false }));setDeleteWorkoutDay(day);}}
+                                      className="flex items-center gap-2 px-4 py-2.5 text-[13px] font-bold text-red-400 hover:bg-slate-700/60 transition-colors w-full whitespace-nowrap">
+                                                <Trash2 className="w-3.5 h-3.5" />
+                                                Delete Workout
+                                              </button>
+                                            </div>
+                                          </>
+                                }
+                                      </div>
+                                  </div>
+                                </div>
+
+                                <div className="flex gap-1.5 px-4 pb-3">
+                                  {COLOR_OPTIONS.map((c) =>
+                            <button key={c.value} onClick={() => updateWorkout(day, 'color', c.value)} className={`w-6 h-6 rounded-lg bg-gradient-to-br ${c.gradient} transition-all active:scale-90 ${wt.color === c.value ? 'ring-2 ring-white ring-offset-1 ring-offset-[#0b0f1c]' : 'opacity-40'}`} />
+                            )}
+                                </div>
+
+                                {exerciseRows.length > 0 &&
+                          <div className="border-t border-slate-800 pl-4 pr-10 pt-3 pb-2 space-y-2.5">
+                                    {/* ── CHANGE 1: narrower sets (52px), reps (46px), weight (56px) → more room for exercise name ── */}
+                                    <div className="grid gap-2 items-center" style={{ gridTemplateColumns: '1fr 52px 46px 56px' }}>
+                                      <span className="text-[9px] font-black text-slate-600 uppercase tracking-wider">Exercise</span>
+                                      <span className="text-[9px] font-black text-slate-600 uppercase tracking-wider text-center">Sets</span>
+                                      <span className="text-[9px] font-black text-slate-600 uppercase tracking-wider text-center">Reps</span>
+                                      <span className="text-[9px] font-black text-slate-600 uppercase tracking-wider text-center">Weight</span>
+                                    </div>
+
+                                    {exerciseRows.map(({ ex, idx, isDupe, setLabel }) =>
+                            <div key={idx} className="relative">
+                                        {/* ── CHANGE 2: same grid on data rows ── */}
+                                        <div className="grid gap-2 items-center" style={{ gridTemplateColumns: '1fr 52px 46px 56px' }}>
+                                          {/* Exercise name */}
+                                          <input
+                                  type="text"
+                                  value={ex.exercise || ''}
+                                  onChange={(e) => updateExercise(day, idx, 'exercise', sanitiseExerciseName(e.target.value))}
+                                  placeholder="Bench press"
+                                  maxLength={35}
+                                  autoComplete="off"
+                                  autoCorrect="off"
+                                  spellCheck="false"
+                                  style={{ fontSize: '16px' }}
+                                  className="px-2.5 py-2 bg-slate-800/70 border border-slate-700/40 rounded-lg text-[12px] text-white placeholder-slate-600 focus:outline-none focus:border-blue-500/50 w-full" />
+                                
+
+                                          {/* Sets */}
+                                          {isDupe ?
+                                <div
+                                  className="w-full px-2 py-2 bg-slate-800/30 border border-slate-700/20 rounded-lg text-[11px] text-slate-400 text-center font-bold select-none truncate"
+                                  title={setLabel}>
+                                  
+                                              {setLabel}
+                                            </div> :
+
+                                <input
+                                  type="text"
+                                  inputMode="numeric"
+                                  value={ex.sets ?? '3'}
+                                  onChange={(e) => updateExercise(day, idx, 'sets', sanitiseSets(e.target.value))}
+                                  placeholder="3"
+                                  maxLength={2}
+                                  autoComplete="off"
+                                  style={{ fontSize: '16px', WebkitAppearance: 'none' }}
+                                  className="w-full px-2 py-2 bg-slate-800/70 border border-slate-700/40 rounded-lg text-[13px] text-white text-center focus:outline-none focus:border-blue-500/50 placeholder-slate-600" />
+
+                                }
+
+                                          {/* Reps */}
+                                          <input
+                                  type="text"
+                                  inputMode="numeric"
+                                  value={ex.reps ?? '10'}
+                                  onChange={(e) => updateExercise(day, idx, 'reps', sanitiseReps(e.target.value))}
+                                  placeholder="10"
+                                  maxLength={3}
+                                  autoComplete="off"
+                                  style={{ fontSize: '16px', WebkitAppearance: 'none' }}
+                                  className="w-full px-2 py-2 bg-slate-800/70 border border-slate-700/40 rounded-lg text-[13px] text-white text-center focus:outline-none focus:border-blue-500/50 placeholder-slate-600" />
+                                
+
+                                          {/* Weight */}
+                                          <div className="relative">
+                                            <input
+                                    type="text"
+                                    inputMode="decimal"
+                                    value={ex.weight ?? ''}
+                                    onChange={(e) => updateExercise(day, idx, 'weight', sanitiseWeight(e.target.value))}
+                                    placeholder="—"
+                                    maxLength={6}
+                                    autoComplete="off"
+                                    style={{ fontSize: '16px', WebkitAppearance: 'none' }}
+                                    className="w-full px-2 py-2 bg-slate-800/70 border border-slate-700/40 rounded-lg text-[13px] text-white text-center focus:outline-none focus:border-blue-500/50 placeholder-slate-600" />
+                                  
+                                            <span className="absolute right-1.5 top-1/2 -translate-y-1/2 text-[8px] text-slate-500 font-bold pointer-events-none">kg</span>
+                                          </div>
+                                        </div>
+
+                                        {/* ── CHANGE 3: bin shifted right from -32px → -26px ── */}
+                                        <button
+                                onClick={() => removeExercise(day, idx)}
+                                className="absolute right-[-26px] top-1/2 -translate-y-1/2 w-7 h-7 flex items-center justify-center rounded-lg text-slate-600 hover:text-red-400 hover:bg-red-400/10 transition-colors active:scale-90">
+                                
+                                          <Trash2 className="w-3.5 h-3.5" />
+                                        </button>
+                                      </div>
+                            )}
+                                  </div>
+                          }
+
+                                {(wt.cardio || []).length > 0 &&
+                          <div className="border-t border-slate-800 pl-4 pr-10 pt-3 pb-2 space-y-2.5">
+                                    <div className="grid gap-2 items-center" style={{ gridTemplateColumns: '1fr 46px 72px 72px' }}>
+                                      <span className="text-[9px] font-black text-slate-600 uppercase tracking-wider">Exercise</span>
+                                      <span className="text-[9px] font-black text-slate-600 uppercase tracking-wider text-center">Rounds</span>
+                                      <span className="text-[9px] font-black text-slate-600 uppercase tracking-wider text-center">Time/Round</span>
+                                      <span className="text-[9px] font-black text-slate-600 uppercase tracking-wider text-center">Rest</span>
+                                    </div>
+                                    {(wt.cardio || []).map((c, idx) => {
+                              const rounds = parseInt(c.rounds, 10) || 0;
+                              const restDisabled = rounds <= 1;
+                              return (
+                                <div key={idx} className="relative">
+                                          <div className="grid gap-2 items-center" style={{ gridTemplateColumns: '1fr 46px 72px 72px' }}>
+                                            <input type="text" value={c.exercise || ''} onChange={(e) => updateCardio(day, idx, 'exercise', sanitiseExerciseName(e.target.value))} placeholder="Run" maxLength={35} autoComplete="off" autoCorrect="off" spellCheck="false" style={{ fontSize: '16px' }} className="px-2.5 py-2 bg-slate-800/70 border border-slate-700/40 rounded-lg text-[12px] text-white placeholder-slate-600 focus:outline-none focus:border-blue-500/50 w-full" />
+                                            <input type="text" inputMode="numeric" value={c.rounds ?? '1'} onChange={(e) => updateCardio(day, idx, 'rounds', sanitiseRounds(e.target.value))} placeholder="1" maxLength={2} autoComplete="off" style={{ fontSize: '16px', WebkitAppearance: 'none' }} className="w-full px-2 py-2 bg-slate-800/70 border border-slate-700/40 rounded-lg text-[13px] text-white text-center focus:outline-none focus:border-blue-500/50 placeholder-slate-600" />
+                                            <div className="relative">
+                                              <input type="text" inputMode="numeric" value={formatTime(c.time)} onChange={(e) => handleTimeChange(day, idx, 'time', e.target.value)} placeholder="0:00" maxLength={5} autoComplete="off" style={{ fontSize: '16px', WebkitAppearance: 'none' }} className="w-full px-1 py-2 bg-slate-800/70 border border-slate-700/40 rounded-lg text-[11px] text-white text-center focus:outline-none focus:border-blue-500/50 placeholder-slate-600 pr-5" />
+                                              <span className="absolute right-1 top-1/2 -translate-y-1/2 text-[8px] text-slate-500 font-bold pointer-events-none">min</span>
+                                            </div>
+                                            <div className="relative">
+                                              <input type="text" inputMode="numeric" value={restDisabled ? '' : formatTime(c.rest)} onChange={(e) => {if (!restDisabled) handleTimeChange(day, idx, 'rest', e.target.value);}} placeholder="0:00" disabled={restDisabled} maxLength={5} autoComplete="off" style={{ fontSize: '16px', WebkitAppearance: 'none' }} className={`w-full px-1 py-2 border rounded-lg text-[11px] text-center focus:outline-none pr-5 transition-opacity ${restDisabled ? 'bg-slate-900/40 border-slate-800/40 text-slate-700 placeholder-slate-800 cursor-not-allowed opacity-50' : 'bg-slate-800/70 border-slate-700/40 text-white placeholder-slate-600 focus:border-blue-500/50'}`} />
+                                              <span className={`absolute right-1 top-1/2 -translate-y-1/2 text-[8px] font-bold pointer-events-none ${restDisabled ? 'text-slate-700' : 'text-slate-500'}`}>min</span>
+                                            </div>
+                                          </div>
+                                          <button onClick={() => removeCardio(day, idx)} className="absolute right-[-32px] top-1/2 -translate-y-1/2 w-7 h-7 flex items-center justify-center rounded-lg text-slate-600 hover:text-red-400 hover:bg-red-400/10 transition-colors active:scale-90">
+                                            <Trash2 className="w-3.5 h-3.5" />
+                                          </button>
+                                        </div>);
+
+                            })}
+                                  </div>
+                          }
+
+                                <div className="px-4 pb-3.5 pt-2 flex flex-col gap-1.5">
+                                  <button onClick={() => addExercise(day)} className="flex items-center gap-1.5 text-[11px] font-bold text-blue-400 hover:text-blue-300 transition-colors active:scale-95"><Plus className="w-3.5 h-3.5" /> Add exercise</button>
+                                  <button onClick={() => addCardio(day)} className="flex items-center gap-1.5 text-[11px] font-bold text-emerald-400 hover:text-emerald-300 transition-colors active:scale-95"><Plus className="w-3.5 h-3.5" /> Add cardio</button>
+                                </div>
+                              </div>);
+
+                    })}
+                        </div>
+                  }
+                    </div>
+                }
                 </div>
+
+                {/* ── FOOTER ── */}
+                {step === 'preview' && weightsDirty &&
+              <div className="flex gap-2 px-4 py-4 border-t border-slate-800 flex-shrink-0">
+                    <button
+                  onClick={() => {
+                    const mergedWorkouts = Object.fromEntries(Object.entries(previewSplit.workouts).map(([day, wt]) => {
+                      const dayWeights = previewWeights[day] || {};const daySets = previewSets[day] || {};const dayReps = previewReps[day] || {};
+                      const mergedExercises = (wt.exercises || []).map((ex, idx) => ({ ...ex, weight: dayWeights[idx] !== undefined ? dayWeights[idx] : ex.weight, sets: daySets[idx] !== undefined && daySets[idx] !== '' ? daySets[idx] : ex.sets, reps: dayReps[idx] !== undefined && dayReps[idx] !== '' ? dayReps[idx] : ex.reps }));
+                      return [day, { ...wt, exercises: mergedExercises }];
+                    }));
+                    const splitEntry = { id: previewSplit.id, preset_id: previewSplit.id, name: previewSplit.name, training_days: previewSplit.days, workouts: mergedWorkouts, created_at: new Date().toISOString() };
+                    const updated = [...savedSplits.filter((s) => s.id !== previewSplit.id), splitEntry];
+                    setSavedSplits(updated);
+                    const isActive = activeSplitId === previewSplit.id;
+                    setActiveMutation.mutate({ saved_splits: updated, ...(isActive ? { custom_workout_types: mergedWorkouts } : {}) });
+                    toast.success('Edits saved!');setWeightsDirty(false);
+                  }}
+                  disabled={setActiveMutation.isPending}
+                  className="bg-gradient-to-b from-blue-500 via-blue-600 to-blue-700 text-white font-black rounded-full px-6 py-2.5 shadow-[0_3px_0_0_#1a3fa8,0_6px_20px_rgba(59,130,246,0.35)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 text-sm transform-gpu flex-1 disabled:opacity-40 disabled:cursor-not-allowed">
+                      {setActiveMutation.isPending ? 'Saving…' : 'Save Edits'}
+                    </button>
+                  </div>
               }
-              <Button onClick={handleCreateGym} disabled={createGymMutation.isPending} className="inline-flex items-center justify-center gap-2 whitespace-nowrap transition-all duration-100 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 h-9 px-4 w-full bg-gradient-to-b from-green-400 via-green-500 to-green-600 text-white rounded-xl font-bold py-6 text-base shadow-[0_4px_0_0_#065f46,0_2px_10px_rgba(0,0,0,0.2),inset_0_1px_0_rgba(255,255,255,0.2),inset_0_0_20px_rgba(255,255,255,0.05)] active:shadow-none active:translate-y-[3px] active:scale-[0.98] transform-gpu">
-                {createGymMutation.isPending ? <Loader2 className="w-5 h-5 animate-spin mr-2" /> : <CheckCircle className="w-5 h-5 mr-2" />}
-                {isOwner ? 'Claim & Add Gym' : 'Add Gym'}
-              </Button>
-              {isOwner && <div className="bg-blue-500/10 border border-blue-400/30 rounded-xl p-3"><p className="text-blue-300 text-xs text-center">✓ Your gym will be marked as verified and you'll become the admin</p></div>}
-            </div>
-          }
-        </DialogContent>
-      </Dialog>
-    </div>
-  );
+                {step === 'configure' &&
+              <div className="flex gap-2 px-4 py-4 border-t border-slate-800 flex-shrink-0">
+                    <button onClick={handleBack} className={btnSecondary}>Back</button>
+                    <button onClick={handleSave} disabled={selectedDays.length === 0 || saveMutation.isPending} className={btnPrimary + ' flex-1 disabled:opacity-40 disabled:cursor-not-allowed'}>
+                      {saveMutation.isPending ? 'Saving…' : 'Save Split'}
+                    </button>
+                  </div>
+              }
+              </div>
+
+              {/* ── Modals ── */}
+              <SetActiveSplitModal open={showSetActiveModal} onClose={() => setShowSetActiveModal(false)} allSplits={allSplitsForModal} activeSplitId={activeSplitId} onSave={handleSetActiveFromModal} isSaving={setActiveMutation.isPending} />
+
+              <MirrorConfirmDialog
+              open={showMirrorConfirm}
+              onClose={() => {setShowMirrorConfirm(false);setPendingMirrorPair(null);}}
+              onConfirm={handleConfirmMirror} />
+            
+
+              <DeleteWorkoutDialog
+              open={deleteWorkoutDay !== null}
+              onClose={() => setDeleteWorkoutDay(null)}
+              onConfirm={() => handleDeleteWorkout(deleteWorkoutDay)}
+              dayName={deleteWorkoutDay ? workouts[deleteWorkoutDay]?.name || DAY_NAMES[deleteWorkoutDay - 1] : ''} />
+            
+
+              {confirmDeleteSplitId &&
+            <div className="absolute inset-0 z-60 flex items-center justify-center px-6" style={{ background: 'rgba(0,0,0,0.7)' }} onClick={() => setConfirmDeleteSplitId(null)}>
+                  <div className="w-full max-w-xs rounded-2xl p-6 space-y-4" style={{ background: 'rgba(18,22,40,0.98)', border: '1px solid rgba(255,255,255,0.08)' }} onClick={(e) => e.stopPropagation()}>
+                    <p className="text-[15px] font-black text-white text-center leading-snug">Are you sure you want to delete this split?</p>
+                    <p className="text-[12px] text-slate-500 text-center">This is irreversible.</p>
+                    <div className="flex gap-2 pt-1">
+                      <button onClick={() => setConfirmDeleteSplitId(null)} className="flex-1 py-2.5 rounded-full text-[13px] font-bold text-slate-300 bg-slate-700/70 border border-slate-600/50 active:scale-95 transition-transform">Cancel</button>
+                      <button
+                    onClick={() => {
+                      const id = confirmDeleteSplitId;
+                      setConfirmDeleteSplitId(null);
+                      const updated = savedSplits.filter((s) => s.id !== id);
+                      setSavedSplits(updated);
+                      if (activeSplitId === id) setActiveSplitId('');
+                      saveMutation.mutate({ saved_splits: updated });
+                    }}
+                    className="flex-1 py-2.5 rounded-full text-[13px] font-bold text-white bg-gradient-to-b from-red-500 to-red-600 shadow-[0_3px_0_0_#7f1d1d] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all">
+                        Delete
+                      </button>
+                    </div>
+                  </div>
+                </div>
+            }
+            </motion.div>
+          </>
+        }
+      </AnimatePresence>
+    </>);
+
 }
