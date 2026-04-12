@@ -406,15 +406,15 @@ export default function Gyms() {
       <div style={{ position: 'fixed', inset: 0, zIndex: -1, background: 'linear-gradient(to bottom right, #02040a, #0d2360, #02040a)' }} />
 
       <Tabs defaultValue="my-gyms" className="w-full">
-        {/* ── Fixed header — ~15% taller: h-[2.6rem], pb-2.5 ── */}
-        <div className="fixed top-0 left-0 right-0 z-20 bg-slate-900/95 backdrop-blur-xl border-b-2 border-blue-700/40 px-3 md:px-4 pb-2.5" style={{ paddingTop: 'calc(0.4rem + env(safe-area-inset-top))' }}>
+        {/* ── Fixed header — ~10% taller than previous ── */}
+        <div className="fixed top-0 left-0 right-0 z-20 bg-slate-900/95 backdrop-blur-xl border-b-2 border-blue-700/40 px-3 md:px-4 pb-3.5" style={{ paddingTop: 'calc(0.4rem + env(safe-area-inset-top))' }}>
           <div className="max-w-6xl mx-auto">
-            <div className="relative flex items-center justify-center h-[2.6rem]">
-              <TabsList className="flex bg-transparent p-0 h-[2.6rem] gap-6 border-0">
-                <TabsTrigger value="my-gyms" className="data-[state=active]:text-blue-400 data-[state=active]:border-b-2 data-[state=active]:border-blue-400 data-[state=active]:bg-transparent text-slate-400 hover:text-slate-300 border-b-2 border-transparent rounded-none px-0 py-2 transition-colors bg-transparent text-sm justify-center">
+            <div className="relative flex items-center justify-center h-[2.9rem]">
+              <TabsList className="flex bg-transparent p-0 h-[2.9rem] gap-6 border-0">
+                <TabsTrigger value="my-gyms" className="data-[state=active]:text-blue-400 data-[state=active]:border-b-2 data-[state=active]:border-blue-400 data-[state=active]:bg-transparent text-slate-400 hover:text-slate-300 border-b-2 border-transparent rounded-none px-0 py-2 transition-colors bg-transparent text-[15px] justify-center">
                   <Users className="w-4 h-4 mr-1.5" />My Gyms
                 </TabsTrigger>
-                <TabsTrigger value="explore" className="data-[state=active]:text-blue-400 data-[state=active]:border-b-2 data-[state=active]:border-blue-400 data-[state=active]:bg-transparent text-slate-400 hover:text-slate-300 border-b-2 border-transparent rounded-none px-0 py-2 transition-colors bg-transparent text-sm justify-center">
+                <TabsTrigger value="explore" className="data-[state=active]:text-blue-400 data-[state=active]:border-b-2 data-[state=active]:border-blue-400 data-[state=active]:bg-transparent text-slate-400 hover:text-slate-300 border-b-2 border-transparent rounded-none px-0 py-2 transition-colors bg-transparent text-[15px] justify-center">
                   <MapPin className="w-4 h-4 mr-1.5" />Explore
                 </TabsTrigger>
               </TabsList>
@@ -437,7 +437,7 @@ export default function Gyms() {
         </div>
 
         {/* ── Spacer matching the taller fixed header ── */}
-        <div style={{ height: 'calc(3.1rem + env(safe-area-inset-top))' }} />
+        <div style={{ height: 'calc(3.55rem + env(safe-area-inset-top))' }} />
 
         <TabsContent value="my-gyms" className="mt-0 px-3 md:px-4 py-2">
           <div className="max-w-6xl mx-auto">
