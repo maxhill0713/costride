@@ -367,13 +367,6 @@ export default function Profile() {
     );
   }
 
-  const displayName = currentUser?.display_name || currentUser?.username || currentUser?.full_name;
-  const primaryGymId = currentUser?.primary_gym_id;
-  const primaryGym = memberGymsData.find((g) => g.id === primaryGymId);
-  const currentStreak = currentUser?.current_streak || 0;
-  
-  if (!currentUser) return null;
-  
   const filteredPosts = useMemo(() => userPosts.filter((post) =>
     (post.image_url || post.video_url) &&
     !post.content?.includes('Well done, workout') &&
@@ -381,6 +374,13 @@ export default function Profile() {
     !post.is_hidden
   ), [userPosts]);
   const friendCount = friends.length;
+
+  const displayName = currentUser?.display_name || currentUser?.username || currentUser?.full_name;
+  const primaryGymId = currentUser?.primary_gym_id;
+  const primaryGym = memberGymsData.find((g) => g.id === primaryGymId);
+  const currentStreak = currentUser?.current_streak || 0;
+
+  if (!currentUser) return null;
 
 
   return (

@@ -347,27 +347,31 @@ function ActionItems(){
 /* ══════════════════════════════════════════════════════════════════
    QUICK ACTIONS GRID
 ══════════════════════════════════════════════════════════════════ */
+function QuickActionBtn({l,icon}){
+  const[hov,setHov]=useState(false);
+  return(
+    <button onMouseEnter={()=>setHov(true)} onMouseLeave={()=>setHov(false)}
+      style={{display:'flex',alignItems:'center',gap:8,padding:'8px 10px',borderRadius:DS.r2,background:hov?DS.surfaceRaised:'rgba(255,255,255,0.02)',border:`1px solid ${hov?DS.borderMid:DS.border}`,cursor:'pointer',transition:'all .14s',fontFamily:DS.fontSans}}>
+      {icon}
+      <span style={{fontSize:11,fontWeight:700,color:hov?DS.t1:DS.t2,transition:'color .14s'}}>{l}</span>
+    </button>
+  );
+}
+
 function QuickActions(){
   const actions=[
-    {l:'Add Member',icon:icons.users(13,DS.success),c:DS.success},
-    {l:'Scan Check-in',icon:icons.activity(13,DS.accent),c:DS.accent},
-    {l:'New Challenge',icon:icons.trophy(13,DS.warn),c:DS.warn},
-    {l:'Post Update',icon:icons.msg(13,DS.accent),c:DS.accent},
+    {l:'Add Member',icon:icons.users(13,DS.success)},
+    {l:'Scan Check-in',icon:icons.activity(13,DS.accent)},
+    {l:'New Challenge',icon:icons.trophy(13,DS.warn)},
+    {l:'Post Update',icon:icons.msg(13,DS.accent)},
   ];
   return(
     <Card padding="20px">
       <div style={{fontSize:10,fontWeight:700,color:DS.t3,letterSpacing:'.08em',textTransform:'uppercase',marginBottom:14}}>QUICK ACTIONS</div>
       <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:6}}>
-        {actions.map(({l,icon,c},i)=>{
-          const[hov,setHov]=useState(false);
-          return(
-            <button key={i} onMouseEnter={()=>setHov(true)} onMouseLeave={()=>setHov(false)}
-              style={{display:'flex',alignItems:'center',gap:8,padding:'8px 10px',borderRadius:DS.r2,background:hov?DS.surfaceRaised:'rgba(255,255,255,0.02)',border:`1px solid ${hov?DS.borderMid:DS.border}`,cursor:'pointer',transition:'all .14s',fontFamily:DS.fontSans}}>
-              {icon}
-              <span style={{fontSize:11,fontWeight:700,color:hov?DS.t1:DS.t2,transition:'color .14s'}}>{l}</span>
-            </button>
-          );
-        })}
+        {actions.map((a,i)=>(
+          <QuickActionBtn key={i} {...a}/>
+        ))}
       </div>
     </Card>
   );
@@ -479,6 +483,18 @@ function ChallengeCard({title,participants,daysLeft,pct}){
 /* ══════════════════════════════════════════════════════════════════
    CONTENT SUGGESTIONS
 ══════════════════════════════════════════════════════════════════ */
+function ContentSuggestionItem({c,icon,l,a}){
+  const[hov,setHov]=useState(false);
+  return(
+    <div onMouseEnter={()=>setHov(true)} onMouseLeave={()=>setHov(false)}
+      style={{display:'flex',alignItems:'center',gap:9,padding:'9px 10px',borderRadius:DS.r2,background:hov?'rgba(255,255,255,0.03)':DS.surfaceRaised,border:`1px solid ${DS.border}`,borderLeft:`3px solid ${c}`,cursor:'pointer',transition:'all .15s'}}>
+      {icon}
+      <span style={{flex:1,fontSize:11,fontWeight:600,color:DS.t2,lineHeight:1.4}}>{l}</span>
+      <span style={{fontSize:10,fontWeight:700,color:c,flexShrink:0,display:'flex',alignItems:'center',gap:2}}>{a} {icons.chevron(9,c)}</span>
+    </div>
+  );
+}
+
 function ContentSuggestions(){
   const items=[
     {c:DS.accent,icon:icons.msg(12,DS.accent),l:'No post in 3 days — engagement drops after 48h',a:'Post now'},
@@ -492,17 +508,9 @@ function ContentSuggestions(){
         <span style={{fontSize:10,fontWeight:700,color:DS.t3,letterSpacing:'.08em',textTransform:'uppercase'}}>CONTENT SUGGESTIONS</span>
       </div>
       <div style={{display:'flex',flexDirection:'column',gap:6}}>
-        {items.map((s,i)=>{
-          const[hov,setHov]=useState(false);
-          return(
-            <div key={i} onMouseEnter={()=>setHov(true)} onMouseLeave={()=>setHov(false)}
-              style={{display:'flex',alignItems:'center',gap:9,padding:'9px 10px',borderRadius:DS.r2,background:hov?'rgba(255,255,255,0.03)':DS.surfaceRaised,border:`1px solid ${DS.border}`,borderLeft:`3px solid ${s.c}`,cursor:'pointer',transition:'all .15s'}}>
-              {s.icon}
-              <span style={{flex:1,fontSize:11,fontWeight:600,color:DS.t2,lineHeight:1.4}}>{s.l}</span>
-              <span style={{fontSize:10,fontWeight:700,color:s.c,flexShrink:0,display:'flex',alignItems:'center',gap:2}}>{s.a} {icons.chevron(9,s.c)}</span>
-            </div>
-          );
-        })}
+        {items.map((s,i)=>(
+          <ContentSuggestionItem key={i} {...s}/>
+        ))}
       </div>
     </Card>
   );

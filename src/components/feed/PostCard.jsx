@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import ReactDOM from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Heart, MessageCircle, Bookmark, Send, MoreHorizontal, Trash2, Star, Plus, Clock, Dumbbell, Zap, ChevronDown, ChevronUp, Loader2, Flag, ChevronRight, Check } from 'lucide-react';
+import { Heart, MessageCircle, Bookmark, Send, MoreHorizontal, Trash2, Star, Plus, Clock, Dumbbell, Zap, ChevronDown, ChevronUp, Loader2, Flag, ChevronRight, Check, UserPlus } from 'lucide-react';
 import { format } from 'date-fns';
 import CommentModal from './CommentModal';
 import ShareModal from './ShareModal';
@@ -16,11 +16,15 @@ import { createPageUrl } from '@/utils';
 const STREAK_ICON_URL = 'https://media.base44.com/images/public/694b637358644e1c22c8ec6b/5688f98be_Pose1_V2.png';
 
 // ── Reactions Modal ───────────────────────────────────────────────────────────
-function ReactionsModal({ open, onClose, reactions, reactedUsers }) {
+function ReactionsModal({ open, onClose, reactions, reactedUsers, currentUserId, friends, sentFriendRequests, onAddFriend }) {
   const [search, setSearch] = useState('');
+  const [localPendingIds, setLocalPendingIds] = useState(new Set());
   if (!open) return null;
 
-  const sanitised = search.replace(/[^a-zA-Z0-9_.\- ]/g, '').slice(0, 30);
+  const friendIds = new Set((friends || []).map(f => f.friend_id));
+  const sentIds = new Set((sentFriendRequests || []).map(r => r.friend_id));
+
+  const sanitised = search.replace(/[^a-zA-Z0-9_.\ ]/g, '').slice(0, 30);
   const filtered = reactedUsers.filter(user => {
     const name = user.display_name || user.full_name || user.username || '';
     return name.toLowerCase().includes(sanitised.toLowerCase());
@@ -51,7 +55,7 @@ function ReactionsModal({ open, onClose, reactions, reactedUsers }) {
             <svg className="w-3.5 h-3.5 text-slate-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
             <input
               value={search}
-              onChange={e => setSearch(e.target.value.replace(/[^a-zA-Z0-9_.\- ]/g, '').slice(0, 30))}
+              onChange={e => setSearch(e.target.value.replace(/[^a-zA-Z0-9_.\ ]/g, '').slice(0, 30))}
               placeholder="Search by name..."
               maxLength={30}
               autoComplete="off"
@@ -68,8 +72,11 @@ function ReactionsModal({ open, onClose, reactions, reactedUsers }) {
             : filtered.map((user) => {
               const variant = reactions[user.id];
               const displayName = user.display_name || user.full_name || user.username || 'Unknown';
+              const isSelf = user.id === currentUserId;
+              const isFriend = friendIds.has(user.id);
+              const isPending = sentIds.has(user.id) || localPendingIds.has(user.id);
               return (
-                <div key={user.id} className="flex items-center gap-2 px-2 py-1 rounded-lg hover:bg-slate-800/50 transition-colors">
+                <div key={user.id} className="flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-slate-800/50 transition-colors">
                   <div className="relative flex-shrink-0 flex items-center justify-center" style={{ width: 32, height: 32, marginLeft: -2 }}>
                     {variant === 'sunglasses'
                       ? <div className="relative w-full h-full flex items-center justify-center">
@@ -82,7 +89,32 @@ function ReactionsModal({ open, onClose, reactions, reactedUsers }) {
                         </div>
                       : <img src={STREAK_ICON_URL} alt="streak" className="w-full h-full" style={{ objectFit: 'contain' }} />}
                   </div>
-                  <span className="text-sm text-slate-200 font-semibold">{displayName}</span>
+                  <span className="text-sm text-slate-200 font-semibold flex-1 min-w-0 truncate">{displayName}</span>
+                  {!isSelf && (
+                    isFriend ? (
+                      <span className="text-[10px] font-bold px-2 py-1 rounded-lg flex-shrink-0" style={{ background: 'linear-gradient(to bottom, #1a1f35, #0f1220)', border: '1px solid rgba(99,102,241,0.3)', color: 'rgba(165,180,252,0.85)', letterSpacing: '0.04em' }}>
+                        Friends
+                      </span>
+                    ) : isPending ? (
+                      <span className="text-[10px] font-bold px-2 py-1 rounded-lg flex-shrink-0" style={{ background: 'linear-gradient(to bottom, #1a1f35, #0f1220)', border: '1px solid rgba(99,102,241,0.3)', color: 'rgba(165,180,252,0.85)', letterSpacing: '0.04em' }}>
+                        Pending
+                      </span>
+                    ) : (
+                      <button
+                        onClick={() => {
+                          if (onAddFriend) onAddFriend(user);
+                          setLocalPendingIds(prev => new Set([...prev, user.id]));
+                        }}
+                        className="flex-shrink-0 h-7 w-7 flex items-center justify-center rounded-lg active:translate-y-[2px] active:shadow-none transition-all duration-100"
+                        style={{
+                          background: 'linear-gradient(to bottom, #60a5fa 0%, #3b82f6 40%, #2563eb 100%)',
+                          border: '1px solid rgba(147,197,253,0.4)',
+                          boxShadow: '0 3px 0 0 #1a3fa8, 0 5px 12px rgba(0,0,100,0.3), inset 0 1px 0 rgba(255,255,255,0.2)'
+                        }}>
+                        <UserPlus className="w-3.5 h-3.5 text-white" />
+                      </button>
+                    )
+                  )}
                 </div>
               );
             })
@@ -336,7 +368,7 @@ function ExpandableCaption({ text, className = '' }) {
   );
 }
 
-function PostCard({ post, onLike, onComment, onSave, onDelete, fullWidth = false, isOwnProfile = false, currentUser: currentUserProp }) {
+function PostCard({ post, onLike, onComment, onSave, onDelete, fullWidth = false, isOwnProfile = false, currentUser: currentUserProp, friends = [], sentFriendRequests = [], onAddFriend }) {
   const [reacted, setReacted] = useState(false);
   const [saved, setSaved] = useState(false);
   const [showComments, setShowComments] = useState(false);
@@ -784,7 +816,7 @@ function PostCard({ post, onLike, onComment, onSave, onDelete, fullWidth = false
           </div>
         </motion.div>
 
-        <ReactionsModal open={showReactionsModal} onClose={() => setShowReactionsModal(false)} reactions={post.reactions || {}} reactedUsers={reactedUsers} />
+        <ReactionsModal open={showReactionsModal} onClose={() => setShowReactionsModal(false)} reactions={post.reactions || {}} reactedUsers={reactedUsers} currentUserId={currentUser?.id} friends={friends} sentFriendRequests={sentFriendRequests} onAddFriend={onAddFriend} />
         <ConfirmDialog open={showDeleteConfirm} onClose={() => setShowDeleteConfirm(false)} title="Delete Post?" description="This action cannot be undone." confirmLabel="Delete"
           confirmClass="bg-gradient-to-b from-red-500 via-red-600 to-red-700 shadow-[0_3px_0_0_#7f1d1d,0_6px_16px_rgba(200,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.15)]"
           onConfirm={() => { deleteMutation.mutate(); setShowDeleteConfirm(false); }} isPending={deleteMutation.isPending} />
@@ -900,7 +932,7 @@ function PostCard({ post, onLike, onComment, onSave, onDelete, fullWidth = false
         )}
       </motion.div>
 
-      <ReactionsModal open={showReactionsModal} onClose={() => setShowReactionsModal(false)} reactions={post.reactions || {}} reactedUsers={reactedUsers} />
+      <ReactionsModal open={showReactionsModal} onClose={() => setShowReactionsModal(false)} reactions={post.reactions || {}} reactedUsers={reactedUsers} currentUserId={currentUser?.id} friends={friends} sentFriendRequests={sentFriendRequests} onAddFriend={onAddFriend} />
       <ConfirmDialog open={showDeleteConfirm} onClose={() => setShowDeleteConfirm(false)} title="Delete Post?" description="Are you sure you want to delete your post? This action cannot be undone." confirmLabel="Delete"
         confirmClass="bg-gradient-to-b from-red-500 via-red-600 to-red-700 shadow-[0_3px_0_0_#7f1d1d,0_6px_16px_rgba(200,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.15)]"
         onConfirm={() => { deleteMutation.mutate(); setShowDeleteConfirm(false); }} isPending={deleteMutation.isPending} />
