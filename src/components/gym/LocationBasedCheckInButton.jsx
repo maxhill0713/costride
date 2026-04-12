@@ -127,7 +127,6 @@ export default function LocationBasedCheckInButton({ gyms, onCheckInSuccess, gym
       queryClient.invalidateQueries({ queryKey: ['currentUser'] });
       setSuccess(true);
       onCheckInSuccess?.();
-      setTimeout(() => setSuccess(false), 2000);
     },
   });
 
@@ -166,15 +165,6 @@ export default function LocationBasedCheckInButton({ gyms, onCheckInSuccess, gym
     if (!pressed) return;
     setPressed(false);
   };
-
-  // Cleanup on unmount
-  useEffect(() => {
-    return () => {
-      if (audioCtxRef.current) {
-        audioCtxRef.current.close().catch(() => {});
-      }
-    };
-  }, []);
 
   const isLoading = checkInMutation.isPending;
   const isSuccess = success;
