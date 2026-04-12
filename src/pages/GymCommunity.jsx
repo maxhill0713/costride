@@ -9,7 +9,7 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import PostCard from '../components/feed/PostCard';
 import CreateGymPostButton from '../components/feed/CreateGymPostButton';
@@ -71,12 +71,6 @@ const pageSlideVariants = {
       mass: 0.9
     }
   }
-};
-
-const overlayVariants = {
-  hidden:  { opacity: 0 },
-  visible: { opacity: 1, transition: { duration: 0.18 } },
-  exit:    { opacity: 0, transition: { duration: 0.2 } },
 };
 
 // ── Card style — matches TodayWorkout home page cards exactly ─────────────────
@@ -1419,8 +1413,6 @@ export default function GymCommunity() {
   const urlParams = new URLSearchParams(window.location.search);
   const gymId = urlParams.get('id');
   const queryClient = useQueryClient();
-  const navigate = useNavigate();
-  const [isVisible, setIsVisible] = useState(true);
 
   useEffect(() => {
     const id = 'gym-community-dialog-anim';
@@ -1589,30 +1581,8 @@ export default function GymCommunity() {
   const tabTriggerClass = "whitespace-nowrap ring-offset-background focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50 bg-slate-900/80 backdrop-blur-md text-slate-400 font-bold rounded-full px-2.5 py-1 flex items-center gap-1 justify-center border border-slate-600/40 shadow-[0_3px_0_0_#0d1220,inset_0_1px_0_rgba(255,255,255,0.08)] data-[state=active]:bg-gradient-to-b data-[state=active]:from-blue-500 data-[state=active]:via-blue-600 data-[state=active]:to-blue-700 data-[state=active]:text-white data-[state=active]:border-transparent data-[state=active]:shadow-[0_3px_0_0_#1a3fa8,0_6px_20px_rgba(59,130,246,0.35),inset_0_1px_0_rgba(255,255,255,0.2)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 text-[11.5px] transform-gpu";
 
   return (
-    <>
-      <AnimatePresence>
-        {isVisible && (
-          <>
-            <motion.div
-              key="gym-community-overlay"
-              className="fixed inset-0 z-40"
-              style={{ background: 'rgba(0,0,0,0.45)' }}
-              variants={overlayVariants}
-              initial="hidden"
-              animate="visible"
-              exit="exit"
-            />
-            <motion.div
-              key="gym-community-panel"
-              className="fixed inset-0 z-50 overflow-y-auto"
-              style={{ background: 'linear-gradient(to bottom right, #02040a, #0d2360, #02040a)' }}
-              variants={pageSlideVariants}
-              initial="hidden"
-              animate="visible"
-              exit="exit"
-            >
     <PullToRefresh onRefresh={async () => {await queryClient.invalidateQueries({ predicate: (q) => Array.isArray(q.queryKey) && q.queryKey.some((k) => k === gymId) });}}>
-      <div className="min-h-screen">
+      <div className="min-h-screen bg-[linear-gradient(to_bottom_right,#02040a,#0d2360,#02040a)]">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full overflow-x-hidden">
           <div className="relative overflow-hidden">
             <div className="absolute inset-0 z-0">
@@ -1938,11 +1908,6 @@ export default function GymCommunity() {
         <InviteOwnerModal isOpen={showInviteOwnerModal} onClose={() => setShowInviteOwnerModal(false)} gym={gym} currentUser={currentUser} />
         <CoachProfileModal coach={selectedCoach} open={!!selectedCoach} onClose={() => setSelectedCoach(null)} gymClasses={classes} />
       </div>
-    </PullToRefresh>
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
-    </>);
+    </PullToRefresh>);
 
 }
