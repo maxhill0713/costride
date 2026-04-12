@@ -1569,17 +1569,7 @@ export default function GymCommunity() {
   const progressLeaderboardMonth = enrichWithAvatars(leaderboards.progressLeaderboardMonth || []);
   const progressLeaderboardAllTime = enrichWithAvatars(leaderboards.progressLeaderboardAllTime || []);
 
-  // ── SKELETON: wrapped in slide animation so it slides in before data loads ──
-  if (gymLoading && !gym) return (
-    <motion.div
-      className="min-h-screen bg-[linear-gradient(to_bottom_right,#02040a,#0d2360,#02040a)]"
-      variants={pageSlideVariants}
-      initial="hidden"
-      animate="visible"
-      exit="exit">
-      
-      <GymCommunitySkeleton />
-    </motion.div>);
+  if (gymLoading && !gym) return null;
 
 
   if (!gymLoading && !gym) return (
