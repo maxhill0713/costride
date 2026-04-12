@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import ShareWorkoutScreen from '../profile/ShareWorkoutScreen';
 import WorkoutDaysCelebration from './WorkoutDaysCelebration';
+import UniqueBadge from '../challenges/UniqueBadge';
 
 const POSE_1_URL = 'https://media.base44.com/images/public/694b637358644e1c22c8ec6b/5688f98be_Pose1_V2.png';
 const POSE_2_URL = 'https://media.base44.com/images/public/694b637358644e1c22c8ec6b/8d4e06e17_Pose2_V21.png';
@@ -181,12 +182,12 @@ function StreakCelebration({
                       </div>
 
                       <div className="flex items-center gap-3 rounded-xl px-3 py-2"
-                        style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }}>
-                        <span style={{ fontSize: 20 }}>{challenge.emoji}</span>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-0.5">Reward</p>
-                          <p className="text-[13px] font-black text-white truncate">{challenge.reward}</p>
-                        </div>
+                          style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }}>
+                          <UniqueBadge reward={challenge.reward} size="sm" />
+                          <div className="flex-1 min-w-0">
+                            <p className="text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-0.5">Reward</p>
+                            <p className="text-[13px] font-black text-white truncate">{challenge.reward}</p>
+                          </div>
                       </div>
                     </div>
                   </motion.div>
