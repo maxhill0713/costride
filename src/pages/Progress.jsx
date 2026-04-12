@@ -119,7 +119,7 @@ export default function Progress() {
 
         <div style={{ height: 'calc(3.55rem + env(safe-area-inset-top))' }} />
 
-        <TabsContent value="analytics" className="mt-0 px-3 md:px-4 py-5 pb-[130px] md:pb-5">
+        <TabsContent value="analytics" className="mt-0 px-3 md:px-4 py-3 pb-[130px] md:pb-5">
           <div className="max-w-4xl mx-auto">
             <AnalyticsTab currentUser={currentUser} workoutLogs={workoutLogs} checkIns={checkIns} animateCharts={analyticsAnimKey} />
           </div>
