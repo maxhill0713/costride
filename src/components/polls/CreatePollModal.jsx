@@ -274,8 +274,7 @@ export default function CreatePollModal({ open, onClose, onSave, isLoading }) {
 
           {/* ── HEADER ──────────────────────────────────────── */}
           <div style={{ flexShrink: 0, padding: '0 20px', background: C.surface, borderBottom: `1px solid ${C.brd}`, position: 'relative', overflow: 'hidden' }}>
-            {/* Accent colour bar */}
-            <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 2, background: `linear-gradient(90deg,${accent},${accent}44,transparent)`, transition: 'background 0.3s', pointerEvents: 'none' }} />
+
 
             {/* Title row */}
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: 14 }}>

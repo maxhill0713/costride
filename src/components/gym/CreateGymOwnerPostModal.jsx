@@ -372,8 +372,7 @@ export default function CreateGymOwnerPostModal({ open, onClose, gym, onSuccess 
             background: C.surface, borderBottom: `1px solid ${C.brd}`,
             position: 'relative', overflow: 'hidden',
           }}>
-            {/* Cyan accent line */}
-            <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 2, background: `linear-gradient(90deg,${activeType.color},${activeType.color}44,transparent)`, transition: 'background 0.3s', pointerEvents: 'none' }} />
+
 
             {/* Top row: title + close */}
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: 14, paddingBottom: 0 }}>
