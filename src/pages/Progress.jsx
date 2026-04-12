@@ -3,8 +3,6 @@ import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { BarChart3, Target, Utensils, MessageCircle, ChevronLeft } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Link } from 'react-router-dom';
-import { createPageUrl } from '../utils';
 import { motion, AnimatePresence } from 'framer-motion';
 
 import AnalyticsTab from '../components/progress/AnalyticsTab';
@@ -15,11 +13,10 @@ import TrainerTab   from '../components/progress/TrainerTab';
 const animatedTabs = new Set();
 
 const pageSlideVariants = {
-  hidden: { x: '100%', opacity: 1 },
+  hidden:  { x: '100%', opacity: 1 },
   visible: { x: 0, opacity: 1, transition: { type: 'spring', stiffness: 380, damping: 36, mass: 1 } },
-  exit:   { x: '100%', opacity: 1, transition: { type: 'spring', stiffness: 420, damping: 40, mass: 0.9 } },
+  exit:    { x: '100%', opacity: 1, transition: { type: 'spring', stiffness: 420, damping: 40, mass: 0.9 } },
 };
-
 const overlayVariants = {
   hidden:  { opacity: 0 },
   visible: { opacity: 1, transition: { duration: 0.18 } },
@@ -59,17 +56,20 @@ export default function Progress() {
     return (
       <div className="min-h-screen" style={{ backgroundColor: 'transparent' }}>
         <div style={{ position: 'fixed', inset: 0, zIndex: -1, background: 'linear-gradient(to bottom right, #02040a, #0d2360, #02040a)' }} />
-        <div className="fixed top-0 left-0 right-0 z-20 bg-slate-900/95 backdrop-blur-xl border-b-2 border-blue-700/40 px-3 md:px-4" style={{ paddingTop: 'calc(0.4rem + env(safe-area-inset-top))', paddingBottom: 0 }}>
+        <div
+          className="fixed top-0 left-0 right-0 z-20 bg-slate-900/95 backdrop-blur-xl border-b-2 border-blue-700/40 px-3 md:px-4"
+          style={{ paddingTop: 'calc(0.4rem + env(safe-area-inset-top))', paddingBottom: 0 }}
+        >
           <div className="max-w-4xl mx-auto">
-            <div className="flex items-end h-[2.9rem] gap-2 pb-1">
+            <div className="flex items-end h-[3.2rem] gap-2 pt-2 pb-1.5">
               {[...Array(3)].map((_, i) => (
                 <div key={i} className="flex-1 h-7 rounded bg-slate-700/60 animate-pulse" />
               ))}
             </div>
           </div>
         </div>
-        <div style={{ height: 'calc(3.55rem + env(safe-area-inset-top))' }} />
-        <div className="max-w-4xl mx-auto px-3 py-3 space-y-4">
+        <div style={{ height: 'calc(3.8rem + env(safe-area-inset-top))' }} />
+        <div className="max-w-4xl mx-auto px-3 py-2 space-y-4">
           <div className="h-32 rounded-2xl bg-slate-800/60 animate-pulse" />
           <div className="grid grid-cols-2 gap-3">
             {[...Array(4)].map((_, i) => <div key={i} className="h-24 rounded-2xl bg-slate-800/60 animate-pulse" />)}
@@ -85,14 +85,14 @@ export default function Progress() {
       <div style={{ position: 'fixed', inset: 0, zIndex: -1, background: 'linear-gradient(to bottom right, #02040a, #0d2360, #02040a)' }} />
 
       <Tabs defaultValue="analytics" className="w-full">
-        {/* ── Fixed header — same overall height, tabs sit at the bottom ── */}
+
+        {/* ── Fixed header: 10% taller (3.2rem), gap above tabs via pt-2, tabs near bottom via pb-1.5 ── */}
         <div
           className="fixed top-0 left-0 right-0 z-20 bg-slate-900/95 backdrop-blur-xl border-b-2 border-blue-700/40 px-3 md:px-4"
           style={{ paddingTop: 'calc(0.4rem + env(safe-area-inset-top))', paddingBottom: 0 }}
         >
           <div className="max-w-4xl mx-auto">
-            {/* items-end + pb-1 pins tabs to the bottom of the bar */}
-            <div className="relative flex items-end justify-center h-[2.9rem] pb-1">
+            <div className="relative flex items-end justify-center h-[3.2rem] pt-2 pb-1.5">
               <TabsList className="flex bg-transparent p-0 gap-6 border-0 h-auto">
                 <TabsTrigger value="analytics" className="data-[state=active]:text-blue-400 data-[state=active]:border-b-2 data-[state=active]:border-blue-400 data-[state=active]:bg-transparent text-slate-400 hover:text-slate-300 border-b-2 border-transparent rounded-none px-0 pb-0 pt-0 transition-colors bg-transparent text-[15px] justify-center leading-none">
                   <BarChart3 className="w-4 h-4 mr-1.5" />Analytics
@@ -105,10 +105,10 @@ export default function Progress() {
                 </TabsTrigger>
               </TabsList>
 
-              {/* Message icon — pinned to the right, same bottom baseline */}
+              {/* Message icon — same bottom baseline as tabs */}
               <button
                 onClick={() => setShowTrainer(true)}
-                className="absolute right-0 bottom-1 flex items-center justify-center w-8 h-8 rounded-full text-slate-400 active:scale-90 transition-transform"
+                className="absolute right-0 bottom-1.5 flex items-center justify-center w-8 h-8 rounded-full text-slate-400 active:scale-90 transition-transform"
                 aria-label="Chats"
               >
                 <MessageCircle className="w-5 h-5" />
@@ -117,21 +117,22 @@ export default function Progress() {
           </div>
         </div>
 
-        <div style={{ height: 'calc(3.55rem + env(safe-area-inset-top))' }} />
+        {/* Spacer — matches new header height */}
+        <div style={{ height: 'calc(3.8rem + env(safe-area-inset-top))' }} />
 
-        <TabsContent value="analytics" className="mt-0 px-3 md:px-4 py-3 pb-[130px] md:pb-5">
+        <TabsContent value="analytics" className="mt-0 px-3 md:px-4 py-1 pb-[130px] md:pb-5">
           <div className="max-w-4xl mx-auto">
             <AnalyticsTab currentUser={currentUser} workoutLogs={workoutLogs} checkIns={checkIns} animateCharts={analyticsAnimKey} />
           </div>
         </TabsContent>
 
-        <TabsContent value="goals" className="mt-0 px-3 md:px-4 py-3 pb-[130px] md:pb-5">
+        <TabsContent value="goals" className="mt-0 px-3 md:px-4 py-1 pb-[130px] md:pb-5">
           <div className="max-w-4xl mx-auto">
             <TargetsTab currentUser={currentUser} />
           </div>
         </TabsContent>
 
-        <TabsContent value="nutrition" className="mt-0 px-3 md:px-4 py-3 pb-[130px] md:pb-5">
+        <TabsContent value="nutrition" className="mt-0 px-3 md:px-4 py-1 pb-[130px] md:pb-5">
           <div className="max-w-4xl mx-auto">
             <NutritionTab />
           </div>
@@ -147,23 +148,17 @@ export default function Progress() {
               className="fixed inset-0 z-40"
               style={{ background: 'rgba(0,0,0,0.45)' }}
               variants={overlayVariants}
-              initial="hidden"
-              animate="visible"
-              exit="exit"
+              initial="hidden" animate="visible" exit="exit"
               onClick={() => setShowTrainer(false)}
             />
-
             <motion.div
               key="trainer-panel"
               className="fixed inset-0 z-50"
               style={{ minHeight: '100dvh', background: 'linear-gradient(to bottom right, #02040a, #0d2360, #02040a)', paddingTop: 'env(safe-area-inset-top)' }}
               variants={pageSlideVariants}
-              initial="hidden"
-              animate="visible"
-              exit="exit"
+              initial="hidden" animate="visible" exit="exit"
             >
               <div className="flex flex-col h-full w-full max-w-2xl mx-auto">
-                {/* Header */}
                 <div className="relative flex items-center px-4 py-[14.7px] border-b border-slate-700/40 flex-shrink-0">
                   <button onClick={() => setShowTrainer(false)} className="flex items-center justify-center active:scale-90 transition-transform">
                     <ChevronLeft className="w-6 h-6 text-slate-300" />
@@ -172,8 +167,6 @@ export default function Progress() {
                     <h2 className="text-[22px] font-black text-white leading-tight tracking-tight">Chats</h2>
                   </div>
                 </div>
-
-                {/* Body */}
                 <div className="overflow-y-auto flex-1 px-4 pb-4">
                   <TrainerTab currentUser={currentUser} />
                 </div>
