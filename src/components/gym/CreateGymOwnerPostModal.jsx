@@ -15,8 +15,8 @@ import { format } from 'date-fns';
 /* ─── TOKENS ─────────────────────────────────────────────────── */
 const C = {
   bg:       '#000000',
-  surface:  '#141416',
-  inset:    '#0f0f12',
+  surface:  '#0f0f12',
+  inset:    '#141416',
   brd:      '#222226',
   brd2:     '#2a2a30',
   t1:       '#ffffff',
@@ -299,15 +299,15 @@ export default function CreateGymOwnerPostModal({ open, onClose, gym, onSuccess 
         {/* Shell */}
         <div style={{
           width:'100%', maxWidth:920, maxHeight:'92vh', display:'flex', flexDirection:'column',
-          background:C.surface, border:`1px solid ${C.brd}`,
-          borderRadius:12, overflow:'hidden',
-          boxShadow:'0 32px 80px rgba(0,0,0,0.7)',
+          background:C.bg, border:`1px solid ${C.brd}`,
+          borderRadius:14, overflow:'hidden',
+          boxShadow:'0 32px 80px rgba(0,0,0,0.8), 0 0 0 1px rgba(0,229,200,0.04)',
           animation:'modal-in 0.22s cubic-bezier(0.16,1,0.3,1)',
           WebkitFontSmoothing:'antialiased',
         }}>
 
           {/* ── HEADER ─────────────────────────────────────────── */}
-          <div style={{ flexShrink:0, padding:'13px 18px', display:'flex', alignItems:'center', justifyContent:'space-between', borderBottom:`1px solid ${C.brd}`, background:C.inset, position:'relative', overflow:'hidden' }}>
+          <div style={{ flexShrink:0, padding:'13px 18px', display:'flex', alignItems:'center', justifyContent:'space-between', borderBottom:`1px solid ${C.brd}`, background:C.surface, position:'relative', overflow:'hidden' }}>
             {/* Accent line */}
             <div style={{ position:'absolute', top:0, left:0, right:0, height:2, background:`linear-gradient(90deg,${activeType.color},${activeType.color}44,transparent)`, transition:'background 0.3s' }}/>
 
@@ -332,7 +332,7 @@ export default function CreateGymOwnerPostModal({ open, onClose, gym, onSuccess 
           <div style={{ flex:1, display:'grid', gridTemplateColumns:'1fr 290px', minHeight:0, overflow:'hidden' }}>
 
             {/* Left — form */}
-            <div style={{ padding:'16px 18px', borderRight:`1px solid ${C.brd}`, display:'flex', flexDirection:'column', gap:16, overflowY:'auto' }}>
+            <div style={{ padding:'16px 18px', borderRight:`1px solid ${C.brd}`, display:'flex', flexDirection:'column', gap:16, overflowY:'auto', background:C.bg }}>
 
               {/* Post type grid */}
               <div>
@@ -477,13 +477,13 @@ export default function CreateGymOwnerPostModal({ open, onClose, gym, onSuccess 
             </div>
 
             {/* Right — live preview */}
-            <div style={{ padding:'16px 14px', background:C.inset, overflowY:'auto', borderLeft:`1px solid ${C.brd}` }}>
+            <div style={{ padding:'16px 14px', background:C.surface, overflowY:'auto', borderLeft:`1px solid ${C.brd}` }}>
               <PostPreview postType={postType} content={content} imageUrl={imageUrl} tags={tags} callToAction={callToAction} isPinned={isPinned} scheduledDate={scheduledDate} gym={gym}/>
             </div>
           </div>
 
           {/* ── FOOTER ─────────────────────────────────────────── */}
-          <div style={{ flexShrink:0, padding:'11px 18px', borderTop:`1px solid ${C.brd}`, display:'flex', alignItems:'center', gap:8, background:C.inset }}>
+          <div style={{ flexShrink:0, padding:'11px 18px', borderTop:`1px solid ${C.brd}`, display:'flex', alignItems:'center', gap:8, background:C.surface }}>
             {/* Status */}
             <div style={{ flex:1, display:'flex', alignItems:'center', gap:6 }}>
               {content.trim() ? (
