@@ -86,7 +86,12 @@ function StreakCelebration({
     return () => cancelAnimationFrame(raf);
   }, [showStreakCelebration, celebrationStreakNum]);
 
-  // no delayed enable — button is always ready
+  const [btnEnabled, setBtnEnabled] = useState(false);
+  useEffect(() => {
+    if (!showChallengesCelebration) { setBtnEnabled(false); return; }
+    const t = setTimeout(() => setBtnEnabled(true), 1200);
+    return () => clearTimeout(t);
+  }, [showChallengesCelebration]);
 
   return (
     <>
@@ -113,7 +118,7 @@ function StreakCelebration({
 
       {/* STAGE 2 — Challenges */}
       <AnimatePresence>
-        {showChallengesCelebration && celebrationChallenges.length > 0 && (
+        {showChallengesCelebration && celebrationChallenges?.length > 0 && (
           <motion.div
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
             transition={{ duration: 0.4 }}
@@ -192,15 +197,18 @@ function StreakCelebration({
 
             <button
               onClick={onChallengesContinue}
-              className="w-full max-w-sm"
+              disabled={!btnEnabled}
+              className="w-full max-w-sm mt-4"
               style={{
                 padding: '14px 0', borderRadius: 16,
-                background: 'linear-gradient(to bottom, #60a5fa, #3b82f6, #1d4ed8)',
+                background: btnEnabled ? 'linear-gradient(to bottom, #60a5fa, #3b82f6, #1d4ed8)' : 'rgba(59,130,246,0.25)',
                 border: 'none',
-                borderBottom: '4px solid #1a3fa8',
-                boxShadow: '0 4px 0 0 #1e40af, inset 0 1px 0 rgba(255,255,255,0.2)',
+                borderBottom: btnEnabled ? '4px solid #1a3fa8' : '4px solid rgba(26,63,168,0.4)',
+                boxShadow: btnEnabled ? '0 4px 0 0 #1e40af, inset 0 1px 0 rgba(255,255,255,0.2)' : 'none',
                 color: '#fff', fontSize: 16, fontWeight: 900,
-                cursor: 'pointer',
+                cursor: btnEnabled ? 'pointer' : 'not-allowed',
+                opacity: btnEnabled ? 1 : 0.45,
+                transition: 'opacity 0.4s ease, background 0.3s ease, box-shadow 0.3s ease, border-bottom 0.3s ease',
                 letterSpacing: '-0.01em',
                 WebkitTapHighlightColor: 'transparent',
               }}

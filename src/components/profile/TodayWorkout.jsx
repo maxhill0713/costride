@@ -15,7 +15,7 @@ import HomeSummaryModal from '../home/WorkoutSummaryModal.jsx';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 
 import { useTimer } from '../TimerContext';
-import { recordTrainedOnRestDay, useRestDayCredit, hasRestDayCredit } from '../../lib/weekSwaps.js';
+import { recordTrainedOnRestDay, useRestDayCredit as spendRestDayCredit, hasRestDayCredit } from '../../lib/weekSwaps.js';
 
 const DAY_NAMES_FULL = ['', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 
@@ -119,6 +119,7 @@ function WorkoutSwitcherModal({ open, onClose, currentUser, activeDayKey, adjust
 export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutStart, onWorkoutLogged, onOverrideDayChange, checkedInToday = false }) {
   const { restTimer, setRestTimer, isTimerActive, setIsTimerActive, initialRestTime, setInitialRestTime, openTimerBar, setOpenTimerBar, setTimerWorkout } = useTimer();
   const [editingIndex, setEditingIndex] = useState(null);
+  const [editingGroupedSet, setEditingGroupedSet] = useState(null);
   const [editWeight, setEditWeight] = useState('');
   const [editReps, setEditReps] = useState('');
   const [editSets, setEditSets] = useState([]);
@@ -1181,7 +1182,7 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
         onSelect={(dayKey, mode) => {
           if (mode === 'rest-to-training') {
             // User is spending their rest-day credit to swap a future rest day to a training day
-            useRestDayCredit(dayKey);
+            spendRestDayCredit(dayKey);
             window.dispatchEvent(new Event('weekSwapChanged'));
           } else {
             const newOverride = dayKey === adjustedDay ? null : dayKey;

@@ -330,6 +330,14 @@ export default function Profile() {
     },
   });
 
+  const filteredPosts = useMemo(() => userPosts.filter((post) =>
+    (post.image_url || post.video_url) &&
+    !post.content?.includes('Well done, workout') &&
+    post.gym_join !== true &&
+    !post.is_hidden
+  ), [userPosts]);
+  const friendCount = friends.length;
+
   if (!currentUser) {
     return (
 <div className="min-h-screen bg-[linear-gradient(to_bottom_right,#02040a,#0d2360,#02040a)]">
@@ -371,13 +379,6 @@ export default function Profile() {
   const primaryGymId = currentUser?.primary_gym_id;
   const primaryGym = memberGymsData.find((g) => g.id === primaryGymId);
   const currentStreak = currentUser?.current_streak || 0;
-  const filteredPosts = useMemo(() => userPosts.filter((post) =>
-    (post.image_url || post.video_url) &&
-    !post.content?.includes('Well done, workout') &&
-    post.gym_join !== true &&
-    !post.is_hidden
-  ), [userPosts]);
-  const friendCount = friends.length;
 
 
   return (
