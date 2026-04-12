@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Link } from 'react-router-dom';
@@ -72,8 +72,7 @@ const validateFile = (file) =>
   });
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Bottom-sheet animation variants — slides up from the bottom edge
-// Overlay fades independently, identical pattern to CreateSplitModal
+// Bottom-sheet animation variants
 // ─────────────────────────────────────────────────────────────────────────────
 const overlayVariants = {
   hidden:  { opacity: 0 },
@@ -82,30 +81,9 @@ const overlayVariants = {
 };
 
 const sheetVariants = {
-  hidden: {
-    y: '100%',
-    opacity: 1,
-  },
-  visible: {
-    y: 0,
-    opacity: 1,
-    transition: {
-      type: 'spring',
-      stiffness: 380,
-      damping: 36,
-      mass: 1,
-    },
-  },
-  exit: {
-    y: '100%',
-    opacity: 1,
-    transition: {
-      type: 'spring',
-      stiffness: 420,
-      damping: 40,
-      mass: 0.9,
-    },
-  },
+  hidden:  { y: '100%', opacity: 1 },
+  visible: { y: 0, opacity: 1, transition: { type: 'spring', stiffness: 380, damping: 36, mass: 1 } },
+  exit:    { y: '100%', opacity: 1, transition: { type: 'spring', stiffness: 420, damping: 40, mass: 0.9 } },
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -227,6 +205,14 @@ export default function Profile() {
     staleTime: 30000,
   });
 
+  // ALL useMemo calls must be here — before any early returns
+  const filteredPosts = useMemo(() => userPosts.filter((post) =>
+    (post.image_url || post.video_url) &&
+    !post.content?.includes('Well done, workout') &&
+    post.gym_join !== true &&
+    !post.is_hidden
+  ), [userPosts]);
+
   useEffect(() => {
     if (currentUser?.dark_mode) {
       document.documentElement.classList.add('dark');
@@ -330,11 +316,12 @@ export default function Profile() {
     },
   });
 
+  // Loading skeleton — early return AFTER all hooks
   if (!currentUser) {
     return (
-<div className="min-h-screen bg-[linear-gradient(to_bottom_right,#02040a,#0d2360,#02040a)]">
-      <div style={{ position: 'fixed', inset: 0, zIndex: -1, background: 'linear-gradient(to bottom right, #02040a, #0d2360, #02040a)' }} />
-      {/* ── TOP BAR ── */}        <div className="max-w-4xl mx-auto px-4 pt-4 pb-3 flex items-center justify-between">
+      <div className="min-h-screen bg-[linear-gradient(to_bottom_right,#02040a,#0d2360,#02040a)]">
+        <div style={{ position: 'fixed', inset: 0, zIndex: -1, background: 'linear-gradient(to bottom right, #02040a, #0d2360, #02040a)' }} />
+        <div className="max-w-4xl mx-auto px-4 pt-4 pb-3 flex items-center justify-between">
           <div className="w-28 h-4 rounded bg-slate-700/60 animate-pulse" />
           <div className="w-6 h-6 rounded bg-slate-700/60 animate-pulse" />
         </div>
@@ -367,21 +354,11 @@ export default function Profile() {
     );
   }
 
-  const filteredPosts = useMemo(() => userPosts.filter((post) =>
-    (post.image_url || post.video_url) &&
-    !post.content?.includes('Well done, workout') &&
-    post.gym_join !== true &&
-    !post.is_hidden
-  ), [userPosts]);
-  const friendCount = friends.length;
-
   const displayName = currentUser?.display_name || currentUser?.username || currentUser?.full_name;
   const primaryGymId = currentUser?.primary_gym_id;
   const primaryGym = memberGymsData.find((g) => g.id === primaryGymId);
   const currentStreak = currentUser?.current_streak || 0;
-
-  if (!currentUser) return null;
-
+  const friendCount = friends.length;
 
   return (
     <div className="min-h-screen bg-[linear-gradient(to_bottom_right,#02040a,#0d2360,#02040a)]">
@@ -453,7 +430,7 @@ export default function Profile() {
               <>
                 {validEquipped.map((badgeId) => (
                   <div key={badgeId} className="w-7 h-7 rounded-lg flex items-center justify-center shadow ring-1 ring-black/30 overflow-hidden">
-                    <img 
+                    <img
                       src={badgeId === 'spartan' ? 'https://media.base44.com/images/public/694b637358644e1c22c8ec6b/04f579c72_spartanbadge.png' : 'https://media.base44.com/images/public/694b637358644e1c22c8ec6b/9bf9eb25d_beachbadge.png'}
                       alt={badgeId}
                       className="w-full h-full object-cover"
@@ -463,10 +440,10 @@ export default function Profile() {
                 <span className="text-[10px] text-slate-600 ml-0.5">tap to edit</span>
               </>
             ) : (
-            <div className="flex items-center gap-1.5">
-              <div className="w-7 h-7 rounded-lg border border-dashed border-slate-600 flex items-center justify-center"></div>
-              <span className="text-[10px] text-slate-600">tap to edit</span>
-            </div>
+              <div className="flex items-center gap-1.5">
+                <div className="w-7 h-7 rounded-lg border border-dashed border-slate-600 flex items-center justify-center"></div>
+                <span className="text-[10px] text-slate-600">tap to edit</span>
+              </div>
             );
           })()}
         </button>
@@ -580,7 +557,6 @@ export default function Profile() {
       <AnimatePresence>
         {showCreatePost && (
           <>
-            {/* Dim overlay: fades independently */}
             <motion.div
               key="create-post-overlay"
               className="fixed inset-0 z-40 bg-black/80 backdrop-blur-md"
@@ -590,8 +566,6 @@ export default function Profile() {
               exit="exit"
               onClick={closeCreatePost}
             />
-
-            {/* Sheet: springs up from the bottom */}
             <motion.div
               key="create-post-sheet"
               className="fixed bottom-0 left-0 right-0 z-50 flex justify-center px-5 pb-28 pt-4"
@@ -600,11 +574,7 @@ export default function Profile() {
               animate="visible"
               exit="exit"
             >
-              <div
-                className="w-full max-w-sm flex flex-col gap-4"
-                onClick={(e) => e.stopPropagation()}>
-
-                {/* ── POST CARD ── */}
+              <div className="w-full max-w-sm flex flex-col gap-4" onClick={(e) => e.stopPropagation()}>
                 <div
                   className="w-full overflow-hidden shadow-2xl shadow-black/40 rounded-3xl relative"
                   style={{
@@ -704,7 +674,6 @@ export default function Profile() {
                   </div>
                 </div>
 
-                {/* Action buttons */}
                 <div className="flex flex-col gap-3">
                   <button
                     onClick={() => createPostMutation.mutate({ content: postContent, image_url: postImage, video_url: postVideo, share_with_community: shareWithCommunity })}
@@ -724,7 +693,6 @@ export default function Profile() {
                     Cancel
                   </button>
                 </div>
-
               </div>
             </motion.div>
           </>

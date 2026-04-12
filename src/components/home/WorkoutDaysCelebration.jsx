@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
+import { getSwappedRestDay } from '@/lib/weekSwaps';
 
 // ── Audio ────────────────────────────────────────────────────────────────────
 function playCircleLevelUp() {
@@ -139,13 +140,15 @@ export default function WorkoutDaysCelebration({
     loggedDays.add(d === 0 ? 7 : d);
   });
   loggedDays.add(todayDowAdjusted);
+  
+  const swappedRestDay = getSwappedRestDay();
 
   const vertOffset = i => Math.round(Math.sin((i / (allDays.length - 1)) * Math.PI * 2) * 11);
 
   const getCircleProps = (day, i) => {
     const isToday        = day === todayDowAdjusted;
     const done           = loggedDays.has(day);
-    const isRestDay      = trainingDays.length > 0 && !trainingDays.includes(day) && !done;
+    const isRestDay      = trainingDays.length > 0 && !trainingDays.includes(day) && !done && day !== swappedRestDay;
     const isPast         = day < todayDowAdjusted;
     const isMissed       = !isRestDay && !done && isPast;
     const isPastRest     = isRestDay && (isPast || isToday);
