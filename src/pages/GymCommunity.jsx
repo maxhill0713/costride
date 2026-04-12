@@ -1614,7 +1614,7 @@ export default function GymCommunity() {
     <PullToRefresh onRefresh={async () => {await queryClient.invalidateQueries({ predicate: (q) => Array.isArray(q.queryKey) && q.queryKey.some((k) => k === gymId) });}}>
       <div className="min-h-screen">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full overflow-x-hidden">
-          <div className="relative">
+          <div className="relative overflow-hidden">
             <div className="absolute inset-0 z-0">
               {gym?.image_url ?
               <img src={gym.image_url} alt={gym?.name} className="w-full h-full object-cover" style={{ opacity: 0.55 }} loading="eager" fetchPriority="high" /> :
@@ -1662,7 +1662,7 @@ export default function GymCommunity() {
                 </div>
               </div>
             </div>
-            <div className="sticky top-0 z-20 relative pt-2" style={{ borderBottom: '1px solid rgba(255,255,255,0.07)', overflowX: 'auto', scrollbarWidth: 'none', WebkitOverflowScrolling: 'touch', background: 'linear-gradient(to bottom, rgba(2,4,10,0.95) 0%, rgba(13,35,96,0.92) 100%)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)' }}>
+            <div className="relative z-10 pt-2" style={{ borderBottom: '1px solid rgba(255,255,255,0.07)', overflowX: 'auto', scrollbarWidth: 'none', WebkitOverflowScrolling: 'touch' }}>
               <TabsList className="flex justify-start bg-transparent px-3 py-2 h-auto gap-1.5" style={{ width: 'max-content', minWidth: '100%' }}>
                 <TabsTrigger value="home" className={tabTriggerClass}><Home className="w-3.5 h-3.5" /><span>Home</span></TabsTrigger>
                 <TabsTrigger value="activity" className={tabTriggerClass}><Activity className="w-3.5 h-3.5" /><span>Activity</span></TabsTrigger>
