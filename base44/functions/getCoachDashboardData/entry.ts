@@ -14,16 +14,23 @@ Deno.serve(async (req) => {
     if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
     const body   = await req.json().catch(() => ({}));
-    const { gymId, coachId, limit = 200 } = body;
+    const { gymId, limit = 200 } = body;
 
     if (!gymId) return Response.json({ error: 'gymId is required' }, { status: 400 });
+
+    // Resolve coachId server-side from the authenticated user's email — never trust client-supplied coachId
+    const coachRecords = await base44.asServiceRole.entities.Coach.filter({
+      gym_id:     gymId,
+      user_email: user.email,
+    });
+    const verifiedCoachId = coachRecords[0]?.id || null;
 
     // Fetch bookings, check-ins, and assigned workouts in parallel
     const [bookings, checkIns, assignedWorkouts] = await Promise.all([
       base44.asServiceRole.entities.Booking.filter({ gym_id: gymId }, '-session_date', limit),
       base44.asServiceRole.entities.CheckIn.filter({ gym_id: gymId }, '-check_in_date', limit),
-      coachId
-        ? base44.asServiceRole.entities.AssignedWorkout.filter({ coach_id: coachId }, '-assigned_date', limit)
+      verifiedCoachId
+        ? base44.asServiceRole.entities.AssignedWorkout.filter({ coach_id: verifiedCoachId }, '-assigned_date', limit)
         : Promise.resolve([]),
     ]);
 
