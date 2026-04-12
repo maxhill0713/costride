@@ -575,16 +575,13 @@ export default function Home() {
     placeholderData: (prev) => prev,
   });
 
-  const activeChallengeIds = userChallengeParticipants.map(p => p.challenge_id).filter(Boolean);
-
-  const { data: userChallenges = [] } = useQuery({
-    queryKey: ['userChallenges', activeChallengeIds.join(',')],
-    queryFn: () => activeChallengeIds.length > 0
-      ? base44.entities.Challenge.filter({ id: { $in: activeChallengeIds }, status: 'active' })
-      : Promise.resolve([]),
-    enabled: activeChallengeIds.length > 0,
-    staleTime: 2 * 60 * 1000,
-    gcTime: 10 * 60 * 1000,
+  // Fetch active app challenges directly (the monthly ones like Discipline Builder, etc.)
+  const { data: activeAppChallenges = [] } = useQuery({
+    queryKey: ['activeAppChallenges'],
+    queryFn: () => base44.entities.Challenge.filter({ is_app_challenge: true, status: 'active' }),
+    enabled: !!currentUser?.id,
+    staleTime: 5 * 60 * 1000,
+    gcTime: 15 * 60 * 1000,
     placeholderData: (prev) => prev,
   });
 
@@ -818,8 +815,8 @@ export default function Home() {
     const freshUser = queryClient.getQueryData(['currentUser']);
     const newStreak = freshUser?.current_streak || userStreak + 1;
     setCelebrationStreakNum(newStreak);
-    // Build real challenges for celebration from the user's active challenge participants
-    const realChallenges = userChallenges.map(ch => {
+    // Build celebration data from the active app challenges (Discipline Builder, Witness My Gains, Weekend Warrior)
+    const realChallenges = activeAppChallenges.map(ch => {
       const participant = userChallengeParticipants.find(p => p.challenge_id === ch.id);
       const currentProgress = participant?.progress || 0;
       const previousProgress = Math.max(0, currentProgress - 1);
