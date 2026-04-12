@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import ShareWorkoutScreen from '../profile/ShareWorkoutScreen';
 import WorkoutDaysCelebration from './WorkoutDaysCelebration';
@@ -25,6 +25,76 @@ function StreakCelebration({
   setShowDaysCelebration,
   setJustLoggedDay,
 }) {
+
+  // Drive the streak animation imperatively on the injected DOM nodes
+  useEffect(() => {
+    if (!showStreakCelebration) return;
+
+    const stage  = document.getElementById('streak-anim-stage');
+    const p1     = document.getElementById('streak-anim-p1');
+    const p2     = document.getElementById('streak-anim-p2');
+    const numEl  = document.getElementById('streak-anim-num');
+    const lblEl  = document.getElementById('streak-anim-lbl');
+    if (!stage || !p1 || !p2 || !numEl || !lblEl) return;
+
+    // Reset
+    stage.style.opacity = '0';
+    stage.style.animation = 'none';
+    numEl.style.opacity = '0';
+    numEl.style.transform = 'scale(0.5)';
+    numEl.style.transition = '';
+    numEl.textContent = String(Math.max(0, celebrationStreakNum - 1));
+    p1.style.display = 'block';
+    p2.style.display = 'none';
+    p2.style.animation = 'none';
+    lblEl.style.display = 'none';
+    lblEl.style.opacity = '0';
+    lblEl.style.animation = 'none';
+    lblEl.textContent = 'Day Streak! 🔥';
+    lblEl.style.fontSize = '22px';
+    lblEl.style.fontWeight = '900';
+    lblEl.style.color = '#fff';
+    lblEl.style.textShadow = '0 2px 8px rgba(0,0,0,0.7)';
+    lblEl.style.letterSpacing = '-0.02em';
+    lblEl.style.marginTop = '4px';
+
+    const timers = [];
+
+    // t=0 — stage bounces in
+    void stage.offsetWidth;
+    stage.style.animation = 'streakBounceIn 0.62s cubic-bezier(0.34,1.56,0.64,1) forwards';
+    stage.style.opacity = '1';
+
+    // t=500ms — number pops in (old streak)
+    timers.push(setTimeout(() => {
+      void numEl.offsetWidth;
+      numEl.style.animation = 'streakNumPop 0.55s cubic-bezier(0.34,1.56,0.64,1) forwards';
+    }, 500));
+
+    // t=1000ms — swap pose, glow, update number to new streak
+    timers.push(setTimeout(() => {
+      // Swap pose
+      p1.style.display = 'none';
+      p2.style.display = 'block';
+      void p2.offsetWidth;
+      p2.style.animation = 'streakIconPop 0.55s cubic-bezier(0.34,1.56,0.64,1) forwards';
+      // Glow pulse on stage
+      stage.style.animation = 'streakGlowPulse 1s ease-in-out infinite';
+      // Update number
+      numEl.textContent = String(celebrationStreakNum);
+      void numEl.offsetWidth;
+      numEl.style.animation = 'streakNumPop 0.5s cubic-bezier(0.34,1.56,0.64,1) forwards';
+    }, 1000));
+
+    // t=1600ms — label fades up
+    timers.push(setTimeout(() => {
+      lblEl.style.display = 'block';
+      void lblEl.offsetWidth;
+      lblEl.style.animation = 'streakFadeUp 0.4s ease forwards';
+    }, 1600));
+
+    return () => timers.forEach(clearTimeout);
+  }, [showStreakCelebration]);
 
   return (
     <>
