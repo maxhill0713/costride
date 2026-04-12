@@ -28,6 +28,18 @@ Deno.serve(async (req) => {
     const base44 = createClientFromRequest(req);
     const payload = await req.json();
 
+    // Guard: only accept calls from Base44 automations (payload includes 'automation' object)
+    // or calls with a valid internal secret header
+    const internalSecret = Deno.env.get('MODERATION_SECRET');
+    const headerSecret = req.headers.get('x-moderation-secret');
+    const hasAutomationPayload = payload?.automation?.id;
+    const hasValidSecret = internalSecret && headerSecret === internalSecret;
+
+    if (!hasAutomationPayload && !hasValidSecret) {
+      console.warn('autoModeratePostContent: rejected unauthorized call');
+      return Response.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     const { event, data } = payload;
 
     if (event?.type !== 'create') {

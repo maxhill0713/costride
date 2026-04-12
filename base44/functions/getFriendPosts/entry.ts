@@ -10,8 +10,19 @@ Deno.serve(async (req) => {
 
     const { friendIds = [], limit = 200 } = await req.json();
 
+    // Verify friendIds against actual accepted Friend records — don't trust client-supplied IDs
+    let verifiedFriendIds = [];
+    if (friendIds.length > 0) {
+      const friendRecords = await base44.asServiceRole.entities.Friend.filter({
+        user_id: user.id,
+        status: 'accepted'
+      }, null, 500);
+      const trustedIds = new Set(friendRecords.map(f => f.friend_id).filter(Boolean));
+      verifiedFriendIds = friendIds.filter(id => trustedIds.has(id));
+    }
+
     // Include the user's own posts too
-    const authorIds = [...new Set([...friendIds, user.id])].filter(Boolean);
+    const authorIds = [...new Set([...verifiedFriendIds, user.id])].filter(Boolean);
 
     if (authorIds.length === 0) {
       return Response.json({ posts: [] });
