@@ -230,7 +230,7 @@ function KpiStrip() {
 ═══════════════════════════════════════════════════════════════ */
 function RetentionFunnelSection() {
   return (
-    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, alignItems: "stretch" }}>
 
       {/* SVG Funnel — reduced */}
       <Card style={{ padding: "13px 14px" }}>
@@ -301,23 +301,25 @@ function RetentionFunnelSection() {
         </div>
       </Card>
 
-      {/* Trend lines — halved height */}
-      <Card style={{ padding: "13px 14px" }}>
+      {/* Trend lines — fills card height */}
+      <Card style={{ padding: "13px 14px", display: "flex", flexDirection: "column" }}>
         <SLabel right="6 months" sub="How each cohort milestone has improved month-on-month">
           Retention Rate Trends
         </SLabel>
-        <ResponsiveContainer width="100%" height={89}>  {/* was 178 */}
-          <LineChart data={RETENTION_OVER_TIME} margin={{ top: 4, right: 6, bottom: 0, left: -28 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" vertical={false}/>
-            <XAxis dataKey="m" tick={tick} axisLine={false} tickLine={false}/>
-            <YAxis tick={tick} axisLine={false} tickLine={false} domain={[30, 100]}/>
-            <Tooltip content={<LineTip/>}/>
-            <Line type="monotone" dataKey="w1" name="Week 1"  stroke={C.cyan}        strokeWidth={2} dot={false} activeDot={{ r: 3, fill: C.cyan,  stroke: C.card, strokeWidth: 2 }}/>
-            <Line type="monotone" dataKey="m1" name="Month 1" stroke={C.blue}        strokeWidth={2} dot={false} activeDot={{ r: 3, fill: C.blue,  stroke: C.card, strokeWidth: 2 }}/>
-            <Line type="monotone" dataKey="m3" name="Month 3" stroke={C.cyan + "77"} strokeWidth={2} dot={false} activeDot={{ r: 3, fill: C.cyan,  stroke: C.card, strokeWidth: 2 }} strokeDasharray="4 3"/>
-          </LineChart>
-        </ResponsiveContainer>
-        <div style={{ display: "flex", gap: 14, marginTop: 8 }}>
+        <div style={{ flex: 1, minHeight: 0 }}>
+          <ResponsiveContainer width="100%" height="100%">
+            <LineChart data={RETENTION_OVER_TIME} margin={{ top: 4, right: 6, bottom: 0, left: -28 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" vertical={false}/>
+              <XAxis dataKey="m" tick={tick} axisLine={false} tickLine={false}/>
+              <YAxis tick={tick} axisLine={false} tickLine={false} domain={[30, 100]}/>
+              <Tooltip content={<LineTip/>}/>
+              <Line type="monotone" dataKey="w1" name="Week 1"  stroke={C.cyan}        strokeWidth={2} dot={false} activeDot={{ r: 3, fill: C.cyan,  stroke: C.card, strokeWidth: 2 }}/>
+              <Line type="monotone" dataKey="m1" name="Month 1" stroke={C.blue}        strokeWidth={2} dot={false} activeDot={{ r: 3, fill: C.blue,  stroke: C.card, strokeWidth: 2 }}/>
+              <Line type="monotone" dataKey="m3" name="Month 3" stroke={C.cyan + "77"} strokeWidth={2} dot={false} activeDot={{ r: 3, fill: C.cyan,  stroke: C.card, strokeWidth: 2 }} strokeDasharray="4 3"/>
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
+        <div style={{ display: "flex", gap: 14, marginTop: 8, flexShrink: 0 }}>
           {[{ col: C.cyan, label: "Week 1" }, { col: C.blue, label: "Month 1" }, { col: C.cyan + "77", label: "Month 3" }].map((l, i) => (
             <div key={i} style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 10, color: C.t3 }}>
               <div style={{ width: 14, height: 2, background: l.col, borderRadius: 1 }}/> {l.label}
