@@ -87,6 +87,24 @@ export default function Gyms() {
   const [confirmLeaveGym, setConfirmLeaveGym] = useState(null);
   const queryClient = useQueryClient();
 
+  const prefetchGymData = (gymId) => {
+    queryClient.prefetchQuery({
+      queryKey: ['gym', gymId],
+      queryFn: () => base44.entities.Gym.filter({ id: gymId }).then(r => r[0]),
+      staleTime: 5 * 60 * 1000,
+    });
+    queryClient.prefetchQuery({
+      queryKey: ['gymActivityFeed', gymId],
+      queryFn: () => base44.functions.invoke('getGymActivityFeed', { gymId }).then(r => r.data),
+      staleTime: 2 * 60 * 1000,
+    });
+    queryClient.prefetchQuery({
+      queryKey: ['leaderboards', gymId],
+      queryFn: () => base44.functions.invoke('getGymLeaderboards', { gymId }).then(r => r.data),
+      staleTime: 5 * 60 * 1000,
+    });
+  };
+
   usePrimaryGymDialogStyles();
 
   // ── Overscroll background fix ──
@@ -449,7 +467,7 @@ export default function Gyms() {
                           <div className="w-full h-full bg-gradient-to-br from-blue-900/60 via-slate-800 to-slate-900 flex items-center justify-center"><Dumbbell className="w-12 h-12 text-slate-600" /></div>
                         }
                         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-                        <Link to={createPageUrl('GymCommunity') + '?id=' + gym.id} className="absolute inset-0 flex items-center justify-center transition-opacity duration-300">
+                        <Link to={createPageUrl('GymCommunity') + '?id=' + gym.id} onMouseEnter={() => prefetchGymData(gym.id)} onMouseDown={() => prefetchGymData(gym.id)} className="absolute inset-0 flex items-center justify-center transition-opacity duration-300">
                           <Button className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md font-bold focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 py-2 bg-gradient-to-b from-blue-500 via-blue-600 to-blue-700 backdrop-blur-md text-white border border-transparent text-xs h-8 px-3 shadow-[0_3px_0_0_#1a3fa8,0_8px_20px_rgba(0,0,100,0.5),inset_0_1px_0_rgba(255,255,255,0.15),inset_0_0_20px_rgba(255,255,255,0.03)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 transform-gpu">
                             <Dumbbell className="w-3 h-3 mr-1.5" />Enter Gym
                           </Button>
@@ -673,7 +691,7 @@ export default function Gyms() {
                           </div>
                         )}
                         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-                        <Link to={createPageUrl('GymCommunity') + '?id=' + gym.id} className="absolute inset-0 flex items-center justify-center transition-opacity duration-300">
+                        <Link to={createPageUrl('GymCommunity') + '?id=' + gym.id} onMouseEnter={() => prefetchGymData(gym.id)} onMouseDown={() => prefetchGymData(gym.id)} className="absolute inset-0 flex items-center justify-center transition-opacity duration-300">
                           <Button className="hover:bg-primary/90 inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md font-bold focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 py-2 bg-gradient-to-b from-blue-500 via-blue-600 to-blue-700 backdrop-blur-md text-white border border-transparent text-xs h-8 px-3 shadow-[0_3px_0_0_#1a3fa8,0_8px_20px_rgba(0,0,100,0.5),inset_0_1px_0_rgba(255,255,255,0.15),inset_0_0_20px_rgba(255,255,255,0.03)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 transform-gpu">
                             <Dumbbell className="w-3 h-3 mr-1.5" />Enter Gym
                           </Button>
