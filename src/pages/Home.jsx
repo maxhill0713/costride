@@ -1453,7 +1453,7 @@ export default function Home() {
           {/* ── DEV: Test log workout animation ── */}
           <button
             onClick={() => handleWorkoutLogged(
-              [{ title: 'Summer Squat Challenge', reward: 'Free protein shake' }],
+              [{ title: 'Summer Squat Challenge', reward: 'Free protein shake', previous_value: 3, new_value: 7, target_value: 10, emoji: '🏋️' }],
               [
                 { exercise: 'Bench Press', sets: '4', reps: '8', weight: '80' },
                 { exercise: 'Squat',       sets: '3', reps: '10', weight: '100' },

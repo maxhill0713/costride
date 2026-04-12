@@ -86,12 +86,7 @@ function StreakCelebration({
       numEl.style.animation = 'streakNumPop 0.5s cubic-bezier(0.34,1.56,0.64,1) forwards';
     }, 1000));
 
-    // t=1600ms — label fades up
-    timers.push(setTimeout(() => {
-      lblEl.style.display = 'block';
-      void lblEl.offsetWidth;
-      lblEl.style.animation = 'streakFadeUp 0.4s ease forwards';
-    }, 1600));
+    // label stays hidden
 
     return () => timers.forEach(clearTimeout);
   }, [showStreakCelebration]);
