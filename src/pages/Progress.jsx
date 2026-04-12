@@ -86,29 +86,30 @@ export default function Progress() {
 
       <Tabs defaultValue="analytics" className="w-full">
 
-        {/* ── Fixed header: 10% taller (3.2rem), gap above tabs via pt-2, tabs near bottom via pb-1.5 ── */}
+        {/* ── Fixed header ── */}
         <div
           className="fixed top-0 left-0 right-0 z-20 bg-slate-900/95 backdrop-blur-xl border-b-2 border-blue-700/40 px-3 md:px-4"
           style={{ paddingTop: 'calc(0.4rem + env(safe-area-inset-top))', paddingBottom: 0 }}
         >
           <div className="max-w-4xl mx-auto">
             <div className="relative flex items-end justify-center h-[3.2rem] pt-2 pb-1.5">
-              <TabsList className="flex bg-transparent p-0 gap-6 border-0 h-auto">
-                <TabsTrigger value="analytics" className="data-[state=active]:text-blue-400 data-[state=active]:border-b-2 data-[state=active]:border-blue-400 data-[state=active]:bg-transparent text-slate-400 hover:text-slate-300 border-b-2 border-transparent rounded-none px-0 pb-0 pt-0 transition-colors bg-transparent text-[15px] justify-center leading-none">
+              {/* Tabs use pb-2 so text floats ~2px above the border indicator */}
+              <TabsList className="flex bg-transparent p-0 gap-6 border-0 h-auto mb-[-2px]">
+                <TabsTrigger value="analytics" className="data-[state=active]:text-blue-400 data-[state=active]:border-b-2 data-[state=active]:border-blue-400 data-[state=active]:bg-transparent text-slate-400 hover:text-slate-300 border-b-2 border-transparent rounded-none px-0 pb-2 pt-0 transition-colors bg-transparent text-[15px] justify-center leading-none">
                   <BarChart3 className="w-4 h-4 mr-1.5" />Analytics
                 </TabsTrigger>
-                <TabsTrigger value="goals" className="data-[state=active]:text-blue-400 data-[state=active]:border-b-2 data-[state=active]:border-blue-400 data-[state=active]:bg-transparent text-slate-400 hover:text-slate-300 border-b-2 border-transparent rounded-none px-0 pb-0 pt-0 transition-colors bg-transparent text-[15px] justify-center leading-none">
+                <TabsTrigger value="goals" className="data-[state=active]:text-blue-400 data-[state=active]:border-b-2 data-[state=active]:border-blue-400 data-[state=active]:bg-transparent text-slate-400 hover:text-slate-300 border-b-2 border-transparent rounded-none px-0 pb-2 pt-0 transition-colors bg-transparent text-[15px] justify-center leading-none">
                   <Target className="w-4 h-4 mr-1.5" />Targets
                 </TabsTrigger>
-                <TabsTrigger value="nutrition" className="data-[state=active]:text-blue-400 data-[state=active]:border-b-2 data-[state=active]:border-blue-400 data-[state=active]:bg-transparent text-slate-400 hover:text-slate-300 border-b-2 border-transparent rounded-none px-0 pb-0 pt-0 transition-colors bg-transparent text-[15px] justify-center leading-none">
+                <TabsTrigger value="nutrition" className="data-[state=active]:text-blue-400 data-[state=active]:border-b-2 data-[state=active]:border-blue-400 data-[state=active]:bg-transparent text-slate-400 hover:text-slate-300 border-b-2 border-transparent rounded-none px-0 pb-2 pt-0 transition-colors bg-transparent text-[15px] justify-center leading-none">
                   <Utensils className="w-4 h-4 mr-1.5" />Nutrition
                 </TabsTrigger>
               </TabsList>
 
-              {/* Message icon — same bottom baseline as tabs */}
+              {/* Message icon — raised slightly to match tab text baseline */}
               <button
                 onClick={() => setShowTrainer(true)}
-                className="absolute right-0 bottom-1.5 flex items-center justify-center w-8 h-8 rounded-full text-slate-400 active:scale-90 transition-transform"
+                className="absolute right-0 bottom-3.5 flex items-center justify-center w-8 h-8 rounded-full text-slate-400 active:scale-90 transition-transform"
                 aria-label="Chats"
               >
                 <MessageCircle className="w-5 h-5" />
@@ -117,7 +118,7 @@ export default function Progress() {
           </div>
         </div>
 
-        {/* Spacer — matches new header height */}
+        {/* Spacer */}
         <div style={{ height: 'calc(3.8rem + env(safe-area-inset-top))' }} />
 
         <TabsContent value="analytics" className="mt-0 px-3 md:px-4 py-1 pb-[130px] md:pb-5">
