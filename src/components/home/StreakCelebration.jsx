@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import ShareWorkoutScreen from '../profile/ShareWorkoutScreen';
 import WorkoutDaysCelebration from './WorkoutDaysCelebration';
@@ -24,6 +24,50 @@ function StreakCelebration({
   setShowDaysCelebration,
   setJustLoggedDay,
 }) {
+  useEffect(() => {
+    if (!showStreakCelebration) return;
+    const stage = document.getElementById('streak-anim-stage');
+    const numEl = document.getElementById('streak-anim-num');
+    const p1 = document.getElementById('streak-anim-p1');
+    const p2 = document.getElementById('streak-anim-p2');
+    if (!stage || !numEl) return;
+
+    // Reset
+    stage.style.opacity = '0';
+    stage.style.transform = 'scale(0.4) translateY(40px)';
+    if (numEl) { numEl.style.opacity = '0'; numEl.style.transform = 'scale(0.3)'; numEl.textContent = String(celebrationStreakNum); }
+    if (p1) p1.style.display = 'block';
+    if (p2) p2.style.display = 'none';
+
+    // Bounce in icon
+    const t1 = setTimeout(() => {
+      stage.style.transition = 'opacity 0.18s ease, transform 0.55s cubic-bezier(0.34,1.6,0.64,1)';
+      stage.style.opacity = '1';
+      stage.style.transform = 'scale(1) translateY(0)';
+    }, 80);
+
+    // Pop in number
+    const t2 = setTimeout(() => {
+      numEl.style.transition = 'opacity 0.18s ease, transform 0.5s cubic-bezier(0.34,1.6,0.64,1)';
+      numEl.style.opacity = '1';
+      numEl.style.transform = 'scale(1)';
+    }, 500);
+
+    // Swap to pose 2
+    const t3 = setTimeout(() => {
+      if (p1) p1.style.display = 'none';
+      if (p2) { p2.style.display = 'block'; }
+    }, 900);
+
+    // Glow pulse on stage
+    const t4 = setTimeout(() => {
+      stage.style.filter = 'drop-shadow(0 0 28px rgba(249,115,22,0.9))';
+      stage.style.transition = 'filter 0.4s ease';
+    }, 950);
+
+    return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); clearTimeout(t4); };
+  }, [showStreakCelebration, celebrationStreakNum]);
+
   return (
     <>
       {/* STAGE 1 — Streak animation */}
