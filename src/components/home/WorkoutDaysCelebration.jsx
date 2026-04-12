@@ -182,7 +182,7 @@ export default function WorkoutDaysCelebration({
         ? '0 3px 0 0 #15803d, 0 5px 12px rgba(0,80,0,0.3), inset 0 1px 0 rgba(255,255,255,0.2)'
         : '0 4px 0 0 #111827, 0 6px 14px rgba(15,20,35,0.5), inset 0 1px 0 rgba(255,255,255,0.1)';
       if (done)     return '0 4px 0 0 #1a3fa8, 0 7px 18px rgba(0,0,100,0.55), inset 0 1px 0 rgba(255,255,255,0.25)';
-      if (isMissed) return '0 4px 0 0 #991b1b, 0 7px 18px rgba(180,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.25)';
+      if (isMissed) return '0 4px 0 0 #991b1b, inset 0 1px 0 rgba(255,255,255,0.25)';
       return '0 4px 0 0 #111827, 0 6px 14px rgba(15,20,35,0.5), inset 0 1px 0 rgba(255,255,255,0.1)';
     };
 
@@ -265,7 +265,7 @@ export default function WorkoutDaysCelebration({
         transition: `background ${BACKDROP_FADE}ms ease-in-out, backdrop-filter ${BACKDROP_FADE}ms ease-in-out`,
         display: 'flex', alignItems: 'flex-start', justifyContent: 'center',
         // ── Shifted down ──
-        paddingTop: 'calc(env(safe-area-inset-top) + 380px)',
+        paddingTop: 'calc(env(safe-area-inset-top) + 398px)',
         pointerEvents: 'none',
       }}
     >

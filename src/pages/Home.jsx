@@ -840,8 +840,6 @@ export default function Home() {
       setShowStreakCelebration(false);
       if (finalChallenges.length > 0) {
         setShowChallengesCelebration(true);
-        const celebT2 = setTimeout(() => { setShowChallengesCelebration(false); showShare(); }, 4000);
-        celebTimers.current.push(celebT2);
       } else {
         showShare();
       }
@@ -1418,6 +1416,7 @@ export default function Home() {
         setShowShareWorkout={setShowShareWorkout}
         setShowDaysCelebration={setShowDaysCelebration}
         setJustLoggedDay={setJustLoggedDay}
+        onChallengesContinue={() => { setShowChallengesCelebration(false); setShowShareWorkout(true); }}
       />
 
       <StreakVariantPicker isOpen={showStreakVariants} onClose={() => setShowStreakVariants(false)} onSelect={handleStreakVariantSelect} selectedVariant={streakVariant} streakFreezes={currentUser?.streak_freezes || 0} unlockedVariants={currentUser?.unlocked_streak_variants || []} />
