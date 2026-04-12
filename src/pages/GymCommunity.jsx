@@ -1582,19 +1582,12 @@ export default function GymCommunity() {
 
   return (
     <PullToRefresh onRefresh={async () => {await queryClient.invalidateQueries({ predicate: (q) => Array.isArray(q.queryKey) && q.queryKey.some((k) => k === gymId) });}}>
-      {/* ── Page slide-in animation wrapper ── */}
-      <motion.div
-        className="min-h-screen bg-[linear-gradient(to_bottom_right,#02040a,#0d2360,#02040a)]"
-        variants={pageSlideVariants}
-        initial="hidden"
-        animate="visible"
-        exit="exit">
-        
+      <div className="min-h-screen bg-[linear-gradient(to_bottom_right,#02040a,#0d2360,#02040a)]">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full overflow-x-hidden">
           <div className="relative overflow-hidden">
             <div className="absolute inset-0 z-0">
-              {gym.image_url ?
-              <img src={gym.image_url} alt={gym.name} className="w-full h-full object-cover" style={{ opacity: 0.55 }} loading="eager" fetchPriority="high" /> :
+              {gym?.image_url ?
+              <img src={gym.image_url} alt={gym?.name} className="w-full h-full object-cover" style={{ opacity: 0.55 }} loading="eager" fetchPriority="high" /> :
               <div className="w-full h-full" style={{ background: 'linear-gradient(135deg, #0f172a 0%, #1e3a5f 100%)' }} />
               }
               <div className="absolute inset-0" style={{ background: 'linear-gradient(to bottom, rgba(2,4,10,0.3) 0%, rgba(2,4,10,0.0) 40%, rgba(2,4,10,0.75) 100%)' }} />
@@ -1604,12 +1597,12 @@ export default function GymCommunity() {
               <div className="flex items-start justify-between mb-3">
                 <div className="flex-1 mr-4">
                   <div className="flex items-center gap-2 mb-1">
-                    <h1 className={`font-black text-white drop-shadow-lg ${gym.name.length > 28 ? 'text-base' : gym.name.length > 18 ? 'text-lg' : 'text-xl'}`}>{gym.name}</h1>
-                    {gym.verified && <BadgeCheck className="w-4 h-4 text-blue-400 flex-shrink-0 drop-shadow" />}
+                    <h1 className={`font-black text-white drop-shadow-lg ${(gym?.name?.length || 0) > 28 ? 'text-base' : (gym?.name?.length || 0) > 18 ? 'text-lg' : 'text-xl'}`}>{gym?.name || ''}</h1>
+                    {gym?.verified && <BadgeCheck className="w-4 h-4 text-blue-400 flex-shrink-0 drop-shadow" />}
                   </div>
                   <div className="flex items-center gap-3">
-                    <p className="text-white/60 text-[11px] flex items-center gap-1"><MapPin className="w-3 h-3" />{gym.city}</p>
-                    {!isGhostGym &&
+                    <p className="text-white/60 text-[11px] flex items-center gap-1"><MapPin className="w-3 h-3" />{gym?.city}</p>
+                    {gym && !isGhostGym &&
                     <div className="flex items-center gap-1 px-2 py-0.5 rounded-full" style={{ background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.15)' }}>
                         <Users className="w-3 h-3 text-white/70" />
                         <span className="text-[11px] font-bold text-white">{gym?.members_count || 0} members</span>
@@ -1618,7 +1611,7 @@ export default function GymCommunity() {
                   </div>
                 </div>
                 <div className="flex flex-col gap-1.5 flex-shrink-0">
-                  {isGhostGym && !isGymOwner &&
+                  {gym && isGhostGym && !isGymOwner &&
                   <button onClick={() => setShowInviteOwnerModal(true)} className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold text-white bg-gradient-to-b from-purple-400 via-purple-500 to-purple-600 shadow-[0_3px_0_0_#5b21b6,0_6px_20px_rgba(120,40,220,0.4)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100">
                       <Crown className="w-3.5 h-3.5" />Make Official
                     </button>
@@ -1914,7 +1907,7 @@ export default function GymCommunity() {
         <CreateChallengeModal open={showCreateChallenge} onClose={() => setShowCreateChallenge(false)} gyms={allGyms} onSave={(data) => createChallengeMutation.mutate(data)} isLoading={createChallengeMutation.isPending} />
         <InviteOwnerModal isOpen={showInviteOwnerModal} onClose={() => setShowInviteOwnerModal(false)} gym={gym} currentUser={currentUser} />
         <CoachProfileModal coach={selectedCoach} open={!!selectedCoach} onClose={() => setSelectedCoach(null)} gymClasses={classes} />
-      </motion.div>
+      </div>
     </PullToRefresh>);
 
 }
