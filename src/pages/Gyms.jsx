@@ -61,9 +61,7 @@ function usePrimaryGymDialogStyles() {
 
 // ─── Gym search sanitiser ─────────────────────────────────────────────────────
 const sanitiseGymSearch = (v) =>
-v.
-replace(/[<>{};`\\]/g, '').
-slice(0, 60);
+  v.replace(/[<>{};`\\]/g, '').slice(0, 60);
 // ─────────────────────────────────────────────────────────────────────────────
 
 export default function Gyms() {
@@ -139,7 +137,7 @@ export default function Gyms() {
     try {
       return JSON.parse(localStorage.getItem(`recentlyViewedGyms_${currentUser.id}`) || '[]').slice(0, 3);
     }
-    catch {return [];}
+    catch { return []; }
   }, [currentUser?.id]);
   const memberGymIds = gymMemberships.map((m) => m.gym_id);
   const { data: userGymsData = [] } = useQuery({
@@ -159,7 +157,7 @@ export default function Gyms() {
       await queryClient.cancelQueries({ queryKey: ['gyms'] });
       const previous = queryClient.getQueryData(['gyms']);
       queryClient.setQueryData(['gyms'], (old = []) =>
-      old.map((gym) => gym.id === gymId ? { ...gym, image_url } : gym)
+        old.map((gym) => gym.id === gymId ? { ...gym, image_url } : gym)
       );
       return { previous };
     },
@@ -200,7 +198,7 @@ export default function Gyms() {
       await queryClient.cancelQueries({ queryKey: ['gymMemberships', currentUser?.id] });
       const previous = queryClient.getQueryData(['gymMemberships', currentUser?.id]);
       queryClient.setQueryData(['gymMemberships', currentUser?.id], (old = []) =>
-      old.filter((m) => m.gym_id !== gymId)
+        old.filter((m) => m.gym_id !== gymId)
       );
       return { previous };
     },
@@ -224,17 +222,17 @@ export default function Gyms() {
 
   const filteredGyms = gyms.filter((gym) => {
     const matchesSearch = gym.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    gym.city?.toLowerCase().includes(searchQuery.toLowerCase());
+      gym.city?.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesType = selectedType === 'all' || gym.type === selectedType;
     const matchesDistance = maxDistance === 'all' || gym.distance_km && gym.distance_km <= parseFloat(maxDistance);
     const matchesEquipment = selectedEquipment === 'all' ||
-    gym.equipment && gym.equipment.includes(selectedEquipment);
+      gym.equipment && gym.equipment.includes(selectedEquipment);
     const isGhostOrApproved = gym.status === 'approved' || !gym.admin_id && !gym.owner_email;
     return matchesSearch && matchesType && matchesDistance && matchesEquipment && isGhostOrApproved;
   });
   const toggleSave = (gymId) => {
     setSavedGyms((prev) =>
-    prev.includes(gymId) ? prev.filter((id) => id !== gymId) : [...prev, gymId]
+      prev.includes(gymId) ? prev.filter((id) => id !== gymId) : [...prev, gymId]
     );
   };
   const searchPlaces = async (query) => {
@@ -291,7 +289,7 @@ export default function Gyms() {
     }
     if (!isOwner) {
       const userCreatedGhostGyms = gyms.filter((g) =>
-      g.created_by === currentUser?.email && !g.admin_id && !g.owner_email
+        g.created_by === currentUser?.email && !g.admin_id && !g.owner_email
       );
       if (userCreatedGhostGyms.length >= 3) {
         alert('You have reached the limit of 3 ghost gyms you can create. Please claim ownership if you manage this gym.');
@@ -341,8 +339,8 @@ export default function Gyms() {
         <div className="bg-slate-800/80 backdrop-blur-md border border-slate-700/50 rounded-2xl overflow-hidden hover:border-blue-500/50 transition-all duration-300 hover:shadow-xl">
           <div className="relative w-full h-40 bg-gradient-to-br from-slate-700 to-slate-800 overflow-hidden">
             {gym.image_url ?
-            <img src={gym.image_url} alt={gym.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" loading="lazy" /> :
-            <div className="w-full h-full bg-gradient-to-br from-blue-900/60 via-slate-800 to-slate-900 flex items-center justify-center"><Dumbbell className="w-10 h-10 text-slate-600" /></div>
+              <img src={gym.image_url} alt={gym.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" loading="lazy" /> :
+              <div className="w-full h-full bg-gradient-to-br from-blue-900/60 via-slate-800 to-slate-900 flex items-center justify-center"><Dumbbell className="w-10 h-10 text-slate-600" /></div>
             }
             <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center gap-3">
               <Link to={createPageUrl('GymCommunity') + '?id=' + gym.id} className="w-full px-4">
@@ -390,11 +388,11 @@ export default function Gyms() {
       <div style={{ position: 'fixed', inset: 0, zIndex: -1, background: 'linear-gradient(to bottom right, #02040a, #0d2360, #02040a)' }} />
 
       <Tabs defaultValue="my-gyms" className="w-full">
-        {/* ── Fixed header ── */}
-        <div className="fixed top-0 left-0 right-0 z-20 bg-slate-900/95 backdrop-blur-xl border-b-2 border-blue-700/40 px-3 md:px-4 pb-2" style={{ paddingTop: 'calc(0.4rem + env(safe-area-inset-top))' }}>
+        {/* ── Fixed header — ~15% taller: h-[2.6rem], pb-2.5 ── */}
+        <div className="fixed top-0 left-0 right-0 z-20 bg-slate-900/95 backdrop-blur-xl border-b-2 border-blue-700/40 px-3 md:px-4 pb-2.5" style={{ paddingTop: 'calc(0.4rem + env(safe-area-inset-top))' }}>
           <div className="max-w-6xl mx-auto">
-            <div className="relative flex items-center justify-center h-9">
-              <TabsList className="flex bg-transparent p-0 h-9 gap-6 border-0">
+            <div className="relative flex items-center justify-center h-[2.6rem]">
+              <TabsList className="flex bg-transparent p-0 h-[2.6rem] gap-6 border-0">
                 <TabsTrigger value="my-gyms" className="data-[state=active]:text-blue-400 data-[state=active]:border-b-2 data-[state=active]:border-blue-400 data-[state=active]:bg-transparent text-slate-400 hover:text-slate-300 border-b-2 border-transparent rounded-none px-0 py-2 transition-colors bg-transparent text-sm justify-center">
                   <Users className="w-4 h-4 mr-1.5" />My Gyms
                 </TabsTrigger>
@@ -405,9 +403,9 @@ export default function Gyms() {
               <div className="absolute right-0 flex items-center">
                 <TabsContent value="my-gyms" className="mt-0 p-0 m-0">
                   {userGyms.length > 0 &&
-                  <Button onClick={() => setShowPrimaryGymModal(true)} className="ease-in-out hover:bg-primary/90 inline-flex items-center justify-center whitespace-nowrap font-bold transition-all duration-100 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 bg-gradient-to-b from-purple-400 via-purple-500 to-purple-600 backdrop-blur-md text-white border border-transparent rounded-md text-[10px] h-6 px-1.5 shadow-[0_2px_0_0_#5b21b6,inset_0_1px_0_rgba(255,255,255,0.2),inset_0_0_20px_rgba(255,255,255,0.05)] active:shadow-none active:translate-y-[2px] active:scale-95 transform-gpu">
-                    Set Home
-                  </Button>
+                    <Button onClick={() => setShowPrimaryGymModal(true)} className="ease-in-out hover:bg-primary/90 inline-flex items-center justify-center whitespace-nowrap font-bold transition-all duration-100 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 bg-gradient-to-b from-purple-400 via-purple-500 to-purple-600 backdrop-blur-md text-white border border-transparent rounded-md text-[10px] h-6 px-1.5 shadow-[0_2px_0_0_#5b21b6,inset_0_1px_0_rgba(255,255,255,0.2),inset_0_0_20px_rgba(255,255,255,0.05)] active:shadow-none active:translate-y-[2px] active:scale-95 transform-gpu">
+                      Set Home
+                    </Button>
                   }
                 </TabsContent>
                 <TabsContent value="explore" className="mt-0 p-0 m-0">
@@ -420,105 +418,105 @@ export default function Gyms() {
           </div>
         </div>
 
-        {/* ── Spacer that exactly matches the fixed header height ── */}
-        <div style={{ height: 'calc(2.75rem + env(safe-area-inset-top))' }} />
+        {/* ── Spacer matching the taller fixed header ── */}
+        <div style={{ height: 'calc(3.1rem + env(safe-area-inset-top))' }} />
 
         <TabsContent value="my-gyms" className="mt-0 px-3 md:px-4 py-2">
-            <div className="max-w-6xl mx-auto">
-              {userGyms.length === 0 ?
-            <div className="text-center py-12"><p className="text-slate-400">No gym memberships yet</p></div> :
-            <div className="grid md:grid-cols-2 gap-4">
-                  {userGyms.map((gym) =>
-              <div key={gym.id} className="group relative">
-                      <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-purple-500/20 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-all duration-500" />
+          <div className="max-w-6xl mx-auto">
+            {userGyms.length === 0 ?
+              <div className="text-center py-12"><p className="text-slate-400">No gym memberships yet</p></div> :
+              <div className="grid md:grid-cols-2 gap-4">
+                {userGyms.map((gym) =>
+                  <div key={gym.id} className="group relative">
+                    <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-purple-500/20 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-all duration-500" />
+                    <div
+                      className="relative rounded-2xl overflow-hidden transition-all duration-300"
+                      style={{
+                        background: 'linear-gradient(135deg, rgba(30,35,60,0.72) 0%, rgba(8,10,20,0.88) 100%)',
+                        border: '1px solid rgba(255,255,255,0.07)',
+                        backdropFilter: 'blur(16px)',
+                        WebkitBackdropFilter: 'blur(16px)',
+                        boxShadow: '0 4px 24px rgba(0,0,0,0.4)'
+                      }}>
                       <div
-                  className="relative rounded-2xl overflow-hidden transition-all duration-300"
-                  style={{
-                    background: 'linear-gradient(135deg, rgba(30,35,60,0.72) 0%, rgba(8,10,20,0.88) 100%)',
-                    border: '1px solid rgba(255,255,255,0.07)',
-                    backdropFilter: 'blur(16px)',
-                    WebkitBackdropFilter: 'blur(16px)',
-                    boxShadow: '0 4px 24px rgba(0,0,0,0.4)'
-                  }}>
-                        <div
-                    className="absolute inset-x-0 top-0 h-px pointer-events-none z-10"
-                    style={{
-                      background: 'linear-gradient(90deg, transparent 10%, rgba(255,255,255,0.1) 50%, transparent 90%)'
-                    }} />
-                        <div className="relative w-full h-48 bg-gradient-to-br from-slate-700 to-slate-800 overflow-hidden">
-                          {gym.image_url ?
-                    <img src={gym.image_url} alt={gym.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" loading="lazy" /> :
-                    <div className="w-full h-full bg-gradient-to-br from-blue-900/60 via-slate-800 to-slate-900 flex items-center justify-center"><Dumbbell className="w-12 h-12 text-slate-600" /></div>
-                    }
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-                          <Link to={createPageUrl('GymCommunity') + '?id=' + gym.id} className="absolute inset-0 flex items-center justify-center transition-opacity duration-300">
-                            <Button className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md font-bold focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 py-2 bg-gradient-to-b from-blue-500 via-blue-600 to-blue-700 backdrop-blur-md text-white border border-transparent text-xs h-8 px-3 shadow-[0_3px_0_0_#1a3fa8,0_8px_20px_rgba(0,0,100,0.5),inset_0_1px_0_rgba(255,255,255,0.15),inset_0_0_20px_rgba(255,255,255,0.03)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 transform-gpu">
-                              <Dumbbell className="w-3 h-3 mr-1.5" />Enter Gym
-                            </Button>
-                          </Link>
-                          <div className="absolute top-3 left-3 flex gap-2 flex-wrap">
-                            {gym.claim_status === 'claimed' || gym.admin_id || gym.owner_email ?
-                      <Badge className="bg-green-500 text-white text-xs shadow-lg font-semibold"><BadgeCheck className="w-3 h-3 mr-1" />Official</Badge> :
-                      <Badge className="inline-flex items-center rounded-md border px-2.5 py-0.5 transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 border-transparent hover:bg-slate-600 bg-slate-700/95 text-slate-200 text-xs shadow-lg font-semibold">Unofficial</Badge>
-                      }
-                            {currentUser && currentUser.email === gym.owner_email &&
-                      <Badge className="bg-gradient-to-r from-purple-600 to-pink-600 text-white text-xs shadow-lg font-bold">Owner</Badge>
-                      }
-                          </div>
-                          {currentUser?.primary_gym_id === gym.id &&
-                    <div className="absolute bottom-3 left-3">
-                              <div className="w-9 h-9 rounded-xl bg-purple-600/90 backdrop-blur-md flex items-center justify-center shadow-lg border border-purple-500/50">
-                                <Star className="w-5 h-5 text-white" />
-                              </div>
-                            </div>
-                    }
-                          <div className="absolute top-3 right-3 flex gap-3">
-                            <button onClick={(e) => {e.preventDefault();setGalleryGym(gym);}} className="flex items-center justify-center hover:scale-110 transition-all">
-                              <Images className="w-5 h-5 text-slate-400 drop-shadow-lg" />
-                            </button>
-                            <button onClick={(e) => {e.preventDefault();setEquipmentGym(gym);}} className="flex items-center justify-center hover:scale-110 transition-all">
-                              <Dumbbell className="w-5 h-5 text-slate-400 drop-shadow-lg" />
-                            </button>
-                            <DropdownMenu>
-                              <DropdownMenuTrigger asChild>
-                                <button onClick={(e) => e.preventDefault()} className="flex items-center justify-center hover:scale-110 transition-all">
-                                  <MoreVertical className="w-5 h-5 text-slate-400 drop-shadow-lg" />
-                                </button>
-                              </DropdownMenuTrigger>
-                              <DropdownMenuContent align="end" className="z-50 min-w-[8rem] overflow-hidden p-1 text-popover-foreground data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 bg-slate-800 border border-slate-700/50 rounded-lg transition-all duration-100 shadow-[0_3px_0_0_#1e293b,0_8px_20px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.1),inset_0_0_20px_rgba(255,255,255,0.02)] active:shadow-none active:translate-y-[2px] active:scale-95 transform-gpu">
-                                {currentUser && currentUser.email === gym.owner_email &&
-                          <DropdownMenuItem onClick={(e) => {e.preventDefault();setEditingGym(gym);}} className="text-slate-300 hover:text-white hover:bg-slate-700 cursor-pointer">
-                                    <Edit className="w-4 h-4 mr-2" />Edit Gym
-                                  </DropdownMenuItem>
+                        className="absolute inset-x-0 top-0 h-px pointer-events-none z-10"
+                        style={{
+                          background: 'linear-gradient(90deg, transparent 10%, rgba(255,255,255,0.1) 50%, transparent 90%)'
+                        }} />
+                      <div className="relative w-full h-48 bg-gradient-to-br from-slate-700 to-slate-800 overflow-hidden">
+                        {gym.image_url ?
+                          <img src={gym.image_url} alt={gym.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" loading="lazy" /> :
+                          <div className="w-full h-full bg-gradient-to-br from-blue-900/60 via-slate-800 to-slate-900 flex items-center justify-center"><Dumbbell className="w-12 h-12 text-slate-600" /></div>
+                        }
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                        <Link to={createPageUrl('GymCommunity') + '?id=' + gym.id} className="absolute inset-0 flex items-center justify-center transition-opacity duration-300">
+                          <Button className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md font-bold focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 py-2 bg-gradient-to-b from-blue-500 via-blue-600 to-blue-700 backdrop-blur-md text-white border border-transparent text-xs h-8 px-3 shadow-[0_3px_0_0_#1a3fa8,0_8px_20px_rgba(0,0,100,0.5),inset_0_1px_0_rgba(255,255,255,0.15),inset_0_0_20px_rgba(255,255,255,0.03)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 transform-gpu">
+                            <Dumbbell className="w-3 h-3 mr-1.5" />Enter Gym
+                          </Button>
+                        </Link>
+                        <div className="absolute top-3 left-3 flex gap-2 flex-wrap">
+                          {gym.claim_status === 'claimed' || gym.admin_id || gym.owner_email ?
+                            <Badge className="bg-green-500 text-white text-xs shadow-lg font-semibold"><BadgeCheck className="w-3 h-3 mr-1" />Official</Badge> :
+                            <Badge className="inline-flex items-center rounded-md border px-2.5 py-0.5 transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 border-transparent hover:bg-slate-600 bg-slate-700/95 text-slate-200 text-xs shadow-lg font-semibold">Unofficial</Badge>
                           }
-                                <DropdownMenuItem onClick={(e) => {e.preventDefault();e.stopPropagation();setConfirmLeaveGym(gym);}} disabled={leaveGymMutation.isPending} className="text-red-400 hover:text-red-300 hover:bg-slate-700 cursor-pointer">
-                                  <LogOut className="w-4 h-4 mr-2" />Leave Gym
-                                </DropdownMenuItem>
-                              </DropdownMenuContent>
-                            </DropdownMenu>
-                          </div>
+                          {currentUser && currentUser.email === gym.owner_email &&
+                            <Badge className="bg-gradient-to-r from-purple-600 to-pink-600 text-white text-xs shadow-lg font-bold">Owner</Badge>
+                          }
                         </div>
-                        <div className="p-4 space-y-2">
-                          <div>
-                            <h3 className="text-xl font-black text-white mb-1 line-clamp-1">{gym.name}</h3>
-                            <div className="flex items-center gap-2 text-sm text-slate-400">
-                              <MapPin className="w-4 h-4 flex-shrink-0" />
-                              <span className="line-clamp-1">{gym.address || gym.city}</span>
+                        {currentUser?.primary_gym_id === gym.id &&
+                          <div className="absolute bottom-3 left-3">
+                            <div className="w-9 h-9 rounded-xl bg-purple-600/90 backdrop-blur-md flex items-center justify-center shadow-lg border border-purple-500/50">
+                              <Star className="w-5 h-5 text-white" />
                             </div>
                           </div>
-                          <div className="flex items-center gap-4 pt-2 border-t border-slate-700/50">
-                            {gym.rating > 0 && <div className="flex items-center gap-1.5"><Star className="w-4 h-4 fill-yellow-400 text-yellow-400" /><span className="font-bold text-white text-sm">{gym.rating}/5</span></div>}
-                            {gym.members_count > 0 && <div className="flex items-center gap-1.5 text-sm text-slate-400"><Users className="w-4 h-4" /><span className="font-semibold">{gym.members_count}</span></div>}
-                          </div>
-                          {gym.type && <div className="flex justify-center pt-1"><Badge className="bg-gradient-to-r from-blue-600/30 to-purple-600/30 text-blue-200 border border-blue-500/30 text-xs capitalize">{gym.type}</Badge></div>}
+                        }
+                        <div className="absolute top-3 right-3 flex gap-3">
+                          <button onClick={(e) => { e.preventDefault(); setGalleryGym(gym); }} className="flex items-center justify-center hover:scale-110 transition-all">
+                            <Images className="w-5 h-5 text-slate-400 drop-shadow-lg" />
+                          </button>
+                          <button onClick={(e) => { e.preventDefault(); setEquipmentGym(gym); }} className="flex items-center justify-center hover:scale-110 transition-all">
+                            <Dumbbell className="w-5 h-5 text-slate-400 drop-shadow-lg" />
+                          </button>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <button onClick={(e) => e.preventDefault()} className="flex items-center justify-center hover:scale-110 transition-all">
+                                <MoreVertical className="w-5 h-5 text-slate-400 drop-shadow-lg" />
+                              </button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" className="z-50 min-w-[8rem] overflow-hidden p-1 text-popover-foreground data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 bg-slate-800 border border-slate-700/50 rounded-lg transition-all duration-100 shadow-[0_3px_0_0_#1e293b,0_8px_20px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.1),inset_0_0_20px_rgba(255,255,255,0.02)] active:shadow-none active:translate-y-[2px] active:scale-95 transform-gpu">
+                              {currentUser && currentUser.email === gym.owner_email &&
+                                <DropdownMenuItem onClick={(e) => { e.preventDefault(); setEditingGym(gym); }} className="text-slate-300 hover:text-white hover:bg-slate-700 cursor-pointer">
+                                  <Edit className="w-4 h-4 mr-2" />Edit Gym
+                                </DropdownMenuItem>
+                              }
+                              <DropdownMenuItem onClick={(e) => { e.preventDefault(); e.stopPropagation(); setConfirmLeaveGym(gym); }} disabled={leaveGymMutation.isPending} className="text-red-400 hover:text-red-300 hover:bg-slate-700 cursor-pointer">
+                                <LogOut className="w-4 h-4 mr-2" />Leave Gym
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
                         </div>
                       </div>
+                      <div className="p-4 space-y-2">
+                        <div>
+                          <h3 className="text-xl font-black text-white mb-1 line-clamp-1">{gym.name}</h3>
+                          <div className="flex items-center gap-2 text-sm text-slate-400">
+                            <MapPin className="w-4 h-4 flex-shrink-0" />
+                            <span className="line-clamp-1">{gym.address || gym.city}</span>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-4 pt-2 border-t border-slate-700/50">
+                          {gym.rating > 0 && <div className="flex items-center gap-1.5"><Star className="w-4 h-4 fill-yellow-400 text-yellow-400" /><span className="font-bold text-white text-sm">{gym.rating}/5</span></div>}
+                          {gym.members_count > 0 && <div className="flex items-center gap-1.5 text-sm text-slate-400"><Users className="w-4 h-4" /><span className="font-semibold">{gym.members_count}</span></div>}
+                        </div>
+                        {gym.type && <div className="flex justify-center pt-1"><Badge className="bg-gradient-to-r from-blue-600/30 to-purple-600/30 text-blue-200 border border-blue-500/30 text-xs capitalize">{gym.type}</Badge></div>}
+                      </div>
                     </div>
-              )}
-                </div>
+                  </div>
+                )}
+              </div>
             }
-            </div>
-          </TabsContent>
+          </div>
+        </TabsContent>
         <TabsContent value="explore" className="mt-0 px-3 md:px-4 py-2">
           <div className="max-w-6xl mx-auto">
             <div className="space-y-2 mb-4">
@@ -543,11 +541,11 @@ export default function Gyms() {
                 </button>
               </div>
               {searchingPlaces && searchQuery.length >= 2 &&
-              <div className="rounded-xl p-3 space-y-2 bg-slate-800/90 border border-slate-700/50 animate-pulse">
+                <div className="rounded-xl p-3 space-y-2 bg-slate-800/90 border border-slate-700/50 animate-pulse">
                   <div className="h-4 w-40 bg-slate-700/60 rounded-lg" />
                   <div className="space-y-2">
                     {[...Array(3)].map((_, i) =>
-                  <div key={i} className="rounded-xl bg-slate-700/50 border border-slate-600/40 overflow-hidden flex items-stretch gap-0">
+                      <div key={i} className="rounded-xl bg-slate-700/50 border border-slate-600/40 overflow-hidden flex items-stretch gap-0">
                         <div className="w-20 h-20 flex-shrink-0 bg-slate-600/60" />
                         <div className="flex-1 p-3 flex flex-col justify-center gap-2">
                           <div className="h-4 bg-slate-600/60 rounded w-3/4" />
@@ -555,19 +553,19 @@ export default function Gyms() {
                           <div className="h-3 bg-slate-600/30 rounded w-16" />
                         </div>
                       </div>
-                  )}
+                    )}
                   </div>
                 </div>
               }
               {!searchingPlaces && searchQuery.length >= 2 && placesResults.length > 0 &&
-              <div className="rounded-xl p-3 space-y-2 bg-slate-900/95 border border-slate-800/60 shadow-xl">
+                <div className="rounded-xl p-3 space-y-2 bg-slate-900/95 border border-slate-800/60 shadow-xl">
                   <p className="text-xs font-semibold flex items-center gap-2">
                     <Plus className="w-3 h-3 text-green-400" />
                     <span className="text-green-400">Found {placesResults.length} gyms on Google Places</span>
                   </p>
                   <div className="space-y-2">
                     {placesResults.slice(0, 5).map((place) =>
-                  <button key={place.place_id} onClick={() => handleSelectPlace(place)} className="w-full text-left rounded-xl bg-slate-700/50 border border-slate-600/40 hover:border-green-500/50 hover:bg-slate-700/80 transition-all overflow-hidden">
+                      <button key={place.place_id} onClick={() => handleSelectPlace(place)} className="w-full text-left rounded-xl bg-slate-700/50 border border-slate-600/40 hover:border-green-500/50 hover:bg-slate-700/80 transition-all overflow-hidden">
                         <div className="flex items-stretch gap-0">
                           <div className="w-20 h-20 flex-shrink-0 bg-gradient-to-br from-slate-600 to-slate-700 overflow-hidden">
                             {place.photo_url ? <img src={place.photo_url} alt={place.name} className="w-full h-full object-cover" loading="lazy" /> : <div className="w-full h-full flex items-center justify-center"><Dumbbell className="w-6 h-6 text-slate-500" /></div>}
@@ -582,29 +580,29 @@ export default function Gyms() {
                           </div>
                         </div>
                       </button>
-                  )}
+                    )}
                   </div>
                 </div>
               }
             </div>
             {!searchQuery && recentlyViewedGyms.length > 0 &&
-            <div className="mb-4">
+              <div className="mb-4">
                 <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">Recently Viewed</p>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   {recentlyViewedGyms.slice(0, 3).map((gym) =>
-                <div key={gym.id} className="group relative">
+                    <div key={gym.id} className="group relative">
                       <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-purple-500/20 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-all duration-500" />
                       <div
-                    className="relative rounded-2xl overflow-hidden transition-all duration-300"
-                    style={{
-                      background: 'linear-gradient(135deg, rgba(30,35,60,0.72) 0%, rgba(8,10,20,0.88) 100%)',
-                      border: '1px solid rgba(255,255,255,0.07)',
-                      backdropFilter: 'blur(16px)',
-                      WebkitBackdropFilter: 'blur(16px)',
-                      boxShadow: '0 4px 24px rgba(0,0,0,0.4)'
-                    }}>
+                        className="relative rounded-2xl overflow-hidden transition-all duration-300"
+                        style={{
+                          background: 'linear-gradient(135deg, rgba(30,35,60,0.72) 0%, rgba(8,10,20,0.88) 100%)',
+                          border: '1px solid rgba(255,255,255,0.07)',
+                          backdropFilter: 'blur(16px)',
+                          WebkitBackdropFilter: 'blur(16px)',
+                          boxShadow: '0 4px 24px rgba(0,0,0,0.4)'
+                        }}>
                         <div className="absolute inset-x-0 top-0 h-px pointer-events-none z-10"
-                    style={{ background: 'linear-gradient(90deg, transparent 10%, rgba(255,255,255,0.1) 50%, transparent 90%)' }} />
+                          style={{ background: 'linear-gradient(90deg, transparent 10%, rgba(255,255,255,0.1) 50%, transparent 90%)' }} />
                         <div className="relative w-full h-48 bg-gradient-to-br from-slate-700 to-slate-800 overflow-hidden">
                           {gym.image_url ? (
                             <img src={gym.image_url} alt={gym.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" loading="lazy" />
@@ -617,8 +615,8 @@ export default function Gyms() {
                             </div>
                           )}
                           {(gym.claim_status === 'claimed' || gym.admin_id || gym.owner_email) &&
-                      <div className="absolute top-3 left-3"><Badge className="bg-green-500 text-white text-xs shadow-lg font-semibold"><BadgeCheck className="w-3 h-3 mr-1" />Official</Badge></div>
-                      }
+                            <div className="absolute top-3 left-3"><Badge className="bg-green-500 text-white text-xs shadow-lg font-semibold"><BadgeCheck className="w-3 h-3 mr-1" />Official</Badge></div>
+                          }
                         </div>
                         <div className="p-4 space-y-2">
                           <div>
@@ -633,36 +631,36 @@ export default function Gyms() {
                         </div>
                       </div>
                     </div>
-                )}
+                  )}
                 </div>
               </div>
             }
             {filteredGyms.length === 0 &&
-            <div className="text-center py-12">
+              <div className="text-center py-12">
                 <Dumbbell className="w-12 h-12 mx-auto mb-3 text-slate-600" />
                 <p className="text-slate-400">No gyms found</p>
                 <p className="text-sm text-slate-500 mt-1">Try adjusting your filters</p>
               </div>
             }
             {filteredGyms.length > 0 &&
-            <div className="grid md:grid-cols-2 gap-4">
+              <div className="grid md:grid-cols-2 gap-4">
                 {filteredGyms.map((gym) =>
-              <div key={gym.id} className="group relative">
+                  <div key={gym.id} className="group relative">
                     <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-purple-500/20 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-all duration-500" />
                     <div
-                  className="relative rounded-2xl overflow-hidden transition-all duration-300"
-                  style={{
-                    background: 'linear-gradient(135deg, rgba(30,35,60,0.72) 0%, rgba(8,10,20,0.88) 100%)',
-                    border: '1px solid rgba(255,255,255,0.07)',
-                    backdropFilter: 'blur(16px)',
-                    WebkitBackdropFilter: 'blur(16px)',
-                    boxShadow: '0 4px 24px rgba(0,0,0,0.4)'
-                  }}>
+                      className="relative rounded-2xl overflow-hidden transition-all duration-300"
+                      style={{
+                        background: 'linear-gradient(135deg, rgba(30,35,60,0.72) 0%, rgba(8,10,20,0.88) 100%)',
+                        border: '1px solid rgba(255,255,255,0.07)',
+                        backdropFilter: 'blur(16px)',
+                        WebkitBackdropFilter: 'blur(16px)',
+                        boxShadow: '0 4px 24px rgba(0,0,0,0.4)'
+                      }}>
                       <div
-                    className="absolute inset-x-0 top-0 h-px pointer-events-none z-10"
-                    style={{
-                      background: 'linear-gradient(90deg, transparent 10%, rgba(255,255,255,0.1) 50%, transparent 90%)'
-                    }} />
+                        className="absolute inset-x-0 top-0 h-px pointer-events-none z-10"
+                        style={{
+                          background: 'linear-gradient(90deg, transparent 10%, rgba(255,255,255,0.1) 50%, transparent 90%)'
+                        }} />
                       <div className="relative w-full h-48 bg-gradient-to-br from-slate-700 to-slate-800 overflow-hidden">
                         {gym.image_url ? (
                           <img src={gym.image_url} alt={gym.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" loading="eager" fetchpriority="high" />
@@ -684,8 +682,8 @@ export default function Gyms() {
                           {(gym.claim_status === 'claimed' || gym.admin_id || gym.owner_email) && <Badge className="bg-green-500 text-white text-xs shadow-lg font-semibold"><BadgeCheck className="w-3 h-3 mr-1" />Official</Badge>}
                         </div>
                         <div className="absolute top-3 right-3 flex gap-3">
-                          <button onClick={(e) => {e.preventDefault();setGalleryGym(gym);}} className="flex items-center justify-center hover:scale-110 transition-all"><Images className="w-5 h-5 text-slate-400 drop-shadow-lg" /></button>
-                          <button onClick={(e) => {e.preventDefault();setEquipmentGym(gym);}} className="flex items-center justify-center hover:scale-110 transition-all"><Dumbbell className="w-5 h-5 text-slate-400 drop-shadow-lg" /></button>
+                          <button onClick={(e) => { e.preventDefault(); setGalleryGym(gym); }} className="flex items-center justify-center hover:scale-110 transition-all"><Images className="w-5 h-5 text-slate-400 drop-shadow-lg" /></button>
+                          <button onClick={(e) => { e.preventDefault(); setEquipmentGym(gym); }} className="flex items-center justify-center hover:scale-110 transition-all"><Dumbbell className="w-5 h-5 text-slate-400 drop-shadow-lg" /></button>
                           {currentUser && currentUser.email === gym.owner_email && <button onClick={() => setEditingGym(gym)} className="flex items-center justify-center hover:scale-110 transition-all"><Edit className="w-5 h-5 text-slate-400 drop-shadow-lg" /></button>}
                         </div>
                       </div>
@@ -702,7 +700,7 @@ export default function Gyms() {
                       </div>
                     </div>
                   </div>
-              )}
+                )}
               </div>
             }
           </div>
@@ -719,15 +717,15 @@ export default function Gyms() {
           </DialogHeader>
           <div className="space-y-3">
             {equipmentGym?.equipment && equipmentGym.equipment.length > 0 ?
-            <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-2 gap-2">
                 {equipmentGym.equipment.map((item, idx) =>
-              <div key={idx} className="flex items-center gap-2 p-2 bg-slate-800/60 rounded-lg border border-slate-700/50">
+                  <div key={idx} className="flex items-center gap-2 p-2 bg-slate-800/60 rounded-lg border border-slate-700/50">
                     <div className="w-1.5 h-1.5 rounded-full bg-blue-400 flex-shrink-0" />
                     <span className="text-slate-200 text-sm">{item}</span>
                   </div>
-              )}
+                )}
               </div> :
-            <div className="text-center py-8 text-slate-400"><Dumbbell className="w-12 h-12 mx-auto mb-2 opacity-50" /><p>No equipment information available</p></div>
+              <div className="text-center py-8 text-slate-400"><Dumbbell className="w-12 h-12 mx-auto mb-2 opacity-50" /><p>No equipment information available</p></div>
             }
           </div>
         </DialogContent>
@@ -737,14 +735,14 @@ export default function Gyms() {
         <DialogContent className="fixed left-[50%] top-[50%] z-50 grid w-full translate-x-[-50%] translate-y-[-50%] gap-4 p-6 duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%] max-w-4xl max-h-[110vh] overflow-y-auto [&>button]:hidden bg-slate-800/30 backdrop-blur-md border border-slate-700/20 rounded-3xl shadow-2xl shadow-black/20 text-white">
           <div>
             {galleryGym?.gallery && galleryGym.gallery.length > 0 ?
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                 {galleryGym.gallery.map((imageUrl, idx) =>
-              <div key={idx} className="aspect-square rounded-lg overflow-hidden bg-slate-700/50 border border-slate-600/50">
+                  <div key={idx} className="aspect-square rounded-lg overflow-hidden bg-slate-700/50 border border-slate-600/50">
                     <img src={imageUrl} alt={`${galleryGym.name} photo ${idx + 1}`} className="w-full h-full object-cover hover:scale-110 transition-transform duration-300" loading="lazy" />
                   </div>
-              )}
+                )}
               </div> :
-            <div className="text-center py-12 text-slate-400"><Images className="w-16 h-16 mx-auto mb-3 opacity-50" /><p>No photos available</p></div>
+              <div className="text-center py-12 text-slate-400"><Images className="w-16 h-16 mx-auto mb-3 opacity-50" /><p>No photos available</p></div>
             }
           </div>
         </DialogContent>
@@ -788,8 +786,8 @@ export default function Gyms() {
             <div
               className="flex gap-3 pg-item-in"
               style={{ animationDelay: `${140 + userGyms.length * 55}ms` }}>
-              <Button onClick={() => {setShowPrimaryGymModal(false);setSelectedPrimaryGym(null);}} className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg text-sm font-bold transition-all duration-100 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 py-2 bg-gradient-to-b from-slate-600 via-slate-700 to-slate-800 backdrop-blur-md text-white border border-slate-500/40 h-9 px-4 flex-1 shadow-[0_3px_0_0_#1e293b,0_8px_20px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.12),inset_0_0_20px_rgba(255,255,255,0.03)] active:shadow-none active:translate-y-[3px] active:scale-95 transform-gpu hover:from-slate-500 hover:via-slate-600 hover:to-slate-700">Cancel</Button>
-              <Button onClick={() => {if (selectedPrimaryGym) {updatePrimaryGymMutation.mutate(selectedPrimaryGym);} else {setShowPrimaryGymModal(false);setSelectedPrimaryGym(null);}}} disabled={updatePrimaryGymMutation.isPending} className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg text-sm font-bold transition-all duration-100 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 py-2 bg-gradient-to-b from-purple-400 via-purple-500 to-purple-600 backdrop-blur-md text-white border border-transparent h-9 px-4 flex-1 shadow-[0_3px_0_0_#5b21b6,0_8px_20px_rgba(120,40,220,0.4),inset_0_1px_0_rgba(255,255,255,0.2),inset_0_0_20px_rgba(255,255,255,0.05)] active:shadow-none active:translate-y-[3px] active:scale-95 transform-gpu">
+              <Button onClick={() => { setShowPrimaryGymModal(false); setSelectedPrimaryGym(null); }} className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg text-sm font-bold transition-all duration-100 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 py-2 bg-gradient-to-b from-slate-600 via-slate-700 to-slate-800 backdrop-blur-md text-white border border-slate-500/40 h-9 px-4 flex-1 shadow-[0_3px_0_0_#1e293b,0_8px_20px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.12),inset_0_0_20px_rgba(255,255,255,0.03)] active:shadow-none active:translate-y-[3px] active:scale-95 transform-gpu hover:from-slate-500 hover:via-slate-600 hover:to-slate-700">Cancel</Button>
+              <Button onClick={() => { if (selectedPrimaryGym) { updatePrimaryGymMutation.mutate(selectedPrimaryGym); } else { setShowPrimaryGymModal(false); setSelectedPrimaryGym(null); } }} disabled={updatePrimaryGymMutation.isPending} className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg text-sm font-bold transition-all duration-100 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 py-2 bg-gradient-to-b from-purple-400 via-purple-500 to-purple-600 backdrop-blur-md text-white border border-transparent h-9 px-4 flex-1 shadow-[0_3px_0_0_#5b21b6,0_8px_20px_rgba(120,40,220,0.4),inset_0_1px_0_rgba(255,255,255,0.2),inset_0_0_20px_rgba(255,255,255,0.05)] active:shadow-none active:translate-y-[3px] active:scale-95 transform-gpu">
                 {updatePrimaryGymMutation.isPending ? <><Loader2 className="w-4 h-4 animate-spin mr-2" />Saving...</> : 'Save'}
               </Button>
             </div>
@@ -797,18 +795,18 @@ export default function Gyms() {
         </DialogContent>
       </Dialog>
 
-      <Dialog open={showConfirmJoin} onOpenChange={() => {setShowConfirmJoin(false);setPendingGymData(null);}}>
+      <Dialog open={showConfirmJoin} onOpenChange={() => { setShowConfirmJoin(false); setPendingGymData(null); }}>
         <DialogContent className="bg-slate-900 border-slate-700 text-white max-w-md [&>button]:hidden">
           <DialogHeader>
             <DialogTitle className="text-xl font-bold">{gymMemberships.length > 0 ? 'Replace Primary Gym?' : 'Join This Community?'}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             {gymMemberships.length > 0 ?
-            <p className="text-slate-300 text-sm">You're currently a member of <span className="font-semibold text-white">{gymMemberships[0]?.gym_name}</span>. Joining <span className="font-semibold text-white">{selectedPlaceGym?.name}</span> will replace your primary gym.</p> :
-            <p className="text-slate-300 text-sm">Are you sure you want to join <span className="font-semibold text-white">{selectedPlaceGym?.name}</span>? This is an unclaimed community gym.</p>
+              <p className="text-slate-300 text-sm">You're currently a member of <span className="font-semibold text-white">{gymMemberships[0]?.gym_name}</span>. Joining <span className="font-semibold text-white">{selectedPlaceGym?.name}</span> will replace your primary gym.</p> :
+              <p className="text-slate-300 text-sm">Are you sure you want to join <span className="font-semibold text-white">{selectedPlaceGym?.name}</span>? This is an unclaimed community gym.</p>
             }
             <div className="flex gap-3 pt-2">
-              <Button onClick={() => {setShowConfirmJoin(false);setPendingGymData(null);}} variant="outline" className="flex-1 border-slate-600 text-slate-300 hover:bg-slate-800">Cancel</Button>
+              <Button onClick={() => { setShowConfirmJoin(false); setPendingGymData(null); }} variant="outline" className="flex-1 border-slate-600 text-slate-300 hover:bg-slate-800">Cancel</Button>
               <Button onClick={handleConfirmJoin} disabled={createGymMutation.isPending} className="flex-1 bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600">
                 {createGymMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Confirm'}
               </Button>
@@ -825,7 +823,7 @@ export default function Gyms() {
           <p className="text-slate-300 text-sm">Are you sure you want to leave this gym? You'll lose access to its community.</p>
           <div className="flex gap-3 pt-2">
             <Button onClick={() => setConfirmLeaveGym(null)} className="flex-1 bg-gradient-to-b from-slate-700 via-slate-800 to-slate-900 text-slate-200 border border-slate-600/50 font-bold rounded-lg shadow-[0_3px_0_0_rgba(0,0,0,0.5),0_6px_16px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.08)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 transform-gpu hover:from-slate-600 hover:via-slate-700 hover:to-slate-800">Cancel</Button>
-            <Button onClick={() => {leaveGymMutation.mutate(confirmLeaveGym.id);setConfirmLeaveGym(null);}} disabled={leaveGymMutation.isPending} className="flex-1 bg-red-600 hover:bg-red-700 text-white">
+            <Button onClick={() => { leaveGymMutation.mutate(confirmLeaveGym.id); setConfirmLeaveGym(null); }} disabled={leaveGymMutation.isPending} className="flex-1 bg-red-600 hover:bg-red-700 text-white">
               {leaveGymMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Leave Gym'}
             </Button>
           </div>
@@ -833,15 +831,15 @@ export default function Gyms() {
       </Dialog>
 
       {showFilterModal &&
-      <>
+        <>
           <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm" onClick={() => setShowFilterModal(false)} />
           <div className="fixed bottom-24 left-0 right-0 z-50 bg-slate-800/30 backdrop-blur-md border-t border-slate-700/20 rounded-3xl p-5 space-y-2 shadow-2xl shadow-black/20" style={{ paddingBottom: 'calc(1.5rem + env(safe-area-inset-bottom))' }}>
             <div className="flex items-center justify-between">
               <h3 className="text-lg font-bold text-white text-center absolute left-1/2 -translate-x-1/2">Filters</h3>
               <div className="flex items-center gap-3">
                 {(selectedType !== 'all' || maxDistance !== 'all' || selectedEquipment !== 'all') &&
-              <button onClick={() => {setSelectedType('all');setMaxDistance('all');setSelectedEquipment('all');}} className="text-xs text-blue-400 font-semibold">Clear all</button>
-              }
+                  <button onClick={() => { setSelectedType('all'); setMaxDistance('all'); setSelectedEquipment('all'); }} className="text-xs text-blue-400 font-semibold">Clear all</button>
+                }
               </div>
             </div>
             <div className="space-y-4">
@@ -849,24 +847,24 @@ export default function Gyms() {
                 <label className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2 block">Gym Type</label>
                 <div className="flex flex-wrap gap-2">
                   {[['all', 'All Types'], ['powerlifting', 'Powerlifting'], ['bodybuilding', 'Bodybuilding'], ['crossfit', 'CrossFit'], ['boxing', 'Boxing'], ['mma', 'MMA'], ['general', 'General']].map(([val, label]) =>
-                <button key={val} onClick={() => setSelectedType(val)} className={`px-3 py-1.5 rounded-xl text-sm font-semibold transition-all ${selectedType === val ? 'bg-blue-600 text-white' : 'bg-slate-700/60 text-slate-300 hover:bg-slate-700'}`}>{label}</button>
-                )}
+                    <button key={val} onClick={() => setSelectedType(val)} className={`px-3 py-1.5 rounded-xl text-sm font-semibold transition-all ${selectedType === val ? 'bg-blue-600 text-white' : 'bg-slate-700/60 text-slate-300 hover:bg-slate-700'}`}>{label}</button>
+                  )}
                 </div>
               </div>
               <div>
                 <label className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2 block">Distance</label>
                 <div className="flex flex-wrap gap-2">
                   {[['all', 'Any Distance'], ['5', 'Within 5 km'], ['10', 'Within 10 km'], ['20', 'Within 20 km'], ['50', 'Within 50 km']].map(([val, label]) =>
-                <button key={val} onClick={() => setMaxDistance(val)} className={`px-3 py-1.5 rounded-xl text-sm font-semibold transition-all ${maxDistance === val ? 'bg-blue-600 text-white' : 'bg-slate-700/60 text-slate-300 hover:bg-slate-700'}`}>{label}</button>
-                )}
+                    <button key={val} onClick={() => setMaxDistance(val)} className={`px-3 py-1.5 rounded-xl text-sm font-semibold transition-all ${maxDistance === val ? 'bg-blue-600 text-white' : 'bg-slate-700/60 text-slate-300 hover:bg-slate-700'}`}>{label}</button>
+                  )}
                 </div>
               </div>
               <div>
                 <label className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2 block">Equipment</label>
                 <div className="flex flex-wrap gap-2">
                   {[['all', 'All Equipment'], ['Power Racks', 'Power Racks'], ['Barbells', 'Barbells'], ['Dumbbells', 'Dumbbells'], ['Cable Machines', 'Cable Machines'], ['Cardio Equipment', 'Cardio'], ['Olympic Platforms', 'Olympic Platforms']].map(([val, label]) =>
-                <button key={val} onClick={() => setSelectedEquipment(val)} className={`px-3 py-1.5 rounded-xl text-sm font-semibold transition-all ${selectedEquipment === val ? 'bg-blue-600 text-white' : 'bg-slate-700/60 text-slate-300 hover:bg-slate-700'}`}>{label}</button>
-                )}
+                    <button key={val} onClick={() => setSelectedEquipment(val)} className={`px-3 py-1.5 rounded-xl text-sm font-semibold transition-all ${selectedEquipment === val ? 'bg-blue-600 text-white' : 'bg-slate-700/60 text-slate-300 hover:bg-slate-700'}`}>{label}</button>
+                  )}
                 </div>
               </div>
             </div>
@@ -874,13 +872,13 @@ export default function Gyms() {
         </>
       }
 
-      <Dialog open={showAddGymModal} onOpenChange={() => {setShowAddGymModal(false);setSelectedPlaceGym(null);setIsOwner(false);setGymType('general');}}>
+      <Dialog open={showAddGymModal} onOpenChange={() => { setShowAddGymModal(false); setSelectedPlaceGym(null); setIsOwner(false); setGymType('general'); }}>
         <DialogContent className="fixed left-[50%] top-[50%] z-50 grid w-full translate-x-[-50%] translate-y-[-50%] gap-4 p-6 duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%] max-w-lg max-h-[80vh] overflow-y-auto [&>button]:hidden bg-slate-800/30 backdrop-blur-md border border-slate-700/20 rounded-3xl shadow-2xl shadow-black/20 text-white">
           <DialogHeader>
             <DialogTitle className="text-xl font-bold">Add Gym to CoStride</DialogTitle>
           </DialogHeader>
           {selectedPlaceGym &&
-          <div className="space-y-4">
+            <div className="space-y-4">
               <div className="bg-slate-800/60 border border-slate-700/40 rounded-xl p-4">
                 <div className="flex items-start gap-3">
                   <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center flex-shrink-0">
@@ -908,7 +906,7 @@ export default function Gyms() {
                 </Select>
               </div>
               {currentUser?.account_type === 'gym_owner' &&
-            <div className="bg-gradient-to-r from-purple-500/20 to-pink-500/20 border-2 border-purple-400/40 rounded-xl p-3">
+                <div className="bg-gradient-to-r from-purple-500/20 to-pink-500/20 border-2 border-purple-400/40 rounded-xl p-3">
                   <label className="flex items-start gap-3 cursor-pointer">
                     <input type="checkbox" checked={isOwner} onChange={(e) => setIsOwner(e.target.checked)} className="mt-1 w-5 h-5 rounded border-purple-400 text-purple-600 focus:ring-purple-500" />
                     <div className="flex-1">
@@ -917,7 +915,7 @@ export default function Gyms() {
                     </div>
                   </label>
                 </div>
-            }
+              }
               <Button onClick={handleCreateGym} disabled={createGymMutation.isPending} className="inline-flex items-center justify-center gap-2 whitespace-nowrap transition-all duration-100 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 h-9 px-4 w-full bg-gradient-to-b from-green-400 via-green-500 to-green-600 text-white rounded-xl font-bold py-6 text-base shadow-[0_4px_0_0_#065f46,0_2px_10px_rgba(0,0,0,0.2),inset_0_1px_0_rgba(255,255,255,0.2),inset_0_0_20px_rgba(255,255,255,0.05)] active:shadow-none active:translate-y-[3px] active:scale-[0.98] transform-gpu">
                 {createGymMutation.isPending ? <Loader2 className="w-5 h-5 animate-spin mr-2" /> : <CheckCircle className="w-5 h-5 mr-2" />}
                 {isOwner ? 'Claim & Add Gym' : 'Add Gym'}
