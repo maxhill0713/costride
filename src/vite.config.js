@@ -1,14 +1,10 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import path from 'path';
-import { readFileSync, writeFileSync, readdirSync } from 'fs';
+import { readFileSync, writeFileSync, readdirSync, existsSync } from 'fs';
 import { createRequire } from 'module';
-import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 import base44Plugin from '@base44/vite-plugin';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
 
 const _req = createRequire(import.meta.url);
 
