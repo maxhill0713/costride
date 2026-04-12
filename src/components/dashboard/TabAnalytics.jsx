@@ -260,7 +260,6 @@ function KpiStrip() {
           <div key={i} style={{
             background:  C.card,
             border:      `1px solid ${C.brd}`,
-            borderLeft:  `2.5px solid ${k.accent}`,
             borderRadius: 10,
             padding:     "18px 16px",
           }}>
