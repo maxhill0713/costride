@@ -28,6 +28,36 @@ import { getSwappedRestDay } from '../lib/weekSwaps.js';
 const sanitiseUsernameQuery = (v) =>
   v.replace(/[^a-zA-Z0-9_.\- ]/g, '').slice(0, 30);
 
+const MONTHLY_CHALLENGES_LOOKUP = {
+  discipline_builder: {
+    title: 'Discipline Builder',
+    description: 'Log 15 workouts this month',
+    target_value: 15,
+    reward: '💪 Discipline Builder Badge',
+    rewardType: 'badge',
+    rewardValue: 'discipline_builder',
+    emoji: '📅',
+  },
+  witness_my_gains: {
+    title: 'Witness My Gains',
+    description: 'Share 4 of your workouts with your community',
+    target_value: 4,
+    reward: '1 x Spartan Streak Icon Design',
+    rewardType: 'streak_icon',
+    rewardValue: 'spartan',
+    emoji: '⚔️',
+  },
+  weekend_warrior: {
+    title: 'Weekend Warrior',
+    description: 'Log your workout on Saturday or Sunday 5 times!',
+    target_value: 5,
+    reward: '2 x Streak Freezes',
+    rewardType: 'freezes',
+    rewardValue: 2,
+    emoji: '🏋️',
+  },
+};
+
 const POSE_1_URL = 'https://media.base44.com/images/public/694b637358644e1c22c8ec6b/5688f98be_Pose1_V2.png';
 const POSE_2_URL = 'https://media.base44.com/images/public/694b637358644e1c22c8ec6b/8d4e06e17_Pose2_V21.png';
 const SPARTAN_ICON_URL = 'https://media.base44.com/images/public/694b637358644e1c22c8ec6b/a72ee034d_spartan.png';
@@ -828,16 +858,26 @@ export default function Home() {
     const newStreak = freshUser?.current_streak || userStreak + 1;
     setCelebrationStreakNum(newStreak);
     // Build celebration data from the active app challenges (Discipline Builder, Witness My Gains, Weekend Warrior)
+    const currentMonth = `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}`;
+    const latestUser = queryClient.getQueryData(['currentUser']);
+    const monthlyProgress = latestUser?.monthly_challenge_progress || {};
+    const isCurrentMonth = monthlyProgress.month === currentMonth;
+
     const realChallenges = activeAppChallenges.map(ch => {
-      const participant = userChallengeParticipants.find(p => p.challenge_id === ch.id);
-      const currentProgress = participant?.progress || 0;
+      const lookup = MONTHLY_CHALLENGES_LOOKUP[ch.id];
+      const currentProgress = isCurrentMonth ? (monthlyProgress[ch.id] || 0) : 0;
       const previousProgress = Math.max(0, currentProgress - 1);
       return {
         ...ch,
+        title:          lookup?.title         || ch.title,
+        description:    lookup?.description   || ch.description,
+        target_value:   lookup?.target_value  || ch.target_value || 30,
+        reward:         lookup?.reward        || ch.reward,
+        rewardType:     lookup?.rewardType,
+        rewardValue:    lookup?.rewardValue,
+        emoji:          lookup?.emoji         || '🏋️',
         previous_value: previousProgress,
-        new_value: currentProgress,
-        target_value: ch.target_value || 30,
-        emoji: ch.category === 'attendance' ? '📅' : ch.category === 'streak' ? '🔥' : '🏋️',
+        new_value:      currentProgress,
       };
     });
     const finalChallenges = realChallenges.length > 0 ? realChallenges : challengesData;
