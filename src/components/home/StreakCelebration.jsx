@@ -26,46 +26,62 @@ function StreakCelebration({
 }) {
   useEffect(() => {
     if (!showStreakCelebration) return;
-    const stage = document.getElementById('streak-anim-stage');
-    const numEl = document.getElementById('streak-anim-num');
-    const p1 = document.getElementById('streak-anim-p1');
-    const p2 = document.getElementById('streak-anim-p2');
-    if (!stage || !numEl) return;
 
-    // Reset
-    stage.style.opacity = '0';
-    stage.style.transform = 'scale(0.4) translateY(40px)';
-    if (numEl) { numEl.style.opacity = '0'; numEl.style.transform = 'scale(0.3)'; numEl.textContent = String(celebrationStreakNum); }
-    if (p1) p1.style.display = 'block';
-    if (p2) p2.style.display = 'none';
+    // Wait for AnimatePresence to actually render the DOM nodes
+    const raf = requestAnimationFrame(() => {
+      const stage = document.getElementById('streak-anim-stage');
+      const numEl = document.getElementById('streak-anim-num');
+      const p1 = document.getElementById('streak-anim-p1');
+      const p2 = document.getElementById('streak-anim-p2');
+      if (!stage || !numEl) return;
 
-    // Bounce in icon
-    const t1 = setTimeout(() => {
-      stage.style.transition = 'opacity 0.18s ease, transform 0.55s cubic-bezier(0.34,1.6,0.64,1)';
-      stage.style.opacity = '1';
-      stage.style.transform = 'scale(1) translateY(0)';
-    }, 80);
+      // Reset state
+      stage.style.transition = 'none';
+      stage.style.opacity = '0';
+      stage.style.transform = 'scale(0.4) translateY(40px)';
+      stage.style.filter = 'none';
+      numEl.style.transition = 'none';
+      numEl.style.opacity = '0';
+      numEl.style.transform = 'scale(0.3)';
+      numEl.textContent = String(celebrationStreakNum);
+      if (p1) p1.style.display = 'block';
+      if (p2) p2.style.display = 'none';
 
-    // Pop in number
-    const t2 = setTimeout(() => {
-      numEl.style.transition = 'opacity 0.18s ease, transform 0.5s cubic-bezier(0.34,1.6,0.64,1)';
-      numEl.style.opacity = '1';
-      numEl.style.transform = 'scale(1)';
-    }, 500);
+      // Bounce in icon
+      const t1 = setTimeout(() => {
+        stage.style.transition = 'opacity 0.18s ease, transform 0.55s cubic-bezier(0.34,1.6,0.64,1)';
+        stage.style.opacity = '1';
+        stage.style.transform = 'scale(1) translateY(0)';
+      }, 60);
 
-    // Swap to pose 2
-    const t3 = setTimeout(() => {
-      if (p1) p1.style.display = 'none';
-      if (p2) { p2.style.display = 'block'; }
-    }, 900);
+      // Pop in number
+      const t2 = setTimeout(() => {
+        numEl.style.transition = 'opacity 0.15s ease, transform 0.5s cubic-bezier(0.34,1.8,0.64,1)';
+        numEl.style.opacity = '1';
+        numEl.style.transform = 'scale(1)';
+      }, 480);
 
-    // Glow pulse on stage
-    const t4 = setTimeout(() => {
-      stage.style.filter = 'drop-shadow(0 0 28px rgba(249,115,22,0.9))';
-      stage.style.transition = 'filter 0.4s ease';
-    }, 950);
+      // Swap to pose 2
+      const t3 = setTimeout(() => {
+        if (p1) p1.style.display = 'none';
+        if (p2) p2.style.display = 'block';
+      }, 880);
 
-    return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); clearTimeout(t4); };
+      // Wiggle pose 2
+      const t4 = setTimeout(() => {
+        if (p2) {
+          p2.style.transition = 'transform 0.12s ease';
+          p2.style.transform = 'rotate(-6deg) scale(1.05)';
+          setTimeout(() => { p2.style.transform = 'rotate(5deg) scale(1.08)'; }, 120);
+          setTimeout(() => { p2.style.transform = 'rotate(-3deg) scale(1.04)'; }, 240);
+          setTimeout(() => { p2.style.transform = 'rotate(0deg) scale(1)'; }, 360);
+        }
+      }, 960);
+
+      return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); clearTimeout(t4); };
+    });
+
+    return () => cancelAnimationFrame(raf);
   }, [showStreakCelebration, celebrationStreakNum]);
 
   return (
