@@ -156,7 +156,7 @@ export default defineConfig({
 
   resolve: {
     alias: {
-      '@': path.resolve(__dirname, './src'),
+      '@': path.resolve(new URL('.', import.meta.url).pathname, 'src'),
     },
   },
 });

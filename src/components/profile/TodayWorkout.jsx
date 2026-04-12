@@ -15,7 +15,7 @@ import HomeSummaryModal from '../home/WorkoutSummaryModal.jsx';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 
 import { useTimer } from '../TimerContext';
-import { recordTrainedOnRestDay, useRestDayCredit, hasRestDayCredit } from '../../lib/weekSwaps.js';
+import { recordTrainedOnRestDay, useRestDayCredit as applyRestDayCredit, hasRestDayCredit } from '../../lib/weekSwaps.js';
 
 const DAY_NAMES_FULL = ['', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 
@@ -137,6 +137,7 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
   const [frozenDuration, setFrozenDuration] = useState(0);
   const frozenDurationRef = React.useRef(0);
   const [summaryLog, setSummaryLog] = useState(null);
+  const [editingGroupedSet, setEditingGroupedSet] = useState(null);
 
   // Load overrideDayKey from localStorage, but only if it was saved for today
   const [overrideDayKey, setOverrideDayKey] = useState(() => {
@@ -1180,8 +1181,8 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
         adjustedDay={adjustedDay}
         onSelect={(dayKey, mode) => {
           if (mode === 'rest-to-training') {
-            // User is spending their rest-day credit to swap a future rest day to a training day
-            useRestDayCredit(dayKey);
+            // utility function (not a hook), safe to call in callbacks
+            applyRestDayCredit(dayKey);
             window.dispatchEvent(new Event('weekSwapChanged'));
           } else {
             const newOverride = dayKey === adjustedDay ? null : dayKey;

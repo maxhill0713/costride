@@ -122,8 +122,11 @@ export default function LocationBasedCheckInButton({ gyms, onCheckInSuccess, gym
         check_in_date: new Date().toISOString(),
       });
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['checkIns'] });
+    onSuccess: async () => {
+      const me = await base44.auth.me();
+      if (me?.id) {
+        queryClient.invalidateQueries({ queryKey: ['checkIns', me.id] });
+      }
       queryClient.invalidateQueries({ queryKey: ['currentUser'] });
       setSuccess(true);
       onCheckInSuccess?.();
@@ -146,6 +149,7 @@ export default function LocationBasedCheckInButton({ gyms, onCheckInSuccess, gym
     setPressed(true);
     spawnRipple(e);
     setLocationError(null);
+    setTimeout(() => setPressed(false), 100);
 
     try {
       // User is already confirmed within range (checked on mount), proceed directly

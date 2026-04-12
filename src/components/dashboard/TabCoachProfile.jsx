@@ -27,7 +27,7 @@ import {
   TrendingDown, TrendingUp, Minus, ChevronRight, ChevronDown,
   ChevronUp, Activity, BarChart2, User, Phone, Mail, MapPin,
   Target, Check, Edit2, Plus, X, Loader2, Save, Clock,
-  Zap, ArrowRight, Brain, Flame, RefreshCw, Eye,
+  Zap, ArrowRight, Brain, Flame, RefreshCw, Eye, XCircle,
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -921,6 +921,20 @@ function SnapshotStats({ cl, clientCheckIns, clientBookings }) {
 }
 
 // ─── Quick Actions ────────────────────────────────────────────────────────────
+function QuickActionButton({ label, icon: Ic, fn }) {
+  const [hov, setHov] = useState(false);
+  return (
+    <button key={label} onClick={fn} onMouseEnter={() => setHov(true)} onMouseLeave={() => setHov(false)}
+      style={{ display: 'flex', alignItems: 'center', gap: 9, padding: '9px 11px', borderRadius: 9, background: hov ? C.surfaceEl : 'rgba(255,255,255,0.02)', border: `1px solid ${hov ? C.borderEl : C.border}`, fontSize: 12, fontWeight: 600, color: hov ? C.t1 : C.t2, cursor: 'pointer', fontFamily: 'inherit', transition: 'all .12s', textAlign: 'left', width: '100%' }}>
+      <div style={{ width: 24, height: 24, borderRadius: 7, background: C.surfaceEl, border: `1px solid ${C.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+        <Ic style={{ width: 11, height: 11, color: C.t3 }} />
+      </div>
+      {label}
+      <ChevronRight style={{ width: 10, height: 10, marginLeft: 'auto', color: C.t4 }} />
+    </button>
+  );
+}
+
 function QuickActions({ onMessage, onBook, onAssign }) {
   const actions = [
     { label: 'Send check-in message', icon: MessageSquare, fn: onMessage },
@@ -930,19 +944,9 @@ function QuickActions({ onMessage, onBook, onAssign }) {
   return (
     <Card label="Quick Actions" icon={Zap} iconColor={C.warn}>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
-        {actions.map(({ label, icon: Ic, fn }) => {
-          const [hov, setHov] = useState(false);
-          return (
-            <button key={label} onClick={fn} onMouseEnter={() => setHov(true)} onMouseLeave={() => setHov(false)}
-              style={{ display: 'flex', alignItems: 'center', gap: 9, padding: '9px 11px', borderRadius: 9, background: hov ? C.surfaceEl : 'rgba(255,255,255,0.02)', border: `1px solid ${hov ? C.borderEl : C.border}`, fontSize: 12, fontWeight: 600, color: hov ? C.t1 : C.t2, cursor: 'pointer', fontFamily: 'inherit', transition: 'all .12s', textAlign: 'left', width: '100%' }}>
-              <div style={{ width: 24, height: 24, borderRadius: 7, background: C.surfaceEl, border: `1px solid ${C.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                <Ic style={{ width: 11, height: 11, color: C.t3 }} />
-              </div>
-              {label}
-              <ChevronRight style={{ width: 10, height: 10, marginLeft: 'auto', color: C.t4 }} />
-            </button>
-          );
-        })}
+        {actions.map((action) => (
+          <QuickActionButton key={action.label} {...action} />
+        ))}
       </div>
     </Card>
   );

@@ -371,6 +371,9 @@ export default function Profile() {
   const primaryGymId = currentUser?.primary_gym_id;
   const primaryGym = memberGymsData.find((g) => g.id === primaryGymId);
   const currentStreak = currentUser?.current_streak || 0;
+  
+  if (!currentUser) return null;
+  
   const filteredPosts = useMemo(() => userPosts.filter((post) =>
     (post.image_url || post.video_url) &&
     !post.content?.includes('Well done, workout') &&
