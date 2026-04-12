@@ -66,10 +66,10 @@ const RETENTION_OVER_TIME = [
 ];
 
 const FUNNEL_STAGES = [
-  { label: "Joined",          val: 38, pct: 100, sub: "Total members"              },
-  { label: "Returned Week 1", val: 32, pct: 84,  sub: "First-week habit"           },
-  { label: "Active Month 1",  val: 27, pct: 71,  sub: "30-day engagement"          },
-  { label: "Retained Month 3",val: 22, pct: 58,  sub: "Long-term members"          },
+  { label: "Joined",           val: 38, pct: 100, sub: "All new members"       },
+  { label: "Returned Week 1",  val: 32, pct: 84,  sub: "First-week habit"      },
+  { label: "Active Month 1",   val: 27, pct: 71,  sub: "30-day engagement"     },
+  { label: "Retained Month 3", val: 22, pct: 58,  sub: "Long-term members"     },
 ];
 
 const SEGMENTS_DATA = [
@@ -87,20 +87,20 @@ const SEGMENT_TREND_DATA = [
 ];
 
 const CLASS_DATA = [
-  { name: "HIIT Circuit",   fill: 94, sessions: 12, trend: +12, peak: "6–7pm" },
-  { name: "Morning Flow",   fill: 78, sessions: 8,  trend: +4,  peak: "7–8am" },
-  { name: "Strength Forge", fill: 71, sessions: 10, trend: -3,  peak: "5–6pm" },
-  { name: "Spin Express",   fill: 55, sessions: 6,  trend: +8,  peak: "6–7am" },
-  { name: "Recovery Yoga",  fill: 38, sessions: 4,  trend: -7,  peak: "9–10am"},
+  { name: "HIIT Circuit",   fill: 94, sessions: 12, trend: +12, peak: "6–7pm"  },
+  { name: "Morning Flow",   fill: 78, sessions: 8,  trend: +4,  peak: "7–8am"  },
+  { name: "Strength Forge", fill: 71, sessions: 10, trend: -3,  peak: "5–6pm"  },
+  { name: "Spin Express",   fill: 55, sessions: 6,  trend: +8,  peak: "6–7am"  },
+  { name: "Recovery Yoga",  fill: 38, sessions: 4,  trend: -7,  peak: "9–10am" },
 ];
 
 const ENGAGEMENT_DATA = [
-  { subject: "Check-ins",   A: 84 },
-  { subject: "Classes",     A: 61 },
-  { subject: "Challenges",  A: 47 },
-  { subject: "Community",   A: 38 },
-  { subject: "App Usage",   A: 72 },
-  { subject: "Polls",       A: 29 },
+  { subject: "Check-ins",  A: 84 },
+  { subject: "Classes",    A: 61 },
+  { subject: "Challenges", A: 47 },
+  { subject: "Community",  A: 38 },
+  { subject: "App Usage",  A: 72 },
+  { subject: "Polls",      A: 29 },
 ];
 
 const REVENUE_DATA = [
@@ -120,15 +120,15 @@ const CHURN_MEMBERS = [
 ];
 
 const HOURS_DATA = [
-  { h: "6a", v: 14 }, { h: "7a", v: 28 }, { h: "8a", v: 22 },
-  { h: "9a", v: 16 }, { h: "12p", v: 18 }, { h: "5p", v: 34 },
-  { h: "6p", v: 42 }, { h: "7p", v: 38 }, { h: "8p", v: 20 },
+  { h: "6a",  v: 14 }, { h: "7a",  v: 28 }, { h: "8a",  v: 22 },
+  { h: "9a",  v: 16 }, { h: "12p", v: 18 }, { h: "5p",  v: 34 },
+  { h: "6p",  v: 42 }, { h: "7p",  v: 38 }, { h: "8p",  v: 20 },
 ];
 
 /* ─── HELPERS ────────────────────────────────────────────────── */
-const riskCol  = p => p >= 70 ? C.red   : p >= 40 ? C.amber : C.green;
-const fillCol  = p => p >= 75 ? C.cyan  : p < 40  ? C.red   : C.t2;
-const trendCol = t => t > 0   ? C.cyan  : t < 0   ? C.red   : C.t3;
+const riskCol = p => p >= 70 ? C.red   : p >= 40 ? C.amber : C.green;
+const fillCol = p => p >= 75 ? C.cyan  : p < 40  ? C.red   : C.t2;
+const trendCol = t => t > 0  ? C.cyan  : t < 0   ? C.red   : C.t3;
 
 /* ─── SHARED COMPONENTS ──────────────────────────────────────── */
 function Card({ children, style = {} }) {
@@ -151,12 +151,12 @@ function SLabel({ children, right, sub }) {
   );
 }
 
-function Pill({ children, color = C.cyan, bg }) {
+function Pill({ children, color = C.cyan }) {
   return (
     <span style={{
       padding: "2px 8px", borderRadius: 20, fontSize: 10, fontWeight: 700,
-      color: color, background: bg || color + "15",
-      border: `1px solid ${color}33`, display: "inline-block",
+      color, background: color + "15", border: `1px solid ${color}33`,
+      display: "inline-block",
     }}>{children}</span>
   );
 }
@@ -169,7 +169,7 @@ function MiniBar({ value, max, color = C.cyan, h = 4 }) {
   );
 }
 
-function Tip({ active, payload, label, suffix = "", valueFn }) {
+function ChartTip({ active, payload, label, suffix = "", valueFn }) {
   if (!active || !payload?.length) return null;
   return (
     <div style={{ background: "#0f1520", border: `1px solid ${C.cyanB}`, borderRadius: 7, padding: "7px 11px", fontSize: 11.5, fontFamily: FONT, minWidth: 110 }}>
@@ -178,6 +178,20 @@ function Tip({ active, payload, label, suffix = "", valueFn }) {
         <div key={i} style={{ color: p.color || C.cyan, fontWeight: 700, display: "flex", justifyContent: "space-between", gap: 8 }}>
           <span style={{ color: C.t3, fontWeight: 400 }}>{p.name || ""}</span>
           <span>{valueFn ? valueFn(p.value) : `${p.value}${suffix}`}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function LineTip({ active, payload, label }) {
+  if (!active || !payload?.length) return null;
+  return (
+    <div style={{ background: "#0f1520", border: `1px solid ${C.cyanB}`, borderRadius: 7, padding: "7px 11px", fontSize: 11, fontFamily: FONT }}>
+      <div style={{ color: C.t3, marginBottom: 4, fontSize: 10 }}>{label}</div>
+      {payload.map((p, i) => (
+        <div key={i} style={{ color: p.color, fontWeight: 700, display: "flex", justifyContent: "space-between", gap: 10 }}>
+          <span style={{ color: C.t3, fontWeight: 400 }}>{p.name}</span>{p.value}%
         </div>
       ))}
     </div>
@@ -202,31 +216,67 @@ function RangeTab({ range, setRange }) {
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   SECTION 1: KPI STRIP
+   SECTION 1: KPI STRIP — 4 cards, white numbers
 ═══════════════════════════════════════════════════════════════ */
 function KpiStrip() {
   const kpis = [
-    { label: "Week 1 Return",    value: "84%", trend: +4,  sub: "of new members return in 7d",   accent: C.cyan  },
-    { label: "Month 1 Active",   value: "71%", trend: +9,  sub: "retained after 30 days",         accent: C.cyan  },
-    { label: "Month 3 Retained", value: "58%", trend: +5,  sub: "long-term cohort",               accent: C.cyan  },
-    { label: "At Risk",          value: "7",   trend: -2,  sub: "members · 18% of membership",   accent: C.red, trendInvert: true },
-    { label: "Revenue at Risk",  value: "£300",trend: -12, sub: "potential monthly loss",         accent: C.red, trendInvert: true },
-    { label: "Avg Visits/Member",value: "5.1", trend: +11, sub: "per week, up from 3.8",          accent: C.t1    },
+    {
+      label:  "Week 1 Return",
+      value:  "84%",
+      trend:  +4,
+      sub:    "of new members return in 7d",
+      accent: C.cyan,
+    },
+    {
+      label:  "Month 3 Retained",
+      value:  "58%",
+      trend:  +5,
+      sub:    "long-term cohort health",
+      accent: C.cyan,
+    },
+    {
+      label:       "At Risk",
+      value:       "7",
+      trend:       -2,
+      sub:         "£265/mo potential loss",
+      accent:      C.red,
+      trendInvert: true,
+    },
+    {
+      label:  "Avg Visits / Week",
+      value:  "5.1",
+      trend:  +11,
+      sub:    "per member, up from 3.8",
+      accent: C.blue,
+    },
   ];
+
   return (
-    <div style={{ display: "grid", gridTemplateColumns: "repeat(6,1fr)", gap: 9 }}>
+    <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 9 }}>
       {kpis.map((k, i) => {
         const up   = k.trendInvert ? k.trend < 0 : k.trend > 0;
         const tCol = up ? C.cyan : C.red;
         return (
-          <div key={i} style={{ background: C.card, border: `1px solid ${C.brd}`, borderRadius: 10, padding: "11px 13px" }}>
-            <div style={{ fontSize: 9.5, color: C.t3, textTransform: "uppercase", letterSpacing: "0.07em", fontWeight: 600, marginBottom: 5 }}>{k.label}</div>
-            <div style={{ fontSize: 24, fontWeight: 700, color: k.accent, letterSpacing: "-0.03em", lineHeight: 1 }}>{k.value}</div>
-            <div style={{ fontSize: 10, color: C.t3, marginTop: 3, marginBottom: 5 }}>{k.sub}</div>
-            <div style={{ display: "flex", alignItems: "center", gap: 2, fontSize: 10.5, color: tCol, fontWeight: 600 }}>
-              {up ? <ArrowUpRight style={{ width: 10, height: 10 }} /> : <ArrowDownRight style={{ width: 10, height: 10 }} />}
+          <div key={i} style={{
+            background:  C.card,
+            border:      `1px solid ${C.brd}`,
+            borderLeft:  `2.5px solid ${k.accent}`,
+            borderRadius: 10,
+            padding:     "18px 16px",
+          }}>
+            <div style={{ fontSize: 10, color: C.t3, textTransform: "uppercase", letterSpacing: "0.1em", fontWeight: 700, marginBottom: 11 }}>
+              {k.label}
+            </div>
+            <div style={{ fontSize: 34, fontWeight: 700, color: C.t1, letterSpacing: "-0.04em", lineHeight: 1, marginBottom: 9 }}>
+              {k.value}
+            </div>
+            <div style={{ fontSize: 11, color: tCol, fontWeight: 600, display: "flex", alignItems: "center", gap: 3 }}>
+              {up
+                ? <ArrowUpRight   style={{ width: 10, height: 10 }} />
+                : <ArrowDownRight style={{ width: 10, height: 10 }} />}
               {k.trend > 0 ? "+" : ""}{k.trend}% vs last month
             </div>
+            <div style={{ fontSize: 10, color: C.t3, marginTop: 3 }}>{k.sub}</div>
           </div>
         );
       })}
@@ -235,72 +285,106 @@ function KpiStrip() {
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   SECTION 2: RETENTION FUNNEL  (visual stepped funnel)
+   SECTION 2: RETENTION FUNNEL — SVG trapezoid + trend lines
 ═══════════════════════════════════════════════════════════════ */
 function RetentionFunnelSection() {
-  const worstDrop = useMemo(() => {
-    let worst = 0, idx = 0;
-    FUNNEL_STAGES.forEach((s, i) => {
-      if (i === 0) return;
-      const drop = FUNNEL_STAGES[i - 1].pct - s.pct;
-      if (drop > worst) { worst = drop; idx = i; }
-    });
-    return { idx, drop: worst };
-  }, []);
-
   return (
     <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
 
-      {/* Funnel visual */}
+      {/* ── SVG Funnel ── */}
       <Card>
-        <SLabel sub={`Biggest drop: ${FUNNEL_STAGES[worstDrop.idx].label} (−${worstDrop.drop}%)`}>
-          Retention Funnel
-        </SLabel>
-        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-          {FUNNEL_STAGES.map((s, i) => {
-            const dropPct = i > 0 ? FUNNEL_STAGES[i - 1].pct - s.pct : 0;
-            const isWorst = worstDrop.idx === i && i > 0;
-            return (
-              <div key={i}>
-                {i > 0 && (
-                  <div style={{ display: "flex", alignItems: "center", gap: 6, padding: "4px 0 4px 8px" }}>
-                    <div style={{ width: 1, height: 14, background: isWorst ? C.amber : C.brd2, marginLeft: 11 }} />
-                    <span style={{ fontSize: 10, color: isWorst ? C.amber : C.t3, fontWeight: isWorst ? 700 : 400 }}>
-                      −{dropPct}% drop-off{isWorst ? " ← biggest gap" : ""}
-                    </span>
-                  </div>
-                )}
-                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                  {/* Funnel bar — tapers with pct */}
-                  <div style={{ flex: 1 }}>
-                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 4 }}>
-                      <span style={{ fontSize: 11.5, fontWeight: i === 0 ? 700 : 500, color: C.t1 }}>{s.label}</span>
-                      <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                        <span style={{ fontSize: 13, fontWeight: 700, color: i === 0 ? C.cyan : isWorst ? C.amber : C.t1 }}>{s.val}</span>
-                        <span style={{ fontSize: 10.5, color: C.t3 }}>{s.pct}%</span>
-                      </div>
-                    </div>
-                    <div style={{ height: 7, background: C.brd, borderRadius: 3, overflow: "hidden" }}>
-                      <div style={{
-                        width: `${s.pct}%`, height: "100%", borderRadius: 3,
-                        background: s.pct === 100 ? C.cyan
-                          : isWorst ? C.amber
-                          : s.pct >= 70 ? C.cyan + "cc"
-                          : s.pct >= 50 ? C.cyan + "88"
-                          : C.cyan + "44",
-                        transition: "width 0.4s ease",
-                      }} />
-                    </div>
-                    <div style={{ fontSize: 9.5, color: C.t3, marginTop: 3 }}>{s.sub}</div>
-                  </div>
-                </div>
-              </div>
-            );
-          })}
+        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 6 }}>
+          <SLabel sub="Member journey from join day to long-term retention">
+            Retention Funnel
+          </SLabel>
+          <div style={{ textAlign: "right", flexShrink: 0, marginLeft: 12 }}>
+            <div style={{ fontSize: 10, color: C.t3, marginBottom: 2 }}>Reach month 3</div>
+            <div style={{ fontSize: 22, fontWeight: 700, color: C.t1, letterSpacing: "-0.02em", lineHeight: 1 }}>58%</div>
+          </div>
+        </div>
+
+        {/*
+          viewBox 460 × 275
+          Center x: 230
+          Max half-width (100%): 165 → left=65, right=395
+          84%  half: 138 → left=92,  right=368
+          71%  half: 117 → left=113, right=347
+          58%  half:  96 → left=134, right=326
+          Band height: 58px each
+          y positions: 12, 70, 128, 186, 244
+        */}
+        <svg
+          viewBox="0 0 460 262"
+          width="100%"
+          style={{ display: "block", marginTop: 4 }}
+          role="img"
+          aria-label="Retention funnel: 38 joined, 32 returned week 1 at 84%, 27 active month 1 at 71%, 22 retained month 3 at 58%"
+        >
+          {/* Band 1 — Joined 100% */}
+          <polygon points="65,12 395,12 368,70 92,70"    fill={C.cyan} fillOpacity={0.82} />
+          {/* Band 2 — Week 1 return 84% */}
+          <polygon points="92,70 368,70 347,128 113,128"  fill={C.cyan} fillOpacity={0.56} />
+          {/* Band 3 — Month 1 active 71% */}
+          <polygon points="113,128 347,128 326,186 134,186" fill={C.cyan} fillOpacity={0.35} />
+          {/* Band 4 — Month 3 retained 58% (flat bottom) */}
+          <polygon points="134,186 326,186 326,244 134,244" fill={C.cyan} fillOpacity={0.20} />
+
+          {/* Separators */}
+          <line x1="92"  y1="70"  x2="368" y2="70"  stroke={C.bg} strokeWidth="2.5" />
+          <line x1="113" y1="128" x2="347" y2="128" stroke={C.bg} strokeWidth="2.5" />
+          <line x1="134" y1="186" x2="326" y2="186" stroke={C.bg} strokeWidth="2.5" />
+
+          {/* Stage labels — left */}
+          <text x="57" y="36"  textAnchor="end" fontFamily={FONT} fontSize="11" fontWeight="700" fill={C.t1}>Joined</text>
+          <text x="57" y="49"  textAnchor="end" fontFamily={FONT} fontSize="9"  fill={C.t3}>All new</text>
+          <text x="57" y="96"  textAnchor="end" fontFamily={FONT} fontSize="11" fontWeight="600" fill={C.t2}>Week 1</text>
+          <text x="57" y="155" textAnchor="end" fontFamily={FONT} fontSize="11" fontWeight="600" fill={C.t2}>Month 1</text>
+          <text x="57" y="218" textAnchor="end" fontFamily={FONT} fontSize="11" fontWeight="600" fill={C.t2}>Month 3</text>
+
+          {/* Member count + % inside bands — white text */}
+          {/* Band 1 center y = (12+70)/2 = 41 */}
+          <text x="230" y="37"  textAnchor="middle" fontFamily={FONT} fontSize="18" fontWeight="700" fill="#ffffff">38</text>
+          <text x="230" y="52"  textAnchor="middle" fontFamily={FONT} fontSize="10" fill="rgba(255,255,255,0.65)">100% · all members</text>
+          {/* Band 2 center y = (70+128)/2 = 99 */}
+          <text x="230" y="96"  textAnchor="middle" fontFamily={FONT} fontSize="18" fontWeight="700" fill="#ffffff">32</text>
+          <text x="230" y="111" textAnchor="middle" fontFamily={FONT} fontSize="10" fill="rgba(255,255,255,0.65)">84% · 6 members lost</text>
+          {/* Band 3 center y = (128+186)/2 = 157 */}
+          <text x="230" y="154" textAnchor="middle" fontFamily={FONT} fontSize="18" fontWeight="700" fill="#ffffff">27</text>
+          <text x="230" y="169" textAnchor="middle" fontFamily={FONT} fontSize="10" fill="rgba(255,255,255,0.65)">71% · 5 members lost</text>
+          {/* Band 4 center y = (186+244)/2 = 215 */}
+          <text x="230" y="212" textAnchor="middle" fontFamily={FONT} fontSize="18" fontWeight="700" fill="#ffffff">22</text>
+          <text x="230" y="227" textAnchor="middle" fontFamily={FONT} fontSize="10" fill="rgba(255,255,255,0.65)">58% · 5 members lost</text>
+
+          {/* Drop-off annotations — right side */}
+          {/* −16% at y=70 (biggest drop — amber) */}
+          <line x1="368" y1="70" x2="395" y2="70" stroke={C.amber} strokeWidth="1.5" />
+          <circle cx="395" cy="70" r="3" fill={C.amber} />
+          <text x="402" y="67" fontFamily={FONT} fontSize="12" fontWeight="700" fill={C.amber}>−16%</text>
+          <text x="402" y="80" fontFamily={FONT} fontSize="9"  fontWeight="600" fill={C.amber}>biggest drop</text>
+
+          {/* −13% at y=128 */}
+          <line x1="347" y1="128" x2="395" y2="128" stroke={C.t3} strokeWidth="1" />
+          <circle cx="395" cy="128" r="2.5" fill={C.t3} />
+          <text x="402" y="132" fontFamily={FONT} fontSize="11" fill={C.t3}>−13%</text>
+
+          {/* −13% at y=186 */}
+          <line x1="326" y1="186" x2="395" y2="186" stroke={C.t3} strokeWidth="1" />
+          <circle cx="395" cy="186" r="2.5" fill={C.t3} />
+          <text x="402" y="190" fontFamily={FONT} fontSize="11" fill={C.t3}>−13%</text>
+        </svg>
+
+        {/* Insight callout */}
+        <div style={{ marginTop: 12, padding: "9px 11px", borderRadius: 8, background: C.amberD, border: `1px solid ${C.amberB}` }}>
+          <div style={{ fontSize: 11, color: C.amber, fontWeight: 700, marginBottom: 2 }}>
+            Biggest opportunity — Week 1 drop-off
+          </div>
+          <div style={{ fontSize: 10.5, color: C.t2, lineHeight: 1.55 }}>
+            16% of new members don't return after their first visit. A targeted welcome sequence on days 3–7 could close this gap by up to 40%.
+          </div>
         </div>
       </Card>
 
-      {/* Retention over time — 3 lines */}
+      {/* ── Retention rate trend lines (unchanged) ── */}
       <Card>
         <SLabel right="6 months" sub="How each cohort milestone has improved month-on-month">
           Retention Rate Trends
@@ -310,28 +394,20 @@ function RetentionFunnelSection() {
             <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" vertical={false} />
             <XAxis dataKey="m" tick={tick} axisLine={false} tickLine={false} />
             <YAxis tick={tick} axisLine={false} tickLine={false} domain={[30, 100]} />
-            <Tooltip content={({ active, payload, label }) => {
-              if (!active || !payload?.length) return null;
-              return (
-                <div style={{ background: "#0f1520", border: `1px solid ${C.cyanB}`, borderRadius: 7, padding: "7px 11px", fontSize: 11, fontFamily: FONT }}>
-                  <div style={{ color: C.t3, marginBottom: 4, fontSize: 10 }}>{label}</div>
-                  {payload.map((p, i) => (
-                    <div key={i} style={{ color: p.color, fontWeight: 700, display: "flex", justifyContent: "space-between", gap: 10 }}>
-                      <span style={{ color: C.t3, fontWeight: 400 }}>{p.name}</span> {p.value}%
-                    </div>
-                  ))}
-                </div>
-              );
-            }} />
-            <Line type="monotone" dataKey="w1" name="Week 1" stroke={C.cyan}            strokeWidth={2} dot={false} activeDot={{ r: 3, fill: C.cyan,  stroke: C.card, strokeWidth: 2 }} />
-            <Line type="monotone" dataKey="m1" name="Month 1" stroke={C.blue}           strokeWidth={2} dot={false} activeDot={{ r: 3, fill: C.blue,  stroke: C.card, strokeWidth: 2 }} />
-            <Line type="monotone" dataKey="m3" name="Month 3" stroke={C.cyan + "77"}    strokeWidth={2} dot={false} activeDot={{ r: 3, fill: C.cyan,  stroke: C.card, strokeWidth: 2 }} strokeDasharray="4 3" />
+            <Tooltip content={<LineTip />} />
+            <Line type="monotone" dataKey="w1" name="Week 1"  stroke={C.cyan}         strokeWidth={2} dot={false} activeDot={{ r: 3, fill: C.cyan,  stroke: C.card, strokeWidth: 2 }} />
+            <Line type="monotone" dataKey="m1" name="Month 1" stroke={C.blue}         strokeWidth={2} dot={false} activeDot={{ r: 3, fill: C.blue,  stroke: C.card, strokeWidth: 2 }} />
+            <Line type="monotone" dataKey="m3" name="Month 3" stroke={C.cyan + "77"}  strokeWidth={2} dot={false} activeDot={{ r: 3, fill: C.cyan,  stroke: C.card, strokeWidth: 2 }} strokeDasharray="4 3" />
           </LineChart>
         </ResponsiveContainer>
         <div style={{ display: "flex", gap: 16, marginTop: 8 }}>
-          {[{ col: C.cyan, label: "Week 1" }, { col: C.blue, label: "Month 1" }, { col: C.cyan + "77", label: "Month 3", dashed: true }].map((l, i) => (
+          {[
+            { col: C.cyan,         label: "Week 1"          },
+            { col: C.blue,         label: "Month 1"         },
+            { col: C.cyan + "77",  label: "Month 3", dashed: true },
+          ].map((l, i) => (
             <div key={i} style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 10.5, color: C.t3 }}>
-              <div style={{ width: 16, height: 2, background: l.col, borderRadius: 1, borderTop: l.dashed ? `2px dashed ${l.col}` : "none" }} />
+              <div style={{ width: 16, height: 2, background: l.col, borderRadius: 1 }} />
               {l.label}
             </div>
           ))}
@@ -347,31 +423,31 @@ function RetentionFunnelSection() {
 function KeyInsights() {
   const insights = [
     {
-      icon: TrendingUp,
+      icon:  TrendingUp,
       color: C.cyan,
-      bg: C.cyanD,
-      brd: C.cyanB,
+      bg:    C.cyanD,
+      brd:   C.cyanB,
       title: "Week-1 habit is driving long-term retention",
-      body: "Members who check in within their first 7 days are 3× more likely to still be active at month 3. Your week-1 rate improved from 68% → 84% over 6 months — this is your biggest retention lever.",
-      tag: "Positive signal",
+      body:  "Members who check in within their first 7 days are 3× more likely to still be active at month 3. Your week-1 rate improved from 68% → 84% over 6 months — this is your biggest retention lever.",
+      tag:   "Positive signal",
     },
     {
-      icon: AlertTriangle,
+      icon:  AlertTriangle,
       color: C.amber,
-      bg: C.amberD,
-      brd: C.amberB,
+      bg:    C.amberD,
+      brd:   C.amberB,
       title: "Month 1 → Month 3 is your biggest drop-off window",
-      body: "You lose 13% of members between month 1 and month 3. This typically happens when the novelty wears off. A targeted challenge or personal check-in at week 6–8 can close this gap by up to 40%.",
-      tag: "Needs attention",
+      body:  "You lose 13% of members between month 1 and month 3. This typically happens when the novelty wears off. A targeted challenge or personal check-in at week 6–8 can close this gap by up to 40%.",
+      tag:   "Needs attention",
     },
     {
-      icon: Zap,
+      icon:  Zap,
       color: C.blue,
-      bg: C.blueD,
-      brd: "rgba(59,130,246,0.22)",
+      bg:    C.blueD,
+      brd:   "rgba(59,130,246,0.22)",
       title: "Engaged members have 2× longer retention",
-      body: "Members who participate in at least one challenge or class per month stay an average of 8.2 months vs 3.9 months for those who don't. Increasing challenge participation from 47% → 65% could recover ~£180/month in projected revenue.",
-      tag: "Opportunity",
+      body:  "Members who participate in at least one challenge or class per month stay an average of 8.2 months vs 3.9 months for those who don't. Increasing challenge participation from 47% → 65% could recover ~£180/month.",
+      tag:   "Opportunity",
     },
   ];
 
@@ -379,9 +455,11 @@ function KeyInsights() {
     <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 12 }}>
       {insights.map((ins, i) => (
         <div key={i} style={{
-          background: C.card, border: `1px solid ${C.brd}`,
-          borderLeft: `2px solid ${ins.color}`,
-          borderRadius: 10, padding: "14px 15px",
+          background:   C.card,
+          border:       `1px solid ${C.brd}`,
+          borderLeft:   `2px solid ${ins.color}`,
+          borderRadius: 10,
+          padding:      "14px 15px",
         }}>
           <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 8 }}>
             <ins.icon style={{ width: 12, height: 12, color: ins.color, flexShrink: 0 }} />
@@ -402,7 +480,6 @@ function MemberSegmentsSection() {
   return (
     <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
 
-      {/* Segments breakdown */}
       <Card>
         <SLabel sub="Who your members are right now and how segments are shifting">
           Member Segments
@@ -421,7 +498,7 @@ function MemberSegmentsSection() {
                 <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 2, fontSize: 10.5, color: s.trend > 0 ? C.cyan : C.red, fontWeight: 600 }}>
                     {s.trend > 0
-                      ? <ArrowUpRight style={{ width: 10, height: 10 }} />
+                      ? <ArrowUpRight   style={{ width: 10, height: 10 }} />
                       : <ArrowDownRight style={{ width: 10, height: 10 }} />}
                     {s.trend > 0 ? "+" : ""}{s.trend}
                   </div>
@@ -429,22 +506,18 @@ function MemberSegmentsSection() {
                   <span style={{ fontSize: 10.5, color: C.t3, width: 30, textAlign: "right" }}>{s.pct}%</span>
                 </div>
               </div>
-              {/* Stacked bar relative to total */}
               <div style={{ height: 4, background: C.brd, borderRadius: 2, overflow: "hidden" }}>
                 <div style={{ width: `${s.pct}%`, height: "100%", background: s.col, borderRadius: 2, opacity: 0.75 }} />
               </div>
             </div>
           ))}
         </div>
-
-        {/* Insight callout */}
         <div style={{ marginTop: 12, padding: "9px 11px", borderRadius: 8, background: C.amberD, border: `1px solid ${C.amberB}` }}>
-          <div style={{ fontSize: 11, color: C.amber, fontWeight: 600, marginBottom: 2 }}>⚠ Slipping segment grew +4 last quarter</div>
+          <div style={{ fontSize: 11, color: C.amber, fontWeight: 600, marginBottom: 2 }}>Slipping segment grew +4 last quarter</div>
           <div style={{ fontSize: 10.5, color: C.t2, lineHeight: 1.5 }}>9 members dropping from Consistent → Slipping. A targeted re-engagement campaign now prevents them becoming At Risk.</div>
         </div>
       </Card>
 
-      {/* Segment trend over time */}
       <Card>
         <SLabel sub="How each segment has changed month by month" right="4 months">
           Segment Trends
@@ -475,10 +548,10 @@ function MemberSegmentsSection() {
         </ResponsiveContainer>
         <div style={{ display: "flex", flexWrap: "wrap", gap: 12, marginTop: 10 }}>
           {[
-            { col: C.cyan,  label: "Super Active" },
-            { col: C.blue,  label: "Consistent"   },
-            { col: C.amber, label: "Slipping",  dashed: true },
-            { col: C.red,   label: "At Risk",   dashed: true },
+            { col: C.cyan,  label: "Super Active"               },
+            { col: C.blue,  label: "Consistent"                 },
+            { col: C.amber, label: "Slipping",  dashed: true    },
+            { col: C.red,   label: "At Risk",   dashed: true    },
           ].map((l, i) => (
             <div key={i} style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 10.5, color: C.t3 }}>
               <div style={{ width: 16, height: 2, background: l.col, borderRadius: 1 }} />
@@ -492,20 +565,19 @@ function MemberSegmentsSection() {
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   SECTION 5: VISIT TRENDS
+   SECTION 5: VISIT TRENDS + PEAK HOURS
 ═══════════════════════════════════════════════════════════════ */
 function VisitTrendsSection() {
   return (
     <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: 12 }}>
 
-      {/* Dual axis: total visits + avg per member */}
       <Card>
         <SLabel sub="Weekly check-ins (bars) and average visits per member (line) — both improving" right="12 weeks">
           Visit Habits
         </SLabel>
         <div style={{ display: "flex", gap: 20, marginBottom: 14 }}>
           <div>
-            <div style={{ fontSize: 24, fontWeight: 700, color: C.cyan, letterSpacing: "-0.03em", lineHeight: 1 }}>192</div>
+            <div style={{ fontSize: 24, fontWeight: 700, color: C.t1, letterSpacing: "-0.03em", lineHeight: 1 }}>192</div>
             <div style={{ fontSize: 10, color: C.t3, marginTop: 2 }}>check-ins this week</div>
           </div>
           <div>
@@ -542,7 +614,7 @@ function VisitTrendsSection() {
                 </div>
               );
             }} />
-            <Bar yAxisId="left" dataKey="total" name="Check-ins" fill={C.cyan + "30"} radius={[2, 2, 0, 0]} barSize={14} />
+            <Bar  yAxisId="left"  dataKey="total" name="Check-ins"  fill={C.cyan + "30"} radius={[2, 2, 0, 0]} barSize={14} />
             <Line yAxisId="right" type="monotone" dataKey="avg" name="Avg/member" stroke={C.cyan} strokeWidth={2.5} dot={false} activeDot={{ r: 3, fill: C.cyan, stroke: C.card, strokeWidth: 2 }} />
           </ComposedChart>
         </ResponsiveContainer>
@@ -556,15 +628,14 @@ function VisitTrendsSection() {
         </div>
       </Card>
 
-      {/* Peak hours heatmap-style */}
       <Card>
         <SLabel sub="When your gym is busiest — staff and class scheduling">Peak Hours</SLabel>
         <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
           {HOURS_DATA.map((d, i) => {
-            const max     = Math.max(...HOURS_DATA.map(x => x.v));
-            const isPeak  = d.v === max;
-            const pct     = (d.v / max) * 100;
-            const barCol  = isPeak ? C.cyan : pct > 60 ? C.cyan + "99" : pct > 30 ? C.cyan + "55" : C.cyan + "25";
+            const max    = Math.max(...HOURS_DATA.map(x => x.v));
+            const isPeak = d.v === max;
+            const pct    = (d.v / max) * 100;
+            const barCol = isPeak ? C.cyan : pct > 60 ? C.cyan + "99" : pct > 30 ? C.cyan + "55" : C.cyan + "25";
             return (
               <div key={i} style={{ display: "flex", alignItems: "center", gap: 8 }}>
                 <span style={{ fontSize: 10.5, color: isPeak ? C.t1 : C.t2, width: 30, flexShrink: 0, fontWeight: isPeak ? 700 : 400 }}>{d.h}</span>
@@ -591,7 +662,6 @@ function VisitTrendsSection() {
    SECTION 6: CLASS PERFORMANCE
 ═══════════════════════════════════════════════════════════════ */
 function ClassPerformanceSection() {
-  const maxFill = 100;
   return (
     <Card>
       <SLabel sub="Fill rate, session count and attendance trend for each class · last 30 days">
@@ -625,7 +695,7 @@ function ClassPerformanceSection() {
         </div>
       ))}
       <div style={{ marginTop: 12, padding: "9px 11px", borderRadius: 8, background: C.cyanD, border: `1px solid ${C.cyanB}` }}>
-        <div style={{ fontSize: 11, color: C.cyan, fontWeight: 600, marginBottom: 2 }}>💡 HIIT Circuit is at 94% capacity every session</div>
+        <div style={{ fontSize: 11, color: C.cyan, fontWeight: 600, marginBottom: 2 }}>HIIT Circuit is at 94% capacity every session</div>
         <div style={{ fontSize: 10.5, color: C.t2 }}>Adding one extra session per week could generate ~£380/month. Recovery Yoga at 38% fill — consider rescheduling or merging.</div>
       </div>
     </Card>
@@ -637,16 +707,15 @@ function ClassPerformanceSection() {
 ═══════════════════════════════════════════════════════════════ */
 function EngagementSection() {
   const engMetrics = [
-    { label: "Overall Engagement",    val: 72, trend: +6,  sub: "members using app weekly"         },
-    { label: "Challenge Participation", val: 47, trend: +12, sub: "of total members in a challenge"  },
-    { label: "Poll Participation",    val: 29, trend: -4,  sub: "responded to last poll"            },
-    { label: "Class Attendance Rate", val: 61, trend: +3,  sub: "of capacity filled across classes" },
+    { label: "Overall Engagement",     val: 72, trend: +6,  sub: "members using app weekly"          },
+    { label: "Challenge Participation",val: 47, trend: +12, sub: "of total members in a challenge"   },
+    { label: "Poll Participation",     val: 29, trend: -4,  sub: "responded to last poll"            },
+    { label: "Class Attendance Rate",  val: 61, trend: +3,  sub: "of capacity filled across classes" },
   ];
 
   return (
     <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
 
-      {/* Radar + stats */}
       <Card>
         <SLabel sub="How members are engaging across every touchpoint">
           Engagement Breakdown
@@ -667,28 +736,24 @@ function EngagementSection() {
             );
           })}
         </div>
-        {/* Engagement radar */}
         <ResponsiveContainer width="100%" height={160}>
           <RadarChart data={ENGAGEMENT_DATA} margin={{ top: 8, right: 16, bottom: 8, left: 16 }}>
             <PolarGrid stroke="rgba(255,255,255,0.06)" />
             <PolarAngleAxis dataKey="subject" tick={{ fill: C.t3, fontSize: 9.5, fontFamily: FONT }} />
             <PolarRadiusAxis domain={[0, 100]} tick={false} axisLine={false} />
             <Radar name="Engagement" dataKey="A" stroke={C.cyan} fill={C.cyan} fillOpacity={0.12} strokeWidth={1.5} />
-            <Tooltip content={<Tip suffix="%" />} />
+            <Tooltip content={<ChartTip suffix="%" />} />
           </RadarChart>
         </ResponsiveContainer>
       </Card>
 
-      {/* Engagement vs retention insight */}
       <Card>
         <SLabel sub="Members who engage more stay significantly longer">
           Engagement → Retention Impact
         </SLabel>
-
-        {/* Visual comparison bars */}
         {[
-          { label: "Engaged members",     months: 8.2, pct: 82, col: C.cyan   },
-          { label: "Non-engaged members", months: 3.9, pct: 39, col: C.t3    },
+          { label: "Engaged members",     months: 8.2, pct: 82, col: C.cyan },
+          { label: "Non-engaged members", months: 3.9, pct: 39, col: C.t3  },
         ].map((r, i) => (
           <div key={i} style={{ marginBottom: 14 }}>
             <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 5 }}>
@@ -700,14 +765,11 @@ function EngagementSection() {
             </div>
           </div>
         ))}
-
         <div style={{ height: 1, background: C.brd, margin: "4px 0 12px" }} />
-
-        {/* Key stats */}
         {[
-          { label: "Challenge participants retain", val: "2.1×", sub: "longer than non-participants",     col: C.cyan  },
-          { label: "App-active members churn at",   val: "4%",   sub: "vs 22% for non-app users",        col: C.cyan  },
-          { label: "Increase challenge rate to 65%", val: "£180", sub: "+/mo projected retention revenue", col: C.green },
+          { label: "Challenge participants retain", val: "2.1×", sub: "longer than non-participants",      col: C.cyan  },
+          { label: "App-active members churn at",   val: "4%",   sub: "vs 22% for non-app users",         col: C.cyan  },
+          { label: "Increase challenge rate to 65%",val: "£180", sub: "+/mo projected retention revenue",  col: C.green },
         ].map((s, i) => (
           <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: 10, padding: "8px 0", borderBottom: i < 2 ? `1px solid ${C.brd}` : "none" }}>
             <span style={{ fontSize: 16, fontWeight: 700, color: s.col, lineHeight: 1, flexShrink: 0, minWidth: 38 }}>{s.val}</span>
@@ -726,28 +788,29 @@ function EngagementSection() {
    SECTION 8: REVENUE
 ═══════════════════════════════════════════════════════════════ */
 function RevenueSection() {
-  const latest    = REVENUE_DATA[REVENUE_DATA.length - 1];
-  const prev      = REVENUE_DATA[REVENUE_DATA.length - 2];
-  const lostDelta = Math.round(((latest.lost - prev.lost) / prev.lost) * 100);
-  const recDelta  = Math.round(((latest.recovered - prev.recovered) / prev.recovered) * 100);
+  const latest   = REVENUE_DATA[REVENUE_DATA.length - 1];
+  const prev     = REVENUE_DATA[REVENUE_DATA.length - 2];
+  const lostDelta  = Math.round(((latest.lost      - prev.lost)      / prev.lost)      * 100);
+  const recDelta   = Math.round(((latest.recovered  - prev.recovered) / prev.recovered) * 100);
 
   return (
     <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: 12 }}>
 
-      {/* Revenue stacked area */}
       <Card>
         <SLabel sub="Monthly revenue retained vs lost to churn vs recovered through re-engagement">
           Revenue Breakdown
         </SLabel>
         <div style={{ display: "flex", gap: 20, marginBottom: 14 }}>
           <div>
-            <div style={{ fontSize: 22, fontWeight: 700, color: C.cyan, letterSpacing: "-0.03em", lineHeight: 1 }}>£{latest.retained.toLocaleString()}</div>
+            <div style={{ fontSize: 22, fontWeight: 700, color: C.t1, letterSpacing: "-0.03em", lineHeight: 1 }}>£{latest.retained.toLocaleString()}</div>
             <div style={{ fontSize: 10, color: C.t3, marginTop: 2 }}>retained this month</div>
           </div>
           <div>
             <div style={{ fontSize: 22, fontWeight: 700, color: C.red, letterSpacing: "-0.03em", lineHeight: 1 }}>£{latest.lost}</div>
             <div style={{ display: "flex", alignItems: "center", gap: 2, fontSize: 10, color: lostDelta < 0 ? C.cyan : C.red, fontWeight: 600, marginTop: 2 }}>
-              {lostDelta < 0 ? <ArrowDownRight style={{ width: 9, height: 9 }} /> : <ArrowUpRight style={{ width: 9, height: 9 }} />}
+              {lostDelta < 0
+                ? <ArrowDownRight style={{ width: 9, height: 9 }} />
+                : <ArrowUpRight   style={{ width: 9, height: 9 }} />}
               {lostDelta}% vs last mo
             </div>
             <div style={{ fontSize: 10, color: C.t3 }}>lost to churn</div>
@@ -790,7 +853,11 @@ function RevenueSection() {
           </ComposedChart>
         </ResponsiveContainer>
         <div style={{ display: "flex", gap: 16, marginTop: 8 }}>
-          {[{ col: C.cyan, label: "Retained (area)" }, { col: C.red, label: "Lost" }, { col: C.green, label: "Recovered" }].map((l, i) => (
+          {[
+            { col: C.cyan,  label: "Retained (area)" },
+            { col: C.red,   label: "Lost"             },
+            { col: C.green, label: "Recovered"        },
+          ].map((l, i) => (
             <div key={i} style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 10.5, color: C.t3 }}>
               <div style={{ width: 12, height: 12, background: l.col, borderRadius: 2, opacity: 0.7 }} /> {l.label}
             </div>
@@ -798,7 +865,6 @@ function RevenueSection() {
         </div>
       </Card>
 
-      {/* At-risk + action */}
       <Card>
         <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 12 }}>
           <div>
@@ -810,7 +876,6 @@ function RevenueSection() {
             <div style={{ fontSize: 9.5, color: C.t3, marginTop: 2 }}>monthly risk</div>
           </div>
         </div>
-
         {CHURN_MEMBERS.map((m, i) => (
           <div key={i} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "8px 0", borderBottom: i < CHURN_MEMBERS.length - 1 ? `1px solid ${C.brd}` : "none" }}>
             <div>
@@ -831,13 +896,11 @@ function RevenueSection() {
             </div>
           </div>
         ))}
-
         <button style={{ marginTop: 12, width: "100%", padding: "9px", borderRadius: 7, background: C.redD, border: `1px solid ${C.redB}`, color: C.red, fontSize: 11.5, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 5, fontFamily: FONT }}>
           <Send style={{ width: 11, height: 11 }} /> Message All At-Risk
         </button>
-
         <div style={{ marginTop: 10, padding: "9px 11px", borderRadius: 8, background: C.greenD, border: `1px solid ${C.greenB}` }}>
-          <div style={{ fontSize: 11, color: C.green, fontWeight: 600, marginBottom: 2 }}>✓ £300 recovered last month</div>
+          <div style={{ fontSize: 11, color: C.green, fontWeight: 600, marginBottom: 2 }}>£300 recovered last month</div>
           <div style={{ fontSize: 10.5, color: C.t2 }}>4 members re-engaged after personal outreach. Recovery is up 15% vs last month.</div>
         </div>
       </Card>
