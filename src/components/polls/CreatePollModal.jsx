@@ -1,360 +1,443 @@
+/**
+ * CreatePollModal — Content Hub design system
+ * Exact match to Content Center / Hub screenshot
+ * Cyan #00e5c8 · DM Sans · #0d0d11 / #17171c / #1f1f26
+ */
 import React, { useState } from 'react';
 import {
- X, BarChart2, Plus, CheckCircle, ChevronDown,
- MessageSquare, Trash2, Eye,
+  X, BarChart2, Plus, CheckCircle,
+  MessageSquare, Trash2, Eye, Zap,
 } from 'lucide-react';
 
-// Design tokens 
-const T = {
- blue: '#0ea5e9', green: '#10b981', red: '#ef4444',
- amber: '#f59e0b', purple: '#8b5cf6',
- text1: '#f0f4f8', text2: '#94a3b8', text3: '#475569',
- border: 'rgba(255,255,255,0.07)', borderM: 'rgba(255,255,255,0.11)',
- card: '#0b1120', card2: '#0d1630', divider: 'rgba(255,255,255,0.05)',
- bg: '#060c18',
+/* ─── TOKENS — Content Hub palette ──────────────────────────── */
+const C = {
+  bg:       '#0d0d11',
+  surface:  '#17171c',
+  card:     '#1f1f26',
+  inset:    '#13131a',
+  brd:      '#252530',
+  brd2:     '#2e2e3a',
+  brdHover: '#3a3a48',
+  t1:       '#ffffff',
+  t2:       '#9898a6',
+  t3:       '#525260',
+  cyan:     '#00e5c8',
+  cyanDim:  'rgba(0,229,200,0.07)',
+  cyanBrd:  'rgba(0,229,200,0.18)',
+  red:    '#ff4d6d', redDim:    'rgba(255,77,109,0.08)',  redBrd:    'rgba(255,77,109,0.20)',
+  amber:  '#f59e0b', amberDim:  'rgba(245,158,11,0.08)', amberBrd:  'rgba(245,158,11,0.20)',
+  green:  '#22c55e', greenDim:  'rgba(34,197,94,0.08)',  greenBrd:  'rgba(34,197,94,0.20)',
+  blue:   '#60a5fa', blueDim:   'rgba(96,165,250,0.08)', blueBrd:   'rgba(96,165,250,0.20)',
+  purple: '#a78bfa', purpleDim: 'rgba(167,139,250,0.08)',purpleBrd: 'rgba(167,139,250,0.20)',
 };
+const FONT = "'DM Sans','Inter',system-ui,sans-serif";
+const MONO = { fontVariantNumeric: 'tabular-nums' };
 
-function Shimmer({ color = T.purple }) {
- return <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 1, background: `linear-gradient(90deg,transparent,${color}35,transparent)`, pointerEvents: 'none' }} />;
-}
-
+/* ─── CATEGORIES ─────────────────────────────────────────────── */
 const CATEGORIES = [
- { value: 'equipment_replacement', label: 'Equipment Replacement', emoji: '🔧', color: T.amber  },
- { value: 'favorite_equipment',    label: 'Favourite Equipment',   emoji: '💪', color: T.blue   },
- { value: 'rewards',               label: 'Rewards & Perks',       emoji: '🎁', color: T.green  },
- { value: 'playlist',              label: 'Gym Playlist',          emoji: '🎵', color: T.purple },
- { value: 'schedule',              label: 'Class Schedule',        emoji: '📅', color: T.blue   },
- { value: 'other',                 label: 'Other',                 emoji: '💬', color: T.text3  },
+  { value: 'equipment_replacement', label: 'Equipment',   emoji: '🔧', color: C.amber,  dim: C.amberDim,  border: C.amberBrd  },
+  { value: 'favorite_equipment',    label: 'Fav. Kit',    emoji: '💪', color: C.blue,   dim: C.blueDim,   border: C.blueBrd   },
+  { value: 'rewards',               label: 'Rewards',     emoji: '🎁', color: C.green,  dim: C.greenDim,  border: C.greenBrd  },
+  { value: 'playlist',              label: 'Playlist',    emoji: '🎵', color: C.purple, dim: C.purpleDim, border: C.purpleBrd },
+  { value: 'schedule',              label: 'Schedule',    emoji: '📅', color: C.blue,   dim: C.blueDim,   border: C.blueBrd   },
+  { value: 'other',                 label: 'Other',       emoji: '💬', color: C.t2,     dim: 'rgba(152,152,166,0.07)', border: 'rgba(152,152,166,0.18)' },
 ];
 
-function catFor(val) { return CATEGORIES.find(c => c.value === val) || null; }
+const catFor = val => CATEGORIES.find(c => c.value === val) || null;
 
-// Shared inputs 
-const baseInput = {
- width: '100%', boxSizing: 'border-box', padding: '10px 13px',
- borderRadius: 10, background: 'rgba(255,255,255,0.04)',
- border: '1px solid rgba(255,255,255,0.08)',
- color: T.text1, fontSize: 13, fontWeight: 500, outline: 'none',
- fontFamily: "'DM Sans', system-ui, sans-serif", transition: 'border-color 0.15s, background 0.15s',
+/* ─── SHARED INPUT BASE ──────────────────────────────────────── */
+const baseInp = {
+  width: '100%', boxSizing: 'border-box', padding: '9px 12px',
+  borderRadius: 9, background: C.card, border: `1px solid ${C.brd}`,
+  color: C.t1, fontSize: 12.5, fontWeight: 500, outline: 'none',
+  fontFamily: FONT, transition: 'border-color 0.15s, background 0.15s',
 };
 
-function FieldLabel({ children, required }) {
- return (
- <div style={{ fontSize: 10, fontWeight: 800, color: T.text3, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 8, display: 'flex', alignItems: 'center', gap: 4 }}>
- {children}{required && <span style={{ color: T.red }}>*</span>}
- </div>
- );
+/* ─── PRIMITIVES ─────────────────────────────────────────────── */
+function SL({ children, required }) {
+  return (
+    <div style={{ fontSize: 10, fontWeight: 600, color: C.t3, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 8, display: 'flex', alignItems: 'center', gap: 4 }}>
+      {children}{required && <span style={{ color: C.red }}>*</span>}
+    </div>
+  );
 }
 
-function Inp({ value, onChange, placeholder, icon: Icon, accentColor = T.purple }) {
- const [focus, setFocus] = useState(false);
- return (
- <div style={{ position: 'relative' }}>
- {Icon && <div style={{ position: 'absolute', left: 11, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }}><Icon style={{ width: 12, height: 12, color: focus ? accentColor : T.text3, transition: 'color 0.15s' }} /></div>}
- <input value={value} onChange={onChange} placeholder={placeholder}
- onFocus={e => { setFocus(true); e.target.style.borderColor = `${accentColor}45`; e.target.style.background = `${accentColor}06`; }}
- onBlur={e => { setFocus(false); e.target.style.borderColor = 'rgba(255,255,255,0.08)'; e.target.style.background = 'rgba(255,255,255,0.04)'; }}
- style={{ ...baseInput, paddingLeft: Icon ? 33 : 13 }} />
- </div>
- );
+function Inp({ value, onChange, placeholder, Icon, accentColor = C.cyan }) {
+  const [focus, setFocus] = useState(false);
+  return (
+    <div style={{ position: 'relative' }}>
+      {Icon && (
+        <div style={{ position: 'absolute', left: 11, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }}>
+          <Icon size={12} color={focus ? accentColor : C.t3} style={{ transition: 'color 0.15s' }} />
+        </div>
+      )}
+      <input
+        value={value} onChange={onChange} placeholder={placeholder}
+        onFocus={e => { setFocus(true); e.target.style.borderColor = `${accentColor}38`; e.target.style.background = C.inset; }}
+        onBlur={e =>  { setFocus(false); e.target.style.borderColor = C.brd; e.target.style.background = C.card; }}
+        style={{ ...baseInp, paddingLeft: Icon ? 32 : 12 }}
+      />
+    </div>
+  );
 }
 
-function Textarea({ value, onChange, placeholder, rows = 3, accentColor = T.purple }) {
- return (
- <textarea value={value} onChange={onChange} placeholder={placeholder} rows={rows}
- onFocus={e => { e.target.style.borderColor = `${accentColor}45`; e.target.style.background = `${accentColor}06`; }}
- onBlur={e => { e.target.style.borderColor = 'rgba(255,255,255,0.08)'; e.target.style.background = 'rgba(255,255,255,0.04)'; }}
- style={{ ...baseInput, resize: 'none', lineHeight: 1.65 }} />
- );
+function Textarea({ value, onChange, placeholder, rows = 2, accentColor = C.cyan }) {
+  return (
+    <textarea
+      value={value} onChange={onChange} placeholder={placeholder} rows={rows}
+      onFocus={e => { e.target.style.borderColor = `${accentColor}38`; e.target.style.background = C.inset; }}
+      onBlur={e =>  { e.target.style.borderColor = C.brd; e.target.style.background = C.card; }}
+      style={{ ...baseInp, resize: 'none', lineHeight: 1.7, padding: '11px 13px' }}
+    />
+  );
 }
 
-// Category picker grid 
-function CategoryPicker({ value, onChange }) {
- return (
- <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 7 }}>
- {CATEGORIES.map(cat => {
- const active = value === cat.value;
- return (
- <button key={cat.value} onClick={() => onChange(cat.value)} type="button"
- style={{ padding: '10px 8px', borderRadius: 10, cursor: 'pointer', border: `1px solid ${active ? cat.color + '35' : T.border}`, background: active ? `${cat.color}12` : T.divider, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5, transition: 'all 0.15s', fontFamily: 'inherit' }}>
-  <span style={{ fontSize: 9, fontWeight: active ? 800 : 500, color: active ? cat.color : T.text3, textAlign: 'center', lineHeight: 1.3, transition: 'color 0.15s' }}>{cat.label}</span>
- </button>
- );
- })}
- </div>
- );
+/* ─── CATEGORY TABS — identical to Hub tab bar ───────────────── */
+function CategoryTabs({ value, onChange }) {
+  return (
+    <div style={{ display: 'flex', gap: 0, borderBottom: `1px solid ${C.brd}`, marginLeft: -2, overflowX: 'auto' }}>
+      {CATEGORIES.map(cat => {
+        const active = value === cat.value;
+        return (
+          <button
+            key={cat.value}
+            onClick={() => onChange(cat.value)}
+            type="button"
+            style={{
+              padding: '8px 13px', background: 'none', border: 'none',
+              borderBottom: active ? `2px solid ${cat.color}` : '2px solid transparent',
+              color: active ? C.t1 : C.t2, fontSize: 12.5,
+              fontWeight: active ? 700 : 500, cursor: 'pointer',
+              fontFamily: FONT, whiteSpace: 'nowrap',
+              transition: 'color 0.15s, border-color 0.15s',
+              marginBottom: -1, display: 'flex', alignItems: 'center', gap: 5,
+            }}
+            onMouseEnter={e => { if (!active) e.currentTarget.style.color = C.t1; }}
+            onMouseLeave={e => { if (!active) e.currentTarget.style.color = C.t2; }}
+          >
+            <span style={{ fontSize: 13 }}>{cat.emoji}</span>
+            {cat.label}
+          </button>
+        );
+      })}
+    </div>
+  );
 }
 
-// Live poll preview 
+/* ─── LIVE PREVIEW ───────────────────────────────────────────── */
 function PollPreview({ title, description, category, options }) {
- const cat = catFor(category);
- const validOpts = options.filter(o => o.trim());
- const hasContent = title || validOpts.length > 0;
+  const cat = catFor(category);
+  const accent = cat?.color || C.purple;
+  const validOpts = options.filter(o => o.trim());
+  const hasContent = title || validOpts.length > 0;
 
- // Simulate a slight vote spread for visual interest in preview
- const fakeVotes = validOpts.map((_, i) => [8, 5, 3, 2][i] || 1);
- const total = fakeVotes.reduce((a, b) => a + b, 0);
+  const fakeVotes = validOpts.map((_, i) => [8, 5, 3, 2][i] || 1);
+  const total = fakeVotes.reduce((a, b) => a + b, 0);
 
- return (
- <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
- {/* Label */}
- <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 14 }}>
- <div style={{ width: 6, height: 6, borderRadius: '50%', background: cat?.color || T.purple, boxShadow: `0 0 6px ${cat?.color || T.purple}` }} />
- <span style={{ fontSize: 10, fontWeight: 700, color: T.text3, textTransform: 'uppercase', letterSpacing: '0.09em' }}>Live Preview</span>
- </div>
+  return (
+    <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+      {/* Label */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 12 }}>
+        <Eye size={11} color={C.t3} />
+        <span style={{ fontSize: 9.5, fontWeight: 600, color: C.t3, textTransform: 'uppercase', letterSpacing: '0.09em' }}>Live Preview</span>
+      </div>
 
- {/* Poll card */}
- <div style={{ borderRadius: 12, background: T.card2, border: `1px solid ${(cat?.color || T.purple) + '22'}`, overflow: 'hidden', position: 'relative' }}>
- <Shimmer color={cat?.color || T.purple} />
- <div style={{ height: 3, background: `linear-gradient(90deg,${cat?.color || T.purple},${(cat?.color || T.purple) + '50'})` }} />
+      {/* Card */}
+      <div style={{ borderRadius: 12, overflow: 'hidden', background: C.card, border: `1px solid ${C.brd}` }}>
+        {/* Accent top bar */}
+        <div style={{ height: 3, background: `linear-gradient(90deg, ${accent}, ${accent}44, transparent)`, transition: 'background 0.3s' }} />
 
- <div style={{ padding: '16px 16px 14px' }}>
- {!hasContent ? (
- <div style={{ textAlign: 'center', padding: '28px 0' }}>
- <BarChart2 style={{ width: 28, height: 28, color: `${T.purple}40`, margin: '0 auto 8px', display: 'block' }} />
- <div style={{ fontSize: 12, color: T.text3, fontWeight: 500 }}>Fill in details to preview your poll</div>
- </div>
- ) : (
- <>
- {/* Category badge */}
- {cat && (
- <div style={{ display: 'inline-flex', alignItems: 'center', gap: 5, padding: '3px 9px', borderRadius: 6, background: `${cat.color}12`, border: `1px solid ${cat.color}25`, marginBottom: 12 }}>
-  <span style={{ fontSize: 10, fontWeight: 700, color: cat.color }}>{cat.label}</span>
- </div>
- )}
+        {!hasContent ? (
+          <div style={{ padding: '32px 18px', textAlign: 'center' }}>
+            <BarChart2 size={22} color={`${accent}35`} style={{ margin: '0 auto 10px', display: 'block' }} />
+            <div style={{ fontSize: 11.5, color: C.t3, fontWeight: 500 }}>Fill in details to preview your poll</div>
+          </div>
+        ) : (
+          <div style={{ padding: '14px 15px 0' }}>
+            {/* Category badge */}
+            {cat && (
+              <div style={{ display: 'inline-flex', alignItems: 'center', gap: 5, padding: '2px 8px', borderRadius: 5, background: cat.dim, border: `1px solid ${cat.border}`, marginBottom: 8 }}>
+                <span style={{ fontSize: 11 }}>{cat.emoji}</span>
+                <span style={{ fontSize: 9.5, fontWeight: 700, color: cat.color }}>{cat.label}</span>
+              </div>
+            )}
 
- {/* Question */}
- <div style={{ fontSize: 14, fontWeight: 800, color: T.text1, letterSpacing: '-0.02em', marginBottom: description ? 8 : 14, lineHeight: 1.3 }}>
- {title || 'Poll question'}
- </div>
+            {/* Question */}
+            <div style={{ fontSize: 14, fontWeight: 700, color: C.t1, lineHeight: 1.35, marginBottom: description ? 7 : 12 }}>
+              {title || 'Poll question'}
+            </div>
 
- {/* Context */}
- {description && (
- <div style={{ fontSize: 11, color: T.text2, lineHeight: 1.6, marginBottom: 14, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
- {description}
- </div>
- )}
+            {/* Context */}
+            {description && (
+              <div style={{ fontSize: 11, color: C.t2, lineHeight: 1.6, marginBottom: 12, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                {description}
+              </div>
+            )}
 
- {/* Options with fake vote bars */}
- {validOpts.length > 0 ? (
- <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
- {validOpts.map((opt, i) => {
- const pct = Math.round((fakeVotes[i] / total) * 100);
- const isTop = i === 0;
- const accent = cat?.color || T.purple;
- return (
- <div key={i} style={{ borderRadius: 9, overflow: 'hidden', border: `1px solid ${isTop ? accent + '30' : T.border}`, background: isTop ? `${accent}06` : 'rgba(255,255,255,0.02)' }}>
- <div style={{ padding: '8px 11px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
- <span style={{ fontSize: 12, fontWeight: isTop ? 700 : 500, color: isTop ? T.text1 : T.text2 }}>{opt}</span>
- <span style={{ fontSize: 11, fontWeight: 700, color: isTop ? accent : T.text3, flexShrink: 0 }}>{pct}%</span>
- </div>
- <div style={{ height: 3, background: T.divider }}>
- <div style={{ height: '100%', width: `${pct}%`, background: isTop ? accent : `${accent}50`, transition: 'width 0.5s ease' }} />
- </div>
- </div>
- );
- })}
- </div>
- ) : (
- <div style={{ padding: '14px', borderRadius: 9, border: `2px dashed ${T.border}`, textAlign: 'center' }}>
- <div style={{ fontSize: 11, color: T.text3 }}>Add options to see them here</div>
- </div>
- )}
+            {/* Options */}
+            {validOpts.length > 0 ? (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 0 }}>
+                {validOpts.map((opt, i) => {
+                  const pct = Math.round((fakeVotes[i] / total) * 100);
+                  const isTop = i === 0;
+                  return (
+                    <div key={i} style={{ borderRadius: 8, overflow: 'hidden', border: `1px solid ${isTop ? accent + '30' : C.brd}`, background: isTop ? `${accent}07` : C.surface }}>
+                      <div style={{ padding: '8px 11px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+                        <span style={{ fontSize: 12, fontWeight: isTop ? 700 : 500, color: isTop ? C.t1 : C.t2 }}>{opt}</span>
+                        <span style={{ fontSize: 11, fontWeight: 700, color: isTop ? accent : C.t3, flexShrink: 0, ...MONO }}>{pct}%</span>
+                      </div>
+                      <div style={{ height: 3, background: C.brd }}>
+                        <div style={{ height: '100%', width: `${pct}%`, background: isTop ? accent : `${accent}50` }} />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <div style={{ padding: '14px', borderRadius: 9, border: `1.5px dashed ${C.brd2}`, textAlign: 'center', marginBottom: 0 }}>
+                <div style={{ fontSize: 11, color: C.t3 }}>Add options to see them here</div>
+              </div>
+            )}
 
- {/* Footer */}
- <div style={{ marginTop: 12, paddingTop: 10, borderTop: `1px solid ${T.divider}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
- <span style={{ fontSize: 10, color: T.text3 }}>0 votes · Open</span>
- <span style={{ fontSize: 10, fontWeight: 700, color: cat?.color || T.purple, background: `${(cat?.color || T.purple)}10`, border: `1px solid ${(cat?.color || T.purple)}22`, borderRadius: 5, padding: '2px 7px' }}>Vote</span>
- </div>
- </>
- )}
- </div>
- </div>
- </div>
- );
+            {/* Footer */}
+            <div style={{ marginTop: 12, paddingTop: 10, paddingBottom: 14, borderTop: `1px solid ${C.brd}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <span style={{ fontSize: 10, color: C.t3 }}>0 votes · Open</span>
+              {/* Vote button — solid cyan style */}
+              <div style={{ padding: '5px 14px', borderRadius: 7, background: C.cyan, color: '#000', fontSize: 11, fontWeight: 700 }}>
+                Vote
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
 }
 
-// 
+/* ═══════════════════════════════════════════════════════════════
+   MAIN EXPORT
+═══════════════════════════════════════════════════════════════ */
 export default function CreatePollModal({ open, onClose, onSave, isLoading }) {
- const [title, setTitle] = useState('');
- const [category, setCategory] = useState('');
- const [options, setOptions] = useState(['', '']);
- const [description, setDescription] = useState('');
+  const [title,       setTitle]       = useState('');
+  const [category,    setCategory]    = useState('');
+  const [options,     setOptions]     = useState(['', '']);
+  const [description, setDescription] = useState('');
 
- const validOpts = options.filter(o => o.trim());
- const canSave = title.trim() && category && validOpts.length >= 2 && !isLoading;
- const cat = catFor(category);
- const accent = cat?.color || T.purple;
+  const validOpts = options.filter(o => o.trim());
+  const canSave   = title.trim() && category && validOpts.length >= 2 && !isLoading;
+  const cat       = catFor(category);
+  const accent    = cat?.color || C.purple;
 
- const updateOption = (idx, val) => { const n = [...options]; n[idx] = val; setOptions(n); };
- const removeOption = (idx) => setOptions(options.filter((_, i) => i !== idx));
- const addOption = () => setOptions([...options, '']);
+  const updateOption = (idx, val) => { const n = [...options]; n[idx] = val; setOptions(n); };
+  const removeOption = (idx) => setOptions(options.filter((_, i) => i !== idx));
+  const addOption    = () => setOptions([...options, '']);
 
- const handleSubmit = () => {
- if (!canSave) return;
- onSave({
- title: title.trim(), description: description.trim(), category,
- options: validOpts.map(text => ({ id: Math.random().toString(36).substr(2, 9), text, votes: 0 })),
- });
- setTitle(''); setDescription(''); setCategory(''); setOptions(['', '']);
- };
+  const handleSubmit = () => {
+    if (!canSave) return;
+    onSave({
+      title: title.trim(), description: description.trim(), category,
+      options: validOpts.map(text => ({ id: Math.random().toString(36).substr(2, 9), text, votes: 0 })),
+    });
+    setTitle(''); setDescription(''); setCategory(''); setOptions(['', '']);
+  };
 
- const handleClose = () => {
- setTitle(''); setDescription(''); setCategory(''); setOptions(['', '']);
- onClose();
- };
+  const handleClose = () => {
+    setTitle(''); setDescription(''); setCategory(''); setOptions(['', '']);
+    onClose();
+  };
 
- if (!open) return null;
+  if (!open) return null;
 
- return (
- <>
- <style>{`
- @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;0,9..40,800;0,9..40,900&display=swap');
- @keyframes pl-overlay { from { opacity: 0 } to { opacity: 1 } }
- @keyframes pl-modal { from { opacity: 0; transform: scale(0.97) translateY(8px) } to { opacity: 1; transform: scale(1) translateY(0) } }
- @keyframes pl-spin { from { transform: rotate(0deg) } to { transform: rotate(360deg) } }
- .pl-body::-webkit-scrollbar { width: 3px } .pl-body::-webkit-scrollbar-track { background: transparent } .pl-body::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 2px }
- .pl-save:not(:disabled):hover { opacity: 0.9; transform: translateY(-1px); }
- .pl-save:not(:disabled):active { transform: translateY(0); }
- .pl-cancel:hover { background: rgba(255,255,255,0.08) !important; color: #f0f4f8 !important; }
- .pl-opt-inp { width: 100%; box-sizing: border-box; padding: 9px 12px; border-radius: 9px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); color: #f0f4f8; font-size: 12px; font-weight: 500; outline: none; font-family: 'DM Sans', system-ui, sans-serif; transition: border-color 0.15s, background 0.15s; }
- .pl-opt-inp::placeholder { color: rgba(71,85,105,0.7); }
- `}</style>
+  return (
+    <>
+      <style>{`
+        @keyframes pl-fade { from{opacity:0} to{opacity:1} }
+        @keyframes pl-in   { from{opacity:0;transform:scale(0.975) translateY(10px)} to{opacity:1;transform:scale(1) translateY(0)} }
+        @keyframes pl-spin { to{transform:rotate(360deg)} }
+        .pl-scroll::-webkit-scrollbar       { width:3px }
+        .pl-scroll::-webkit-scrollbar-track { background:transparent }
+        .pl-scroll::-webkit-scrollbar-thumb { background:${C.brd2}; border-radius:2px }
+        .pl-cancel { padding:9px 18px; border-radius:8px; background:transparent; border:1px solid ${C.brd}; color:${C.t2}; font-size:12.5px; font-weight:600; cursor:pointer; font-family:${FONT}; transition:all 0.15s; }
+        .pl-cancel:hover { border-color:${C.brdHover}; color:${C.t1}; background:${C.card}; }
+        .pl-opt { width:100%; box-sizing:border-box; padding:9px 12px; border-radius:9px; background:${C.card}; border:1px solid ${C.brd}; color:${C.t1}; font-size:12px; font-weight:500; outline:none; font-family:${FONT}; transition:border-color 0.15s, background 0.15s; }
+        .pl-opt::placeholder { color:${C.t3}; }
+      `}</style>
 
- {/* Overlay */}
- <div style={{ position: 'fixed', inset: 0, background: 'rgba(2,5,20,0.82)', backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20, animation: 'pl-overlay 0.18s ease', fontFamily: "'DM Sans', system-ui, sans-serif" }}
- onClick={e => e.target === e.currentTarget && handleClose()}>
+      {/* Backdrop */}
+      <div
+        onClick={e => e.target === e.currentTarget && handleClose()}
+        style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.82)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20, animation: 'pl-fade 0.15s ease', fontFamily: FONT }}
+      >
 
- {/* Modal */}
- <div style={{ width: '100%', maxWidth: 820, maxHeight: '92vh', display: 'flex', flexDirection: 'column', background: '#07101f', border: `1px solid ${T.borderM}`, borderRadius: 18, overflow: 'hidden', boxShadow: '0 32px 80px rgba(0,0,0,0.72), 0 0 0 1px rgba(255,255,255,0.04) inset', animation: 'pl-modal 0.22s cubic-bezier(0.34,1.4,0.64,1)' }}>
+        {/* Shell */}
+        <div style={{ width: '100%', maxWidth: 920, maxHeight: '92vh', display: 'flex', flexDirection: 'column', background: C.bg, border: `1px solid ${C.brd}`, borderRadius: 14, overflow: 'hidden', boxShadow: `0 40px 100px rgba(0,0,0,0.85), 0 0 0 1px rgba(0,229,200,0.04)`, animation: 'pl-in 0.24s cubic-bezier(0.16,1,0.3,1)', WebkitFontSmoothing: 'antialiased' }}>
 
- {/* Header */}
- <div style={{ flexShrink: 0, padding: '18px 24px 16px', borderBottom: `1px solid ${T.border}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'relative', overflow: 'hidden' }}>
- <Shimmer color={accent} />
- <div style={{ position: 'absolute', top: -40, left: -20, width: 180, height: 100, borderRadius: '50%', background: accent, opacity: 0.04, filter: 'blur(40px)', pointerEvents: 'none', transition: 'background 0.3s' }} />
- <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
- <div style={{ width: 38, height: 38, borderRadius: 11, background: `${accent}14`, border: `1px solid ${accent}28`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: cat ? 18 : 'inherit', transition: 'all 0.2s' }}>
- {cat ? <span>{cat.emoji}</span> : <BarChart2 style={{ width: 17, height: 17, color: T.purple }} />}
- </div>
- <div>
- <div style={{ fontSize: 16, fontWeight: 800, color: T.text1, letterSpacing: '-0.025em' }}>Create Poll</div>
- <div style={{ fontSize: 11, color: T.text3, marginTop: 1 }}>Ask members what they think</div>
- </div>
- </div>
- <button onClick={handleClose}
- style={{ width: 32, height: 32, borderRadius: 9, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,255,255,0.05)', border: `1px solid ${T.border}`, cursor: 'pointer', transition: 'all 0.15s', color: T.text3 }}
- onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.10)'; e.currentTarget.style.color = T.text1; }}
- onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; e.currentTarget.style.color = T.text3; }}>
- <X style={{ width: 14, height: 14 }} />
- </button>
- </div>
+          {/* ── HEADER ──────────────────────────────────────── */}
+          <div style={{ flexShrink: 0, padding: '0 20px', background: C.surface, borderBottom: `1px solid ${C.brd}`, position: 'relative', overflow: 'hidden' }}>
+            {/* Accent colour bar */}
+            <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 2, background: `linear-gradient(90deg,${accent},${accent}44,transparent)`, transition: 'background 0.3s', pointerEvents: 'none' }} />
 
- {/* Body — two columns */}
- <div style={{ flex: 1, display: 'grid', gridTemplateColumns: '1fr 300px', minHeight: 0, overflow: 'hidden' }}>
+            {/* Title row */}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: 14 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 11 }}>
+                <div style={{ width: 32, height: 32, borderRadius: 9, background: cat?.dim || C.cyanDim, border: `1px solid ${cat?.border || C.cyanBrd}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: cat ? 16 : 'inherit', transition: 'all 0.2s' }}>
+                  {cat ? <span>{cat.emoji}</span> : <BarChart2 size={14} color={C.cyan} />}
+                </div>
+                <div>
+                  <div style={{ fontSize: 15, fontWeight: 700, color: C.t1, letterSpacing: '-0.02em', lineHeight: 1.2 }}>
+                    Content Center <span style={{ color: C.cyan }}>/</span> <span style={{ color: C.cyan }}>Create Poll</span>
+                  </div>
+                  <div style={{ fontSize: 10.5, color: C.t3, marginTop: 2 }}>Ask members what they think</div>
+                </div>
+              </div>
+              <button
+                onClick={handleClose}
+                style={{ width: 30, height: 30, borderRadius: 7, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'transparent', border: `1px solid ${C.brd}`, cursor: 'pointer', color: C.t3, flexShrink: 0, transition: 'all 0.15s' }}
+                onMouseEnter={e => { e.currentTarget.style.background = C.card; e.currentTarget.style.color = C.t1; }}
+                onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = C.t3; }}
+              >
+                <X size={13} />
+              </button>
+            </div>
 
- {/* Left — form */}
- <div className="pl-body" style={{ padding: '20px 24px', borderRight: `1px solid ${T.border}`, display: 'flex', flexDirection: 'column', gap: 18, overflowY: 'auto' }}>
+            {/* Category tabs — identical Hub tab bar */}
+            <div style={{ marginTop: 4, marginLeft: -2 }}>
+              <CategoryTabs value={category} onChange={setCategory} />
+            </div>
+          </div>
 
- {/* Category */}
- <div>
- <FieldLabel required>Category</FieldLabel>
- <CategoryPicker value={category} onChange={setCategory} />
- </div>
+          {/* ── BODY ────────────────────────────────────────── */}
+          <div style={{ flex: 1, display: 'grid', gridTemplateColumns: '1fr 300px', minHeight: 0, overflow: 'hidden' }}>
 
- {/* Question */}
- <div>
- <FieldLabel required>Question</FieldLabel>
- <Inp value={title} onChange={e => setTitle(e.target.value)} placeholder="e.g. Which equipment should we replace first?" icon={MessageSquare} accentColor={accent} />
- </div>
+            {/* Left — form */}
+            <div className="pl-scroll" style={{ padding: '18px 20px', borderRight: `1px solid ${C.brd}`, display: 'flex', flexDirection: 'column', gap: 18, overflowY: 'auto', background: C.bg }}>
 
- {/* Context */}
- <div>
- <FieldLabel>Additional context</FieldLabel>
- <Textarea value={description} onChange={e => setDescription(e.target.value)} placeholder="Add any helpful context or background for members…" rows={2} accentColor={accent} />
- </div>
+              {/* Question */}
+              <div>
+                <SL required>Question</SL>
+                <Inp value={title} onChange={e => setTitle(e.target.value)} placeholder="e.g. Which equipment should we replace first?" Icon={MessageSquare} accentColor={accent} />
+              </div>
 
- {/* Options */}
- <div>
- <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
- <FieldLabel required>Answer options</FieldLabel>
- <span style={{ fontSize: 10, color: validOpts.length >= 2 ? T.green : T.text3, fontWeight: 700 }}>
- {validOpts.length} / {options.length} filled
- </span>
- </div>
+              {/* Context */}
+              <div>
+                <SL>Additional Context</SL>
+                <Textarea value={description} onChange={e => setDescription(e.target.value)} placeholder="Add any helpful context or background for members…" rows={2} accentColor={accent} />
+              </div>
 
- <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
- {options.map((opt, idx) => (
- <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
- {/* Number badge */}
- <div style={{ width: 26, height: 26, borderRadius: 7, background: opt.trim() ? `${accent}14` : T.divider, border: `1px solid ${opt.trim() ? accent + '30' : T.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'all 0.15s' }}>
- <span style={{ fontSize: 10, fontWeight: 800, color: opt.trim() ? accent : T.text3 }}>{idx + 1}</span>
- </div>
- {/* Input */}
- <input className="pl-opt-inp" value={opt} onChange={e => updateOption(idx, e.target.value)} placeholder={`Option ${idx + 1}`}
- onFocus={e => { e.target.style.borderColor = `${accent}45`; e.target.style.background = `${accent}06`; }}
- onBlur={e => { e.target.style.borderColor = 'rgba(255,255,255,0.08)'; e.target.style.background = 'rgba(255,255,255,0.04)'; }} />
- {/* Remove */}
- {options.length > 2 && (
- <button type="button" onClick={() => removeOption(idx)}
- style={{ flexShrink: 0, width: 28, height: 28, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', background: `${T.red}08`, border: `1px solid ${T.red}18`, cursor: 'pointer', transition: 'all 0.12s' }}
- onMouseEnter={e => e.currentTarget.style.background = `${T.red}18`}
- onMouseLeave={e => e.currentTarget.style.background = `${T.red}08`}>
- <Trash2 style={{ width: 11, height: 11, color: T.red }} />
- </button>
- )}
- </div>
- ))}
- </div>
+              {/* Options */}
+              <div>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+                  <SL required>Answer Options</SL>
+                  <span style={{ fontSize: 10, color: validOpts.length >= 2 ? C.green : C.t3, fontWeight: 700, marginTop: -8, ...MONO }}>
+                    {validOpts.length} / {options.length} filled
+                  </span>
+                </div>
 
- {/* Add option */}
- {options.length < 8 && (
- <button type="button" onClick={addOption}
- style={{ marginTop: 9, width: '100%', padding: '9px', borderRadius: 10, background: `${accent}06`, border: `1px dashed ${accent}25`, color: accent, fontSize: 11, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, fontFamily: 'inherit', transition: 'all 0.15s', opacity: 0.8 }}
- onMouseEnter={e => { e.currentTarget.style.background = `${accent}12`; e.currentTarget.style.opacity = '1'; }}
- onMouseLeave={e => { e.currentTarget.style.background = `${accent}06`; e.currentTarget.style.opacity = '0.8'; }}>
- <Plus style={{ width: 12, height: 12 }} /> Add option
- </button>
- )}
- </div>
- </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
+                  {options.map((opt, idx) => (
+                    <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      {/* Number badge */}
+                      <div style={{ width: 26, height: 26, borderRadius: 7, flexShrink: 0, background: opt.trim() ? `${accent}14` : C.card, border: `1px solid ${opt.trim() ? accent + '30' : C.brd}`, display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.15s' }}>
+                        <span style={{ fontSize: 10, fontWeight: 700, color: opt.trim() ? accent : C.t3, ...MONO }}>{idx + 1}</span>
+                      </div>
 
- {/* Right — live preview */}
- <div style={{ padding: '20px 18px', background: T.bg, overflowY: 'auto' }}>
- <PollPreview title={title} description={description} category={category} options={options} />
- </div>
- </div>
+                      {/* Input */}
+                      <input
+                        className="pl-opt"
+                        value={opt}
+                        onChange={e => updateOption(idx, e.target.value)}
+                        placeholder={`Option ${idx + 1}`}
+                        onFocus={e => { e.target.style.borderColor = `${accent}38`; e.target.style.background = C.inset; }}
+                        onBlur={e =>  { e.target.style.borderColor = C.brd; e.target.style.background = C.card; }}
+                      />
 
- {/* Footer */}
- <div style={{ flexShrink: 0, padding: '14px 24px 18px', borderTop: `1px solid ${T.border}`, display: 'flex', alignItems: 'center', gap: 10, background: '#07101f' }}>
- <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 7 }}>
- {canSave ? (
- <>
- <CheckCircle style={{ width: 12, height: 12, color: T.green, flexShrink: 0 }} />
- <span style={{ fontSize: 11, color: T.text3 }}>
- {title} · {validOpts.length} option{validOpts.length !== 1 ? 's' : ''}
- {cat ? ` · ${cat.label}` : ''}
- </span>
- </>
- ) : (
- <span style={{ fontSize: 11, color: T.text3 }}>
- {!category ? 'Pick a category to continue' : !title.trim() ? 'Add a question to continue' : 'Add at least 2 options'}
- </span>
- )}
- </div>
- <button className="pl-cancel" onClick={handleClose}
- style={{ padding: '10px 20px', borderRadius: 10, background: T.divider, color: T.text2, border: `1px solid ${T.border}`, fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.15s' }}>
- Cancel
- </button>
- <button className="pl-save" onClick={handleSubmit} disabled={!canSave}
- style={{ padding: '10px 24px', borderRadius: 10, background: canSave ? `linear-gradient(135deg,${accent},${accent}cc)` : 'rgba(255,255,255,0.06)', color: canSave ? '#fff' : T.text3, border: 'none', fontSize: 12, fontWeight: 800, cursor: canSave ? 'pointer' : 'default', fontFamily: 'inherit', display: 'flex', alignItems: 'center', gap: 7, transition: 'all 0.2s', letterSpacing: '-0.01em', boxShadow: canSave ? `0 4px 16px ${accent}35` : 'none', minWidth: 150, justifyContent: 'center' }}>
- {isLoading
- ? <><div style={{ width: 12, height: 12, border: '2px solid rgba(255,255,255,0.3)', borderTop: '2px solid #fff', borderRadius: '50%', animation: 'pl-spin 0.7s linear infinite' }} /> Creating…</>
- : <>Create Poll</>
- }
- </button>
- </div>
- </div>
- </div>
- </>
- );
+                      {/* Remove */}
+                      {options.length > 2 && (
+                        <button
+                          type="button"
+                          onClick={() => removeOption(idx)}
+                          style={{ flexShrink: 0, width: 28, height: 28, borderRadius: 7, display: 'flex', alignItems: 'center', justifyContent: 'center', background: C.redDim, border: `1px solid ${C.redBrd}`, cursor: 'pointer', transition: 'all 0.12s' }}
+                          onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,77,109,0.16)'}
+                          onMouseLeave={e => e.currentTarget.style.background = C.redDim}
+                        >
+                          <Trash2 size={11} color={C.red} />
+                        </button>
+                      )}
+                    </div>
+                  ))}
+                </div>
+
+                {/* Add option */}
+                {options.length < 8 && (
+                  <button
+                    type="button"
+                    onClick={addOption}
+                    style={{ marginTop: 9, width: '100%', padding: '9px', borderRadius: 9, background: `${accent}07`, border: `1.5px dashed ${accent}28`, color: accent, fontSize: 11.5, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, fontFamily: FONT, transition: 'all 0.15s' }}
+                    onMouseEnter={e => e.currentTarget.style.background = `${accent}12`}
+                    onMouseLeave={e => e.currentTarget.style.background = `${accent}07`}
+                  >
+                    <Plus size={12} /> Add option
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {/* Right — live preview */}
+            <div className="pl-scroll" style={{ padding: '18px 16px', background: C.surface, overflowY: 'auto', borderLeft: `1px solid ${C.brd}` }}>
+              <PollPreview title={title} description={description} category={category} options={options} />
+            </div>
+          </div>
+
+          {/* ── FOOTER ──────────────────────────────────────── */}
+          <div style={{ flexShrink: 0, padding: '12px 20px', borderTop: `1px solid ${C.brd}`, display: 'flex', alignItems: 'center', gap: 10, background: C.surface }}>
+            {/* Status */}
+            <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 6 }}>
+              {canSave ? (
+                <>
+                  <CheckCircle size={11} color={C.green} />
+                  <span style={{ fontSize: 10.5, color: C.t3 }}>
+                    {title} · {validOpts.length} option{validOpts.length !== 1 ? 's' : ''}
+                    {cat ? ` · ${cat.label}` : ''}
+                  </span>
+                </>
+              ) : (
+                <span style={{ fontSize: 10.5, color: C.t3 }}>
+                  {!category ? 'Pick a category to continue' : !title.trim() ? 'Add a question to continue' : 'Add at least 2 options'}
+                </span>
+              )}
+            </div>
+
+            {/* Cancel */}
+            <button className="pl-cancel" onClick={handleClose} type="button">Cancel</button>
+
+            {/* Create Poll — solid cyan */}
+            <button
+              onClick={handleSubmit}
+              disabled={!canSave}
+              type="button"
+              style={{
+                padding: '9px 22px', borderRadius: 8, border: 'none',
+                fontFamily: FONT, fontSize: 13, fontWeight: 700, letterSpacing: '-0.01em',
+                background: canSave ? C.cyan : C.brd2,
+                color: canSave ? '#000' : C.t3,
+                cursor: canSave ? 'pointer' : 'default',
+                display: 'inline-flex', alignItems: 'center', gap: 7,
+                boxShadow: canSave ? `0 0 24px ${C.cyan}40` : 'none',
+                opacity: canSave ? 1 : 0.4,
+                minWidth: 150, justifyContent: 'center',
+                transition: 'opacity 0.15s, box-shadow 0.15s',
+              }}
+              onMouseEnter={e => { if (canSave) e.currentTarget.style.opacity = '0.88'; }}
+              onMouseLeave={e => { if (canSave) e.currentTarget.style.opacity = '1'; }}
+            >
+              {isLoading
+                ? <><div style={{ width: 12, height: 12, border: '2px solid rgba(0,0,0,0.2)', borderTop: '2px solid #000', borderRadius: '50%', animation: 'pl-spin 0.7s linear infinite' }} /> Creating…</>
+                : <><Zap size={13} /> Create Poll</>}
+            </button>
+          </div>
+
+        </div>
+      </div>
+    </>
+  );
 }
