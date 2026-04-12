@@ -588,7 +588,6 @@ export default function Home() {
     }, 50);
     return () => {
       clearTimeout(init);
-      celebTimers.current.forEach(clearTimeout);
     };
   }, [showStreakCelebration]);
 
