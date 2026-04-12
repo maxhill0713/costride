@@ -22,20 +22,16 @@ import { useState } from 'react';
 import { isToday, differenceInDays, startOfWeek, startOfDay } from 'date-fns';
 import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '../utils';
+import LocationBasedCheckInButton from '../components/gym/LocationBasedCheckInButton';
+import { getSwappedRestDay } from '../lib/weekSwaps.js';
 
 const sanitiseUsernameQuery = (v) =>
-  v
-    .replace(/[^a-zA-Z0-9_.\- ]/g, '')
-    .slice(0, 30);
+  v.replace(/[^a-zA-Z0-9_.\- ]/g, '').slice(0, 30);
 
 const POSE_1_URL = 'https://media.base44.com/images/public/694b637358644e1c22c8ec6b/5688f98be_Pose1_V2.png';
 const POSE_2_URL = 'https://media.base44.com/images/public/694b637358644e1c22c8ec6b/8d4e06e17_Pose2_V21.png';
 const SPARTAN_ICON_URL = 'https://media.base44.com/images/public/694b637358644e1c22c8ec6b/a72ee034d_spartan.png';
 const BEACH_ICON_URL = 'https://media.base44.com/images/public/694b637358644e1c22c8ec6b/9766d8d41_BEACH.png';
-const MOCK_MODE = false;
-
-import LocationBasedCheckInButton from '../components/gym/LocationBasedCheckInButton';
-import { getSwappedRestDay } from '../lib/weekSwaps.js';
 
 function playTone(ctx, freq, startTime, duration, gainVal, type = 'sine') {
   const osc = ctx.createOscillator();
@@ -68,31 +64,11 @@ function soundNumPop(ctx) {
   playTone(ctx, 900, now, 0.08, 0.18);
   playTone(ctx, 1100, now + 0.04, 0.07, 0.12);
 }
-function soundPoseSwap(ctx) {
-  const now = ctx.currentTime;
-  [[659, 0], [784, 0.10], [1047, 0.20]].forEach(([freq, t]) => {
-    playTone(ctx, freq, now + t, 0.25, 0.28);
-    playTone(ctx, freq * 1.5, now + t, 0.18, 0.06);
-  });
-  playTone(ctx, 330, now, 0.4, 0.1);
-}
 function soundGlowPulse(ctx) {
   const now = ctx.currentTime;
   [523, 659, 784].forEach((freq, i) => {
     playTone(ctx, freq, now + i * 0.03, 0.5, 0.09);
   });
-}
-function soundTransition(ctx) {
-  const now = ctx.currentTime;
-  const osc = ctx.createOscillator();
-  const gain = ctx.createGain();
-  osc.connect(gain); gain.connect(ctx.destination);
-  osc.type = 'sine';
-  osc.frequency.setValueAtTime(420, now);
-  osc.frequency.exponentialRampToValueAtTime(180, now + 0.3);
-  gain.gain.setValueAtTime(0.15, now);
-  gain.gain.exponentialRampToValueAtTime(0.001, now + 0.32);
-  osc.start(now); osc.stop(now + 0.35);
 }
 
 const STREAK_KEYFRAMES = `
@@ -164,7 +140,6 @@ function injectStreakStyles() {
   document.head.appendChild(style);
 }
 
-// ── ArrowButton defined outside Home to avoid hook-count violations ──────────
 function ArrowButton({ direction, disabled, onPress }) {
   const [pressed, setPressed] = useState(false);
   const facePoints = direction === 'left' ? '8,1 1,6.5 8,12' : '1,1 8,6.5 1,12';
@@ -195,7 +170,6 @@ function ArrowButton({ direction, disabled, onPress }) {
     </button>
   );
 }
-// ─────────────────────────────────────────────────────────────────────────────
 
 export default function Home() {
   const navigate = useNavigate();
@@ -313,7 +287,7 @@ export default function Home() {
       try { return await base44.auth.me(); }
       catch (error) { console.error('Auth error:', error); return null; }
     },
-    staleTime: 0, // always fetch fresh user data to catch onboarding_completed resets
+    staleTime: 0,
     gcTime: 10 * 60 * 1000,
   });
 
@@ -344,9 +318,7 @@ export default function Home() {
       try {
         const result = await base44.functions.invoke('checkStreakLoss', {});
         if (result.data?.shouldShowAnimation) {
-          setStreakLossAnimationData({
-            previousStreak: result.data.previousStreak,
-          });
+          setStreakLossAnimationData({ previousStreak: result.data.previousStreak });
           setShowStreakLossAnimation(true);
         }
       } catch (error) {
@@ -435,7 +407,6 @@ export default function Home() {
     placeholderData: (prev) => prev,
   });
 
-  // ── Friend requests ─────────────────────────────────────────────────────
   const { data: friendRequests = [] } = useQuery({
     queryKey: ['friendRequests', currentUser?.id],
     queryFn: () => base44.entities.Friend.filter({ friend_id: currentUser?.id, status: 'pending' }, '-created_date', 50),
@@ -489,7 +460,6 @@ export default function Home() {
     placeholderData: (prev) => prev,
   });
 
-  // ── Check-in users for community card ────────────────────────────────────
   const todayStr = new Date().toISOString().split('T')[0];
   const todayCheckInsForQuery = useMemo(
     () => allCheckIns.filter(c => c.check_in_date?.startsWith(todayStr) && c.gym_id === primaryGymIdForQuery),
@@ -521,7 +491,6 @@ export default function Home() {
     display_name: checkInAvatars[u.user_id]?.full_name || u.display_name,
   })), [checkInUsers, checkInAvatars]);
 
-  // ── Friend mutations ──────────────────────────────────────────────────────
   const acceptFriendMutation = useMutation({
     mutationFn: async (userId) => {
       const req = friendRequests.find(r => r.user_id === userId);
@@ -565,7 +534,6 @@ export default function Home() {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['sentFriendRequests'] }),
   });
 
-  // ── Streak animation helper ───────────────────────────────────────────────
   const runStreakAnimation = (streakNum, audioRef, timers) => {
     if (!audioRef.current) return;
     const ctx = audioRef.current;
@@ -586,40 +554,35 @@ export default function Home() {
     const init = setTimeout(() => {
       runStreakAnimation(celebrationStreakNum, audioCtxRef, celebTimers);
     }, 50);
-    return () => {
-      clearTimeout(init);
-    };
+    return () => { clearTimeout(init); };
   }, [showStreakCelebration]);
-
-  const memberGym = memberGymData || null;
-  const userCheckIns = useMemo(
-    () => allCheckIns.filter((c) => c.user_id === currentUser?.id),
-    [allCheckIns, currentUser?.id]
-  );
-  const lastCheckIn = userCheckIns.length > 0 ? userCheckIns[0].check_in_date : null;
-  const daysSinceCheckIn = lastCheckIn ? differenceInDays(new Date(), new Date(lastCheckIn)) : null;
-
-  const friendPosts = useMemo(() => allPosts.filter((post) =>
-    friendIdList.includes(post.member_id) &&
-    !post.is_system_generated &&
-    !post.content?.includes('well done') &&
-    !post.content?.includes('workout finished')
-  ), [allPosts, friendIdList]);
-
-  const effectiveToday = (() => {
-    const now = new Date();
-    if (now.getHours() < 3) {
-      const yesterday = new Date(now);
-      yesterday.setDate(yesterday.getDate() - 1);
-      return yesterday.toISOString().split('T')[0];
-    }
-    return now.toISOString().split('T')[0];
-  })();
 
   const { data: allRecentCheckIns = [] } = useQuery({
     queryKey: ['friendCheckIns', friendIdList.join(',')],
     queryFn: () => base44.functions.invoke('getFriendCheckIns', { friendIds: friendIdList, sinceDate: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0] }).then(r => r.data?.checkIns || []),
     enabled: !!currentUser?.id && friendIdList.length > 0,
+    staleTime: 2 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
+    placeholderData: (prev) => prev,
+  });
+
+  const { data: userChallengeParticipants = [] } = useQuery({
+    queryKey: ['userChallengeParticipants', currentUser?.id],
+    queryFn: () => base44.entities.ChallengeParticipant.filter({ user_id: currentUser?.id }, '-created_date', 50),
+    enabled: !!currentUser?.id,
+    staleTime: 2 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
+    placeholderData: (prev) => prev,
+  });
+
+  const activeChallengeIds = userChallengeParticipants.map(p => p.challenge_id).filter(Boolean);
+
+  const { data: userChallenges = [] } = useQuery({
+    queryKey: ['userChallenges', activeChallengeIds.join(',')],
+    queryFn: () => activeChallengeIds.length > 0
+      ? base44.entities.Challenge.filter({ id: { $in: activeChallengeIds }, status: 'active' })
+      : Promise.resolve([]),
+    enabled: activeChallengeIds.length > 0,
     staleTime: 2 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
     placeholderData: (prev) => prev,
@@ -645,12 +608,38 @@ export default function Home() {
     placeholderData: (prev) => prev,
   });
 
+  const memberGym = memberGymData || null;
+  const userCheckIns = useMemo(
+    () => allCheckIns.filter((c) => c.user_id === currentUser?.id),
+    [allCheckIns, currentUser?.id]
+  );
+  const lastCheckIn = userCheckIns.length > 0 ? userCheckIns[0].check_in_date : null;
+  const daysSinceCheckIn = lastCheckIn ? differenceInDays(new Date(), new Date(lastCheckIn)) : null;
+
   const userStreak = currentUser?.current_streak || 0;
   const streakVariant = currentUser?.streak_variant || 'default';
   const todayDowAdjusted = (() => { const d = new Date().getDay(); return d === 0 ? 7 : d; })();
+
+  const effectiveToday = (() => {
+    const now = new Date();
+    if (now.getHours() < 3) {
+      const yesterday = new Date(now);
+      yesterday.setDate(yesterday.getDate() - 1);
+      return yesterday.toISOString().split('T')[0];
+    }
+    return now.toISOString().split('T')[0];
+  })();
+
   const workoutLoggedToday = weeklyWorkoutLogs.some(log => log.completed_date === effectiveToday) || justLoggedDay === todayDowAdjusted;
   const todayIsRestDay = !(currentUser?.training_days || []).includes(todayDowAdjusted);
   const showCheckInButton = !todayIsRestDay || workoutOverrideDay !== null;
+
+  const friendPosts = useMemo(() => allPosts.filter((post) =>
+    friendIdList.includes(post.member_id) &&
+    !post.is_system_generated &&
+    !post.content?.includes('well done') &&
+    !post.content?.includes('workout finished')
+  ), [allPosts, friendIdList]);
 
   const calculateFriendStreak = (checkIns) => {
     if (checkIns.length === 0) return 0;
@@ -699,66 +688,45 @@ export default function Home() {
   const activityFeed = useMemo(() => {
     const activities = [];
     const exerciseNames = { bench_press: 'Bench Press', squat: 'Squat', deadlift: 'Deadlift', overhead_press: 'Overhead Press', barbell_row: 'Barbell Row', power_clean: 'Power Clean' };
-
-    // PRs
     const friendPRs = recentLifts.filter(l => l.is_pr && friendIdList.includes(l.member_id));
     friendPRs.forEach(lift => {
       const friend = friends.find(f => f.friend_id === lift.member_id);
       if (differenceInDays(new Date(), new Date(lift.created_date)) <= 7) {
         activities.push({
-          id: `pr-${lift.id}`,
-          type: 'pr',
-          friendId: lift.member_id,
-          friendName: friend?.friend_name || lift.member_name,
-          friendAvatar: friend?.friend_avatar,
+          id: `pr-${lift.id}`, type: 'pr', friendId: lift.member_id,
+          friendName: friend?.friend_name || lift.member_name, friendAvatar: friend?.friend_avatar,
           message: `just hit a new PR — ${lift.weight_lbs}lbs ${exerciseNames[lift.exercise] || lift.exercise}`,
           timestamp: new Date(lift.created_date),
         });
       }
     });
-
-    // Leaderboard rank changes — friends with top streaks get a spotlight moment
     friendsWithActivity.forEach((friend, idx) => {
       const streak = friend.activity?.streak || 0;
       if (streak > 0 && friend.activity?.daysSinceCheckIn === 0) {
         const rank = idx + 1;
         if (rank <= 3) {
           activities.push({
-            id: `leaderboard-${friend.friend_id}`,
-            type: 'leaderboard_rank',
-            friendId: friend.friend_id,
-            friendName: friend.friend_name,
-            friendAvatar: friend.friend_avatar,
-            rank,
-            message: rank === 1
-              ? `just took #1 on the weekly consistency leaderboard 👑`
-              : `is sitting at #${rank} on the consistency leaderboard`,
+            id: `leaderboard-${friend.friend_id}`, type: 'leaderboard_rank',
+            friendId: friend.friend_id, friendName: friend.friend_name, friendAvatar: friend.friend_avatar,
+            rank, message: rank === 1 ? `just took #1 on the weekly consistency leaderboard 👑` : `is sitting at #${rank} on the consistency leaderboard`,
             timestamp: new Date(Date.now() - rank * 60000),
           });
         } else if (streak >= 7 && streak % 7 === 0) {
-          // Streak milestone
           activities.push({
-            id: `streak-${friend.friend_id}`,
-            type: 'streak',
-            friendId: friend.friend_id,
-            friendName: friend.friend_name,
-            friendAvatar: friend.friend_avatar,
-            streakCount: streak,
-            message: `just hit a ${streak}-day streak! 🔥`,
+            id: `streak-${friend.friend_id}`, type: 'streak',
+            friendId: friend.friend_id, friendName: friend.friend_name, friendAvatar: friend.friend_avatar,
+            streakCount: streak, message: `just hit a ${streak}-day streak! 🔥`,
             timestamp: new Date(Date.now() - 120000),
           });
         }
       }
     });
-
-    // Notifications
     notifications.forEach(n => {
       const text = (n.message || n.title || '').toLowerCase();
       if (differenceInDays(new Date(), new Date(n.created_date)) <= 7 && !text.includes('accepted') && !text.includes('friend request') && !text.includes('official') && !text.includes('gym request')) {
         activities.push({ id: `notif-${n.id}`, type: 'notification', message: n.message || n.title, timestamp: new Date(n.created_date) });
       }
     });
-
     return activities.sort((a, b) => b.timestamp - a.timestamp);
   }, [recentLifts, friendsWithActivity, friends, friendIdList, notifications]);
 
@@ -844,12 +812,27 @@ export default function Home() {
     setWorkoutStartTime(null);
     await queryClient.invalidateQueries({ queryKey: ['checkIns', currentUser?.id] });
     await queryClient.invalidateQueries({ queryKey: ['weeklyWorkoutLogs', currentUser?.id] });
+    await queryClient.invalidateQueries({ queryKey: ['userChallengeParticipants', currentUser?.id] });
     if (audioCtxRef.current) audioCtxRef.current.close().catch(() => {});
     audioCtxRef.current = new (window.AudioContext || window.webkitAudioContext)();
     const freshUser = queryClient.getQueryData(['currentUser']);
     const newStreak = freshUser?.current_streak || userStreak + 1;
     setCelebrationStreakNum(newStreak);
-    setCelebrationChallenges(challengesData);
+    // Build real challenges for celebration from the user's active challenge participants
+    const realChallenges = userChallenges.map(ch => {
+      const participant = userChallengeParticipants.find(p => p.challenge_id === ch.id);
+      const currentProgress = participant?.progress || 0;
+      const previousProgress = Math.max(0, currentProgress - 1);
+      return {
+        ...ch,
+        previous_value: previousProgress,
+        new_value: currentProgress,
+        target_value: ch.target_value || 30,
+        emoji: ch.category === 'attendance' ? '📅' : ch.category === 'streak' ? '🔥' : '🏋️',
+      };
+    });
+    const finalChallenges = realChallenges.length > 0 ? realChallenges : challengesData;
+    setCelebrationChallenges(finalChallenges);
     setCelebrationExercises(exercises);
     setCelebrationWorkoutName(workoutName);
     setCelebrationPreviousExercises(previousExercises);
@@ -858,7 +841,7 @@ export default function Home() {
     setShowStreakCelebration(true);
     const celebT1 = setTimeout(() => {
       setShowStreakCelebration(false);
-      if (challengesData.length > 0) {
+      if (finalChallenges.length > 0) {
         setShowChallengesCelebration(true);
         const celebT2 = setTimeout(() => { setShowChallengesCelebration(false); showShare(); }, 4000);
         celebTimers.current.push(celebT2);
@@ -891,31 +874,24 @@ export default function Home() {
   };
 
   const viewSummaryBtnStyle = {
-    marginTop: 4, width: '100%',
-    padding: '7px 0',
-    borderRadius: 9,
+    marginTop: 4, width: '100%', padding: '7px 0', borderRadius: 9,
     background: 'linear-gradient(to bottom, #3b82f6 0%, #2563eb 40%, #1d4ed8 100%)',
     border: 'none', borderBottom: '3px solid #1e40af',
     color: '#ffffff', fontSize: 12, fontWeight: 800, cursor: 'pointer',
     letterSpacing: '0.03em', textAlign: 'center',
     boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.2)',
-    transition: 'transform 0.1s ease', WebkitTapHighlightColor: 'transparent',
-    touchAction: 'manipulation',
+    transition: 'transform 0.1s ease', WebkitTapHighlightColor: 'transparent', touchAction: 'manipulation',
   };
 
   const viewWorkoutBtnStyle = {
-    marginTop: 10, width: '100%',
-    padding: '8px 0',
-    borderRadius: 9,
+    marginTop: 10, width: '100%', padding: '8px 0', borderRadius: 9,
     background: 'linear-gradient(to bottom, #1e2430 0%, #141820 60%, #0d1017 100%)',
-    border: '1px solid rgba(255,255,255,0.10)',
-    borderBottom: '3px solid rgba(0,0,0,0.5)',
+    border: '1px solid rgba(255,255,255,0.10)', borderBottom: '3px solid rgba(0,0,0,0.5)',
     color: 'rgba(255,255,255,0.82)', fontSize: 12, fontWeight: 800, cursor: 'pointer',
     letterSpacing: '0.04em', textAlign: 'center',
     boxShadow: '0 2px 8px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.08)',
     transition: 'transform 0.08s ease, box-shadow 0.08s ease',
-    WebkitTapHighlightColor: 'transparent',
-    touchAction: 'manipulation',
+    WebkitTapHighlightColor: 'transparent', touchAction: 'manipulation',
   };
 
   const modalPanelClass = "w-full max-w-sm bg-slate-800/30 backdrop-blur-md border border-slate-700/20 rounded-3xl shadow-2xl shadow-black/20 text-white p-6 max-h-[80vh] overflow-y-auto";
@@ -932,12 +908,7 @@ export default function Home() {
           style={{ objectFit: 'contain', opacity: 1 }} />
         <span
           className={`font-black ${compact ? 'text-lg -ml-1.5 mt-2' : 'text-xl -ml-2 mt-3'} select-none`}
-          style={{
-            color: '#ffffff',
-            textShadow: '0 2px 4px rgba(0,0,0,0.8), 0 1px 0 rgba(0,0,0,0.9)',
-            letterSpacing: '-0.02em',
-            lineHeight: 1,
-          }}>
+          style={{ color: '#ffffff', textShadow: '0 2px 4px rgba(0,0,0,0.8), 0 1px 0 rgba(0,0,0,0.9)', letterSpacing: '-0.02em', lineHeight: 1 }}>
           {userStreak}
         </span>
       </button>
@@ -945,10 +916,7 @@ export default function Home() {
         CoStride
       </h1>
       <button
-        onClick={() => {
-          setShowFriendsModal(true);
-          setFriendsModalViewed(true);
-        }}
+        onClick={() => { setShowFriendsModal(true); setFriendsModalViewed(true); }}
         className="absolute right-0 top-1/2 -translate-y-1/2 p-2 -mr-2 text-white/70 hover:text-white active:scale-90 active:opacity-60 transition-all duration-100 transform-gpu">
         <Users className={compact ? 'w-5 h-5' : 'w-6 h-6'} />
         {!friendsModalViewed && (friendRequests.length > 0 || sentFriendRequests.some(r => {
@@ -963,18 +931,15 @@ export default function Home() {
 
   return (
     <PullToRefresh onRefresh={triggerRefresh}>
-  <div className="min-h-screen bg-gradient-to-br from-slate-950 via-blue-950 to-slate-950">
-    <div style={{ position: 'fixed', inset: 0, zIndex: -1, background: 'linear-gradient(to bottom right, #02040a, #0d2360, #02040a)' }} />
-    {/* ── Fixed header ── */}
+      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-blue-950 to-slate-950">
+        <div style={{ position: 'fixed', inset: 0, zIndex: -1, background: 'linear-gradient(to bottom right, #02040a, #0d2360, #02040a)' }} />
         <div
           className="fixed top-0 left-0 right-0 z-50"
           style={{
             opacity: headerState === 'hidden' ? 0 : 1,
             transform: headerState === 'hidden' ? 'translateY(-6px)' : 'translateY(0)',
             pointerEvents: headerState === 'hidden' ? 'none' : 'auto',
-            background: headerState === 'top'
-              ? 'linear-gradient(to bottom, rgba(30,41,59,0.4), transparent)'
-              : 'rgba(15, 23, 42, 0.88)',
+            background: headerState === 'top' ? 'linear-gradient(to bottom, rgba(30,41,59,0.4), transparent)' : 'rgba(15, 23, 42, 0.88)',
             backdropFilter: headerState === 'top' ? 'none' : 'blur(16px)',
             WebkitBackdropFilter: headerState === 'top' ? 'none' : 'blur(16px)',
             borderBottom: headerState === 'top' ? 'none' : '1px solid rgba(255,255,255,0.07)',
@@ -985,7 +950,6 @@ export default function Home() {
             <HeaderContent compact={true} />
           </div>
         </div>
-        {/* Ghost spacer */}
         <div className="px-4 py-2.5 opacity-0 pointer-events-none" aria-hidden="true">
           <HeaderContent compact={true} />
         </div>
@@ -1053,11 +1017,8 @@ export default function Home() {
             </div>
           )}
 
-          {/* ── Community card ── */}
           {memberGym?.id && (
-            <div
-              className="active:scale-[0.97] active:translate-y-0.5 transition-transform duration-100"
-              style={{ WebkitTapHighlightColor: 'transparent' }}>
+            <div className="active:scale-[0.97] active:translate-y-0.5 transition-transform duration-100" style={{ WebkitTapHighlightColor: 'transparent' }}>
               <Link to={createPageUrl('GymCommunity') + `?id=${memberGym.id}`} className="block">
                 <Card className="rounded-xl text-card-foreground cursor-pointer relative h-40 overflow-hidden group" style={{ background: 'linear-gradient(135deg, rgba(30,35,60,0.82) 0%, rgba(8,10,20,0.96) 100%)', border: '1px solid rgba(255,255,255,0.07)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)' }}>
                   {memberGym?.image_url ? (
@@ -1068,17 +1029,11 @@ export default function Home() {
                   <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-900/70 to-transparent" />
                   <div className="relative p-6 h-full flex flex-col justify-between">
                     <div>
-                      <p className="text-white font-semibold text-base tracking-tight">
-                        Your Community
-                      </p>
-                      <p className="text-slate-300 text-sm mt-1 font-medium">
-                        {memberGym.name}
-                      </p>
+                      <p className="text-white font-semibold text-base tracking-tight">Your Community</p>
+                      <p className="text-slate-300 text-sm mt-1 font-medium">{memberGym.name}</p>
                     </div>
                     <div className="flex items-center justify-between">
-                      <span className="text-xs text-slate-300 font-medium">
-                        {getCommunityText()}
-                      </span>
+                      <span className="text-xs text-slate-300 font-medium">{getCommunityText()}</span>
                       <div className="flex items-center gap-2">
                         <div className="flex items-center -space-x-2">
                           {enrichedCheckInUsers.slice(0, 2).map((u) => (
@@ -1102,10 +1057,8 @@ export default function Home() {
             </div>
           )}
 
-          {/* ── Weekly workout circles with week navigation ── */}
           {memberGym?.id && (() => {
             const baseTrainingDays = (currentUser?.training_days || []).filter((d) => d >= 1 && d <= 7);
-            // Apply week-level rest→training swap if applicable (current week only)
             const swappedRestDay = weekOffset === 0 ? getSwappedRestDay() : null;
             const trainingDays = swappedRestDay && !baseTrainingDays.includes(swappedRestDay)
               ? [...baseTrainingDays, swappedRestDay]
@@ -1137,34 +1090,12 @@ export default function Home() {
                     style={{ position: 'fixed', inset: 0, zIndex: 198 }}
                   />
                 )}
-
-                {/* ── Left arrow ── */}
-                <div style={{
-                  position: 'absolute', left: 0, top: 0, bottom: 0,
-                  width: 20, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  zIndex: 10,
-                }}>
-                  <ArrowButton
-                    direction="left"
-                    disabled={weekOffset <= -1}
-                    onPress={() => { setSlideDirection(-1); setWeekOffset(w => w - 1); setActiveCircleDay(null); setBubblePos(null); }}
-                  />
+                <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 20, display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 10 }}>
+                  <ArrowButton direction="left" disabled={weekOffset <= -1} onPress={() => { setSlideDirection(-1); setWeekOffset(w => w - 1); setActiveCircleDay(null); setBubblePos(null); }} />
                 </div>
-
-                {/* ── Right arrow ── */}
-                <div style={{
-                  position: 'absolute', right: 0, top: 0, bottom: 0,
-                  width: 20, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  zIndex: 10,
-                }}>
-                  <ArrowButton
-                    direction="right"
-                    disabled={weekOffset >= 1}
-                    onPress={() => { setSlideDirection(1); setWeekOffset(w => w + 1); setActiveCircleDay(null); setBubblePos(null); }}
-                  />
+                <div style={{ position: 'absolute', right: 0, top: 0, bottom: 0, width: 20, display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 10 }}>
+                  <ArrowButton direction="right" disabled={weekOffset >= 1} onPress={() => { setSlideDirection(1); setWeekOffset(w => w + 1); setActiveCircleDay(null); setBubblePos(null); }} />
                 </div>
-
-                {/* ── Sliding dots track ── */}
                 <div style={{ overflowX: 'hidden', overflowY: 'visible', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   <AnimatePresence mode="popLayout" initial={false} custom={slideDirection}>
                     <motion.div
@@ -1175,9 +1106,7 @@ export default function Home() {
                         center: { x: 0, opacity: 1 },
                         exit: (dir) => ({ x: dir < 0 ? '100%' : '-100%', opacity: 1 }),
                       }}
-                      initial="enter"
-                      animate="center"
-                      exit="exit"
+                      initial="enter" animate="center" exit="exit"
                       transition={{ duration: 0.38, ease: [0.25, 0.46, 0.45, 0.94] }}
                       style={{ display: 'flex', flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'center', gap: 8, overflow: 'visible', position: 'relative', width: '100%', paddingTop: 14, paddingBottom: 14 }}>
                       {allDays.map((day, i) => {
@@ -1247,15 +1176,8 @@ export default function Home() {
                                 setBubblePos({
                                   buttonCenterX: rect.left + rect.width / 2,
                                   buttonBottom: rect.bottom,
-                                  day,
-                                  workoutLog: workoutLog || null,
-                                  done,
-                                  isRestDay,
-                                  isMissed,
-                                  isPastOrTodayRestDay,
-                                  isTodayCircle,
-                                  showViewWorkout,
-                                  hasBubbleBtn,
+                                  day, workoutLog: workoutLog || null, done, isRestDay, isMissed,
+                                  isPastOrTodayRestDay, isTodayCircle, showViewWorkout, hasBubbleBtn,
                                   popupLabel: (() => {
                                     if (isRestDay) return 'Rest Day';
                                     if (isMissed) return 'No Workout';
@@ -1295,8 +1217,7 @@ export default function Home() {
                                 opacity: pressedDay === day ? 0.65 : 1,
                                 transform: pressedDay === day ? 'scale(0.82) translateY(3px)' : 'none',
                                 willChange: 'opacity', cursor: 'pointer', padding: 0, outline: 'none',
-                                WebkitTapHighlightColor: 'transparent', userSelect: 'none',
-                                touchAction: 'manipulation',
+                                WebkitTapHighlightColor: 'transparent', userSelect: 'none', touchAction: 'manipulation',
                               }}>
                               {isRestDay ? (
                                 isPastOrTodayRestDay ? (
@@ -1338,8 +1259,7 @@ export default function Home() {
                                 <div style={{ width: isTodayCircle ? 18 : 14, height: isTodayCircle ? 18 : 14, borderRadius: '50%', border: isTodayCircle ? '2px solid rgba(148,163,184,0.6)' : '2px solid rgba(100,116,139,0.35)', background: isTodayCircle ? 'rgba(255,255,255,0.05)' : 'transparent', boxShadow: isTodayCircle ? 'inset 0 1px 3px rgba(0,0,0,0.4)' : 'none' }} />
                               )}
                             </button>
-                            <AnimatePresence>
-                            </AnimatePresence>
+                            <AnimatePresence></AnimatePresence>
                           </div>
                         );
                       })}
@@ -1350,12 +1270,8 @@ export default function Home() {
             );
           })()}
 
-          {/* ── Fixed bubble ── */}
           {activeCircleDay !== null && bubblePos && (() => {
-            const ARROW_H = 7;
-            const ARROW_W = 13;
-            const RADIUS = 14;
-            const BUBBLE_W = 274;
+            const ARROW_H = 7, ARROW_W = 13, RADIUS = 14, BUBBLE_W = 274;
             const BUBBLE_H = bubblePos.hasBubbleBtn ? 118 : 78;
             const SVG_H = BUBBLE_H + ARROW_H;
             const screenW = window.innerWidth;
@@ -1396,12 +1312,9 @@ export default function Home() {
                       onPointerDown={async (e) => {
                         e.stopPropagation();
                         const wl = bubblePos.workoutLog;
-                        setActiveCircleDay(null);
-                        setBubblePos(null);
-                        try {
-                          const logs = await base44.entities.WorkoutLog.filter({ id: wl.id });
-                          setSummaryLog(logs[0] || wl);
-                        } catch { setSummaryLog(wl); }
+                        setActiveCircleDay(null); setBubblePos(null);
+                        try { const logs = await base44.entities.WorkoutLog.filter({ id: wl.id }); setSummaryLog(logs[0] || wl); }
+                        catch { setSummaryLog(wl); }
                       }}
                       style={{ ...viewSummaryBtnStyle, marginTop: 10 }}>
                       View Summary
@@ -1412,8 +1325,7 @@ export default function Home() {
                       onPointerDown={(e) => {
                         e.stopPropagation();
                         const d = bubblePos.day;
-                        setActiveCircleDay(null);
-                        setBubblePos(null);
+                        setActiveCircleDay(null); setBubblePos(null);
                         setViewWorkoutDay(d);
                       }}
                       style={viewWorkoutBtnStyle}>
@@ -1427,7 +1339,6 @@ export default function Home() {
 
           {memberGym?.id && <QuoteCarousel />}
 
-          {/* ── Social Feed ── */}
           {socialFeedPosts.length > 0 && (
             <div className="space-y-3">
               {socialFeedPosts.map((post) => (
@@ -1456,13 +1367,13 @@ export default function Home() {
               [{ title: 'Summer Squat Challenge', reward: 'Free protein shake', previous_value: 3, new_value: 7, target_value: 10, emoji: '🏋️' }],
               [
                 { exercise: 'Bench Press', sets: '4', reps: '8', weight: '80' },
-                { exercise: 'Squat',       sets: '3', reps: '10', weight: '100' },
-                { exercise: 'Deadlift',    sets: '3', reps: '5',  weight: '120' },
+                { exercise: 'Squat', sets: '3', reps: '10', weight: '100' },
+                { exercise: 'Deadlift', sets: '3', reps: '5', weight: '120' },
               ],
               'Push Day A',
               [
                 { exercise: 'Bench Press', sets: '4', reps: '8', weight: '77.5' },
-                { exercise: 'Squat',       sets: '3', reps: '10', weight: '97.5' },
+                { exercise: 'Squat', sets: '3', reps: '10', weight: '97.5' },
               ]
             )}
             style={{
@@ -1473,14 +1384,12 @@ export default function Home() {
               border: '1px solid rgba(255,255,255,0.2)',
               boxShadow: '0 4px 12px rgba(124,58,237,0.5)',
               cursor: 'pointer', letterSpacing: '0.04em',
-            }}
-          >
+            }}>
             🧪 TEST LOG
           </button>
         </div>
       </div>
 
-      {/* Streak Freeze Animation */}
       <StreakFreezeAnimation
         isOpen={showFreezeAnimation}
         freezesLostCount={freezeAnimationData.freezesLostCount}
@@ -1488,7 +1397,6 @@ export default function Home() {
         onComplete={() => setShowFreezeAnimation(false)}
       />
 
-      {/* Streak Loss Animation */}
       <StreakLossAnimation
         isOpen={showStreakLossAnimation}
         previousStreak={streakLossAnimationData.previousStreak}
@@ -1521,10 +1429,7 @@ export default function Home() {
 
       <FriendsSection
         showFriendsModal={showFriendsModal}
-        setShowFriendsModal={(val) => {
-          setShowFriendsModal(val);
-          if (val) setFriendsModalViewed(true);
-        }}
+        setShowFriendsModal={(val) => { setShowFriendsModal(val); if (val) setFriendsModalViewed(true); }}
         showAddFriendModal={showAddFriendModal}
         setShowAddFriendModal={setShowAddFriendModal}
         confirmRemoveFriend={confirmRemoveFriend}
@@ -1550,10 +1455,8 @@ export default function Home() {
         addFriendMutation={addFriendMutation}
       />
 
-      {/* ── Workout Summary Modal ── */}
       <WorkoutSummaryModal summaryLog={summaryLog} onClose={() => setSummaryLog(null)} />
 
-      {/* ── View Workout Modal ── */}
       <AnimatePresence>
         {viewWorkoutDay !== null && (() => {
           const workout = currentUser?.custom_workout_types?.[viewWorkoutDay];
@@ -1584,18 +1487,10 @@ export default function Home() {
                   const nameToGroupIdx = {};
                   exercises.forEach((ex, index) => {
                     const key = (ex.exercise || ex.name || '').trim().toLowerCase();
-                    if (!key) {
-                      groups.push({ key: `__empty_${index}`, name: ex.exercise || ex.name || '', items: [{ ex, index }] });
-                      return;
-                    }
-                    if (nameToGroupIdx[key] === undefined) {
-                      nameToGroupIdx[key] = groups.length;
-                      groups.push({ key, name: ex.exercise || ex.name, items: [{ ex, index }] });
-                    } else {
-                      groups[nameToGroupIdx[key]].items.push({ ex, index });
-                    }
+                    if (!key) { groups.push({ key: `__empty_${index}`, name: ex.exercise || ex.name || '', items: [{ ex, index }] }); return; }
+                    if (nameToGroupIdx[key] === undefined) { nameToGroupIdx[key] = groups.length; groups.push({ key, name: ex.exercise || ex.name, items: [{ ex, index }] }); }
+                    else { groups[nameToGroupIdx[key]].items.push({ ex, index }); }
                   });
-
                   return (
                     <div className="space-y-2">
                       <div className="grid grid-cols-[1fr_36px_12px_36px_auto] gap-1 mb-1.5 items-end px-2 -mx-2">
@@ -1633,10 +1528,7 @@ export default function Home() {
                               </div>
                             );
                           }
-
-                          const sorted = [...group.items].sort(
-                            (a, b) => (parseFloat(b.ex.weight_kg ?? b.ex.weight_lbs ?? b.ex.weight) || 0) - (parseFloat(a.ex.weight_kg ?? a.ex.weight_lbs ?? a.ex.weight) || 0)
-                          );
+                          const sorted = [...group.items].sort((a, b) => (parseFloat(b.ex.weight_kg ?? b.ex.weight_lbs ?? b.ex.weight) || 0) - (parseFloat(a.ex.weight_kg ?? a.ex.weight_lbs ?? a.ex.weight) || 0));
                           return (
                             <div key={group.key} className="bg-white/5 pt-2 pb-2 pl-2 rounded-xl border border-white/10">
                               {sorted.map(({ ex, index }, setIdx) => {
@@ -1650,9 +1542,7 @@ export default function Home() {
                                 return (
                                   <div key={index} className="grid grid-cols-[1fr_36px_12px_36px_auto] gap-1 items-center pr-2 mb-1">
                                     <div className="ml-1">
-                                      {setIdx === 0
-                                        ? <div className="text-sm font-bold text-white leading-tight">{group.name}</div>
-                                        : <div />}
+                                      {setIdx === 0 ? <div className="text-sm font-bold text-white leading-tight">{group.name}</div> : <div />}
                                     </div>
                                     <div className="bg-white/10 text-slate-300 py-1 text-[11px] font-bold text-center rounded-lg flex items-center justify-center ml-3" style={{ width: '36px' }}>{setLabel}</div>
                                     <div className="text-slate-400 text-xs font-bold flex items-center justify-center ml-4">×</div>
