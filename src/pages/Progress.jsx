@@ -12,22 +12,12 @@ import TargetsTab   from '../components/progress/TargetsTab';
 import NutritionTab from '../components/progress/NutritionTab';
 import TrainerTab   from '../components/progress/TrainerTab';
 
-// Module-level set — tracks which tabs have animated this session
 const animatedTabs = new Set();
 
-// ── Full-page slide variants — identical to CreateSplitModal ──
 const pageSlideVariants = {
   hidden: { x: '100%', opacity: 1 },
-  visible: {
-    x: 0,
-    opacity: 1,
-    transition: { type: 'spring', stiffness: 380, damping: 36, mass: 1 },
-  },
-  exit: {
-    x: '100%',
-    opacity: 1,
-    transition: { type: 'spring', stiffness: 420, damping: 40, mass: 0.9 },
-  },
+  visible: { x: 0, opacity: 1, transition: { type: 'spring', stiffness: 380, damping: 36, mass: 1 } },
+  exit:   { x: '100%', opacity: 1, transition: { type: 'spring', stiffness: 420, damping: 40, mass: 0.9 } },
 };
 
 const overlayVariants = {
@@ -56,8 +46,8 @@ export default function Progress() {
   });
 
   const [showTrainer, setShowTrainer] = useState(false);
-
   const [analyticsAnimKey, setAnalyticsAnimKey] = useState(0);
+
   useEffect(() => {
     if (!animatedTabs.has('analytics') && currentUser) {
       animatedTabs.add('analytics');
@@ -69,9 +59,9 @@ export default function Progress() {
     return (
       <div className="min-h-screen" style={{ backgroundColor: 'transparent' }}>
         <div style={{ position: 'fixed', inset: 0, zIndex: -1, background: 'linear-gradient(to bottom right, #02040a, #0d2360, #02040a)' }} />
-        <div className="fixed top-0 left-0 right-0 z-20 bg-slate-900/95 backdrop-blur-xl border-b-2 border-blue-700/40 px-3 md:px-4 pb-3.5" style={{ paddingTop: 'calc(0.4rem + env(safe-area-inset-top))' }}>
+        <div className="fixed top-0 left-0 right-0 z-20 bg-slate-900/95 backdrop-blur-xl border-b-2 border-blue-700/40 px-3 md:px-4" style={{ paddingTop: 'calc(0.4rem + env(safe-area-inset-top))', paddingBottom: 0 }}>
           <div className="max-w-4xl mx-auto">
-            <div className="flex items-center h-[2.9rem] gap-2">
+            <div className="flex items-end h-[2.9rem] gap-2 pb-1">
               {[...Array(3)].map((_, i) => (
                 <div key={i} className="flex-1 h-7 rounded bg-slate-700/60 animate-pulse" />
               ))}
@@ -95,29 +85,31 @@ export default function Progress() {
       <div style={{ position: 'fixed', inset: 0, zIndex: -1, background: 'linear-gradient(to bottom right, #02040a, #0d2360, #02040a)' }} />
 
       <Tabs defaultValue="analytics" className="w-full">
-        {/* ── Fixed tab header — ~10% taller than previous ── */}
-        <div className="fixed top-0 left-0 right-0 z-20 bg-slate-900/95 backdrop-blur-xl border-b-2 border-blue-700/40 px-3 md:px-4 pb-3.5" style={{ paddingTop: 'calc(0.4rem + env(safe-area-inset-top))' }}>
+        {/* ── Fixed header — same overall height, tabs sit at the bottom ── */}
+        <div
+          className="fixed top-0 left-0 right-0 z-20 bg-slate-900/95 backdrop-blur-xl border-b-2 border-blue-700/40 px-3 md:px-4"
+          style={{ paddingTop: 'calc(0.4rem + env(safe-area-inset-top))', paddingBottom: 0 }}
+        >
           <div className="max-w-4xl mx-auto">
-            {/* Relative container so the message icon can sit absolute right */}
-            <div className="relative flex items-center justify-center h-[2.9rem]">
-              {/* 3 centred tabs */}
-              <TabsList className="flex bg-transparent p-0 h-[2.9rem] gap-6 border-0">
-                <TabsTrigger value="analytics" className="data-[state=active]:text-blue-400 data-[state=active]:border-b-2 data-[state=active]:border-blue-400 data-[state=active]:bg-transparent text-slate-400 hover:text-slate-300 border-b-2 border-transparent rounded-none px-0 py-2 transition-colors bg-transparent text-[15px] justify-center">
+            {/* items-end + pb-1 pins tabs to the bottom of the bar */}
+            <div className="relative flex items-end justify-center h-[2.9rem] pb-1">
+              <TabsList className="flex bg-transparent p-0 gap-6 border-0 h-auto">
+                <TabsTrigger value="analytics" className="data-[state=active]:text-blue-400 data-[state=active]:border-b-2 data-[state=active]:border-blue-400 data-[state=active]:bg-transparent text-slate-400 hover:text-slate-300 border-b-2 border-transparent rounded-none px-0 pb-0 pt-0 transition-colors bg-transparent text-[15px] justify-center leading-none">
                   <BarChart3 className="w-4 h-4 mr-1.5" />Analytics
                 </TabsTrigger>
-                <TabsTrigger value="goals" className="data-[state=active]:text-blue-400 data-[state=active]:border-b-2 data-[state=active]:border-blue-400 data-[state=active]:bg-transparent text-slate-400 hover:text-slate-300 border-b-2 border-transparent rounded-none px-0 py-2 transition-colors bg-transparent text-[15px] justify-center">
+                <TabsTrigger value="goals" className="data-[state=active]:text-blue-400 data-[state=active]:border-b-2 data-[state=active]:border-blue-400 data-[state=active]:bg-transparent text-slate-400 hover:text-slate-300 border-b-2 border-transparent rounded-none px-0 pb-0 pt-0 transition-colors bg-transparent text-[15px] justify-center leading-none">
                   <Target className="w-4 h-4 mr-1.5" />Targets
                 </TabsTrigger>
-                <TabsTrigger value="nutrition" className="data-[state=active]:text-blue-400 data-[state=active]:border-b-2 data-[state=active]:border-blue-400 data-[state=active]:bg-transparent text-slate-400 hover:text-slate-300 border-b-2 border-transparent rounded-none px-0 py-2 transition-colors bg-transparent text-[15px] justify-center">
+                <TabsTrigger value="nutrition" className="data-[state=active]:text-blue-400 data-[state=active]:border-b-2 data-[state=active]:border-blue-400 data-[state=active]:bg-transparent text-slate-400 hover:text-slate-300 border-b-2 border-transparent rounded-none px-0 pb-0 pt-0 transition-colors bg-transparent text-[15px] justify-center leading-none">
                   <Utensils className="w-4 h-4 mr-1.5" />Nutrition
                 </TabsTrigger>
               </TabsList>
 
-              {/* Trainer — message icon pinned to the right, settings-style press animation only */}
+              {/* Message icon — pinned to the right, same bottom baseline */}
               <button
                 onClick={() => setShowTrainer(true)}
-                className="absolute right-0 flex items-center justify-center w-8 h-8 rounded-full text-slate-400 active:scale-90 transition-transform"
-                aria-label="Trainer"
+                className="absolute right-0 bottom-1 flex items-center justify-center w-8 h-8 rounded-full text-slate-400 active:scale-90 transition-transform"
+                aria-label="Chats"
               >
                 <MessageCircle className="w-5 h-5" />
               </button>
@@ -125,7 +117,6 @@ export default function Progress() {
           </div>
         </div>
 
-        {/* Spacer matching the taller fixed header */}
         <div style={{ height: 'calc(3.55rem + env(safe-area-inset-top))' }} />
 
         <TabsContent value="analytics" className="mt-0 px-3 md:px-4 py-3 pb-[130px] md:pb-5">
@@ -147,11 +138,10 @@ export default function Progress() {
         </TabsContent>
       </Tabs>
 
-      {/* ── Trainer full-page slide — identical pattern to CreateSplitModal ── */}
+      {/* ── Chats full-page slide ── */}
       <AnimatePresence>
         {showTrainer && (
           <>
-            {/* Dim overlay */}
             <motion.div
               key="trainer-overlay"
               className="fixed inset-0 z-40"
@@ -163,40 +153,30 @@ export default function Progress() {
               onClick={() => setShowTrainer(false)}
             />
 
-            {/* Full-page panel slides in from the right */}
             <motion.div
               key="trainer-panel"
               className="fixed inset-0 z-50"
-              style={{
-                minHeight: '100dvh',
-                background: 'linear-gradient(to bottom right, #02040a, #0d2360, #02040a)',
-                paddingTop: 'env(safe-area-inset-top)',
-              }}
+              style={{ minHeight: '100dvh', background: 'linear-gradient(to bottom right, #02040a, #0d2360, #02040a)', paddingTop: 'env(safe-area-inset-top)' }}
               variants={pageSlideVariants}
               initial="hidden"
               animate="visible"
               exit="exit"
             >
               <div className="flex flex-col h-full w-full max-w-2xl mx-auto">
-
-                {/* ── Header — matches CreateSplitModal header exactly ── */}
+                {/* Header */}
                 <div className="relative flex items-center px-4 py-[14.7px] border-b border-slate-700/40 flex-shrink-0">
-                  <button
-                    onClick={() => setShowTrainer(false)}
-                    className="flex items-center justify-center active:scale-90 transition-transform"
-                  >
+                  <button onClick={() => setShowTrainer(false)} className="flex items-center justify-center active:scale-90 transition-transform">
                     <ChevronLeft className="w-6 h-6 text-slate-300" />
                   </button>
                   <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                    <h2 className="text-[22px] font-black text-white leading-tight tracking-tight">Trainer</h2>
+                    <h2 className="text-[22px] font-black text-white leading-tight tracking-tight">Chats</h2>
                   </div>
                 </div>
 
-                {/* ── Scrollable body ── */}
+                {/* Body */}
                 <div className="overflow-y-auto flex-1 px-4 pb-4">
                   <TrainerTab currentUser={currentUser} />
                 </div>
-
               </div>
             </motion.div>
           </>
