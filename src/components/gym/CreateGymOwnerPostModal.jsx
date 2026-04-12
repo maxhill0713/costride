@@ -15,8 +15,8 @@ import { format } from 'date-fns';
 /* ─── TOKENS ─────────────────────────────────────────────────── */
 const C = {
   bg:       '#000000',
-  surface:  '#0f0f12',
-  inset:    '#141416',
+  surface:  '#141416',
+  inset:    '#1a1a1f',
   brd:      '#222226',
   brd2:     '#2a2a30',
   t1:       '#ffffff',
