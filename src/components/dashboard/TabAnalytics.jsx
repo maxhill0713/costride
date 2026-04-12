@@ -4,27 +4,25 @@
  * Dependencies: recharts, lucide-react
  */
 
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import {
   TrendingUp, TrendingDown, ArrowUpRight, ArrowDownRight,
-  AlertTriangle, Users, Activity, Target, Zap, ChevronRight,
-  Send, Award, BarChart2, Flame, Clock,
+  AlertTriangle, Activity, Zap, Send, BarChart2, Flame,
 } from "lucide-react";
 import {
   AreaChart, Area, BarChart, Bar, LineChart, Line,
   XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid,
   Cell, RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis,
-  ComposedChart, ReferenceLine,
+  ComposedChart,
 } from "recharts";
 
 /* ─── TOKENS ─────────────────────────────────────────────────── */
 const C = {
   bg:      "#0b0b0d",
-  sidebar: "#0f0f12",
-  card:    "#141416",
-  card2:   "#18181b",
-  brd:     "#222226",
-  brd2:    "#2a2a30",
+  card:    "#0f1015",
+  card2:   "#13131a",
+  brd:     "#1c1c24",
+  brd2:    "#242430",
   t1:      "#ffffff",
   t2:      "#8a8a94",
   t3:      "#444450",
@@ -42,9 +40,11 @@ const C = {
   greenB:  "rgba(34,197,94,0.22)",
   blue:    "#3b82f6",
   blueD:   "rgba(59,130,246,0.09)",
+  blueB:   "rgba(59,130,246,0.22)",
 };
 const FONT = "'DM Sans','Segoe UI',sans-serif";
 const tick = { fill: "#444450", fontSize: 9.5, fontFamily: FONT };
+const mono = { fontVariantNumeric: "tabular-nums", fontFeatureSettings: '"tnum"' };
 
 /* ─── MOCK DATA ──────────────────────────────────────────────── */
 const VISIT_TREND = [
@@ -55,37 +55,23 @@ const VISIT_TREND = [
   { w: "W1 Mar", total: 170, avg: 4.5 }, { w: "W2", total: 155, avg: 4.1 },
   { w: "W3",     total: 178, avg: 4.7 }, { w: "W4 Apr", total: 192, avg: 5.1 },
 ];
-
 const RETENTION_OVER_TIME = [
-  { m: "Nov", w1: 68, m1: 54, m3: 41 },
-  { m: "Dec", m1: 57, w1: 71, m3: 44 },
-  { m: "Jan", w1: 74, m1: 60, m3: 47 },
-  { m: "Feb", w1: 76, m1: 62, m3: 49 },
-  { m: "Mar", w1: 80, m1: 67, m3: 53 },
-  { m: "Apr", w1: 84, m1: 72, m3: 58 },
+  { m: "Nov", w1: 68, m1: 54, m3: 41 }, { m: "Dec", m1: 57, w1: 71, m3: 44 },
+  { m: "Jan", w1: 74, m1: 60, m3: 47 }, { m: "Feb", w1: 76, m1: 62, m3: 49 },
+  { m: "Mar", w1: 80, m1: 67, m3: 53 }, { m: "Apr", w1: 84, m1: 72, m3: 58 },
 ];
-
-const FUNNEL_STAGES = [
-  { label: "Joined",           val: 38, pct: 100, sub: "All new members"       },
-  { label: "Returned Week 1",  val: 32, pct: 84,  sub: "First-week habit"      },
-  { label: "Active Month 1",   val: 27, pct: 71,  sub: "30-day engagement"     },
-  { label: "Retained Month 3", val: 22, pct: 58,  sub: "Long-term members"     },
-];
-
 const SEGMENTS_DATA = [
   { label: "Super Active", sub: "15+ visits/mo", val: 8,  pct: 21, trend: +3, col: C.cyan  },
   { label: "Consistent",   sub: "8–14 visits",   val: 14, pct: 37, trend: +1, col: C.blue  },
   { label: "Slipping",     sub: "3–7 visits",    val: 9,  pct: 24, trend: -4, col: C.amber },
   { label: "At Risk",      sub: "0–2 visits",    val: 7,  pct: 18, trend: -2, col: C.red   },
 ];
-
 const SEGMENT_TREND_DATA = [
   { m: "Jan", super: 5,  cons: 11, slip: 12, risk: 10 },
   { m: "Feb", super: 6,  cons: 12, slip: 11, risk: 9  },
   { m: "Mar", super: 7,  cons: 13, slip: 10, risk: 8  },
   { m: "Apr", super: 8,  cons: 14, slip: 9,  risk: 7  },
 ];
-
 const CLASS_DATA = [
   { name: "HIIT Circuit",   fill: 94, sessions: 12, trend: +12, peak: "6–7pm"  },
   { name: "Morning Flow",   fill: 78, sessions: 8,  trend: +4,  peak: "7–8am"  },
@@ -93,16 +79,11 @@ const CLASS_DATA = [
   { name: "Spin Express",   fill: 55, sessions: 6,  trend: +8,  peak: "6–7am"  },
   { name: "Recovery Yoga",  fill: 38, sessions: 4,  trend: -7,  peak: "9–10am" },
 ];
-
 const ENGAGEMENT_DATA = [
-  { subject: "Check-ins",  A: 84 },
-  { subject: "Classes",    A: 61 },
-  { subject: "Challenges", A: 47 },
-  { subject: "Community",  A: 38 },
-  { subject: "App Usage",  A: 72 },
-  { subject: "Polls",      A: 29 },
+  { subject: "Check-ins",  A: 84 }, { subject: "Classes",    A: 61 },
+  { subject: "Challenges", A: 47 }, { subject: "Community",  A: 38 },
+  { subject: "App Usage",  A: 72 }, { subject: "Polls",      A: 29 },
 ];
-
 const REVENUE_DATA = [
   { m: "Nov", retained: 2240, lost: 480, recovered: 160 },
   { m: "Dec", retained: 2360, lost: 400, recovered: 200 },
@@ -111,18 +92,16 @@ const REVENUE_DATA = [
   { m: "Mar", retained: 2640, lost: 320, recovered: 260 },
   { m: "Apr", retained: 2760, lost: 240, recovered: 300 },
 ];
-
 const CHURN_MEMBERS = [
   { name: "Marcus Webb",  days: 22, risk: 84, mv: 85 },
   { name: "Devon Osei",   days: 19, risk: 78, mv: 60 },
   { name: "Priya Sharma", days: 16, risk: 71, mv: 60 },
   { name: "Sam Rivera",   days: 14, risk: 55, mv: 60 },
 ];
-
 const HOURS_DATA = [
-  { h: "6a",  v: 14 }, { h: "7a",  v: 28 }, { h: "8a",  v: 22 },
-  { h: "9a",  v: 16 }, { h: "12p", v: 18 }, { h: "5p",  v: 34 },
-  { h: "6p",  v: 42 }, { h: "7p",  v: 38 }, { h: "8p",  v: 20 },
+  { h: "6am",  v: 14 }, { h: "7am",  v: 28 }, { h: "8am",  v: 22 },
+  { h: "9am",  v: 16 }, { h: "12pm", v: 18 }, { h: "5pm",  v: 34 },
+  { h: "6pm",  v: 42 }, { h: "7pm",  v: 38 }, { h: "8pm",  v: 20 },
 ];
 
 /* ─── HELPERS ────────────────────────────────────────────────── */
@@ -133,62 +112,35 @@ const trendCol = t => t > 0  ? C.cyan  : t < 0   ? C.red   : C.t3;
 /* ─── SHARED COMPONENTS ──────────────────────────────────────── */
 function Card({ children, style = {} }) {
   return (
-    <div style={{ background: C.card, border: `1px solid ${C.brd}`, borderRadius: 10, padding: "16px", ...style }}>
+    <div style={{ background: C.card, border: `1px solid ${C.brd}`, borderRadius: 10, padding: "14px", ...style }}>
       {children}
     </div>
   );
 }
-
 function SLabel({ children, right, sub }) {
   return (
-    <div style={{ marginBottom: 12 }}>
+    <div style={{ marginBottom: 11 }}>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-        <span style={{ fontSize: 12.5, fontWeight: 700, color: C.t1 }}>{children}</span>
-        {right && <span style={{ fontSize: 10.5, color: C.t3 }}>{right}</span>}
+        <span style={{ fontSize: 12, fontWeight: 700, color: C.t1 }}>{children}</span>
+        {right && <span style={{ fontSize: 10, color: C.t3 }}>{right}</span>}
       </div>
-      {sub && <div style={{ fontSize: 10.5, color: C.t3, marginTop: 2, lineHeight: 1.5 }}>{sub}</div>}
+      {sub && <div style={{ fontSize: 10, color: C.t3, marginTop: 2, lineHeight: 1.5 }}>{sub}</div>}
     </div>
   );
 }
-
 function Pill({ children, color = C.cyan }) {
   return (
     <span style={{
-      padding: "2px 8px", borderRadius: 20, fontSize: 10, fontWeight: 700,
-      color, background: color + "15", border: `1px solid ${color}33`,
-      display: "inline-block",
+      padding: "2px 7px", borderRadius: 20, fontSize: 9.5, fontWeight: 700,
+      color, background: color + "15", border: `1px solid ${color}33`, display: "inline-block",
     }}>{children}</span>
   );
 }
-
-function MiniBar({ value, max, color = C.cyan, h = 4 }) {
-  return (
-    <div style={{ flex: 1, height: h, background: C.brd, borderRadius: 2, overflow: "hidden" }}>
-      <div style={{ width: `${Math.min((value / max) * 100, 100)}%`, height: "100%", background: color, borderRadius: 2 }} />
-    </div>
-  );
-}
-
-function ChartTip({ active, payload, label, suffix = "", valueFn }) {
-  if (!active || !payload?.length) return null;
-  return (
-    <div style={{ background: "#0f1520", border: `1px solid ${C.cyanB}`, borderRadius: 7, padding: "7px 11px", fontSize: 11.5, fontFamily: FONT, minWidth: 110 }}>
-      {label && <div style={{ fontSize: 10, color: C.t3, marginBottom: 4 }}>{label}</div>}
-      {payload.map((p, i) => (
-        <div key={i} style={{ color: p.color || C.cyan, fontWeight: 700, display: "flex", justifyContent: "space-between", gap: 8 }}>
-          <span style={{ color: C.t3, fontWeight: 400 }}>{p.name || ""}</span>
-          <span>{valueFn ? valueFn(p.value) : `${p.value}${suffix}`}</span>
-        </div>
-      ))}
-    </div>
-  );
-}
-
 function LineTip({ active, payload, label }) {
   if (!active || !payload?.length) return null;
   return (
-    <div style={{ background: "#0f1520", border: `1px solid ${C.cyanB}`, borderRadius: 7, padding: "7px 11px", fontSize: 11, fontFamily: FONT }}>
-      <div style={{ color: C.t3, marginBottom: 4, fontSize: 10 }}>{label}</div>
+    <div style={{ background: "#0a0e18", border: `1px solid ${C.cyanB}`, borderRadius: 7, padding: "6px 10px", fontSize: 11, fontFamily: FONT }}>
+      <div style={{ color: C.t3, marginBottom: 3, fontSize: 9.5 }}>{label}</div>
       {payload.map((p, i) => (
         <div key={i} style={{ color: p.color, fontWeight: 700, display: "flex", justifyContent: "space-between", gap: 10 }}>
           <span style={{ color: C.t3, fontWeight: 400 }}>{p.name}</span>{p.value}%
@@ -197,18 +149,30 @@ function LineTip({ active, payload, label }) {
     </div>
   );
 }
-
-/* ─── TIME RANGE SELECTOR ────────────────────────────────────── */
+function ChartTip({ active, payload, label, suffix = "" }) {
+  if (!active || !payload?.length) return null;
+  return (
+    <div style={{ background: "#0a0e18", border: `1px solid ${C.cyanB}`, borderRadius: 7, padding: "6px 10px", fontSize: 11, fontFamily: FONT, minWidth: 100 }}>
+      {label && <div style={{ fontSize: 9.5, color: C.t3, marginBottom: 3 }}>{label}</div>}
+      {payload.map((p, i) => (
+        <div key={i} style={{ color: p.color || C.cyan, fontWeight: 700, display: "flex", justifyContent: "space-between", gap: 8 }}>
+          <span style={{ color: C.t3, fontWeight: 400 }}>{p.name || ""}</span>
+          <span>{p.value}{suffix}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
 function RangeTab({ range, setRange }) {
   return (
-    <div style={{ display: "flex", gap: 3 }}>
+    <div style={{ display: "flex", gap: 2 }}>
       {["7D", "30D", "90D", "6M"].map(r => (
         <button key={r} onClick={() => setRange(r)} style={{
-          padding: "4px 10px", borderRadius: 6, cursor: "pointer",
+          padding: "3px 9px", borderRadius: 5, cursor: "pointer",
           background: range === r ? C.cyanD : "transparent",
           border: range === r ? `1px solid ${C.cyanB}` : "1px solid transparent",
           color: range === r ? C.cyan : C.t3,
-          fontSize: 11, fontWeight: range === r ? 700 : 400, fontFamily: FONT,
+          fontSize: 10.5, fontWeight: range === r ? 700 : 400, fontFamily: FONT,
         }}>{r}</button>
       ))}
     </div>
@@ -216,41 +180,15 @@ function RangeTab({ range, setRange }) {
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   SECTION 1: KPI STRIP — 4 cards, white numbers
+   SECTION 1 — KPI STRIP  (compact, no border, matches overview)
 ═══════════════════════════════════════════════════════════════ */
 function KpiStrip() {
   const kpis = [
-    {
-      label:  "Week 1 Return",
-      value:  "84%",
-      trend:  +4,
-      sub:    "of new members return in 7d",
-      accent: C.cyan,
-    },
-    {
-      label:  "Month 3 Retained",
-      value:  "58%",
-      trend:  +5,
-      sub:    "long-term cohort health",
-      accent: C.cyan,
-    },
-    {
-      label:       "At Risk",
-      value:       "7",
-      trend:       -2,
-      sub:         "£265/mo potential loss",
-      accent:      C.red,
-      trendInvert: true,
-    },
-    {
-      label:  "Avg Visits / Week",
-      value:  "5.1",
-      trend:  +11,
-      sub:    "per member, up from 3.8",
-      accent: C.blue,
-    },
+    { label: "Week 1 Return",    value: "84%",  trend: +4,  sub: "of new members return in 7d",  accent: C.cyan  },
+    { label: "Month 3 Retained", value: "58%",  trend: +5,  sub: "long-term cohort health",       accent: C.cyan  },
+    { label: "At Risk",          value: "7",    trend: -2,  sub: "£265/mo potential loss",        accent: C.red,  trendInvert: true },
+    { label: "Avg Visits / Week",value: "5.1",  trend: +11, sub: "per member, up from 3.8",      accent: C.blue  },
   ];
-
   return (
     <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 9 }}>
       {kpis.map((k, i) => {
@@ -258,24 +196,28 @@ function KpiStrip() {
         const tCol = up ? C.cyan : C.red;
         return (
           <div key={i} style={{
-            background:  C.card,
-            border:      `1px solid ${C.brd}`,
+            background: C.card,
+            border: "none",            /* ← no border */
             borderRadius: 10,
-            padding:     "18px 16px",
+            padding: "13px 14px",       /* ← compact */
           }}>
-            <div style={{ fontSize: 10, color: C.t3, textTransform: "uppercase", letterSpacing: "0.1em", fontWeight: 700, marginBottom: 11 }}>
+            <div style={{ fontSize: 9.5, color: C.t3, textTransform: "uppercase",
+              letterSpacing: "0.09em", fontWeight: 700, marginBottom: 8 }}>
               {k.label}
             </div>
-            <div style={{ fontSize: 34, fontWeight: 700, color: C.t1, letterSpacing: "-0.04em", lineHeight: 1, marginBottom: 9 }}>
+            {/* ← value matches overview ~22px */}
+            <div style={{ fontSize: 26, fontWeight: 700, color: C.t1,
+              letterSpacing: "-0.03em", lineHeight: 1, marginBottom: 7, ...mono }}>
               {k.value}
             </div>
-            <div style={{ fontSize: 11, color: tCol, fontWeight: 600, display: "flex", alignItems: "center", gap: 3 }}>
+            <div style={{ fontSize: 10.5, color: tCol, fontWeight: 600,
+              display: "flex", alignItems: "center", gap: 3 }}>
               {up
                 ? <ArrowUpRight   style={{ width: 10, height: 10 }} />
                 : <ArrowDownRight style={{ width: 10, height: 10 }} />}
               {k.trend > 0 ? "+" : ""}{k.trend}% vs last month
             </div>
-            <div style={{ fontSize: 10, color: C.t3, marginTop: 3 }}>{k.sub}</div>
+            <div style={{ fontSize: 9.5, color: C.t3, marginTop: 3 }}>{k.sub}</div>
           </div>
         );
       })}
@@ -284,130 +226,101 @@ function KpiStrip() {
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   SECTION 2: RETENTION FUNNEL — SVG trapezoid + trend lines
+   SECTION 2 — RETENTION FUNNEL  (50% smaller heights)
 ═══════════════════════════════════════════════════════════════ */
 function RetentionFunnelSection() {
   return (
     <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
 
-      {/* ── SVG Funnel ── */}
-      <Card>
-        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 6 }}>
+      {/* SVG Funnel — reduced */}
+      <Card style={{ padding: "13px 14px" }}>
+        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 5 }}>
           <SLabel sub="Member journey from join day to long-term retention">
             Retention Funnel
           </SLabel>
           <div style={{ textAlign: "right", flexShrink: 0, marginLeft: 12 }}>
-            <div style={{ fontSize: 10, color: C.t3, marginBottom: 2 }}>Reach month 3</div>
-            <div style={{ fontSize: 22, fontWeight: 700, color: C.t1, letterSpacing: "-0.02em", lineHeight: 1 }}>58%</div>
+            <div style={{ fontSize: 9.5, color: C.t3, marginBottom: 1 }}>Reach month 3</div>
+            <div style={{ fontSize: 18, fontWeight: 700, color: C.t1, letterSpacing: "-0.02em", lineHeight: 1, ...mono }}>58%</div>
           </div>
         </div>
 
         {/*
-          viewBox 460 × 275
-          Center x: 230
-          Max half-width (100%): 165 → left=65, right=395
-          84%  half: 138 → left=92,  right=368
-          71%  half: 117 → left=113, right=347
-          58%  half:  96 → left=134, right=326
-          Band height: 58px each
-          y positions: 12, 70, 128, 186, 244
+          Original viewBox: 460 × 262  → half height: 131
+          All y-coords halved, x-coords unchanged.
+          Band height: 29px each (was 58)
+          y positions: 6, 35, 64, 93, 122
         */}
-        <svg
-          viewBox="0 0 460 262"
-          width="100%"
-          style={{ display: "block", marginTop: 4 }}
-          role="img"
-          aria-label="Retention funnel: 38 joined, 32 returned week 1 at 84%, 27 active month 1 at 71%, 22 retained month 3 at 58%"
-        >
-          {/* Band 1 — Joined 100% */}
-          <polygon points="65,12 395,12 368,70 92,70"    fill={C.cyan} fillOpacity={0.82} />
-          {/* Band 2 — Week 1 return 84% */}
-          <polygon points="92,70 368,70 347,128 113,128"  fill={C.cyan} fillOpacity={0.56} />
-          {/* Band 3 — Month 1 active 71% */}
-          <polygon points="113,128 347,128 326,186 134,186" fill={C.cyan} fillOpacity={0.35} />
-          {/* Band 4 — Month 3 retained 58% (flat bottom) */}
-          <polygon points="134,186 326,186 326,244 134,244" fill={C.cyan} fillOpacity={0.20} />
+        <svg viewBox="0 0 460 131" width="100%" style={{ display: "block" }}
+          role="img" aria-label="Retention funnel">
+          <polygon points="65,6 395,6 368,35 92,35"     fill={C.cyan} fillOpacity={0.82}/>
+          <polygon points="92,35 368,35 347,64 113,64"  fill={C.cyan} fillOpacity={0.56}/>
+          <polygon points="113,64 347,64 326,93 134,93" fill={C.cyan} fillOpacity={0.35}/>
+          <polygon points="134,93 326,93 326,122 134,122" fill={C.cyan} fillOpacity={0.20}/>
 
-          {/* Separators */}
-          <line x1="92"  y1="70"  x2="368" y2="70"  stroke={C.bg} strokeWidth="2.5" />
-          <line x1="113" y1="128" x2="347" y2="128" stroke={C.bg} strokeWidth="2.5" />
-          <line x1="134" y1="186" x2="326" y2="186" stroke={C.bg} strokeWidth="2.5" />
+          <line x1="92"  y1="35"  x2="368" y2="35"  stroke={C.bg} strokeWidth="2"/>
+          <line x1="113" y1="64"  x2="347" y2="64"  stroke={C.bg} strokeWidth="2"/>
+          <line x1="134" y1="93"  x2="326" y2="93"  stroke={C.bg} strokeWidth="2"/>
 
-          {/* Stage labels — left */}
-          <text x="57" y="36"  textAnchor="end" fontFamily={FONT} fontSize="11" fontWeight="700" fill={C.t1}>Joined</text>
-          <text x="57" y="49"  textAnchor="end" fontFamily={FONT} fontSize="9"  fill={C.t3}>All new</text>
-          <text x="57" y="96"  textAnchor="end" fontFamily={FONT} fontSize="11" fontWeight="600" fill={C.t2}>Week 1</text>
-          <text x="57" y="155" textAnchor="end" fontFamily={FONT} fontSize="11" fontWeight="600" fill={C.t2}>Month 1</text>
-          <text x="57" y="218" textAnchor="end" fontFamily={FONT} fontSize="11" fontWeight="600" fill={C.t2}>Month 3</text>
+          {/* left labels */}
+          <text x="57" y="18"  textAnchor="end" fontFamily={FONT} fontSize="10" fontWeight="700" fill={C.t1}>Joined</text>
+          <text x="57" y="48"  textAnchor="end" fontFamily={FONT} fontSize="10" fontWeight="600" fill={C.t2}>Week 1</text>
+          <text x="57" y="77"  textAnchor="end" fontFamily={FONT} fontSize="10" fontWeight="600" fill={C.t2}>Month 1</text>
+          <text x="57" y="109" textAnchor="end" fontFamily={FONT} fontSize="10" fontWeight="600" fill={C.t2}>Month 3</text>
 
-          {/* Member count + % inside bands — white text */}
-          {/* Band 1 center y = (12+70)/2 = 41 */}
-          <text x="230" y="37"  textAnchor="middle" fontFamily={FONT} fontSize="18" fontWeight="700" fill="#ffffff">38</text>
-          <text x="230" y="52"  textAnchor="middle" fontFamily={FONT} fontSize="10" fill="rgba(255,255,255,0.65)">100% · all members</text>
-          {/* Band 2 center y = (70+128)/2 = 99 */}
-          <text x="230" y="96"  textAnchor="middle" fontFamily={FONT} fontSize="18" fontWeight="700" fill="#ffffff">32</text>
-          <text x="230" y="111" textAnchor="middle" fontFamily={FONT} fontSize="10" fill="rgba(255,255,255,0.65)">84% · 6 members lost</text>
-          {/* Band 3 center y = (128+186)/2 = 157 */}
-          <text x="230" y="154" textAnchor="middle" fontFamily={FONT} fontSize="18" fontWeight="700" fill="#ffffff">27</text>
-          <text x="230" y="169" textAnchor="middle" fontFamily={FONT} fontSize="10" fill="rgba(255,255,255,0.65)">71% · 5 members lost</text>
-          {/* Band 4 center y = (186+244)/2 = 215 */}
-          <text x="230" y="212" textAnchor="middle" fontFamily={FONT} fontSize="18" fontWeight="700" fill="#ffffff">22</text>
-          <text x="230" y="227" textAnchor="middle" fontFamily={FONT} fontSize="10" fill="rgba(255,255,255,0.65)">58% · 5 members lost</text>
+          {/* centre values */}
+          <text x="230" y="18"  textAnchor="middle" fontFamily={FONT} fontSize="14" fontWeight="700" fill="#fff">38</text>
+          <text x="230" y="27"  textAnchor="middle" fontFamily={FONT} fontSize="8.5" fill="rgba(255,255,255,0.6)">100%</text>
+          <text x="230" y="47"  textAnchor="middle" fontFamily={FONT} fontSize="14" fontWeight="700" fill="#fff">32</text>
+          <text x="230" y="56"  textAnchor="middle" fontFamily={FONT} fontSize="8.5" fill="rgba(255,255,255,0.6)">84% · 6 lost</text>
+          <text x="230" y="77"  textAnchor="middle" fontFamily={FONT} fontSize="14" fontWeight="700" fill="#fff">27</text>
+          <text x="230" y="86"  textAnchor="middle" fontFamily={FONT} fontSize="8.5" fill="rgba(255,255,255,0.6)">71% · 5 lost</text>
+          <text x="230" y="106" textAnchor="middle" fontFamily={FONT} fontSize="14" fontWeight="700" fill="#fff">22</text>
+          <text x="230" y="115" textAnchor="middle" fontFamily={FONT} fontSize="8.5" fill="rgba(255,255,255,0.6)">58% · 5 lost</text>
 
-          {/* Drop-off annotations — right side */}
-          {/* −16% at y=70 (biggest drop — amber) */}
-          <line x1="368" y1="70" x2="395" y2="70" stroke={C.amber} strokeWidth="1.5" />
-          <circle cx="395" cy="70" r="3" fill={C.amber} />
-          <text x="402" y="67" fontFamily={FONT} fontSize="12" fontWeight="700" fill={C.amber}>−16%</text>
-          <text x="402" y="80" fontFamily={FONT} fontSize="9"  fontWeight="600" fill={C.amber}>biggest drop</text>
-
-          {/* −13% at y=128 */}
-          <line x1="347" y1="128" x2="395" y2="128" stroke={C.t3} strokeWidth="1" />
-          <circle cx="395" cy="128" r="2.5" fill={C.t3} />
-          <text x="402" y="132" fontFamily={FONT} fontSize="11" fill={C.t3}>−13%</text>
-
-          {/* −13% at y=186 */}
-          <line x1="326" y1="186" x2="395" y2="186" stroke={C.t3} strokeWidth="1" />
-          <circle cx="395" cy="186" r="2.5" fill={C.t3} />
-          <text x="402" y="190" fontFamily={FONT} fontSize="11" fill={C.t3}>−13%</text>
+          {/* drop-off annotations */}
+          <line x1="368" y1="35" x2="398" y2="35" stroke={C.amber} strokeWidth="1.5"/>
+          <circle cx="398" cy="35" r="2.5" fill={C.amber}/>
+          <text x="404" y="33" fontFamily={FONT} fontSize="10" fontWeight="700" fill={C.amber}>−16%</text>
+          <text x="404" y="43" fontFamily={FONT} fontSize="8"  fill={C.amber}>biggest drop</text>
+          <line x1="347" y1="64" x2="398" y2="64" stroke={C.t3} strokeWidth="1"/>
+          <circle cx="398" cy="64" r="2" fill={C.t3}/>
+          <text x="404" y="67" fontFamily={FONT} fontSize="9.5" fill={C.t3}>−13%</text>
+          <line x1="326" y1="93" x2="398" y2="93" stroke={C.t3} strokeWidth="1"/>
+          <circle cx="398" cy="93" r="2" fill={C.t3}/>
+          <text x="404" y="96" fontFamily={FONT} fontSize="9.5" fill={C.t3}>−13%</text>
         </svg>
 
-        {/* Insight callout */}
-        <div style={{ marginTop: 12, padding: "9px 11px", borderRadius: 8, background: C.amberD, border: `1px solid ${C.amberB}` }}>
-          <div style={{ fontSize: 11, color: C.amber, fontWeight: 700, marginBottom: 2 }}>
+        <div style={{ marginTop: 9, padding: "8px 10px", borderRadius: 7,
+          background: C.amberD, border: `1px solid ${C.amberB}` }}>
+          <div style={{ fontSize: 10.5, color: C.amber, fontWeight: 700, marginBottom: 2 }}>
             Biggest opportunity — Week 1 drop-off
           </div>
-          <div style={{ fontSize: 10.5, color: C.t2, lineHeight: 1.55 }}>
-            16% of new members don't return after their first visit. A targeted welcome sequence on days 3–7 could close this gap by up to 40%.
+          <div style={{ fontSize: 10, color: C.t2, lineHeight: 1.5 }}>
+            16% of new members don't return after their first visit. A welcome sequence on days 3–7 could close this gap by up to 40%.
           </div>
         </div>
       </Card>
 
-      {/* ── Retention rate trend lines (unchanged) ── */}
-      <Card>
+      {/* Trend lines — halved height */}
+      <Card style={{ padding: "13px 14px" }}>
         <SLabel right="6 months" sub="How each cohort milestone has improved month-on-month">
           Retention Rate Trends
         </SLabel>
-        <ResponsiveContainer width="100%" height={178}>
-          <LineChart data={RETENTION_OVER_TIME} margin={{ top: 6, right: 8, bottom: 0, left: -26 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" vertical={false} />
-            <XAxis dataKey="m" tick={tick} axisLine={false} tickLine={false} />
-            <YAxis tick={tick} axisLine={false} tickLine={false} domain={[30, 100]} />
-            <Tooltip content={(props) => <LineTip {...props} />} />
-            <Line type="monotone" dataKey="w1" name="Week 1"  stroke={C.cyan}         strokeWidth={2} dot={false} activeDot={{ r: 3, fill: C.cyan,  stroke: C.card, strokeWidth: 2 }} />
-            <Line type="monotone" dataKey="m1" name="Month 1" stroke={C.blue}         strokeWidth={2} dot={false} activeDot={{ r: 3, fill: C.blue,  stroke: C.card, strokeWidth: 2 }} />
-            <Line type="monotone" dataKey="m3" name="Month 3" stroke={C.cyan + "77"}  strokeWidth={2} dot={false} activeDot={{ r: 3, fill: C.cyan,  stroke: C.card, strokeWidth: 2 }} strokeDasharray="4 3" />
+        <ResponsiveContainer width="100%" height={89}>  {/* was 178 */}
+          <LineChart data={RETENTION_OVER_TIME} margin={{ top: 4, right: 6, bottom: 0, left: -28 }}>
+            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" vertical={false}/>
+            <XAxis dataKey="m" tick={tick} axisLine={false} tickLine={false}/>
+            <YAxis tick={tick} axisLine={false} tickLine={false} domain={[30, 100]}/>
+            <Tooltip content={<LineTip/>}/>
+            <Line type="monotone" dataKey="w1" name="Week 1"  stroke={C.cyan}        strokeWidth={2} dot={false} activeDot={{ r: 3, fill: C.cyan,  stroke: C.card, strokeWidth: 2 }}/>
+            <Line type="monotone" dataKey="m1" name="Month 1" stroke={C.blue}        strokeWidth={2} dot={false} activeDot={{ r: 3, fill: C.blue,  stroke: C.card, strokeWidth: 2 }}/>
+            <Line type="monotone" dataKey="m3" name="Month 3" stroke={C.cyan + "77"} strokeWidth={2} dot={false} activeDot={{ r: 3, fill: C.cyan,  stroke: C.card, strokeWidth: 2 }} strokeDasharray="4 3"/>
           </LineChart>
         </ResponsiveContainer>
-        <div style={{ display: "flex", gap: 16, marginTop: 8 }}>
-          {[
-            { col: C.cyan,         label: "Week 1"          },
-            { col: C.blue,         label: "Month 1"         },
-            { col: C.cyan + "77",  label: "Month 3", dashed: true },
-          ].map((l, i) => (
-            <div key={i} style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 10.5, color: C.t3 }}>
-              <div style={{ width: 16, height: 2, background: l.col, borderRadius: 1 }} />
-              {l.label}
+        <div style={{ display: "flex", gap: 14, marginTop: 8 }}>
+          {[{ col: C.cyan, label: "Week 1" }, { col: C.blue, label: "Month 1" }, { col: C.cyan + "77", label: "Month 3" }].map((l, i) => (
+            <div key={i} style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 10, color: C.t3 }}>
+              <div style={{ width: 14, height: 2, background: l.col, borderRadius: 1 }}/> {l.label}
             </div>
           ))}
         </div>
@@ -417,55 +330,42 @@ function RetentionFunnelSection() {
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   SECTION 3: KEY INSIGHTS
+   SECTION 3 — KEY INSIGHTS
 ═══════════════════════════════════════════════════════════════ */
 function KeyInsights() {
   const insights = [
     {
-      icon:  TrendingUp,
-      color: C.cyan,
-      bg:    C.cyanD,
-      brd:   C.cyanB,
+      icon: TrendingUp, color: C.cyan, bg: C.cyanD, brd: C.cyanB,
       title: "Week-1 habit is driving long-term retention",
-      body:  "Members who check in within their first 7 days are 3× more likely to still be active at month 3. Your week-1 rate improved from 68% → 84% over 6 months — this is your biggest retention lever.",
-      tag:   "Positive signal",
+      body: "Members who check in within their first 7 days are 3× more likely to still be active at month 3. Your week-1 rate improved from 68% → 84% over 6 months — this is your biggest retention lever.",
+      tag: "Positive signal",
     },
     {
-      icon:  AlertTriangle,
-      color: C.amber,
-      bg:    C.amberD,
-      brd:   C.amberB,
+      icon: AlertTriangle, color: C.amber, bg: C.amberD, brd: C.amberB,
       title: "Month 1 → Month 3 is your biggest drop-off window",
-      body:  "You lose 13% of members between month 1 and month 3. This typically happens when the novelty wears off. A targeted challenge or personal check-in at week 6–8 can close this gap by up to 40%.",
-      tag:   "Needs attention",
+      body: "You lose 13% of members between month 1 and month 3. A targeted challenge or personal check-in at week 6–8 can close this gap by up to 40%.",
+      tag: "Needs attention",
     },
     {
-      icon:  Zap,
-      color: C.blue,
-      bg:    C.blueD,
-      brd:   "rgba(59,130,246,0.22)",
+      icon: Zap, color: C.blue, bg: C.blueD, brd: C.blueB,
       title: "Engaged members have 2× longer retention",
-      body:  "Members who participate in at least one challenge or class per month stay an average of 8.2 months vs 3.9 months for those who don't. Increasing challenge participation from 47% → 65% could recover ~£180/month.",
-      tag:   "Opportunity",
+      body: "Members in at least one challenge/class per month stay 8.2 months vs 3.9 months for those who don't. Raising challenge participation from 47% → 65% could recover ~£180/month.",
+      tag: "Opportunity",
     },
   ];
-
   return (
     <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 12 }}>
       {insights.map((ins, i) => (
         <div key={i} style={{
-          background:   C.card,
-          border:       `1px solid ${C.brd}`,
-          borderLeft:   `2px solid ${ins.color}`,
-          borderRadius: 10,
-          padding:      "14px 15px",
+          background: C.card, border: `1px solid ${C.brd}`,
+          borderLeft: `2px solid ${ins.color}`, borderRadius: 10, padding: "13px 14px",
         }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 8 }}>
-            <ins.icon style={{ width: 12, height: 12, color: ins.color, flexShrink: 0 }} />
+          <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 7 }}>
+            <ins.icon style={{ width: 11, height: 11, color: ins.color, flexShrink: 0 }}/>
             <Pill color={ins.color}>{ins.tag}</Pill>
           </div>
-          <div style={{ fontSize: 12.5, fontWeight: 700, color: C.t1, lineHeight: 1.4, marginBottom: 6 }}>{ins.title}</div>
-          <div style={{ fontSize: 11, color: C.t2, lineHeight: 1.6 }}>{ins.body}</div>
+          <div style={{ fontSize: 12, fontWeight: 700, color: C.t1, lineHeight: 1.4, marginBottom: 5 }}>{ins.title}</div>
+          <div style={{ fontSize: 10.5, color: C.t2, lineHeight: 1.6 }}>{ins.body}</div>
         </div>
       ))}
     </div>
@@ -473,64 +373,55 @@ function KeyInsights() {
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   SECTION 4: MEMBER SEGMENTS + TRENDS
+   SECTION 4 — MEMBER SEGMENTS
 ═══════════════════════════════════════════════════════════════ */
 function MemberSegmentsSection() {
   return (
     <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
-
       <Card>
-        <SLabel sub="Who your members are right now and how segments are shifting">
-          Member Segments
-        </SLabel>
-        <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
+        <SLabel sub="Who your members are right now and how segments are shifting">Member Segments</SLabel>
+        <div style={{ display: "flex", flexDirection: "column" }}>
           {SEGMENTS_DATA.map((s, i) => (
-            <div key={i} style={{ padding: "10px 0", borderBottom: i < SEGMENTS_DATA.length - 1 ? `1px solid ${C.brd}` : "none" }}>
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 6 }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                  <div style={{ width: 8, height: 8, borderRadius: "50%", background: s.col, flexShrink: 0 }} />
-                  <div>
-                    <span style={{ fontSize: 12.5, fontWeight: 600, color: C.t1 }}>{s.label}</span>
-                    <span style={{ fontSize: 10, color: C.t3, marginLeft: 6 }}>{s.sub}</span>
-                  </div>
+            <div key={i} style={{ padding: "9px 0", borderBottom: i < SEGMENTS_DATA.length - 1 ? `1px solid ${C.brd}` : "none" }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 5 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
+                  <div style={{ width: 7, height: 7, borderRadius: "50%", background: s.col, flexShrink: 0 }}/>
+                  <span style={{ fontSize: 12, fontWeight: 600, color: C.t1 }}>{s.label}</span>
+                  <span style={{ fontSize: 9.5, color: C.t3 }}>{s.sub}</span>
                 </div>
-                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 2, fontSize: 10.5, color: s.trend > 0 ? C.cyan : C.red, fontWeight: 600 }}>
-                    {s.trend > 0
-                      ? <ArrowUpRight   style={{ width: 10, height: 10 }} />
-                      : <ArrowDownRight style={{ width: 10, height: 10 }} />}
+                <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 2, fontSize: 10, color: s.trend > 0 ? C.cyan : C.red, fontWeight: 600 }}>
+                    {s.trend > 0 ? <ArrowUpRight style={{ width: 10, height: 10 }}/> : <ArrowDownRight style={{ width: 10, height: 10 }}/>}
                     {s.trend > 0 ? "+" : ""}{s.trend}
                   </div>
-                  <span style={{ fontSize: 14, fontWeight: 700, color: C.t1, width: 20, textAlign: "right" }}>{s.val}</span>
-                  <span style={{ fontSize: 10.5, color: C.t3, width: 30, textAlign: "right" }}>{s.pct}%</span>
+                  <span style={{ fontSize: 13, fontWeight: 700, color: C.t1, width: 18, textAlign: "right", ...mono }}>{s.val}</span>
+                  <span style={{ fontSize: 10, color: C.t3, width: 28, textAlign: "right", ...mono }}>{s.pct}%</span>
                 </div>
               </div>
-              <div style={{ height: 4, background: C.brd, borderRadius: 2, overflow: "hidden" }}>
-                <div style={{ width: `${s.pct}%`, height: "100%", background: s.col, borderRadius: 2, opacity: 0.75 }} />
+              <div style={{ height: 3, background: C.brd, borderRadius: 2, overflow: "hidden" }}>
+                <div style={{ width: `${s.pct}%`, height: "100%", background: s.col, borderRadius: 2, opacity: 0.75 }}/>
               </div>
             </div>
           ))}
         </div>
-        <div style={{ marginTop: 12, padding: "9px 11px", borderRadius: 8, background: C.amberD, border: `1px solid ${C.amberB}` }}>
-          <div style={{ fontSize: 11, color: C.amber, fontWeight: 600, marginBottom: 2 }}>Slipping segment grew +4 last quarter</div>
-          <div style={{ fontSize: 10.5, color: C.t2, lineHeight: 1.5 }}>9 members dropping from Consistent → Slipping. A targeted re-engagement campaign now prevents them becoming At Risk.</div>
+        <div style={{ marginTop: 10, padding: "8px 10px", borderRadius: 7, background: C.amberD, border: `1px solid ${C.amberB}` }}>
+          <div style={{ fontSize: 10.5, color: C.amber, fontWeight: 600, marginBottom: 2 }}>Slipping segment grew +4 last quarter</div>
+          <div style={{ fontSize: 10, color: C.t2, lineHeight: 1.5 }}>9 members dropping from Consistent → Slipping. A targeted re-engagement campaign now prevents them becoming At Risk.</div>
         </div>
       </Card>
 
       <Card>
-        <SLabel sub="How each segment has changed month by month" right="4 months">
-          Segment Trends
-        </SLabel>
-        <ResponsiveContainer width="100%" height={200}>
-          <LineChart data={SEGMENT_TREND_DATA} margin={{ top: 6, right: 8, bottom: 0, left: -26 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" vertical={false} />
-            <XAxis dataKey="m" tick={tick} axisLine={false} tickLine={false} />
-            <YAxis tick={tick} axisLine={false} tickLine={false} />
+        <SLabel sub="How each segment has changed month by month" right="4 months">Segment Trends</SLabel>
+        <ResponsiveContainer width="100%" height={190}>
+          <LineChart data={SEGMENT_TREND_DATA} margin={{ top: 4, right: 6, bottom: 0, left: -28 }}>
+            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" vertical={false}/>
+            <XAxis dataKey="m" tick={tick} axisLine={false} tickLine={false}/>
+            <YAxis tick={tick} axisLine={false} tickLine={false}/>
             <Tooltip content={({ active, payload, label }) => {
               if (!active || !payload?.length) return null;
               return (
-                <div style={{ background: "#0f1520", border: `1px solid ${C.cyanB}`, borderRadius: 7, padding: "7px 11px", fontSize: 11, fontFamily: FONT }}>
-                  <div style={{ color: C.t3, marginBottom: 4, fontSize: 10 }}>{label}</div>
+                <div style={{ background: "#0a0e18", border: `1px solid ${C.cyanB}`, borderRadius: 7, padding: "6px 10px", fontSize: 11, fontFamily: FONT }}>
+                  <div style={{ color: C.t3, marginBottom: 3, fontSize: 9.5 }}>{label}</div>
                   {payload.map((p, i) => (
                     <div key={i} style={{ color: p.color, fontWeight: 700, display: "flex", justifyContent: "space-between", gap: 10 }}>
                       <span style={{ color: C.t3, fontWeight: 400 }}>{p.name}</span>{p.value}
@@ -538,23 +429,17 @@ function MemberSegmentsSection() {
                   ))}
                 </div>
               );
-            }} />
-            <Line type="monotone" dataKey="super" name="Super Active" stroke={C.cyan}  strokeWidth={2} dot={false} activeDot={{ r: 3, fill: C.cyan,  stroke: C.card, strokeWidth: 2 }} />
-            <Line type="monotone" dataKey="cons"  name="Consistent"  stroke={C.blue}  strokeWidth={2} dot={false} activeDot={{ r: 3, fill: C.blue,  stroke: C.card, strokeWidth: 2 }} />
-            <Line type="monotone" dataKey="slip"  name="Slipping"    stroke={C.amber} strokeWidth={2} dot={false} activeDot={{ r: 3, fill: C.amber, stroke: C.card, strokeWidth: 2 }} strokeDasharray="4 3" />
-            <Line type="monotone" dataKey="risk"  name="At Risk"     stroke={C.red}   strokeWidth={2} dot={false} activeDot={{ r: 3, fill: C.red,   stroke: C.card, strokeWidth: 2 }} strokeDasharray="4 3" />
+            }}/>
+            <Line type="monotone" dataKey="super" name="Super Active" stroke={C.cyan}  strokeWidth={2} dot={false} activeDot={{ r: 3, fill: C.cyan,  stroke: C.card, strokeWidth: 2 }}/>
+            <Line type="monotone" dataKey="cons"  name="Consistent"  stroke={C.blue}  strokeWidth={2} dot={false} activeDot={{ r: 3, fill: C.blue,  stroke: C.card, strokeWidth: 2 }}/>
+            <Line type="monotone" dataKey="slip"  name="Slipping"    stroke={C.amber} strokeWidth={2} dot={false} activeDot={{ r: 3, fill: C.amber, stroke: C.card, strokeWidth: 2 }} strokeDasharray="4 3"/>
+            <Line type="monotone" dataKey="risk"  name="At Risk"     stroke={C.red}   strokeWidth={2} dot={false} activeDot={{ r: 3, fill: C.red,   stroke: C.card, strokeWidth: 2 }} strokeDasharray="4 3"/>
           </LineChart>
         </ResponsiveContainer>
-        <div style={{ display: "flex", flexWrap: "wrap", gap: 12, marginTop: 10 }}>
-          {[
-            { col: C.cyan,  label: "Super Active"               },
-            { col: C.blue,  label: "Consistent"                 },
-            { col: C.amber, label: "Slipping",  dashed: true    },
-            { col: C.red,   label: "At Risk",   dashed: true    },
-          ].map((l, i) => (
-            <div key={i} style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 10.5, color: C.t3 }}>
-              <div style={{ width: 16, height: 2, background: l.col, borderRadius: 1 }} />
-              {l.label}
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 12, marginTop: 8 }}>
+          {[{ col: C.cyan, label: "Super Active" }, { col: C.blue, label: "Consistent" }, { col: C.amber, label: "Slipping" }, { col: C.red, label: "At Risk" }].map((l, i) => (
+            <div key={i} style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 10, color: C.t3 }}>
+              <div style={{ width: 14, height: 2, background: l.col, borderRadius: 1 }}/> {l.label}
             </div>
           ))}
         </div>
@@ -564,47 +449,44 @@ function MemberSegmentsSection() {
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   SECTION 5: VISIT TRENDS + PEAK HOURS
+   SECTION 5 — VISIT TRENDS + PEAK HOURS
 ═══════════════════════════════════════════════════════════════ */
 function VisitTrendsSection() {
   return (
     <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: 12 }}>
-
       <Card>
-        <SLabel sub="Weekly check-ins (bars) and average visits per member (line) — both improving" right="12 weeks">
-          Visit Habits
-        </SLabel>
-        <div style={{ display: "flex", gap: 20, marginBottom: 14 }}>
+        <SLabel sub="Weekly check-ins (bars) and average visits per member (line)" right="12 weeks">Visit Habits</SLabel>
+        <div style={{ display: "flex", gap: 18, marginBottom: 12 }}>
           <div>
-            <div style={{ fontSize: 24, fontWeight: 700, color: C.t1, letterSpacing: "-0.03em", lineHeight: 1 }}>192</div>
-            <div style={{ fontSize: 10, color: C.t3, marginTop: 2 }}>check-ins this week</div>
+            <div style={{ fontSize: 22, fontWeight: 700, color: C.t1, letterSpacing: "-0.03em", lineHeight: 1, ...mono }}>192</div>
+            <div style={{ fontSize: 9.5, color: C.t3, marginTop: 2 }}>check-ins this week</div>
           </div>
           <div>
-            <div style={{ fontSize: 24, fontWeight: 700, color: C.t1, letterSpacing: "-0.03em", lineHeight: 1 }}>5.1</div>
-            <div style={{ fontSize: 10, color: C.t3, marginTop: 2 }}>avg visits/member/wk</div>
+            <div style={{ fontSize: 22, fontWeight: 700, color: C.t1, letterSpacing: "-0.03em", lineHeight: 1, ...mono }}>5.1</div>
+            <div style={{ fontSize: 9.5, color: C.t3, marginTop: 2 }}>avg visits/member/wk</div>
           </div>
           <div style={{ marginLeft: "auto", textAlign: "right" }}>
-            <div style={{ fontSize: 11, color: C.cyan, fontWeight: 600 }}>↑ +32% avg visits since Jan</div>
-            <div style={{ fontSize: 10, color: C.t3, marginTop: 2 }}>habits are improving across the board</div>
+            <div style={{ fontSize: 10.5, color: C.cyan, fontWeight: 600 }}>↑ +32% avg visits since Jan</div>
+            <div style={{ fontSize: 9.5, color: C.t3, marginTop: 2 }}>habits improving across the board</div>
           </div>
         </div>
-        <ResponsiveContainer width="100%" height={150}>
-          <ComposedChart data={VISIT_TREND} margin={{ top: 4, right: 30, bottom: 0, left: -26 }}>
+        <ResponsiveContainer width="100%" height={140}>
+          <ComposedChart data={VISIT_TREND} margin={{ top: 4, right: 28, bottom: 0, left: -26 }}>
             <defs>
               <linearGradient id="visitGrad" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%"   stopColor={C.cyan} stopOpacity={0.25} />
-                <stop offset="100%" stopColor={C.cyan} stopOpacity={0.02} />
+                <stop offset="0%"   stopColor={C.cyan} stopOpacity={0.25}/>
+                <stop offset="100%" stopColor={C.cyan} stopOpacity={0.02}/>
               </linearGradient>
             </defs>
-            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" vertical={false} />
-            <XAxis dataKey="w" tick={tick} axisLine={false} tickLine={false} interval={2} />
-            <YAxis yAxisId="left"  tick={tick} axisLine={false} tickLine={false} domain={[80, 220]} />
-            <YAxis yAxisId="right" tick={tick} axisLine={false} tickLine={false} orientation="right" domain={[2, 6]} />
+            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" vertical={false}/>
+            <XAxis dataKey="w" tick={tick} axisLine={false} tickLine={false} interval={2}/>
+            <YAxis yAxisId="left"  tick={tick} axisLine={false} tickLine={false} domain={[80, 220]}/>
+            <YAxis yAxisId="right" tick={tick} axisLine={false} tickLine={false} orientation="right" domain={[2, 6]}/>
             <Tooltip content={({ active, payload, label }) => {
               if (!active || !payload?.length) return null;
               return (
-                <div style={{ background: "#0f1520", border: `1px solid ${C.cyanB}`, borderRadius: 7, padding: "7px 11px", fontSize: 11, fontFamily: FONT }}>
-                  <div style={{ color: C.t3, marginBottom: 4, fontSize: 10 }}>{label}</div>
+                <div style={{ background: "#0a0e18", border: `1px solid ${C.cyanB}`, borderRadius: 7, padding: "6px 10px", fontSize: 11, fontFamily: FONT }}>
+                  <div style={{ color: C.t3, marginBottom: 3, fontSize: 9.5 }}>{label}</div>
                   {payload.map((p, i) => (
                     <div key={i} style={{ color: p.color, fontWeight: 700, display: "flex", justifyContent: "space-between", gap: 10 }}>
                       <span style={{ color: C.t3, fontWeight: 400 }}>{p.name}</span>{p.value}
@@ -612,45 +494,45 @@ function VisitTrendsSection() {
                   ))}
                 </div>
               );
-            }} />
-            <Bar  yAxisId="left"  dataKey="total" name="Check-ins"  fill={C.cyan + "30"} radius={[2, 2, 0, 0]} barSize={14} />
-            <Line yAxisId="right" type="monotone" dataKey="avg" name="Avg/member" stroke={C.cyan} strokeWidth={2.5} dot={false} activeDot={{ r: 3, fill: C.cyan, stroke: C.card, strokeWidth: 2 }} />
+            }}/>
+            <Bar  yAxisId="left"  dataKey="total" name="Check-ins"  fill={C.cyan + "30"} radius={[2, 2, 0, 0]} barSize={12}/>
+            <Line yAxisId="right" type="monotone" dataKey="avg" name="Avg/member" stroke={C.cyan} strokeWidth={2} dot={false} activeDot={{ r: 3, fill: C.cyan, stroke: C.card, strokeWidth: 2 }}/>
           </ComposedChart>
         </ResponsiveContainer>
-        <div style={{ display: "flex", gap: 16, marginTop: 8 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 10.5, color: C.t3 }}>
-            <div style={{ width: 12, height: 12, background: C.cyan + "30", borderRadius: 2 }} /> Check-ins (total)
+        <div style={{ display: "flex", gap: 14, marginTop: 7 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 10, color: C.t3 }}>
+            <div style={{ width: 11, height: 11, background: C.cyan + "30", borderRadius: 2 }}/> Check-ins
           </div>
-          <div style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 10.5, color: C.t3 }}>
-            <div style={{ width: 16, height: 2, background: C.cyan, borderRadius: 1 }} /> Avg per member
+          <div style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 10, color: C.t3 }}>
+            <div style={{ width: 14, height: 2, background: C.cyan, borderRadius: 1 }}/> Avg per member
           </div>
         </div>
       </Card>
 
       <Card>
-        <SLabel sub="When your gym is busiest — staff and class scheduling">Peak Hours</SLabel>
-        <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
+        <SLabel sub="When your gym is busiest">Peak Hours</SLabel>
+        <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
           {HOURS_DATA.map((d, i) => {
-            const max    = Math.max(...HOURS_DATA.map(x => x.v));
+            const max = Math.max(...HOURS_DATA.map(x => x.v));
             const isPeak = d.v === max;
-            const pct    = (d.v / max) * 100;
+            const pct = (d.v / max) * 100;
             const barCol = isPeak ? C.cyan : pct > 60 ? C.cyan + "99" : pct > 30 ? C.cyan + "55" : C.cyan + "25";
             return (
-              <div key={i} style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                <span style={{ fontSize: 10.5, color: isPeak ? C.t1 : C.t2, width: 30, flexShrink: 0, fontWeight: isPeak ? 700 : 400 }}>{d.h}</span>
-                <div style={{ flex: 1, height: 18, background: C.brd, borderRadius: 3, overflow: "hidden", position: "relative" }}>
-                  <div style={{ width: `${pct}%`, height: "100%", background: barCol, borderRadius: 3 }} />
+              <div key={i} style={{ display: "flex", alignItems: "center", gap: 7 }}>
+                <span style={{ fontSize: 10, color: isPeak ? C.t1 : C.t2, width: 30, flexShrink: 0, fontWeight: isPeak ? 700 : 400 }}>{d.h}</span>
+                <div style={{ flex: 1, height: 16, background: C.brd, borderRadius: 3, overflow: "hidden", position: "relative" }}>
+                  <div style={{ width: `${pct}%`, height: "100%", background: barCol, borderRadius: 3 }}/>
                   {isPeak && (
-                    <span style={{ position: "absolute", right: 6, top: "50%", transform: "translateY(-50%)", fontSize: 9, color: C.card, fontWeight: 700 }}>PEAK</span>
+                    <span style={{ position: "absolute", right: 5, top: "50%", transform: "translateY(-50%)", fontSize: 8, color: C.card, fontWeight: 700 }}>PEAK</span>
                   )}
                 </div>
-                <span style={{ fontSize: 10.5, fontWeight: isPeak ? 700 : 400, color: isPeak ? C.cyan : C.t3, width: 22, textAlign: "right" }}>{d.v}</span>
+                <span style={{ fontSize: 10, fontWeight: isPeak ? 700 : 400, color: isPeak ? C.cyan : C.t3, width: 20, textAlign: "right", ...mono }}>{d.v}</span>
               </div>
             );
           })}
         </div>
-        <div style={{ marginTop: 10, fontSize: 10.5, color: C.t3, lineHeight: 1.5 }}>
-          6–7pm is your peak. Consider adding a second HIIT session or extending class capacity during this slot.
+        <div style={{ marginTop: 9, fontSize: 10, color: C.t3, lineHeight: 1.5 }}>
+          6–7pm is your peak. Consider adding a second HIIT session or extending class capacity.
         </div>
       </Card>
     </div>
@@ -658,123 +540,116 @@ function VisitTrendsSection() {
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   SECTION 6: CLASS PERFORMANCE
+   SECTION 6 — CLASS PERFORMANCE
 ═══════════════════════════════════════════════════════════════ */
 function ClassPerformanceSection() {
   return (
     <Card>
-      <SLabel sub="Fill rate, session count and attendance trend for each class · last 30 days">
-        Class Performance
-      </SLabel>
-      <div style={{ display: "grid", gridTemplateColumns: "2fr 60px 80px 60px 160px", gap: 12, padding: "0 0 8px", borderBottom: `1px solid ${C.brd}`, marginBottom: 4 }}>
-        {["CLASS", "SESSIONS", "FILL RATE", "TREND", "CAPACITY BAR"].map((h, i) => (
-          <div key={i} style={{ fontSize: 9, fontWeight: 600, color: C.t3, letterSpacing: "0.07em", textAlign: i > 0 ? "center" : "left" }}>{h}</div>
+      <SLabel sub="Fill rate, session count and attendance trend · last 30 days">Class Performance</SLabel>
+      <div style={{ display: "grid", gridTemplateColumns: "2fr 60px 80px 60px 160px", gap: 10,
+        padding: "0 0 7px", borderBottom: `1px solid ${C.brd}`, marginBottom: 3 }}>
+        {["CLASS", "SESSIONS", "FILL RATE", "TREND", "CAPACITY"].map((h, i) => (
+          <div key={i} style={{ fontSize: 8.5, fontWeight: 600, color: C.t3, letterSpacing: "0.07em", textAlign: i > 0 ? "center" : "left" }}>{h}</div>
         ))}
       </div>
       {CLASS_DATA.map((cls, i) => (
-        <div key={i} style={{ display: "grid", gridTemplateColumns: "2fr 60px 80px 60px 160px", gap: 12, padding: "10px 0", borderBottom: i < CLASS_DATA.length - 1 ? `1px solid ${C.brd}` : "none", alignItems: "center" }}>
+        <div key={i} style={{ display: "grid", gridTemplateColumns: "2fr 60px 80px 60px 160px", gap: 10,
+          padding: "9px 0", borderBottom: i < CLASS_DATA.length - 1 ? `1px solid ${C.brd}` : "none", alignItems: "center" }}>
           <div>
-            <div style={{ fontSize: 12.5, fontWeight: 600, color: C.t1 }}>{cls.name}</div>
-            <div style={{ fontSize: 10, color: C.t3, marginTop: 1 }}>Peak: {cls.peak}</div>
+            <div style={{ fontSize: 12, fontWeight: 600, color: C.t1 }}>{cls.name}</div>
+            <div style={{ fontSize: 9.5, color: C.t3, marginTop: 1 }}>Peak: {cls.peak}</div>
           </div>
-          <div style={{ textAlign: "center", fontSize: 13, fontWeight: 600, color: C.t2 }}>{cls.sessions}</div>
-          <div style={{ textAlign: "center", fontSize: 14, fontWeight: 700, color: fillCol(cls.fill) }}>{cls.fill}%</div>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 3, fontSize: 11, fontWeight: 700, color: trendCol(cls.trend) }}>
-            {cls.trend > 0 ? <TrendingUp style={{ width: 11, height: 11 }} /> : <TrendingDown style={{ width: 11, height: 11 }} />}
+          <div style={{ textAlign: "center", fontSize: 12.5, fontWeight: 600, color: C.t2, ...mono }}>{cls.sessions}</div>
+          <div style={{ textAlign: "center", fontSize: 13, fontWeight: 700, color: fillCol(cls.fill), ...mono }}>{cls.fill}%</div>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 3, fontSize: 10.5, fontWeight: 700, color: trendCol(cls.trend) }}>
+            {cls.trend > 0 ? <TrendingUp style={{ width: 10, height: 10 }}/> : <TrendingDown style={{ width: 10, height: 10 }}/>}
             {cls.trend > 0 ? "+" : ""}{cls.trend}%
           </div>
-          <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-            <div style={{ flex: 1, height: 6, background: C.brd, borderRadius: 3, overflow: "hidden" }}>
-              <div style={{ width: `${cls.fill}%`, height: "100%", background: fillCol(cls.fill), borderRadius: 3, opacity: 0.85 }} />
+          <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
+            <div style={{ flex: 1, height: 5, background: C.brd, borderRadius: 3, overflow: "hidden" }}>
+              <div style={{ width: `${cls.fill}%`, height: "100%", background: fillCol(cls.fill), borderRadius: 3, opacity: 0.85 }}/>
             </div>
-            {cls.fill >= 90 && (
-              <span style={{ fontSize: 9, color: C.cyan, fontWeight: 700, flexShrink: 0 }}>FULL</span>
-            )}
+            {cls.fill >= 90 && <span style={{ fontSize: 8.5, color: C.cyan, fontWeight: 700, flexShrink: 0 }}>FULL</span>}
           </div>
         </div>
       ))}
-      <div style={{ marginTop: 12, padding: "9px 11px", borderRadius: 8, background: C.cyanD, border: `1px solid ${C.cyanB}` }}>
-        <div style={{ fontSize: 11, color: C.cyan, fontWeight: 600, marginBottom: 2 }}>HIIT Circuit is at 94% capacity every session</div>
-        <div style={{ fontSize: 10.5, color: C.t2 }}>Adding one extra session per week could generate ~£380/month. Recovery Yoga at 38% fill — consider rescheduling or merging.</div>
+      <div style={{ marginTop: 10, padding: "8px 10px", borderRadius: 7, background: C.cyanD, border: `1px solid ${C.cyanB}` }}>
+        <div style={{ fontSize: 10.5, color: C.cyan, fontWeight: 600, marginBottom: 2 }}>HIIT Circuit is at 94% capacity every session</div>
+        <div style={{ fontSize: 10, color: C.t2 }}>Adding one extra session per week could generate ~£380/month. Recovery Yoga at 38% fill — consider rescheduling or merging.</div>
       </div>
     </Card>
   );
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   SECTION 7: ENGAGEMENT
+   SECTION 7 — ENGAGEMENT
 ═══════════════════════════════════════════════════════════════ */
 function EngagementSection() {
   const engMetrics = [
-    { label: "Overall Engagement",     val: 72, trend: +6,  sub: "members using app weekly"          },
-    { label: "Challenge Participation",val: 47, trend: +12, sub: "of total members in a challenge"   },
-    { label: "Poll Participation",     val: 29, trend: -4,  sub: "responded to last poll"            },
-    { label: "Class Attendance Rate",  val: 61, trend: +3,  sub: "of capacity filled across classes" },
+    { label: "Overall Engagement",      val: 72, trend: +6,  sub: "members using app weekly"          },
+    { label: "Challenge Participation", val: 47, trend: +12, sub: "of total members in a challenge"   },
+    { label: "Poll Participation",      val: 29, trend: -4,  sub: "responded to last poll"            },
+    { label: "Class Attendance Rate",   val: 61, trend: +3,  sub: "of capacity filled across classes" },
   ];
-
   return (
     <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
-
       <Card>
-        <SLabel sub="How members are engaging across every touchpoint">
-          Engagement Breakdown
-        </SLabel>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 12 }}>
+        <SLabel sub="How members are engaging across every touchpoint">Engagement Breakdown</SLabel>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 7, marginBottom: 11 }}>
           {engMetrics.map((m, i) => {
             const up = m.trend > 0;
             return (
-              <div key={i} style={{ padding: "10px 11px", borderRadius: 8, background: C.card2, border: `1px solid ${C.brd}` }}>
-                <div style={{ fontSize: 9.5, color: C.t3, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 4 }}>{m.label}</div>
-                <div style={{ fontSize: 20, fontWeight: 700, color: m.val >= 60 ? C.cyan : m.val >= 40 ? C.t1 : C.amber, letterSpacing: "-0.02em", lineHeight: 1 }}>{m.val}%</div>
-                <div style={{ display: "flex", alignItems: "center", gap: 2, fontSize: 10, color: up ? C.cyan : C.red, fontWeight: 600, marginTop: 3 }}>
-                  {up ? <ArrowUpRight style={{ width: 9, height: 9 }} /> : <ArrowDownRight style={{ width: 9, height: 9 }} />}
+              <div key={i} style={{ padding: "9px 10px", borderRadius: 7, background: C.card2, border: `1px solid ${C.brd}` }}>
+                <div style={{ fontSize: 9, color: C.t3, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 3 }}>{m.label}</div>
+                <div style={{ fontSize: 18, fontWeight: 700, color: m.val >= 60 ? C.cyan : m.val >= 40 ? C.t1 : C.amber, letterSpacing: "-0.02em", lineHeight: 1, ...mono }}>{m.val}%</div>
+                <div style={{ display: "flex", alignItems: "center", gap: 2, fontSize: 9.5, color: up ? C.cyan : C.red, fontWeight: 600, marginTop: 3 }}>
+                  {up ? <ArrowUpRight style={{ width: 9, height: 9 }}/> : <ArrowDownRight style={{ width: 9, height: 9 }}/>}
                   {up ? "+" : ""}{m.trend}%
                 </div>
-                <div style={{ fontSize: 9.5, color: C.t3, marginTop: 2 }}>{m.sub}</div>
+                <div style={{ fontSize: 9, color: C.t3, marginTop: 2 }}>{m.sub}</div>
               </div>
             );
           })}
         </div>
-        <ResponsiveContainer width="100%" height={160}>
-          <RadarChart data={ENGAGEMENT_DATA} margin={{ top: 8, right: 16, bottom: 8, left: 16 }}>
-            <PolarGrid stroke="rgba(255,255,255,0.06)" />
-            <PolarAngleAxis dataKey="subject" tick={{ fill: C.t3, fontSize: 9.5, fontFamily: FONT }} />
-            <PolarRadiusAxis domain={[0, 100]} tick={false} axisLine={false} />
-            <Radar name="Engagement" dataKey="A" stroke={C.cyan} fill={C.cyan} fillOpacity={0.12} strokeWidth={1.5} />
-            <Tooltip content={(props) => <ChartTip {...props} suffix="%" />} />
+        <ResponsiveContainer width="100%" height={148}>
+          <RadarChart data={ENGAGEMENT_DATA} margin={{ top: 6, right: 14, bottom: 6, left: 14 }}>
+            <PolarGrid stroke="rgba(255,255,255,0.06)"/>
+            <PolarAngleAxis dataKey="subject" tick={{ fill: C.t3, fontSize: 9, fontFamily: FONT }}/>
+            <PolarRadiusAxis domain={[0, 100]} tick={false} axisLine={false}/>
+            <Radar name="Engagement" dataKey="A" stroke={C.cyan} fill={C.cyan} fillOpacity={0.12} strokeWidth={1.5}/>
+            <Tooltip content={<ChartTip suffix="%"/>}/>
           </RadarChart>
         </ResponsiveContainer>
       </Card>
 
       <Card>
-        <SLabel sub="Members who engage more stay significantly longer">
-          Engagement → Retention Impact
-        </SLabel>
+        <SLabel sub="Members who engage more stay significantly longer">Engagement → Retention</SLabel>
         {[
           { label: "Engaged members",     months: 8.2, pct: 82, col: C.cyan },
           { label: "Non-engaged members", months: 3.9, pct: 39, col: C.t3  },
         ].map((r, i) => (
-          <div key={i} style={{ marginBottom: 14 }}>
-            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 5 }}>
-              <span style={{ fontSize: 12, fontWeight: 600, color: C.t1 }}>{r.label}</span>
-              <span style={{ fontSize: 13, fontWeight: 700, color: r.col }}>{r.months} mo avg</span>
+          <div key={i} style={{ marginBottom: 12 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
+              <span style={{ fontSize: 11.5, fontWeight: 600, color: C.t1 }}>{r.label}</span>
+              <span style={{ fontSize: 12.5, fontWeight: 700, color: r.col, ...mono }}>{r.months} mo avg</span>
             </div>
-            <div style={{ height: 10, background: C.brd, borderRadius: 5, overflow: "hidden" }}>
-              <div style={{ width: `${r.pct}%`, height: "100%", background: r.col, borderRadius: 5, opacity: i === 0 ? 0.85 : 0.4 }} />
+            <div style={{ height: 8, background: C.brd, borderRadius: 4, overflow: "hidden" }}>
+              <div style={{ width: `${r.pct}%`, height: "100%", background: r.col, borderRadius: 4, opacity: i === 0 ? 0.85 : 0.4 }}/>
             </div>
           </div>
         ))}
-        <div style={{ height: 1, background: C.brd, margin: "4px 0 12px" }} />
+        <div style={{ height: 1, background: C.brd, margin: "4px 0 10px" }}/>
         {[
-          { label: "Challenge participants retain", val: "2.1×", sub: "longer than non-participants",      col: C.cyan  },
-          { label: "App-active members churn at",   val: "4%",   sub: "vs 22% for non-app users",         col: C.cyan  },
-          { label: "Increase challenge rate to 65%",val: "£180", sub: "+/mo projected retention revenue",  col: C.green },
+          { label: "Challenge participants retain", val: "2.1×", sub: "longer than non-participants",     col: C.cyan  },
+          { label: "App-active members churn at",   val: "4%",   sub: "vs 22% for non-app users",        col: C.cyan  },
+          { label: "Raise challenge rate to 65%",   val: "£180", sub: "+/mo projected retention revenue", col: C.green },
         ].map((s, i) => (
-          <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: 10, padding: "8px 0", borderBottom: i < 2 ? `1px solid ${C.brd}` : "none" }}>
-            <span style={{ fontSize: 16, fontWeight: 700, color: s.col, lineHeight: 1, flexShrink: 0, minWidth: 38 }}>{s.val}</span>
+          <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: 9,
+            padding: "7px 0", borderBottom: i < 2 ? `1px solid ${C.brd}` : "none" }}>
+            <span style={{ fontSize: 15, fontWeight: 700, color: s.col, lineHeight: 1, flexShrink: 0, minWidth: 36, ...mono }}>{s.val}</span>
             <div>
-              <div style={{ fontSize: 11.5, fontWeight: 600, color: C.t1 }}>{s.label}</div>
-              <div style={{ fontSize: 10.5, color: C.t3, marginTop: 1 }}>{s.sub}</div>
+              <div style={{ fontSize: 11, fontWeight: 600, color: C.t1 }}>{s.label}</div>
+              <div style={{ fontSize: 10, color: C.t3, marginTop: 1 }}>{s.sub}</div>
             </div>
           </div>
         ))}
@@ -784,60 +659,55 @@ function EngagementSection() {
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   SECTION 8: REVENUE
+   SECTION 8 — REVENUE
 ═══════════════════════════════════════════════════════════════ */
 function RevenueSection() {
-  const latest   = REVENUE_DATA[REVENUE_DATA.length - 1];
-  const prev     = REVENUE_DATA[REVENUE_DATA.length - 2];
-  const lostDelta  = Math.round(((latest.lost      - prev.lost)      / prev.lost)      * 100);
-  const recDelta   = Math.round(((latest.recovered  - prev.recovered) / prev.recovered) * 100);
+  const latest  = REVENUE_DATA[REVENUE_DATA.length - 1];
+  const prev    = REVENUE_DATA[REVENUE_DATA.length - 2];
+  const lostDelta = Math.round(((latest.lost     - prev.lost)      / prev.lost)     * 100);
+  const recDelta  = Math.round(((latest.recovered - prev.recovered) / prev.recovered) * 100);
 
   return (
     <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: 12 }}>
-
       <Card>
-        <SLabel sub="Monthly revenue retained vs lost to churn vs recovered through re-engagement">
-          Revenue Breakdown
-        </SLabel>
-        <div style={{ display: "flex", gap: 20, marginBottom: 14 }}>
+        <SLabel sub="Monthly revenue retained vs lost to churn vs recovered through re-engagement">Revenue Breakdown</SLabel>
+        <div style={{ display: "flex", gap: 18, marginBottom: 12 }}>
           <div>
-            <div style={{ fontSize: 22, fontWeight: 700, color: C.t1, letterSpacing: "-0.03em", lineHeight: 1 }}>£{latest.retained.toLocaleString()}</div>
-            <div style={{ fontSize: 10, color: C.t3, marginTop: 2 }}>retained this month</div>
+            <div style={{ fontSize: 20, fontWeight: 700, color: C.t1, letterSpacing: "-0.03em", lineHeight: 1, ...mono }}>£{latest.retained.toLocaleString()}</div>
+            <div style={{ fontSize: 9.5, color: C.t3, marginTop: 2 }}>retained this month</div>
           </div>
           <div>
-            <div style={{ fontSize: 22, fontWeight: 700, color: C.red, letterSpacing: "-0.03em", lineHeight: 1 }}>£{latest.lost}</div>
-            <div style={{ display: "flex", alignItems: "center", gap: 2, fontSize: 10, color: lostDelta < 0 ? C.cyan : C.red, fontWeight: 600, marginTop: 2 }}>
-              {lostDelta < 0
-                ? <ArrowDownRight style={{ width: 9, height: 9 }} />
-                : <ArrowUpRight   style={{ width: 9, height: 9 }} />}
+            <div style={{ fontSize: 20, fontWeight: 700, color: C.red, letterSpacing: "-0.03em", lineHeight: 1, ...mono }}>£{latest.lost}</div>
+            <div style={{ display: "flex", alignItems: "center", gap: 2, fontSize: 9.5, color: lostDelta < 0 ? C.cyan : C.red, fontWeight: 600, marginTop: 2 }}>
+              {lostDelta < 0 ? <ArrowDownRight style={{ width: 9, height: 9 }}/> : <ArrowUpRight style={{ width: 9, height: 9 }}/>}
               {lostDelta}% vs last mo
             </div>
-            <div style={{ fontSize: 10, color: C.t3 }}>lost to churn</div>
+            <div style={{ fontSize: 9.5, color: C.t3 }}>lost to churn</div>
           </div>
           <div>
-            <div style={{ fontSize: 22, fontWeight: 700, color: C.green, letterSpacing: "-0.03em", lineHeight: 1 }}>£{latest.recovered}</div>
-            <div style={{ display: "flex", alignItems: "center", gap: 2, fontSize: 10, color: C.cyan, fontWeight: 600, marginTop: 2 }}>
-              <ArrowUpRight style={{ width: 9, height: 9 }} /> +{recDelta}% vs last mo
+            <div style={{ fontSize: 20, fontWeight: 700, color: C.green, letterSpacing: "-0.03em", lineHeight: 1, ...mono }}>£{latest.recovered}</div>
+            <div style={{ display: "flex", alignItems: "center", gap: 2, fontSize: 9.5, color: C.cyan, fontWeight: 600, marginTop: 2 }}>
+              <ArrowUpRight style={{ width: 9, height: 9 }}/> +{recDelta}% vs last mo
             </div>
-            <div style={{ fontSize: 10, color: C.t3 }}>re-engaged / recovered</div>
+            <div style={{ fontSize: 9.5, color: C.t3 }}>re-engaged / recovered</div>
           </div>
         </div>
-        <ResponsiveContainer width="100%" height={140}>
+        <ResponsiveContainer width="100%" height={130}>
           <ComposedChart data={REVENUE_DATA} margin={{ top: 4, right: 4, bottom: 0, left: -18 }}>
             <defs>
               <linearGradient id="retainedGrad" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%"   stopColor={C.cyan} stopOpacity={0.2} />
-                <stop offset="100%" stopColor={C.cyan} stopOpacity={0.02} />
+                <stop offset="0%"   stopColor={C.cyan} stopOpacity={0.2}/>
+                <stop offset="100%" stopColor={C.cyan} stopOpacity={0.02}/>
               </linearGradient>
             </defs>
-            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" vertical={false} />
-            <XAxis dataKey="m" tick={tick} axisLine={false} tickLine={false} />
-            <YAxis tick={tick} axisLine={false} tickLine={false} />
+            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" vertical={false}/>
+            <XAxis dataKey="m" tick={tick} axisLine={false} tickLine={false}/>
+            <YAxis tick={tick} axisLine={false} tickLine={false}/>
             <Tooltip content={({ active, payload, label }) => {
               if (!active || !payload?.length) return null;
               return (
-                <div style={{ background: "#0f1520", border: `1px solid ${C.cyanB}`, borderRadius: 7, padding: "7px 11px", fontSize: 11, fontFamily: FONT }}>
-                  <div style={{ color: C.t3, marginBottom: 4, fontSize: 10 }}>{label}</div>
+                <div style={{ background: "#0a0e18", border: `1px solid ${C.cyanB}`, borderRadius: 7, padding: "6px 10px", fontSize: 11, fontFamily: FONT }}>
+                  <div style={{ color: C.t3, marginBottom: 3, fontSize: 9.5 }}>{label}</div>
                   {payload.map((p, i) => (
                     <div key={i} style={{ color: p.color, fontWeight: 700, display: "flex", justifyContent: "space-between", gap: 10 }}>
                       <span style={{ color: C.t3, fontWeight: 400 }}>{p.name}</span>£{p.value}
@@ -845,62 +715,62 @@ function RevenueSection() {
                   ))}
                 </div>
               );
-            }} />
-            <Area type="monotone" dataKey="retained"  name="Retained"  stroke={C.cyan}  strokeWidth={2}   fill="url(#retainedGrad)" />
-            <Bar             dataKey="lost"      name="Lost"      fill={C.red}   fillOpacity={0.6} radius={[2, 2, 0, 0]} barSize={10} />
-            <Bar             dataKey="recovered" name="Recovered" fill={C.green} fillOpacity={0.7} radius={[2, 2, 0, 0]} barSize={10} />
+            }}/>
+            <Area type="monotone" dataKey="retained"  name="Retained"  stroke={C.cyan}  strokeWidth={2}   fill="url(#retainedGrad)"/>
+            <Bar             dataKey="lost"      name="Lost"      fill={C.red}   fillOpacity={0.6} radius={[2, 2, 0, 0]} barSize={9}/>
+            <Bar             dataKey="recovered" name="Recovered" fill={C.green} fillOpacity={0.7} radius={[2, 2, 0, 0]} barSize={9}/>
           </ComposedChart>
         </ResponsiveContainer>
-        <div style={{ display: "flex", gap: 16, marginTop: 8 }}>
-          {[
-            { col: C.cyan,  label: "Retained (area)" },
-            { col: C.red,   label: "Lost"             },
-            { col: C.green, label: "Recovered"        },
-          ].map((l, i) => (
-            <div key={i} style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 10.5, color: C.t3 }}>
-              <div style={{ width: 12, height: 12, background: l.col, borderRadius: 2, opacity: 0.7 }} /> {l.label}
+        <div style={{ display: "flex", gap: 14, marginTop: 7 }}>
+          {[{ col: C.cyan, label: "Retained" }, { col: C.red, label: "Lost" }, { col: C.green, label: "Recovered" }].map((l, i) => (
+            <div key={i} style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 10, color: C.t3 }}>
+              <div style={{ width: 11, height: 11, background: l.col, borderRadius: 2, opacity: 0.7 }}/> {l.label}
             </div>
           ))}
         </div>
       </Card>
 
       <Card>
-        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 12 }}>
+        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 11 }}>
           <div>
-            <div style={{ fontSize: 12.5, fontWeight: 700, color: C.t1, marginBottom: 2 }}>At-Risk Members</div>
-            <div style={{ fontSize: 10.5, color: C.t3 }}>£{CHURN_MEMBERS.reduce((s, m) => s + m.mv, 0)}/mo exposure</div>
+            <div style={{ fontSize: 12, fontWeight: 700, color: C.t1, marginBottom: 2 }}>At-Risk Members</div>
+            <div style={{ fontSize: 10, color: C.t3 }}>£{CHURN_MEMBERS.reduce((s, m) => s + m.mv, 0)}/mo exposure</div>
           </div>
           <div style={{ textAlign: "right" }}>
-            <div style={{ fontSize: 20, fontWeight: 700, color: C.red, lineHeight: 1 }}>£{CHURN_MEMBERS.reduce((s, m) => s + m.mv, 0)}</div>
+            <div style={{ fontSize: 18, fontWeight: 700, color: C.red, lineHeight: 1, ...mono }}>£{CHURN_MEMBERS.reduce((s, m) => s + m.mv, 0)}</div>
             <div style={{ fontSize: 9.5, color: C.t3, marginTop: 2 }}>monthly risk</div>
           </div>
         </div>
         {CHURN_MEMBERS.map((m, i) => (
-          <div key={i} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "8px 0", borderBottom: i < CHURN_MEMBERS.length - 1 ? `1px solid ${C.brd}` : "none" }}>
+          <div key={i} style={{ display: "flex", alignItems: "center", justifyContent: "space-between",
+            padding: "7px 0", borderBottom: i < CHURN_MEMBERS.length - 1 ? `1px solid ${C.brd}` : "none" }}>
             <div>
-              <div style={{ fontSize: 12, fontWeight: 600, color: C.t1 }}>{m.name}</div>
-              <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 2 }}>
-                <div style={{ width: 48, height: 3, background: C.brd, borderRadius: 2, overflow: "hidden" }}>
-                  <div style={{ width: `${m.risk}%`, height: "100%", background: riskCol(m.risk), borderRadius: 2 }} />
+              <div style={{ fontSize: 11.5, fontWeight: 600, color: C.t1 }}>{m.name}</div>
+              <div style={{ display: "flex", alignItems: "center", gap: 5, marginTop: 2 }}>
+                <div style={{ width: 44, height: 3, background: C.brd, borderRadius: 2, overflow: "hidden" }}>
+                  <div style={{ width: `${m.risk}%`, height: "100%", background: riskCol(m.risk), borderRadius: 2 }}/>
                 </div>
-                <span style={{ fontSize: 10, color: riskCol(m.risk), fontWeight: 700 }}>{m.risk}%</span>
-                <span style={{ fontSize: 10, color: C.t3 }}>{m.days}d absent</span>
+                <span style={{ fontSize: 9.5, color: riskCol(m.risk), fontWeight: 700, ...mono }}>{m.risk}%</span>
+                <span style={{ fontSize: 9.5, color: C.t3 }}>{m.days}d absent</span>
               </div>
             </div>
-            <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-              <span style={{ fontSize: 11, color: C.t2 }}>£{m.mv}</span>
-              <button style={{ padding: "3px 9px", borderRadius: 5, background: "transparent", border: `1px solid ${C.brd2}`, color: C.t2, fontSize: 10.5, fontWeight: 600, cursor: "pointer", fontFamily: FONT }}>
-                Nudge
-              </button>
+            <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
+              <span style={{ fontSize: 10.5, color: C.t2, ...mono }}>£{m.mv}</span>
+              <button style={{ padding: "3px 8px", borderRadius: 5, background: "transparent",
+                border: `1px solid ${C.brd2}`, color: C.t2, fontSize: 10, fontWeight: 600,
+                cursor: "pointer", fontFamily: FONT }}>Nudge</button>
             </div>
           </div>
         ))}
-        <button style={{ marginTop: 12, width: "100%", padding: "9px", borderRadius: 7, background: C.redD, border: `1px solid ${C.redB}`, color: C.red, fontSize: 11.5, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 5, fontFamily: FONT }}>
-          <Send style={{ width: 11, height: 11 }} /> Message All At-Risk
+        <button style={{ marginTop: 10, width: "100%", padding: "8px", borderRadius: 7,
+          background: C.redD, border: `1px solid ${C.redB}`, color: C.red,
+          fontSize: 11, fontWeight: 700, cursor: "pointer",
+          display: "flex", alignItems: "center", justifyContent: "center", gap: 5, fontFamily: FONT }}>
+          <Send style={{ width: 11, height: 11 }}/> Message All At-Risk
         </button>
-        <div style={{ marginTop: 10, padding: "9px 11px", borderRadius: 8, background: C.greenD, border: `1px solid ${C.greenB}` }}>
-          <div style={{ fontSize: 11, color: C.green, fontWeight: 600, marginBottom: 2 }}>£300 recovered last month</div>
-          <div style={{ fontSize: 10.5, color: C.t2 }}>4 members re-engaged after personal outreach. Recovery is up 15% vs last month.</div>
+        <div style={{ marginTop: 9, padding: "8px 10px", borderRadius: 7, background: C.greenD, border: `1px solid ${C.greenB}` }}>
+          <div style={{ fontSize: 10.5, color: C.green, fontWeight: 600, marginBottom: 2 }}>£300 recovered last month</div>
+          <div style={{ fontSize: 10, color: C.t2 }}>4 members re-engaged after personal outreach. Recovery up 15% vs last month.</div>
         </div>
       </Card>
     </div>
@@ -914,67 +784,80 @@ export default function TabAnalytics() {
   const [range, setRange] = useState("30D");
 
   return (
-    <div style={{ padding: "16px 20px", display: "flex", flexDirection: "column", gap: 20, fontFamily: FONT, color: C.t1 }}>
+    <div style={{ padding: "16px 18px", display: "flex", flexDirection: "column", gap: 18,
+      fontFamily: FONT, color: C.t1 }}>
 
       {/* Page header */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
         <div>
-          <div style={{ fontSize: 18, fontWeight: 700, color: C.t1, letterSpacing: "-0.02em" }}>
-            Analytics <span style={{ color: C.t3, fontWeight: 300 }}>/</span> <span style={{ color: C.cyan }}>Overview</span>
+          <div style={{ fontSize: 17, fontWeight: 700, color: C.t1, letterSpacing: "-0.02em" }}>
+            Analytics <span style={{ color: C.t3, fontWeight: 300 }}>/</span>{" "}
+            <span style={{ color: C.cyan }}>Overview</span>
           </div>
-          <div style={{ fontSize: 11, color: C.t3, marginTop: 2 }}>Your gym's retention, engagement and revenue — at a glance</div>
+          <div style={{ fontSize: 10.5, color: C.t3, marginTop: 2 }}>
+            Retention, engagement and revenue — at a glance
+          </div>
         </div>
-        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 5, padding: "5px 10px", borderRadius: 7, background: C.amberD, border: `1px solid ${C.amberB}`, fontSize: 11.5, color: C.amber, fontWeight: 600 }}>
-            <AlertTriangle style={{ width: 11, height: 11 }} /> 4 members need attention
+        <div style={{ display: "flex", alignItems: "center", gap: 9 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 5, padding: "5px 10px",
+            borderRadius: 7, background: C.amberD, border: `1px solid ${C.amberB}`,
+            fontSize: 11, color: C.amber, fontWeight: 600 }}>
+            <AlertTriangle style={{ width: 10, height: 10 }}/> 4 members need attention
           </div>
-          <RangeTab range={range} setRange={setRange} />
+          <RangeTab range={range} setRange={setRange}/>
         </div>
       </div>
 
       {/* 1 · KPI strip */}
-      <KpiStrip />
+      <KpiStrip/>
 
-      {/* 2 · Retention funnel + trend lines */}
+      {/* 2 · Retention health */}
       <div>
-        <div style={{ fontSize: 10, fontWeight: 700, color: C.t3, letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 10 }}>Retention Health</div>
-        <RetentionFunnelSection />
+        <div style={{ fontSize: 9.5, fontWeight: 700, color: C.t3, letterSpacing: "0.1em",
+          textTransform: "uppercase", marginBottom: 9 }}>Retention Health</div>
+        <RetentionFunnelSection/>
       </div>
 
       {/* 3 · Key insights */}
       <div>
-        <div style={{ fontSize: 10, fontWeight: 700, color: C.t3, letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 10 }}>Key Insights</div>
-        <KeyInsights />
+        <div style={{ fontSize: 9.5, fontWeight: 700, color: C.t3, letterSpacing: "0.1em",
+          textTransform: "uppercase", marginBottom: 9 }}>Key Insights</div>
+        <KeyInsights/>
       </div>
 
       {/* 4 · Member segments */}
       <div>
-        <div style={{ fontSize: 10, fontWeight: 700, color: C.t3, letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 10 }}>Member Segments</div>
-        <MemberSegmentsSection />
+        <div style={{ fontSize: 9.5, fontWeight: 700, color: C.t3, letterSpacing: "0.1em",
+          textTransform: "uppercase", marginBottom: 9 }}>Member Segments</div>
+        <MemberSegmentsSection/>
       </div>
 
-      {/* 5 · Visit trends + peak hours */}
+      {/* 5 · Visit habits */}
       <div>
-        <div style={{ fontSize: 10, fontWeight: 700, color: C.t3, letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 10 }}>Visit Habits</div>
-        <VisitTrendsSection />
+        <div style={{ fontSize: 9.5, fontWeight: 700, color: C.t3, letterSpacing: "0.1em",
+          textTransform: "uppercase", marginBottom: 9 }}>Visit Habits</div>
+        <VisitTrendsSection/>
       </div>
 
       {/* 6 · Class performance */}
       <div>
-        <div style={{ fontSize: 10, fontWeight: 700, color: C.t3, letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 10 }}>Class Performance</div>
-        <ClassPerformanceSection />
+        <div style={{ fontSize: 9.5, fontWeight: 700, color: C.t3, letterSpacing: "0.1em",
+          textTransform: "uppercase", marginBottom: 9 }}>Class Performance</div>
+        <ClassPerformanceSection/>
       </div>
 
       {/* 7 · Engagement */}
       <div>
-        <div style={{ fontSize: 10, fontWeight: 700, color: C.t3, letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 10 }}>Engagement</div>
-        <EngagementSection />
+        <div style={{ fontSize: 9.5, fontWeight: 700, color: C.t3, letterSpacing: "0.1em",
+          textTransform: "uppercase", marginBottom: 9 }}>Engagement</div>
+        <EngagementSection/>
       </div>
 
       {/* 8 · Revenue */}
       <div style={{ paddingBottom: 24 }}>
-        <div style={{ fontSize: 10, fontWeight: 700, color: C.t3, letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 10 }}>Revenue</div>
-        <RevenueSection />
+        <div style={{ fontSize: 9.5, fontWeight: 700, color: C.t3, letterSpacing: "0.1em",
+          textTransform: "uppercase", marginBottom: 9 }}>Revenue</div>
+        <RevenueSection/>
       </div>
 
     </div>
