@@ -150,11 +150,16 @@ function StreakCelebration({
                       <div className="flex items-start gap-3">
                         <div className="w-12 h-12 rounded-xl overflow-hidden flex-shrink-0"
                           style={{ border: '1px solid rgba(255,255,255,0.08)' }}>
-                          <img
-                            src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694b637358644e1c22c8ec6b/5a4c7be8b_Untitleddesign-7.jpg"
-                            alt="Challenge"
-                            className="w-full h-full object-cover"
-                          />
+                          {challenge.image_url ? (
+                            <img src={challenge.image_url} alt={challenge.title} className="w-full h-full object-cover" />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center"
+                              style={{ background: 'linear-gradient(135deg, #f97316, #ef4444)' }}>
+                              <span style={{ fontSize: 22 }}>
+                                {challenge.category === 'streak' ? '🔥' : challenge.category === 'attendance' ? '📅' : '🏋️'}
+                              </span>
+                            </div>
+                          )}
                         </div>
                         <div className="flex-1 min-w-0">
                           <p className="text-[15px] font-black text-white leading-tight truncate">{challenge.title}</p>
