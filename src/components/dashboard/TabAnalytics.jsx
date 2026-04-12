@@ -393,7 +393,7 @@ function RetentionFunnelSection() {
             <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" vertical={false} />
             <XAxis dataKey="m" tick={tick} axisLine={false} tickLine={false} />
             <YAxis tick={tick} axisLine={false} tickLine={false} domain={[30, 100]} />
-            <Tooltip content={<LineTip />} />
+            <Tooltip content={(props) => <LineTip {...props} />} />
             <Line type="monotone" dataKey="w1" name="Week 1"  stroke={C.cyan}         strokeWidth={2} dot={false} activeDot={{ r: 3, fill: C.cyan,  stroke: C.card, strokeWidth: 2 }} />
             <Line type="monotone" dataKey="m1" name="Month 1" stroke={C.blue}         strokeWidth={2} dot={false} activeDot={{ r: 3, fill: C.blue,  stroke: C.card, strokeWidth: 2 }} />
             <Line type="monotone" dataKey="m3" name="Month 3" stroke={C.cyan + "77"}  strokeWidth={2} dot={false} activeDot={{ r: 3, fill: C.cyan,  stroke: C.card, strokeWidth: 2 }} strokeDasharray="4 3" />
@@ -741,7 +741,7 @@ function EngagementSection() {
             <PolarAngleAxis dataKey="subject" tick={{ fill: C.t3, fontSize: 9.5, fontFamily: FONT }} />
             <PolarRadiusAxis domain={[0, 100]} tick={false} axisLine={false} />
             <Radar name="Engagement" dataKey="A" stroke={C.cyan} fill={C.cyan} fillOpacity={0.12} strokeWidth={1.5} />
-            <Tooltip content={<ChartTip suffix="%" />} />
+            <Tooltip content={(props) => <ChartTip {...props} suffix="%" />} />
           </RadarChart>
         </ResponsiveContainer>
       </Card>
