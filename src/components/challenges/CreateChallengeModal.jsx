@@ -1,492 +1,583 @@
+/**
+ * CreateChallengeModal — Content Hub design system
+ * Exact match to Content Center / Hub screenshot
+ * Cyan #00e5c8 · DM Sans · #0d0d11 / #17171c / #1f1f26
+ */
 import React, { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import {
- X, Trophy, Users, Flame, Calendar, Gift,
- ChevronDown, CheckCircle, Zap, Target, Dumbbell,
- BarChart2, Shield, Eye,
+  X, Trophy, Users, Flame, Calendar, Gift,
+  ChevronDown, CheckCircle, Zap, Target,
+  Shield, Eye, BarChart2, Clock,
 } from 'lucide-react';
 import { format, differenceInDays, parseISO } from 'date-fns';
 
-// Design tokens 
-const T = {
- blue: '#0ea5e9', green: '#10b981', red: '#ef4444',
- amber: '#f59e0b', purple: '#8b5cf6',
- text1: '#f0f4f8', text2: '#94a3b8', text3: '#475569',
- border: 'rgba(255,255,255,0.07)', borderM: 'rgba(255,255,255,0.11)',
- card: '#0b1120', card2: '#0d1630', divider: 'rgba(255,255,255,0.05)',
- bg: '#060c18',
+/* ─── TOKENS — exact Content Hub palette ────────────────────── */
+const C = {
+  bg:        '#0d0d11',
+  surface:   '#17171c',
+  card:      '#1f1f26',
+  inset:     '#13131a',
+  brd:       '#252530',
+  brd2:      '#2e2e3a',
+  brdHover:  '#3a3a48',
+  t1:        '#ffffff',
+  t2:        '#9898a6',
+  t3:        '#525260',
+  /* primary */
+  cyan:      '#00e5c8',
+  cyanDim:   'rgba(0,229,200,0.07)',
+  cyanBrd:   'rgba(0,229,200,0.18)',
+  /* semantic */
+  red:    '#ff4d6d', redDim:    'rgba(255,77,109,0.08)',  redBrd:    'rgba(255,77,109,0.20)',
+  amber:  '#f59e0b', amberDim:  'rgba(245,158,11,0.08)', amberBrd:  'rgba(245,158,11,0.20)',
+  green:  '#22c55e', greenDim:  'rgba(34,197,94,0.08)',  greenBrd:  'rgba(34,197,94,0.20)',
+  blue:   '#60a5fa', blueDim:   'rgba(96,165,250,0.08)', blueBrd:   'rgba(96,165,250,0.20)',
+  purple: '#a78bfa', purpleDim: 'rgba(167,139,250,0.08)',purpleBrd: 'rgba(167,139,250,0.20)',
 };
+const FONT = "'DM Sans','Inter',system-ui,sans-serif";
+const MONO = { fontVariantNumeric: 'tabular-nums', fontFeatureSettings: '"tnum"' };
 
-function Shimmer({ color = T.amber }) {
- return <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 1, background: `linear-gradient(90deg,transparent,${color}35,transparent)`, pointerEvents: 'none' }} />;
-}
-
-// Challenge catalogue 
+/* ─── DATA ───────────────────────────────────────────────────── */
 const CATEGORIES = [
- { value: 'lifting', label: 'Lifting', color: T.purple, desc: 'Track weight lifted' },
- { value: 'attendance', label: 'Attendance', color: T.blue, desc: 'Most check-ins wins' },
- { value: 'streak', label: 'Streak', color: T.amber, desc: 'Longest consecutive days' },
- { value: 'cardio', label: 'Cardio', color: T.green, desc: 'Distance or time tracked' },
+  { value: 'lifting',    label: 'Lifting',    color: C.purple, dim: C.purpleDim, border: C.purpleBrd, desc: 'Track weight lifted' },
+  { value: 'attendance', label: 'Attendance', color: C.blue,   dim: C.blueDim,   border: C.blueBrd,   desc: 'Most check-ins wins' },
+  { value: 'streak',     label: 'Streak',     color: C.amber,  dim: C.amberDim,  border: C.amberBrd,  desc: 'Longest consecutive days' },
+  { value: 'cardio',     label: 'Cardio',     color: C.green,  dim: C.greenDim,  border: C.greenBrd,  desc: 'Distance or time tracked' },
 ];
 
 const TYPES = [
- { value: 'individual', label: 'Individual', icon: Target, desc: 'Each member competes solo' },
- { value: 'team', label: 'Team', icon: Users, desc: 'Divided into competing teams' },
- { value: 'gym_vs_gym', label: 'Gym vs Gym', icon: Shield, desc: 'Two gyms go head to head' },
- { value: 'community', label: 'Community', icon: Flame, desc: 'Everyone works toward one goal' },
+  { value: 'individual', label: 'Individual',  Icon: Target,  desc: 'Each member competes solo' },
+  { value: 'team',       label: 'Team',        Icon: Users,   desc: 'Divided into competing teams' },
+  { value: 'gym_vs_gym', label: 'Gym vs Gym',  Icon: Shield,  desc: 'Two gyms go head to head' },
+  { value: 'community',  label: 'Community',   Icon: Flame,   desc: 'Everyone works toward one goal' },
 ];
 
 const EXERCISES = [
- 'Bench Press','Squat','Deadlift','Overhead Press','Barbell Row',
- 'Power Clean','Snatch','Front Squat','Romanian Deadlift','Pull-up',
+  'Bench Press','Squat','Deadlift','Overhead Press','Barbell Row',
+  'Power Clean','Snatch','Front Squat','Romanian Deadlift','Pull-up',
 ];
 
 const GOAL_TYPES = [
- { value: 'total_weight', label: 'Total Weight Lifted' },
- { value: 'total_reps', label: 'Total Reps' },
- { value: 'max_weight', label: 'Max Weight (1RM)' },
+  { value: 'total_weight', label: 'Total Weight Lifted' },
+  { value: 'total_reps',   label: 'Total Reps' },
+  { value: 'max_weight',   label: 'Max Weight (1RM)' },
 ];
 
-function categoryFor(val) { return CATEGORIES.find(c => c.value === val) || CATEGORIES[0]; }
-function typeFor(val) { return TYPES.find(t => t.value === val) || TYPES[0]; }
+const catFor  = val => CATEGORIES.find(c => c.value === val) || CATEGORIES[0];
 
-// Shared input components 
-const baseInput = {
- width: '100%', boxSizing: 'border-box', padding: '10px 13px',
- borderRadius: 10, background: 'rgba(255,255,255,0.04)',
- border: '1px solid rgba(255,255,255,0.08)',
- color: T.text1, fontSize: 13, fontWeight: 500, outline: 'none',
- fontFamily: "'DM Sans', system-ui, sans-serif", transition: 'border-color 0.15s, background 0.15s',
- colorScheme: 'dark',
+const DEFAULT_FORM = {
+  title: '', description: '', type: 'individual', category: 'lifting',
+  gym_id: '', gym_name: '', competing_gym_id: '', competing_gym_name: '',
+  exercise: 'Bench Press', goal_type: 'total_weight', target_value: 0,
+  start_date: new Date().toISOString().split('T')[0], end_date: '',
+  status: 'upcoming', reward: '', auto_start: true, send_reminders: true,
 };
 
-function FieldLabel({ children, required }) {
- return (
- <div style={{ fontSize: 10, fontWeight: 800, color: T.text3, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 8, display: 'flex', alignItems: 'center', gap: 4 }}>
- {children}{required && <span style={{ color: T.red }}>*</span>}
- </div>
- );
+/* ─── SHARED INPUT STYLE ─────────────────────────────────────── */
+const baseInp = {
+  width: '100%', boxSizing: 'border-box', padding: '9px 12px',
+  borderRadius: 9, background: C.card, border: `1px solid ${C.brd}`,
+  color: C.t1, fontSize: 12.5, fontWeight: 500, outline: 'none',
+  fontFamily: FONT, transition: 'border-color 0.15s, background 0.15s', colorScheme: 'dark',
+};
+
+/* ─── PRIMITIVES ─────────────────────────────────────────────── */
+function SL({ children, required, hint }) {
+  return (
+    <div style={{ marginBottom: 8 }}>
+      <div style={{ fontSize: 10, fontWeight: 600, color: C.t3, textTransform: 'uppercase', letterSpacing: '0.1em', display: 'flex', alignItems: 'center', gap: 4 }}>
+        {children}{required && <span style={{ color: C.red }}>*</span>}
+      </div>
+      {hint && <div style={{ fontSize: 10, color: C.t3, marginTop: 3 }}>{hint}</div>}
+    </div>
+  );
 }
 
 function Field({ label, required, hint, children }) {
- return (
- <div>
- {label && <FieldLabel required={required}>{label}</FieldLabel>}
- {children}
- {hint && <div style={{ fontSize: 10, color: T.text3, marginTop: 5 }}>{hint}</div>}
- </div>
- );
+  return (
+    <div>
+      {label && <SL required={required} hint={hint}>{label}</SL>}
+      {children}
+    </div>
+  );
 }
 
-function Inp({ value, onChange, placeholder, type = 'text', icon: Icon, accentColor = T.amber, min }) {
- const [focus, setFocus] = useState(false);
- return (
- <div style={{ position: 'relative' }}>
- {Icon && <div style={{ position: 'absolute', left: 11, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }}><Icon style={{ width: 12, height: 12, color: focus ? accentColor : T.text3, transition: 'color 0.15s' }} /></div>}
- <input type={type} value={value} onChange={onChange} placeholder={placeholder} min={min}
- onFocus={e => { setFocus(true); e.target.style.borderColor = `${accentColor}45`; e.target.style.background = `${accentColor}06`; }}
- onBlur={e => { setFocus(false); e.target.style.borderColor = 'rgba(255,255,255,0.08)'; e.target.style.background = 'rgba(255,255,255,0.04)'; }}
- style={{ ...baseInput, paddingLeft: Icon ? 33 : 13 }} />
- </div>
- );
+function Inp({ value, onChange, placeholder, type = 'text', Icon, accentColor = C.cyan, min }) {
+  const [focus, setFocus] = useState(false);
+  return (
+    <div style={{ position: 'relative' }}>
+      {Icon && (
+        <div style={{ position: 'absolute', left: 11, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }}>
+          <Icon size={12} color={focus ? accentColor : C.t3} style={{ transition: 'color 0.15s' }} />
+        </div>
+      )}
+      <input
+        type={type} value={value} onChange={onChange} placeholder={placeholder} min={min}
+        onFocus={e => { setFocus(true); e.target.style.borderColor = `${accentColor}38`; e.target.style.background = C.inset; }}
+        onBlur={e =>  { setFocus(false); e.target.style.borderColor = C.brd; e.target.style.background = C.card; }}
+        style={{ ...baseInp, paddingLeft: Icon ? 32 : 12 }}
+      />
+    </div>
+  );
 }
 
-function Textarea({ value, onChange, placeholder, rows = 3, accentColor = T.amber }) {
- return (
- <textarea value={value} onChange={onChange} placeholder={placeholder} rows={rows}
- onFocus={e => { e.target.style.borderColor = `${accentColor}45`; e.target.style.background = `${accentColor}06`; }}
- onBlur={e => { e.target.style.borderColor = 'rgba(255,255,255,0.08)'; e.target.style.background = 'rgba(255,255,255,0.04)'; }}
- style={{ ...baseInput, resize: 'none', lineHeight: 1.65 }} />
- );
+function Textarea({ value, onChange, placeholder, rows = 3, accentColor = C.cyan }) {
+  return (
+    <textarea
+      value={value} onChange={onChange} placeholder={placeholder} rows={rows}
+      onFocus={e => { e.target.style.borderColor = `${accentColor}38`; e.target.style.background = C.inset; }}
+      onBlur={e =>  { e.target.style.borderColor = C.brd; e.target.style.background = C.card; }}
+      style={{ ...baseInp, resize: 'none', lineHeight: 1.7, padding: '11px 13px' }}
+    />
+  );
 }
 
-function Select({ value, onChange, children, accentColor = T.amber }) {
- return (
- <div style={{ position: 'relative' }}>
- <select value={value} onChange={onChange}
- onFocus={e => { e.target.style.borderColor = `${accentColor}45`; e.target.style.background = `${accentColor}06`; }}
- onBlur={e => { e.target.style.borderColor = 'rgba(255,255,255,0.08)'; e.target.style.background = 'rgba(255,255,255,0.04)'; }}
- style={{ ...baseInput, appearance: 'none', paddingRight: 34, cursor: 'pointer' }}>
- {children}
- </select>
- <ChevronDown style={{ position: 'absolute', right: 11, top: '50%', transform: 'translateY(-50%)', width: 13, height: 13, color: T.text3, pointerEvents: 'none' }} />
- </div>
- );
+function Sel({ value, onChange, children, accentColor = C.cyan }) {
+  return (
+    <div style={{ position: 'relative' }}>
+      <select
+        value={value} onChange={onChange}
+        onFocus={e => { e.target.style.borderColor = `${accentColor}38`; e.target.style.background = C.inset; }}
+        onBlur={e =>  { e.target.style.borderColor = C.brd; e.target.style.background = C.card; }}
+        style={{ ...baseInp, appearance: 'none', paddingRight: 34, cursor: 'pointer' }}
+      >
+        {children}
+      </select>
+      <ChevronDown size={12} color={C.t3} style={{ position: 'absolute', right: 11, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }} />
+    </div>
+  );
 }
 
-// Category picker 
-function CategoryPicker({ value, onChange }) {
- return (
- <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 7 }}>
- {CATEGORIES.map(cat => {
- const active = value === cat.value;
- return (
- <button key={cat.value} onClick={() => onChange(cat.value)} type="button"
- style={{ padding: '11px 6px', borderRadius: 10, cursor: 'pointer', border: `1px solid ${active ? cat.color + '35' : T.border}`, background: active ? `${cat.color}12` : T.divider, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5, transition: 'all 0.15s', fontFamily: 'inherit' }}>
-  <span style={{ fontSize: 10, fontWeight: active ? 800 : 500, color: active ? cat.color : T.text3, transition: 'color 0.15s' }}>{cat.label}</span>
- </button>
- );
- })}
- </div>
- );
+/* ─── CATEGORY TABS — matches Content Hub tab bar ────────────── */
+function CategoryTabs({ value, onChange }) {
+  return (
+    <div style={{ display: 'flex', gap: 0, borderBottom: `1px solid ${C.brd}`, marginLeft: -2 }}>
+      {CATEGORIES.map(cat => {
+        const active = value === cat.value;
+        return (
+          <button
+            key={cat.value}
+            onClick={() => onChange(cat.value)}
+            type="button"
+            style={{
+              padding: '8px 14px', background: 'none', border: 'none',
+              borderBottom: active ? `2px solid ${cat.color}` : '2px solid transparent',
+              color: active ? C.t1 : C.t2, fontSize: 12.5,
+              fontWeight: active ? 700 : 500, cursor: 'pointer',
+              fontFamily: FONT, whiteSpace: 'nowrap',
+              transition: 'color 0.15s, border-color 0.15s',
+              marginBottom: -1,
+            }}
+            onMouseEnter={e => { if (!active) e.currentTarget.style.color = C.t1; }}
+            onMouseLeave={e => { if (!active) e.currentTarget.style.color = C.t2; }}
+          >
+            {cat.label}
+          </button>
+        );
+      })}
+    </div>
+  );
 }
 
-// Type selector (radio-style) 
+/* ─── TYPE PICKER ────────────────────────────────────────────── */
 function TypePicker({ value, onChange }) {
- return (
- <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 7 }}>
- {TYPES.map(t => {
- const active = value === t.value;
- const Icon = t.icon;
- return (
- <button key={t.value} onClick={() => onChange(t.value)} type="button"
- style={{ padding: '10px 12px', borderRadius: 10, cursor: 'pointer', border: `1px solid ${active ? T.amber + '35' : T.border}`, background: active ? `${T.amber}10` : T.divider, display: 'flex', alignItems: 'center', gap: 9, transition: 'all 0.15s', fontFamily: 'inherit', textAlign: 'left' }}>
- <div style={{ width: 26, height: 26, borderRadius: 7, background: active ? `${T.amber}18` : 'rgba(255,255,255,0.06)', border: `1px solid ${active ? T.amber + '30' : T.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
- <Icon style={{ width: 12, height: 12, color: active ? T.amber : T.text3, transition: 'color 0.15s' }} />
- </div>
- <div>
- <div style={{ fontSize: 12, fontWeight: active ? 700 : 500, color: active ? T.text1 : T.text2, transition: 'color 0.15s' }}>{t.label}</div>
- <div style={{ fontSize: 9, color: T.text3, marginTop: 1 }}>{t.desc}</div>
- </div>
- </button>
- );
- })}
- </div>
- );
+  return (
+    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 7 }}>
+      {TYPES.map(t => {
+        const active = value === t.value;
+        return (
+          <button
+            key={t.value}
+            onClick={() => onChange(t.value)}
+            type="button"
+            style={{
+              padding: '10px 12px', borderRadius: 9, cursor: 'pointer',
+              border: `1px solid ${active ? C.cyanBrd : C.brd}`,
+              background: active ? C.cyanDim : C.card,
+              display: 'flex', alignItems: 'center', gap: 9,
+              transition: 'all 0.15s', fontFamily: FONT, textAlign: 'left',
+            }}
+          >
+            <div style={{ width: 26, height: 26, borderRadius: 7, background: active ? 'rgba(0,229,200,0.12)' : 'rgba(255,255,255,0.05)', border: `1px solid ${active ? C.cyanBrd : C.brd}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+              <t.Icon size={11} color={active ? C.cyan : C.t3} style={{ transition: 'color 0.15s' }} />
+            </div>
+            <div>
+              <div style={{ fontSize: 12, fontWeight: active ? 700 : 500, color: active ? C.t1 : C.t2 }}>{t.label}</div>
+              <div style={{ fontSize: 9.5, color: C.t3, marginTop: 1 }}>{t.desc}</div>
+            </div>
+          </button>
+        );
+      })}
+    </div>
+  );
 }
 
-// Live challenge card preview — mirrors GymChallengeCard exactly
+/* ─── TOGGLE ─────────────────────────────────────────────────── */
+function Toggle({ checked, onChange, label, sub, color = C.cyan }) {
+  return (
+    <div
+      onClick={() => onChange(!checked)}
+      style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', borderRadius: 9, cursor: 'pointer', background: checked ? `${color}09` : C.card, border: `1px solid ${checked ? color + '28' : C.brd}`, transition: 'all 0.18s' }}
+    >
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ fontSize: 12, fontWeight: 600, color: checked ? C.t1 : C.t2 }}>{label}</div>
+        {sub && <div style={{ fontSize: 10, color: C.t3, marginTop: 2 }}>{sub}</div>}
+      </div>
+      <div style={{ flexShrink: 0, width: 38, height: 21, borderRadius: 99, background: checked ? color : C.brd2, transition: 'background 0.2s', position: 'relative' }}>
+        <div style={{ position: 'absolute', top: 2.5, left: checked ? 19 : 2.5, width: 16, height: 16, borderRadius: '50%', background: '#fff', transition: 'left 0.2s', boxShadow: '0 1px 4px rgba(0,0,0,0.6)' }} />
+      </div>
+    </div>
+  );
+}
+
+/* ─── LIVE PREVIEW ───────────────────────────────────────────── */
 function ChallengePreview({ form, gyms }) {
- const cat = categoryFor(form.category);
- const hasContent = form.title;
- const targetValue = form.target_value || 50;
+  const cat = catFor(form.category);
+  const targetValue = form.target_value || 50;
 
- const durationDays = useMemo(() => {
- if (!form.start_date || !form.end_date) return null;
- try { return differenceInDays(parseISO(form.end_date), parseISO(form.start_date)); }
- catch { return null; }
- }, [form.start_date, form.end_date]);
+  const durationDays = useMemo(() => {
+    if (!form.start_date || !form.end_date) return null;
+    try { return differenceInDays(parseISO(form.end_date), parseISO(form.start_date)); }
+    catch { return null; }
+  }, [form.start_date, form.end_date]);
 
- return (
- <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
- {/* Preview label */}
- <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 14 }}>
- <Eye style={{ width: 11, height: 11, color: T.text3 }} />
- <span style={{ fontSize: 10, fontWeight: 700, color: T.text3, textTransform: 'uppercase', letterSpacing: '0.09em' }}>Live Preview</span>
- </div>
+  const hasContent = !!form.title;
 
- {/* Real GymChallengeCard style */}
- <div style={{ borderRadius: 16, padding: 20, overflow: 'hidden', position: 'relative', background: 'linear-gradient(135deg, rgba(16,19,40,0.96) 0%, rgba(6,8,18,0.99) 100%)', border: '1px solid rgba(255,255,255,0.07)', boxShadow: '0 2px 12px rgba(0,0,0,0.35)' }}>
- {/* Decorative glow */}
- <div style={{ position: 'absolute', top: -48, right: -48, width: 96, height: 96, borderRadius: '50%', background: 'rgba(245,158,11,0.1)', filter: 'blur(24px)', pointerEvents: 'none' }} />
+  return (
+    <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+      {/* Label — matches PostPreview label exactly */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 12 }}>
+        <Eye size={11} color={C.t3} />
+        <span style={{ fontSize: 9.5, fontWeight: 600, color: C.t3, textTransform: 'uppercase', letterSpacing: '0.09em' }}>Live Preview</span>
+      </div>
 
- {!hasContent ? (
- <div style={{ textAlign: 'center', padding: '28px 0' }}>
- <div style={{ fontSize: 12, color: T.text3, fontWeight: 500 }}>Fill in details to preview</div>
- </div>
- ) : (
- <div style={{ position: 'relative' }}>
- {/* Header row */}
- <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 16 }}>
- <div style={{ flex: 1, minWidth: 0, paddingRight: 12 }}>
- <div style={{ fontSize: 15, fontWeight: 700, color: '#fff', marginBottom: 4, lineHeight: 1.3 }}>
-  {form.title || 'Challenge Title'}
- </div>
- {form.description && (
-  <div style={{ fontSize: 11, color: '#94a3b8', marginBottom: 10, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
-  {form.description}
-  </div>
- )}
- <span style={{ display: 'inline-block', fontSize: 9, fontWeight: 700, color: '#fcd34d', background: 'rgba(245,158,11,0.15)', border: '1px solid rgba(245,158,11,0.35)', borderRadius: 4, padding: '2px 7px' }}>
-  {targetValue} {form.goal_type === 'participation' ? 'participants' : form.category === 'streak' ? 'day streak' : 'check-ins'}
- </span>
- </div>
- <div style={{ width: 52, height: 52, borderRadius: 12, background: 'linear-gradient(135deg, #fbbf24, #f59e0b, #d97706)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, boxShadow: '0 4px 12px rgba(245,158,11,0.4)' }}>
- <Trophy style={{ width: 26, height: 26, color: '#fff' }} />
- </div>
- </div>
+      {/* Card */}
+      <div style={{ borderRadius: 12, overflow: 'hidden', background: C.card, border: `1px solid ${C.brd}` }}>
+        {/* Accent line matching active category */}
+        <div style={{ height: 3, background: `linear-gradient(90deg, ${cat.color}, ${cat.color}44, transparent)`, transition: 'background 0.3s' }} />
 
- {/* Progress bar */}
- <div style={{ height: 16, borderRadius: 99, overflow: 'hidden', background: 'rgba(30,41,59,0.8)', border: '1px solid rgba(71,85,105,0.5)', marginBottom: 4 }}>
- <div style={{ width: '0%', height: '100%', background: 'linear-gradient(90deg, #fbbf24, #f59e0b, #f97316)', borderRadius: 99 }} />
- </div>
- <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16 }}>
- <span style={{ fontSize: 9, color: '#64748b' }}>0 joined</span>
- <span style={{ fontSize: 9, color: '#64748b' }}>goal: {targetValue}</span>
- </div>
+        {!hasContent ? (
+          <div style={{ padding: '32px 18px', textAlign: 'center' }}>
+            <Trophy size={22} color={`${cat.color}35`} style={{ margin: '0 auto 10px', display: 'block' }} />
+            <div style={{ fontSize: 11.5, color: C.t3, fontWeight: 500 }}>Fill in details to preview your challenge</div>
+          </div>
+        ) : (
+          <div style={{ padding: '14px 15px 0' }}>
+            {/* Category badge + title */}
+            <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 10 }}>
+              <div style={{ flex: 1, paddingRight: 10 }}>
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, padding: '2px 7px', borderRadius: 5, background: cat.dim, border: `1px solid ${cat.border}`, fontSize: 9, fontWeight: 700, color: cat.color, marginBottom: 6 }}>
+                  {cat.label}
+                </span>
+                <div style={{ fontSize: 14, fontWeight: 700, color: C.t1, lineHeight: 1.35 }}>{form.title}</div>
+                {form.description && (
+                  <div style={{ fontSize: 11, color: C.t2, marginTop: 4, lineHeight: 1.55, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{form.description}</div>
+                )}
+              </div>
+              {/* Trophy icon */}
+              <div style={{ width: 46, height: 46, borderRadius: 11, background: `linear-gradient(135deg,${cat.color},${cat.color}bb)`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, boxShadow: `0 4px 14px ${cat.color}40` }}>
+                <Trophy size={22} color="#fff" />
+              </div>
+            </div>
 
- {/* Reward section */}
- <div style={{ background: 'linear-gradient(135deg, rgba(30,41,59,0.6), rgba(51,65,85,0.4))', border: '1px solid rgba(245,158,11,0.3)', borderRadius: 12, padding: '12px 14px', marginBottom: 14, display: 'flex', alignItems: 'center', gap: 12 }}>
- <div style={{ width: 36, height: 36, borderRadius: 9, background: 'linear-gradient(135deg,#fbbf24,#f59e0b)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-  <Gift style={{ width: 16, height: 16, color: '#fff' }} />
- </div>
- <div style={{ minWidth: 0 }}>
-  <div style={{ fontSize: 9, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 2 }}>Challenge Reward</div>
-  <div style={{ fontSize: 13, fontWeight: 800, color: '#fde68a' }}>{form.reward || 'Challenge Badge'}</div>
- </div>
- </div>
+            {/* Progress bar — 0% on preview */}
+            <div style={{ height: 5, borderRadius: 99, background: C.brd, overflow: 'hidden', marginBottom: 4 }}>
+              <div style={{ width: '0%', height: '100%', background: cat.color, borderRadius: 99 }} />
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 12 }}>
+              <span style={{ fontSize: 9.5, color: C.t3 }}>0 joined</span>
+              <span style={{ fontSize: 9.5, color: C.t3 }}>Goal: {targetValue}</span>
+            </div>
 
- {/* Date + meta info */}
- {(form.start_date || form.end_date) && (
- <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginBottom: 12, padding: '6px 10px', borderRadius: 8, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }}>
-  <Calendar style={{ width: 9, height: 9, color: '#64748b', flexShrink: 0 }} />
-  <span style={{ fontSize: 10, color: '#94a3b8' }}>
-  {form.start_date ? format(parseISO(form.start_date), 'MMM d') : '?'} → {form.end_date ? format(parseISO(form.end_date), 'MMM d') : '?'}
-  </span>
-  {durationDays != null && durationDays > 0 && <span style={{ marginLeft: 'auto', fontSize: 9, color: '#64748b', fontWeight: 700 }}>{durationDays} days</span>}
- </div>
- )}
+            {/* Reward */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', borderRadius: 9, background: C.surface, border: `1px solid ${cat.border}`, marginBottom: 10 }}>
+              <div style={{ width: 32, height: 32, borderRadius: 8, background: cat.dim, border: `1px solid ${cat.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                <Gift size={14} color={cat.color} />
+              </div>
+              <div style={{ minWidth: 0 }}>
+                <div style={{ fontSize: 9, color: C.t3, textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 2 }}>Challenge Reward</div>
+                <div style={{ fontSize: 12.5, fontWeight: 700, color: cat.color }}>{form.reward || 'Challenge Badge'}</div>
+              </div>
+            </div>
 
- {/* Join button */}
- <div style={{ width: '100%', padding: '10px', borderRadius: 8, background: 'linear-gradient(135deg, #f59e0b, #d97706)', color: '#fff', fontWeight: 700, fontSize: 13, textAlign: 'center', boxShadow: '0 4px 12px rgba(245,158,11,0.35)' }}>
- Join Challenge
- </div>
+            {/* Dates */}
+            {(form.start_date || form.end_date) && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '7px 10px', borderRadius: 8, background: C.surface, border: `1px solid ${C.brd}`, marginBottom: 10 }}>
+                <Calendar size={10} color={C.t3} />
+                <span style={{ fontSize: 10.5, color: C.t2 }}>
+                  {form.start_date ? format(parseISO(form.start_date), 'MMM d') : '?'} → {form.end_date ? format(parseISO(form.end_date), 'MMM d') : '?'}
+                </span>
+                {durationDays != null && durationDays > 0 && (
+                  <span style={{ marginLeft: 'auto', fontSize: 9.5, color: C.t3, fontWeight: 700, ...MONO }}>{durationDays}d</span>
+                )}
+              </div>
+            )}
 
- {/* Gym vs Gym */}
- {form.type === 'gym_vs_gym' && form.gym_id && form.competing_gym_id && (
-  <div style={{ marginTop: 10, padding: '8px 12px', borderRadius: 9, background: T.card2, border: `1px solid ${T.border}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-  <span style={{ fontSize: 11, fontWeight: 700, color: T.text1 }}>{gyms.find(g => g.id === form.gym_id)?.name || 'Home Gym'}</span>
-  <span style={{ fontSize: 12, fontWeight: 800, color: T.amber }}>VS</span>
-  <span style={{ fontSize: 11, fontWeight: 700, color: T.text1 }}>{gyms.find(g => g.id === form.competing_gym_id)?.name || 'Away Gym'}</span>
-  </div>
- )}
- </div>
- )}
- </div>
- </div>
- );
+            {/* Gym vs Gym */}
+            {form.type === 'gym_vs_gym' && form.gym_id && form.competing_gym_id && (
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 12px', borderRadius: 9, background: C.surface, border: `1px solid ${C.brd}`, marginBottom: 10 }}>
+                <span style={{ fontSize: 11.5, fontWeight: 700, color: C.t1 }}>{gyms.find(g => g.id === form.gym_id)?.name || 'Home Gym'}</span>
+                <span style={{ fontSize: 12, fontWeight: 800, color: cat.color }}>VS</span>
+                <span style={{ fontSize: 11.5, fontWeight: 700, color: C.t1 }}>{gyms.find(g => g.id === form.competing_gym_id)?.name || 'Away Gym'}</span>
+              </div>
+            )}
+
+            {/* Join button — solid cyan "Review & Schedule" style */}
+            <div style={{ padding: '0 0 14px' }}>
+              <div style={{ width: '100%', padding: '10px', borderRadius: 8, background: C.cyan, color: '#000', fontWeight: 700, fontSize: 13, textAlign: 'center', boxShadow: `0 4px 16px ${C.cyan}35` }}>
+                Join Challenge
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
 }
 
-// 
-const DEFAULT_FORM = {
- title: '', description: '', type: 'individual', category: 'lifting',
- gym_id: '', gym_name: '', competing_gym_id: '', competing_gym_name: '',
- exercise: 'Bench Press', goal_type: 'total_weight', target_value: 0,
- start_date: new Date().toISOString().split('T')[0], end_date: '',
- status: 'upcoming', reward: '', auto_start: true, send_reminders: true,
-};
-
+/* ═══════════════════════════════════════════════════════════════
+   MAIN EXPORT
+═══════════════════════════════════════════════════════════════ */
 export default function CreateChallengeModal({ open, onClose, gyms = [], onSave, isLoading }) {
- const [form, setForm] = useState(DEFAULT_FORM);
- const set = (k, v) => setForm(f => ({ ...f, [k]: v }));
+  const [form, setForm] = useState(DEFAULT_FORM);
+  const set = (k, v) => setForm(f => ({ ...f, [k]: v }));
 
- const cat = categoryFor(form.category);
- const canSave = form.title.trim() && form.end_date && !isLoading;
+  const cat     = catFor(form.category);
+  const canSave = form.title.trim() && form.end_date && !isLoading;
 
- const handleCategoryChange = (val) => {
- const updates = { category: val };
- if (val === 'lifting') updates.goal_type = 'total_weight';
- if (val === 'attendance') updates.goal_type = 'most_check_ins';
- if (val === 'streak') updates.goal_type = 'longest_streak';
- setForm(f => ({ ...f, ...updates }));
- };
+  const handleCategoryChange = (val) => {
+    const updates = { category: val };
+    if (val === 'lifting')    updates.goal_type = 'total_weight';
+    if (val === 'attendance') updates.goal_type = 'most_check_ins';
+    if (val === 'streak')     updates.goal_type = 'longest_streak';
+    setForm(f => ({ ...f, ...updates }));
+  };
 
- const handleSubmit = (e) => {
- e?.preventDefault();
- if (!form.title.trim() || !form.end_date) { toast?.error('Please fill in title and end date'); return; }
- if (form.type === 'gym_vs_gym' && (!form.gym_id || !form.competing_gym_id)) { toast?.error('Please select both gyms'); return; }
- onSave(form);
- setForm(DEFAULT_FORM);
- };
+  const handleSubmit = (e) => {
+    e?.preventDefault();
+    if (!form.title.trim() || !form.end_date) { toast?.error('Please fill in title and end date'); return; }
+    if (form.type === 'gym_vs_gym' && (!form.gym_id || !form.competing_gym_id)) { toast?.error('Please select both gyms'); return; }
+    onSave(form);
+    setForm(DEFAULT_FORM);
+  };
 
- const handleClose = () => { setForm(DEFAULT_FORM); onClose(); };
+  const handleClose = () => { setForm(DEFAULT_FORM); onClose(); };
 
- return (
- <>
- <style>{`
- @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;0,9..40,800;0,9..40,900&display=swap');
- @keyframes ch-spin { from { transform: rotate(0deg) } to { transform: rotate(360deg) } }
- .ch-body::-webkit-scrollbar { width: 3px } .ch-body::-webkit-scrollbar-track { background: transparent } .ch-body::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 2px }
- .ch-save:not(:disabled):hover { opacity: 0.9; transform: translateY(-1px); }
- .ch-save:not(:disabled):active { transform: translateY(0); }
- .ch-cancel:hover { background: rgba(255,255,255,0.08) !important; color: #f0f4f8 !important; }
- `}</style>
+  return (
+    <>
+      <style>{`
+        @keyframes ch-spin { to { transform: rotate(360deg) } }
+        @keyframes ch-fade  { from{opacity:0} to{opacity:1} }
+        @keyframes ch-in    { from{opacity:0;transform:scale(0.975) translateY(10px)} to{opacity:1;transform:scale(1) translateY(0)} }
+        .ch-scroll::-webkit-scrollbar        { width: 3px }
+        .ch-scroll::-webkit-scrollbar-track  { background: transparent }
+        .ch-scroll::-webkit-scrollbar-thumb  { background: ${C.brd2}; border-radius: 2px }
+        .ch-cancel { padding:9px 18px; border-radius:8px; background:transparent; border:1px solid ${C.brd}; color:${C.t2}; font-size:12.5px; font-weight:600; cursor:pointer; font-family:${FONT}; transition:all 0.15s; }
+        .ch-cancel:hover { border-color:${C.brdHover}; color:${C.t1}; background:${C.card}; }
+      `}</style>
 
- <AnimatePresence>
- {open && (
- <motion.div
-   key="ch-overlay"
-   initial={{ opacity: 0 }}
-   animate={{ opacity: 1 }}
-   exit={{ opacity: 0 }}
-   transition={{ duration: 0.2 }}
-   style={{ position: 'fixed', inset: 0, background: 'rgba(2,5,20,0.82)', backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20, fontFamily: "'DM Sans', system-ui, sans-serif" }}
-   onClick={e => e.target === e.currentTarget && handleClose()}>
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            key="overlay"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.18 }}
+            onClick={e => e.target === e.currentTarget && handleClose()}
+            style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.82)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20, fontFamily: FONT }}
+          >
+            <motion.div
+              key="modal"
+              initial={{ opacity: 0, y: 16, scale: 0.975 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 16, scale: 0.975 }}
+              transition={{ type: 'spring', stiffness: 380, damping: 36, mass: 1 }}
+              style={{ width: '100%', maxWidth: 920, maxHeight: '92vh', display: 'flex', flexDirection: 'column', background: C.bg, border: `1px solid ${C.brd}`, borderRadius: 14, overflow: 'hidden', boxShadow: `0 40px 100px rgba(0,0,0,0.85), 0 0 0 1px rgba(0,229,200,0.04)`, WebkitFontSmoothing: 'antialiased' }}
+            >
 
- {/* Modal */}
- <motion.div
-   key="ch-modal"
-   initial={{ opacity: 0, y: 40, scale: 0.97 }}
-   animate={{ opacity: 1, y: 0, scale: 1 }}
-   exit={{ opacity: 0, y: 40, scale: 0.97, transition: { type: 'spring', stiffness: 420, damping: 40, mass: 0.9 } }}
-   transition={{ type: 'spring', stiffness: 380, damping: 36, mass: 1 }}
-   style={{ width: '100%', maxWidth: 860, maxHeight: '92vh', display: 'flex', flexDirection: 'column', background: '#07101f', border: `1px solid ${T.borderM}`, borderRadius: 18, overflow: 'hidden', boxShadow: '0 32px 80px rgba(0,0,0,0.72), 0 0 0 1px rgba(255,255,255,0.04) inset' }}>
+              {/* ── HEADER ────────────────────────────────────── */}
+              <div style={{ flexShrink: 0, padding: '0 20px', background: C.surface, borderBottom: `1px solid ${C.brd}`, position: 'relative', overflow: 'hidden' }}>
+                {/* Category-coloured accent bar */}
+                <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 2, background: `linear-gradient(90deg,${cat.color},${cat.color}44,transparent)`, transition: 'background 0.3s', pointerEvents: 'none' }} />
 
- {/* Header */}
- <div style={{ flexShrink: 0, padding: '18px 24px 16px', borderBottom: `1px solid ${T.border}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'relative', overflow: 'hidden' }}>
- <Shimmer color={cat.color} />
- <div style={{ position: 'absolute', top: -40, left: -20, width: 180, height: 100, borderRadius: '50%', background: cat.color, opacity: 0.04, filter: 'blur(40px)', pointerEvents: 'none', transition: 'background 0.3s' }} />
- <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
- <div style={{ width: 38, height: 38, borderRadius: 11, background: `${cat.color}14`, border: `1px solid ${cat.color}28`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, flexShrink: 0, transition: 'all 0.2s' }}>
- 
- </div>
- <div>
- <div style={{ fontSize: 16, fontWeight: 800, color: T.text1, letterSpacing: '-0.025em' }}>Create Challenge</div>
- <div style={{ fontSize: 11, color: T.text3, marginTop: 1 }}>Set up a competition for your members</div>
- </div>
- </div>
- <button onClick={handleClose}
- style={{ width: 32, height: 32, borderRadius: 9, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,255,255,0.05)', border: `1px solid ${T.border}`, cursor: 'pointer', transition: 'all 0.15s', color: T.text3 }}
- onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.10)'; e.currentTarget.style.color = T.text1; }}
- onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; e.currentTarget.style.color = T.text3; }}>
- <X style={{ width: 14, height: 14 }} />
- </button>
- </div>
+                {/* Title row */}
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: 14 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 11 }}>
+                    <div style={{ width: 32, height: 32, borderRadius: 9, background: cat.dim, border: `1px solid ${cat.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'all 0.2s' }}>
+                      <Trophy size={14} color={cat.color} />
+                    </div>
+                    <div>
+                      <div style={{ fontSize: 15, fontWeight: 700, color: C.t1, letterSpacing: '-0.02em', lineHeight: 1.2 }}>
+                        Content Center <span style={{ color: C.cyan }}>/</span> <span style={{ color: C.cyan }}>Create Challenge</span>
+                      </div>
+                      <div style={{ fontSize: 10.5, color: C.t3, marginTop: 2 }}>Set up a competition for your members</div>
+                    </div>
+                  </div>
+                  <button
+                    onClick={handleClose}
+                    style={{ width: 30, height: 30, borderRadius: 7, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'transparent', border: `1px solid ${C.brd}`, cursor: 'pointer', color: C.t3, transition: 'all 0.15s', flexShrink: 0 }}
+                    onMouseEnter={e => { e.currentTarget.style.background = C.card; e.currentTarget.style.color = C.t1; }}
+                    onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = C.t3; }}
+                  >
+                    <X size={13} />
+                  </button>
+                </div>
 
- {/* Body — two columns */}
- <form onSubmit={handleSubmit} style={{ flex: 1, display: 'grid', gridTemplateColumns: '1fr 300px', minHeight: 0, overflow: 'hidden' }}>
+                {/* Category tabs — identical to Hub tab bar */}
+                <div style={{ marginTop: 4, marginLeft: -2 }}>
+                  <CategoryTabs value={form.category} onChange={handleCategoryChange} />
+                </div>
+              </div>
 
- {/* Left — form */}
- <div className="ch-body" style={{ padding: '20px 24px', borderRight: `1px solid ${T.border}`, display: 'flex', flexDirection: 'column', gap: 18, overflowY: 'auto' }}>
+              {/* ── BODY ──────────────────────────────────────── */}
+              <form onSubmit={handleSubmit} style={{ flex: 1, display: 'grid', gridTemplateColumns: '1fr 300px', minHeight: 0, overflow: 'hidden' }}>
 
- {/* Category */}
- <Field label="Category">
- <CategoryPicker value={form.category} onChange={handleCategoryChange} />
- </Field>
+                {/* Left — form */}
+                <div className="ch-scroll" style={{ padding: '18px 20px', borderRight: `1px solid ${C.brd}`, display: 'flex', flexDirection: 'column', gap: 18, overflowY: 'auto', background: C.bg }}>
 
- {/* Title */}
- <Field label="Challenge title" required>
- <Inp value={form.title} onChange={e => set('title', e.target.value)} placeholder="e.g. Summer Squat Showdown" icon={Trophy} accentColor={cat.color} />
- </Field>
+                  {/* Title */}
+                  <Field label="Challenge Title" required>
+                    <Inp value={form.title} onChange={e => set('title', e.target.value)} placeholder="e.g. Summer Squat Showdown" Icon={Trophy} accentColor={cat.color} />
+                  </Field>
 
- {/* Description */}
- <Field label="Description">
- <Textarea value={form.description} onChange={e => set('description', e.target.value)} placeholder="Describe the rules, what counts, and who can enter…" rows={3} accentColor={cat.color} />
- </Field>
+                  {/* Description */}
+                  <Field label="Description">
+                    <Textarea value={form.description} onChange={e => set('description', e.target.value)} placeholder="Describe the rules, what counts, and who can enter…" rows={3} accentColor={cat.color} />
+                  </Field>
 
- {/* Competition type */}
- <Field label="Competition type">
- <TypePicker value={form.type} onChange={v => set('type', v)} />
- </Field>
+                  {/* Competition type */}
+                  <Field label="Competition Type">
+                    <TypePicker value={form.type} onChange={v => set('type', v)} />
+                  </Field>
 
- {/* Gym vs Gym selectors */}
- {form.type === 'gym_vs_gym' && (
- <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
- <Field label="Home gym" required>
- <Select value={form.gym_id} onChange={e => { const g = gyms.find(x => x.id === e.target.value); set('gym_id', e.target.value); set('gym_name', g?.name || ''); }} accentColor={cat.color}>
- <option value="" style={{ background: '#0d1120' }}>Select gym</option>
- {gyms.map(g => <option key={g.id} value={g.id} style={{ background: '#0d1120' }}>{g.name}</option>)}
- </Select>
- </Field>
- <Field label="vs. gym" required>
- <Select value={form.competing_gym_id} onChange={e => { const g = gyms.find(x => x.id === e.target.value); set('competing_gym_id', e.target.value); set('competing_gym_name', g?.name || ''); }} accentColor={cat.color}>
- <option value="" style={{ background: '#0d1120' }}>Select gym</option>
- {gyms.map(g => <option key={g.id} value={g.id} style={{ background: '#0d1120' }}>{g.name}</option>)}
- </Select>
- </Field>
- </div>
- )}
+                  {/* Gym vs Gym selectors */}
+                  {form.type === 'gym_vs_gym' && (
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                      <Field label="Home Gym" required>
+                        <Sel value={form.gym_id} onChange={e => { const g = gyms.find(x => x.id === e.target.value); set('gym_id', e.target.value); set('gym_name', g?.name || ''); }} accentColor={cat.color}>
+                          <option value="" style={{ background: C.card }}>Select gym</option>
+                          {gyms.map(g => <option key={g.id} value={g.id} style={{ background: C.card }}>{g.name}</option>)}
+                        </Sel>
+                      </Field>
+                      <Field label="vs. Gym" required>
+                        <Sel value={form.competing_gym_id} onChange={e => { const g = gyms.find(x => x.id === e.target.value); set('competing_gym_id', e.target.value); set('competing_gym_name', g?.name || ''); }} accentColor={cat.color}>
+                          <option value="" style={{ background: C.card }}>Select gym</option>
+                          {gyms.map(g => <option key={g.id} value={g.id} style={{ background: C.card }}>{g.name}</option>)}
+                        </Sel>
+                      </Field>
+                    </div>
+                  )}
 
- {/* Lifting-specific options */}
- {form.category === 'lifting' && (
- <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
- <Field label="Exercise">
- <Select value={form.exercise} onChange={e => set('exercise', e.target.value)} accentColor={cat.color}>
- {EXERCISES.map(ex => <option key={ex} value={ex} style={{ background: '#0d1120' }}>{ex}</option>)}
- </Select>
- </Field>
- <Field label="Goal type">
- <Select value={form.goal_type} onChange={e => set('goal_type', e.target.value)} accentColor={cat.color}>
- {GOAL_TYPES.map(g => <option key={g.value} value={g.value} style={{ background: '#0d1120' }}>{g.label}</option>)}
- </Select>
- </Field>
- </div>
- )}
+                  {/* Lifting-specific */}
+                  {form.category === 'lifting' && (
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                      <Field label="Exercise">
+                        <Sel value={form.exercise} onChange={e => set('exercise', e.target.value)} accentColor={cat.color}>
+                          {EXERCISES.map(ex => <option key={ex} value={ex} style={{ background: C.card }}>{ex}</option>)}
+                        </Sel>
+                      </Field>
+                      <Field label="Goal Type">
+                        <Sel value={form.goal_type} onChange={e => set('goal_type', e.target.value)} accentColor={cat.color}>
+                          {GOAL_TYPES.map(g => <option key={g.value} value={g.value} style={{ background: C.card }}>{g.label}</option>)}
+                        </Sel>
+                      </Field>
+                    </div>
+                  )}
 
- {/* Attendance / streak target */}
- {(form.category === 'attendance' || form.category === 'streak') && (
- <Field label={form.category === 'streak' ? 'Streak target (days)' : 'Check-in target'}
- hint={form.category === 'streak' ? 'Members aim to hit this consecutive streak' : 'Number of check-ins to win or qualify'}>
- <Inp type="number" value={form.target_value} onChange={e => set('target_value', parseInt(e.target.value) || 0)} placeholder={form.category === 'streak' ? '30' : '20'} icon={Target} accentColor={cat.color} min="1" />
- </Field>
- )}
+                  {/* Attendance / streak target */}
+                  {(form.category === 'attendance' || form.category === 'streak') && (
+                    <Field
+                      label={form.category === 'streak' ? 'Streak Target (days)' : 'Check-in Target'}
+                      hint={form.category === 'streak' ? 'Members aim to hit this consecutive streak' : 'Number of check-ins to win or qualify'}
+                    >
+                      <Inp type="number" value={form.target_value} onChange={e => set('target_value', parseInt(e.target.value) || 0)} placeholder={form.category === 'streak' ? '30' : '20'} Icon={Target} accentColor={cat.color} min="1" />
+                    </Field>
+                  )}
 
- {/* Date range */}
- <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
- <Field label="Start date" required>
- <Inp type="date" value={form.start_date} onChange={e => set('start_date', e.target.value)} icon={Calendar} accentColor={cat.color} />
- </Field>
- <Field label="End date" required>
- <Inp type="date" value={form.end_date} onChange={e => set('end_date', e.target.value)} icon={Calendar} accentColor={cat.color} />
- </Field>
- </div>
+                  {/* Date range */}
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                    <Field label="Start Date" required>
+                      <Inp type="date" value={form.start_date} onChange={e => set('start_date', e.target.value)} Icon={Calendar} accentColor={cat.color} />
+                    </Field>
+                    <Field label="End Date" required>
+                      <Inp type="date" value={form.end_date} onChange={e => set('end_date', e.target.value)} Icon={Calendar} accentColor={cat.color} />
+                    </Field>
+                  </div>
 
- {/* Reward */}
- <Field label="Reward" hint="Optional — shown to members as the prize for winning">
- <Inp value={form.reward} onChange={e => set('reward', e.target.value)} placeholder="e.g. Free protein shake, £10 gift card" icon={Gift} accentColor={cat.color} />
- </Field>
+                  {/* Reward */}
+                  <Field label="Reward" hint="Optional — shown to members as the prize for winning">
+                    <Inp value={form.reward} onChange={e => set('reward', e.target.value)} placeholder="e.g. Free protein shake, £10 gift card" Icon={Gift} accentColor={cat.color} />
+                  </Field>
 
- {/* Toggles */}
- <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
- {[
- { key: 'auto_start', label: 'Auto-start', sub: 'Begins on start date automatically' },
- { key: 'send_reminders', label: 'Send reminders',sub: 'Notify participants weekly' },
- ].map(toggle => (
- <div key={toggle.key} onClick={() => set(toggle.key, !form[toggle.key])}
- style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', borderRadius: 10, background: form[toggle.key] ? `${cat.color}08` : T.divider, border: `1px solid ${form[toggle.key] ? cat.color + '22' : T.border}`, cursor: 'pointer', transition: 'all 0.15s' }}>
- <div style={{ flex: 1 }}>
- <div style={{ fontSize: 11, fontWeight: 700, color: form[toggle.key] ? T.text1 : T.text2 }}>{toggle.label}</div>
- <div style={{ fontSize: 9, color: T.text3, marginTop: 1 }}>{toggle.sub}</div>
- </div>
- <div style={{ flexShrink: 0, width: 36, height: 20, borderRadius: 99, background: form[toggle.key] ? cat.color : 'rgba(255,255,255,0.1)', transition: 'background 0.2s', position: 'relative' }}>
- <div style={{ position: 'absolute', top: 2, left: form[toggle.key] ? 18 : 2, width: 16, height: 16, borderRadius: '50%', background: '#fff', transition: 'left 0.2s', boxShadow: '0 1px 4px rgba(0,0,0,0.3)' }} />
- </div>
- </div>
- ))}
- </div>
- </div>
+                  {/* Toggles */}
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+                    <Toggle checked={form.auto_start}      onChange={v => set('auto_start', v)}      color={cat.color} label="Auto-start"      sub="Begins on start date automatically" />
+                    <Toggle checked={form.send_reminders}  onChange={v => set('send_reminders', v)}  color={cat.color} label="Send reminders"  sub="Notify participants weekly" />
+                  </div>
+                </div>
 
- {/* Right — live preview */}
- <div style={{ padding: '20px 18px', background: T.bg, overflowY: 'auto' }}>
- <ChallengePreview form={form} gyms={gyms} />
- </div>
- </form>
+                {/* Right — live preview */}
+                <div className="ch-scroll" style={{ padding: '18px 16px', background: C.surface, overflowY: 'auto', borderLeft: `1px solid ${C.brd}` }}>
+                  <ChallengePreview form={form} gyms={gyms} />
+                </div>
+              </form>
 
- {/* Footer */}
- <div style={{ flexShrink: 0, padding: '14px 24px 18px', borderTop: `1px solid ${T.border}`, display: 'flex', alignItems: 'center', gap: 10, background: '#07101f' }}>
- <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 7 }}>
- {canSave ? (
- <>
- <CheckCircle style={{ width: 12, height: 12, color: T.green, flexShrink: 0 }} />
- <span style={{ fontSize: 11, color: T.text3 }}>
- {form.title}
- {form.end_date ? ` · ends ${format(parseISO(form.end_date), 'MMM d')}` : ''}
- {form.reward ? ` · ${form.reward}` : ''}
- </span>
- </>
- ) : (
- <span style={{ fontSize: 11, color: T.text3 }}>
- {!form.title.trim() ? 'Add a challenge title to continue' : 'Set an end date to continue'}
- </span>
- )}
- </div>
- <button className="ch-cancel" onClick={handleClose}
- style={{ padding: '10px 20px', borderRadius: 10, background: T.divider, color: T.text2, border: `1px solid ${T.border}`, fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.15s' }}>
- Cancel
- </button>
- <button className="ch-save" type="submit" onClick={handleSubmit} disabled={!canSave}
- style={{ padding: '10px 24px', borderRadius: 10, background: canSave ? `linear-gradient(135deg,${cat.color},${cat.color}cc)` : 'rgba(255,255,255,0.06)', color: canSave ? '#fff' : T.text3, border: 'none', fontSize: 12, fontWeight: 800, cursor: canSave ? 'pointer' : 'default', fontFamily: 'inherit', display: 'flex', alignItems: 'center', gap: 7, transition: 'all 0.2s', letterSpacing: '-0.01em', boxShadow: canSave ? `0 4px 16px ${cat.color}35` : 'none', minWidth: 160, justifyContent: 'center' }}>
- {isLoading
- ? <><div style={{ width: 12, height: 12, border: '2px solid rgba(255,255,255,0.3)', borderTop: '2px solid #fff', borderRadius: '50%', animation: 'ch-spin 0.7s linear infinite' }} /> Creating…</>
- : <>Create Challenge</>
- }
- </button>
- </div>
- </motion.div>
- </motion.div>
- )}
- </AnimatePresence>
- </>
- );
+              {/* ── FOOTER ────────────────────────────────────── */}
+              <div style={{ flexShrink: 0, padding: '12px 20px', borderTop: `1px solid ${C.brd}`, display: 'flex', alignItems: 'center', gap: 10, background: C.surface }}>
+                {/* Status */}
+                <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 6 }}>
+                  {canSave ? (
+                    <>
+                      <CheckCircle size={11} color={C.green} />
+                      <span style={{ fontSize: 10.5, color: C.t3, ...MONO }}>
+                        {form.title}
+                        {form.end_date ? ` · ends ${format(parseISO(form.end_date), 'MMM d')}` : ''}
+                        {form.reward ? ` · ${form.reward}` : ''}
+                      </span>
+                    </>
+                  ) : (
+                    <span style={{ fontSize: 10.5, color: C.t3 }}>
+                      {!form.title.trim() ? 'Add a challenge title to continue' : 'Set an end date to continue'}
+                    </span>
+                  )}
+                </div>
+
+                {/* Cancel */}
+                <button className="ch-cancel" onClick={handleClose} type="button">Cancel</button>
+
+                {/* Create — solid cyan "Review & Schedule" style */}
+                <button
+                  type="submit"
+                  onClick={handleSubmit}
+                  disabled={!canSave}
+                  style={{
+                    padding: '9px 22px', borderRadius: 8, border: 'none',
+                    fontFamily: FONT, fontSize: 13, fontWeight: 700, letterSpacing: '-0.01em',
+                    background: canSave ? C.cyan : C.brd2,
+                    color: canSave ? '#000' : C.t3,
+                    cursor: canSave ? 'pointer' : 'default',
+                    display: 'inline-flex', alignItems: 'center', gap: 7,
+                    transition: 'opacity 0.15s, box-shadow 0.15s',
+                    boxShadow: canSave ? `0 0 24px ${C.cyan}40` : 'none',
+                    opacity: canSave ? 1 : 0.4,
+                    minWidth: 165, justifyContent: 'center',
+                  }}
+                  onMouseEnter={e => { if (canSave) e.currentTarget.style.opacity = '0.88'; }}
+                  onMouseLeave={e => { if (canSave) e.currentTarget.style.opacity = '1'; }}
+                >
+                  {isLoading
+                    ? <><div style={{ width: 12, height: 12, border: '2px solid rgba(0,0,0,0.2)', borderTop: '2px solid #000', borderRadius: '50%', animation: 'ch-spin 0.7s linear infinite' }} /> Creating…</>
+                    : <><Zap size={13} /> Create Challenge</>}
+                </button>
+              </div>
+
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </>
+  );
 }
