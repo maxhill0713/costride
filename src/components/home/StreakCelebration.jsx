@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import ShareWorkoutScreen from '../profile/ShareWorkoutScreen';
 import WorkoutDaysCelebration from './WorkoutDaysCelebration';
@@ -25,71 +25,6 @@ function StreakCelebration({
   setShowDaysCelebration,
   setJustLoggedDay,
 }) {
-
-  // Drive the streak animation imperatively on the injected DOM nodes
-  useEffect(() => {
-    if (!showStreakCelebration) return;
-
-    const stage  = document.getElementById('streak-anim-stage');
-    const p1     = document.getElementById('streak-anim-p1');
-    const p2     = document.getElementById('streak-anim-p2');
-    const numEl  = document.getElementById('streak-anim-num');
-    const lblEl  = document.getElementById('streak-anim-lbl');
-    if (!stage || !p1 || !p2 || !numEl || !lblEl) return;
-
-    // Reset
-    stage.style.opacity = '0';
-    stage.style.animation = 'none';
-    numEl.style.opacity = '0';
-    numEl.style.transform = 'scale(0.5)';
-    numEl.style.transition = '';
-    numEl.textContent = String(Math.max(0, celebrationStreakNum - 1));
-    p1.style.display = 'block';
-    p2.style.display = 'none';
-    p2.style.animation = 'none';
-    lblEl.style.display = 'none';
-    lblEl.style.opacity = '0';
-    lblEl.style.animation = 'none';
-    lblEl.textContent = 'Day Streak! 🔥';
-    lblEl.style.fontSize = '22px';
-    lblEl.style.fontWeight = '900';
-    lblEl.style.color = '#fff';
-    lblEl.style.textShadow = '0 2px 8px rgba(0,0,0,0.7)';
-    lblEl.style.letterSpacing = '-0.02em';
-    lblEl.style.marginTop = '4px';
-
-    const timers = [];
-
-    // t=0 — stage bounces in
-    void stage.offsetWidth;
-    stage.style.animation = 'streakBounceIn 0.62s cubic-bezier(0.34,1.56,0.64,1) forwards';
-    stage.style.opacity = '1';
-
-    // t=500ms — number pops in (old streak)
-    timers.push(setTimeout(() => {
-      void numEl.offsetWidth;
-      numEl.style.animation = 'streakNumPop 0.55s cubic-bezier(0.34,1.56,0.64,1) forwards';
-    }, 500));
-
-    // t=1000ms — swap pose, glow, update number to new streak
-    timers.push(setTimeout(() => {
-      // Swap pose
-      p1.style.display = 'none';
-      p2.style.display = 'block';
-      void p2.offsetWidth;
-      p2.style.animation = 'streakIconPop 0.55s cubic-bezier(0.34,1.56,0.64,1) forwards';
-      // Glow pulse on stage
-      stage.style.animation = 'streakGlowPulse 1s ease-in-out infinite';
-      // Update number
-      numEl.textContent = String(celebrationStreakNum);
-      void numEl.offsetWidth;
-      numEl.style.animation = 'streakNumPop 0.5s cubic-bezier(0.34,1.56,0.64,1) forwards';
-    }, 1000));
-
-    // label stays hidden
-
-    return () => timers.forEach(clearTimeout);
-  }, [showStreakCelebration]);
 
   return (
     <>
@@ -136,12 +71,12 @@ function StreakCelebration({
 
             <div style={{ width: '100%', maxWidth: 360, display: 'flex', flexDirection: 'column', gap: 10 }}>
               {celebrationChallenges.map((challenge, idx) => {
-                const prevPct = Math.min(100, Math.round((challenge.previous_value / challenge.target_value) * 100));
-                const newPct = Math.min(100, Math.round((challenge.new_value / challenge.target_value) * 100));
+                const prevPct = Math.min(100, Math.round(((challenge.previous_value || 0) / (challenge.target_value || 1)) * 100));
+                const newPct = Math.min(100, Math.round(((challenge.new_value || 0) / (challenge.target_value || 1)) * 100));
                 const isComplete = newPct >= 100;
                 return (
                   <motion.div
-                    key={challenge.id}
+                    key={challenge.id || idx}
                     initial={{ opacity: 0, y: 14, scale: 0.96 }}
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     transition={{ delay: 0.1 + idx * 0.12, type: 'spring', damping: 28, stiffness: 280 }}
@@ -169,7 +104,7 @@ function StreakCelebration({
                         }}>
                           {challenge.image_url
                             ? <img src={challenge.image_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                            : <span style={{ fontSize: 22 }}>🏋️</span>
+                            : <span style={{ fontSize: 22 }}>{challenge.emoji || '🏋️'}</span>
                           }
                         </div>
                         <div style={{ flex: 1, minWidth: 0 }}>
