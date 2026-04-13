@@ -1,12 +1,13 @@
 import React, { useState, useMemo, useRef, useEffect, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
-  CalendarDays, User, Send, ChevronRight, CheckCircle, X, BadgeCheck,
-  Paperclip, Camera, Image, Film, FileText, Play, Download,
+  ChevronLeft, ChevronRight, CheckCircle, X, BadgeCheck,
+  Paperclip, Camera, Image, Film, FileText, Play, Download, Send,
 } from 'lucide-react';
 
-/* ─────────── helpers ─────────── */
+/* ─── helpers ─── */
 const ini = (n = '') => (n || '?').split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
 const fmtTime = (date) => {
   if (!date) return '';
@@ -18,7 +19,7 @@ const fmtTime = (date) => {
   return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
 };
 
-/* ─────────── MediaBubble ─────────── */
+/* ─── MediaBubble ─── */
 function MediaBubble({ url, type, name, isMe }) {
   const [playing, setPlaying] = useState(false);
   if (type === 'image') {
@@ -51,7 +52,7 @@ function MediaBubble({ url, type, name, isMe }) {
   );
 }
 
-/* ─────────── AttachMenu ─────────── */
+/* ─── AttachMenu ─── */
 function AttachMenu({ onPickFile, onPickCamera, onClose }) {
   useEffect(() => {
     const handler = (e) => { if (!e.target.closest('[data-attach-menu]')) onClose(); };
@@ -68,7 +69,7 @@ function AttachMenu({ onPickFile, onPickCamera, onClose }) {
   return (
     <div data-attach-menu style={{ position: 'absolute', bottom: '100%', left: 0, marginBottom: 8, zIndex: 20, background: 'linear-gradient(160deg, #141b2e 0%, #0b0f1e 100%)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 16, padding: 6, display: 'flex', flexDirection: 'column', gap: 2, boxShadow: '0 8px 32px rgba(0,0,0,0.6)', minWidth: 160 }}>
       {items.map(({ icon: Icon, label, action }) => (
-        <button key={label} onClick={action} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '9px 12px', borderRadius: 10, border: 'none', background: 'none', cursor: 'pointer', fontSize: 13, fontWeight: 600, color: '#cbd5e1', fontFamily: 'inherit', transition: 'background 0.1s' }}
+        <button key={label} onClick={action} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '9px 12px', borderRadius: 10, border: 'none', background: 'none', cursor: 'pointer', fontSize: 13, fontWeight: 600, color: '#cbd5e1', fontFamily: 'inherit' }}
           onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.06)'}
           onMouseLeave={e => e.currentTarget.style.background = 'none'}
         >
@@ -82,7 +83,7 @@ function AttachMenu({ onPickFile, onPickCamera, onClose }) {
   );
 }
 
-/* ─────────── MediaPreviewStrip ─────────── */
+/* ─── MediaPreviewStrip ─── */
 function MediaPreviewStrip({ previews, onRemove }) {
   if (!previews.length) return null;
   return (
@@ -110,13 +111,10 @@ function MediaPreviewStrip({ previews, onRemove }) {
   );
 }
 
-/* ─────────── CoachMessages ─────────── */
-// hideEmpty: when true, don't render the "No messages yet" placeholder —
-// the parent already shows coach info so the empty state is redundant.
-function CoachMessages({ currentUser, hideEmpty = false }) {
-  const [openThread, setOpenThread] = useState(null);
-  const [replyText, setReplyText]   = useState('');
-  const [previews, setPreviews]     = useState([]);
+/* ─── ChatPage — full-screen WhatsApp/Instagram style ─── */
+function ChatPage({ thread, currentUser, onBack }) {
+  const [replyText, setReplyText] = useState('');
+  const [previews, setPreviews]   = useState([]);
   const [showAttach, setShowAttach] = useState(false);
   const [uploading, setUploading]   = useState(false);
   const bottomRef    = useRef(null);
@@ -124,46 +122,7 @@ function CoachMessages({ currentUser, hideEmpty = false }) {
   const fileAcceptRef = useRef('image/*,video/*');
   const qc = useQueryClient();
 
-  const { data: received = [], isLoading } = useQuery({
-    queryKey: ['coachMessages', currentUser?.id],
-    queryFn: () => base44.entities.Message.filter({ receiver_id: currentUser.id }, 'created_date', 200),
-    enabled: !!currentUser, staleTime: 15 * 1000, refetchInterval: 15 * 1000,
-  });
-  const { data: sent = [] } = useQuery({
-    queryKey: ['coachMessagesSent', currentUser?.id],
-    queryFn: () => base44.entities.Message.filter({ sender_id: currentUser.id }, 'created_date', 200),
-    enabled: !!currentUser, staleTime: 15 * 1000, refetchInterval: 15 * 1000,
-  });
-
-  const threads = useMemo(() => {
-    const map = {};
-    // Build threads from all received messages
-    received.forEach(msg => {
-      const id = msg.sender_id;
-      if (!map[id]) map[id] = { sender_id: id, name: msg.sender_name || 'Coach', avatar: msg.sender_avatar || null, messages: [] };
-      map[id].messages.push(msg);
-    });
-    // Also include sent messages in the thread
-    sent.forEach(msg => {
-      const id = msg.receiver_id;
-      if (map[id]) map[id].messages.push(msg);
-    });
-    Object.values(map).forEach(t => {
-      const seen = new Set();
-      t.messages = t.messages.filter(m => { if (seen.has(m.id)) return false; seen.add(m.id); return true; });
-      t.messages.sort((a, b) => new Date(a.created_date) - new Date(b.created_date));
-      t.unread = t.messages.filter(m => m.receiver_id === currentUser?.id && !m.read).length;
-    });
-    return Object.values(map).sort((a, b) => {
-      const la = a.messages[a.messages.length - 1]?.created_date || 0;
-      const lb = b.messages[b.messages.length - 1]?.created_date || 0;
-      return new Date(lb) - new Date(la);
-    });
-  }, [received, sent, currentUser?.id]);
-
-  useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [openThread, received, sent]);
-
-  const activeThread = threads.find(t => t.sender_id === openThread);
+  useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: 'instant' }); }, [thread?.messages?.length]);
 
   const handlePickFile = (accept) => {
     fileAcceptRef.current = accept;
@@ -185,8 +144,7 @@ function CoachMessages({ currentUser, hideEmpty = false }) {
 
   const sendReply = useMutation({
     mutationFn: async ({ content, mediaUrl, mediaType, mediaName }) => {
-      const receiverName = threads.find(t => t.sender_id === openThread)?.name || 'Coach';
-      return base44.entities.Message.create({ sender_id: currentUser.id, sender_name: currentUser.full_name || currentUser.email, sender_avatar: currentUser.avatar_url || null, receiver_id: openThread, receiver_name: receiverName, content: content || '', media_url: mediaUrl || null, media_type: mediaType || null, media_name: mediaName || null, read: false });
+      return base44.entities.Message.create({ sender_id: currentUser.id, sender_name: currentUser.full_name || currentUser.email, sender_avatar: currentUser.avatar_url || null, receiver_id: thread.sender_id, receiver_name: thread.name, content: content || '', media_url: mediaUrl || null, media_type: mediaType || null, media_name: mediaName || null, read: false });
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['coachMessages', currentUser?.id] });
@@ -217,100 +175,259 @@ function CoachMessages({ currentUser, hideEmpty = false }) {
   };
 
   const canSend = (replyText.trim().length > 0 || previews.length > 0) && !uploading && !sendReply.isPending;
+  const messages = thread?.messages || [];
 
-  /* ── Thread view ── */
-  if (activeThread) {
-    return (
-      <div style={{ display: 'flex', flexDirection: 'column', height: '72vh', background: 'linear-gradient(160deg, #0c1128 0%, #060810 100%)', borderRadius: 20, border: '1px solid rgba(255,255,255,0.08)', overflow: 'hidden', boxShadow: '0 20px 60px rgba(0,0,0,0.7)' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '13px 16px', borderBottom: '1px solid rgba(255,255,255,0.07)', flexShrink: 0, background: 'rgba(255,255,255,0.015)', backdropFilter: 'blur(12px)' }}>
-          <button onClick={() => setOpenThread(null)} style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 10, cursor: 'pointer', padding: '6px 8px', display: 'flex', color: '#94a3b8', flexShrink: 0 }}>
-            <ChevronRight style={{ width: 16, height: 16, transform: 'rotate(180deg)' }} />
-          </button>
-          <div style={{ position: 'relative', flexShrink: 0 }}>
-            <div style={{ width: 40, height: 40, borderRadius: '50%', overflow: 'hidden', background: activeThread.avatar ? 'transparent' : 'rgba(99,102,241,0.15)', border: '2px solid rgba(99,102,241,0.5)', boxShadow: '0 0 14px rgba(99,102,241,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, fontWeight: 800, color: '#818cf8' }}>
-              {activeThread.avatar ? <img src={activeThread.avatar} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : ini(activeThread.name)}
-            </div>
-            <div style={{ position: 'absolute', bottom: 1, right: 1, width: 9, height: 9, borderRadius: '50%', background: '#10b981', border: '2px solid #060810', boxShadow: '0 0 6px rgba(16,185,129,0.6)' }} />
+  return (
+    <div style={{
+      position: 'fixed', inset: 0, zIndex: 200,
+      background: 'linear-gradient(to bottom right, #02040a, #0d2360, #02040a)',
+      display: 'flex', flexDirection: 'column',
+      paddingTop: 'env(safe-area-inset-top)',
+    }}>
+      {/* Header */}
+      <div style={{
+        display: 'flex', alignItems: 'center', gap: 12,
+        padding: '12px 16px',
+        borderBottom: '1px solid rgba(255,255,255,0.07)',
+        background: 'rgba(8,12,28,0.85)',
+        backdropFilter: 'blur(16px)',
+        flexShrink: 0,
+      }}>
+        <button onClick={onBack} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4, display: 'flex', alignItems: 'center', color: '#94a3b8', flexShrink: 0 }}>
+          <ChevronLeft style={{ width: 24, height: 24 }} />
+        </button>
+        {/* Avatar */}
+        <div style={{ position: 'relative', flexShrink: 0 }}>
+          <div style={{ width: 40, height: 40, borderRadius: '50%', overflow: 'hidden', background: thread?.avatar ? 'transparent' : 'rgba(99,102,241,0.15)', border: '2px solid rgba(99,102,241,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, fontWeight: 800, color: '#818cf8' }}>
+            {thread?.avatar ? <img src={thread.avatar} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : ini(thread?.name)}
           </div>
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <p style={{ fontSize: 14, fontWeight: 800, color: '#f1f5f9', margin: 0, letterSpacing: '-0.01em' }}>{activeThread.name}</p>
-            <p style={{ fontSize: 11, color: '#22c55e', margin: '1px 0 0', fontWeight: 600 }}>Online · Coach</p>
-          </div>
+          <div style={{ position: 'absolute', bottom: 1, right: 1, width: 9, height: 9, borderRadius: '50%', background: '#10b981', border: '2px solid #02040a', boxShadow: '0 0 6px rgba(16,185,129,0.6)' }} />
         </div>
+        {/* Name + status */}
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <p style={{ fontSize: 15, fontWeight: 800, color: '#f1f5f9', margin: 0, letterSpacing: '-0.01em' }}>{thread?.name}</p>
+          <p style={{ fontSize: 11, color: '#22c55e', margin: '1px 0 0', fontWeight: 600 }}>Online · Coach</p>
+        </div>
+      </div>
 
-        <div style={{ flex: 1, overflowY: 'auto', padding: '14px', display: 'flex', flexDirection: 'column', gap: 8 }}>
-          {activeThread.messages.map((msg, i) => {
+      {/* Messages */}
+      <div style={{ flex: 1, overflowY: 'auto', padding: '14px 14px 8px', display: 'flex', flexDirection: 'column', gap: 0, WebkitOverflowScrolling: 'touch' }}>
+        {messages.length === 0 ? (
+          <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', paddingTop: 60 }}>
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ width: 56, height: 56, borderRadius: '50%', background: 'rgba(99,102,241,0.1)', border: '1px solid rgba(99,102,241,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px' }}>
+                <Send style={{ width: 22, height: 22, color: '#6366f1' }} />
+              </div>
+              <p style={{ fontSize: 14, fontWeight: 700, color: '#e2e8f0', margin: '0 0 4px' }}>Start the conversation</p>
+              <p style={{ fontSize: 12, color: '#475569' }}>Send a message to your coach</p>
+            </div>
+          </div>
+        ) : (
+          messages.map((msg, i) => {
             const isMe = msg.sender_id === currentUser?.id;
-            const prev = activeThread.messages[i - 1];
+            const prev = messages[i - 1];
             const showAvatar = !isMe && (i === 0 || prev?.sender_id !== msg.sender_id);
             const isGrouped = i > 0 && prev?.sender_id === msg.sender_id && (new Date(msg.created_date) - new Date(prev?.created_date)) < 60000;
+            const showTime = i === messages.length - 1 || (new Date(messages[i + 1]?.created_date) - new Date(msg.created_date)) > 300000;
             return (
-              <div key={msg.id || i} style={{ display: 'flex', justifyContent: isMe ? 'flex-end' : 'flex-start', alignItems: 'flex-end', gap: 8, marginTop: isGrouped ? 2 : 6 }}>
+              <div key={msg.id || i} style={{ display: 'flex', justifyContent: isMe ? 'flex-end' : 'flex-start', alignItems: 'flex-end', gap: 8, marginTop: isGrouped ? 2 : 10 }}>
+                {/* Coach avatar placeholder for alignment */}
                 {!isMe && (
                   <div style={{ width: 28, flexShrink: 0 }}>
-                    {showAvatar && <div style={{ width: 28, height: 28, borderRadius: '50%', overflow: 'hidden', background: activeThread.avatar ? 'transparent' : 'rgba(99,102,241,0.15)', border: '2px solid rgba(99,102,241,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 9, fontWeight: 800, color: '#818cf8' }}>
-                      {activeThread.avatar ? <img src={activeThread.avatar} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : ini(activeThread.name)}
-                    </div>}
+                    {showAvatar && (
+                      <div style={{ width: 28, height: 28, borderRadius: '50%', overflow: 'hidden', background: thread?.avatar ? 'transparent' : 'rgba(99,102,241,0.15)', border: '1.5px solid rgba(99,102,241,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 9, fontWeight: 800, color: '#818cf8' }}>
+                        {thread?.avatar ? <img src={thread.avatar} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : ini(thread?.name)}
+                      </div>
+                    )}
                   </div>
                 )}
-                <div style={{ maxWidth: '75%', display: 'flex', flexDirection: 'column', gap: 2, alignItems: isMe ? 'flex-end' : 'flex-start' }}>
-                  {showAvatar && <span style={{ fontSize: 10, color: '#475569', fontWeight: 600, paddingLeft: 4, marginBottom: 1 }}>{activeThread.name}</span>}
+                <div style={{ maxWidth: '72%', display: 'flex', flexDirection: 'column', gap: 2, alignItems: isMe ? 'flex-end' : 'flex-start' }}>
                   {msg.media_url && <MediaBubble url={msg.media_url} type={msg.media_type || 'file'} name={msg.media_name} isMe={isMe} />}
-                  {msg.content && <div style={{ padding: '10px 14px', borderRadius: isMe ? '18px 18px 4px 18px' : '18px 18px 18px 4px', background: isMe ? 'linear-gradient(135deg, #4f46e5, #6366f1)' : 'rgba(255,255,255,0.07)', border: isMe ? 'none' : '1px solid rgba(255,255,255,0.08)', fontSize: 14, color: '#e2e8f0', lineHeight: 1.55, boxShadow: isMe ? '0 2px 12px rgba(99,102,241,0.35)' : 'none' }}>{msg.content}</div>}
-                  <span style={{ fontSize: 10, color: '#1e2d42', paddingLeft: 4, paddingRight: 4 }}>{fmtTime(msg.created_date)}</span>
+                  {msg.content && (
+                    <div style={{
+                      padding: '10px 14px',
+                      borderRadius: isMe ? '20px 20px 5px 20px' : '20px 20px 20px 5px',
+                      background: isMe
+                        ? 'linear-gradient(135deg, #3b82f6, #2563eb)'
+                        : 'rgba(255,255,255,0.08)',
+                      border: isMe ? 'none' : '1px solid rgba(255,255,255,0.1)',
+                      fontSize: 14.5,
+                      color: '#f1f5f9',
+                      lineHeight: 1.5,
+                      boxShadow: isMe ? '0 2px 12px rgba(59,130,246,0.3)' : 'none',
+                    }}>{msg.content}</div>
+                  )}
+                  {showTime && <span style={{ fontSize: 10, color: '#334155', paddingLeft: 4, paddingRight: 4, marginTop: 1 }}>{fmtTime(msg.created_date)}</span>}
                 </div>
               </div>
             );
-          })}
-          <div ref={bottomRef} />
-        </div>
+          })
+        )}
+        <div ref={bottomRef} />
+      </div>
 
-        <MediaPreviewStrip previews={previews} onRemove={removePreview} />
+      <MediaPreviewStrip previews={previews} onRemove={removePreview} />
 
-        <div style={{ padding: '10px 12px 12px', borderTop: '1px solid rgba(255,255,255,0.07)', display: 'flex', gap: 8, alignItems: 'flex-end', flexShrink: 0, background: 'rgba(0,0,0,0.2)', position: 'relative' }}>
-          {showAttach && <AttachMenu onPickFile={handlePickFile} onPickCamera={handlePickCamera} onClose={() => setShowAttach(false)} />}
-          <button onClick={() => setShowAttach(v => !v)} style={{ width: 36, height: 36, borderRadius: 11, display: 'flex', alignItems: 'center', justifyContent: 'center', background: showAttach ? 'rgba(99,102,241,0.2)' : 'rgba(255,255,255,0.06)', border: `1px solid ${showAttach ? 'rgba(99,102,241,0.4)' : 'rgba(255,255,255,0.09)'}`, cursor: 'pointer', transition: 'all 0.15s', flexShrink: 0 }}>
-            <Paperclip style={{ width: 15, height: 15, color: showAttach ? '#818cf8' : '#475569' }} />
-          </button>
-          <textarea value={replyText} onChange={e => setReplyText(e.target.value)} onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); } }} placeholder={`Message ${activeThread.name}…`} rows={1}
-            style={{ flex: 1, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.09)', borderRadius: 18, padding: '9px 14px', color: '#e2e8f0', fontSize: 14, resize: 'none', outline: 'none', fontFamily: 'inherit', lineHeight: 1.5, maxHeight: 96, overflowY: 'auto', transition: 'border-color 0.15s' }}
-            onFocus={e => e.target.style.borderColor = 'rgba(99,102,241,0.5)'}
-            onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.09)'}
-          />
-          <button onClick={handleSend} disabled={!canSend} style={{ width: 36, height: 36, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: canSend ? 'linear-gradient(135deg, #4f46e5, #6366f1)' : 'rgba(255,255,255,0.05)', border: 'none', cursor: canSend ? 'pointer' : 'default', transition: 'all 0.15s', flexShrink: 0, boxShadow: canSend ? '0 4px 14px rgba(99,102,241,0.5)' : 'none' }}>
-            {uploading || sendReply.isPending
-              ? <div className="animate-spin" style={{ width: 14, height: 14, borderRadius: '50%', border: '2px solid rgba(255,255,255,0.3)', borderTopColor: '#fff' }} />
-              : <Send style={{ width: 14, height: 14, color: canSend ? '#fff' : '#334155', marginLeft: 1 }} />
-            }
-          </button>
-        </div>
+      {/* Input bar */}
+      <div style={{
+        padding: '10px 12px',
+        paddingBottom: 'calc(10px + env(safe-area-inset-bottom))',
+        borderTop: '1px solid rgba(255,255,255,0.07)',
+        display: 'flex', gap: 8, alignItems: 'flex-end',
+        flexShrink: 0,
+        background: 'rgba(8,12,28,0.9)',
+        backdropFilter: 'blur(16px)',
+        position: 'relative',
+      }}>
+        {showAttach && <AttachMenu onPickFile={handlePickFile} onPickCamera={handlePickCamera} onClose={() => setShowAttach(false)} />}
+        <button onClick={() => setShowAttach(v => !v)} style={{ width: 36, height: 36, borderRadius: 11, display: 'flex', alignItems: 'center', justifyContent: 'center', background: showAttach ? 'rgba(99,102,241,0.2)' : 'rgba(255,255,255,0.06)', border: `1px solid ${showAttach ? 'rgba(99,102,241,0.4)' : 'rgba(255,255,255,0.09)'}`, cursor: 'pointer', flexShrink: 0 }}>
+          <Paperclip style={{ width: 15, height: 15, color: showAttach ? '#818cf8' : '#475569' }} />
+        </button>
+        <textarea
+          value={replyText}
+          onChange={e => setReplyText(e.target.value)}
+          onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); } }}
+          placeholder={`Message ${thread?.name ?? 'Coach'}…`}
+          rows={1}
+          style={{ flex: 1, background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 22, padding: '10px 16px', color: '#e2e8f0', fontSize: 14, resize: 'none', outline: 'none', fontFamily: 'inherit', lineHeight: 1.5, maxHeight: 96, overflowY: 'auto' }}
+          onFocus={e => e.target.style.borderColor = 'rgba(99,102,241,0.5)'}
+          onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.1)'}
+        />
+        <button onClick={handleSend} disabled={!canSend} style={{ width: 38, height: 38, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: canSend ? 'linear-gradient(135deg, #3b82f6, #2563eb)' : 'rgba(255,255,255,0.05)', border: 'none', cursor: canSend ? 'pointer' : 'default', flexShrink: 0, boxShadow: canSend ? '0 4px 14px rgba(59,130,246,0.4)' : 'none', transition: 'all 0.15s' }}>
+          {uploading || sendReply.isPending
+            ? <div className="animate-spin" style={{ width: 14, height: 14, borderRadius: '50%', border: '2px solid rgba(255,255,255,0.3)', borderTopColor: '#fff' }} />
+            : <Send style={{ width: 14, height: 14, color: canSend ? '#fff' : '#334155', marginLeft: 1 }} />
+          }
+        </button>
         <input ref={fileInputRef} type="file" multiple style={{ display: 'none' }} onChange={handleFileChange} />
       </div>
-    );
-  }
+    </div>
+  );
+}
 
-  /* ── Loading skeleton ── */
-  if (isLoading) return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 2, borderRadius: 20, border: '1px solid rgba(255,255,255,0.06)', overflow: 'hidden' }}>
-      {[1,2,3].map(i => (
-        <div key={i} style={{ height: 74, background: 'rgba(255,255,255,0.03)', display: 'flex', alignItems: 'center', gap: 14, padding: '0 16px' }}>
-          <div style={{ width: 48, height: 48, borderRadius: '50%', background: 'rgba(255,255,255,0.05)', flexShrink: 0 }} />
-          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 6 }}>
-            <div style={{ height: 12, borderRadius: 6, background: 'rgba(255,255,255,0.06)', width: '55%' }} />
-            <div style={{ height: 10, borderRadius: 5, background: 'rgba(255,255,255,0.04)', width: '80%' }} />
+/* ─── CoachThreadRow — "My Splits" style card ─── */
+function CoachThreadRow({ thread, currentUser, onClick }) {
+  const lastMsg = thread.messages[thread.messages.length - 1];
+  const lastPreview = lastMsg?.media_type === 'image' ? '📷 Photo' : lastMsg?.media_type === 'video' ? '🎥 Video' : lastMsg?.media_type === 'file' ? '📎 File' : (lastMsg?.content || '');
+  const hasUnread = thread.unread > 0;
+
+  return (
+    <button
+      onClick={onClick}
+      style={{
+        width: '100%', display: 'flex', alignItems: 'center', gap: 14,
+        padding: '14px 16px',
+        background: 'linear-gradient(135deg, rgba(30,35,60,0.82) 0%, rgba(8,10,20,0.96) 100%)',
+        border: `1px solid ${hasUnread ? 'rgba(99,102,241,0.35)' : 'rgba(255,255,255,0.07)'}`,
+        borderRadius: 18,
+        cursor: 'pointer',
+        fontFamily: 'inherit',
+        textAlign: 'left',
+        backdropFilter: 'blur(20px)',
+        WebkitBackdropFilter: 'blur(20px)',
+        boxShadow: hasUnread ? '0 4px 20px rgba(99,102,241,0.18)' : '0 2px 12px rgba(0,0,0,0.4)',
+        transition: 'border-color 0.15s, box-shadow 0.15s',
+        position: 'relative',
+        overflow: 'hidden',
+      }}
+      onMouseEnter={e => e.currentTarget.style.borderColor = 'rgba(99,102,241,0.45)'}
+      onMouseLeave={e => e.currentTarget.style.borderColor = hasUnread ? 'rgba(99,102,241,0.35)' : 'rgba(255,255,255,0.07)'}
+    >
+      {/* Top shine line */}
+      <div style={{ position: 'absolute', inset: '0 0 auto 0', height: 1, background: 'linear-gradient(90deg, transparent 10%, rgba(255,255,255,0.08) 50%, transparent 90%)', pointerEvents: 'none' }} />
+
+      {/* Left: name + last message snippet */}
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <p style={{ fontSize: 15, fontWeight: hasUnread ? 800 : 700, color: '#f1f5f9', margin: '0 0 4px', letterSpacing: '-0.01em', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+          {thread.name}
+        </p>
+        <p style={{ fontSize: 12.5, color: hasUnread ? '#94a3b8' : '#475569', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontWeight: hasUnread ? 600 : 400 }}>
+          {lastPreview || 'No messages yet'}
+        </p>
+      </div>
+
+      {/* Right: unread badge + chevron + avatar */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+        {hasUnread && (
+          <div style={{ minWidth: 20, height: 20, borderRadius: 10, background: 'linear-gradient(135deg, #4f46e5, #6366f1)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 800, color: '#fff', padding: '0 5px', boxShadow: '0 2px 8px rgba(99,102,241,0.5)' }}>
+            {thread.unread > 9 ? '9+' : thread.unread}
           </div>
+        )}
+        <ChevronRight style={{ width: 15, height: 15, color: '#334155' }} />
+        {/* Coach avatar on the far right */}
+        <div style={{ position: 'relative', flexShrink: 0 }}>
+          <div style={{ width: 44, height: 44, borderRadius: '50%', overflow: 'hidden', background: thread.avatar ? 'transparent' : 'rgba(99,102,241,0.12)', border: `2px solid ${hasUnread ? 'rgba(99,102,241,0.7)' : 'rgba(99,102,241,0.3)'}`, boxShadow: hasUnread ? '0 0 14px rgba(99,102,241,0.4)' : 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 15, fontWeight: 800, color: '#818cf8' }}>
+            {thread.avatar ? <img src={thread.avatar} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : ini(thread.name)}
+          </div>
+          <div style={{ position: 'absolute', bottom: 1, right: 1, width: 9, height: 9, borderRadius: '50%', background: '#10b981', border: '2px solid #02040a', boxShadow: '0 0 6px rgba(16,185,129,0.5)' }} />
+        </div>
+      </div>
+    </button>
+  );
+}
+
+/* ─── CoachMessages ─── */
+function CoachMessages({ currentUser, hideEmpty = false }) {
+  const [openThread, setOpenThread] = useState(null);
+  const qc = useQueryClient();
+
+  const { data: received = [], isLoading } = useQuery({
+    queryKey: ['coachMessages', currentUser?.id],
+    queryFn: () => base44.entities.Message.filter({ receiver_id: currentUser.id }, 'created_date', 200),
+    enabled: !!currentUser, staleTime: 15 * 1000, refetchInterval: 15 * 1000,
+  });
+  const { data: sent = [] } = useQuery({
+    queryKey: ['coachMessagesSent', currentUser?.id],
+    queryFn: () => base44.entities.Message.filter({ sender_id: currentUser.id }, 'created_date', 200),
+    enabled: !!currentUser, staleTime: 15 * 1000, refetchInterval: 15 * 1000,
+  });
+
+  const threads = useMemo(() => {
+    const map = {};
+    received.forEach(msg => {
+      const id = msg.sender_id;
+      if (!map[id]) map[id] = { sender_id: id, name: msg.sender_name || 'Coach', avatar: msg.sender_avatar || null, messages: [] };
+      map[id].messages.push(msg);
+    });
+    sent.forEach(msg => {
+      const id = msg.receiver_id;
+      if (map[id]) map[id].messages.push(msg);
+    });
+    Object.values(map).forEach(t => {
+      const seen = new Set();
+      t.messages = t.messages.filter(m => { if (seen.has(m.id)) return false; seen.add(m.id); return true; });
+      t.messages.sort((a, b) => new Date(a.created_date) - new Date(b.created_date));
+      t.unread = t.messages.filter(m => m.receiver_id === currentUser?.id && !m.read).length;
+    });
+    return Object.values(map).sort((a, b) => {
+      const la = a.messages[a.messages.length - 1]?.created_date || 0;
+      const lb = b.messages[b.messages.length - 1]?.created_date || 0;
+      return new Date(lb) - new Date(la);
+    });
+  }, [received, sent, currentUser?.id]);
+
+  const activeThread = threads.find(t => t.sender_id === openThread);
+
+  if (isLoading) return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+      {[1, 2].map(i => (
+        <div key={i} style={{ height: 76, borderRadius: 18, background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', padding: '0 16px', gap: 14 }}>
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 6 }}>
+            <div style={{ height: 12, borderRadius: 6, background: 'rgba(255,255,255,0.06)', width: '45%' }} />
+            <div style={{ height: 10, borderRadius: 5, background: 'rgba(255,255,255,0.04)', width: '70%' }} />
+          </div>
+          <div style={{ width: 44, height: 44, borderRadius: '50%', background: 'rgba(255,255,255,0.05)', flexShrink: 0 }} />
         </div>
       ))}
     </div>
   );
 
-  /* ── Empty state — only shown when hideEmpty is false ── */
   if (threads.length === 0) {
     if (hideEmpty) return null;
     return (
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '52px 24px', textAlign: 'center' }}>
         <div style={{ width: 64, height: 64, borderRadius: 20, background: 'rgba(99,102,241,0.08)', border: '1px solid rgba(99,102,241,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 16 }}>
-          <User style={{ width: 28, height: 28, color: '#6366f1' }} />
+          <Send style={{ width: 28, height: 28, color: '#6366f1' }} />
         </div>
         <p style={{ fontSize: 15, fontWeight: 800, color: '#e2e8f0', margin: '0 0 6px', letterSpacing: '-0.01em' }}>No messages yet</p>
         <p style={{ fontSize: 13, color: '#475569', lineHeight: 1.65, maxWidth: 240, margin: 0 }}>When a coach or gym owner messages you, their conversation will appear here.</p>
@@ -318,48 +435,34 @@ function CoachMessages({ currentUser, hideEmpty = false }) {
     );
   }
 
-  /* ── Thread list ── */
   return (
-    <div style={{ borderRadius: 20, border: '1px solid rgba(255,255,255,0.07)', overflow: 'hidden', background: 'linear-gradient(160deg, #0c1128 0%, #060810 100%)', boxShadow: '0 8px 32px rgba(0,0,0,0.5)' }}>
-      {threads.map((thread, idx) => {
-        const lastMsg = thread.messages[thread.messages.length - 1];
-        const isLastFromMe = lastMsg?.sender_id === currentUser?.id;
-        const hasUnread = thread.unread > 0;
-        const lastPreview = lastMsg?.media_type === 'image' ? '📷 Photo' : lastMsg?.media_type === 'video' ? '🎥 Video' : lastMsg?.media_type === 'file' ? '📎 File' : (lastMsg?.content || '');
-        return (
-          <button key={thread.sender_id} onClick={() => setOpenThread(thread.sender_id)}
-            style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 14, padding: '14px 16px', border: 'none', cursor: 'pointer', background: 'transparent', fontFamily: 'inherit', textAlign: 'left', borderBottom: idx < threads.length - 1 ? '1px solid rgba(255,255,255,0.05)' : 'none', transition: 'background 0.1s' }}
-            onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.025)'}
-            onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+    <>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+        {threads.map(thread => (
+          <CoachThreadRow key={thread.sender_id} thread={thread} currentUser={currentUser} onClick={() => setOpenThread(thread.sender_id)} />
+        ))}
+      </div>
+
+      {/* Full-screen chat page — slides in from right */}
+      <AnimatePresence>
+        {activeThread && (
+          <motion.div
+            key="chat-page"
+            initial={{ x: '100%' }}
+            animate={{ x: 0 }}
+            exit={{ x: '100%' }}
+            transition={{ type: 'spring', stiffness: 380, damping: 36, mass: 1 }}
+            style={{ position: 'fixed', inset: 0, zIndex: 300 }}
           >
-            <div style={{ position: 'relative', flexShrink: 0 }}>
-              <div style={{ width: 50, height: 50, borderRadius: '50%', overflow: 'hidden', background: thread.avatar ? 'transparent' : 'rgba(99,102,241,0.12)', border: `2px solid ${hasUnread ? 'rgba(99,102,241,0.7)' : 'rgba(99,102,241,0.3)'}`, boxShadow: hasUnread ? '0 0 14px rgba(99,102,241,0.4)' : 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 17, fontWeight: 800, color: '#818cf8' }}>
-                {thread.avatar ? <img src={thread.avatar} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : ini(thread.name)}
-              </div>
-              <div style={{ position: 'absolute', bottom: 1, right: 1, width: 10, height: 10, borderRadius: '50%', background: '#10b981', border: '2px solid #060810', boxShadow: '0 0 6px rgba(16,185,129,0.5)' }} />
-            </div>
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 3 }}>
-                <span style={{ fontSize: 14, fontWeight: hasUnread ? 800 : 600, color: '#f1f5f9', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{thread.name}</span>
-                <span style={{ fontSize: 11, color: hasUnread ? '#6366f1' : '#334155', flexShrink: 0, marginLeft: 8, fontWeight: hasUnread ? 700 : 500 }}>{fmtTime(lastMsg?.created_date)}</span>
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                {isLastFromMe && <span style={{ fontSize: 11, color: '#334155', flexShrink: 0 }}>You: </span>}
-                <span style={{ fontSize: 13, color: hasUnread ? '#94a3b8' : '#475569', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1, fontWeight: hasUnread ? 600 : 400 }}>{lastPreview}</span>
-              </div>
-            </div>
-            {hasUnread
-              ? <div style={{ width: 20, height: 20, borderRadius: '50%', background: '#6366f1', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: 10, fontWeight: 800, color: '#fff', boxShadow: '0 2px 8px rgba(99,102,241,0.5)' }}>{thread.unread > 9 ? '9+' : thread.unread}</div>
-              : <ChevronRight style={{ width: 14, height: 14, color: '#1e2d42', flexShrink: 0 }} />
-            }
-          </button>
-        );
-      })}
-    </div>
+            <ChatPage thread={activeThread} currentUser={currentUser} onBack={() => setOpenThread(null)} />
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </>
   );
 }
 
-/* ─────────── CoachInviteBanner ─────────── */
+/* ─── CoachInviteBanner ─── */
 function CoachInviteBanner({ invite, onAccept, onDecline, accepting, declining }) {
   return (
     <div style={{ background: 'linear-gradient(160deg, #0c1128 0%, #060c1e 100%)', border: '1px solid rgba(99,102,241,0.3)', borderRadius: 20, overflow: 'hidden', boxShadow: '0 8px 32px rgba(0,0,0,0.5)' }}>
@@ -383,10 +486,10 @@ function CoachInviteBanner({ invite, onAccept, onDecline, accepting, declining }
           {invite.coach_name.split(' ')[0]} wants to work with you as their personal training client.
         </div>
         <div style={{ display: 'flex', gap: 10 }}>
-          <button onClick={onAccept} disabled={accepting || declining} style={{ flex: 1, height: 44, borderRadius: 13, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7, background: 'linear-gradient(135deg, #16a34a, #22c55e)', border: '1px solid rgba(34,197,94,0.3)', cursor: 'pointer', fontSize: 13, fontWeight: 800, color: '#fff', boxShadow: '0 4px 14px rgba(34,197,94,0.3)', opacity: accepting || declining ? 0.6 : 1, transition: 'all 0.15s', fontFamily: 'inherit' }}>
+          <button onClick={onAccept} disabled={accepting || declining} style={{ flex: 1, height: 44, borderRadius: 13, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7, background: 'linear-gradient(135deg, #16a34a, #22c55e)', border: '1px solid rgba(34,197,94,0.3)', cursor: 'pointer', fontSize: 13, fontWeight: 800, color: '#fff', boxShadow: '0 4px 14px rgba(34,197,94,0.3)', opacity: accepting || declining ? 0.6 : 1, fontFamily: 'inherit' }}>
             <CheckCircle style={{ width: 16, height: 16 }} /> Accept
           </button>
-          <button onClick={onDecline} disabled={accepting || declining} style={{ flex: 1, height: 44, borderRadius: 13, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', cursor: 'pointer', fontSize: 13, fontWeight: 700, color: '#64748b', opacity: accepting || declining ? 0.6 : 1, transition: 'all 0.15s', fontFamily: 'inherit' }}>
+          <button onClick={onDecline} disabled={accepting || declining} style={{ flex: 1, height: 44, borderRadius: 13, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', cursor: 'pointer', fontSize: 13, fontWeight: 700, color: '#64748b', opacity: accepting || declining ? 0.6 : 1, fontFamily: 'inherit' }}>
             <X style={{ width: 15, height: 15 }} /> Decline
           </button>
         </div>
@@ -395,7 +498,7 @@ function CoachInviteBanner({ invite, onAccept, onDecline, accepting, declining }
   );
 }
 
-/* ─────────── MyCoachBox ─────────── */
+/* ─── MyCoachBox ─── */
 function MyCoachBox({ invite }) {
   return (
     <div style={{ background: 'linear-gradient(160deg, #0c1128 0%, #060c1e 100%)', border: '1px solid rgba(99,102,241,0.2)', borderRadius: 20, overflow: 'hidden', boxShadow: '0 8px 32px rgba(0,0,0,0.5)' }}>
@@ -414,19 +517,12 @@ function MyCoachBox({ invite }) {
             </div>
           </div>
         </div>
-        <div style={{ height: 1, background: 'rgba(255,255,255,0.05)', margin: '14px 0' }} />
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 12px', borderRadius: 12, background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(255,255,255,0.05)' }}>
-          <div style={{ width: 28, height: 28, borderRadius: 8, background: 'rgba(99,102,241,0.1)', border: '1px solid rgba(99,102,241,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-            <CalendarDays style={{ width: 13, height: 13, color: '#6366f1' }} />
-          </div>
-          <p style={{ fontSize: 12, color: '#475569', fontStyle: 'italic', margin: 0 }}>Your coach will add workouts &amp; programmes here soon.</p>
-        </div>
       </div>
     </div>
   );
 }
 
-/* ─────────── TrainerTab ─────────── */
+/* ─── TrainerTab ─── */
 export default function TrainerTab({ currentUser }) {
   const queryClient = useQueryClient();
 
@@ -461,38 +557,22 @@ export default function TrainerTab({ currentUser }) {
     setProcessingId(null);
   };
 
-  // Hide the "No messages yet" empty state if the user has an accepted coach —
-  // the MyCoachBox already communicates the relationship.
   const hasCoach = acceptedInvites.length > 0;
 
   return (
     <div className="space-y-4 pt-4">
-      {/* Pending coach invite banners */}
       {pendingInvites.length > 0 && (
         <div className="space-y-3">
           {pendingInvites.map(invite => (
-            <CoachInviteBanner
-              key={invite.id}
-              invite={invite}
-              accepting={processingId === invite.id}
-              declining={processingId === invite.id}
-              onAccept={() => handleAccept(invite)}
-              onDecline={() => handleDecline(invite)}
-            />
+            <CoachInviteBanner key={invite.id} invite={invite} accepting={processingId === invite.id} declining={processingId === invite.id} onAccept={() => handleAccept(invite)} onDecline={() => handleDecline(invite)} />
           ))}
         </div>
       )}
-
-      {/* Accepted coach boxes */}
       {acceptedInvites.length > 0 && (
         <div className="space-y-3">
-          {acceptedInvites.map(invite => (
-            <MyCoachBox key={invite.id} invite={invite} />
-          ))}
+          {acceptedInvites.map(invite => <MyCoachBox key={invite.id} invite={invite} />)}
         </div>
       )}
-
-      {/* Message threads — suppress empty state when user already has a coach */}
       <CoachMessages currentUser={user} hideEmpty={hasCoach} />
     </div>
   );

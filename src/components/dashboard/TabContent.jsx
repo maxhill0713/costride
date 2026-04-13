@@ -228,6 +228,22 @@ function TableRow({ row, checked, onToggle, last }) {
   );
 }
 
+function ScheduledRow({ row, last }) {
+  const [checked, setChecked] = useState(false);
+  return <TableRow row={row} checked={checked} onToggle={() => setChecked(p => !p)} last={last} />;
+}
+
+function ScheduledTable() {
+  return (
+    <div style={{ background: C.card, border: `1px solid ${C.brd}`, borderRadius: 10, overflow: "hidden" }}>
+      <TableHeader />
+      {TABLE_ROWS.map((row, i) => (
+        <ScheduledRow key={row.id} row={row} last={i === TABLE_ROWS.length - 1} />
+      ))}
+    </div>
+  );
+}
+
 function ContentTable() {
   const [checked, setChecked] = useState(new Set());
   const toggle = id => setChecked(p => { const s = new Set(p); s.has(id) ? s.delete(id) : s.add(id); return s; });
@@ -543,20 +559,7 @@ export default function ContentPage({ events = [], challenges = [], polls = [], 
           {tab === "Scheduled" && (
             isMobile
               ? <div style={{ paddingTop: 10 }}>{TABLE_ROWS.map(row => <MobileContentCard key={row.id} row={row} />)}</div>
-              : (() => {
-                  function ScheduledTable() {
-                    return (
-                      <div style={{ background: C.card, border: `1px solid ${C.brd}`, borderRadius: 10, overflow: "hidden" }}>
-                        <TableHeader />
-                        {TABLE_ROWS.map((row, i) => {
-                          const [c, setC] = useState(false);
-                          return <TableRow key={row.id} row={row} checked={c} onToggle={() => setC(p => !p)} last={i === TABLE_ROWS.length - 1} />;
-                        })}
-                      </div>
-                    );
-                  }
-                  return <ScheduledTable />;
-                })()
+              : <ScheduledTable />
           )}
 
           {tab === "Events" && (
