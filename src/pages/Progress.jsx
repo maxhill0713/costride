@@ -4,7 +4,6 @@ import { base44 } from '@/api/base44Client';
 import { BarChart3, Target, Utensils, MessageCircle, ChevronLeft } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { motion, AnimatePresence } from 'framer-motion';
-
 import AnalyticsTab from '../components/progress/AnalyticsTab';
 import TargetsTab   from '../components/progress/TargetsTab';
 import NutritionTab from '../components/progress/NutritionTab';
@@ -17,6 +16,7 @@ const pageSlideVariants = {
   visible: { x: 0, opacity: 1, transition: { type: 'spring', stiffness: 380, damping: 36, mass: 1 } },
   exit:    { x: '100%', opacity: 1, transition: { type: 'spring', stiffness: 420, damping: 40, mass: 0.9 } },
 };
+
 const overlayVariants = {
   hidden:  { opacity: 0 },
   visible: { opacity: 1, transition: { duration: 0.18 } },
@@ -80,6 +80,11 @@ export default function Progress() {
     );
   }
 
+  const tabTriggerClass =
+    'data-[state=active]:text-blue-400 data-[state=active]:border-b-2 data-[state=active]:border-blue-400 data-[state=active]:bg-transparent ' +
+    'text-slate-400 hover:text-slate-300 border-b-2 border-transparent rounded-none px-0 pb-2 pt-0 ' +
+    'transition-colors bg-transparent text-[15px] justify-center leading-none flex items-center';
+
   return (
     <div className="min-h-screen" style={{ background: 'linear-gradient(to bottom right, #02040a, #0d2360, #02040a)' }}>
       <div style={{ position: 'fixed', inset: 0, zIndex: -1, background: 'linear-gradient(to bottom right, #02040a, #0d2360, #02040a)' }} />
@@ -92,28 +97,30 @@ export default function Progress() {
           style={{ paddingTop: 'calc(0.4rem + env(safe-area-inset-top))', paddingBottom: 0 }}
         >
           <div className="max-w-4xl mx-auto">
-            <div className="relative flex items-end justify-center h-[3.2rem] pt-2 pb-1.5">
-              {/* Tabs use pb-2 so text floats ~2px above the border indicator */}
-              <TabsList className="flex bg-transparent p-0 gap-6 border-0 h-auto mb-[-2px]">
-                <TabsTrigger value="analytics" className="data-[state=active]:text-blue-400 data-[state=active]:border-b-2 data-[state=active]:border-blue-400 data-[state=active]:bg-transparent text-slate-400 hover:text-slate-300 border-b-2 border-transparent rounded-none px-0 pb-2 pt-0 transition-colors bg-transparent text-[15px] justify-center leading-none">
+            <div className="flex items-end h-[3.2rem] pt-2 pb-0">
+
+              {/* Tabs row — flex-1 so it fills all space left of the icon */}
+              <TabsList className="flex flex-1 bg-transparent p-0 gap-6 border-0 h-auto mb-[-2px]">
+                <TabsTrigger value="analytics" className={tabTriggerClass}>
                   <BarChart3 className="w-4 h-4 mr-1.5" />Analytics
                 </TabsTrigger>
-                <TabsTrigger value="goals" className="data-[state=active]:text-blue-400 data-[state=active]:border-b-2 data-[state=active]:border-blue-400 data-[state=active]:bg-transparent text-slate-400 hover:text-slate-300 border-b-2 border-transparent rounded-none px-0 pb-2 pt-0 transition-colors bg-transparent text-[15px] justify-center leading-none">
+                <TabsTrigger value="goals" className={tabTriggerClass}>
                   <Target className="w-4 h-4 mr-1.5" />Targets
                 </TabsTrigger>
-                <TabsTrigger value="nutrition" className="data-[state=active]:text-blue-400 data-[state=active]:border-b-2 data-[state=active]:border-blue-400 data-[state=active]:bg-transparent text-slate-400 hover:text-slate-300 border-b-2 border-transparent rounded-none px-0 pb-2 pt-0 transition-colors bg-transparent text-[15px] justify-center leading-none">
+                <TabsTrigger value="nutrition" className={tabTriggerClass}>
                   <Utensils className="w-4 h-4 mr-1.5" />Nutrition
                 </TabsTrigger>
               </TabsList>
 
-              {/* Message icon — raised slightly to match tab text baseline */}
+              {/* Message icon — plain flex sibling, no absolute positioning */}
               <button
                 onClick={() => setShowTrainer(true)}
-                className="absolute right-0 bottom-3.5 flex items-center justify-center w-8 h-8 rounded-full text-slate-400 active:scale-90 transition-transform"
+                className="flex items-center justify-center w-8 h-8 mb-1.5 ml-4 flex-shrink-0 rounded-full text-slate-400 active:scale-90 transition-transform"
                 aria-label="Chats"
               >
                 <MessageCircle className="w-5 h-5" />
               </button>
+
             </div>
           </div>
         </div>
@@ -138,6 +145,7 @@ export default function Progress() {
             <NutritionTab />
           </div>
         </TabsContent>
+
       </Tabs>
 
       {/* ── Chats full-page slide ── */}
@@ -155,13 +163,20 @@ export default function Progress() {
             <motion.div
               key="trainer-panel"
               className="fixed inset-0 z-50"
-              style={{ minHeight: '100dvh', background: 'linear-gradient(to bottom right, #02040a, #0d2360, #02040a)', paddingTop: 'env(safe-area-inset-top)' }}
+              style={{
+                minHeight: '100dvh',
+                background: 'linear-gradient(to bottom right, #02040a, #0d2360, #02040a)',
+                paddingTop: 'env(safe-area-inset-top)',
+              }}
               variants={pageSlideVariants}
               initial="hidden" animate="visible" exit="exit"
             >
               <div className="flex flex-col h-full w-full max-w-2xl mx-auto">
                 <div className="relative flex items-center px-4 py-[14.7px] border-b border-slate-700/40 flex-shrink-0">
-                  <button onClick={() => setShowTrainer(false)} className="flex items-center justify-center active:scale-90 transition-transform">
+                  <button
+                    onClick={() => setShowTrainer(false)}
+                    className="flex items-center justify-center active:scale-90 transition-transform"
+                  >
                     <ChevronLeft className="w-6 h-6 text-slate-300" />
                   </button>
                   <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
