@@ -316,35 +316,97 @@ function MobileKpiStrip({ tab, isCoach, stats, posts, events, challenges, polls,
 }
 
 /* ─── Mobile FAB ─────────────────────────────────────────────── */
-function MobileFAB({ onClick }) {
+function MobileFAB({ openModal }) {
+  const [open, setOpen] = useState(false);
+
+  const items = [
+    { emoji: '📝', label: 'Post',      modal: 'post'      },
+    { emoji: '🏆', label: 'Challenge', modal: 'challenge' },
+    { emoji: '📊', label: 'Poll',      modal: 'poll'      },
+    { emoji: '📅', label: 'Event',     modal: 'event'     },
+    { emoji: '⚙️', label: 'More',      modal: null        },
+  ];
+
   return (
-    <button
-      onClick={onClick}
-      aria-label="New Post"
-      style={{
-        position: 'fixed',
-        bottom: 'calc(72px + env(safe-area-inset-bottom))',
-        right: 20,
-        zIndex: 200,
-        width: 52,
-        height: 52,
-        borderRadius: 26,
-        background: T.cyan,
-        border: 'none',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        boxShadow: `0 4px 20px rgba(0,229,200,0.45), 0 2px 10px rgba(0,0,0,0.6)`,
-        cursor: 'pointer',
-        color: '#000',
-        transition: 'transform 0.12s, opacity 0.12s',
-        WebkitTapHighlightColor: 'transparent',
-      }}
-      onTouchStart={e => e.currentTarget.style.transform = 'scale(0.93)'}
-      onTouchEnd={e => e.currentTarget.style.transform = 'scale(1)'}
-    >
-      <Plus style={{ width: 22, height: 22, strokeWidth: 2.5 }} />
-    </button>
+    <>
+      {/* Backdrop */}
+      {open && (
+        <div
+          onClick={() => setOpen(false)}
+          style={{ position: 'fixed', inset: 0, zIndex: 198, background: 'rgba(0,0,0,0.45)' }}
+        />
+      )}
+
+      {/* Option pills */}
+      {open && (
+        <div style={{
+          position: 'fixed',
+          bottom: 'calc(134px + env(safe-area-inset-bottom))',
+          right: 16,
+          zIndex: 199,
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 10,
+          alignItems: 'flex-end',
+        }}>
+          {items.map(item => (
+            <button
+              key={item.label}
+              onClick={() => {
+                setOpen(false);
+                if (item.modal) openModal(item.modal);
+              }}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 10,
+                padding: '11px 16px',
+                borderRadius: 14,
+                background: T.card,
+                border: `1px solid ${T.brd2}`,
+                color: T.t1,
+                fontSize: 14,
+                fontWeight: 600,
+                cursor: 'pointer',
+                boxShadow: '0 4px 20px rgba(0,0,0,0.7)',
+                WebkitTapHighlightColor: 'transparent',
+                minHeight: 48,
+                whiteSpace: 'nowrap',
+              }}
+            >
+              <span style={{ fontSize: 18 }}>{item.emoji}</span>
+              {item.label}
+            </button>
+          ))}
+        </div>
+      )}
+
+      {/* FAB button */}
+      <button
+        onClick={() => setOpen(o => !o)}
+        aria-label="Create"
+        style={{
+          position: 'fixed',
+          bottom: 'calc(72px + env(safe-area-inset-bottom))',
+          right: 20,
+          zIndex: 200,
+          width: 52,
+          height: 52,
+          borderRadius: 26,
+          background: T.cyan,
+          border: 'none',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          boxShadow: `0 4px 20px rgba(0,229,200,0.45), 0 2px 10px rgba(0,0,0,0.6)`,
+          cursor: 'pointer',
+          color: '#000',
+          transition: 'transform 0.18s',
+          WebkitTapHighlightColor: 'transparent',
+          transform: open ? 'rotate(45deg)' : 'rotate(0deg)',
+        }}
+      >
+        <Plus style={{ width: 22, height: 22, strokeWidth: 2.5 }} />
+      </button>
+    </>
   );
 }
 
@@ -875,7 +937,7 @@ export default function GymOwnerDashboard() {
       </main>
 
       {/* ── FAB — primary action ───────────────────────────────── */}
-      <MobileFAB onClick={() => openModal('post')} />
+      <MobileFAB openModal={openModal} />
 
       {/* ── Bottom navigation ─────────────────────────────────── */}
       <nav style={{
