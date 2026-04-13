@@ -9,7 +9,6 @@ const POSE_2_URL = 'https://media.base44.com/images/public/694b637358644e1c22c8e
 
 const DAY_LABELS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
-// ── Inject day-circle keyframes ───────────────────────────────────────────────
 function injectDayStyles() {
   if (document.getElementById('sc-day-styles')) return;
   const s = document.createElement('style');
@@ -41,14 +40,6 @@ function injectDayStyles() {
       from { opacity: 0; transform: translateY(22px); }
       to   { opacity: 1; transform: translateY(0); }
     }
-    @keyframes scIconShiftUp {
-      from { transform: translateY(0); }
-      to   { transform: translateY(-48px); }
-    }
-    @keyframes scNumShiftUp {
-      from { transform: translateY(0) scale(1); }
-      to   { transform: translateY(-48px) scale(0.82); }
-    }
     @keyframes scParticleBurst {
       0%   { transform: translate(0,0) scale(1); opacity: 1; }
       100% { transform: translate(var(--tx),var(--ty)) scale(0); opacity: 0; }
@@ -57,7 +48,6 @@ function injectDayStyles() {
   document.head.appendChild(s);
 }
 
-// ── Particle burst around today's circle ──────────────────────────────────────
 function spawnParticles(originEl) {
   if (!originEl) return;
   const rect = originEl.getBoundingClientRect();
@@ -85,9 +75,9 @@ function spawnParticles(originEl) {
   }
 }
 
-// ── Day-circles row (embedded in streak stage) ────────────────────────────────
 function EmbeddedDayCircles({ currentUser, weeklyWorkoutLogs, todayDow, onAnimationComplete }) {
   const [animatedIdx, setAnimatedIdx] = useState(-1);
+  const [animatedColorIdx, setAnimatedColorIdx] = useState(-1);
   const todayRef = useRef(null);
   const hasCompleted = useRef(false);
 
@@ -106,20 +96,27 @@ function EmbeddedDayCircles({ currentUser, weeklyWorkoutLogs, todayDow, onAnimat
   const vertOffset = i => Math.round(Math.sin((i / (allDays.length - 1)) * Math.PI * 2) * 9);
 
   useEffect(() => {
-    // Stagger-animate each circle in, then fire complete
     const timers = [];
+
+    // Pop circles in one by one (grey)
     allDays.forEach((_, i) => {
       timers.push(setTimeout(() => setAnimatedIdx(i), i * 80));
     });
-    // After last circle + pop animation, spawn particles and notify complete
-    const lastDelay = (allDays.length - 1) * 80 + 500;
+
+    // Then stagger the colour reveal — grey → final colour
+    allDays.forEach((_, i) => {
+      timers.push(setTimeout(() => setAnimatedColorIdx(i), i * 180 + 500));
+    });
+
+    // After last colour transition, spawn particles and signal complete
+    const lastColourDelay = (allDays.length - 1) * 180 + 500 + 700;
     timers.push(setTimeout(() => {
       spawnParticles(todayRef.current);
       if (!hasCompleted.current) {
         hasCompleted.current = true;
         onAnimationComplete?.();
       }
-    }, lastDelay));
+    }, lastColourDelay));
 
     return () => timers.forEach(clearTimeout);
   }, []);
@@ -133,32 +130,45 @@ function EmbeddedDayCircles({ currentUser, weeklyWorkoutLogs, todayDow, onAnimat
     const isPastRest = isRestDay && (isPast || isToday);
     const size = isToday ? 44 : 36;
     const isVisible = i <= animatedIdx;
+    const isColoured = i <= animatedColorIdx;
 
     const getBg = () => {
-      if (isToday) return 'linear-gradient(to bottom, #60a5fa 0%, #3b82f6 35%, #1d4ed8 100%)';
+      if (isToday) return isColoured
+        ? 'linear-gradient(to bottom, #60a5fa 0%, #3b82f6 35%, #1d4ed8 100%)'
+        : 'linear-gradient(to bottom, #2d3748 0%, #1a202c 50%, #0f172a 100%)';
       if (isRestDay) return isPastRest
         ? 'linear-gradient(to bottom, #4ade80 0%, #22c55e 40%, #16a34a 100%)'
         : 'linear-gradient(to bottom, #2d3748 0%, #1a202c 50%, #0f172a 100%)';
-      if (done) return 'linear-gradient(to bottom, #60a5fa 0%, #3b82f6 35%, #1d4ed8 100%)';
-      if (isMissed) return 'linear-gradient(to bottom, #f87171 0%, #ef4444 35%, #b91c1c 100%)';
+      if (done) return isColoured
+        ? 'linear-gradient(to bottom, #60a5fa 0%, #3b82f6 35%, #1d4ed8 100%)'
+        : 'linear-gradient(to bottom, #2d3748 0%, #1a202c 50%, #0f172a 100%)';
+      if (isMissed) return isColoured
+        ? 'linear-gradient(to bottom, #f87171 0%, #ef4444 35%, #b91c1c 100%)'
+        : 'linear-gradient(to bottom, #2d3748 0%, #1a202c 50%, #0f172a 100%)';
       return 'linear-gradient(to bottom, #2d3748 0%, #1a202c 50%, #0f172a 100%)';
     };
 
     const getBorder = () => {
-      if (isToday) return '1px solid rgba(147,197,253,0.5)';
+      if (isToday) return isColoured ? '1px solid rgba(147,197,253,0.5)' : '1px solid rgba(71,85,105,0.7)';
       if (isRestDay) return isPastRest ? '1px solid rgba(74,222,128,0.5)' : '1px solid rgba(71,85,105,0.7)';
-      if (done) return '1px solid rgba(147,197,253,0.5)';
-      if (isMissed) return '1px solid rgba(248,113,113,0.5)';
+      if (done) return isColoured ? '1px solid rgba(147,197,253,0.5)' : '1px solid rgba(71,85,105,0.7)';
+      if (isMissed) return isColoured ? '1px solid rgba(248,113,113,0.5)' : '1px solid rgba(71,85,105,0.7)';
       return '1px solid rgba(71,85,105,0.7)';
     };
 
     const getBoxShadow = () => {
-      if (isToday) return '0 4px 0 0 #1a3fa8, 0 7px 18px rgba(0,0,100,0.55), inset 0 1px 0 rgba(255,255,255,0.25)';
+      if (isToday) return isColoured
+        ? '0 4px 0 0 #1a3fa8, 0 7px 18px rgba(0,0,100,0.55), inset 0 1px 0 rgba(255,255,255,0.25)'
+        : '0 4px 0 0 #111827, 0 6px 14px rgba(15,20,35,0.5), inset 0 1px 0 rgba(255,255,255,0.1)';
       if (isRestDay) return isPastRest
         ? '0 3px 0 0 #15803d, 0 5px 12px rgba(0,80,0,0.3), inset 0 1px 0 rgba(255,255,255,0.2)'
         : '0 4px 0 0 #111827, 0 6px 14px rgba(15,20,35,0.5), inset 0 1px 0 rgba(255,255,255,0.1)';
-      if (done) return '0 4px 0 0 #1a3fa8, 0 7px 18px rgba(0,0,100,0.55), inset 0 1px 0 rgba(255,255,255,0.25)';
-      if (isMissed) return '0 4px 0 0 #991b1b, inset 0 1px 0 rgba(255,255,255,0.25)';
+      if (done) return isColoured
+        ? '0 4px 0 0 #1a3fa8, 0 7px 18px rgba(0,0,100,0.55), inset 0 1px 0 rgba(255,255,255,0.25)'
+        : '0 4px 0 0 #111827, 0 6px 14px rgba(15,20,35,0.5), inset 0 1px 0 rgba(255,255,255,0.1)';
+      if (isMissed) return isColoured
+        ? '0 4px 0 0 #991b1b, inset 0 1px 0 rgba(255,255,255,0.25)'
+        : '0 4px 0 0 #111827, 0 6px 14px rgba(15,20,35,0.5), inset 0 1px 0 rgba(255,255,255,0.1)';
       return '0 4px 0 0 #111827, 0 6px 14px rgba(15,20,35,0.5), inset 0 1px 0 rgba(255,255,255,0.1)';
     };
 
@@ -169,7 +179,7 @@ function EmbeddedDayCircles({ currentUser, weeklyWorkoutLogs, todayDow, onAnimat
       return `scWiggle 2.4s ease-in-out ${i * 0.18}s infinite`;
     };
 
-    return { isToday, done, isRestDay, isMissed, isPastRest, size, isVisible, getBg, getBorder, getBoxShadow, getAnim };
+    return { isToday, done, isRestDay, isMissed, isPastRest, size, isVisible, isColoured, getBg, getBorder, getBoxShadow, getAnim };
   };
 
   return (
@@ -222,6 +232,7 @@ function EmbeddedDayCircles({ currentUser, weeklyWorkoutLogs, todayDow, onAnimat
                 animation: getAnim(),
                 flexShrink: 0,
                 transform: isVisible ? undefined : 'scale(0.3)',
+                transition: 'background 0.45s ease, border 0.45s ease, box-shadow 0.45s ease',
               }}
             >
               {isRestDay ? (
@@ -289,7 +300,6 @@ function EmbeddedDayCircles({ currentUser, weeklyWorkoutLogs, todayDow, onAnimat
   );
 }
 
-// ── Main component ────────────────────────────────────────────────────────────
 function StreakCelebration({
   showStreakCelebration,
   celebrationStreakNum,
@@ -309,22 +319,15 @@ function StreakCelebration({
   setJustLoggedDay,
   onChallengesContinue,
 }) {
-  // Phase within the streak screen:
-  // 'animating' → streak bounces in, number pops
-  // 'shifted'   → icon+number shift up, day circles appear below
-  // 'circles_done' → continue button becomes pressable
   const [streakPhase, setStreakPhase] = useState('animating');
   const [continueButtonVisible, setContinueButtonVisible] = useState(false);
   const [continueButtonEnabled, setContinueButtonEnabled] = useState(false);
-
-  // For fading out the share workout screen back to home
   const [shareWorkoutExiting, setShareWorkoutExiting] = useState(false);
 
   useEffect(() => {
     injectDayStyles();
   }, []);
 
-  // Reset phase whenever the streak screen opens
   useEffect(() => {
     if (showStreakCelebration) {
       setStreakPhase('animating');
@@ -355,26 +358,26 @@ function StreakCelebration({
       if (p1) p1.style.display = 'block';
       if (p2) p2.style.display = 'none';
 
-      // Bounce in icon
+      // Bounce in icon — delayed for more anticipation
       const t1 = setTimeout(() => {
         stage.style.transition = 'opacity 0.18s ease, transform 0.55s cubic-bezier(0.34,1.6,0.64,1)';
         stage.style.opacity = '1';
         stage.style.transform = 'scale(1) translateY(0)';
-      }, 60);
+      }, 350);
 
-      // Pop in number — button becomes visible (disabled) at this point
+      // Pop in number — button appears (disabled) at this point
       const t2 = setTimeout(() => {
         numEl.style.transition = 'opacity 0.15s ease, transform 0.5s cubic-bezier(0.34,1.8,0.64,1)';
         numEl.style.opacity = '1';
         numEl.style.transform = 'scale(1)';
-        setContinueButtonVisible(true); // button appears but stays disabled
-      }, 480);
+        setContinueButtonVisible(true);
+      }, 770);
 
       // Swap to pose 2
       const t3 = setTimeout(() => {
         if (p1) p1.style.display = 'none';
         if (p2) p2.style.display = 'block';
-      }, 880);
+      }, 1170);
 
       // Wiggle pose 2
       const t4 = setTimeout(() => {
@@ -385,12 +388,12 @@ function StreakCelebration({
           setTimeout(() => { p2.style.transform = 'rotate(-3deg) scale(1.04)'; }, 240);
           setTimeout(() => { p2.style.transform = 'rotate(0deg) scale(1)'; }, 360);
         }
-      }, 960);
+      }, 1250);
 
       // Shift icon+number up, reveal day circles
       const t5 = setTimeout(() => {
         setStreakPhase('shifted');
-      }, 1400);
+      }, 1700);
 
       return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); clearTimeout(t4); clearTimeout(t5); };
     });
@@ -416,9 +419,9 @@ function StreakCelebration({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.15 }} // faster fade-in for darker feel
+            transition={{ duration: 0.15 }}
             className="fixed inset-0 z-[100] backdrop-blur-sm flex flex-col items-center justify-center overflow-hidden"
-            style={{ background: 'rgba(0,0,0,0.92)' }} // much darker
+            style={{ background: 'rgba(0,0,0,0.92)' }}
           >
             {/* Icon + Number wrapper — shifts up when phase === 'shifted' */}
             <div style={{
@@ -469,7 +472,7 @@ function StreakCelebration({
               )}
             </div>
 
-            {/* Continue button — appears when number pops, enabled after circles finish */}
+            {/* Continue button — appears when number pops, enabled after circles finish colouring */}
             <AnimatePresence>
               {continueButtonVisible && (
                 <motion.div
@@ -486,12 +489,6 @@ function StreakCelebration({
                   <button
                     disabled={!continueButtonEnabled}
                     onClick={() => {
-                      // This is handled by the parent — StreakCelebration doesn't own the timing
-                      // We just need to signal the parent via the existing prop flow
-                      // Parent's setTimeout already handles the transition after 3500ms,
-                      // but now we want the button to drive it instead.
-                      // We'll dispatch a custom event the parent can listen to,
-                      // OR we accept an onStreakContinue prop. For now use the ref trick:
                       document.dispatchEvent(new CustomEvent('streakCelebrationContinue'));
                     }}
                     style={{
@@ -500,13 +497,13 @@ function StreakCelebration({
                       borderRadius: 16,
                       background: continueButtonEnabled
                         ? 'linear-gradient(to bottom, #60a5fa, #3b82f6, #1d4ed8)'
-                        : 'rgba(40,50,80,0.7)',
+                        : 'linear-gradient(to bottom, #2d3748, #1a202c, #0f172a)',
                       border: 'none',
-                      borderBottom: continueButtonEnabled ? '4px solid #1a3fa8' : '4px solid rgba(0,0,0,0.3)',
+                      borderBottom: continueButtonEnabled ? '4px solid #1a3fa8' : '4px solid #111827',
                       boxShadow: continueButtonEnabled
                         ? '0 4px 0 0 #1e40af, inset 0 1px 0 rgba(255,255,255,0.2)'
-                        : 'none',
-                      color: continueButtonEnabled ? '#fff' : 'rgba(255,255,255,0.3)',
+                        : '0 4px 0 0 #111827, inset 0 1px 0 rgba(255,255,255,0.08)',
+                      color: continueButtonEnabled ? '#fff' : 'rgba(255,255,255,0.28)',
                       fontSize: 16,
                       fontWeight: 900,
                       cursor: continueButtonEnabled ? 'pointer' : 'default',
