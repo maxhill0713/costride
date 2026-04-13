@@ -9,13 +9,15 @@ const POSE_2_URL = 'https://media.base44.com/images/public/694b637358644e1c22c8e
 
 const DAY_LABELS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
-// ── Audio — fires ONLY when pose swaps to celebrating icon ───────────────────
+// ── Audio ─────────────────────────────────────────────────────────────────────
+
+// Fires when pose swaps to celebrating icon + streak number increments
 function playCircleLevelUp() {
   try {
     const ctx = new (window.AudioContext || window.webkitAudioContext)();
-    const playTone = (freq, start, dur, gain, type = 'sine') => {
+    const t = (freq, start, dur, gain, type = 'sine') => {
       const osc = ctx.createOscillator();
-      const g = ctx.createGain();
+      const g   = ctx.createGain();
       osc.connect(g); g.connect(ctx.destination);
       osc.type = type;
       osc.frequency.setValueAtTime(freq, start);
@@ -25,14 +27,60 @@ function playCircleLevelUp() {
       osc.start(start); osc.stop(start + dur + 0.05);
     };
     const now = ctx.currentTime;
-    playTone(392,  now,        0.12, 0.22);
-    playTone(523,  now + 0.09, 0.12, 0.22);
-    playTone(659,  now + 0.18, 0.14, 0.26);
-    playTone(784,  now + 0.27, 0.30, 0.30);
-    playTone(1047, now + 0.27, 0.22, 0.12);
-    playTone(110,  now + 0.27, 0.18, 0.14, 'triangle');
+    t(392,  now,        0.12, 0.22);
+    t(523,  now + 0.09, 0.12, 0.22);
+    t(659,  now + 0.18, 0.14, 0.26);
+    t(784,  now + 0.27, 0.30, 0.30);
+    t(1047, now + 0.27, 0.22, 0.12);
+    t(110,  now + 0.27, 0.18, 0.14, 'triangle');
     if (navigator.vibrate) navigator.vibrate([40, 30, 80]);
     setTimeout(() => ctx.close(), 1000);
+  } catch (_) {}
+}
+
+// Duolingo-style bright "correct!" chime — fires when today's circle pops blue
+function playDayCircleDing() {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const now = ctx.currentTime;
+    const t = (freq, start, dur, gain, type = 'sine') => {
+      const osc = ctx.createOscillator();
+      const g   = ctx.createGain();
+      osc.connect(g); g.connect(ctx.destination);
+      osc.type = type;
+      osc.frequency.setValueAtTime(freq, start);
+      g.gain.setValueAtTime(0, start);
+      g.gain.linearRampToValueAtTime(gain, start + 0.008);
+      g.gain.exponentialRampToValueAtTime(0.001, start + dur);
+      osc.start(start); osc.stop(start + dur + 0.05);
+    };
+    // Rising two-note "ding-dong" chime
+    t(880,  now,        0.18, 0.28);        // A5
+    t(1320, now + 0.13, 0.28, 0.32);        // E6
+    t(1760, now + 0.24, 0.20, 0.16);        // A6 shimmer
+    t(130,  now,        0.12, 0.16, 'triangle'); // warm thud
+    if (navigator.vibrate) navigator.vibrate([30, 20, 60]);
+    setTimeout(() => ctx.close(), 800);
+  } catch (_) {}
+}
+
+// Light ascending tick per other circle — staircase of pitches, Duolingo-style
+function playCircleTick(seqIndex) {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const now = ctx.currentTime;
+    const freq = 520 + seqIndex * 38;
+    const osc = ctx.createOscillator();
+    const g   = ctx.createGain();
+    osc.connect(g); g.connect(ctx.destination);
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(freq, now);
+    osc.frequency.exponentialRampToValueAtTime(freq * 1.12, now + 0.06);
+    g.gain.setValueAtTime(0, now);
+    g.gain.linearRampToValueAtTime(0.13, now + 0.008);
+    g.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
+    osc.start(now); osc.stop(now + 0.15);
+    setTimeout(() => ctx.close(), 300);
   } catch (_) {}
 }
 
@@ -90,12 +138,12 @@ function spawnParticles(originEl) {
   const cy = rect.top + rect.height / 2;
   const cols = ['#60a5fa', '#93c5fd', '#3b82f6', '#bfdbfe', '#ffffff', '#2563eb'];
   for (let i = 0; i < 18; i++) {
-    const p = document.createElement('div');
+    const p   = document.createElement('div');
     const ang = (i / 18) * 360;
-    const d = 45 + Math.random() * 55;
-    const tx = Math.cos((ang * Math.PI) / 180) * d;
-    const ty = Math.sin((ang * Math.PI) / 180) * d;
-    const sz = 4 + Math.random() * 5;
+    const d   = 45 + Math.random() * 55;
+    const tx  = Math.cos((ang * Math.PI) / 180) * d;
+    const ty  = Math.sin((ang * Math.PI) / 180) * d;
+    const sz  = 4 + Math.random() * 5;
     p.style.cssText = [
       'position:fixed', 'border-radius:50%', 'pointer-events:none', 'z-index:10001',
       `width:${sz}px`, `height:${sz}px`,
@@ -110,13 +158,11 @@ function spawnParticles(originEl) {
   }
 }
 
-// ── 3D Continue button matching onboarding style ─────────────────────────────
+// ── 3D Continue button ────────────────────────────────────────────────────────
 function ContinueButton({ enabled, onClick }) {
   const [pressed, setPressed] = useState(false);
-
   return (
     <div style={{ position: 'relative', width: '100%' }}>
-      {/* raised platform shadow */}
       <div style={{
         position: 'absolute', inset: 0, borderRadius: 16,
         background: enabled ? '#1a3fa8' : '#111827',
@@ -132,25 +178,16 @@ function ContinueButton({ enabled, onClick }) {
         onTouchCancel={() => setPressed(false)}
         style={{
           position: 'relative', zIndex: 1,
-          width: '100%',
-          padding: '13px 0',
-          borderRadius: 16,
-          border: 'none',
+          width: '100%', padding: '13px 0', borderRadius: 16, border: 'none',
           background: enabled
             ? 'linear-gradient(to bottom, #60a5fa, #3b82f6 40%, #1d4ed8)'
             : 'linear-gradient(to bottom, #2d3748, #1a202c 50%, #0f172a)',
           color: enabled ? '#fff' : 'rgba(255,255,255,0.28)',
-          fontSize: 16,
-          fontWeight: 900,
-          cursor: enabled ? 'pointer' : 'default',
+          fontSize: 16, fontWeight: 900, cursor: enabled ? 'pointer' : 'default',
           letterSpacing: '-0.01em',
-          WebkitTapHighlightColor: 'transparent',
-          userSelect: 'none',
-          outline: 'none',
+          WebkitTapHighlightColor: 'transparent', userSelect: 'none', outline: 'none',
           transform: pressed ? 'translateY(4px)' : 'translateY(0)',
-          boxShadow: pressed || !enabled
-            ? 'none'
-            : 'inset 0 1px 0 rgba(255,255,255,0.2)',
+          boxShadow: pressed || !enabled ? 'none' : 'inset 0 1px 0 rgba(255,255,255,0.2)',
           transition: 'transform 0.07s ease, box-shadow 0.07s ease, background 0.4s ease, color 0.4s ease',
         }}
       >
@@ -161,29 +198,30 @@ function ContinueButton({ enabled, onClick }) {
 }
 
 // ── EmbeddedDayCircles ────────────────────────────────────────────────────────
-// Sizes match the home page day circles: today = 49px, others = 40px
-// Today's circle is delayed by 1000ms before colouring blue
+// Sequence:
+//   1. All 7 circles appear as grey
+//   2. Today's circle pops blue immediately (500ms after visible) + ding sound
+//   3. OTHER circles colour one-by-one after today's settles + ascending ticks
 function EmbeddedDayCircles({ currentUser, weeklyWorkoutLogs, todayDow, startAnimation, onAllVisible, onAnimationComplete }) {
-  const [animatedIdx, setAnimatedIdx]           = useState(-1);  // circles visible (grey)
-  const [animatedColorIdx, setAnimatedColorIdx] = useState(-1);  // circles coloured (non-today)
-  const [todayColoured, setTodayColoured]       = useState(false); // today circle coloured separately
-  const [colourPopIdx, setColourPopIdx]         = useState(-1);  // triggers colour-pop anim
+  const [animatedIdx, setAnimatedIdx]           = useState(-1);
+  const [animatedColorIdx, setAnimatedColorIdx] = useState(-1);
+  const [todayColoured, setTodayColoured]       = useState(false);
+  const [colourPopIdx, setColourPopIdx]         = useState(-1);
   const [todayColourPop, setTodayColourPop]     = useState(false);
   const todayRef     = useRef(null);
   const hasCompleted = useRef(false);
 
   const todayDowAdjusted = todayDow || (() => { const d = new Date().getDay(); return d === 0 ? 7 : d; })();
-  const trainingDays = (currentUser?.training_days || []).filter(d => d >= 1 && d <= 7);
-  const allDays = [1, 2, 3, 4, 5, 6, 7];
-  const swappedRestDay = getSwappedRestDay();
+  const trainingDays     = (currentUser?.training_days || []).filter(d => d >= 1 && d <= 7);
+  const allDays          = [1, 2, 3, 4, 5, 6, 7];
+  const swappedRestDay   = getSwappedRestDay();
 
-  // Build loggedDays WITHOUT today so the initial state matches pre-log appearance
+  // loggedDays excludes today — today starts grey, pops blue separately
   const loggedDays = new Set();
   weeklyWorkoutLogs.forEach(l => {
     const d = new Date(l.completed_date).getDay();
     loggedDays.add(d === 0 ? 7 : d);
   });
-  // NOTE: we do NOT add todayDowAdjusted here — today starts grey, then pops blue after delay
 
   const vertOffset = i => Math.round(Math.sin((i / (allDays.length - 1)) * Math.PI * 2) * 9);
 
@@ -191,81 +229,69 @@ function EmbeddedDayCircles({ currentUser, weeklyWorkoutLogs, todayDow, startAni
     if (!startAnimation) return;
     const timers = [];
 
-    // Phase 1 — pop all circles in as grey
+    // Phase 1 — all circles pop in grey quickly
     allDays.forEach((_, i) => {
-      timers.push(setTimeout(() => setAnimatedIdx(i), i * 80));
+      timers.push(setTimeout(() => setAnimatedIdx(i), i * 65));
     });
-
-    const allVisibleAt = (allDays.length - 1) * 80 + 120;
+    const allVisibleAt = (allDays.length - 1) * 65 + 80;
     timers.push(setTimeout(() => onAllVisible?.(), allVisibleAt));
 
-    // Phase 2 — colour non-today circles one by one
-    const todayIndex = todayDowAdjusted - 1; // 0-based index
-    let nonTodayDelay = 0;
-    allDays.forEach((day, i) => {
-      if (day === todayDowAdjusted) return; // skip today for now
-      const delay = allVisibleAt + 200 + nonTodayDelay * 180;
-      nonTodayDelay++;
-      timers.push(setTimeout(() => {
-        setAnimatedColorIdx(i);
-        setColourPopIdx(i);
-      }, delay));
-    });
-
-    // Phase 3 — today's circle pops blue 1000ms after all others have coloured
-    const lastNonTodayColourAt = allVisibleAt + 200 + (nonTodayDelay - 1) * 180;
-    const todayColourAt = lastNonTodayColourAt + 1000;
+    // Phase 2 — today's circle pops blue 500ms after visible
+    const todayColourAt = allVisibleAt + 500;
     timers.push(setTimeout(() => {
       setTodayColoured(true);
       setTodayColourPop(true);
-      // Reset pop flag after animation
+      playDayCircleDing();
       setTimeout(() => setTodayColourPop(false), 600);
     }, todayColourAt));
 
-    // Phase 4 — particles + signal complete
-    const lastColourAt = todayColourAt + 400;
+    // Phase 3 — other circles colour one-by-one, starting 350ms after today pops
+    const nonTodayStartAt = todayColourAt + 350;
+    const nonTodayDays = allDays
+      .map((day, i) => ({ day, i }))
+      .filter(({ day }) => day !== todayDowAdjusted);
+
+    nonTodayDays.forEach(({ i }, seq) => {
+      timers.push(setTimeout(() => {
+        setAnimatedColorIdx(i);
+        setColourPopIdx(i);
+        playCircleTick(seq);
+      }, nonTodayStartAt + seq * 155));
+    });
+
+    // Phase 4 — particles + complete
+    const lastAt = nonTodayStartAt + (nonTodayDays.length - 1) * 155 + 380;
     timers.push(setTimeout(() => {
       spawnParticles(todayRef.current);
       if (!hasCompleted.current) {
         hasCompleted.current = true;
         onAnimationComplete?.();
       }
-    }, lastColourAt));
+    }, lastAt));
 
     return () => timers.forEach(clearTimeout);
   }, [startAnimation]);
 
   const getCircleProps = (day, i) => {
     const isToday    = day === todayDowAdjusted;
-    // For non-today days, done = loggedDays; for today, done = todayColoured
     const doneBase   = loggedDays.has(day);
     const done       = isToday ? todayColoured : doneBase;
     const isRestDay  = trainingDays.length > 0 && !trainingDays.includes(day) && !doneBase && !isToday && day !== swappedRestDay;
     const isPast     = day < todayDowAdjusted;
     const isMissed   = !isRestDay && !doneBase && isPast;
     const isPastRest = isRestDay && isPast;
-    // Sizes matching home page
     const size       = isToday ? 49 : 40;
     const isVisible  = i <= animatedIdx;
     const isColoured = isToday ? todayColoured : i <= animatedColorIdx;
     const isPopping  = isToday ? todayColourPop : (i === colourPopIdx);
 
     const getBg = () => {
-      if (isToday) return isColoured
-        ? 'linear-gradient(to bottom, #60a5fa 0%, #3b82f6 35%, #1d4ed8 100%)'
-        : 'linear-gradient(to bottom, #2d3748 0%, #1a202c 50%, #0f172a 100%)';
-      if (isRestDay) return (isPastRest && isColoured)
-        ? 'linear-gradient(to bottom, #4ade80 0%, #22c55e 40%, #16a34a 100%)'
-        : 'linear-gradient(to bottom, #2d3748 0%, #1a202c 50%, #0f172a 100%)';
-      if (done) return isColoured
-        ? 'linear-gradient(to bottom, #60a5fa 0%, #3b82f6 35%, #1d4ed8 100%)'
-        : 'linear-gradient(to bottom, #2d3748 0%, #1a202c 50%, #0f172a 100%)';
-      if (isMissed) return isColoured
-        ? 'linear-gradient(to bottom, #f87171 0%, #ef4444 35%, #b91c1c 100%)'
-        : 'linear-gradient(to bottom, #2d3748 0%, #1a202c 50%, #0f172a 100%)';
+      if (isToday)   return isColoured ? 'linear-gradient(to bottom, #60a5fa 0%, #3b82f6 35%, #1d4ed8 100%)' : 'linear-gradient(to bottom, #2d3748 0%, #1a202c 50%, #0f172a 100%)';
+      if (isRestDay) return (isPastRest && isColoured) ? 'linear-gradient(to bottom, #4ade80 0%, #22c55e 40%, #16a34a 100%)' : 'linear-gradient(to bottom, #2d3748 0%, #1a202c 50%, #0f172a 100%)';
+      if (done)      return isColoured ? 'linear-gradient(to bottom, #60a5fa 0%, #3b82f6 35%, #1d4ed8 100%)' : 'linear-gradient(to bottom, #2d3748 0%, #1a202c 50%, #0f172a 100%)';
+      if (isMissed)  return isColoured ? 'linear-gradient(to bottom, #f87171 0%, #ef4444 35%, #b91c1c 100%)' : 'linear-gradient(to bottom, #2d3748 0%, #1a202c 50%, #0f172a 100%)';
       return 'linear-gradient(to bottom, #2d3748 0%, #1a202c 50%, #0f172a 100%)';
     };
-
     const getBorder = () => {
       if (isToday)   return isColoured ? '1px solid rgba(147,197,253,0.5)' : '1px solid rgba(71,85,105,0.7)';
       if (isRestDay) return (isPastRest && isColoured) ? '1px solid rgba(74,222,128,0.5)' : '1px solid rgba(71,85,105,0.7)';
@@ -273,28 +299,18 @@ function EmbeddedDayCircles({ currentUser, weeklyWorkoutLogs, todayDow, startAni
       if (isMissed)  return isColoured ? '1px solid rgba(248,113,113,0.5)' : '1px solid rgba(71,85,105,0.7)';
       return '1px solid rgba(71,85,105,0.7)';
     };
-
     const getBoxShadow = () => {
-      if (isToday) return isColoured
-        ? '0 4px 0 0 #1a3fa8, 0 7px 18px rgba(0,0,100,0.55), inset 0 1px 0 rgba(255,255,255,0.25)'
-        : '0 4px 0 0 #111827, 0 6px 14px rgba(15,20,35,0.5), inset 0 1px 0 rgba(255,255,255,0.1)';
-      if (isRestDay) return (isPastRest && isColoured)
-        ? '0 3px 0 0 #15803d, 0 5px 12px rgba(0,80,0,0.3), inset 0 1px 0 rgba(255,255,255,0.2)'
-        : '0 4px 0 0 #111827, 0 6px 14px rgba(15,20,35,0.5), inset 0 1px 0 rgba(255,255,255,0.1)';
-      if (done) return isColoured
-        ? '0 4px 0 0 #1a3fa8, 0 7px 18px rgba(0,0,100,0.55), inset 0 1px 0 rgba(255,255,255,0.25)'
-        : '0 4px 0 0 #111827, 0 6px 14px rgba(15,20,35,0.5), inset 0 1px 0 rgba(255,255,255,0.1)';
-      if (isMissed) return isColoured
-        ? '0 4px 0 0 #991b1b, inset 0 1px 0 rgba(255,255,255,0.25)'
-        : '0 4px 0 0 #111827, 0 6px 14px rgba(15,20,35,0.5), inset 0 1px 0 rgba(255,255,255,0.1)';
+      if (isToday)   return isColoured ? '0 4px 0 0 #1a3fa8, 0 7px 18px rgba(0,0,100,0.55), inset 0 1px 0 rgba(255,255,255,0.25)' : '0 4px 0 0 #111827, 0 6px 14px rgba(15,20,35,0.5), inset 0 1px 0 rgba(255,255,255,0.1)';
+      if (isRestDay) return (isPastRest && isColoured) ? '0 3px 0 0 #15803d, 0 5px 12px rgba(0,80,0,0.3), inset 0 1px 0 rgba(255,255,255,0.2)' : '0 4px 0 0 #111827, 0 6px 14px rgba(15,20,35,0.5), inset 0 1px 0 rgba(255,255,255,0.1)';
+      if (done)      return isColoured ? '0 4px 0 0 #1a3fa8, 0 7px 18px rgba(0,0,100,0.55), inset 0 1px 0 rgba(255,255,255,0.25)' : '0 4px 0 0 #111827, 0 6px 14px rgba(15,20,35,0.5), inset 0 1px 0 rgba(255,255,255,0.1)';
+      if (isMissed)  return isColoured ? '0 4px 0 0 #991b1b, inset 0 1px 0 rgba(255,255,255,0.25)' : '0 4px 0 0 #111827, 0 6px 14px rgba(15,20,35,0.5), inset 0 1px 0 rgba(255,255,255,0.1)';
       return '0 4px 0 0 #111827, 0 6px 14px rgba(15,20,35,0.5), inset 0 1px 0 rgba(255,255,255,0.1)';
     };
-
     const getAnim = () => {
       if (!isVisible) return 'none';
-      if (isPopping) return 'scCircleColourPop 0.55s cubic-bezier(0.34,1.3,0.64,1) forwards';
+      if (isPopping)  return 'scCircleColourPop 0.55s cubic-bezier(0.34,1.3,0.64,1) forwards';
       if (isColoured) return 'none';
-      if (isToday) return 'scCirclePop 0.9s cubic-bezier(0.34,1.3,0.64,1) forwards';
+      if (isToday)    return 'scCirclePop 0.9s cubic-bezier(0.34,1.3,0.64,1) forwards';
       if (done || isRestDay || isMissed) return 'scCirclePop 0.55s cubic-bezier(0.34,1.3,0.64,1) forwards';
       return `scWiggle 2.4s ease-in-out ${i * 0.18}s infinite`;
     };
@@ -338,18 +354,14 @@ function EmbeddedDayCircles({ currentUser, weeklyWorkoutLogs, todayDow, startAni
               style={{
                 width: size, height: size, borderRadius: '50%',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                background: getBg(),
-                border: getBorder(),
-                boxShadow: getBoxShadow(),
-                animation: getAnim(),
-                flexShrink: 0,
+                background: getBg(), border: getBorder(), boxShadow: getBoxShadow(),
+                animation: getAnim(), flexShrink: 0,
                 transform: isVisible ? undefined : 'scale(0.3)',
                 transition: 'background 0.35s ease, border 0.35s ease, box-shadow 0.35s ease',
               }}
             >
               {isRestDay ? (
                 isPastRest ? (
-                  // Coloured rest day icon (green)
                   <svg width={isToday ? 32 : 26} height={isToday ? 32 : 26} viewBox="0 0 100 100" fill="none">
                     <line x1="50" y1="95" x2="50" y2="30" stroke="#15803d" strokeWidth="3" strokeLinecap="round" />
                     <path d="M50 8 C44 20 40 28 42 36 C45 40 55 40 58 36 C60 28 56 20 50 8Z" fill="#4ade80" stroke="#22c55e" strokeWidth="1" />
@@ -359,7 +371,6 @@ function EmbeddedDayCircles({ currentUser, weeklyWorkoutLogs, todayDow, startAni
                     <path d="M50 50 C60 42 72 40 84 46 C84 52 78 60 68 60 C58 60 50 54 50 50Z" fill="#4ade80" stroke="#22c55e" strokeWidth="1" />
                   </svg>
                 ) : (
-                  // Uncoloured rest day icon (grey)
                   <svg width={isToday ? 32 : 26} height={isToday ? 32 : 26} viewBox="0 0 100 100" fill="none">
                     <line x1="50" y1="95" x2="50" y2="30" stroke="rgba(148,163,184,0.3)" strokeWidth="3" strokeLinecap="round" />
                     <path d="M50 8 C44 20 40 28 42 36 C45 40 55 40 58 36 C60 28 56 20 50 8Z" fill="none" stroke="rgba(148,163,184,0.55)" strokeWidth="1.5" />
@@ -404,7 +415,7 @@ function EmbeddedDayCircles({ currentUser, weeklyWorkoutLogs, todayDow, startAni
               transform: 'translateX(-50%)', fontSize: 8,
               fontWeight: isToday ? 900 : 700,
               color: isToday ? '#93c5fd'
-                : done    ? 'rgba(147,197,253,0.7)'
+                : done     ? 'rgba(147,197,253,0.7)'
                 : isMissed ? 'rgba(248,113,113,0.6)'
                 : isRestDay && isPastRest ? 'rgba(74,222,128,0.7)'
                 : 'rgba(100,116,139,0.5)',
@@ -448,17 +459,15 @@ function StreakCelebration({
   const [continueButtonEnabled, setContinueButtonEnabled] = useState(false);
   const [shareWorkoutExiting, setShareWorkoutExiting]     = useState(false);
 
-  // Shared dark background persists across stage transitions to prevent flash
-  const [showSharedBackground, setShowSharedBackground]   = useState(false);
+  // Shared dark backdrop across all stages — prevents any flash between them
+  const [showSharedBackground, setShowSharedBackground] = useState(false);
 
   useEffect(() => { injectDayStyles(); }, []);
 
-  // Show shared background whenever any stage is active
   useEffect(() => {
     if (showStreakCelebration || showChallengesCelebration || showShareWorkout) {
       setShowSharedBackground(true);
     } else {
-      // Small delay before hiding so exit animations complete
       const t = setTimeout(() => setShowSharedBackground(false), 600);
       return () => clearTimeout(t);
     }
@@ -494,21 +503,19 @@ function StreakCelebration({
       if (p1) p1.style.display = 'block';
       if (p2) p2.style.display = 'none';
 
-      // t1 — icon bounces in
       const t1 = setTimeout(() => {
         stage.style.transition = 'opacity 0.18s ease, transform 0.6s cubic-bezier(0.34,1.6,0.64,1)';
         stage.style.opacity    = '1';
         stage.style.transform  = 'scale(1) translateY(0)';
       }, 600);
 
-      // t2 — number pops in (still showing old streak - 1)
       const t2 = setTimeout(() => {
         numEl.style.transition = 'opacity 0.15s ease, transform 0.55s cubic-bezier(0.34,1.8,0.64,1)';
         numEl.style.opacity    = '1';
         numEl.style.transform  = 'scale(1)';
       }, 1050);
 
-      // t3 — pose swap + number updates to new streak + SOUND fires here
+      // Pose swap + number increment + level-up sound
       const t3 = setTimeout(() => {
         if (p1) p1.style.display = 'none';
         if (p2) p2.style.display = 'block';
@@ -516,12 +523,9 @@ function StreakCelebration({
         numEl.style.transform  = 'scale(1.25)';
         numEl.textContent      = String(celebrationStreakNum);
         playCircleLevelUp();
-        setTimeout(() => {
-          numEl.style.transform = 'scale(1)';
-        }, 450);
+        setTimeout(() => { numEl.style.transform = 'scale(1)'; }, 450);
       }, 1450);
 
-      // t4 — wiggle pose 2
       const t4 = setTimeout(() => {
         if (p2) {
           p2.style.transition = 'transform 0.12s ease';
@@ -532,16 +536,17 @@ function StreakCelebration({
         }
       }, 1530);
 
-      // t5 — shift icon+number up to FINAL position (already accounts for circles + button below)
-      // Using easeIn-easeOut curve: fast start, smooth deceleration
+      // ── Single-step shift to FINAL position ─────────────────────────────────
+      // This value accounts for the circles row + button gap below.
+      // It moves here ONCE — the circles appearing doesn't cause a second jolt
+      // because the container is already at this position.
       const t5 = setTimeout(() => {
         setStreakPhase('final');
       }, 1950);
 
-      // t6 — 1s pause, then show circles + button (no position shift — already at final pos)
+      // Show circles (no layout shift — container already at final pos)
       const t6 = setTimeout(() => {
         setStreakPhase('circles');
-        setContinueButtonVisible(true);
         setStartCircleAnimation(true);
       }, 2950);
 
@@ -553,6 +558,14 @@ function StreakCelebration({
 
     return () => cancelAnimationFrame(raf);
   }, [showStreakCelebration, celebrationStreakNum]);
+
+  // Continue button fades in 400ms after circles start — soft entrance, not sudden
+  useEffect(() => {
+    if (streakPhase === 'circles') {
+      const t = setTimeout(() => setContinueButtonVisible(true), 400);
+      return () => clearTimeout(t);
+    }
+  }, [streakPhase]);
 
   const handleCirclesComplete = () => {
     setTimeout(() => setContinueButtonEnabled(true), 500);
@@ -570,26 +583,19 @@ function StreakCelebration({
   const BUTTON_BOTTOM = 'calc(env(safe-area-inset-bottom) + 36px)';
   const BUTTON_WIDTH  = 'min(340px, 88vw)';
 
-  // translateY value:
-  // 'final' and 'circles' are the same position — no secondary jolt
-  // The number here needs to be large enough to leave room for circles + button
-  const getTranslateY = () => {
-    if (streakPhase === 'final' || streakPhase === 'circles') return '-90px';
-    return '0px';
-  };
+  // Large enough to clear the circles row + continue button at the bottom
+  const FINAL_Y = '-120px';
 
   return (
     <>
-      {/* Persistent dark backdrop — lives behind all stages, prevents flash */}
+      {/* Persistent backdrop — shared across stages, prevents flash */}
       {showSharedBackground && (
-        <div
-          style={{
-            position: 'fixed', inset: 0, zIndex: 99,
-            background: 'rgba(0,0,0,0.92)',
-            backdropFilter: 'blur(4px)',
-            WebkitBackdropFilter: 'blur(4px)',
-          }}
-        />
+        <div style={{
+          position: 'fixed', inset: 0, zIndex: 99,
+          background: 'rgba(0,0,0,0.92)',
+          backdropFilter: 'blur(4px)',
+          WebkitBackdropFilter: 'blur(4px)',
+        }} />
       )}
 
       {/* STAGE 1 — Streak + Day Circles */}
@@ -604,10 +610,13 @@ function StreakCelebration({
           >
             <div style={{
               display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16,
-              // Fast acceleration then smooth deceleration (easeInOut-style)
-              transform: `translateY(${getTranslateY()})`,
+              // One-shot move — no second jolt when circles mount
+              transform: (streakPhase === 'final' || streakPhase === 'circles')
+                ? `translateY(${FINAL_Y})`
+                : 'translateY(0px)',
+              // easeInOut: fast acceleration → smooth deceleration
               transition: (streakPhase === 'final' || streakPhase === 'circles')
-                ? 'transform 0.65s cubic-bezier(0.4, 0, 0.2, 1)'
+                ? 'transform 0.7s cubic-bezier(0.4, 0, 0.2, 1)'
                 : 'none',
             }}>
               <div id="streak-anim-stage"
@@ -628,7 +637,7 @@ function StreakCelebration({
                 {celebrationStreakNum - 1}
               </div>
 
-              {(streakPhase === 'circles') && (
+              {streakPhase === 'circles' && (
                 <div style={{ width: BUTTON_WIDTH }}>
                   <EmbeddedDayCircles
                     currentUser={currentUser}
@@ -642,14 +651,14 @@ function StreakCelebration({
               )}
             </div>
 
-            {/* Continue button */}
+            {/* Continue button — long soft fade, not a sudden pop */}
             <AnimatePresence>
               {continueButtonVisible && (
                 <motion.div
-                  initial={{ opacity: 0, y: 16 }}
+                  initial={{ opacity: 0, y: 24 }}
                   animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 0.35 }}
+                  exit={{ opacity: 0, y: 8 }}
+                  transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
                   style={{
                     position: 'absolute',
                     bottom: BUTTON_BOTTOM,
@@ -681,8 +690,8 @@ function StreakCelebration({
               paddingBottom: 'calc(env(safe-area-inset-bottom) + 80px)',
             }} className="space-y-3">
               {celebrationChallenges.map((challenge, idx) => {
-                const prevPct  = Math.min(100, Math.round((challenge.previous_value / challenge.target_value) * 100));
-                const newPct   = Math.min(100, Math.round((challenge.new_value / challenge.target_value) * 100));
+                const prevPct    = Math.min(100, Math.round((challenge.previous_value / challenge.target_value) * 100));
+                const newPct     = Math.min(100, Math.round((challenge.new_value / challenge.target_value) * 100));
                 const isComplete = newPct >= 100;
                 return (
                   <motion.div
@@ -745,12 +754,7 @@ function StreakCelebration({
                 );
               })}
             </div>
-
-            <div style={{
-              position: 'absolute',
-              bottom: BUTTON_BOTTOM,
-              width: BUTTON_WIDTH,
-            }}>
+            <div style={{ position: 'absolute', bottom: BUTTON_BOTTOM, width: BUTTON_WIDTH }}>
               <ContinueButton enabled={true} onClick={onChallengesContinue} />
             </div>
           </motion.div>
