@@ -265,6 +265,19 @@ export default function Home() {
   }, [anyCelebrationActive]);
 
   useEffect(() => {
+  const handler = () => {
+    setShowStreakCelebration(false);
+    if (celebrationChallenges.length > 0) {
+      setTimeout(() => setShowChallengesCelebration(true), 200);
+    } else {
+      setTimeout(() => setShowShareWorkout(true), 200);
+    }
+  };
+  document.addEventListener('streakCelebrationContinue', handler);
+  return () => document.removeEventListener('streakCelebrationContinue', handler);
+}, [celebrationChallenges]);
+
+  useEffect(() => {
     lastScrollY.current = window.scrollY;
     const handleScroll = () => {
       if (ticking.current) return;
