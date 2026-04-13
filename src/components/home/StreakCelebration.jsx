@@ -198,10 +198,6 @@ function ContinueButton({ enabled, onClick }) {
 }
 
 // ── EmbeddedDayCircles ────────────────────────────────────────────────────────
-// Sequence:
-//   1. All 7 circles appear as grey
-//   2. Today's circle pops blue immediately (500ms after visible) + ding sound
-//   3. OTHER circles colour one-by-one after today's settles + ascending ticks
 function EmbeddedDayCircles({ currentUser, weeklyWorkoutLogs, todayDow, startAnimation, onAllVisible, onAnimationComplete }) {
   const [animatedIdx, setAnimatedIdx]           = useState(-1);
   const [animatedColorIdx, setAnimatedColorIdx] = useState(-1);
@@ -536,15 +532,12 @@ function StreakCelebration({
         }
       }, 1530);
 
-      // ── Single-step shift to FINAL position ─────────────────────────────────
-      // This value accounts for the circles row + button gap below.
-      // It moves here ONCE — the circles appearing doesn't cause a second jolt
-      // because the container is already at this position.
+      // Move icon+number to their final position — happens once, before circles appear
       const t5 = setTimeout(() => {
         setStreakPhase('final');
       }, 1950);
 
-      // Show circles (no layout shift — container already at final pos)
+      // Circles become visible — layout is already at final position so no second shift
       const t6 = setTimeout(() => {
         setStreakPhase('circles');
         setStartCircleAnimation(true);
@@ -583,8 +576,15 @@ function StreakCelebration({
   const BUTTON_BOTTOM = 'calc(env(safe-area-inset-bottom) + 36px)';
   const BUTTON_WIDTH  = 'min(340px, 88vw)';
 
-  // Large enough to clear the circles row + continue button at the bottom
-  const FINAL_Y = '-120px';
+  // How far up the icon+number shift to make room for circles + button below.
+  // Reduced from -120px so the circles land closer to the continue button.
+  const FINAL_Y = '-80px';
+
+  // The circles row sits in a fixed slot below the icon/number group.
+  // We pre-allocate the space (visibility:hidden when not yet animating) so that
+  // when the circles mount they cause ZERO layout shift — the container is
+  // already at FINAL_Y and stays there.
+  const CIRCLES_SLOT_HEIGHT = 110; // px — matches EmbeddedDayCircles height (90) + some breathing room
 
   return (
     <>
@@ -608,17 +608,21 @@ function StreakCelebration({
             transition={{ duration: 0.15 }}
             className="fixed inset-0 z-[100] flex flex-col items-center justify-center overflow-hidden"
           >
+            {/*
+              Outer wrapper: shifts up ONCE when phase reaches 'final'.
+              Because the circles slot is pre-reserved below, mounting the
+              EmbeddedDayCircles component does NOT trigger another shift.
+            */}
             <div style={{
               display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16,
-              // One-shot move — no second jolt when circles mount
               transform: (streakPhase === 'final' || streakPhase === 'circles')
                 ? `translateY(${FINAL_Y})`
                 : 'translateY(0px)',
-              // easeInOut: fast acceleration → smooth deceleration
-              transition: (streakPhase === 'final' || streakPhase === 'circles')
+              transition: streakPhase === 'final'
                 ? 'transform 0.7s cubic-bezier(0.4, 0, 0.2, 1)'
                 : 'none',
             }}>
+              {/* Pose image */}
               <div id="streak-anim-stage"
                 style={{ position: 'relative', width: 180, height: 180, opacity: 0, willChange: 'transform, opacity' }}>
                 <img id="streak-anim-p1" src={POSE_1_URL} alt="pose 1"
@@ -627,6 +631,7 @@ function StreakCelebration({
                   style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'contain', display: 'none' }} />
               </div>
 
+              {/* Streak number */}
               <div id="streak-anim-num" style={{
                 fontSize: 96,
                 fontWeight: 900, color: '#fff',
@@ -637,8 +642,17 @@ function StreakCelebration({
                 {celebrationStreakNum - 1}
               </div>
 
-              {streakPhase === 'circles' && (
-                <div style={{ width: BUTTON_WIDTH }}>
+              {/*
+                Pre-reserved circles slot — always rendered once we're in 'final' or
+                'circles' phase, but invisible until 'circles' so the layout height
+                is already accounted for before the animation starts.
+              */}
+              {(streakPhase === 'final' || streakPhase === 'circles') && (
+                <div style={{
+                  width: BUTTON_WIDTH,
+                  height: CIRCLES_SLOT_HEIGHT,
+                  visibility: streakPhase === 'circles' ? 'visible' : 'hidden',
+                }}>
                   <EmbeddedDayCircles
                     currentUser={currentUser}
                     weeklyWorkoutLogs={weeklyWorkoutLogs}
