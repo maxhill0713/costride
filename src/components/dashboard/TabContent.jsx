@@ -1,10 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import {
-  LayoutDashboard, Users, FileText, BarChart2, Zap, Settings,
-  ExternalLink, Eye, LogOut, QrCode, ChevronDown, Search, Plus,
-  Flame, Facebook, Instagram, Sparkles, Heart, MessageCircle,
-  ChevronRight, Check, AlertTriangle, Star, X, MoreHorizontal,
-  BrainCircuit, Gift, Bell,
+  ChevronDown, Plus, Flame, Facebook, Instagram, Heart, MessageCircle,
+  ChevronRight, Check, AlertTriangle, X, MoreHorizontal,
 } from "lucide-react";
 
 /* ─── MOBILE HOOK ────────────────────────────────────────────── */
@@ -20,14 +17,13 @@ function useIsMobile(breakpoint = 768) {
   return isMobile;
 }
 
-/* ─── TOKENS (Forge Fitness) ─────────────────────────────────── */
+/* ─── TOKENS ─────────────────────────────────────────────────── */
 const C = {
   bg:       "#000000",
   sidebar:  "#0f0f12",
   card:     "#141416",
   card2:    "#1a1a1f",
   brd:      "#222226",
-  brd2:     "#2a2a30",
   t1:       "#ffffff",
   t2:       "#8a8a94",
   t3:       "#444450",
@@ -36,8 +32,6 @@ const C = {
   cyanBrd:  "rgba(0,229,200,0.25)",
   red:      "#ff4d6d",
   redDim:   "rgba(255,77,109,0.15)",
-  amber:    "#f59e0b",
-  amberDim: "rgba(245,158,11,0.15)",
   green:    "#22c55e",
   greenDim: "rgba(34,197,94,0.12)",
 };
@@ -50,12 +44,9 @@ function Avatar({ name = "", size = 28 }) {
   const bg = palette[(name.charCodeAt(0) || 0) % palette.length];
   const letters = name.split(" ").map(w => w[0]).join("").toUpperCase().slice(0, 2) || "?";
   return (
-    <div style={{
-      width: size, height: size, borderRadius: "50%", flexShrink: 0,
-      background: bg, border: `1.5px solid ${C.card}`,
-      color: "#fff", fontSize: size * 0.36, fontWeight: 700,
-      display: "flex", alignItems: "center", justifyContent: "center",
-    }}>{letters}</div>
+    <div style={{ width: size, height: size, borderRadius: "50%", flexShrink: 0, background: bg, border: `1.5px solid ${C.card}`, color: "#fff", fontSize: size * 0.36, fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center" }}>
+      {letters}
+    </div>
   );
 }
 
@@ -73,9 +64,7 @@ function PlatformPill({ type }) {
 }
 
 function AiBadge() {
-  return (
-    <span style={{ padding: "2px 6px", borderRadius: 4, background: C.cyanDim, border: `1px solid ${C.cyanBrd}`, fontSize: 9.5, fontWeight: 800, color: C.cyan, letterSpacing: "0.05em" }}>AI</span>
-  );
+  return <span style={{ padding: "2px 6px", borderRadius: 4, background: C.cyanDim, border: `1px solid ${C.cyanBrd}`, fontSize: 9.5, fontWeight: 800, color: C.cyan, letterSpacing: "0.05em" }}>AI</span>;
 }
 
 function ScheduledBadge() {
@@ -94,146 +83,8 @@ function Checkbox({ checked, onChange }) {
   );
 }
 
-/* ─── SIDEBAR (desktop only) ─────────────────────────────────── */
-const NAV = [
-  { Icon: LayoutDashboard, label: "Overview"         },
-  { Icon: Eye,             label: "Views"            },
-  { Icon: Users,           label: "Members"          },
-  { Icon: FileText,        label: "Content", active: true },
-  { Icon: BarChart2,       label: "Analytics"        },
-  { Icon: MessageCircle,   label: "Community"        },
-  { Icon: Zap,             label: "Automations"      },
-  { Icon: BrainCircuit,    label: "AI Coach"         },
-];
-
-function Sidebar() {
-  return (
-    <div style={{ width: 188, flexShrink: 0, background: C.sidebar, borderRight: `1px solid ${C.brd}`, display: "flex", flexDirection: "column", height: "100vh", fontFamily: FONT }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "14px", borderBottom: `1px solid ${C.brd}` }}>
-        <div style={{ width: 28, height: 28, borderRadius: 8, background: "linear-gradient(135deg,#00e5c8,#00a896)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, flexShrink: 0 }}>🔥</div>
-        <div>
-          <div style={{ fontSize: 13, fontWeight: 700, color: C.t1, letterSpacing: "-0.02em" }}>Forge Fitness</div>
-          <div style={{ fontSize: 9.5, color: C.t2, fontWeight: 500, letterSpacing: "0.08em", textTransform: "uppercase" }}>GYM OWNER</div>
-        </div>
-      </div>
-      <div style={{ padding: "10px 8px", flex: 1 }}>
-        <div style={{ fontSize: 9.5, fontWeight: 600, color: C.t3, letterSpacing: "0.08em", textTransform: "uppercase", padding: "4px 8px 8px" }}>Navigation</div>
-        {NAV.map((item, i) => (
-          <div key={i} style={{
-            display: "flex", alignItems: "center", gap: 8,
-            padding: "7px 8px", borderRadius: 7, cursor: "pointer",
-            background: item.active ? C.cyanDim : "transparent",
-            borderLeft: item.active ? `2px solid ${C.cyan}` : "2px solid transparent",
-            color: item.active ? C.t1 : C.t2,
-            fontSize: 12.5, fontWeight: item.active ? 600 : 400,
-            marginBottom: 1,
-          }}>
-            <item.Icon style={{ width: 13, height: 13, flexShrink: 0 }} />
-            {item.label}
-          </div>
-        ))}
-      </div>
-      <div style={{ padding: "8px", borderTop: `1px solid ${C.brd}` }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "7px 8px", borderRadius: 7, cursor: "pointer", color: C.t2, fontSize: 12.5 }}>
-          <Settings style={{ width: 13, height: 13 }} /> Settings
-        </div>
-      </div>
-    </div>
-  );
-}
-
-/* ─── MOBILE BOTTOM NAV ──────────────────────────────────────── */
-const BOTTOM_NAV = [
-  { Icon: LayoutDashboard, label: "Overview", active: false },
-  { Icon: Users,           label: "Members",  active: false },
-  { Icon: FileText,        label: "Content",  active: true  },
-  { Icon: BarChart2,       label: "Analytics",active: false },
-  { Icon: BrainCircuit,    label: "AI Coach", active: false },
-];
-
-function MobileBottomNav() {
-  return (
-    <div style={{
-      position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 200,
-      background: C.sidebar, borderTop: `1px solid ${C.brd}`,
-      display: "flex", alignItems: "stretch",
-      height: 60, paddingBottom: "env(safe-area-inset-bottom)",
-      fontFamily: FONT,
-    }}>
-      {BOTTOM_NAV.map((item, i) => (
-        <div key={i} style={{
-          flex: 1, display: "flex", flexDirection: "column",
-          alignItems: "center", justifyContent: "center", gap: 4,
-          cursor: "pointer", minHeight: 44,
-          color: item.active ? C.cyan : C.t3,
-          position: "relative",
-        }}>
-          {item.active && (
-            <div style={{ position: "absolute", top: 0, left: "50%", transform: "translateX(-50%)", width: 28, height: 2, background: C.cyan, borderRadius: "0 0 2px 2px" }} />
-          )}
-          <item.Icon size={18} />
-          <span style={{ fontSize: 9.5, fontWeight: item.active ? 700 : 500, letterSpacing: "0.02em" }}>{item.label}</span>
-        </div>
-      ))}
-    </div>
-  );
-}
-
-/* ─── TOP BAR (desktop) ──────────────────────────────────────── */
-function TopBar() {
-  return (
-    <div style={{
-      height: 46, flexShrink: 0, background: C.sidebar,
-      borderBottom: `1px solid ${C.brd}`,
-      display: "flex", alignItems: "center", justifyContent: "space-between",
-      padding: "0 18px", gap: 10, fontFamily: FONT,
-    }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-        <span style={{ fontSize: 12.5, fontWeight: 600, color: C.t2 }}>Content Center</span>
-        <div style={{ display: "flex", alignItems: "center", gap: 7, background: "rgba(255,255,255,0.04)", border: `1px solid ${C.brd}`, borderRadius: 7, padding: "5px 10px", width: 220 }}>
-          <Search style={{ width: 12, height: 12, color: C.t3, flexShrink: 0 }} />
-          <span style={{ fontSize: 12, color: C.t3 }}>Search members, content…</span>
-        </div>
-        <div style={{ display: "flex", alignItems: "center", gap: 6, background: "rgba(255,255,255,0.04)", border: `1px solid ${C.brd}`, borderRadius: 7, padding: "5px 10px", fontSize: 11.5, color: C.t2 }}>
-          <span>📅</span> Friday 10 April 2026
-        </div>
-      </div>
-      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 5, padding: "5px 10px", borderRadius: 7, background: "rgba(255,77,109,0.1)", border: "1px solid rgba(255,77,109,0.28)", cursor: "pointer" }}>
-          <div style={{ width: 6, height: 6, borderRadius: "50%", background: C.red }} />
-          <span style={{ fontSize: 11.5, fontWeight: 700, color: C.red }}>3 At Risk</span>
-        </div>
-        <div style={{ display: "flex", alignItems: "center", gap: 6, padding: "5px 11px", borderRadius: 7, background: C.cyanDim, border: `1px solid ${C.cyanBrd}`, color: C.cyan, fontSize: 12, fontWeight: 600, cursor: "pointer" }}>
-          <QrCode style={{ width: 12, height: 12 }} /> + Scan QR
-        </div>
-      </div>
-    </div>
-  );
-}
-
-/* ─── MOBILE HEADER ──────────────────────────────────────────── */
-function MobileHeader() {
-  return (
-    <div style={{
-      height: 52, flexShrink: 0, background: C.sidebar,
-      borderBottom: `1px solid ${C.brd}`,
-      display: "flex", alignItems: "center", justifyContent: "space-between",
-      padding: "0 16px", fontFamily: FONT,
-      position: "sticky", top: 0, zIndex: 100,
-    }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-        <div style={{ width: 26, height: 26, borderRadius: 7, background: "linear-gradient(135deg,#00e5c8,#00a896)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12 }}>🔥</div>
-        <span style={{ fontSize: 15, fontWeight: 700, color: C.t1, letterSpacing: "-0.02em" }}>Content</span>
-      </div>
-      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-        <div style={{ position: "relative", minWidth: 44, minHeight: 44, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
-          <Bell size={18} color={C.t2} />
-          <div style={{ position: "absolute", top: 8, right: 8, width: 7, height: 7, borderRadius: "50%", background: C.red, border: `1.5px solid ${C.sidebar}` }} />
-        </div>
-        <Avatar name="Gym Owner" size={30} />
-      </div>
-    </div>
-  );
+function DeleteBtn({ onClick }) {
+  return <button onClick={onClick} style={{ background: C.redDim, border: `1px solid rgba(255,77,109,0.3)`, borderRadius: 6, padding: "4px 10px", color: C.red, fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: FONT, flexShrink: 0, minHeight: 36 }}>Delete</button>;
 }
 
 /* ─── ALERT BANNER ───────────────────────────────────────────── */
@@ -281,63 +132,19 @@ function JourneyCard() {
 const VISIBLE_TABS = ["Drafts", "Scheduled", "Events", "Challenges", "Polls", "Posts"];
 
 function Tabs({ active, setActive, isMobile }) {
-  const tabsRef = useRef(null);
-
-  // Scroll active tab into view on mobile
+  const ref = useRef(null);
   useEffect(() => {
-    if (isMobile && tabsRef.current) {
-      const activeEl = tabsRef.current.querySelector("[data-active='true']");
-      if (activeEl) activeEl.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
+    if (isMobile && ref.current) {
+      const el = ref.current.querySelector("[data-active='true']");
+      if (el) el.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
     }
   }, [active, isMobile]);
 
   return (
-    <div style={{
-      marginBottom: isMobile ? 0 : 14,
-      borderBottom: `1px solid ${C.brd}`,
-      ...(isMobile ? {
-        position: "sticky",
-        top: 52,
-        zIndex: 90,
-        background: C.bg,
-      } : {}),
-    }}>
-      <div
-        ref={tabsRef}
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: 2,
-          ...(isMobile ? {
-            overflowX: "auto",
-            WebkitOverflowScrolling: "touch",
-            scrollbarWidth: "none",
-            msOverflowStyle: "none",
-          } : {}),
-        }}
-      >
+    <div style={{ borderBottom: `1px solid ${C.brd}`, marginBottom: isMobile ? 0 : 14, ...(isMobile ? { position: "sticky", top: 0, zIndex: 90, background: C.bg } : {}) }}>
+      <div ref={ref} style={{ display: "flex", alignItems: "center", gap: 2, ...(isMobile ? { overflowX: "auto", WebkitOverflowScrolling: "touch", scrollbarWidth: "none" } : {}) }}>
         {VISIBLE_TABS.map(tab => (
-          <button
-            key={tab}
-            data-active={active === tab}
-            onClick={() => setActive(tab)}
-            style={{
-              padding: isMobile ? "10px 16px" : "7px 14px",
-              fontSize: 12.5,
-              background: "transparent",
-              border: "none",
-              borderBottom: `2px solid ${active === tab ? C.cyan : "transparent"}`,
-              color: active === tab ? C.t1 : C.t2,
-              fontWeight: active === tab ? 700 : 400,
-              cursor: "pointer",
-              marginBottom: -1,
-              fontFamily: FONT,
-              transition: "color 0.15s",
-              whiteSpace: "nowrap",
-              flexShrink: 0,
-              minHeight: 44,
-            }}
-          >
+          <button key={tab} data-active={active === tab} onClick={() => setActive(tab)} style={{ padding: isMobile ? "10px 16px" : "7px 14px", fontSize: 12.5, background: "transparent", border: "none", borderBottom: `2px solid ${active === tab ? C.cyan : "transparent"}`, color: active === tab ? C.t1 : C.t2, fontWeight: active === tab ? 700 : 400, cursor: "pointer", marginBottom: -1, fontFamily: FONT, transition: "color 0.15s", whiteSpace: "nowrap", flexShrink: 0, minHeight: 44 }}>
             {tab}
           </button>
         ))}
@@ -348,17 +155,13 @@ function Tabs({ active, setActive, isMobile }) {
 
 /* ─── DRAFT CARDS ────────────────────────────────────────────── */
 const DRAFTS = [
-  { id: "d1", author: "AI Gym", title: "AI Draft: Motivation Monday", sub: "Ready to crush your goals with...", platforms: ["instagram", "facebook"], aiGen: true },
-  { id: "d2", author: "Priya S", title: "Draft: New Class Poll", sub: "What class should we add next?...", platforms: ["instagram"], aiGen: false },
+  { id: "d1", author: "AI Gym",  title: "AI Draft: Motivation Monday", sub: "Ready to crush your goals with...", platforms: ["instagram", "facebook"], aiGen: true  },
+  { id: "d2", author: "Priya S", title: "Draft: New Class Poll",        sub: "What class should we add next?...", platforms: ["instagram"],            aiGen: false },
 ];
 
 function DraftCard({ d, isMobile }) {
   return (
-    <div
-      style={{ background: C.card, border: `1px solid ${C.brd}`, borderRadius: 10, overflow: "hidden" }}
-      onMouseEnter={e => e.currentTarget.style.borderColor = C.cyanBrd}
-      onMouseLeave={e => e.currentTarget.style.borderColor = C.brd}
-    >
+    <div style={{ background: C.card, border: `1px solid ${C.brd}`, borderRadius: 10, overflow: "hidden" }} onMouseEnter={e => e.currentTarget.style.borderColor = C.cyanBrd} onMouseLeave={e => e.currentTarget.style.borderColor = C.brd}>
       <div style={{ padding: isMobile ? "14px 16px 12px" : "12px 14px 10px", display: "flex", alignItems: "flex-start", gap: 9 }}>
         <Avatar name={d.author} size={isMobile ? 34 : 30} />
         <div style={{ minWidth: 0 }}>
@@ -367,9 +170,7 @@ function DraftCard({ d, isMobile }) {
         </div>
       </div>
       <div style={{ padding: isMobile ? "10px 16px 14px" : "9px 14px 12px", display: "flex", alignItems: "center", gap: 6, borderTop: `1px solid ${C.brd}` }}>
-        <div style={{ display: "flex", gap: 4 }}>
-          {d.platforms.map(p => <PlatformPill key={p} type={p} />)}
-        </div>
+        <div style={{ display: "flex", gap: 4 }}>{d.platforms.map(p => <PlatformPill key={p} type={p} />)}</div>
         {d.aiGen && <AiBadge />}
         <div style={{ flex: 1 }} />
         <button style={{ padding: isMobile ? "8px 14px" : "6px 13px", borderRadius: 7, fontSize: 11.5, fontWeight: 700, background: C.cyan, color: "#000", border: "none", cursor: "pointer", fontFamily: FONT, minHeight: 44 }}>
@@ -402,35 +203,21 @@ function TableHeader() {
 
 function TableRow({ row, checked, onToggle, last }) {
   return (
-    <div style={{
-      display: "grid", gridTemplateColumns: COL, gap: 6, padding: "9px 12px",
-      alignItems: "center", cursor: "pointer",
-      background: checked ? C.cyanDim : "transparent",
-      borderBottom: last ? "none" : `1px solid ${C.brd}`,
-    }}
+    <div style={{ display: "grid", gridTemplateColumns: COL, gap: 6, padding: "9px 12px", alignItems: "center", cursor: "pointer", background: checked ? C.cyanDim : "transparent", borderBottom: last ? "none" : `1px solid ${C.brd}` }}
       onMouseEnter={e => { if (!checked) e.currentTarget.style.background = "rgba(255,255,255,0.02)"; }}
       onMouseLeave={e => { if (!checked) e.currentTarget.style.background = "transparent"; }}
       onClick={onToggle}>
-      <div style={{ display: "flex", justifyContent: "center" }}>
-        <Checkbox checked={checked} onChange={onToggle} />
-      </div>
+      <div style={{ display: "flex", justifyContent: "center" }}><Checkbox checked={checked} onChange={onToggle} /></div>
       <div style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0 }}>
         <Avatar name={row.typeAvatar} size={24} />
         <span style={{ fontSize: 12, fontWeight: 500, color: C.t1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{row.typeLabel}</span>
       </div>
-      <div style={{ display: "flex", alignItems: "center", gap: 3 }}>
-        {row.platforms.map(p => <PlatformPill key={p} type={p} />)}
-        {row.aiGen && <AiBadge />}
-      </div>
+      <div style={{ display: "flex", alignItems: "center", gap: 3 }}>{row.platforms.map(p => <PlatformPill key={p} type={p} />)}{row.aiGen && <AiBadge />}</div>
       <div><ScheduledBadge /></div>
       <div style={{ fontSize: 11.5, color: C.t2 }}>{row.date}</div>
       <div>
         <span style={{ fontSize: 11.5, color: C.t3 }}>N/A</span>
-        {row.engBar > 0 && (
-          <div style={{ height: 3, background: "rgba(255,255,255,0.06)", borderRadius: 2, marginTop: 5, width: 60 }}>
-            <div style={{ width: `${row.engBar}%`, height: "100%", background: C.cyan, borderRadius: 2 }} />
-          </div>
-        )}
+        {row.engBar > 0 && <div style={{ height: 3, background: "rgba(255,255,255,0.06)", borderRadius: 2, marginTop: 5, width: 60 }}><div style={{ width: `${row.engBar}%`, height: "100%", background: C.cyan, borderRadius: 2 }} /></div>}
       </div>
       <div onClick={e => e.stopPropagation()}>
         <button style={{ display: "flex", alignItems: "center", gap: 4, padding: "4px 10px", borderRadius: 6, fontSize: 11.5, fontWeight: 500, background: "rgba(255,255,255,0.04)", border: `1px solid ${C.brd}`, color: C.t2, cursor: "pointer", fontFamily: FONT }}>
@@ -447,30 +234,16 @@ function ContentTable() {
   return (
     <div style={{ background: C.card, border: `1px solid ${C.brd}`, borderRadius: 10, overflow: "hidden" }}>
       <TableHeader />
-      {TABLE_ROWS.map((row, i) => (
-        <TableRow key={row.id} row={row} checked={checked.has(row.id)} onToggle={() => toggle(row.id)} last={i === TABLE_ROWS.length - 1} />
-      ))}
+      {TABLE_ROWS.map((row, i) => <TableRow key={row.id} row={row} checked={checked.has(row.id)} onToggle={() => toggle(row.id)} last={i === TABLE_ROWS.length - 1} />)}
     </div>
   );
 }
 
-/* ─── MOBILE CONTENT CARD (replaces table rows) ──────────────── */
-function MobileContentCard({ row, last }) {
+/* ─── MOBILE CONTENT CARD ────────────────────────────────────── */
+function MobileContentCard({ row }) {
   const [checked, setChecked] = useState(false);
   return (
-    <div
-      onClick={() => setChecked(p => !p)}
-      style={{
-        background: checked ? C.cyanDim : C.card,
-        border: `1px solid ${checked ? C.cyanBrd : C.brd}`,
-        borderRadius: 10,
-        padding: "14px 16px",
-        marginBottom: 8,
-        cursor: "pointer",
-        transition: "border-color 0.15s, background 0.15s",
-      }}
-    >
-      {/* Row 1: Avatar + title + checkbox */}
+    <div onClick={() => setChecked(p => !p)} style={{ background: checked ? C.cyanDim : C.card, border: `1px solid ${checked ? C.cyanBrd : C.brd}`, borderRadius: 10, padding: "14px 16px", marginBottom: 8, cursor: "pointer", transition: "border-color 0.15s, background 0.15s" }}>
       <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
         <Avatar name={row.typeAvatar} size={34} />
         <div style={{ flex: 1, minWidth: 0 }}>
@@ -479,50 +252,26 @@ function MobileContentCard({ row, last }) {
         </div>
         <Checkbox checked={checked} onChange={() => setChecked(p => !p)} />
       </div>
-
-      {/* Row 2: Platforms + AI badge + Status */}
       <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 10 }}>
         {row.platforms.map(p => <PlatformPill key={p} type={p} />)}
         {row.aiGen && <AiBadge />}
-        <div style={{ marginLeft: "auto" }}>
-          <ScheduledBadge />
-        </div>
+        <div style={{ marginLeft: "auto" }}><ScheduledBadge /></div>
       </div>
-
-      {/* Row 3: Engagement bar */}
       {row.engBar > 0 && (
         <div style={{ marginBottom: 12 }}>
           <div style={{ display: "flex", justifyContent: "space-between", fontSize: 10.5, color: C.t3, marginBottom: 4 }}>
-            <span>Engagement</span>
-            <span style={{ color: C.cyan }}>{row.engBar}%</span>
+            <span>Engagement</span><span style={{ color: C.cyan }}>{row.engBar}%</span>
           </div>
           <div style={{ height: 4, background: "rgba(255,255,255,0.06)", borderRadius: 2, overflow: "hidden" }}>
             <div style={{ width: `${row.engBar}%`, height: "100%", background: C.cyan, borderRadius: 2 }} />
           </div>
         </div>
       )}
-
-      {/* Row 4: Action button full width */}
       <div onClick={e => e.stopPropagation()}>
-        <button style={{
-          width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 5,
-          padding: "11px", borderRadius: 8, fontSize: 12.5, fontWeight: 600,
-          background: "rgba(255,255,255,0.04)", border: `1px solid ${C.brd}`,
-          color: C.t2, cursor: "pointer", fontFamily: FONT, minHeight: 44,
-        }}>
+        <button style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 5, padding: "11px", borderRadius: 8, fontSize: 12.5, fontWeight: 600, background: "rgba(255,255,255,0.04)", border: `1px solid ${C.brd}`, color: C.t2, cursor: "pointer", fontFamily: FONT, minHeight: 44 }}>
           Review &amp; Edit <ChevronDown size={11} />
         </button>
       </div>
-    </div>
-  );
-}
-
-function MobileContentCards() {
-  return (
-    <div>
-      {TABLE_ROWS.map((row, i) => (
-        <MobileContentCard key={row.id} row={row} last={i === TABLE_ROWS.length - 1} />
-      ))}
     </div>
   );
 }
@@ -549,22 +298,13 @@ function FeedRow({ isMobile }) {
   );
 }
 
-/* ─── RIGHT SIDEBAR ──────────────────────────────────────────── */
+/* ─── RIGHT SIDEBAR (desktop) ────────────────────────────────── */
 const BAR_DATA = [{ h: 60 }, { h: 85 }, { h: 35 }, { h: 60 }, { h: 28 }, { h: 22 }, { h: 18 }];
-
-const QUICK_IDEAS = [
-  "Generate AI Motivation Monday",
-  "Post Member Spotlight",
-  "Create Weekend Challenge Poll",
-];
+const QUICK_IDEAS = ["Generate AI Motivation Monday", "Post Member Spotlight", "Create Weekend Challenge Poll"];
 
 function RightSidebar() {
   return (
-    <div style={{
-      width: 252, flexShrink: 0, background: C.sidebar,
-      borderLeft: `1px solid ${C.brd}`, padding: "14px 12px",
-      display: "flex", flexDirection: "column", gap: 14, overflowY: "auto",
-    }}>
+    <div style={{ width: 252, flexShrink: 0, background: C.sidebar, borderLeft: `1px solid ${C.brd}`, padding: "14px 12px", display: "flex", flexDirection: "column", gap: 14, overflowY: "auto" }}>
       <div>
         <div style={{ fontSize: 12.5, fontWeight: 600, color: C.t1, marginBottom: 2 }}>What to Post Today?</div>
         <div style={{ fontSize: 10.5, color: C.t2, marginBottom: 9 }}>Guided ideas for today</div>
@@ -578,9 +318,7 @@ function RightSidebar() {
           ))}
         </div>
       </div>
-
       <div style={{ height: 1, background: C.brd }} />
-
       <div>
         <div style={{ fontSize: 12.5, fontWeight: 600, color: C.t1, marginBottom: 10 }}>Actionable Insights</div>
         <div style={{ display: "flex", gap: 4, alignItems: "flex-end", height: 70, marginBottom: 3 }}>
@@ -595,16 +333,14 @@ function RightSidebar() {
         </div>
         <div style={{ height: 1, background: C.brd, marginBottom: 10, marginLeft: 24 }} />
         <div style={{ fontSize: 11.5, color: C.t2, lineHeight: 1.6, marginBottom: 8 }}>
-          Polls have <span style={{ color: C.t1, fontWeight: 600 }}>2× more engagement</span> than text posts. Try asking about new class ideas.
+          Polls have <span style={{ color: C.t1, fontWeight: 600 }}>2× more engagement</span> than text posts.
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 4, cursor: "pointer" }}>
           <span style={{ fontSize: 11.5, color: C.cyan, fontWeight: 600 }}>Review Detailed Insights</span>
           <ChevronRight size={11} color={C.cyan} />
         </div>
       </div>
-
       <div style={{ height: 1, background: C.brd }} />
-
       <div>
         <div style={{ fontSize: 12.5, fontWeight: 600, color: C.t1, marginBottom: 10 }}>Content Feed Preview</div>
         <div style={{ background: C.card, border: `1px solid ${C.brd}`, borderRadius: 10, overflow: "hidden" }}>
@@ -613,11 +349,9 @@ function RightSidebar() {
             <span style={{ fontSize: 12, fontWeight: 600, color: C.t1 }}>Sarah</span>
           </div>
           <div style={{ padding: "0 12px 8px", fontSize: 11.5, color: C.t2, lineHeight: 1.55 }}>
-            Finally nailed that pose!{" "}
-            <span style={{ color: C.cyan }}>@forgefitness</span>{" "}
-            <span style={{ color: C.cyan }}>#yogagoals</span>
+            Finally nailed that pose! <span style={{ color: C.cyan }}>@forgefitness</span> <span style={{ color: C.cyan }}>#yogagoals</span>
           </div>
-          <div style={{ margin: "0 12px 10px", borderRadius: 8, overflow: "hidden", height: 90, background: "rgba(255,255,255,0.03)", border: `1px solid ${C.brd}`, display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <div style={{ margin: "0 12px 10px", borderRadius: 8, height: 90, background: "rgba(255,255,255,0.03)", border: `1px solid ${C.brd}`, display: "flex", alignItems: "center", justifyContent: "center" }}>
             <svg width="40" height="40" viewBox="0 0 48 48" fill="none">
               <ellipse cx="24" cy="10" rx="5" ry="5" fill={C.t3} />
               <line x1="24" y1="15" x2="24" y2="32" stroke={C.t3} strokeWidth="3" strokeLinecap="round" />
@@ -632,7 +366,6 @@ function RightSidebar() {
             <div style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 11.5, color: C.t2 }}><MessageCircle size={12} color={C.cyan} /> 4</div>
           </div>
         </div>
-
         <button style={{ width: "100%", marginTop: 9, padding: "9px", borderRadius: 8, background: C.cyan, color: "#000", border: "none", fontSize: 12.5, fontWeight: 700, cursor: "pointer", fontFamily: FONT, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, boxShadow: "0 0 16px rgba(0,229,200,0.25)" }}>
           <Plus size={13} /> Add Member
         </button>
@@ -641,7 +374,7 @@ function RightSidebar() {
   );
 }
 
-/* ─── MOBILE QUICK IDEAS CARD ────────────────────────────────── */
+/* ─── MOBILE CONTEXTUAL CARDS ────────────────────────────────── */
 function MobileQuickIdeas() {
   return (
     <div style={{ background: C.card, border: `1px solid ${C.brd}`, borderRadius: 10, padding: "14px 16px", marginBottom: 10 }}>
@@ -649,24 +382,13 @@ function MobileQuickIdeas() {
       <div style={{ fontSize: 11, color: C.t2, marginBottom: 10 }}>Guided ideas for today</div>
       <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
         {QUICK_IDEAS.map((q, i) => (
-          <button
-            key={i}
-            style={{
-              width: "100%", padding: "12px 14px", borderRadius: 8, textAlign: "left",
-              background: C.card2, border: `1px solid ${C.brd}`, color: C.t2,
-              fontSize: 12.5, fontWeight: 500, cursor: "pointer", fontFamily: FONT,
-              minHeight: 44,
-            }}
-          >
-            {q}
-          </button>
+          <button key={i} style={{ width: "100%", padding: "12px 14px", borderRadius: 8, textAlign: "left", background: C.card2, border: `1px solid ${C.brd}`, color: C.t2, fontSize: 12.5, fontWeight: 500, cursor: "pointer", fontFamily: FONT, minHeight: 44 }}>{q}</button>
         ))}
       </div>
     </div>
   );
 }
 
-/* ─── MOBILE INSIGHTS CARD ───────────────────────────────────── */
 function MobileInsights() {
   return (
     <div style={{ background: C.card, border: `1px solid ${C.brd}`, borderRadius: 10, padding: "14px 16px", marginBottom: 10 }}>
@@ -677,15 +399,10 @@ function MobileInsights() {
           <ChevronRight size={11} color={C.cyan} />
         </div>
       </div>
-      {/* Mini bar chart */}
       <div style={{ display: "flex", gap: 4, alignItems: "flex-end", height: 52, marginBottom: 8 }}>
         {BAR_DATA.map((b, i) => (
           <div key={i} style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "flex-end", height: "100%" }}>
-            <div style={{
-              width: "100%", height: `${b.h}%`,
-              background: i < 2 ? C.cyan : i < 4 ? "rgba(0,229,200,0.5)" : "rgba(0,229,200,0.2)",
-              borderRadius: "2px 2px 0 0",
-            }} />
+            <div style={{ width: "100%", height: `${b.h}%`, background: i < 2 ? C.cyan : i < 4 ? "rgba(0,229,200,0.5)" : "rgba(0,229,200,0.2)", borderRadius: "2px 2px 0 0" }} />
           </div>
         ))}
       </div>
@@ -712,7 +429,6 @@ function EmptyState({ label, onAdd }) {
   );
 }
 
-/* ─── SECTION HEADER ─────────────────────────────────────────── */
 function SectionHeader({ count, label, onAdd, btnLabel, isMobile }) {
   return (
     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
@@ -726,7 +442,6 @@ function SectionHeader({ count, label, onAdd, btnLabel, isMobile }) {
   );
 }
 
-/* ─── GENERIC LIST CARD ──────────────────────────────────────── */
 function ListCard({ children, isMobile }) {
   return (
     <div style={{ background: C.card, border: `1px solid ${C.brd}`, borderRadius: 10, padding: isMobile ? "14px 16px" : "13px 16px", display: "flex", alignItems: "center", gap: 12, marginBottom: 8 }}
@@ -737,297 +452,226 @@ function ListCard({ children, isMobile }) {
   );
 }
 
-function DeleteBtn({ onClick }) {
-  return (
-    <button onClick={onClick} style={{ background: C.redDim, border: `1px solid rgba(255,77,109,0.3)`, borderRadius: 6, padding: "4px 10px", color: C.red, fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: FONT, flexShrink: 0, minHeight: 36 }}>Delete</button>
-  );
-}
-
-/* ─── SCHEDULED TAB ─────────────────────────────────────────── */
-function ScheduledRow({ row, last }) {
-  const [checked, setChecked] = useState(false);
-  return <TableRow row={row} checked={checked} onToggle={() => setChecked(p => !p)} last={last} />;
-}
-
-function ScheduledTab({ isMobile }) {
-  if (isMobile) {
-    return (
-      <div style={{ paddingTop: 10 }}>
-        {TABLE_ROWS.map((row, i) => (
-          <MobileContentCard key={row.id} row={row} last={i === TABLE_ROWS.length - 1} />
-        ))}
-      </div>
-    );
-  }
-  return (
-    <div style={{ background: C.card, border: `1px solid ${C.brd}`, borderRadius: 10, overflow: "hidden" }}>
-      <TableHeader />
-      {TABLE_ROWS.map((row, i) => (
-        <ScheduledRow key={row.id} row={row} last={i === TABLE_ROWS.length - 1} />
-      ))}
-    </div>
-  );
-}
-
-/* ─── FLOATING ACTION BUTTON (mobile) ───────────────────────── */
+/* ─── FAB (mobile only) ──────────────────────────────────────── */
 function FAB({ onClick }) {
   return (
-    <button
-      onClick={onClick}
-      style={{
-        position: "fixed",
-        bottom: 76,
-        right: 18,
-        zIndex: 190,
-        width: 52,
-        height: 52,
-        borderRadius: "50%",
-        background: C.cyan,
-        border: "none",
-        cursor: "pointer",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        boxShadow: "0 0 0 1px rgba(0,229,200,0.3), 0 8px 28px rgba(0,229,200,0.35)",
-        fontFamily: FONT,
-      }}
-    >
+    <button onClick={onClick} style={{ position: "fixed", bottom: 76, right: 18, zIndex: 190, width: 52, height: 52, borderRadius: "50%", background: C.cyan, border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 0 0 1px rgba(0,229,200,0.3), 0 8px 28px rgba(0,229,200,0.35)" }}>
       <Plus size={22} color="#000" strokeWidth={2.5} />
     </button>
   );
 }
 
-/* ─── CONTENT AREA ───────────────────────────────────────────── */
-function ContentArea({ events = [], challenges = [], polls = [], posts = [], openModal, onDeleteEvent, onDeleteChallenge, onDeletePost }) {
+/* ─── ROOT ───────────────────────────────────────────────────── */
+export default function ContentPage({ events = [], challenges = [], polls = [], posts = [], openModal, onDeleteEvent, onDeleteChallenge, onDeletePost }) {
   const isMobile = useIsMobile();
-  const [tab, setTab] = useState("Drafts");
+  const [tab, setTab]   = useState("Drafts");
   const [alert, setAlert] = useState(true);
-  const [showCreateMenu, setShowCreateMenu] = useState(false);
+  const [showMenu, setShowMenu] = useState(false);
 
   const createItems = [
-    { label: "📝 New Post",      action: () => { openModal?.("post");      setShowCreateMenu(false); setTab("Posts"); } },
-    { label: "📅 New Event",     action: () => { openModal?.("event");     setShowCreateMenu(false); setTab("Events"); } },
-    { label: "🏆 New Challenge", action: () => { openModal?.("challenge"); setShowCreateMenu(false); setTab("Challenges"); } },
-    { label: "📊 New Poll",      action: () => { openModal?.("poll");      setShowCreateMenu(false); setTab("Polls"); } },
+    { label: "📝 New Post",      action: () => { openModal?.("post");      setShowMenu(false); setTab("Posts");      } },
+    { label: "📅 New Event",     action: () => { openModal?.("event");     setShowMenu(false); setTab("Events");     } },
+    { label: "🏆 New Challenge", action: () => { openModal?.("challenge"); setShowMenu(false); setTab("Challenges"); } },
+    { label: "📊 New Poll",      action: () => { openModal?.("poll");      setShowMenu(false); setTab("Polls");      } },
   ];
 
   return (
-    <div style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0, overflow: "hidden" }}>
-      <div style={{ flex: 1, display: "flex", overflow: "hidden" }}>
-        <div style={{ flex: 1, overflowY: "auto", minWidth: 0, ...(isMobile ? { paddingBottom: 80 } : {}) }}>
+    <div style={{ display: "flex", flex: 1, minHeight: 0, background: C.bg, color: C.t1, fontFamily: FONT, fontSize: 13, lineHeight: 1.5, WebkitFontSmoothing: "antialiased" }}>
 
-          {/* ── MAIN SCROLL AREA ── */}
-          <div style={{ padding: isMobile ? "14px 14px 0" : "16px 20px 40px" }}>
+      {/* ── MAIN SCROLL ── */}
+      <div style={{ flex: 1, overflowY: "auto", minWidth: 0, ...(isMobile ? { paddingBottom: 80 } : {}) }}>
 
-            {/* Page header */}
-            {!isMobile && (
-              <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 12 }}>
-                <div>
-                  <h1 style={{ fontSize: 19, fontWeight: 700, color: C.t1, margin: 0, letterSpacing: "-0.02em", lineHeight: 1.25 }}>
-                    Content Center <span style={{ color: C.t3, fontWeight: 300 }}>/</span> <span style={{ color: C.cyan }}>Hub</span>
-                  </h1>
-                  <div style={{ fontSize: 12, color: C.t2, marginTop: 4 }}>Manage posts, events, challenges and polls</div>
-                </div>
-                <div style={{ position: "relative" }}>
-                  <button onClick={() => setShowCreateMenu(o => !o)} style={{ display: "flex", alignItems: "center", gap: 6, padding: "9px 18px", background: C.cyan, border: "none", borderRadius: 9, fontSize: 12.5, fontWeight: 700, color: "#000", cursor: "pointer", fontFamily: FONT, boxShadow: "0 0 20px rgba(0,229,200,0.3)", flexShrink: 0 }}>
-                    Create New <ChevronDown size={11} />
-                  </button>
-                  {showCreateMenu && (
-                    <>
-                      <div onClick={() => setShowCreateMenu(false)} style={{ position: "fixed", inset: 0, zIndex: 99 }} />
-                      <div style={{ position: "absolute", right: 0, top: "calc(100% + 6px)", zIndex: 100, background: C.card, border: `1px solid ${C.brd}`, borderRadius: 10, overflow: "hidden", minWidth: 175, boxShadow: "0 12px 36px rgba(0,0,0,0.7)" }}>
-                        {createItems.map(item => (
-                          <button key={item.label} onClick={item.action} style={{ width: "100%", display: "block", padding: "9px 16px", background: "transparent", border: "none", color: C.t1, fontSize: 12.5, fontWeight: 500, cursor: "pointer", textAlign: "left", fontFamily: FONT }}
-                            onMouseEnter={e => e.currentTarget.style.background = C.cyanDim}
-                            onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
-                            {item.label}
-                          </button>
-                        ))}
-                      </div>
-                    </>
-                  )}
-                </div>
+        {/* Header section */}
+        <div style={{ padding: isMobile ? "14px 14px 0" : "16px 20px 0" }}>
+
+          {/* Desktop page title + Create button */}
+          {!isMobile && (
+            <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 12 }}>
+              <div>
+                <h1 style={{ fontSize: 19, fontWeight: 700, color: C.t1, margin: 0, letterSpacing: "-0.02em", lineHeight: 1.25 }}>
+                  Content Center <span style={{ color: C.t3, fontWeight: 300 }}>/</span> <span style={{ color: C.cyan }}>Hub</span>
+                </h1>
+                <div style={{ fontSize: 12, color: C.t2, marginTop: 4 }}>Manage posts, events, challenges and polls</div>
               </div>
-            )}
-
-            {/* Alert */}
-            {alert && <AlertBanner onDismiss={() => setAlert(false)} isMobile={isMobile} />}
-
-            {/* Mobile: quick ideas + insights before journey */}
-            {isMobile && (
-              <>
-                <MobileQuickIdeas />
-                <MobileInsights />
-              </>
-            )}
-
-            {/* Journey */}
-            <JourneyCard />
-          </div>
-
-          {/* Tabs — sticky on mobile, normal on desktop */}
-          <div style={{ padding: isMobile ? "0 14px" : "0 20px" }}>
-            <Tabs active={tab} setActive={setTab} isMobile={isMobile} />
-          </div>
-
-          {/* Tab content */}
-          <div style={{ padding: isMobile ? "10px 14px 24px" : "0 20px 40px" }}>
-
-            {/* ── DRAFTS ── */}
-            {tab === "Drafts" && (
-              <>
-                <div style={{ fontSize: 11.5, fontWeight: 600, color: C.t2, marginBottom: 9, marginTop: isMobile ? 2 : 0 }}>Draft Content</div>
-                <div style={{
-                  display: "grid",
-                  gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr",
-                  gap: 10,
-                  marginBottom: 16,
-                }}>
-                  {DRAFTS.map(d => <DraftCard key={d.id} d={d} isMobile={isMobile} />)}
-                </div>
-                <div style={{ fontSize: 12.5, fontWeight: 600, color: C.t1, marginBottom: 9 }}>All Content (Drafts &amp; Scheduled)</div>
-                {isMobile ? <MobileContentCards /> : <ContentTable />}
-                <FeedRow isMobile={isMobile} />
-              </>
-            )}
-
-            {/* ── SCHEDULED ── */}
-            {tab === "Scheduled" && <ScheduledTab isMobile={isMobile} />}
-
-            {/* ── EVENTS ── */}
-            {tab === "Events" && (
-              <>
-                <SectionHeader count={events.length} label="Events" onAdd={() => openModal?.("event")} btnLabel="Add Event" isMobile={isMobile} />
-                {events.length === 0 ? <EmptyState label="events" onAdd={() => openModal?.("event")} /> : (
-                  events.map(ev => (
-                    <ListCard key={ev.id} isMobile={isMobile}>
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ fontSize: 13, fontWeight: 600, color: C.t1 }}>{ev.title}</div>
-                        {ev.description && <div style={{ fontSize: 11.5, color: C.t2, marginTop: 3 }}>{ev.description}</div>}
-                        {ev.event_date && <div style={{ fontSize: 11, color: C.t3, marginTop: 4 }}>{new Date(ev.event_date).toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}</div>}
-                      </div>
-                      <div style={{ fontSize: 11.5, color: C.t2 }}>{ev.attendees || 0} attending</div>
-                      {onDeleteEvent && <DeleteBtn onClick={() => onDeleteEvent(ev.id)} />}
-                    </ListCard>
-                  ))
-                )}
-              </>
-            )}
-
-            {/* ── CHALLENGES ── */}
-            {tab === "Challenges" && (
-              <>
-                <SectionHeader count={challenges.length} label="Challenges" onAdd={() => openModal?.("challenge")} btnLabel="New Challenge" isMobile={isMobile} />
-                {challenges.length === 0 ? <EmptyState label="challenges" onAdd={() => openModal?.("challenge")} /> : (
-                  challenges.map(ch => (
-                    <ListCard key={ch.id} isMobile={isMobile}>
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 3 }}>
-                          <div style={{ fontSize: 13, fontWeight: 600, color: C.t1 }}>{ch.title}</div>
-                          <span style={{ padding: "2px 8px", borderRadius: 20, fontSize: 10, fontWeight: 700, textTransform: "uppercase", background: ch.status === "active" ? C.cyanDim : "rgba(255,255,255,0.06)", color: ch.status === "active" ? C.cyan : C.t2, border: `1px solid ${ch.status === "active" ? C.cyanBrd : C.brd}` }}>{ch.status}</span>
-                        </div>
-                        {ch.description && <div style={{ fontSize: 11.5, color: C.t2 }}>{ch.description}</div>}
-                        <div style={{ fontSize: 11, color: C.t3, marginTop: 3 }}>{ch.start_date} → {ch.end_date}</div>
-                      </div>
-                      <div style={{ fontSize: 11.5, color: C.t2 }}>{(ch.participants || []).length} joined</div>
-                      {onDeleteChallenge && <DeleteBtn onClick={() => onDeleteChallenge(ch.id)} />}
-                    </ListCard>
-                  ))
-                )}
-              </>
-            )}
-
-            {/* ── POLLS ── */}
-            {tab === "Polls" && (
-              <>
-                <SectionHeader count={polls.length} label="Polls" onAdd={() => openModal?.("poll")} btnLabel="New Poll" isMobile={isMobile} />
-                {polls.length === 0 ? <EmptyState label="polls" onAdd={() => openModal?.("poll")} /> : (
-                  polls.map(poll => (
-                    <div key={poll.id} style={{ background: C.card, border: `1px solid ${C.brd}`, borderRadius: 10, padding: isMobile ? "14px 16px" : "13px 16px", marginBottom: 8 }}
-                      onMouseEnter={e => e.currentTarget.style.borderColor = C.cyanBrd}
-                      onMouseLeave={e => e.currentTarget.style.borderColor = C.brd}>
-                      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
-                        <div style={{ fontSize: 13, fontWeight: 600, color: C.t1 }}>{poll.question || poll.title}</div>
-                        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                          <span style={{ fontSize: 11, color: C.t2 }}>{(poll.voters || []).length} votes</span>
-                          {onDeleteChallenge && <DeleteBtn onClick={() => onDeleteChallenge(poll.id)} />}
-                        </div>
-                      </div>
-                      {(poll.options || []).map((opt, i) => {
-                        const optText = typeof opt === "object" ? (opt.text || opt.label || String(i + 1)) : opt;
-                        const optVotes = typeof opt === "object" ? (opt.votes || 0) : ((poll.votes || {})[opt] || 0);
-                        const total = Math.max((poll.voters || []).length, 1);
-                        const pct = Math.round(optVotes / total * 100);
-                        return (
-                          <div key={i} style={{ marginBottom: 6 }}>
-                            <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11.5, color: C.t2, marginBottom: 3 }}>
-                              <span>{optText}</span><span style={{ color: C.cyan }}>{pct}%</span>
-                            </div>
-                            <div style={{ height: 4, background: "rgba(255,255,255,0.06)", borderRadius: 2, overflow: "hidden" }}>
-                              <div style={{ width: `${pct}%`, height: "100%", background: C.cyan, borderRadius: 2 }} />
-                            </div>
-                          </div>
-                        );
-                      })}
+              <div style={{ position: "relative" }}>
+                <button onClick={() => setShowMenu(o => !o)} style={{ display: "flex", alignItems: "center", gap: 6, padding: "9px 18px", background: C.cyan, border: "none", borderRadius: 9, fontSize: 12.5, fontWeight: 700, color: "#000", cursor: "pointer", fontFamily: FONT, boxShadow: "0 0 20px rgba(0,229,200,0.3)" }}>
+                  Create New <ChevronDown size={11} />
+                </button>
+                {showMenu && (
+                  <>
+                    <div onClick={() => setShowMenu(false)} style={{ position: "fixed", inset: 0, zIndex: 99 }} />
+                    <div style={{ position: "absolute", right: 0, top: "calc(100% + 6px)", zIndex: 100, background: C.card, border: `1px solid ${C.brd}`, borderRadius: 10, overflow: "hidden", minWidth: 175, boxShadow: "0 12px 36px rgba(0,0,0,0.7)" }}>
+                      {createItems.map(item => (
+                        <button key={item.label} onClick={item.action} style={{ width: "100%", display: "block", padding: "9px 16px", background: "transparent", border: "none", color: C.t1, fontSize: 12.5, fontWeight: 500, cursor: "pointer", textAlign: "left", fontFamily: FONT }}
+                          onMouseEnter={e => e.currentTarget.style.background = C.cyanDim}
+                          onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
+                          {item.label}
+                        </button>
+                      ))}
                     </div>
-                  ))
+                  </>
                 )}
-              </>
-            )}
+              </div>
+            </div>
+          )}
 
-            {/* ── POSTS ── */}
-            {tab === "Posts" && (
-              <>
-                <SectionHeader count={posts.length} label="Posts" onAdd={() => openModal?.("post")} btnLabel="New Post" isMobile={isMobile} />
-                {posts.length === 0 ? <EmptyState label="posts" onAdd={() => openModal?.("post")} /> : (
-                  posts.map(p => (
-                    <ListCard key={p.id} isMobile={isMobile}>
-                      {p.image_url && <img src={p.image_url} alt="" style={{ width: 52, height: 52, borderRadius: 7, objectFit: "cover", flexShrink: 0 }} />}
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ fontSize: 12.5, fontWeight: 600, color: C.t1 }}>{p.member_name}</div>
-                        <div style={{ fontSize: 11.5, color: C.t2, marginTop: 2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{p.content}</div>
+          {alert && <AlertBanner onDismiss={() => setAlert(false)} isMobile={isMobile} />}
+          {isMobile && (<><MobileQuickIdeas /><MobileInsights /></>)}
+          <JourneyCard />
+        </div>
+
+        {/* Sticky tabs */}
+        <div style={{ padding: isMobile ? "0 14px" : "0 20px" }}>
+          <Tabs active={tab} setActive={setTab} isMobile={isMobile} />
+        </div>
+
+        {/* Tab panels */}
+        <div style={{ padding: isMobile ? "10px 14px 24px" : "0 20px 40px" }}>
+
+          {tab === "Drafts" && (
+            <>
+              <div style={{ fontSize: 11.5, fontWeight: 600, color: C.t2, marginBottom: 9, marginTop: isMobile ? 2 : 0 }}>Draft Content</div>
+              <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: 10, marginBottom: 16 }}>
+                {DRAFTS.map(d => <DraftCard key={d.id} d={d} isMobile={isMobile} />)}
+              </div>
+              <div style={{ fontSize: 12.5, fontWeight: 600, color: C.t1, marginBottom: 9 }}>All Content (Drafts &amp; Scheduled)</div>
+              {isMobile ? TABLE_ROWS.map(row => <MobileContentCard key={row.id} row={row} />) : <ContentTable />}
+              <FeedRow isMobile={isMobile} />
+            </>
+          )}
+
+          {tab === "Scheduled" && (
+            isMobile
+              ? <div style={{ paddingTop: 10 }}>{TABLE_ROWS.map(row => <MobileContentCard key={row.id} row={row} />)}</div>
+              : (() => {
+                  function ScheduledTable() {
+                    return (
+                      <div style={{ background: C.card, border: `1px solid ${C.brd}`, borderRadius: 10, overflow: "hidden" }}>
+                        <TableHeader />
+                        {TABLE_ROWS.map((row, i) => {
+                          const [c, setC] = useState(false);
+                          return <TableRow key={row.id} row={row} checked={c} onToggle={() => setC(p => !p)} last={i === TABLE_ROWS.length - 1} />;
+                        })}
                       </div>
-                      <div style={{ fontSize: 11, color: C.t3 }}>{Object.keys(p.reactions || {}).length} reactions</div>
-                      {onDeletePost && <DeleteBtn onClick={() => onDeletePost(p.id)} />}
-                    </ListCard>
-                  ))
-                )}
-              </>
-            )}
+                    );
+                  }
+                  return <ScheduledTable />;
+                })()
+          )}
 
-          </div>{/* end tab content */}
-        </div>{/* end scroll area */}
+          {tab === "Events" && (
+            <>
+              <SectionHeader count={events.length} label="Events" onAdd={() => openModal?.("event")} btnLabel="Add Event" isMobile={isMobile} />
+              {events.length === 0 ? <EmptyState label="events" onAdd={() => openModal?.("event")} /> :
+                events.map(ev => (
+                  <ListCard key={ev.id} isMobile={isMobile}>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontSize: 13, fontWeight: 600, color: C.t1 }}>{ev.title}</div>
+                      {ev.description && <div style={{ fontSize: 11.5, color: C.t2, marginTop: 3 }}>{ev.description}</div>}
+                      {ev.event_date && <div style={{ fontSize: 11, color: C.t3, marginTop: 4 }}>{new Date(ev.event_date).toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}</div>}
+                    </div>
+                    <div style={{ fontSize: 11.5, color: C.t2 }}>{ev.attendees || 0} attending</div>
+                    {onDeleteEvent && <DeleteBtn onClick={() => onDeleteEvent(ev.id)} />}
+                  </ListCard>
+                ))
+              }
+            </>
+          )}
 
-        {/* Right sidebar — desktop only */}
-        {!isMobile && <RightSidebar />}
+          {tab === "Challenges" && (
+            <>
+              <SectionHeader count={challenges.length} label="Challenges" onAdd={() => openModal?.("challenge")} btnLabel="New Challenge" isMobile={isMobile} />
+              {challenges.length === 0 ? <EmptyState label="challenges" onAdd={() => openModal?.("challenge")} /> :
+                challenges.map(ch => (
+                  <ListCard key={ch.id} isMobile={isMobile}>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 3 }}>
+                        <div style={{ fontSize: 13, fontWeight: 600, color: C.t1 }}>{ch.title}</div>
+                        <span style={{ padding: "2px 8px", borderRadius: 20, fontSize: 10, fontWeight: 700, textTransform: "uppercase", background: ch.status === "active" ? C.cyanDim : "rgba(255,255,255,0.06)", color: ch.status === "active" ? C.cyan : C.t2, border: `1px solid ${ch.status === "active" ? C.cyanBrd : C.brd}` }}>{ch.status}</span>
+                      </div>
+                      {ch.description && <div style={{ fontSize: 11.5, color: C.t2 }}>{ch.description}</div>}
+                      <div style={{ fontSize: 11, color: C.t3, marginTop: 3 }}>{ch.start_date} → {ch.end_date}</div>
+                    </div>
+                    <div style={{ fontSize: 11.5, color: C.t2 }}>{(ch.participants || []).length} joined</div>
+                    {onDeleteChallenge && <DeleteBtn onClick={() => onDeleteChallenge(ch.id)} />}
+                  </ListCard>
+                ))
+              }
+            </>
+          )}
+
+          {tab === "Polls" && (
+            <>
+              <SectionHeader count={polls.length} label="Polls" onAdd={() => openModal?.("poll")} btnLabel="New Poll" isMobile={isMobile} />
+              {polls.length === 0 ? <EmptyState label="polls" onAdd={() => openModal?.("poll")} /> :
+                polls.map(poll => (
+                  <div key={poll.id} style={{ background: C.card, border: `1px solid ${C.brd}`, borderRadius: 10, padding: isMobile ? "14px 16px" : "13px 16px", marginBottom: 8 }}
+                    onMouseEnter={e => e.currentTarget.style.borderColor = C.cyanBrd}
+                    onMouseLeave={e => e.currentTarget.style.borderColor = C.brd}>
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
+                      <div style={{ fontSize: 13, fontWeight: 600, color: C.t1 }}>{poll.question || poll.title}</div>
+                      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                        <span style={{ fontSize: 11, color: C.t2 }}>{(poll.voters || []).length} votes</span>
+                        {onDeleteChallenge && <DeleteBtn onClick={() => onDeleteChallenge(poll.id)} />}
+                      </div>
+                    </div>
+                    {(poll.options || []).map((opt, i) => {
+                      const optText  = typeof opt === "object" ? (opt.text || opt.label || String(i + 1)) : opt;
+                      const optVotes = typeof opt === "object" ? (opt.votes || 0) : ((poll.votes || {})[opt] || 0);
+                      const total    = Math.max((poll.voters || []).length, 1);
+                      const pct      = Math.round(optVotes / total * 100);
+                      return (
+                        <div key={i} style={{ marginBottom: 6 }}>
+                          <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11.5, color: C.t2, marginBottom: 3 }}>
+                            <span>{optText}</span><span style={{ color: C.cyan }}>{pct}%</span>
+                          </div>
+                          <div style={{ height: 4, background: "rgba(255,255,255,0.06)", borderRadius: 2, overflow: "hidden" }}>
+                            <div style={{ width: `${pct}%`, height: "100%", background: C.cyan, borderRadius: 2 }} />
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                ))
+              }
+            </>
+          )}
+
+          {tab === "Posts" && (
+            <>
+              <SectionHeader count={posts.length} label="Posts" onAdd={() => openModal?.("post")} btnLabel="New Post" isMobile={isMobile} />
+              {posts.length === 0 ? <EmptyState label="posts" onAdd={() => openModal?.("post")} /> :
+                posts.map(p => (
+                  <ListCard key={p.id} isMobile={isMobile}>
+                    {p.image_url && <img src={p.image_url} alt="" style={{ width: 52, height: 52, borderRadius: 7, objectFit: "cover", flexShrink: 0 }} />}
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontSize: 12.5, fontWeight: 600, color: C.t1 }}>{p.member_name}</div>
+                      <div style={{ fontSize: 11.5, color: C.t2, marginTop: 2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{p.content}</div>
+                    </div>
+                    <div style={{ fontSize: 11, color: C.t3 }}>{Object.keys(p.reactions || {}).length} reactions</div>
+                    {onDeletePost && <DeleteBtn onClick={() => onDeletePost(p.id)} />}
+                  </ListCard>
+                ))
+              }
+            </>
+          )}
+
+        </div>
       </div>
 
-      {/* Mobile FAB */}
+      {/* Right sidebar — desktop only */}
+      {!isMobile && <RightSidebar />}
+
+      {/* Mobile FAB + menu */}
       {isMobile && (
         <>
-          <FAB onClick={() => setShowCreateMenu(o => !o)} />
-          {showCreateMenu && (
+          <FAB onClick={() => setShowMenu(o => !o)} />
+          {showMenu && (
             <>
-              <div onClick={() => setShowCreateMenu(false)} style={{ position: "fixed", inset: 0, zIndex: 188 }} />
-              <div style={{
-                position: "fixed", bottom: 136, right: 16, zIndex: 189,
-                background: C.card, border: `1px solid ${C.brd}`,
-                borderRadius: 12, overflow: "hidden", minWidth: 195,
-                boxShadow: "0 -4px 40px rgba(0,0,0,0.8)",
-              }}>
+              <div onClick={() => setShowMenu(false)} style={{ position: "fixed", inset: 0, zIndex: 188 }} />
+              <div style={{ position: "fixed", bottom: 136, right: 16, zIndex: 189, background: C.card, border: `1px solid ${C.brd}`, borderRadius: 12, overflow: "hidden", minWidth: 195, boxShadow: "0 -4px 40px rgba(0,0,0,0.8)" }}>
                 {createItems.map(item => (
-                  <button
-                    key={item.label}
-                    onClick={item.action}
-                    style={{
-                      width: "100%", display: "block", padding: "14px 18px",
-                      background: "transparent", border: "none",
-                      borderBottom: `1px solid ${C.brd}`,
-                      color: C.t1, fontSize: 13.5, fontWeight: 500,
-                      cursor: "pointer", textAlign: "left", fontFamily: FONT,
-                      minHeight: 52,
-                    }}
-                  >
+                  <button key={item.label} onClick={item.action} style={{ width: "100%", display: "block", padding: "14px 18px", background: "transparent", border: "none", borderBottom: `1px solid ${C.brd}`, color: C.t1, fontSize: 13.5, fontWeight: 500, cursor: "pointer", textAlign: "left", fontFamily: FONT, minHeight: 52 }}>
                     {item.label}
                   </button>
                 ))}
@@ -1036,48 +680,7 @@ function ContentArea({ events = [], challenges = [], polls = [], posts = [], ope
           )}
         </>
       )}
-    </div>
-  );
-}
 
-/* ─── ROOT ───────────────────────────────────────────────────── */
-export default function ContentPage({ events = [], challenges = [], polls = [], posts = [], openModal, onDeleteEvent, onDeleteChallenge, onDeletePost }) {
-  const isMobile = useIsMobile();
-
-  return (
-    <div style={{
-      display: "flex", flexDirection: "column",
-      minHeight: "100%", height: "100%",
-      background: C.bg, color: C.t1, fontFamily: FONT,
-      fontSize: 13, lineHeight: 1.5, WebkitFontSmoothing: "antialiased",
-    }}>
-      {/* ── MOBILE layout ── */}
-      {isMobile ? (
-        <>
-          <MobileHeader />
-          <div style={{ flex: 1, overflow: "hidden", display: "flex" }}>
-            <ContentArea
-              events={events} challenges={challenges} polls={polls} posts={posts}
-              openModal={openModal} onDeleteEvent={onDeleteEvent}
-              onDeleteChallenge={onDeleteChallenge} onDeletePost={onDeletePost}
-            />
-          </div>
-          <MobileBottomNav />
-        </>
-      ) : (
-        /* ── DESKTOP layout (unchanged) ── */
-        <div style={{ display: "flex", flex: 1, overflow: "hidden" }}>
-          <Sidebar />
-          <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
-            <TopBar />
-            <ContentArea
-              events={events} challenges={challenges} polls={polls} posts={posts}
-              openModal={openModal} onDeleteEvent={onDeleteEvent}
-              onDeleteChallenge={onDeleteChallenge} onDeletePost={onDeletePost}
-            />
-          </div>
-        </div>
-      )}
     </div>
   );
 }
