@@ -643,15 +643,17 @@ export default function Home() {
   const { data: weeklyWorkoutLogs = [] } = useQuery({
     queryKey: ['weeklyWorkoutLogs', currentUser?.id, weekOffset],
     queryFn: () => {
-      const base = startOfWeek(new Date(), { weekStartsOn: 1 });
-      base.setDate(base.getDate() + weekOffset * 7);
-      const monday = base.toISOString().split('T')[0];
-      const sunday = new Date(base);
-      sunday.setDate(base.getDate() + 6);
-      const sundayStr = sunday.toISOString().split('T')[0];
-      return base44.entities.WorkoutLog.filter({
-        user_id: currentUser?.id,
-        completed_date: { $gte: monday, $lte: sundayStr },
+    const base = startOfWeek(new Date(), { weekStartsOn: 1 });
+    base.setDate(base.getDate() + weekOffset * 7);
+    // Use local date strings (not UTC) to avoid BST/timezone day-shift bugs
+    const pad = n => String(n).padStart(2, '0');
+    const monday = `${base.getFullYear()}-${pad(base.getMonth()+1)}-${pad(base.getDate())}`;
+    const sun = new Date(base);
+    sun.setDate(base.getDate() + 6);
+    const sundayStr = `${sun.getFullYear()}-${pad(sun.getMonth()+1)}-${pad(sun.getDate())}`;
+    return base44.entities.WorkoutLog.filter({
+      user_id: currentUser?.id,
+      completed_date: { $gte: monday, $lte: sundayStr },
       });
     },
     enabled: !!currentUser?.id,
@@ -1119,7 +1121,12 @@ export default function Home() {
             mondayBase.setDate(mondayBase.getDate() + weekOffset * 7);
             const logsByDay = {};
             weeklyWorkoutLogs.forEach((l) => {
-              const d = new Date(l.completed_date).getDay();
+              // Parse date-only strings using local time to avoid UTC midnight timezone shift
+              const dateStr = (l.completed_date || '').split('T')[0];
+              const parts = dateStr.split('-').map(Number);
+              const d = (parts.length === 3 && parts[0])
+                ? new Date(parts[0], parts[1] - 1, parts[2]).getDay()
+                : new Date(l.completed_date).getDay();
               const dayNum = d === 0 ? 7 : d;
               if (!logsByDay[dayNum]) logsByDay[dayNum] = l;
             });
@@ -1171,6 +1178,7 @@ export default function Home() {
                         const isPast = isFutureWeek ? false : weekOffset < 0 ? true : day < todayDay;
                         const isPreJoin = joinDayNum !== null && day < joinDayNum && weekOffset === 0;
                         const isInCurrentSplit = trainingDays.includes(day);
+                        // If logged, it's never a rest day — user may have swapped their rest day
                         const isRestDay = done ? false : !isInCurrentSplit;
                         const isMissed = !isRestDay && !done && isPast && !isPreJoin && !isFutureWeek;
                         const isPastOrTodayRestDay = isRestDay && (isPast || isTodayCircle);
