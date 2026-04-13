@@ -1168,7 +1168,9 @@ export default function Home() {
                       transition={{ duration: 0.38, ease: [0.25, 0.46, 0.45, 0.94] }}
                       style={{ display: 'flex', flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'center', gap: 8, overflow: 'visible', position: 'relative', width: '100%', paddingTop: 14, paddingBottom: 14 }}>
                       {allDays.map((day, i) => {
-                        const done = loggedDays.has(day);
+                        // A day can only be 'done' if it's today or in the past — never a future day
+                        const isDayInFuture = weekOffset === 0 && day > todayDay;
+                        const done = !isDayInFuture && loggedDays.has(day);
                         const bounce = justLoggedDay === day && weekOffset === 0;
                         const isTodayCircle = day === todayDay && weekOffset === 0;
                         const joinDate = currentUser?.created_date || currentUser?.created_at || null;
