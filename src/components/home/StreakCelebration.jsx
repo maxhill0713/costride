@@ -123,50 +123,20 @@ function injectDayStyles() {
       from { opacity: 0; transform: translateY(22px); }
       to   { opacity: 1; transform: translateY(0); }
     }
-    @keyframes scParticleBurst {
-      0%   { transform: translate(0,0) scale(1); opacity: 1; }
-      100% { transform: translate(var(--tx),var(--ty)) scale(0); opacity: 0; }
-    }
   `;
   document.head.appendChild(s);
 }
 
-function spawnParticles(originEl) {
-  if (!originEl) return;
-  const rect = originEl.getBoundingClientRect();
-  const cx = rect.left + rect.width / 2;
-  const cy = rect.top + rect.height / 2;
-  const cols = ['#60a5fa', '#93c5fd', '#3b82f6', '#bfdbfe', '#ffffff', '#2563eb'];
-  for (let i = 0; i < 18; i++) {
-    const p   = document.createElement('div');
-    const ang = (i / 18) * 360;
-    const d   = 45 + Math.random() * 55;
-    const tx  = Math.cos((ang * Math.PI) / 180) * d;
-    const ty  = Math.sin((ang * Math.PI) / 180) * d;
-    const sz  = 4 + Math.random() * 5;
-    p.style.cssText = [
-      'position:fixed', 'border-radius:50%', 'pointer-events:none', 'z-index:10001',
-      `width:${sz}px`, `height:${sz}px`,
-      `left:${cx - sz / 2}px`, `top:${cy - sz / 2}px`,
-      `background:${cols[i % cols.length]}`,
-      `--tx:${tx}px`, `--ty:${ty}px`,
-      `animation:scParticleBurst ${0.6 + Math.random() * 0.3}s ease-out forwards`,
-      `animation-delay:${Math.random() * 0.04}s`,
-    ].join(';');
-    document.body.appendChild(p);
-    setTimeout(() => p.remove(), 1100);
-  }
-}
-
 // ── 3D Continue button ────────────────────────────────────────────────────────
-function ContinueButton({ enabled, onClick }) {
+function ContinueButton({ enabled, opacity, onClick }) {
   const [pressed, setPressed] = useState(false);
   return (
-    <div style={{ position: 'relative', width: '100%' }}>
+    <div style={{ position: 'relative', width: '100%', opacity: opacity !== undefined ? opacity : 1, transition: 'opacity 0.8s ease' }}>
       <div style={{
         position: 'absolute', inset: 0, borderRadius: 16,
         background: enabled ? '#1a3fa8' : '#111827',
         transform: 'translateY(4px)',
+        transition: 'background 0.8s ease',
       }} />
       <button
         disabled={!enabled}
@@ -188,7 +158,7 @@ function ContinueButton({ enabled, onClick }) {
           WebkitTapHighlightColor: 'transparent', userSelect: 'none', outline: 'none',
           transform: pressed ? 'translateY(4px)' : 'translateY(0)',
           boxShadow: pressed || !enabled ? 'none' : 'inset 0 1px 0 rgba(255,255,255,0.2)',
-          transition: 'transform 0.07s ease, box-shadow 0.07s ease, background 0.4s ease, color 0.4s ease',
+          transition: 'transform 0.07s ease, box-shadow 0.07s ease, background 0.8s ease, color 0.8s ease',
         }}
       >
         Continue
@@ -225,14 +195,16 @@ function EmbeddedDayCircles({ currentUser, weeklyWorkoutLogs, todayDow, startAni
     if (!startAnimation) return;
     const timers = [];
 
-    // Phase 1 — all circles pop in grey quickly
+    // Phase 1 — all circles pop in grey, slightly slower spacing (90ms per circle, up from 65ms)
     allDays.forEach((_, i) => {
-      timers.push(setTimeout(() => setAnimatedIdx(i), i * 65));
+      timers.push(setTimeout(() => setAnimatedIdx(i), i * 90));
     });
-    const allVisibleAt = (allDays.length - 1) * 65 + 80;
+    const allVisibleAt = (allDays.length - 1) * 90 + 80;
+
+    // Notify parent that all circles are visible
     timers.push(setTimeout(() => onAllVisible?.(), allVisibleAt));
 
-    // Phase 2 — today's circle pops blue 500ms after visible
+    // Phase 2 — pause 500ms after all visible before today's circle pops blue
     const todayColourAt = allVisibleAt + 500;
     timers.push(setTimeout(() => {
       setTodayColoured(true);
@@ -241,8 +213,9 @@ function EmbeddedDayCircles({ currentUser, weeklyWorkoutLogs, todayDow, startAni
       setTimeout(() => setTodayColourPop(false), 600);
     }, todayColourAt));
 
-    // Phase 3 — other circles colour one-by-one, starting 350ms after today pops
-    const nonTodayStartAt = todayColourAt + 350;
+    // Phase 3 — other circles colour one-by-one, starting 400ms after today pops
+    // Slowed down: 220ms between each circle (up from 155ms)
+    const nonTodayStartAt = todayColourAt + 400;
     const nonTodayDays = allDays
       .map((day, i) => ({ day, i }))
       .filter(({ day }) => day !== todayDowAdjusted);
@@ -252,13 +225,12 @@ function EmbeddedDayCircles({ currentUser, weeklyWorkoutLogs, todayDow, startAni
         setAnimatedColorIdx(i);
         setColourPopIdx(i);
         playCircleTick(seq);
-      }, nonTodayStartAt + seq * 155));
+      }, nonTodayStartAt + seq * 220));
     });
 
-    // Phase 4 — particles + complete
-    const lastAt = nonTodayStartAt + (nonTodayDays.length - 1) * 155 + 380;
+    // Phase 4 — complete (no particles/confetti)
+    const lastAt = nonTodayStartAt + (nonTodayDays.length - 1) * 220 + 380;
     timers.push(setTimeout(() => {
-      spawnParticles(todayRef.current);
       if (!hasCompleted.current) {
         hasCompleted.current = true;
         onAnimationComplete?.();
@@ -453,6 +425,8 @@ function StreakCelebration({
   const [startCircleAnimation, setStartCircleAnimation]   = useState(false);
   const [continueButtonVisible, setContinueButtonVisible] = useState(false);
   const [continueButtonEnabled, setContinueButtonEnabled] = useState(false);
+  // Separate opacity state for smooth fade-in of the button
+  const [continueButtonOpacity, setContinueButtonOpacity] = useState(0);
   const [shareWorkoutExiting, setShareWorkoutExiting]     = useState(false);
 
   // Shared dark backdrop across all stages — prevents any flash between them
@@ -475,6 +449,7 @@ function StreakCelebration({
       setStartCircleAnimation(false);
       setContinueButtonVisible(false);
       setContinueButtonEnabled(false);
+      setContinueButtonOpacity(0);
     }
   }, [showStreakCelebration]);
 
@@ -532,16 +507,18 @@ function StreakCelebration({
         }
       }, 1530);
 
-      // Move icon+number to their final position — happens once, before circles appear
+      // Pause 500ms after shake completes (shake ends ~1530+360=1890ms), then shift up
+      // Shift-up at ~2400ms — icon+number move to final position slowly (0.9s)
       const t5 = setTimeout(() => {
         setStreakPhase('final');
-      }, 1950);
+      }, 2400);
 
       // Circles become visible — layout is already at final position so no second shift
+      // Slightly later to let the shift-up complete more gracefully
       const t6 = setTimeout(() => {
         setStreakPhase('circles');
         setStartCircleAnimation(true);
-      }, 2950);
+      }, 3500);
 
       return () => {
         clearTimeout(t1); clearTimeout(t2); clearTimeout(t3);
@@ -552,16 +529,22 @@ function StreakCelebration({
     return () => cancelAnimationFrame(raf);
   }, [showStreakCelebration, celebrationStreakNum]);
 
-  // Continue button fades in 400ms after circles start — soft entrance, not sudden
+  // Continue button fades in 400ms after circles start
+  // First make it visible (but transparent), then smoothly fade opacity to 1
+  // and enable interaction a bit after it's fully visible
   useEffect(() => {
     if (streakPhase === 'circles') {
-      const t = setTimeout(() => setContinueButtonVisible(true), 400);
-      return () => clearTimeout(t);
+      // Show the element (opacity 0) after a short delay
+      const t1 = setTimeout(() => setContinueButtonVisible(true), 400);
+      // Fade it in
+      const t2 = setTimeout(() => setContinueButtonOpacity(1), 450);
+      return () => { clearTimeout(t1); clearTimeout(t2); };
     }
   }, [streakPhase]);
 
   const handleCirclesComplete = () => {
-    setTimeout(() => setContinueButtonEnabled(true), 500);
+    // Enable the button with a smooth colour transition handled by ContinueButton itself
+    setTimeout(() => setContinueButtonEnabled(true), 300);
   };
 
   const handleShareWorkoutContinue = () => {
@@ -576,26 +559,27 @@ function StreakCelebration({
   const BUTTON_BOTTOM = 'calc(env(safe-area-inset-bottom) + 36px)';
   const BUTTON_WIDTH  = 'min(340px, 88vw)';
 
-  // How far up the icon+number shift to make room for circles + button below.
-  // Reduced from -120px so the circles land closer to the continue button.
+  // Slightly slower shift-up so it feels more deliberate (0.9s, up from 0.7s)
   const FINAL_Y = '-80px';
 
-  // The circles row sits in a fixed slot below the icon/number group.
-  // We pre-allocate the space (visibility:hidden when not yet animating) so that
-  // when the circles mount they cause ZERO layout shift — the container is
-  // already at FINAL_Y and stays there.
-  const CIRCLES_SLOT_HEIGHT = 110; // px — matches EmbeddedDayCircles height (90) + some breathing room
+  const CIRCLES_SLOT_HEIGHT = 110;
 
   return (
     <>
-      {/* Persistent backdrop — shared across stages, prevents flash */}
+      {/* Persistent backdrop — slightly slower fade-in so it feels less sudden */}
       {showSharedBackground && (
-        <div style={{
-          position: 'fixed', inset: 0, zIndex: 99,
-          background: 'rgba(0,0,0,0.92)',
-          backdropFilter: 'blur(4px)',
-          WebkitBackdropFilter: 'blur(4px)',
-        }} />
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.45, ease: 'easeOut' }}
+          style={{
+            position: 'fixed', inset: 0, zIndex: 99,
+            background: 'rgba(0,0,0,0.92)',
+            backdropFilter: 'blur(4px)',
+            WebkitBackdropFilter: 'blur(4px)',
+          }}
+        />
       )}
 
       {/* STAGE 1 — Streak + Day Circles */}
@@ -610,8 +594,7 @@ function StreakCelebration({
           >
             {/*
               Outer wrapper: shifts up ONCE when phase reaches 'final'.
-              Because the circles slot is pre-reserved below, mounting the
-              EmbeddedDayCircles component does NOT trigger another shift.
+              Slower transition (0.9s) so the movement feels more deliberate.
             */}
             <div style={{
               display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16,
@@ -619,7 +602,7 @@ function StreakCelebration({
                 ? `translateY(${FINAL_Y})`
                 : 'translateY(0px)',
               transition: streakPhase === 'final'
-                ? 'transform 0.7s cubic-bezier(0.4, 0, 0.2, 1)'
+                ? 'transform 0.9s cubic-bezier(0.4, 0, 0.2, 1)'
                 : 'none',
             }}>
               {/* Pose image */}
@@ -665,27 +648,24 @@ function StreakCelebration({
               )}
             </div>
 
-            {/* Continue button — long soft fade, not a sudden pop */}
-            <AnimatePresence>
-              {continueButtonVisible && (
-                <motion.div
-                  initial={{ opacity: 0, y: 24 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: 8 }}
-                  transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-                  style={{
-                    position: 'absolute',
-                    bottom: BUTTON_BOTTOM,
-                    width: BUTTON_WIDTH,
-                  }}
-                >
-                  <ContinueButton
-                    enabled={continueButtonEnabled}
-                    onClick={() => document.dispatchEvent(new CustomEvent('streakCelebrationContinue'))}
-                  />
-                </motion.div>
-              )}
-            </AnimatePresence>
+            {/* Continue button — smooth opacity fade, colour transitions when enabled */}
+            {continueButtonVisible && (
+              <div
+                style={{
+                  position: 'absolute',
+                  bottom: BUTTON_BOTTOM,
+                  width: BUTTON_WIDTH,
+                  opacity: continueButtonOpacity,
+                  transform: continueButtonOpacity === 1 ? 'translateY(0)' : 'translateY(16px)',
+                  transition: 'opacity 0.9s ease, transform 0.9s ease',
+                }}
+              >
+                <ContinueButton
+                  enabled={continueButtonEnabled}
+                  onClick={() => document.dispatchEvent(new CustomEvent('streakCelebrationContinue'))}
+                />
+              </div>
+            )}
           </motion.div>
         )}
       </AnimatePresence>
