@@ -97,10 +97,10 @@ export default function Progress() {
           style={{ paddingTop: 'calc(0.4rem + env(safe-area-inset-top))', paddingBottom: 0 }}
         >
           <div className="max-w-4xl mx-auto">
-            <div className="flex items-end h-[3.2rem] pt-2 pb-0">
+            <div className="flex items-end h-[3.2rem] pt-2 pb-2">
 
               {/* Tabs row — flex-1 so it fills all space left of the icon */}
-              <TabsList className="flex flex-1 bg-transparent p-0 gap-6 border-0 h-auto mb-[-2px]">
+              <TabsList className="flex flex-1 bg-transparent p-0 gap-6 border-0 h-auto mb-[3px]">
                 <TabsTrigger value="analytics" className={tabTriggerClass}>
                   <BarChart3 className="w-4 h-4 mr-1.5" />Analytics
                 </TabsTrigger>

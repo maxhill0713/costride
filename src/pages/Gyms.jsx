@@ -285,9 +285,8 @@ export default function Gyms() {
           style={{ paddingTop: 'calc(0.4rem + env(safe-area-inset-top))', paddingBottom: 0 }}
         >
           <div className="max-w-6xl mx-auto">
-            <div className="relative flex items-end justify-center h-[3.2rem] pt-2 pb-1.5">
-              {/* Tabs sit with pb-2 so the text floats ~2px above the border indicator */}
-              <TabsList className="flex bg-transparent p-0 gap-9 border-0 h-auto mb-[-2px]">
+            <div className="relative flex items-end justify-center h-[3.2rem] pt-2 pb-2">
+              <TabsList className="flex bg-transparent p-0 gap-9 border-0 h-auto mb-[3px]">
                 <TabsTrigger value="my-gyms" className="data-[state=active]:text-blue-400 data-[state=active]:border-b-2 data-[state=active]:border-blue-400 data-[state=active]:bg-transparent text-slate-400 hover:text-slate-300 border-b-2 border-transparent rounded-none px-0 pb-2 pt-0 transition-colors bg-transparent text-[15px] justify-center leading-none">
                   <Users className="w-4 h-4 mr-1.5" />My Gyms
                 </TabsTrigger>
