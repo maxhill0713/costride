@@ -48,11 +48,6 @@ function usePrimaryGymDialogStyles() {
 
 const sanitiseGymSearch = (v) => v.replace(/[<>{};`\\]/g, '').slice(0, 60);
 
-const tabTriggerClass =
-  'data-[state=active]:text-blue-400 data-[state=active]:border-b-2 data-[state=active]:border-blue-400 data-[state=active]:bg-transparent ' +
-  'text-slate-400 hover:text-slate-300 border-b-2 border-transparent rounded-none px-0 pb-2 pt-0 ' +
-  'transition-colors bg-transparent text-[15px] justify-center leading-none flex items-center';
-
 export default function Gyms() {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
@@ -146,11 +141,7 @@ export default function Gyms() {
       return { previous };
     },
     onError: (err, gymId, ctx) => queryClient.setQueryData(['gymMemberships', currentUser?.id], ctx.previous),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['gymMemberships', currentUser?.id] });
-      queryClient.invalidateQueries({ queryKey: ['memberGyms', currentUser?.id] });
-      queryClient.invalidateQueries({ queryKey: ['currentUser'] });
-    },
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['gymMemberships', currentUser?.id] }); queryClient.invalidateQueries({ queryKey: ['memberGyms', currentUser?.id] }); queryClient.invalidateQueries({ queryKey: ['currentUser'] }); },
   });
 
   const createGymMutation = useMutation({
@@ -160,10 +151,8 @@ export default function Gyms() {
       return { exists: false, gym: await base44.entities.Gym.create(gymData) };
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['gyms'] });
-      queryClient.invalidateQueries({ queryKey: ['gymMemberships'] });
-      setShowAddGymModal(false); setShowConfirmJoin(false); setSelectedPlaceGym(null);
-      setPendingGymData(null); setPlacesResults([]); setSearchQuery('');
+      queryClient.invalidateQueries({ queryKey: ['gyms'] }); queryClient.invalidateQueries({ queryKey: ['gymMemberships'] });
+      setShowAddGymModal(false); setShowConfirmJoin(false); setSelectedPlaceGym(null); setPendingGymData(null); setPlacesResults([]); setSearchQuery('');
     },
   });
 
@@ -173,10 +162,7 @@ export default function Gyms() {
     return 0;
   });
 
-  const recentlyViewedGyms = useMemo(() =>
-    recentlyViewedGymIds.map(id => gyms.find(g => g.id === id)).filter(Boolean).slice(0, 3),
-    [recentlyViewedGymIds, gyms]
-  );
+  const recentlyViewedGyms = useMemo(() => recentlyViewedGymIds.map(id => gyms.find(g => g.id === id)).filter(Boolean).slice(0, 3), [recentlyViewedGymIds, gyms]);
 
   const filteredGyms = gyms.filter(gym => {
     const matchesSearch = gym.name?.toLowerCase().includes(searchQuery.toLowerCase()) || gym.city?.toLowerCase().includes(searchQuery.toLowerCase());
@@ -212,18 +198,8 @@ export default function Gyms() {
     }
     const parts = selectedPlaceGym.address.split(',');
     const city = parts.length >= 2 ? parts[parts.length - 2].trim() : selectedPlaceGym.address;
-    const gymData = {
-      name: selectedPlaceGym.name, address: selectedPlaceGym.address, city,
-      google_place_id: selectedPlaceGym.place_id, latitude: selectedPlaceGym.latitude,
-      longitude: selectedPlaceGym.longitude, type: gymType,
-      claim_status: isOwner ? 'claimed' : 'unclaimed',
-      admin_id: isOwner ? currentUser?.id : null,
-      owner_email: isOwner ? currentUser?.email : null,
-      verified: isOwner, status: 'approved', members_count: 0,
-      image_url: selectedPlaceGym.photo_url || null,
-    };
-    if (isOwner && gymMemberships.length > 0) { setPendingGymData(gymData); setShowConfirmJoin(true); }
-    else { createGymMutation.mutate(gymData); }
+    const gymData = { name: selectedPlaceGym.name, address: selectedPlaceGym.address, city, google_place_id: selectedPlaceGym.place_id, latitude: selectedPlaceGym.latitude, longitude: selectedPlaceGym.longitude, type: gymType, claim_status: isOwner ? 'claimed' : 'unclaimed', admin_id: isOwner ? currentUser?.id : null, owner_email: isOwner ? currentUser?.email : null, verified: isOwner, status: 'approved', members_count: 0, image_url: selectedPlaceGym.photo_url || null };
+    if (isOwner && gymMemberships.length > 0) { setPendingGymData(gymData); setShowConfirmJoin(true); } else { createGymMutation.mutate(gymData); }
   };
 
   useEffect(() => {
@@ -309,40 +285,32 @@ export default function Gyms() {
           style={{ paddingTop: 'calc(0.4rem + env(safe-area-inset-top))', paddingBottom: 0 }}
         >
           <div className="max-w-6xl mx-auto">
-            <div className="flex items-end h-[3.2rem] pt-2 pb-0">
-
-              {/* Tabs — flex-1 fills all space to the left of the action button */}
-              <TabsList className="flex flex-1 bg-transparent p-0 gap-9 border-0 h-auto mb-[-2px]">
-                <TabsTrigger value="my-gyms" className={tabTriggerClass}>
+            <div className="relative flex items-end justify-center h-[3.2rem] pt-2 pb-1.5">
+              {/* Tabs sit with pb-2 so the text floats ~2px above the border indicator */}
+              <TabsList className="flex bg-transparent p-0 gap-9 border-0 h-auto mb-[-2px]">
+                <TabsTrigger value="my-gyms" className="data-[state=active]:text-blue-400 data-[state=active]:border-b-2 data-[state=active]:border-blue-400 data-[state=active]:bg-transparent text-slate-400 hover:text-slate-300 border-b-2 border-transparent rounded-none px-0 pb-2 pt-0 transition-colors bg-transparent text-[15px] justify-center leading-none">
                   <Users className="w-4 h-4 mr-1.5" />My Gyms
                 </TabsTrigger>
-                <TabsTrigger value="explore" className={tabTriggerClass}>
+                <TabsTrigger value="explore" className="data-[state=active]:text-blue-400 data-[state=active]:border-b-2 data-[state=active]:border-blue-400 data-[state=active]:bg-transparent text-slate-400 hover:text-slate-300 border-b-2 border-transparent rounded-none px-0 pb-2 pt-0 transition-colors bg-transparent text-[15px] justify-center leading-none">
                   <MapPin className="w-4 h-4 mr-1.5" />Explore
                 </TabsTrigger>
               </TabsList>
 
-              {/* Action button — plain flex sibling, no absolute positioning */}
-              <div className="mb-1.5 ml-4 flex-shrink-0">
+              {/* Right buttons — raised slightly so they sit comfortably above the border */}
+              <div className="absolute right-0 bottom-3.5 flex items-center">
                 <TabsContent value="my-gyms" className="mt-0 p-0 m-0">
                   {userGyms.length > 0 &&
-                    <Button
-                      onClick={() => setShowPrimaryGymModal(true)}
-                      className="inline-flex items-center justify-center whitespace-nowrap font-bold transition-all duration-100 bg-gradient-to-b from-purple-400 via-purple-500 to-purple-600 text-white border-transparent rounded-md text-[10px] h-6 px-1.5 shadow-[0_2px_0_0_#5b21b6,inset_0_1px_0_rgba(255,255,255,0.2)] active:shadow-none active:translate-y-[2px] active:scale-95 transform-gpu"
-                    >
+                    <Button onClick={() => setShowPrimaryGymModal(true)} className="inline-flex items-center justify-center whitespace-nowrap font-bold transition-all duration-100 bg-gradient-to-b from-purple-400 via-purple-500 to-purple-600 text-white border-transparent rounded-md text-[10px] h-6 px-1.5 shadow-[0_2px_0_0_#5b21b6,inset_0_1px_0_rgba(255,255,255,0.2)] active:shadow-none active:translate-y-[2px] active:scale-95 transform-gpu">
                       Set Home
                     </Button>
                   }
                 </TabsContent>
                 <TabsContent value="explore" className="mt-0 p-0 m-0">
-                  <Button
-                    onClick={() => setShowJoinWithCode(true)}
-                    className="inline-flex items-center justify-center whitespace-nowrap font-bold transition-all duration-100 bg-gradient-to-b from-blue-500 via-blue-600 to-blue-700 text-white border-transparent rounded-md text-[10px] h-6 px-1.5 shadow-[0_2px_0_0_#1a3fa8,inset_0_1px_0_rgba(255,255,255,0.15)] active:shadow-none active:translate-y-[2px] active:scale-95 transform-gpu"
-                  >
+                  <Button onClick={() => setShowJoinWithCode(true)} className="inline-flex items-center justify-center whitespace-nowrap font-bold transition-all duration-100 bg-gradient-to-b from-blue-500 via-blue-600 to-blue-700 text-white border-transparent rounded-md text-[10px] h-6 px-1.5 shadow-[0_2px_0_0_#1a3fa8,inset_0_1px_0_rgba(255,255,255,0.15)] active:shadow-none active:translate-y-[2px] active:scale-95 transform-gpu">
                     Gym Key
                   </Button>
                 </TabsContent>
               </div>
-
             </div>
           </div>
         </div>
@@ -374,20 +342,10 @@ export default function Gyms() {
               <div className="flex items-center gap-2">
                 <div className="relative flex-1">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
-                  <Input
-                    placeholder="Search gyms or add new..."
-                    value={searchQuery}
-                    onChange={e => setSearchQuery(sanitiseGymSearch(e.target.value))}
-                    maxLength={60} autoComplete="off" autoCorrect="off" spellCheck="false"
-                    style={{ fontSize: '16px' }}
-                    className="h-9 pl-10 pr-10 bg-white/10 border border-white/20 hover:border-white/40 focus-visible:outline-none focus-visible:border-blue-400 focus-visible:bg-white/15 text-white placeholder:text-slate-300 rounded-xl transition-all duration-200 w-full"
-                  />
+                  <Input placeholder="Search gyms or add new..." value={searchQuery} onChange={e => setSearchQuery(sanitiseGymSearch(e.target.value))} maxLength={60} autoComplete="off" autoCorrect="off" spellCheck="false" style={{ fontSize: '16px' }} className="h-9 pl-10 pr-10 bg-white/10 border border-white/20 hover:border-white/40 focus-visible:outline-none focus-visible:border-blue-400 focus-visible:bg-white/15 text-white placeholder:text-slate-300 rounded-xl transition-all duration-200 w-full" />
                   {searchingPlaces && <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-blue-400 animate-spin" />}
                 </div>
-                <button
-                  onClick={() => setShowFilterModal(true)}
-                  className="relative flex-shrink-0 w-11 h-9 rounded-xl flex items-center justify-center border transition-all bg-white/10 border-white/20 hover:border-white/40 text-slate-400"
-                >
+                <button onClick={() => setShowFilterModal(true)} className="relative flex-shrink-0 w-11 h-9 rounded-xl flex items-center justify-center border transition-all bg-white/10 border-white/20 hover:border-white/40 text-slate-400">
                   <Filter className="w-5 h-5" />
                   {(selectedType !== 'all' || maxDistance !== 'all' || selectedEquipment !== 'all') && <span className="absolute -top-1 -right-1 w-3 h-3 bg-blue-500 rounded-full" />}
                 </button>
@@ -397,34 +355,20 @@ export default function Gyms() {
                 <div className="rounded-xl p-3 space-y-2 bg-slate-800/90 border border-slate-700/50 animate-pulse">
                   <div className="h-4 w-40 bg-slate-700/60 rounded-lg" />
                   <div className="space-y-2">
-                    {[...Array(3)].map((_, i) => (
-                      <div key={i} className="rounded-xl bg-slate-700/50 border border-slate-600/40 overflow-hidden flex items-stretch">
-                        <div className="w-20 h-20 flex-shrink-0 bg-slate-600/60" />
-                        <div className="flex-1 p-3 flex flex-col justify-center gap-2">
-                          <div className="h-4 bg-slate-600/60 rounded w-3/4" />
-                          <div className="h-3 bg-slate-600/40 rounded w-1/2" />
-                        </div>
-                      </div>
-                    ))}
+                    {[...Array(3)].map((_, i) => <div key={i} className="rounded-xl bg-slate-700/50 border border-slate-600/40 overflow-hidden flex items-stretch"><div className="w-20 h-20 flex-shrink-0 bg-slate-600/60" /><div className="flex-1 p-3 flex flex-col justify-center gap-2"><div className="h-4 bg-slate-600/60 rounded w-3/4" /><div className="h-3 bg-slate-600/40 rounded w-1/2" /></div></div>)}
                   </div>
                 </div>
               }
 
               {!searchingPlaces && searchQuery.length >= 2 && placesResults.length > 0 &&
                 <div className="rounded-xl p-3 space-y-2 bg-slate-900/95 border border-slate-800/60 shadow-xl">
-                  <p className="text-xs font-semibold flex items-center gap-2">
-                    <Plus className="w-3 h-3 text-green-400" />
-                    <span className="text-green-400">Found {placesResults.length} gyms on Google Places</span>
-                  </p>
+                  <p className="text-xs font-semibold flex items-center gap-2"><Plus className="w-3 h-3 text-green-400" /><span className="text-green-400">Found {placesResults.length} gyms on Google Places</span></p>
                   <div className="space-y-2">
                     {placesResults.slice(0, 5).map(place => (
                       <button key={place.place_id} onClick={() => handleSelectPlace(place)} className="w-full text-left rounded-xl bg-slate-700/50 border border-slate-600/40 hover:border-green-500/50 hover:bg-slate-700/80 transition-all overflow-hidden">
                         <div className="flex items-stretch">
                           <div className="w-20 h-20 flex-shrink-0 bg-gradient-to-br from-slate-600 to-slate-700 overflow-hidden">
-                            {place.photo_url
-                              ? <img src={place.photo_url} alt={place.name} className="w-full h-full object-cover" loading="lazy" />
-                              : <div className="w-full h-full flex items-center justify-center"><Dumbbell className="w-6 h-6 text-slate-500" /></div>
-                            }
+                            {place.photo_url ? <img src={place.photo_url} alt={place.name} className="w-full h-full object-cover" loading="lazy" /> : <div className="w-full h-full flex items-center justify-center"><Dumbbell className="w-6 h-6 text-slate-500" /></div>}
                           </div>
                           <div className="flex-1 min-w-0 p-3 flex flex-col justify-center">
                             <h4 className="font-semibold text-white text-sm mb-0.5 truncate">{place.name}</h4>
@@ -457,11 +401,7 @@ export default function Gyms() {
             }
 
             {filteredGyms.length === 0 &&
-              <div className="text-center py-12">
-                <Dumbbell className="w-12 h-12 mx-auto mb-3 text-slate-600" />
-                <p className="text-slate-400">No gyms found</p>
-                <p className="text-sm text-slate-500 mt-1">Try adjusting your filters</p>
-              </div>
+              <div className="text-center py-12"><Dumbbell className="w-12 h-12 mx-auto mb-3 text-slate-600" /><p className="text-slate-400">No gyms found</p><p className="text-sm text-slate-500 mt-1">Try adjusting your filters</p></div>
             }
 
             {filteredGyms.length > 0 &&
@@ -539,7 +479,7 @@ export default function Gyms() {
         <DialogContent className="bg-slate-900 border-slate-700 text-white max-w-md [&>button]:hidden">
           <DialogHeader><DialogTitle className="text-xl font-bold">{gymMemberships.length > 0 ? 'Replace Primary Gym?' : 'Join This Community?'}</DialogTitle></DialogHeader>
           <div className="space-y-4">
-            <p className="text-slate-300 text-sm">{gymMemberships.length > 0 ? <><span className="font-semibold text-white">{gymMemberships[0]?.gym_name}</span> will be replaced by <span className="font-semibold text-white">{selectedPlaceGym?.name}</span> as your primary gym.</> : <>Are you sure you want to join <span className="font-semibold text-white">{selectedPlaceGym?.name}</span>? This is an unclaimed community gym.</>}</p>
+            <p className="text-slate-300 text-sm">{gymMemberships.length > 0 ? <>You're currently a member of <span className="font-semibold text-white">{gymMemberships[0]?.gym_name}</span>. Joining <span className="font-semibold text-white">{selectedPlaceGym?.name}</span> will replace your primary gym.</> : <>Are you sure you want to join <span className="font-semibold text-white">{selectedPlaceGym?.name}</span>? This is an unclaimed community gym.</>}</p>
             <div className="flex gap-3 pt-2">
               <Button onClick={() => { setShowConfirmJoin(false); setPendingGymData(null); }} variant="outline" className="flex-1 border-slate-600 text-slate-300 hover:bg-slate-800">Cancel</Button>
               <Button onClick={() => pendingGymData && createGymMutation.mutate(pendingGymData)} disabled={createGymMutation.isPending} className="flex-1 bg-gradient-to-r from-blue-500 to-cyan-500">
@@ -569,34 +509,20 @@ export default function Gyms() {
           <div className="fixed bottom-24 left-0 right-0 z-50 bg-slate-800/30 backdrop-blur-md border-t border-slate-700/20 rounded-3xl p-5 space-y-2 shadow-2xl shadow-black/20" style={{ paddingBottom: 'calc(1.5rem + env(safe-area-inset-bottom))' }}>
             <div className="flex items-center justify-between">
               <h3 className="text-lg font-bold text-white text-center absolute left-1/2 -translate-x-1/2">Filters</h3>
-              {(selectedType !== 'all' || maxDistance !== 'all' || selectedEquipment !== 'all') &&
-                <button onClick={() => { setSelectedType('all'); setMaxDistance('all'); setSelectedEquipment('all'); }} className="text-xs text-blue-400 font-semibold ml-auto">Clear all</button>
-              }
+              {(selectedType !== 'all' || maxDistance !== 'all' || selectedEquipment !== 'all') && <button onClick={() => { setSelectedType('all'); setMaxDistance('all'); setSelectedEquipment('all'); }} className="text-xs text-blue-400 font-semibold ml-auto">Clear all</button>}
             </div>
             <div className="space-y-4">
               <div>
                 <label className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2 block">Gym Type</label>
-                <div className="flex flex-wrap gap-2">
-                  {[['all','All Types'],['powerlifting','Powerlifting'],['bodybuilding','Bodybuilding'],['crossfit','CrossFit'],['boxing','Boxing'],['mma','MMA'],['general','General']].map(([val, label]) => (
-                    <button key={val} onClick={() => setSelectedType(val)} className={`px-3 py-1.5 rounded-xl text-sm font-semibold transition-all ${selectedType === val ? 'bg-blue-600 text-white' : 'bg-slate-700/60 text-slate-300 hover:bg-slate-700'}`}>{label}</button>
-                  ))}
-                </div>
+                <div className="flex flex-wrap gap-2">{[['all','All Types'],['powerlifting','Powerlifting'],['bodybuilding','Bodybuilding'],['crossfit','CrossFit'],['boxing','Boxing'],['mma','MMA'],['general','General']].map(([val,label]) => <button key={val} onClick={() => setSelectedType(val)} className={`px-3 py-1.5 rounded-xl text-sm font-semibold transition-all ${selectedType===val?'bg-blue-600 text-white':'bg-slate-700/60 text-slate-300 hover:bg-slate-700'}`}>{label}</button>)}</div>
               </div>
               <div>
                 <label className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2 block">Distance</label>
-                <div className="flex flex-wrap gap-2">
-                  {[['all','Any'],['5','5 km'],['10','10 km'],['20','20 km'],['50','50 km']].map(([val, label]) => (
-                    <button key={val} onClick={() => setMaxDistance(val)} className={`px-3 py-1.5 rounded-xl text-sm font-semibold transition-all ${maxDistance === val ? 'bg-blue-600 text-white' : 'bg-slate-700/60 text-slate-300 hover:bg-slate-700'}`}>{label}</button>
-                  ))}
-                </div>
+                <div className="flex flex-wrap gap-2">{[['all','Any'],['5','5 km'],['10','10 km'],['20','20 km'],['50','50 km']].map(([val,label]) => <button key={val} onClick={() => setMaxDistance(val)} className={`px-3 py-1.5 rounded-xl text-sm font-semibold transition-all ${maxDistance===val?'bg-blue-600 text-white':'bg-slate-700/60 text-slate-300 hover:bg-slate-700'}`}>{label}</button>)}</div>
               </div>
               <div>
                 <label className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2 block">Equipment</label>
-                <div className="flex flex-wrap gap-2">
-                  {[['all','All'],['Power Racks','Power Racks'],['Barbells','Barbells'],['Dumbbells','Dumbbells'],['Cable Machines','Cables'],['Cardio Equipment','Cardio'],['Olympic Platforms','Olympic']].map(([val, label]) => (
-                    <button key={val} onClick={() => setSelectedEquipment(val)} className={`px-3 py-1.5 rounded-xl text-sm font-semibold transition-all ${selectedEquipment === val ? 'bg-blue-600 text-white' : 'bg-slate-700/60 text-slate-300 hover:bg-slate-700'}`}>{label}</button>
-                  ))}
-                </div>
+                <div className="flex flex-wrap gap-2">{[['all','All'],['Power Racks','Power Racks'],['Barbells','Barbells'],['Dumbbells','Dumbbells'],['Cable Machines','Cables'],['Cardio Equipment','Cardio'],['Olympic Platforms','Olympic']].map(([val,label]) => <button key={val} onClick={() => setSelectedEquipment(val)} className={`px-3 py-1.5 rounded-xl text-sm font-semibold transition-all ${selectedEquipment===val?'bg-blue-600 text-white':'bg-slate-700/60 text-slate-300 hover:bg-slate-700'}`}>{label}</button>)}</div>
               </div>
             </div>
           </div>
@@ -623,12 +549,7 @@ export default function Gyms() {
                 <Select value={gymType} onValueChange={setGymType}>
                   <SelectTrigger className="bg-slate-800/60 border-slate-600/40 text-white"><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="general">General Fitness</SelectItem>
-                    <SelectItem value="powerlifting">Powerlifting</SelectItem>
-                    <SelectItem value="bodybuilding">Bodybuilding</SelectItem>
-                    <SelectItem value="crossfit">CrossFit</SelectItem>
-                    <SelectItem value="boxing">Boxing</SelectItem>
-                    <SelectItem value="mma">MMA</SelectItem>
+                    <SelectItem value="general">General Fitness</SelectItem><SelectItem value="powerlifting">Powerlifting</SelectItem><SelectItem value="bodybuilding">Bodybuilding</SelectItem><SelectItem value="crossfit">CrossFit</SelectItem><SelectItem value="boxing">Boxing</SelectItem><SelectItem value="mma">MMA</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
