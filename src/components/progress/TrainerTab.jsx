@@ -305,10 +305,8 @@ function ChatPage({ thread, currentUser, onBack }) {
   );
 }
 
-/* ─── CoachThreadRow — "My Splits" style card ─── */
+/* ─── CoachThreadRow ─── */
 function CoachThreadRow({ thread, currentUser, onClick }) {
-  const lastMsg = thread.messages[thread.messages.length - 1];
-  const lastPreview = lastMsg?.media_type === 'image' ? '📷 Photo' : lastMsg?.media_type === 'video' ? '🎥 Video' : lastMsg?.media_type === 'file' ? '📎 File' : (lastMsg?.content || '');
   const hasUnread = thread.unread > 0;
 
   return (
@@ -336,31 +334,32 @@ function CoachThreadRow({ thread, currentUser, onClick }) {
       {/* Top shine line */}
       <div style={{ position: 'absolute', inset: '0 0 auto 0', height: 1, background: 'linear-gradient(90deg, transparent 10%, rgba(255,255,255,0.08) 50%, transparent 90%)', pointerEvents: 'none' }} />
 
-      {/* Left: name + last message snippet */}
+      {/* Left: avatar */}
+      <div style={{ position: 'relative', flexShrink: 0 }}>
+        <div style={{ width: 44, height: 44, borderRadius: '50%', overflow: 'hidden', background: thread.avatar ? 'transparent' : 'rgba(99,102,241,0.12)', border: `2px solid ${hasUnread ? 'rgba(99,102,241,0.7)' : 'rgba(99,102,241,0.3)'}`, boxShadow: hasUnread ? '0 0 14px rgba(99,102,241,0.4)' : 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 15, fontWeight: 800, color: '#818cf8' }}>
+          {thread.avatar ? <img src={thread.avatar} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : ini(thread.name)}
+        </div>
+        <div style={{ position: 'absolute', bottom: 1, right: 1, width: 9, height: 9, borderRadius: '50%', background: '#10b981', border: '2px solid #02040a', boxShadow: '0 0 6px rgba(16,185,129,0.5)' }} />
+      </div>
+
+      {/* Middle: name + Coach label */}
       <div style={{ flex: 1, minWidth: 0 }}>
-        <p style={{ fontSize: 15, fontWeight: hasUnread ? 800 : 700, color: '#f1f5f9', margin: '0 0 4px', letterSpacing: '-0.01em', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+        <p style={{ fontSize: 15, fontWeight: hasUnread ? 800 : 700, color: '#f1f5f9', margin: '0 0 3px', letterSpacing: '-0.01em', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
           {thread.name}
         </p>
-        <p style={{ fontSize: 12.5, color: hasUnread ? '#94a3b8' : '#475569', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontWeight: hasUnread ? 600 : 400 }}>
-          {lastPreview || 'No messages yet'}
+        <p style={{ fontSize: 11.5, color: '#6366f1', margin: 0, fontWeight: 700, letterSpacing: '0.01em' }}>
+          Coach
         </p>
       </div>
 
-      {/* Right: unread badge + chevron + avatar */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+      {/* Right: unread count + chevron */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
         {hasUnread && (
           <div style={{ minWidth: 20, height: 20, borderRadius: 10, background: 'linear-gradient(135deg, #4f46e5, #6366f1)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 800, color: '#fff', padding: '0 5px', boxShadow: '0 2px 8px rgba(99,102,241,0.5)' }}>
             {thread.unread > 9 ? '9+' : thread.unread}
           </div>
         )}
         <ChevronRight style={{ width: 15, height: 15, color: '#334155' }} />
-        {/* Coach avatar on the far right */}
-        <div style={{ position: 'relative', flexShrink: 0 }}>
-          <div style={{ width: 44, height: 44, borderRadius: '50%', overflow: 'hidden', background: thread.avatar ? 'transparent' : 'rgba(99,102,241,0.12)', border: `2px solid ${hasUnread ? 'rgba(99,102,241,0.7)' : 'rgba(99,102,241,0.3)'}`, boxShadow: hasUnread ? '0 0 14px rgba(99,102,241,0.4)' : 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 15, fontWeight: 800, color: '#818cf8' }}>
-            {thread.avatar ? <img src={thread.avatar} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : ini(thread.name)}
-          </div>
-          <div style={{ position: 'absolute', bottom: 1, right: 1, width: 9, height: 9, borderRadius: '50%', background: '#10b981', border: '2px solid #02040a', boxShadow: '0 0 6px rgba(16,185,129,0.5)' }} />
-        </div>
       </div>
     </button>
   );
