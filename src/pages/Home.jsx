@@ -63,42 +63,38 @@ const POSE_2_URL = 'https://media.base44.com/images/public/694b637358644e1c22c8e
 const SPARTAN_ICON_URL = 'https://media.base44.com/images/public/694b637358644e1c22c8ec6b/a72ee034d_spartan.png';
 const BEACH_ICON_URL = 'https://media.base44.com/images/public/694b637358644e1c22c8ec6b/9766d8d41_BEACH.png';
 
-function playTone(ctx, freq, startTime, duration, gainVal, type = 'sine') {
-  const osc = ctx.createOscillator();
-  const gain = ctx.createGain();
-  osc.connect(gain);
-  gain.connect(ctx.destination);
-  osc.type = type;
-  osc.frequency.setValueAtTime(freq, startTime);
-  gain.gain.setValueAtTime(0, startTime);
-  gain.gain.linearRampToValueAtTime(gainVal, startTime + 0.01);
-  gain.gain.exponentialRampToValueAtTime(0.001, startTime + duration);
-  osc.start(startTime);
-  osc.stop(startTime + duration + 0.05);
-}
-function soundBounceIn(ctx) {
-  const now = ctx.currentTime;
-  const osc = ctx.createOscillator();
-  const gain = ctx.createGain();
-  osc.connect(gain); gain.connect(ctx.destination);
-  osc.type = 'sine';
-  osc.frequency.setValueAtTime(300, now);
-  osc.frequency.exponentialRampToValueAtTime(680, now + 0.18);
-  gain.gain.setValueAtTime(0, now);
-  gain.gain.linearRampToValueAtTime(0.22, now + 0.02);
-  gain.gain.exponentialRampToValueAtTime(0.001, now + 0.22);
-  osc.start(now); osc.stop(now + 0.3);
-}
-function soundNumPop(ctx) {
-  const now = ctx.currentTime;
-  playTone(ctx, 900, now, 0.08, 0.18);
-  playTone(ctx, 1100, now + 0.04, 0.07, 0.12);
-}
-function soundGlowPulse(ctx) {
-  const now = ctx.currentTime;
-  [523, 659, 784].forEach((freq, i) => {
-    playTone(ctx, freq, now + i * 0.03, 0.5, 0.09);
-  });
+// ── Workout logged sound ──────────────────────────────────────────────────────
+// Duolingo-style immediate feedback sound — fires the instant the user logs.
+// Bright ascending "achievement unlocked" feel: quick pop, rising notes, warm finish.
+function playWorkoutLoggedSound() {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const now = ctx.currentTime;
+
+    const tone = (freq, start, dur, gain, type = 'sine') => {
+      const osc = ctx.createOscillator();
+      const g   = ctx.createGain();
+      osc.connect(g); g.connect(ctx.destination);
+      osc.type = type;
+      osc.frequency.setValueAtTime(freq, start);
+      g.gain.setValueAtTime(0, start);
+      g.gain.linearRampToValueAtTime(gain, start + 0.01);
+      g.gain.exponentialRampToValueAtTime(0.001, start + dur);
+      osc.start(start); osc.stop(start + dur + 0.05);
+    };
+
+    // Sharp initial "tap" thud
+    tone(180,  now,        0.06, 0.22, 'triangle');
+    // Quick rising chime — Duolingo "correct" energy
+    tone(660,  now + 0.04, 0.10, 0.20);
+    tone(880,  now + 0.12, 0.12, 0.24);
+    tone(1100, now + 0.21, 0.16, 0.20);
+    // Warm harmonic tail
+    tone(550,  now + 0.21, 0.20, 0.10);
+
+    if (navigator.vibrate) navigator.vibrate([20, 10, 40]);
+    setTimeout(() => ctx.close(), 800);
+  } catch (_) {}
 }
 
 const STREAK_KEYFRAMES = `
@@ -245,7 +241,6 @@ export default function Home() {
   const [weekOffset, setWeekOffset] = useState(0);
   const [slideDirection, setSlideDirection] = useState(0);
   const [, forceUpdateSwaps] = useState(0);
-  const audioCtxRef = useRef(null);
   const celebTimers = useRef([]);
 
   const [headerState, setHeaderState] = useState('top');
@@ -589,28 +584,11 @@ export default function Home() {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['sentFriendRequests'] }),
   });
 
-  const runStreakAnimation = (streakNum, audioRef, timers) => {
-    if (!audioRef.current) return;
-    const ctx = audioRef.current;
-    try { soundBounceIn(ctx); } catch {}
-    const t1 = setTimeout(() => { try { soundNumPop(ctx); } catch {} }, 500);
-    const t2 = setTimeout(() => { try { soundGlowPulse(ctx); } catch {} }, 900);
-    timers.current.push(t1, t2);
-  };
-
   useEffect(() => {
     if (currentUser && !currentUser.onboarding_completed && !currentUser.deleted_at) {
       navigate(createPageUrl('Onboarding'), { replace: true });
     }
   }, [currentUser?.onboarding_completed, currentUser?.deleted_at, navigate]);
-
-  useEffect(() => {
-    if (!showStreakCelebration) return;
-    const init = setTimeout(() => {
-      runStreakAnimation(celebrationStreakNum, audioCtxRef, celebTimers);
-    }, 50);
-    return () => { clearTimeout(init); };
-  }, [showStreakCelebration]);
 
   const { data: allRecentCheckIns = [] } = useQuery({
     queryKey: ['friendCheckIns', friendIdList.join(',')],
@@ -864,11 +842,10 @@ export default function Home() {
       }
     }
     setWorkoutStartTime(null);
+    playWorkoutLoggedSound();
     await queryClient.invalidateQueries({ queryKey: ['checkIns', currentUser?.id] });
     await queryClient.invalidateQueries({ queryKey: ['weeklyWorkoutLogs', currentUser?.id] });
     await queryClient.invalidateQueries({ queryKey: ['userChallengeParticipants', currentUser?.id] });
-    if (audioCtxRef.current) audioCtxRef.current.close().catch(() => {});
-    audioCtxRef.current = new (window.AudioContext || window.webkitAudioContext)();
     const freshUser = queryClient.getQueryData(['currentUser']);
     const newStreak = freshUser?.current_streak || userStreak + 1;
     setCelebrationStreakNum(newStreak);
