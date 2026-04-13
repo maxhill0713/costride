@@ -100,7 +100,7 @@ export default function Progress() {
             <div className="flex items-end h-[3.2rem] pt-2 pb-2">
 
               {/* Tabs row — flex-1 so it fills all space left of the icon */}
-              <TabsList className="flex flex-1 bg-transparent p-0 gap-6 border-0 h-auto mb-[3px]">
+              <TabsList className="flex flex-1 bg-transparent p-0 gap-6 border-0 h-auto mb-[-1px]">
                 <TabsTrigger value="analytics" className={tabTriggerClass}>
                   <BarChart3 className="w-4 h-4 mr-1.5" />Analytics
                 </TabsTrigger>
