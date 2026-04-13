@@ -2,9 +2,10 @@
  * TabAnalytics — Forge Fitness
  * No sidebar/topbar — rendered inside existing dashboard shell.
  * Dependencies: recharts, lucide-react
+ * Mobile responsive: stacks on ≤768px, desktop unchanged at ≥1024px
  */
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   TrendingUp, TrendingDown, ArrowUpRight, ArrowDownRight,
   AlertTriangle, Activity, Zap, Send, BarChart2, Flame,
@@ -180,9 +181,9 @@ function RangeTab({ range, setRange }) {
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   SECTION 1 — KPI STRIP  (compact, no border, matches overview)
+   SECTION 1 — KPI STRIP
 ═══════════════════════════════════════════════════════════════ */
-function KpiStrip() {
+function KpiStrip({ isMobile }) {
   const kpis = [
     { label: "Week 1 Return",    value: "84%",  trend: +4,  sub: "of new members return in 7d",  accent: C.cyan  },
     { label: "Month 3 Retained", value: "58%",  trend: +5,  sub: "long-term cohort health",       accent: C.cyan  },
@@ -190,24 +191,30 @@ function KpiStrip() {
     { label: "Avg Visits / Week",value: "5.1",  trend: +11, sub: "per member, up from 3.8",      accent: C.blue  },
   ];
   return (
-    <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 9 }}>
+    <div style={{
+      display: "grid",
+      gridTemplateColumns: isMobile ? "repeat(2,1fr)" : "repeat(4,1fr)",
+      gap: 9,
+    }}>
       {kpis.map((k, i) => {
         const up   = k.trendInvert ? k.trend < 0 : k.trend > 0;
         const tCol = up ? C.cyan : C.red;
         return (
           <div key={i} style={{
             background: C.card,
-            border: "none",            /* ← no border */
+            border: "none",
             borderRadius: 10,
-            padding: "13px 14px",       /* ← compact */
+            padding: isMobile ? "11px 12px" : "13px 14px",
           }}>
             <div style={{ fontSize: 9.5, color: C.t3, textTransform: "uppercase",
               letterSpacing: "0.09em", fontWeight: 700, marginBottom: 8 }}>
               {k.label}
             </div>
-            {/* ← value matches overview ~22px */}
-            <div style={{ fontSize: 26, fontWeight: 700, color: C.t1,
-              letterSpacing: "-0.03em", lineHeight: 1, marginBottom: 7, ...mono }}>
+            <div style={{
+              fontSize: isMobile ? 22 : 26,
+              fontWeight: 700, color: C.t1,
+              letterSpacing: "-0.03em", lineHeight: 1, marginBottom: 7, ...mono,
+            }}>
               {k.value}
             </div>
             <div style={{ fontSize: 10.5, color: tCol, fontWeight: 600,
@@ -226,13 +233,17 @@ function KpiStrip() {
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   SECTION 2 — RETENTION FUNNEL  (50% smaller heights)
+   SECTION 2 — RETENTION FUNNEL
 ═══════════════════════════════════════════════════════════════ */
-function RetentionFunnelSection() {
+function RetentionFunnelSection({ isMobile }) {
   return (
-    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, alignItems: "stretch" }}>
-
-      {/* SVG Funnel — reduced */}
+    <div style={{
+      display: "grid",
+      gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr",
+      gap: 12,
+      alignItems: "stretch",
+    }}>
+      {/* SVG Funnel */}
       <Card style={{ padding: "13px 14px" }}>
         <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 5 }}>
           <SLabel sub="Member journey from join day to long-term retention">
@@ -244,12 +255,6 @@ function RetentionFunnelSection() {
           </div>
         </div>
 
-        {/*
-          Original viewBox: 460 × 262  → half height: 131
-          All y-coords halved, x-coords unchanged.
-          Band height: 29px each (was 58)
-          y positions: 6, 35, 64, 93, 122
-        */}
         <svg viewBox="0 0 460 131" width="100%" style={{ display: "block" }}
           role="img" aria-label="Retention funnel">
           <polygon points="65,6 395,6 368,35 92,35"     fill={C.cyan} fillOpacity={0.82}/>
@@ -261,13 +266,11 @@ function RetentionFunnelSection() {
           <line x1="113" y1="64"  x2="347" y2="64"  stroke={C.bg} strokeWidth="2"/>
           <line x1="134" y1="93"  x2="326" y2="93"  stroke={C.bg} strokeWidth="2"/>
 
-          {/* left labels */}
           <text x="57" y="18"  textAnchor="end" fontFamily={FONT} fontSize="10" fontWeight="700" fill={C.t1}>Joined</text>
           <text x="57" y="48"  textAnchor="end" fontFamily={FONT} fontSize="10" fontWeight="600" fill={C.t2}>Week 1</text>
           <text x="57" y="77"  textAnchor="end" fontFamily={FONT} fontSize="10" fontWeight="600" fill={C.t2}>Month 1</text>
           <text x="57" y="109" textAnchor="end" fontFamily={FONT} fontSize="10" fontWeight="600" fill={C.t2}>Month 3</text>
 
-          {/* centre values */}
           <text x="230" y="18"  textAnchor="middle" fontFamily={FONT} fontSize="14" fontWeight="700" fill="#fff">38</text>
           <text x="230" y="27"  textAnchor="middle" fontFamily={FONT} fontSize="8.5" fill="rgba(255,255,255,0.6)">100%</text>
           <text x="230" y="47"  textAnchor="middle" fontFamily={FONT} fontSize="14" fontWeight="700" fill="#fff">32</text>
@@ -277,7 +280,6 @@ function RetentionFunnelSection() {
           <text x="230" y="106" textAnchor="middle" fontFamily={FONT} fontSize="14" fontWeight="700" fill="#fff">22</text>
           <text x="230" y="115" textAnchor="middle" fontFamily={FONT} fontSize="8.5" fill="rgba(255,255,255,0.6)">58% · 5 lost</text>
 
-          {/* drop-off annotations */}
           <line x1="368" y1="35" x2="398" y2="35" stroke={C.amber} strokeWidth="1.5"/>
           <circle cx="398" cy="35" r="2.5" fill={C.amber}/>
           <text x="404" y="33" fontFamily={FONT} fontSize="10" fontWeight="700" fill={C.amber}>−16%</text>
@@ -301,13 +303,13 @@ function RetentionFunnelSection() {
         </div>
       </Card>
 
-      {/* Trend lines — fills card height */}
+      {/* Trend lines */}
       <Card style={{ padding: "13px 14px", display: "flex", flexDirection: "column" }}>
         <SLabel right="6 months" sub="How each cohort milestone has improved month-on-month">
           Retention Rate Trends
         </SLabel>
-        <div style={{ flex: 1, minHeight: 0 }}>
-          <ResponsiveContainer width="100%" height="100%">
+        <div style={{ flex: 1, minHeight: isMobile ? 160 : 0 }}>
+          <ResponsiveContainer width="100%" height={isMobile ? 160 : "100%"}>
             <LineChart data={RETENTION_OVER_TIME} margin={{ top: 4, right: 6, bottom: 0, left: -28 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" vertical={false}/>
               <XAxis dataKey="m" tick={tick} axisLine={false} tickLine={false}/>
@@ -334,7 +336,7 @@ function RetentionFunnelSection() {
 /* ═══════════════════════════════════════════════════════════════
    SECTION 3 — KEY INSIGHTS
 ═══════════════════════════════════════════════════════════════ */
-function KeyInsights() {
+function KeyInsights({ isMobile }) {
   const insights = [
     {
       icon: TrendingUp, color: C.cyan, bg: C.cyanD, brd: C.cyanB,
@@ -356,7 +358,11 @@ function KeyInsights() {
     },
   ];
   return (
-    <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 12 }}>
+    <div style={{
+      display: "grid",
+      gridTemplateColumns: isMobile ? "1fr" : "repeat(3,1fr)",
+      gap: 12,
+    }}>
       {insights.map((ins, i) => (
         <div key={i} style={{
           background: C.card, border: `1px solid ${C.brd}`,
@@ -377,9 +383,13 @@ function KeyInsights() {
 /* ═══════════════════════════════════════════════════════════════
    SECTION 4 — MEMBER SEGMENTS
 ═══════════════════════════════════════════════════════════════ */
-function MemberSegmentsSection() {
+function MemberSegmentsSection({ isMobile }) {
   return (
-    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+    <div style={{
+      display: "grid",
+      gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr",
+      gap: 12,
+    }}>
       <Card>
         <SLabel sub="Who your members are right now and how segments are shifting">Member Segments</SLabel>
         <div style={{ display: "flex", flexDirection: "column" }}>
@@ -414,7 +424,7 @@ function MemberSegmentsSection() {
 
       <Card>
         <SLabel sub="How each segment has changed month by month" right="4 months">Segment Trends</SLabel>
-        <ResponsiveContainer width="100%" height={190}>
+        <ResponsiveContainer width="100%" height={isMobile ? 150 : 190}>
           <LineChart data={SEGMENT_TREND_DATA} margin={{ top: 4, right: 6, bottom: 0, left: -28 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" vertical={false}/>
             <XAxis dataKey="m" tick={tick} axisLine={false} tickLine={false}/>
@@ -453,12 +463,21 @@ function MemberSegmentsSection() {
 /* ═══════════════════════════════════════════════════════════════
    SECTION 5 — VISIT TRENDS + PEAK HOURS
 ═══════════════════════════════════════════════════════════════ */
-function VisitTrendsSection() {
+function VisitTrendsSection({ isMobile }) {
   return (
-    <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: 12 }}>
+    <div style={{
+      display: "grid",
+      gridTemplateColumns: isMobile ? "1fr" : "2fr 1fr",
+      gap: 12,
+    }}>
       <Card>
         <SLabel sub="Weekly check-ins (bars) and average visits per member (line)" right="12 weeks">Visit Habits</SLabel>
-        <div style={{ display: "flex", gap: 18, marginBottom: 12 }}>
+        <div style={{
+          display: "flex",
+          flexWrap: isMobile ? "wrap" : "nowrap",
+          gap: 18,
+          marginBottom: 12,
+        }}>
           <div>
             <div style={{ fontSize: 22, fontWeight: 700, color: C.t1, letterSpacing: "-0.03em", lineHeight: 1, ...mono }}>192</div>
             <div style={{ fontSize: 9.5, color: C.t3, marginTop: 2 }}>check-ins this week</div>
@@ -467,40 +486,42 @@ function VisitTrendsSection() {
             <div style={{ fontSize: 22, fontWeight: 700, color: C.t1, letterSpacing: "-0.03em", lineHeight: 1, ...mono }}>5.1</div>
             <div style={{ fontSize: 9.5, color: C.t3, marginTop: 2 }}>avg visits/member/wk</div>
           </div>
-          <div style={{ marginLeft: "auto", textAlign: "right" }}>
+          <div style={{ marginLeft: isMobile ? 0 : "auto", textAlign: isMobile ? "left" : "right" }}>
             <div style={{ fontSize: 10.5, color: C.cyan, fontWeight: 600 }}>↑ +32% avg visits since Jan</div>
             <div style={{ fontSize: 9.5, color: C.t3, marginTop: 2 }}>habits improving across the board</div>
           </div>
         </div>
-        <ResponsiveContainer width="100%" height={140}>
-          <ComposedChart data={VISIT_TREND} margin={{ top: 4, right: 28, bottom: 0, left: -26 }}>
-            <defs>
-              <linearGradient id="visitGrad" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%"   stopColor={C.cyan} stopOpacity={0.25}/>
-                <stop offset="100%" stopColor={C.cyan} stopOpacity={0.02}/>
-              </linearGradient>
-            </defs>
-            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" vertical={false}/>
-            <XAxis dataKey="w" tick={tick} axisLine={false} tickLine={false} interval={2}/>
-            <YAxis yAxisId="left"  tick={tick} axisLine={false} tickLine={false} domain={[80, 220]}/>
-            <YAxis yAxisId="right" tick={tick} axisLine={false} tickLine={false} orientation="right" domain={[2, 6]}/>
-            <Tooltip content={({ active, payload, label }) => {
-              if (!active || !payload?.length) return null;
-              return (
-                <div style={{ background: "#0a0e18", border: `1px solid ${C.cyanB}`, borderRadius: 7, padding: "6px 10px", fontSize: 11, fontFamily: FONT }}>
-                  <div style={{ color: C.t3, marginBottom: 3, fontSize: 9.5 }}>{label}</div>
-                  {payload.map((p, i) => (
-                    <div key={i} style={{ color: p.color, fontWeight: 700, display: "flex", justifyContent: "space-between", gap: 10 }}>
-                      <span style={{ color: C.t3, fontWeight: 400 }}>{p.name}</span>{p.value}
-                    </div>
-                  ))}
-                </div>
-              );
-            }}/>
-            <Bar  yAxisId="left"  dataKey="total" name="Check-ins"  fill={C.cyan + "30"} radius={[2, 2, 0, 0]} barSize={12}/>
-            <Line yAxisId="right" type="monotone" dataKey="avg" name="Avg/member" stroke={C.cyan} strokeWidth={2} dot={false} activeDot={{ r: 3, fill: C.cyan, stroke: C.card, strokeWidth: 2 }}/>
-          </ComposedChart>
-        </ResponsiveContainer>
+        <div style={{ width: "100%", overflow: "hidden" }}>
+          <ResponsiveContainer width="100%" height={isMobile ? 110 : 140}>
+            <ComposedChart data={VISIT_TREND} margin={{ top: 4, right: 28, bottom: 0, left: -26 }}>
+              <defs>
+                <linearGradient id="visitGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%"   stopColor={C.cyan} stopOpacity={0.25}/>
+                  <stop offset="100%" stopColor={C.cyan} stopOpacity={0.02}/>
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" vertical={false}/>
+              <XAxis dataKey="w" tick={tick} axisLine={false} tickLine={false} interval={2}/>
+              <YAxis yAxisId="left"  tick={tick} axisLine={false} tickLine={false} domain={[80, 220]}/>
+              <YAxis yAxisId="right" tick={tick} axisLine={false} tickLine={false} orientation="right" domain={[2, 6]}/>
+              <Tooltip content={({ active, payload, label }) => {
+                if (!active || !payload?.length) return null;
+                return (
+                  <div style={{ background: "#0a0e18", border: `1px solid ${C.cyanB}`, borderRadius: 7, padding: "6px 10px", fontSize: 11, fontFamily: FONT }}>
+                    <div style={{ color: C.t3, marginBottom: 3, fontSize: 9.5 }}>{label}</div>
+                    {payload.map((p, i) => (
+                      <div key={i} style={{ color: p.color, fontWeight: 700, display: "flex", justifyContent: "space-between", gap: 10 }}>
+                        <span style={{ color: C.t3, fontWeight: 400 }}>{p.name}</span>{p.value}
+                      </div>
+                    ))}
+                  </div>
+                );
+              }}/>
+              <Bar  yAxisId="left"  dataKey="total" name="Check-ins"  fill={C.cyan + "30"} radius={[2, 2, 0, 0]} barSize={12}/>
+              <Line yAxisId="right" type="monotone" dataKey="avg" name="Avg/member" stroke={C.cyan} strokeWidth={2} dot={false} activeDot={{ r: 3, fill: C.cyan, stroke: C.card, strokeWidth: 2 }}/>
+            </ComposedChart>
+          </ResponsiveContainer>
+        </div>
         <div style={{ display: "flex", gap: 14, marginTop: 7 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 10, color: C.t3 }}>
             <div style={{ width: 11, height: 11, background: C.cyan + "30", borderRadius: 2 }}/> Check-ins
@@ -544,37 +565,42 @@ function VisitTrendsSection() {
 /* ═══════════════════════════════════════════════════════════════
    SECTION 6 — CLASS PERFORMANCE
 ═══════════════════════════════════════════════════════════════ */
-function ClassPerformanceSection() {
+function ClassPerformanceSection({ isMobile }) {
   return (
     <Card>
       <SLabel sub="Fill rate, session count and attendance trend · last 30 days">Class Performance</SLabel>
-      <div style={{ display: "grid", gridTemplateColumns: "2fr 60px 80px 60px 160px", gap: 10,
-        padding: "0 0 7px", borderBottom: `1px solid ${C.brd}`, marginBottom: 3 }}>
-        {["CLASS", "SESSIONS", "FILL RATE", "TREND", "CAPACITY"].map((h, i) => (
-          <div key={i} style={{ fontSize: 8.5, fontWeight: 600, color: C.t3, letterSpacing: "0.07em", textAlign: i > 0 ? "center" : "left" }}>{h}</div>
-        ))}
-      </div>
-      {CLASS_DATA.map((cls, i) => (
-        <div key={i} style={{ display: "grid", gridTemplateColumns: "2fr 60px 80px 60px 160px", gap: 10,
-          padding: "9px 0", borderBottom: i < CLASS_DATA.length - 1 ? `1px solid ${C.brd}` : "none", alignItems: "center" }}>
-          <div>
-            <div style={{ fontSize: 12, fontWeight: 600, color: C.t1 }}>{cls.name}</div>
-            <div style={{ fontSize: 9.5, color: C.t3, marginTop: 1 }}>Peak: {cls.peak}</div>
+      {/* Horizontal scroll wrapper on mobile only */}
+      <div style={{ overflowX: isMobile ? "auto" : "visible", WebkitOverflowScrolling: "touch" }}>
+        <div style={{ minWidth: isMobile ? 520 : "auto" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "2fr 60px 80px 60px 160px", gap: 10,
+            padding: "0 0 7px", borderBottom: `1px solid ${C.brd}`, marginBottom: 3 }}>
+            {["CLASS", "SESSIONS", "FILL RATE", "TREND", "CAPACITY"].map((h, i) => (
+              <div key={i} style={{ fontSize: 8.5, fontWeight: 600, color: C.t3, letterSpacing: "0.07em", textAlign: i > 0 ? "center" : "left" }}>{h}</div>
+            ))}
           </div>
-          <div style={{ textAlign: "center", fontSize: 12.5, fontWeight: 600, color: C.t2, ...mono }}>{cls.sessions}</div>
-          <div style={{ textAlign: "center", fontSize: 13, fontWeight: 700, color: fillCol(cls.fill), ...mono }}>{cls.fill}%</div>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 3, fontSize: 10.5, fontWeight: 700, color: trendCol(cls.trend) }}>
-            {cls.trend > 0 ? <TrendingUp style={{ width: 10, height: 10 }}/> : <TrendingDown style={{ width: 10, height: 10 }}/>}
-            {cls.trend > 0 ? "+" : ""}{cls.trend}%
-          </div>
-          <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
-            <div style={{ flex: 1, height: 5, background: C.brd, borderRadius: 3, overflow: "hidden" }}>
-              <div style={{ width: `${cls.fill}%`, height: "100%", background: fillCol(cls.fill), borderRadius: 3, opacity: 0.85 }}/>
+          {CLASS_DATA.map((cls, i) => (
+            <div key={i} style={{ display: "grid", gridTemplateColumns: "2fr 60px 80px 60px 160px", gap: 10,
+              padding: "9px 0", borderBottom: i < CLASS_DATA.length - 1 ? `1px solid ${C.brd}` : "none", alignItems: "center" }}>
+              <div>
+                <div style={{ fontSize: 12, fontWeight: 600, color: C.t1 }}>{cls.name}</div>
+                <div style={{ fontSize: 9.5, color: C.t3, marginTop: 1 }}>Peak: {cls.peak}</div>
+              </div>
+              <div style={{ textAlign: "center", fontSize: 12.5, fontWeight: 600, color: C.t2, ...mono }}>{cls.sessions}</div>
+              <div style={{ textAlign: "center", fontSize: 13, fontWeight: 700, color: fillCol(cls.fill), ...mono }}>{cls.fill}%</div>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 3, fontSize: 10.5, fontWeight: 700, color: trendCol(cls.trend) }}>
+                {cls.trend > 0 ? <TrendingUp style={{ width: 10, height: 10 }}/> : <TrendingDown style={{ width: 10, height: 10 }}/>}
+                {cls.trend > 0 ? "+" : ""}{cls.trend}%
+              </div>
+              <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
+                <div style={{ flex: 1, height: 5, background: C.brd, borderRadius: 3, overflow: "hidden" }}>
+                  <div style={{ width: `${cls.fill}%`, height: "100%", background: fillCol(cls.fill), borderRadius: 3, opacity: 0.85 }}/>
+                </div>
+                {cls.fill >= 90 && <span style={{ fontSize: 8.5, color: C.cyan, fontWeight: 700, flexShrink: 0 }}>FULL</span>}
+              </div>
             </div>
-            {cls.fill >= 90 && <span style={{ fontSize: 8.5, color: C.cyan, fontWeight: 700, flexShrink: 0 }}>FULL</span>}
-          </div>
+          ))}
         </div>
-      ))}
+      </div>
       <div style={{ marginTop: 10, padding: "8px 10px", borderRadius: 7, background: C.cyanD, border: `1px solid ${C.cyanB}` }}>
         <div style={{ fontSize: 10.5, color: C.cyan, fontWeight: 600, marginBottom: 2 }}>HIIT Circuit is at 94% capacity every session</div>
         <div style={{ fontSize: 10, color: C.t2 }}>Adding one extra session per week could generate ~£380/month. Recovery Yoga at 38% fill — consider rescheduling or merging.</div>
@@ -586,7 +612,7 @@ function ClassPerformanceSection() {
 /* ═══════════════════════════════════════════════════════════════
    SECTION 7 — ENGAGEMENT
 ═══════════════════════════════════════════════════════════════ */
-function EngagementSection() {
+function EngagementSection({ isMobile }) {
   const engMetrics = [
     { label: "Overall Engagement",      val: 72, trend: +6,  sub: "members using app weekly"          },
     { label: "Challenge Participation", val: 47, trend: +12, sub: "of total members in a challenge"   },
@@ -594,7 +620,11 @@ function EngagementSection() {
     { label: "Class Attendance Rate",   val: 61, trend: +3,  sub: "of capacity filled across classes" },
   ];
   return (
-    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+    <div style={{
+      display: "grid",
+      gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr",
+      gap: 12,
+    }}>
       <Card>
         <SLabel sub="How members are engaging across every touchpoint">Engagement Breakdown</SLabel>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 7, marginBottom: 11 }}>
@@ -613,7 +643,7 @@ function EngagementSection() {
             );
           })}
         </div>
-        <ResponsiveContainer width="100%" height={148}>
+        <ResponsiveContainer width="100%" height={isMobile ? 120 : 148}>
           <RadarChart data={ENGAGEMENT_DATA} margin={{ top: 6, right: 14, bottom: 6, left: 14 }}>
             <PolarGrid stroke="rgba(255,255,255,0.06)"/>
             <PolarAngleAxis dataKey="subject" tick={{ fill: C.t3, fontSize: 9, fontFamily: FONT }}/>
@@ -663,17 +693,26 @@ function EngagementSection() {
 /* ═══════════════════════════════════════════════════════════════
    SECTION 8 — REVENUE
 ═══════════════════════════════════════════════════════════════ */
-function RevenueSection() {
+function RevenueSection({ isMobile }) {
   const latest  = REVENUE_DATA[REVENUE_DATA.length - 1];
   const prev    = REVENUE_DATA[REVENUE_DATA.length - 2];
   const lostDelta = Math.round(((latest.lost     - prev.lost)      / prev.lost)     * 100);
   const recDelta  = Math.round(((latest.recovered - prev.recovered) / prev.recovered) * 100);
 
   return (
-    <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: 12 }}>
+    <div style={{
+      display: "grid",
+      gridTemplateColumns: isMobile ? "1fr" : "2fr 1fr",
+      gap: 12,
+    }}>
       <Card>
         <SLabel sub="Monthly revenue retained vs lost to churn vs recovered through re-engagement">Revenue Breakdown</SLabel>
-        <div style={{ display: "flex", gap: 18, marginBottom: 12 }}>
+        <div style={{
+          display: "flex",
+          flexWrap: isMobile ? "wrap" : "nowrap",
+          gap: 18,
+          marginBottom: 12,
+        }}>
           <div>
             <div style={{ fontSize: 20, fontWeight: 700, color: C.t1, letterSpacing: "-0.03em", lineHeight: 1, ...mono }}>£{latest.retained.toLocaleString()}</div>
             <div style={{ fontSize: 9.5, color: C.t3, marginTop: 2 }}>retained this month</div>
@@ -694,35 +733,37 @@ function RevenueSection() {
             <div style={{ fontSize: 9.5, color: C.t3 }}>re-engaged / recovered</div>
           </div>
         </div>
-        <ResponsiveContainer width="100%" height={130}>
-          <ComposedChart data={REVENUE_DATA} margin={{ top: 4, right: 4, bottom: 0, left: -18 }}>
-            <defs>
-              <linearGradient id="retainedGrad" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%"   stopColor={C.cyan} stopOpacity={0.2}/>
-                <stop offset="100%" stopColor={C.cyan} stopOpacity={0.02}/>
-              </linearGradient>
-            </defs>
-            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" vertical={false}/>
-            <XAxis dataKey="m" tick={tick} axisLine={false} tickLine={false}/>
-            <YAxis tick={tick} axisLine={false} tickLine={false}/>
-            <Tooltip content={({ active, payload, label }) => {
-              if (!active || !payload?.length) return null;
-              return (
-                <div style={{ background: "#0a0e18", border: `1px solid ${C.cyanB}`, borderRadius: 7, padding: "6px 10px", fontSize: 11, fontFamily: FONT }}>
-                  <div style={{ color: C.t3, marginBottom: 3, fontSize: 9.5 }}>{label}</div>
-                  {payload.map((p, i) => (
-                    <div key={i} style={{ color: p.color, fontWeight: 700, display: "flex", justifyContent: "space-between", gap: 10 }}>
-                      <span style={{ color: C.t3, fontWeight: 400 }}>{p.name}</span>£{p.value}
-                    </div>
-                  ))}
-                </div>
-              );
-            }}/>
-            <Area type="monotone" dataKey="retained"  name="Retained"  stroke={C.cyan}  strokeWidth={2}   fill="url(#retainedGrad)"/>
-            <Bar             dataKey="lost"      name="Lost"      fill={C.red}   fillOpacity={0.6} radius={[2, 2, 0, 0]} barSize={9}/>
-            <Bar             dataKey="recovered" name="Recovered" fill={C.green} fillOpacity={0.7} radius={[2, 2, 0, 0]} barSize={9}/>
-          </ComposedChart>
-        </ResponsiveContainer>
+        <div style={{ width: "100%", overflow: "hidden" }}>
+          <ResponsiveContainer width="100%" height={isMobile ? 100 : 130}>
+            <ComposedChart data={REVENUE_DATA} margin={{ top: 4, right: 4, bottom: 0, left: -18 }}>
+              <defs>
+                <linearGradient id="retainedGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%"   stopColor={C.cyan} stopOpacity={0.2}/>
+                  <stop offset="100%" stopColor={C.cyan} stopOpacity={0.02}/>
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" vertical={false}/>
+              <XAxis dataKey="m" tick={tick} axisLine={false} tickLine={false}/>
+              <YAxis tick={tick} axisLine={false} tickLine={false}/>
+              <Tooltip content={({ active, payload, label }) => {
+                if (!active || !payload?.length) return null;
+                return (
+                  <div style={{ background: "#0a0e18", border: `1px solid ${C.cyanB}`, borderRadius: 7, padding: "6px 10px", fontSize: 11, fontFamily: FONT }}>
+                    <div style={{ color: C.t3, marginBottom: 3, fontSize: 9.5 }}>{label}</div>
+                    {payload.map((p, i) => (
+                      <div key={i} style={{ color: p.color, fontWeight: 700, display: "flex", justifyContent: "space-between", gap: 10 }}>
+                        <span style={{ color: C.t3, fontWeight: 400 }}>{p.name}</span>£{p.value}
+                      </div>
+                    ))}
+                  </div>
+                );
+              }}/>
+              <Area type="monotone" dataKey="retained"  name="Retained"  stroke={C.cyan}  strokeWidth={2}   fill="url(#retainedGrad)"/>
+              <Bar             dataKey="lost"      name="Lost"      fill={C.red}   fillOpacity={0.6} radius={[2, 2, 0, 0]} barSize={9}/>
+              <Bar             dataKey="recovered" name="Recovered" fill={C.green} fillOpacity={0.7} radius={[2, 2, 0, 0]} barSize={9}/>
+            </ComposedChart>
+          </ResponsiveContainer>
+        </div>
         <div style={{ display: "flex", gap: 14, marginTop: 7 }}>
           {[{ col: C.cyan, label: "Retained" }, { col: C.red, label: "Lost" }, { col: C.green, label: "Recovered" }].map((l, i) => (
             <div key={i} style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 10, color: C.t3 }}>
@@ -785,14 +826,33 @@ function RevenueSection() {
 export default function TabAnalytics() {
   const [range, setRange] = useState("30D");
 
+  // ── Mobile detection with resize listener ──────────────────
+  const [isMobile, setIsMobile] = useState(
+    typeof window !== "undefined" ? window.innerWidth <= 768 : false
+  );
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth <= 768);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
   return (
-    <div style={{ padding: "16px 18px", display: "flex", flexDirection: "column", gap: 18,
-      fontFamily: FONT, color: C.t1 }}>
+    <div style={{
+      padding: isMobile ? "12px 12px" : "16px 18px",
+      display: "flex", flexDirection: "column", gap: 18,
+      fontFamily: FONT, color: C.t1,
+    }}>
 
       {/* Page header */}
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+      <div style={{
+        display: "flex",
+        flexDirection: isMobile ? "column" : "row",
+        alignItems: isMobile ? "flex-start" : "center",
+        justifyContent: "space-between",
+        gap: isMobile ? 10 : 0,
+      }}>
         <div>
-          <div style={{ fontSize: 17, fontWeight: 700, color: C.t1, letterSpacing: "-0.02em" }}>
+          <div style={{ fontSize: isMobile ? 15 : 17, fontWeight: 700, color: C.t1, letterSpacing: "-0.02em" }}>
             Analytics <span style={{ color: C.t3, fontWeight: 300 }}>/</span>{" "}
             <span style={{ color: C.cyan }}>Overview</span>
           </div>
@@ -800,10 +860,20 @@ export default function TabAnalytics() {
             Retention, engagement and revenue — at a glance
           </div>
         </div>
-        <div style={{ display: "flex", alignItems: "center", gap: 9 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 5, padding: "5px 10px",
+        <div style={{
+          display: "flex",
+          flexDirection: isMobile ? "column" : "row",
+          alignItems: isMobile ? "flex-start" : "center",
+          gap: 9,
+          width: isMobile ? "100%" : "auto",
+        }}>
+          <div style={{
+            display: "flex", alignItems: "center", gap: 5, padding: "5px 10px",
             borderRadius: 7, background: C.amberD, border: `1px solid ${C.amberB}`,
-            fontSize: 11, color: C.amber, fontWeight: 600 }}>
+            fontSize: 11, color: C.amber, fontWeight: 600,
+            width: isMobile ? "100%" : "auto",
+            boxSizing: "border-box",
+          }}>
             <AlertTriangle style={{ width: 10, height: 10 }}/> 4 members need attention
           </div>
           <RangeTab range={range} setRange={setRange}/>
@@ -811,55 +881,55 @@ export default function TabAnalytics() {
       </div>
 
       {/* 1 · KPI strip */}
-      <KpiStrip/>
+      <KpiStrip isMobile={isMobile}/>
 
       {/* 2 · Retention health */}
       <div>
         <div style={{ fontSize: 9.5, fontWeight: 700, color: C.t3, letterSpacing: "0.1em",
           textTransform: "uppercase", marginBottom: 9 }}>Retention Health</div>
-        <RetentionFunnelSection/>
+        <RetentionFunnelSection isMobile={isMobile}/>
       </div>
 
       {/* 3 · Key insights */}
       <div>
         <div style={{ fontSize: 9.5, fontWeight: 700, color: C.t3, letterSpacing: "0.1em",
           textTransform: "uppercase", marginBottom: 9 }}>Key Insights</div>
-        <KeyInsights/>
+        <KeyInsights isMobile={isMobile}/>
       </div>
 
       {/* 4 · Member segments */}
       <div>
         <div style={{ fontSize: 9.5, fontWeight: 700, color: C.t3, letterSpacing: "0.1em",
           textTransform: "uppercase", marginBottom: 9 }}>Member Segments</div>
-        <MemberSegmentsSection/>
+        <MemberSegmentsSection isMobile={isMobile}/>
       </div>
 
       {/* 5 · Visit habits */}
       <div>
         <div style={{ fontSize: 9.5, fontWeight: 700, color: C.t3, letterSpacing: "0.1em",
           textTransform: "uppercase", marginBottom: 9 }}>Visit Habits</div>
-        <VisitTrendsSection/>
+        <VisitTrendsSection isMobile={isMobile}/>
       </div>
 
       {/* 6 · Class performance */}
       <div>
         <div style={{ fontSize: 9.5, fontWeight: 700, color: C.t3, letterSpacing: "0.1em",
           textTransform: "uppercase", marginBottom: 9 }}>Class Performance</div>
-        <ClassPerformanceSection/>
+        <ClassPerformanceSection isMobile={isMobile}/>
       </div>
 
       {/* 7 · Engagement */}
       <div>
         <div style={{ fontSize: 9.5, fontWeight: 700, color: C.t3, letterSpacing: "0.1em",
           textTransform: "uppercase", marginBottom: 9 }}>Engagement</div>
-        <EngagementSection/>
+        <EngagementSection isMobile={isMobile}/>
       </div>
 
       {/* 8 · Revenue */}
       <div style={{ paddingBottom: 24 }}>
         <div style={{ fontSize: 9.5, fontWeight: 700, color: C.t3, letterSpacing: "0.1em",
           textTransform: "uppercase", marginBottom: 9 }}>Revenue</div>
-        <RevenueSection/>
+        <RevenueSection isMobile={isMobile}/>
       </div>
 
     </div>
