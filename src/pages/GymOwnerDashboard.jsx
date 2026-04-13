@@ -206,38 +206,145 @@ function classColor(cls) {
   return CLASS_TYPE_COLORS[Object.keys(CLASS_TYPE_COLORS).find((k) => n.includes(k)) || 'default'];
 }
 
-/* ─── Mobile KPI strip ───────────────────────────────────────── */
+/* ─── Mobile KPI strip — horizontal scroll snap cards ───────── */
 function MobileKpiStrip({ tab, isCoach, stats, posts, events, challenges, polls, coaches, classes, myClasses, allMemberships }) {
   const { todayCI = 0, activeThisWeek = 0, atRisk = 0, totalMembers = 0, newSignUps = 0, retentionRate = 0, monthChangePct = 0, activeThisMonth = 0 } = stats;
   let items;
   if (tab === 'overview') {
-    items = [{ label: 'TODAY', value: todayCI, color: T.cyan }, { label: 'WEEK', value: activeThisWeek }, { label: 'AT RISK', value: atRisk, color: atRisk > 0 ? T.red : null }, { label: 'MEMBERS', value: totalMembers }];
+    items = [
+      { label: 'Today',   value: todayCI,         color: T.cyan },
+      { label: 'Week',    value: activeThisWeek },
+      { label: 'At Risk', value: atRisk,           color: atRisk > 0 ? T.red : null },
+      { label: 'Members', value: totalMembers },
+    ];
   } else if (tab === 'members') {
-    items = [{ label: 'TOTAL', value: totalMembers }, { label: 'ACTIVE', value: activeThisWeek }, { label: 'AT RISK', value: atRisk, color: atRisk > 0 ? T.red : null }, { label: 'NEW', value: newSignUps, color: newSignUps > 0 ? T.green : null }];
+    items = [
+      { label: 'Total',  value: totalMembers },
+      { label: 'Active', value: activeThisWeek },
+      { label: 'At Risk',value: atRisk,  color: atRisk > 0 ? T.red : null },
+      { label: 'New',    value: newSignUps, color: newSignUps > 0 ? T.green : null },
+    ];
   } else if (tab === 'content') {
-    items = [{ label: 'POSTS', value: posts.length }, { label: 'EVENTS', value: events.length }, { label: 'CHALLENGES', value: challenges.length }, { label: 'POLLS', value: polls.length }];
+    items = [
+      { label: 'Posts',      value: posts.length },
+      { label: 'Events',     value: events.length },
+      { label: 'Challenges', value: challenges.length },
+      { label: 'Polls',      value: polls.length },
+    ];
   } else if (tab === 'analytics') {
-    items = [{ label: 'RETENTION', value: retentionRate + '%', color: retentionRate >= 70 ? T.green : retentionRate >= 40 ? T.amber : T.red }, { label: '30-DAY Δ', value: (monthChangePct > 0 ? '+' : '') + monthChangePct + '%', color: monthChangePct > 0 ? T.green : monthChangePct < 0 ? T.red : null }, { label: 'ACTIVE', value: activeThisMonth }, { label: 'AT RISK', value: atRisk, color: atRisk > 0 ? T.red : null }];
+    items = [
+      { label: 'Retention', value: retentionRate + '%', color: retentionRate >= 70 ? T.green : retentionRate >= 40 ? T.amber : T.red },
+      { label: '30-Day Δ',  value: (monthChangePct > 0 ? '+' : '') + monthChangePct + '%', color: monthChangePct > 0 ? T.green : monthChangePct < 0 ? T.red : null },
+      { label: 'Active',    value: activeThisMonth },
+      { label: 'At Risk',   value: atRisk, color: atRisk > 0 ? T.red : null },
+    ];
   } else if (tab === 'engagement') {
-    items = [{ label: 'MEMBERS', value: totalMembers }, { label: 'ACTIVE', value: activeThisWeek }, { label: 'AT RISK', value: atRisk, color: atRisk > 0 ? T.red : null }];
+    items = [
+      { label: 'Members', value: totalMembers },
+      { label: 'Active',  value: activeThisWeek },
+      { label: 'At Risk', value: atRisk, color: atRisk > 0 ? T.red : null },
+    ];
   } else if (tab === 'gym') {
-    items = [{ label: 'COACHES', value: coaches.length }, { label: 'CLASSES', value: classes.length }, { label: 'MEMBERS', value: totalMembers }];
+    items = [
+      { label: 'Coaches',  value: coaches.length },
+      { label: 'Classes',  value: classes.length },
+      { label: 'Members',  value: totalMembers },
+    ];
   } else if ((tab === 'today' || tab === 'schedule') && isCoach) {
-    items = [{ label: 'CLASSES', value: myClasses.length }, { label: 'CLIENTS', value: allMemberships.length }];
+    items = [
+      { label: 'Classes', value: myClasses.length },
+      { label: 'Clients', value: allMemberships.length },
+    ];
   } else { return null; }
 
   return (
-    <div style={{ flexShrink: 0, background: T.sidebar, borderBottom: `1px solid ${T.brd}`, display: 'flex' }}>
-      {items.map((item, i) => (
-        <React.Fragment key={item.label}>
-          {i > 0 && <div style={{ width: 1, background: T.brd, alignSelf: 'stretch', margin: '8px 0' }} />}
-          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '11px 4px', gap: 3 }}>
-            <div style={{ fontSize: 20, fontWeight: 800, letterSpacing: '-0.04em', lineHeight: 1, color: item.color || T.t1 }}>{item.value}</div>
-            <div style={{ fontSize: 9, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.09em', color: item.color ? item.color + 'aa' : T.t3 }}>{item.label}</div>
+    <>
+      <style>{`
+        .kpi-strip::-webkit-scrollbar { display: none; }
+        .kpi-card { flex-shrink: 0; scroll-snap-align: start; }
+      `}</style>
+      <div
+        className="kpi-strip"
+        style={{
+          flexShrink: 0,
+          display: 'flex',
+          gap: 10,
+          overflowX: 'auto',
+          scrollSnapType: 'x mandatory',
+          WebkitOverflowScrolling: 'touch',
+          padding: '12px 16px',
+          background: T.bg,
+          borderBottom: `1px solid ${T.brd}`,
+          scrollbarWidth: 'none',
+          msOverflowStyle: 'none',
+        }}
+      >
+        {items.map((item) => (
+          <div
+            key={item.label}
+            className="kpi-card"
+            style={{
+              background: T.card,
+              border: `1px solid ${item.color ? item.color + '35' : T.brd}`,
+              borderRadius: 14,
+              padding: '12px 18px',
+              minWidth: 92,
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 5,
+              boxShadow: item.color ? `0 0 18px ${item.color}10` : 'none',
+            }}
+          >
+            <div style={{
+              fontSize: 26, fontWeight: 900, letterSpacing: '-0.05em',
+              lineHeight: 1, color: item.color || T.t1,
+            }}>
+              {item.value}
+            </div>
+            <div style={{
+              fontSize: 10, fontWeight: 700, textTransform: 'uppercase',
+              letterSpacing: '0.10em',
+              color: item.color ? item.color + 'bb' : T.t3,
+            }}>
+              {item.label}
+            </div>
           </div>
-        </React.Fragment>
-      ))}
-    </div>
+        ))}
+      </div>
+    </>
+  );
+}
+
+/* ─── Mobile FAB ─────────────────────────────────────────────── */
+function MobileFAB({ onClick }) {
+  return (
+    <button
+      onClick={onClick}
+      aria-label="New Post"
+      style={{
+        position: 'fixed',
+        bottom: 'calc(72px + env(safe-area-inset-bottom))',
+        right: 20,
+        zIndex: 200,
+        width: 52,
+        height: 52,
+        borderRadius: 26,
+        background: T.cyan,
+        border: 'none',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        boxShadow: `0 4px 20px rgba(0,229,200,0.45), 0 2px 10px rgba(0,0,0,0.6)`,
+        cursor: 'pointer',
+        color: '#000',
+        transition: 'transform 0.12s, opacity 0.12s',
+        WebkitTapHighlightColor: 'transparent',
+      }}
+      onTouchStart={e => e.currentTarget.style.transform = 'scale(0.93)'}
+      onTouchEnd={e => e.currentTarget.style.transform = 'scale(1)'}
+    >
+      <Plus style={{ width: 22, height: 22, strokeWidth: 2.5 }} />
+    </button>
   );
 }
 
@@ -629,63 +736,214 @@ export default function GymOwnerDashboard() {
     </>
   );
 
-  /* ────────────────── MOBILE ────────────────────────────────── */
+  /* ════════════════════════════════════════════════════════════
+     MOBILE — fully redesigned, desktop-untouched guard above
+     ════════════════════════════════════════════════════════════ */
   if (isMobile) return (
-    <div style={{ display: 'flex', flexDirection: 'column', background: T.bg, overflow: 'hidden', height: '100dvh' }}>
-      {/* Mobile header */}
-      <header style={{ flexShrink: 0, background: T.sidebar, borderBottom: `1px solid ${T.brd}`, padding: '10px 14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
-          <div style={{ width: 30, height: 30, borderRadius: 8, background: T.card, border: `1px solid ${T.brd}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <Dumbbell style={{ width: 14, height: 14, color: T.cyan }} />
+    <div style={{
+      display: 'flex', flexDirection: 'column',
+      background: T.bg, height: '100dvh', overflow: 'hidden',
+    }}>
+
+      {/* ── Mobile header ────────────────────────────────────── */}
+      <header style={{
+        flexShrink: 0,
+        background: T.sidebar,
+        borderBottom: `1px solid ${T.brd}`,
+        height: 60,
+        padding: '0 16px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        position: 'relative',
+      }}>
+        {/* Subtle cyan accent line at bottom of header */}
+        <div style={{
+          position: 'absolute', bottom: 0, left: 0, right: 0, height: 1,
+          background: `linear-gradient(90deg, transparent 0%, ${T.cyan}40 40%, ${T.cyan}40 60%, transparent 100%)`,
+          pointerEvents: 'none',
+        }} />
+
+        {/* Left: Logo + gym name + role */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0 }}>
+          <div style={{
+            width: 38, height: 38, borderRadius: 11, flexShrink: 0,
+            background: T.card,
+            border: `1.5px solid ${T.cyanBrd}`,
+            boxShadow: `0 0 14px ${T.cyanDim}`,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            overflow: 'hidden',
+          }}>
+            {selectedGym?.logo_url || selectedGym?.image_url
+              ? <img src={selectedGym.logo_url || selectedGym.image_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              : <Dumbbell style={{ width: 16, height: 16, color: T.cyan }} />
+            }
           </div>
-          <div>
-            <div style={{ fontSize: 13, fontWeight: 700, color: T.t1, letterSpacing: '-0.02em', lineHeight: 1 }}>{selectedGym?.name || 'Dashboard'}</div>
-            <div style={{ fontSize: 9, color: T.t3, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', marginTop: 2 }}>{roleLabel}</div>
+          <div style={{ minWidth: 0 }}>
+            <div style={{
+              fontSize: 14, fontWeight: 800, color: T.t1,
+              letterSpacing: '-0.03em', lineHeight: 1.15,
+              overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+              maxWidth: 160,
+            }}>
+              {selectedGym?.name || 'Dashboard'}
+            </div>
+            <div style={{
+              marginTop: 2, display: 'inline-flex', alignItems: 'center', gap: 4,
+              fontSize: 9.5, fontWeight: 700, textTransform: 'uppercase',
+              letterSpacing: '0.12em', color: T.cyan,
+            }}>
+              <div style={{ width: 5, height: 5, borderRadius: '50%', background: T.cyan, flexShrink: 0 }} />
+              {roleLabel}
+            </div>
           </div>
         </div>
-        <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+
+        {/* Right: at-risk badge + QR + profile */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
           {atRisk > 0 && (
-            <button onClick={() => setTab('members')} style={{ background: T.redDim, color: T.red, border: '1px solid rgba(255,77,109,0.3)', borderRadius: 20, fontSize: 10, fontWeight: 700, padding: '4px 9px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 3 }}>
-              <AlertTriangle style={{ width: 9, height: 9 }} />{atRisk}
+            <button
+              onClick={() => setTab('members')}
+              style={{
+                background: T.redDim, color: T.red,
+                border: '1px solid rgba(255,77,109,0.35)',
+                borderRadius: 20, fontSize: 11, fontWeight: 800,
+                padding: '5px 10px', cursor: 'pointer',
+                display: 'flex', alignItems: 'center', gap: 4,
+                minHeight: 32,
+                WebkitTapHighlightColor: 'transparent',
+              }}
+            >
+              <AlertTriangle style={{ width: 10, height: 10 }} />{atRisk}
             </button>
           )}
-          <button onClick={() => openModal('qrScanner')} style={{ width: 32, height: 32, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', background: T.card, border: `1px solid ${T.brd}`, color: T.t3, cursor: 'pointer' }}>
-            <QrCode style={{ width: 14, height: 14 }} />
+
+          <button
+            onClick={() => openModal('qrScanner')}
+            style={{
+              width: 38, height: 38, borderRadius: 11,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              background: T.card, border: `1px solid ${T.brd}`,
+              color: T.t2, cursor: 'pointer',
+              WebkitTapHighlightColor: 'transparent',
+              flexShrink: 0,
+            }}
+          >
+            <QrCode style={{ width: 16, height: 16 }} />
           </button>
-          <button onClick={() => openModal('post')} style={{ width: 32, height: 32, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', background: T.cyan, border: 'none', color: '#000', cursor: 'pointer' }}>
-            <Plus style={{ width: 14, height: 14 }} />
-          </button>
+
+          {/* Profile avatar */}
+          <div style={{
+            width: 38, height: 38, borderRadius: 11, flexShrink: 0,
+            background: T.card2, border: `1px solid ${T.brd}`,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            overflow: 'hidden', cursor: 'pointer',
+            fontSize: 15, fontWeight: 800, color: T.t1,
+          }}>
+            {currentUser?.avatar_url
+              ? <img src={currentUser.avatar_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              : (currentUser?.full_name || currentUser?.email || '?').charAt(0).toUpperCase()
+            }
+          </div>
         </div>
       </header>
 
-      <MobileKpiStrip tab={tab} isCoach={isCoach} stats={stats} posts={posts} events={events} challenges={challenges} polls={polls} coaches={coaches} classes={classes} myClasses={myClasses} allMemberships={effectiveMemberships} />
+      {/* ── KPI strip ─────────────────────────────────────────── */}
+      <MobileKpiStrip
+        tab={tab} isCoach={isCoach} stats={stats}
+        posts={posts} events={events} challenges={challenges} polls={polls}
+        coaches={coaches} classes={classes} myClasses={myClasses}
+        allMemberships={effectiveMemberships}
+      />
 
-      <main style={{ flex: 1, overflowY: 'auto', padding: '12px 12px 80px', WebkitOverflowScrolling: 'touch' }}>
+      {/* ── Scrollable content ─────────────────────────────────── */}
+      <main style={{
+        flex: 1,
+        overflowY: 'auto',
+        overflowX: 'hidden',
+        padding: '14px 16px 96px',
+        WebkitOverflowScrolling: 'touch',
+        minWidth: 0,
+      }}>
         <Suspense fallback={<TabLoader />}>
           {tabPanels.map((p) => (
-            <div key={p.id} style={{ display: p.id === tab ? 'block' : 'none' }}>{p.content}</div>
+            <div key={p.id} style={{ display: p.id === tab ? 'block' : 'none', minWidth: 0 }}>
+              {p.content}
+            </div>
           ))}
         </Suspense>
       </main>
 
-      {/* Mobile bottom nav */}
-      <nav style={{ flexShrink: 0, background: T.sidebar, borderTop: `1px solid ${T.brd}`, display: 'flex', paddingBottom: 'env(safe-area-inset-bottom)' }}>
-        {NAV.map((item) => {
-          const active = tab === item.id;
-          return (
-            <button key={item.id} onClick={() => setTab(item.id)} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3, paddingTop: 11, paddingBottom: 9, border: 'none', cursor: 'pointer', position: 'relative', transition: 'color 0.15s, background 0.15s', background: active ? T.cyanDim : 'transparent', color: active ? T.cyan : T.t3 }}>
-              {active && <div style={{ position: 'absolute', top: 0, left: '25%', right: '25%', height: 2, background: T.cyan, borderRadius: '0 0 2px 2px' }} />}
-              <item.icon style={{ width: 18, height: 18 }} />
-              <span style={{ fontSize: 9, letterSpacing: '0.03em', fontWeight: active ? 700 : 500 }}>{item.label}</span>
-            </button>
-          );
-        })}
+      {/* ── FAB — primary action ───────────────────────────────── */}
+      <MobileFAB onClick={() => openModal('post')} />
+
+      {/* ── Bottom navigation ─────────────────────────────────── */}
+      <nav style={{
+        flexShrink: 0,
+        background: T.sidebar,
+        borderTop: `1px solid ${T.brd}`,
+        paddingBottom: 'env(safe-area-inset-bottom)',
+        paddingLeft: 8,
+        paddingRight: 8,
+        paddingTop: 8,
+      }}>
+        <div style={{ display: 'flex', gap: 4 }}>
+          {NAV.map((item) => {
+            const active = tab === item.id;
+            return (
+              <button
+                key={item.id}
+                onClick={() => setTab(item.id)}
+                style={{
+                  flex: 1,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: 4,
+                  paddingTop: 9,
+                  paddingBottom: 9,
+                  border: 'none',
+                  cursor: 'pointer',
+                  borderRadius: 12,
+                  background: active ? T.cyanDim : 'transparent',
+                  color: active ? T.cyan : T.t3,
+                  transition: 'background 0.15s, color 0.15s',
+                  minHeight: 52,
+                  WebkitTapHighlightColor: 'transparent',
+                  position: 'relative',
+                }}
+              >
+                {/* Active top indicator */}
+                {active && (
+                  <div style={{
+                    position: 'absolute', top: 0,
+                    left: '30%', right: '30%',
+                    height: 2, borderRadius: '0 0 2px 2px',
+                    background: T.cyan,
+                  }} />
+                )}
+                <item.icon style={{ width: 19, height: 19, strokeWidth: active ? 2.2 : 1.8 }} />
+                <span style={{
+                  fontSize: 9.5, letterSpacing: '0.02em',
+                  fontWeight: active ? 700 : 500,
+                  lineHeight: 1,
+                }}>
+                  {item.label}
+                </span>
+              </button>
+            );
+          })}
+        </div>
       </nav>
+
       {sharedModals}
     </div>
   );
 
-  /* ────────────────── DESKTOP ───────────────────────────────── */
+  /* ════════════════════════════════════════════════════════════
+     DESKTOP — completely unchanged from original
+     ════════════════════════════════════════════════════════════ */
   return (
     <div style={{ display: 'flex', height: '100vh', overflow: 'hidden', background: T.bg }}>
 
