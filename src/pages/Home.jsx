@@ -901,14 +901,6 @@ export default function Home() {
     setCelebrationDurationMinutes(durationMins > 0 ? durationMins : 0);
 
     setShowStreakCelebration(true);
-    setTimeout(() => {
-      setShowStreakCelebration(false);
-      if (finalChallenges.length > 0) {
-        setShowChallengesCelebration(true);
-      } else {
-        setShowShareWorkout(true);
-      }
-    }, 3500);
   };
 
   const handleStreakVariantSelect = (variant) => {
