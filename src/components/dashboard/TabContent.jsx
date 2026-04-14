@@ -27,9 +27,9 @@ const C = {
   t1:       "#ffffff",
   t2:       "#8a8a94",
   t3:       "#444450",
-  cyan:     "#00e5c8",
-  cyanDim:  "rgba(0,229,200,0.1)",
-  cyanBrd:  "rgba(0,229,200,0.25)",
+  cyan:     "#4f7eff",
+  cyanDim:  "rgba(79,126,255,0.1)",
+  cyanBrd:  "rgba(79,126,255,0.28)",
   red:      "#ff4d6d",
   redDim:   "rgba(255,77,109,0.15)",
   green:    "#22c55e",
@@ -78,7 +78,7 @@ function ScheduledBadge() {
 function Checkbox({ checked, onChange }) {
   return (
     <div onClick={onChange} style={{ width: 14, height: 14, borderRadius: 3, cursor: "pointer", flexShrink: 0, background: checked ? C.cyan : "transparent", border: `1.5px solid ${checked ? C.cyan : C.t3}`, display: "flex", alignItems: "center", justifyContent: "center" }}>
-      {checked && <Check size={8} color="#000" strokeWidth={3} />}
+      {checked && <Check size={8} color="#fff" strokeWidth={3} />}
     </div>
   );
 }
@@ -108,7 +108,7 @@ function JourneyCard() {
       <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
         <span style={{ fontSize: 12, fontWeight: 600, color: C.t1, whiteSpace: "nowrap" }}>Content Success Journey</span>
         <div style={{ flex: 1, position: "relative", height: 5, background: "rgba(255,255,255,0.06)", borderRadius: 3, overflow: "hidden" }}>
-          <div style={{ position: "absolute", left: 0, top: 0, bottom: 0, width: "66%", background: `linear-gradient(90deg,${C.cyan},#00a896)`, borderRadius: 3 }} />
+          <div style={{ position: "absolute", left: 0, top: 0, bottom: 0, width: "66%", background: `linear-gradient(90deg,${C.cyan},#2d5ce8)`, borderRadius: 3 }} />
         </div>
         <span style={{ fontSize: 11, color: C.cyan, fontWeight: 600, whiteSpace: "nowrap" }}>66%</span>
       </div>
@@ -173,7 +173,7 @@ function DraftCard({ d, isMobile }) {
         <div style={{ display: "flex", gap: 4 }}>{d.platforms.map(p => <PlatformPill key={p} type={p} />)}</div>
         {d.aiGen && <AiBadge />}
         <div style={{ flex: 1 }} />
-        <button style={{ padding: isMobile ? "8px 14px" : "6px 13px", borderRadius: 7, fontSize: 11.5, fontWeight: 700, background: C.cyan, color: "#000", border: "none", cursor: "pointer", fontFamily: FONT, minHeight: 44 }}>
+        <button style={{ padding: isMobile ? "8px 14px" : "6px 13px", borderRadius: 7, fontSize: 11.5, fontWeight: 700, background: C.cyan, color: "#fff", border: "none", cursor: "pointer", fontFamily: FONT, minHeight: 44, boxShadow: "0 0 14px rgba(79,126,255,0.3)" }}>
           Review &amp; Schedule
         </button>
       </div>
@@ -343,7 +343,7 @@ function RightSidebar() {
           </div>
           {BAR_DATA.map((b, i) => (
             <div key={i} style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "flex-end", height: "100%" }}>
-              <div style={{ width: "100%", height: `${b.h}%`, background: i < 2 ? C.cyan : i < 4 ? "rgba(0,229,200,0.5)" : "rgba(0,229,200,0.25)", borderRadius: "2px 2px 0 0" }} />
+              <div style={{ width: "100%", height: `${b.h}%`, background: i < 2 ? C.cyan : i < 4 ? "rgba(79,126,255,0.5)" : "rgba(79,126,255,0.25)", borderRadius: "2px 2px 0 0" }} />
             </div>
           ))}
         </div>
@@ -382,7 +382,7 @@ function RightSidebar() {
             <div style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 11.5, color: C.t2 }}><MessageCircle size={12} color={C.cyan} /> 4</div>
           </div>
         </div>
-        <button style={{ width: "100%", marginTop: 9, padding: "9px", borderRadius: 8, background: C.cyan, color: "#000", border: "none", fontSize: 12.5, fontWeight: 700, cursor: "pointer", fontFamily: FONT, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, boxShadow: "0 0 16px rgba(0,229,200,0.25)" }}>
+        <button style={{ width: "100%", marginTop: 9, padding: "9px", borderRadius: 8, background: C.cyan, color: "#fff", border: "none", fontSize: 12.5, fontWeight: 700, cursor: "pointer", fontFamily: FONT, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, boxShadow: "0 0 16px rgba(79,126,255,0.3)" }}>
           <Plus size={13} /> Add Member
         </button>
       </div>
@@ -418,7 +418,7 @@ function MobileInsights() {
       <div style={{ display: "flex", gap: 4, alignItems: "flex-end", height: 52, marginBottom: 8 }}>
         {BAR_DATA.map((b, i) => (
           <div key={i} style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "flex-end", height: "100%" }}>
-            <div style={{ width: "100%", height: `${b.h}%`, background: i < 2 ? C.cyan : i < 4 ? "rgba(0,229,200,0.5)" : "rgba(0,229,200,0.2)", borderRadius: "2px 2px 0 0" }} />
+            <div style={{ width: "100%", height: `${b.h}%`, background: i < 2 ? C.cyan : i < 4 ? "rgba(79,126,255,0.5)" : "rgba(79,126,255,0.2)", borderRadius: "2px 2px 0 0" }} />
           </div>
         ))}
       </div>
@@ -438,7 +438,7 @@ function EmptyState({ label, onAdd }) {
         <Flame size={20} color={C.cyan} />
       </div>
       <div style={{ fontSize: 13, fontWeight: 500, color: C.t2 }}>No {label} yet</div>
-      <button onClick={onAdd} style={{ padding: "7px 16px", borderRadius: 8, background: C.cyan, color: "#000", border: "none", fontSize: 12.5, fontWeight: 700, cursor: "pointer", fontFamily: FONT, display: "flex", alignItems: "center", gap: 6, minHeight: 44 }}>
+      <button onClick={onAdd} style={{ padding: "7px 16px", borderRadius: 8, background: C.cyan, color: "#fff", border: "none", fontSize: 12.5, fontWeight: 700, cursor: "pointer", fontFamily: FONT, display: "flex", alignItems: "center", gap: 6, minHeight: 44 }}>
         <Plus size={12} /> Create
       </button>
     </div>
@@ -450,7 +450,7 @@ function SectionHeader({ count, label, onAdd, btnLabel, isMobile }) {
     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
       <div style={{ fontSize: 12, fontWeight: 500, color: C.t2 }}>{count} {label}</div>
       {!isMobile && (
-        <button onClick={onAdd} style={{ padding: "6px 14px", borderRadius: 7, background: C.cyan, color: "#000", border: "none", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: FONT, display: "flex", alignItems: "center", gap: 5, minHeight: 44 }}>
+        <button onClick={onAdd} style={{ padding: "6px 14px", borderRadius: 7, background: C.cyan, color: "#fff", border: "none", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: FONT, display: "flex", alignItems: "center", gap: 5, minHeight: 44 }}>
           <Plus size={11} /> {btnLabel}
         </button>
       )}
@@ -471,8 +471,8 @@ function ListCard({ children, isMobile }) {
 /* ─── FAB (mobile only) ──────────────────────────────────────── */
 function FAB({ onClick }) {
   return (
-    <button onClick={onClick} style={{ position: "fixed", bottom: 76, right: 18, zIndex: 190, width: 52, height: 52, borderRadius: "50%", background: C.cyan, border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 0 0 1px rgba(0,229,200,0.3), 0 8px 28px rgba(0,229,200,0.35)" }}>
-      <Plus size={22} color="#000" strokeWidth={2.5} />
+    <button onClick={onClick} style={{ position: "fixed", bottom: 76, right: 18, zIndex: 190, width: 52, height: 52, borderRadius: "50%", background: C.cyan, border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 0 0 1px rgba(79,126,255,0.3), 0 8px 28px rgba(79,126,255,0.4)" }}>
+      <Plus size={22} color="#fff" strokeWidth={2.5} />
     </button>
   );
 }
@@ -510,7 +510,7 @@ export default function ContentPage({ events = [], challenges = [], polls = [], 
                 <div style={{ fontSize: 12, color: C.t2, marginTop: 4 }}>Manage posts, events, challenges and polls</div>
               </div>
               <div style={{ position: "relative" }}>
-                <button onClick={() => setShowMenu(o => !o)} style={{ display: "flex", alignItems: "center", gap: 6, padding: "9px 18px", background: C.cyan, border: "none", borderRadius: 9, fontSize: 12.5, fontWeight: 700, color: "#000", cursor: "pointer", fontFamily: FONT, boxShadow: "0 0 20px rgba(0,229,200,0.3)" }}>
+                <button onClick={() => setShowMenu(o => !o)} style={{ display: "flex", alignItems: "center", gap: 6, padding: "9px 18px", background: C.cyan, border: "none", borderRadius: 9, fontSize: 12.5, fontWeight: 700, color: "#fff", cursor: "pointer", fontFamily: FONT, boxShadow: "0 0 20px rgba(79,126,255,0.35)" }}>
                   Create New <ChevronDown size={11} />
                 </button>
                 {showMenu && (
@@ -687,3 +687,4 @@ export default function ContentPage({ events = [], challenges = [], polls = [], 
     </div>
   );
 }
+
