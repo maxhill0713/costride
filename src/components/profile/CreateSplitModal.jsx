@@ -48,13 +48,13 @@ function reorderExercisesAdjacent(exercises) {
 
 const pageSlideVariants = {
   hidden: { x: '100%', opacity: 1 },
-  visible: { x: 0, opacity: 1, transition: { type: 'spring', stiffness: 380, damping: 36, mass: 1 } },
-  exit: { x: '100%', opacity: 1, transition: { type: 'spring', stiffness: 420, damping: 40, mass: 0.9 } }
+  visible: { x: 0, opacity: 1, transition: { type: 'spring', stiffness: 300, damping: 40, mass: 1.2 } },
+  exit: { x: '100%', opacity: 1, transition: { type: 'spring', stiffness: 300, damping: 40, mass: 1.2 } }
 };
 const overlayVariants = {
   hidden: { opacity: 0 },
-  visible: { opacity: 1, transition: { duration: 0.18 } },
-  exit: { opacity: 0, transition: { duration: 0.2 } }
+  visible: { opacity: 1, transition: { duration: 0.4 } },
+  exit: { opacity: 0, transition: { duration: 0.3 } }
 };
 
 const DEFAULT_SPLITS = [
