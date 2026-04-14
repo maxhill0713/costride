@@ -481,18 +481,23 @@ export default function Gyms() {
         </DialogContent>
       </Dialog>
 
-      <Dialog open={!!confirmLeaveGym} onOpenChange={() => setConfirmLeaveGym(null)}>
-        <DialogContent className="bg-slate-900 border-slate-700 text-white max-w-md [&>button]:hidden">
-          <DialogHeader><DialogTitle className="text-xl font-bold">Leave {confirmLeaveGym?.name}?</DialogTitle></DialogHeader>
-          <p className="text-slate-300 text-sm">Are you sure you want to leave this gym? You'll lose access to its community.</p>
-          <div className="flex gap-3 pt-2">
-            <Button onClick={() => setConfirmLeaveGym(null)} className="flex-1 bg-gradient-to-b from-slate-700 to-slate-900 text-slate-200 border border-slate-600/50 font-bold rounded-lg shadow-[0_3px_0_0_rgba(0,0,0,0.5),inset_0_1px_0_rgba(255,255,255,0.08)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 transform-gpu">Cancel</Button>
-            <Button onClick={() => { leaveGymMutation.mutate(confirmLeaveGym.id); setConfirmLeaveGym(null); }} disabled={leaveGymMutation.isPending} className="flex-1 bg-red-600 hover:bg-red-700 text-white">
-              {leaveGymMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Leave Gym'}
-            </Button>
+      {confirmLeaveGym && (
+        <>
+          <div className="fixed inset-0 z-[10003] bg-slate-950/60 backdrop-blur-sm" onClick={() => setConfirmLeaveGym(null)} />
+          <div className="fixed left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2 w-11/12 max-w-sm z-[10004] bg-slate-900/80 backdrop-blur-md border border-slate-700/30 rounded-3xl shadow-2xl shadow-black/40 text-white p-6">
+            <h3 className="text-xl font-black text-white mb-2">Leave {confirmLeaveGym.name}?</h3>
+            <p className="text-slate-300 text-sm mb-6">Are you sure you want to leave this gym? You'll lose access to its community.</p>
+            <div className="flex gap-3">
+              <button onClick={() => setConfirmLeaveGym(null)} className="flex-1 py-2.5 rounded-xl font-bold text-sm text-slate-200 bg-gradient-to-b from-slate-600 via-slate-700 to-slate-800 border border-slate-500/40 shadow-[0_3px_0_0_#1e293b,0_6px_16px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.08)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 transform-gpu">
+                Cancel
+              </button>
+              <button onClick={() => { leaveGymMutation.mutate(confirmLeaveGym.id); setConfirmLeaveGym(null); }} disabled={leaveGymMutation.isPending} className="flex-1 py-2.5 rounded-xl font-bold text-sm text-white bg-gradient-to-b from-red-500 via-red-600 to-red-700 shadow-[0_3px_0_0_#7f1d1d,0_6px_16px_rgba(200,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.15)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 transform-gpu disabled:opacity-50">
+                {leaveGymMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin mx-auto" /> : 'Leave Gym'}
+              </button>
+            </div>
           </div>
-        </DialogContent>
-      </Dialog>
+        </>
+      )}
 
       {showFilterModal && (
         <>
