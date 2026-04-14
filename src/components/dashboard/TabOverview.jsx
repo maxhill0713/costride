@@ -22,9 +22,9 @@ const C = {
   t1:       '#ffffff',
   t2:       '#8a8a94',
   t3:       '#444450',
-  cyan:     '#00e5c8',
-  cyanDim:  'rgba(0,229,200,0.1)',
-  cyanBrd:  'rgba(0,229,200,0.25)',
+  cyan:     '#4d7fff',
+  cyanDim:  'rgba(77,127,255,0.10)',
+  cyanBrd:  'rgba(77,127,255,0.28)',
   red:      '#ff4d6d',
   redDim:   'rgba(255,77,109,0.15)',
   amber:    '#f59e0b',
@@ -38,7 +38,7 @@ const SCHEDULE = [
   { time: '08:30', label: 'Morning Yoga Flow',       instructor: 'Sara M.',   capacity: 10, booked: 7,  color: '#14b8a6' },
   { time: '10:00', label: 'Strength & Conditioning', instructor: 'Coach Dan', capacity: 8,  booked: 8,  color: '#ff4d6d' },
   { time: '12:15', label: 'Lunchtime Spin',          instructor: 'Priya K.',  capacity: 15, booked: 9,  color: '#6366f1' },
-  { time: '17:30', label: 'Peak Hour Open Gym',      instructor: '',          capacity: 40, booked: 31, color: '#00e5c8' },
+  { time: '17:30', label: 'Peak Hour Open Gym',      instructor: '',          capacity: 40, booked: 31, color: '#4d7fff' },
   { time: '18:45', label: 'Boxing Basics',           instructor: 'Mike O.',   capacity: 12, booked: 12, color: '#ef4444' },
   { time: '19:30', label: 'Evening HIIT',            instructor: 'Alex T.',   capacity: 12, booked: 6,  color: '#f59e0b' },
 ];
@@ -148,7 +148,7 @@ function Sidebar() {
   return (
     <div style={{ width:188, flexShrink:0, background:C.sidebar, borderRight:`1px solid ${C.brd}`, display:'flex', flexDirection:'column', height:'100vh' }}>
       <div style={{ display:'flex', alignItems:'center', gap:8, padding:'14px', borderBottom:`1px solid ${C.brd}` }}>
-        <div style={{ width:28, height:28, borderRadius:8, background:'linear-gradient(135deg,#00e5c8,#00a896)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:13 }}>🔥</div>
+        <div style={{ width:28, height:28, borderRadius:8, background:'linear-gradient(135deg,#4d7fff,#1a4fd6)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:13 }}>🔥</div>
         <div>
           <div style={{ fontSize:13, fontWeight:700, color:C.t1, letterSpacing:'-0.02em' }}>Forge Fitness</div>
           <div style={{ fontSize:10, color:C.t2 }}>GYM OWNER</div>
@@ -206,7 +206,7 @@ function MobileTopBar() {
   return (
     <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'16px 16px 12px' }}>
       <div style={{ display:'flex', alignItems:'center', gap:10 }}>
-        <div style={{ width:36, height:36, borderRadius:11, background:'linear-gradient(135deg,#00e5c8,#00a896)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:17 }}>🔥</div>
+        <div style={{ width:36, height:36, borderRadius:11, background:'linear-gradient(135deg,#4d7fff,#1a4fd6)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:17 }}>🔥</div>
         <div>
           <div style={{ fontSize:15, fontWeight:700, color:C.t1, letterSpacing:'-0.02em' }}>Forge Fitness</div>
           <div style={{ fontSize:10, color:C.t2, letterSpacing:'0.05em', textTransform:'uppercase' }}>Gym Owner · Apr 10</div>
@@ -258,7 +258,7 @@ function MobileKpiGrid() {
         <div style={{ position:'absolute', top:-18, right:-18, width:60, height:60, borderRadius:'50%', background:C.cyan, opacity:0.06, filter:'blur(18px)', pointerEvents:'none' }}/>
         <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:8 }}>
           <span style={{ fontSize:11, color:C.t2, fontWeight:500 }}>Check-ins</span>
-          <div style={{ width:22, height:22, borderRadius:6, background:`${C.cyan}18`, border:`1px solid ${C.cyan}28`, display:'flex', alignItems:'center', justifyContent:'center' }}>
+          <div style={{ width:22, height:22, borderRadius:6, background:`rgba(77,127,255,0.12)`, border:`1px solid rgba(77,127,255,0.22)`, display:'flex', alignItems:'center', justifyContent:'center' }}>
             <Activity style={{ width:11, height:11, color:C.cyan }}/>
           </div>
         </div>
@@ -274,7 +274,7 @@ function MobileKpiGrid() {
         <div style={{ position:'absolute', top:-18, right:-18, width:60, height:60, borderRadius:'50%', background:C.cyan, opacity:0.06, filter:'blur(18px)', pointerEvents:'none' }}/>
         <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:8 }}>
           <span style={{ fontSize:11, color:C.t2, fontWeight:500 }}>Weekly Active</span>
-          <div style={{ width:22, height:22, borderRadius:6, background:`${C.cyan}18`, border:`1px solid ${C.cyan}28`, display:'flex', alignItems:'center', justifyContent:'center' }}>
+          <div style={{ width:22, height:22, borderRadius:6, background:`rgba(77,127,255,0.12)`, border:`1px solid rgba(77,127,255,0.22)`, display:'flex', alignItems:'center', justifyContent:'center' }}>
             <Users style={{ width:11, height:11, color:C.cyan }}/>
           </div>
         </div>
@@ -307,14 +307,14 @@ function MobileKpiGrid() {
 
       {/* Retention */}
       <div style={{ background:C.card, border:`1px solid ${C.cyanBrd}`, borderRadius:14, padding:'13px 13px 11px', position:'relative', overflow:'hidden' }}>
-        <div style={{ position:'absolute', top:-18, right:-18, width:60, height:60, borderRadius:'50%', background:C.cyan, opacity:0.1, filter:'blur(18px)', pointerEvents:'none' }}/>
+        <div style={{ position:'absolute', top:-18, right:-18, width:60, height:60, borderRadius:'50%', background:C.cyan, opacity:0.10, filter:'blur(18px)', pointerEvents:'none' }}/>
         <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:8 }}>
           <span style={{ fontSize:11, color:C.t2, fontWeight:500 }}>Retention</span>
-          <div style={{ width:22, height:22, borderRadius:6, background:`${C.cyan}18`, border:`1px solid ${C.cyan}28`, display:'flex', alignItems:'center', justifyContent:'center' }}>
+          <div style={{ width:22, height:22, borderRadius:6, background:`rgba(77,127,255,0.12)`, border:`1px solid rgba(77,127,255,0.22)`, display:'flex', alignItems:'center', justifyContent:'center' }}>
             <TrendingUp style={{ width:11, height:11, color:C.cyan }}/>
           </div>
         </div>
-        <div style={{ fontSize:32, fontWeight:800, color:C.cyan, letterSpacing:'-0.04em', lineHeight:1, textShadow:'0 0 20px rgba(0,229,200,0.35)' }}>96%</div>
+        <div style={{ fontSize:32, fontWeight:800, color:C.cyan, letterSpacing:'-0.04em', lineHeight:1, textShadow:'0 0 20px rgba(77,127,255,0.45)' }}>96%</div>
         <div style={{ fontSize:10.5, color:C.t3, marginTop:4, marginBottom:6 }}>Elite Tier</div>
         <div style={{ display:'flex', justifyContent:'flex-end' }}>
           <TrendArrow color={C.cyan} w={46} h={26}/>
@@ -426,7 +426,7 @@ function MobileCommunity() {
 function MobileFab() {
   return (
     <div style={{ position:'fixed', bottom:80, right:18, zIndex:100 }}>
-      <button style={{ width:50, height:50, borderRadius:25, background:C.cyan, border:'none', color:'#000', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', boxShadow:`0 4px 20px rgba(0,229,200,0.45)` }}>
+      <button style={{ width:50, height:50, borderRadius:25, background:C.cyan, border:'none', color:'#fff', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', boxShadow:`0 4px 20px rgba(77,127,255,0.5)` }}>
         <Plus style={{ width:22, height:22 }}/>
       </button>
     </div>
@@ -510,7 +510,7 @@ function DesktopOverview() {
             <span style={{ color:C.cyan }}>+4% from last week</span>
           </div>
         </div>
-        <button style={{ display:'flex', alignItems:'center', gap:6, padding:'9px 18px', background:C.cyan, border:'none', borderRadius:9, fontSize:12.5, fontWeight:700, color:'#000', cursor:'pointer', fontFamily:FONT, boxShadow:'0 0 20px rgba(0,229,200,0.35)', flexShrink:0 }}>
+        <button style={{ display:'flex', alignItems:'center', gap:6, padding:'9px 18px', background:C.cyan, border:'none', borderRadius:9, fontSize:12.5, fontWeight:700, color:'#fff', cursor:'pointer', fontFamily:FONT, boxShadow:'0 0 20px rgba(77,127,255,0.4)', flexShrink:0 }}>
           <Plus style={{ width:13, height:13 }}/> New Post
         </button>
       </div>
@@ -571,7 +571,7 @@ function DesktopOverview() {
           </div>
           <div style={{ display:'flex', alignItems:'flex-end', justifyContent:'space-between', marginTop:2 }}>
             <div>
-              <div style={{ fontSize:32, fontWeight:700, color:C.cyan, letterSpacing:'-0.03em', lineHeight:1, textShadow:'0 0 20px rgba(0,229,200,0.4)' }}>96%</div>
+              <div style={{ fontSize:32, fontWeight:700, color:C.cyan, letterSpacing:'-0.03em', lineHeight:1, textShadow:'0 0 20px rgba(77,127,255,0.5)' }}>96%</div>
               <div style={{ fontSize:11, color:C.t3, marginTop:4 }}>Elite Tier</div>
             </div>
             <TrendArrow color={C.cyan}/>
