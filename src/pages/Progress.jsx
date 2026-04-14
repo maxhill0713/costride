@@ -100,7 +100,7 @@ export default function Progress() {
             <div className="relative flex items-end h-[3.2rem] pt-2 pb-2">
 
               {/* Centred tabs */}
-              <TabsList className="absolute left-1/2 -translate-x-1/2 flex bg-transparent p-0 gap-6 border-0 h-auto mb-[-1px] bottom-2">
+              <TabsList className="absolute left-1/2 -translate-x-1/2 flex bg-transparent p-0 gap-4 border-0 h-auto mb-[-1px] bottom-2">
                 <TabsTrigger value="analytics" className={tabTriggerClass}>
                   <BarChart3 className="w-4 h-4 mr-1.5" />Analytics
                 </TabsTrigger>
