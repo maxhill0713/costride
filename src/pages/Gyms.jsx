@@ -399,20 +399,7 @@ export default function Gyms() {
               </div>
             }
 
-            {filteredGyms.length === 0 &&
-              <div className="text-center py-12"><Dumbbell className="w-12 h-12 mx-auto mb-3 text-slate-600" /><p className="text-slate-400">No gyms found</p><p className="text-sm text-slate-500 mt-1">Try adjusting your filters</p></div>
-            }
 
-            {filteredGyms.length > 0 &&
-              <div className="grid md:grid-cols-2 gap-4">
-                {filteredGyms.map(gym => (
-                  <div key={gym.id} className="group relative">
-                    <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-purple-500/20 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-all duration-500" />
-                    <GymCardInner gym={gym} isMember={false} />
-                  </div>
-                ))}
-              </div>
-            }
           </div>
         </TabsContent>
       </Tabs>
