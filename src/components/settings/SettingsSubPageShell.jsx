@@ -12,8 +12,8 @@ const PAGE_BG = 'linear-gradient(135deg, #02040a 0%, #0d2360 50%, #02040a 100%)'
 
 const slideVariants = {
   hidden:  { x: '100%', opacity: 1 },
-  visible: { x: 0, opacity: 1, transition: { type: 'spring', stiffness: 380, damping: 36, mass: 1 } },
-  exit:    { x: '100%', opacity: 1, transition: { type: 'spring', stiffness: 420, damping: 40, mass: 0.9 } },
+  visible: { x: 0, opacity: 1, transition: { type: 'spring', stiffness: 300, damping: 40, mass: 1.2 } },
+  exit:    { x: '100%', opacity: 1, transition: { type: 'spring', stiffness: 300, damping: 40, mass: 1.2 } },
 };
 
 export default function SettingsSubPageShell({ title, children, rightContent }) {

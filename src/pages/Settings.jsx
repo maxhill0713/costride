@@ -49,11 +49,11 @@ const pageSlideVariants = {
   hidden:  { x: '100%', opacity: 1 },
   visible: {
     x: 0, opacity: 1,
-    transition: { type: 'spring', stiffness: 380, damping: 36, mass: 1 },
+    transition: { type: 'spring', stiffness: 300, damping: 40, mass: 1.2 },
   },
   exit: {
     x: '100%', opacity: 1,
-    transition: { type: 'spring', stiffness: 420, damping: 40, mass: 0.9 },
+    transition: { type: 'spring', stiffness: 300, damping: 40, mass: 1.2 },
   },
 };
 
