@@ -433,24 +433,27 @@ function MobileFab() {
   );
 }
 
-function MobileBottomNav() {
-  const tabs = [
-    { icon:LayoutDashboard, label:'Home',      active:true },
-    { icon:Users,           label:'Members' },
-    { icon:BarChart2,       label:'Analytics' },
-    { icon:MessageCircle,   label:'Community' },
-    { icon:BrainCircuit,    label:'AI Coach' },
+function MobileBottomNav({ activeTab = 'Overview' }) {
+  const tabsConfig = [
+    { key:'Overview',   icon:LayoutDashboard, label:'Home' },
+    { key:'Members',    icon:Users,           label:'Members' },
+    { key:'Analytics',  icon:BarChart2,       label:'Analytics' },
+    { key:'Community',  icon:MessageCircle,   label:'Community' },
+    { key:'AICoach',    icon:BrainCircuit,    label:'AI Coach' },
   ];
   return (
     <div style={{ position:'fixed', bottom:0, left:0, right:0, zIndex:50, background:'rgba(10,10,12,0.97)', backdropFilter:'blur(20px)', WebkitBackdropFilter:'blur(20px)', borderTop:`1px solid ${C.brd}`, padding:'8px 0 12px', display:'grid', gridTemplateColumns:'repeat(5,1fr)' }}>
-      {tabs.map((t,i) => (
-        <div key={i} style={{ display:'flex', flexDirection:'column', alignItems:'center', gap:3, cursor:'pointer' }}>
-          <div style={{ width:34, height:28, borderRadius:8, background:t.active?C.cyanDim:'transparent', display:'flex', alignItems:'center', justifyContent:'center' }}>
-            <t.icon style={{ width:18, height:18, color:t.active?C.cyan:C.t3 }}/>
+      {tabsConfig.map((t,i) => {
+        const isActive = activeTab === t.key;
+        return (
+          <div key={i} style={{ display:'flex', flexDirection:'column', alignItems:'center', gap:3, cursor:'pointer' }}>
+            <div style={{ width:34, height:28, borderRadius:8, background:isActive?C.cyanDim:'transparent', display:'flex', alignItems:'center', justifyContent:'center' }}>
+              <t.icon style={{ width:18, height:18, color:isActive?C.cyan:C.t3 }}/>
+            </div>
+            <div style={{ fontSize:9.5, color:isActive?C.cyan:C.t3, fontWeight:isActive?600:400 }}>{t.label}</div>
           </div>
-          <div style={{ fontSize:9.5, color:t.active?C.cyan:C.t3, fontWeight:t.active?600:400 }}>{t.label}</div>
-        </div>
-      ))}
+        );
+      })}
     </div>
   );
 }
@@ -484,7 +487,7 @@ function MobileOverview() {
       </div>
 
       <MobileFab />
-      <MobileBottomNav />
+      <MobileBottomNav activeTab="Overview" />
     </div>
   );
 }
