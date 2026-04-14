@@ -1,18 +1,14 @@
 /**
  * Forge Fitness — Gym Owner Dashboard (Overview)
- * Desktop: unchanged
- * Mobile: clean premium redesign — no sticky overlap, proper 2×2 KPI grid, single FAB
  */
-
 import React, { useState, useEffect } from 'react';
 import { AreaChart, Area, ResponsiveContainer } from 'recharts';
 import {
-  LayoutDashboard, Users, FileText, BarChart2, MessageCircle,
-  Zap, BrainCircuit, Settings, QrCode, Search, Plus, Bell,
-  ChevronRight, ArrowUpRight, Eye, TrendingUp, Activity,
-  AlertTriangle, Flame, ChevronDown,
+LayoutDashboard, Users, FileText, BarChart2, MessageCircle,
+Zap, BrainCircuit, Settings, QrCode, Search, Plus, Bell,
+ChevronRight, ArrowUpRight, Eye, TrendingUp, Activity,
+AlertTriangle, Flame, ChevronDown,
 } from 'lucide-react';
-
 /* ─── TOKENS ─────────────────────────────────────────────── */
 const C = {
   bg:       '#000000',
@@ -22,16 +18,20 @@ const C = {
   t1:       '#ffffff',
   t2:       '#8a8a94',
   t3:       '#444450',
-  cyan:     '#4d7fff',
-  cyanDim:  'rgba(77,127,255,0.10)',
-  cyanBrd:  'rgba(77,127,255,0.28)',
+  cyan:     '#4d7fff',          // blue-500
+  cyanDim:  'rgba(77,127,255,0.14)',
+  cyanBrd:  'rgba(77,127,255,0.38)',
   red:      '#ff4d6d',
   redDim:   'rgba(255,77,109,0.15)',
   amber:    '#f59e0b',
   amberDim: 'rgba(245,158,11,0.15)',
+  gradStart: '#4d7fff',
+  gradMid:   '#2563eb',
+  gradEnd:   '#1d4ed8',
 };
+const BG = (deg = 135) =>
+  `linear-gradient(${deg}deg, ${C.gradStart} 0%, ${C.gradMid} 50%, ${C.gradEnd} 100%)`;
 const FONT = "'DM Sans', 'Segoe UI', sans-serif";
-
 /* ─── SCHEDULE DATA ──────────────────────────────────────── */
 const SCHEDULE = [
   { time: '06:00', label: 'Early Bird HIIT',        instructor: 'Alex T.',   capacity: 12, booked: 11, color: '#f59e0b' },
@@ -42,12 +42,11 @@ const SCHEDULE = [
   { time: '18:45', label: 'Boxing Basics',           instructor: 'Mike O.',   capacity: 12, booked: 12, color: '#ef4444' },
   { time: '19:30', label: 'Evening HIIT',            instructor: 'Alex T.',   capacity: 12, booked: 6,  color: '#f59e0b' },
 ];
-
 /* ─── AVATAR ─────────────────────────────────────────────── */
 function Av({ name, size = 20, style = {} }) {
-  const colors = ['#6366f1','#8b5cf6','#ec4899','#14b8a6','#f59e0b','#ef4444'];
-  const idx = (name?.charCodeAt(0) || 0) % colors.length;
-  return (
+const colors = ['#6366f1','#8b5cf6','#ec4899','#14b8a6','#f59e0b','#ef4444'];
+const idx = (name?.charCodeAt(0) || 0) % colors.length;
+return (
     <div style={{
       width: size, height: size, borderRadius: '50%',
       background: colors[idx], border: `1.5px solid ${C.card}`,
@@ -57,16 +56,15 @@ function Av({ name, size = 20, style = {} }) {
     }}>{(name || '?')[0].toUpperCase()}</div>
   );
 }
-
 /* ─── WAVEFORM ───────────────────────────────────────────── */
 function WaveForm({ color = C.cyan }) {
-  const pts = [26,22,24,18,20,15,17,12,14,10,12,8,10,7,9,5,7,11,8,5,7,4,6,3,5,8,6,3,5,2,4,5];
-  const w = 130, h = 28;
-  const max = Math.max(...pts);
-  const pathD = pts.map((v, i) =>
-    `${i === 0 ? 'M' : 'L'} ${(i / (pts.length - 1)) * w} ${h - (v / max) * (h - 4) - 2}`
+const pts = [26,22,24,18,20,15,17,12,14,10,12,8,10,7,9,5,7,11,8,5,7,4,6,3,5,8,6,3,5,2,4,5];
+const w = 130, h = 28;
+const max = Math.max(...pts);
+const pathD = pts.map((v, i) =>
+`${i === 0 ? 'M' : 'L'} ${(i / (pts.length - 1)) * w} ${h - (v / max) * (h - 4) - 2}`
   ).join(' ');
-  return (
+return (
     <svg viewBox={`0 0 ${w} ${h}`} style={{ display: 'block', width: '100%', height: 28 }}>
       <defs>
         <linearGradient id="wg" x1="0" y1="0" x2="0" y2="1">
@@ -79,11 +77,10 @@ function WaveForm({ color = C.cyan }) {
     </svg>
   );
 }
-
 /* ─── MINI AREA ──────────────────────────────────────────── */
 function MiniArea({ color = C.cyan }) {
-  const data = [{ v:28 },{ v:32 },{ v:30 },{ v:38 },{ v:42 },{ v:50 },{ v:55 },{ v:60 },{ v:70 }];
-  return (
+const data = [{ v:28 },{ v:32 },{ v:30 },{ v:38 },{ v:42 },{ v:50 },{ v:55 },{ v:60 },{ v:70 }];
+return (
     <ResponsiveContainer width="100%" height={28}>
       <AreaChart data={data} margin={{ top:2, right:0, bottom:0, left:0 }}>
         <defs>
@@ -97,19 +94,17 @@ function MiniArea({ color = C.cyan }) {
     </ResponsiveContainer>
   );
 }
-
 /* ─── DONUT ──────────────────────────────────────────────── */
 function Donut({ pct, size = 58, stroke = 5, color = C.cyan }) {
-  const r = (size - stroke * 2) / 2;
-  const circ = 2 * Math.PI * r;
-  const offset = circ - (pct / 100) * circ;
-  return (
+const r = (size - stroke * 2) / 2;
+const circ = 2 * Math.PI * r;
+const offset = circ - (pct / 100) * circ;
+return (
     <div style={{ position:'relative', display:'inline-flex', flexShrink:0 }}>
       <svg width={size} height={size} style={{ transform:'rotate(-90deg)' }}>
         <circle cx={size/2} cy={size/2} r={r} fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth={stroke}/>
         <circle cx={size/2} cy={size/2} r={r} fill="none" stroke={color} strokeWidth={stroke}
-          strokeDasharray={circ} strokeDashoffset={offset} strokeLinecap="round"
-          style={{ filter:`drop-shadow(0 0 5px ${color})` }}/>
+          strokeDasharray={circ} strokeDashoffset={offset} strokeLinecap="round"/>
       </svg>
       <div style={{
         position:'absolute', inset:0, display:'flex', alignItems:'center', justifyContent:'center',
@@ -118,20 +113,17 @@ function Donut({ pct, size = 58, stroke = 5, color = C.cyan }) {
     </div>
   );
 }
-
 /* ─── TREND ARROW ────────────────────────────────────────── */
 function TrendArrow({ color = C.cyan, w = 52, h = 34 }) {
-  return (
+return (
     <svg width={w} height={h} viewBox="0 0 52 34">
       <polyline points="2,28 12,18 22,21 34,10 50,3"
-        fill="none" stroke={color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
-        style={{ filter:`drop-shadow(0 0 5px ${color})` }}/>
+        fill="none" stroke={color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
       <polyline points="42,3 50,3 50,11"
         fill="none" stroke={color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
     </svg>
   );
 }
-
 /* ─── SIDEBAR ────────────────────────────────────────────── */
 const NAV = [
   { icon: LayoutDashboard, label:'Overview',   active:true },
@@ -143,12 +135,11 @@ const NAV = [
   { icon: Zap,             label:'Automations' },
   { icon: BrainCircuit,    label:'AI Coach' },
 ];
-
 function Sidebar() {
-  return (
+return (
     <div style={{ width:188, flexShrink:0, background:C.sidebar, borderRight:`1px solid ${C.brd}`, display:'flex', flexDirection:'column', height:'100vh' }}>
       <div style={{ display:'flex', alignItems:'center', gap:8, padding:'14px', borderBottom:`1px solid ${C.brd}` }}>
-        <div style={{ width:28, height:28, borderRadius:8, background:'linear-gradient(135deg,#4d7fff,#1a4fd6)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:13 }}>🔥</div>
+        <div style={{ width:28, height:28, borderRadius:8, background:BG(), display:'flex', alignItems:'center', justifyContent:'center', fontSize:13 }}>🔥</div>
         <div>
           <div style={{ fontSize:13, fontWeight:700, color:C.t1, letterSpacing:'-0.02em' }}>Forge Fitness</div>
           <div style={{ fontSize:10, color:C.t2 }}>GYM OWNER</div>
@@ -176,10 +167,9 @@ function Sidebar() {
     </div>
   );
 }
-
 /* ─── TOP BAR ────────────────────────────────────────────── */
 function TopBar() {
-  return (
+return (
     <div style={{ height:46, flexShrink:0, background:C.sidebar, borderBottom:`1px solid ${C.brd}`, display:'flex', alignItems:'center', justifyContent:'space-between', padding:'0 18px', gap:12 }}>
       <div style={{ display:'flex', alignItems:'center', gap:12 }}>
         <span style={{ fontSize:13, fontWeight:600, color:C.t2 }}>Gym Owner Dashboard</span>
@@ -197,16 +187,14 @@ function TopBar() {
     </div>
   );
 }
-
 /* ══════════════════════════════════════════════════════════
-   MOBILE — clean, no-overlap layout
+   MOBILE
 ══════════════════════════════════════════════════════════ */
-
 function MobileTopBar() {
-  return (
+return (
     <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'16px 16px 12px' }}>
       <div style={{ display:'flex', alignItems:'center', gap:10 }}>
-        <div style={{ width:36, height:36, borderRadius:11, background:'linear-gradient(135deg,#4d7fff,#1a4fd6)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:17 }}>🔥</div>
+        <div style={{ width:36, height:36, borderRadius:11, background:BG(), display:'flex', alignItems:'center', justifyContent:'center', fontSize:17 }}>🔥</div>
         <div>
           <div style={{ fontSize:15, fontWeight:700, color:C.t1, letterSpacing:'-0.02em' }}>Forge Fitness</div>
           <div style={{ fontSize:10, color:C.t2, letterSpacing:'0.05em', textTransform:'uppercase' }}>Gym Owner · Apr 10</div>
@@ -223,42 +211,36 @@ function MobileTopBar() {
     </div>
   );
 }
-
 function MobileHero() {
-  return (
+return (
     <div style={{ padding:'0 16px 16px' }}>
       <div style={{ fontSize:20, fontWeight:800, color:C.t1, letterSpacing:'-0.03em', lineHeight:1.2 }}>
-        Good morning, Max. 👋
+Good morning, Max. 👋
       </div>
       <div style={{ fontSize:13, color:C.t2, marginTop:5, lineHeight:1.5 }}>
-        Retention pulse is strong —{' '}
+Retention pulse is strong —{' '}
         <span style={{ color:C.cyan, fontWeight:600 }}>+4% from last week</span>
       </div>
-      {/* Alert pill */}
       <div style={{ marginTop:12, display:'flex', alignItems:'center', gap:10, padding:'11px 13px', background:'rgba(255,77,109,0.07)', border:`1px solid rgba(255,77,109,0.22)`, borderRadius:12 }}>
         <div style={{ width:28, height:28, borderRadius:8, background:'rgba(255,77,109,0.15)', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
           <AlertTriangle style={{ width:13, height:13, color:C.red }}/>
         </div>
         <div style={{ flex:1, fontSize:12, color:C.t2, lineHeight:1.5 }}>
-          Peak hours in 18 min · 5 at-risk members · 3 predicted churns
+Peak hours in 18 min · 5 at-risk members · 3 predicted churns
         </div>
         <div style={{ fontSize:12, fontWeight:700, color:C.cyan, flexShrink:0 }}>View</div>
       </div>
     </div>
   );
 }
-
-/* 2×2 grid — all 4 cards visible without scrolling */
 function MobileKpiGrid() {
-  return (
+return (
     <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:10 }}>
-
-      {/* Check-ins */}
       <div style={{ background:C.card, border:`1px solid ${C.brd}`, borderRadius:14, padding:'13px 13px 11px', position:'relative', overflow:'hidden' }}>
-        <div style={{ position:'absolute', top:-18, right:-18, width:60, height:60, borderRadius:'50%', background:C.cyan, opacity:0.06, filter:'blur(18px)', pointerEvents:'none' }}/>
+        <div style={{ position:'absolute', top:-18, right:-18, width:60, height:60, borderRadius:'50%', background:C.cyan, opacity:0.05, filter:'blur(18px)', pointerEvents:'none' }}/>
         <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:8 }}>
           <span style={{ fontSize:11, color:C.t2, fontWeight:500 }}>Check-ins</span>
-          <div style={{ width:22, height:22, borderRadius:6, background:`rgba(77,127,255,0.12)`, border:`1px solid rgba(77,127,255,0.22)`, display:'flex', alignItems:'center', justifyContent:'center' }}>
+          <div style={{ width:22, height:22, borderRadius:6, background:C.cyanDim, border:`1px solid ${C.cyanBrd}`, display:'flex', alignItems:'center', justifyContent:'center' }}>
             <Activity style={{ width:11, height:11, color:C.cyan }}/>
           </div>
         </div>
@@ -268,13 +250,11 @@ function MobileKpiGrid() {
         </div>
         <WaveForm color={C.cyan}/>
       </div>
-
-      {/* Weekly Active */}
       <div style={{ background:C.card, border:`1px solid ${C.brd}`, borderRadius:14, padding:'13px 13px 11px', position:'relative', overflow:'hidden' }}>
-        <div style={{ position:'absolute', top:-18, right:-18, width:60, height:60, borderRadius:'50%', background:C.cyan, opacity:0.06, filter:'blur(18px)', pointerEvents:'none' }}/>
+        <div style={{ position:'absolute', top:-18, right:-18, width:60, height:60, borderRadius:'50%', background:C.cyan, opacity:0.05, filter:'blur(18px)', pointerEvents:'none' }}/>
         <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:8 }}>
           <span style={{ fontSize:11, color:C.t2, fontWeight:500 }}>Weekly Active</span>
-          <div style={{ width:22, height:22, borderRadius:6, background:`rgba(77,127,255,0.12)`, border:`1px solid rgba(77,127,255,0.22)`, display:'flex', alignItems:'center', justifyContent:'center' }}>
+          <div style={{ width:22, height:22, borderRadius:6, background:C.cyanDim, border:`1px solid ${C.cyanBrd}`, display:'flex', alignItems:'center', justifyContent:'center' }}>
             <Users style={{ width:11, height:11, color:C.cyan }}/>
           </div>
         </div>
@@ -284,10 +264,8 @@ function MobileKpiGrid() {
         </div>
         <MiniArea color={C.cyan}/>
       </div>
-
-      {/* Live in Gym */}
       <div style={{ background:C.card, border:`1px solid ${C.brd}`, borderRadius:14, padding:'13px 13px 11px', position:'relative', overflow:'hidden' }}>
-        <div style={{ position:'absolute', top:-18, right:-18, width:60, height:60, borderRadius:'50%', background:'#6366f1', opacity:0.07, filter:'blur(18px)', pointerEvents:'none' }}/>
+        <div style={{ position:'absolute', top:-18, right:-18, width:60, height:60, borderRadius:'50%', background:'#6366f1', opacity:0.06, filter:'blur(18px)', pointerEvents:'none' }}/>
         <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:8 }}>
           <span style={{ fontSize:11, color:C.t2, fontWeight:500 }}>Live in Gym</span>
           <div style={{ width:22, height:22, borderRadius:6, background:'rgba(99,102,241,0.15)', border:'1px solid rgba(99,102,241,0.25)', display:'flex', alignItems:'center', justifyContent:'center' }}>
@@ -297,36 +275,32 @@ function MobileKpiGrid() {
         <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between' }}>
           <div>
             <div style={{ fontSize:32, fontWeight:800, color:C.t1, letterSpacing:'-0.04em', lineHeight:1 }}>
-              19<span style={{ fontSize:16, color:C.t3, fontWeight:400 }}>%</span>
+19<span style={{ fontSize:16, color:C.t3, fontWeight:400 }}>%</span>
             </div>
             <div style={{ fontSize:10.5, color:C.t3, marginTop:5 }}>Peak 5–7 PM</div>
           </div>
           <Donut pct={19} size={52} stroke={5} color="#6366f1"/>
         </div>
       </div>
-
-      {/* Retention */}
       <div style={{ background:C.card, border:`1px solid ${C.cyanBrd}`, borderRadius:14, padding:'13px 13px 11px', position:'relative', overflow:'hidden' }}>
-        <div style={{ position:'absolute', top:-18, right:-18, width:60, height:60, borderRadius:'50%', background:C.cyan, opacity:0.10, filter:'blur(18px)', pointerEvents:'none' }}/>
+        <div style={{ position:'absolute', top:-18, right:-18, width:60, height:60, borderRadius:'50%', background:C.cyan, opacity:0.07, filter:'blur(18px)', pointerEvents:'none' }}/>
         <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:8 }}>
           <span style={{ fontSize:11, color:C.t2, fontWeight:500 }}>Retention</span>
-          <div style={{ width:22, height:22, borderRadius:6, background:`rgba(77,127,255,0.12)`, border:`1px solid rgba(77,127,255,0.22)`, display:'flex', alignItems:'center', justifyContent:'center' }}>
+          <div style={{ width:22, height:22, borderRadius:6, background:C.cyanDim, border:`1px solid ${C.cyanBrd}`, display:'flex', alignItems:'center', justifyContent:'center' }}>
             <TrendingUp style={{ width:11, height:11, color:C.cyan }}/>
           </div>
         </div>
-        <div style={{ fontSize:32, fontWeight:800, color:C.cyan, letterSpacing:'-0.04em', lineHeight:1, textShadow:'0 0 20px rgba(77,127,255,0.45)' }}>96%</div>
+        <div style={{ fontSize:32, fontWeight:800, color:C.cyan, letterSpacing:'-0.04em', lineHeight:1 }}>96%</div>
         <div style={{ fontSize:10.5, color:C.t3, marginTop:4, marginBottom:6 }}>Elite Tier</div>
         <div style={{ display:'flex', justifyContent:'flex-end' }}>
           <TrendArrow color={C.cyan} w={46} h={26}/>
         </div>
       </div>
-
     </div>
   );
 }
-
 function MSH({ title, action, actionLabel='See all' }) {
-  return (
+return (
     <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:10 }}>
       <div style={{ fontSize:15, fontWeight:700, color:C.t1, letterSpacing:'-0.01em' }}>{title}</div>
       {action && (
@@ -337,14 +311,13 @@ function MSH({ title, action, actionLabel='See all' }) {
     </div>
   );
 }
-
 function MobilePriorities() {
-  const items = [
+const items = [
     { avs:['S','M','P'], text:'Nudge 5 at-risk members',        badge:'Urgent', bColor:C.red,   bBg:C.redDim },
     { avs:['D','E'],     text:'Launch "30-Day Strength Surge"', badge:'Run It', bColor:C.amber, bBg:C.amberDim },
     { avs:['R'],         text:'Review April revenue impact',    badge:null },
   ];
-  return (
+return (
     <div style={{ display:'flex', flexDirection:'column', gap:8 }}>
       {items.map((it,i) => (
         <div key={i} style={{ display:'flex', alignItems:'center', gap:12, padding:'13px 14px', borderRadius:13, background:C.card, border:`1px solid ${C.brd}`, cursor:'pointer' }}>
@@ -363,17 +336,16 @@ function MobilePriorities() {
     </div>
   );
 }
-
 function MobileSchedule() {
-  const [expanded, setExpanded] = useState(false);
-  const shown = expanded ? SCHEDULE : SCHEDULE.slice(0,4);
-  return (
+const [expanded, setExpanded] = useState(false);
+const shown = expanded ? SCHEDULE : SCHEDULE.slice(0,4);
+return (
     <div>
       <div style={{ display:'flex', flexDirection:'column', gap:7 }}>
         {shown.map((s,i) => {
-          const pct = Math.round((s.booked/s.capacity)*100);
-          const full = s.booked >= s.capacity;
-          return (
+const pct = Math.round((s.booked/s.capacity)*100);
+const full = s.booked >= s.capacity;
+return (
             <div key={i} style={{ display:'flex', alignItems:'center', gap:11, padding:'12px 14px', borderRadius:13, background:C.card, border:`1px solid ${C.brd}` }}>
               <div style={{ width:3, height:36, borderRadius:4, background:s.color, flexShrink:0 }}/>
               <div style={{ fontSize:11.5, fontWeight:700, color:C.t3, width:36, flexShrink:0 }}>{s.time}</div>
@@ -401,14 +373,13 @@ function MobileSchedule() {
     </div>
   );
 }
-
 function MobileCommunity() {
-  const cards = [
+const cards = [
     { tag:'🆕 New Post',         tagColor:C.cyan,  title:"Coach Alex's Mobility Flow",    sub:'27 joined · 4 new reactions' },
     { tag:'Member Spotlight',    tagColor:C.amber, title:"Priya's 12-week transformation", sub:'Tap to celebrate 🎉' },
     { tag:'Event live tomorrow', tagColor:C.red,   title:'Free Recovery Workshop',         sub:'Register before it fills' },
   ];
-  return (
+return (
     <div style={{ overflowX:'auto', paddingBottom:4, marginLeft:-16, paddingLeft:16 }}>
       <div style={{ display:'flex', gap:10, paddingRight:16, width:'max-content' }}>
         {cards.map((c,i) => (
@@ -422,30 +393,28 @@ function MobileCommunity() {
     </div>
   );
 }
-
 function MobileFab() {
-  return (
+return (
     <div style={{ position:'fixed', bottom:80, right:18, zIndex:100 }}>
-      <button style={{ width:50, height:50, borderRadius:25, background:C.cyan, border:'none', color:'#fff', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', boxShadow:`0 4px 20px rgba(77,127,255,0.5)` }}>
+      <button style={{ width:50, height:50, borderRadius:25, background:BG(), border:'none', color:'#fff', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', boxShadow:'0 0 14px rgba(77,127,255,0.30), 0 4px 10px rgba(77,127,255,0.18)' }}>
         <Plus style={{ width:22, height:22 }}/>
       </button>
     </div>
   );
 }
-
 function MobileBottomNav({ activeTab = 'Overview' }) {
-  const tabsConfig = [
+const tabsConfig = [
     { key:'Overview',   icon:LayoutDashboard, label:'Home' },
     { key:'Members',    icon:Users,           label:'Members' },
     { key:'Analytics',  icon:BarChart2,       label:'Analytics' },
     { key:'Community',  icon:MessageCircle,   label:'Community' },
     { key:'AICoach',    icon:BrainCircuit,    label:'AI Coach' },
   ];
-  return (
+return (
     <div style={{ position:'fixed', bottom:0, left:0, right:0, zIndex:50, background:'rgba(10,10,12,0.97)', backdropFilter:'blur(20px)', WebkitBackdropFilter:'blur(20px)', borderTop:`1px solid ${C.brd}`, padding:'8px 0 12px', display:'grid', gridTemplateColumns:'repeat(5,1fr)' }}>
       {tabsConfig.map((t,i) => {
-        const isActive = activeTab === t.key;
-        return (
+const isActive = activeTab === t.key;
+return (
           <div key={i} style={{ display:'flex', flexDirection:'column', alignItems:'center', gap:3, cursor:'pointer' }}>
             <div style={{ width:34, height:28, borderRadius:8, background:isActive?C.cyanDim:'transparent', display:'flex', alignItems:'center', justifyContent:'center' }}>
               <t.icon style={{ width:18, height:18, color:isActive?C.cyan:C.t3 }}/>
@@ -457,69 +426,59 @@ function MobileBottomNav({ activeTab = 'Overview' }) {
     </div>
   );
 }
-
 function MobileOverview() {
-  return (
+return (
     <div style={{ fontFamily:FONT, background:C.bg, minHeight:'100vh', paddingBottom:110 }}>
       <MobileTopBar />
       <MobileHero />
-
       <div style={{ padding:'0 16px', marginBottom:22 }}>
         <MSH title="Key Metrics" />
         <MobileKpiGrid />
       </div>
-
       <div style={{ padding:'0 16px', marginBottom:22 }}>
         <MSH title="Today's Priorities" action={() => {}} />
         <MobilePriorities />
       </div>
-
       <div style={{ padding:'0 16px', marginBottom:22 }}>
         <MSH title="Today's Schedule" action={() => {}} actionLabel="+ Add" />
         <MobileSchedule />
       </div>
-
       <div style={{ marginBottom:22 }}>
         <div style={{ padding:'0 16px 10px' }}>
           <MSH title="Community" action={() => {}} />
         </div>
         <MobileCommunity />
       </div>
-
       <MobileFab />
       <MobileBottomNav activeTab="Overview" />
     </div>
   );
 }
-
 /* ══════════════════════════════════════════════════════════
-   DESKTOP OVERVIEW — pixel-perfect original
+   DESKTOP OVERVIEW
 ══════════════════════════════════════════════════════════ */
 function DesktopOverview() {
-  return (
+return (
     <div style={{ fontFamily:FONT, display:'flex', flexDirection:'column', gap:11, padding:'16px 20px', background:'#000', minHeight:'100%' }}>
-
       <div style={{ display:'flex', alignItems:'flex-start', justifyContent:'space-between' }}>
         <div>
           <h1 style={{ fontSize:19, fontWeight:700, color:C.t1, margin:0, letterSpacing:'-0.02em', lineHeight:1.25 }}>
-            Good morning, Max. Your retention pulse is strong today.
+Good morning, Max. Your retention pulse is strong today.
           </h1>
           <div style={{ fontSize:12, color:C.t2, marginTop:4, display:'flex', gap:5, alignItems:'center' }}>
-            42 members active <span style={{ color:C.t3 }}>•</span>
-            96% weekly retention <span style={{ color:C.t3 }}>•</span>
+42 members active <span style={{ color:C.t3 }}>•</span>
+96% weekly retention <span style={{ color:C.t3 }}>•</span>
             <span style={{ color:C.cyan }}>+4% from last week</span>
           </div>
         </div>
-        <button style={{ display:'flex', alignItems:'center', gap:6, padding:'9px 18px', background:C.cyan, border:'none', borderRadius:9, fontSize:12.5, fontWeight:700, color:'#fff', cursor:'pointer', fontFamily:FONT, boxShadow:'0 0 20px rgba(77,127,255,0.4)', flexShrink:0 }}>
+        <button style={{ display:'flex', alignItems:'center', gap:6, padding:'9px 18px', background:BG(), border:'none', borderRadius:9, fontSize:12.5, fontWeight:700, color:'#fff', cursor:'pointer', fontFamily:FONT, boxShadow:'0 0 10px rgba(77,127,255,0.22), 0 2px 8px rgba(77,127,255,0.12)', flexShrink:0 }}>
           <Plus style={{ width:13, height:13 }}/> New Post
         </button>
       </div>
-
       <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'9px 14px', background:'rgba(255,255,255,0.02)', border:`1px solid ${C.brd}`, borderRadius:8, fontSize:12, color:C.t2 }}>
         <span>Peak hours begin in 18 minutes &nbsp;•&nbsp; 5 at-risk members detected &nbsp;•&nbsp; AI predicts 3 potential churns &nbsp;•&nbsp; 4 new community posts today</span>
         <span style={{ color:C.cyan, fontWeight:600, cursor:'pointer', marginLeft:10, flexShrink:0 }}>View</span>
       </div>
-
       <div style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:10 }}>
         <div style={{ background:C.card, border:`1px solid ${C.brd}`, borderRadius:10, padding:'12px 14px' }}>
           <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:2 }}>
@@ -534,7 +493,6 @@ function DesktopOverview() {
           </div>
           <WaveForm color={C.cyan}/>
         </div>
-
         <div style={{ background:C.card, border:`1px solid ${C.brd}`, borderRadius:10, padding:'12px 14px' }}>
           <div style={{ fontSize:11, color:C.t2, fontWeight:500, marginBottom:2 }}>Weekly Active Members</div>
           <div style={{ fontSize:28, fontWeight:700, color:C.t1, letterSpacing:'-0.03em', lineHeight:1.1 }}>42</div>
@@ -543,7 +501,6 @@ function DesktopOverview() {
           </div>
           <MiniArea color={C.cyan}/>
         </div>
-
         <div style={{ background:C.card, border:`1px solid ${C.brd}`, borderRadius:10, padding:'12px 14px' }}>
           <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:2 }}>
             <span style={{ fontSize:11, color:C.t2, fontWeight:500 }}>Live in Gym</span>
@@ -554,14 +511,13 @@ function DesktopOverview() {
           <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginTop:2 }}>
             <div>
               <div style={{ fontSize:28, fontWeight:700, color:C.t1, letterSpacing:'-0.03em', lineHeight:1 }}>
-                19<span style={{ fontSize:15, color:C.t3, fontWeight:400 }}>%</span>
+19<span style={{ fontSize:15, color:C.t3, fontWeight:400 }}>%</span>
               </div>
               <div style={{ fontSize:10.5, color:C.t3, marginTop:4 }}>Peak 5–7 PM</div>
             </div>
             <Donut pct={19} size={58} stroke={5} color={C.cyan}/>
           </div>
         </div>
-
         <div style={{ background:C.card, border:`1px solid ${C.brd}`, borderRadius:10, padding:'12px 14px' }}>
           <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:2 }}>
             <span style={{ fontSize:11, color:C.t2, fontWeight:500 }}>Retention Score</span>
@@ -571,14 +527,13 @@ function DesktopOverview() {
           </div>
           <div style={{ display:'flex', alignItems:'flex-end', justifyContent:'space-between', marginTop:2 }}>
             <div>
-              <div style={{ fontSize:32, fontWeight:700, color:C.cyan, letterSpacing:'-0.03em', lineHeight:1, textShadow:'0 0 20px rgba(77,127,255,0.5)' }}>96%</div>
+              <div style={{ fontSize:32, fontWeight:700, color:C.cyan, letterSpacing:'-0.03em', lineHeight:1 }}>96%</div>
               <div style={{ fontSize:11, color:C.t3, marginTop:4 }}>Elite Tier</div>
             </div>
             <TrendArrow color={C.cyan}/>
           </div>
         </div>
       </div>
-
       <div style={{ display:'flex', gap:11 }}>
         <div style={{ background:C.card, border:`1px solid ${C.brd}`, borderRadius:10, padding:'16px 18px', flex:1, minWidth:0 }}>
           <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:14 }}>
@@ -587,9 +542,9 @@ function DesktopOverview() {
           </div>
           <div style={{ display:'flex', flexDirection:'column', gap:6 }}>
             {SCHEDULE.map((s,i) => {
-              const pct = Math.round((s.booked/s.capacity)*100);
-              const full = s.booked >= s.capacity;
-              return (
+const pct = Math.round((s.booked/s.capacity)*100);
+const full = s.booked >= s.capacity;
+return (
                 <div key={i} style={{ display:'flex', alignItems:'center', gap:10, padding:'9px 11px', borderRadius:8, background:'rgba(255,255,255,0.02)', border:`1px solid ${C.brd}`, borderLeft:`3px solid ${s.color}` }}>
                   <div style={{ fontSize:11, fontWeight:700, color:C.t3, width:36, flexShrink:0 }}>{s.time}</div>
                   <div style={{ flex:1, minWidth:0 }}>
@@ -610,7 +565,6 @@ function DesktopOverview() {
             })}
           </div>
         </div>
-
         <div style={{ background:C.card, border:`1px solid ${C.brd}`, borderRadius:10, padding:'16px', width:248, flexShrink:0 }}>
           <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:14 }}>
             <span style={{ fontSize:13, fontWeight:600, color:C.t1 }}>Today's Priorities</span>
@@ -634,11 +588,10 @@ function DesktopOverview() {
             </div>
           ))}
           <div style={{ paddingTop:10, borderTop:`1px solid ${C.brd}`, fontSize:11, color:C.t3 }}>
-            View Live <span style={{ color:C.cyan }}>|</span> Live <span style={{ color:C.cyan }}>|</span> Live Single Studio <span style={{ color:C.cyan }}>|</span> Floor
+View Live <span style={{ color:C.cyan }}>|</span> Live <span style={{ color:C.cyan }}>|</span> Live Single Studio <span style={{ color:C.cyan }}>|</span> Floor
           </div>
         </div>
       </div>
-
       <div style={{ background:C.card, border:`1px solid ${C.brd}`, borderRadius:10, padding:'14px 16px' }}>
         <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:11 }}>
           <div style={{ display:'flex', alignItems:'center', gap:5 }}>
@@ -669,23 +622,20 @@ function DesktopOverview() {
           ))}
         </div>
       </div>
-
     </div>
   );
 }
-
 /* ══════════════════════════════════════════════════════════
    ROOT
 ══════════════════════════════════════════════════════════ */
 export default function TabOverview({ openModal, setTab } = {}) {
-  const [isMobile, setIsMobile] = useState(() =>
-    typeof window !== 'undefined' ? window.innerWidth < 768 : false
+const [isMobile, setIsMobile] = useState(() =>
+typeof window !== 'undefined' ? window.innerWidth < 768 : false
   );
   useEffect(() => {
-    const h = () => setIsMobile(window.innerWidth < 768);
+const h = () => setIsMobile(window.innerWidth < 768);
     window.addEventListener('resize', h);
-    return () => window.removeEventListener('resize', h);
+return () => window.removeEventListener('resize', h);
   }, []);
-
-  return isMobile ? <MobileOverview /> : <DesktopOverview />;
+return isMobile ? <MobileOverview /> : <DesktopOverview />;
 }
