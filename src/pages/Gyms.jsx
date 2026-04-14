@@ -434,7 +434,7 @@ export default function Gyms() {
                     <span className={`text-xs font-bold uppercase tracking-widest transition-colors duration-200 ${nearbySection === 'recent' ? 'text-slate-300' : 'text-slate-600'}`}>
                       Recently Viewed
                     </span>
-                    {nearbySection === 'recent' && <div className="h-0.5 bg-slate-400 rounded-full mt-1" />}
+
                   </button>
 
                   <button
@@ -445,7 +445,7 @@ export default function Gyms() {
                     <span className={`text-xs font-bold uppercase tracking-widest transition-colors duration-200 ${nearbySection === 'nearby' ? 'text-slate-300' : 'text-slate-600'}`}>
                       Popular Nearby
                     </span>
-                    {nearbySection === 'nearby' && <div className="h-0.5 bg-slate-400 rounded-full mt-1" />}
+
                   </button>
                 </div>
 
