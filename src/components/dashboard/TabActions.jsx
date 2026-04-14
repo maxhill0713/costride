@@ -10,7 +10,7 @@ import {
   Flame, Star, Bell, Gift, TrendingUp, TrendingDown, Activity,
   MessageCircle, Plus, Eye, RefreshCw, MoreHorizontal, Sparkles,
   UserPlus, BookOpen, Target, DollarSign, BarChart2, Filter,
-  LayoutDashboard, FileText, BrainCircuit,
+
 } from "lucide-react";
 
 /* ─── TOKENS ─────────────────────────────────────────────────── */
@@ -643,28 +643,6 @@ function MobileFeedRow({item,i,total}) {
   );
 }
 
-function MobileBottomNav() {
-  const tabs = [
-    {icon:LayoutDashboard,label:"Home"},
-    {icon:Users,          label:"Members"},
-    {icon:Shield,         label:"Actions", active:true},
-    {icon:MessageCircle,  label:"Community"},
-    {icon:BrainCircuit,   label:"AI Coach"},
-  ];
-  return (
-    <div style={{position:"fixed",bottom:0,left:0,right:0,zIndex:50,background:"rgba(10,10,12,0.97)",backdropFilter:"blur(20px)",WebkitBackdropFilter:"blur(20px)",borderTop:`1px solid ${C.brd}`,padding:"8px 0 12px",display:"grid",gridTemplateColumns:"repeat(5,1fr)"}}>
-      {tabs.map((t,i)=>(
-        <div key={i} style={{display:"flex",flexDirection:"column",alignItems:"center",gap:3,cursor:"pointer"}}>
-          <div style={{width:34,height:28,borderRadius:8,background:t.active?C.cyanDim:"transparent",display:"flex",alignItems:"center",justifyContent:"center"}}>
-            <t.icon style={{width:18,height:18,color:t.active?C.cyan:C.t3}}/>
-          </div>
-          <div style={{fontSize:9.5,color:t.active?C.cyan:C.t3,fontWeight:t.active?600:400}}>{t.label}</div>
-        </div>
-      ))}
-    </div>
-  );
-}
-
 /* ─── MOBILE ROOT ────────────────────────────────────────────── */
 function MobileActions() {
   const [actions,setActions] = useState(PRIORITY_ACTIONS);
@@ -702,7 +680,7 @@ function MobileActions() {
   ];
 
   return (
-    <div style={{fontFamily:FONT,background:C.bg,color:C.t1,minHeight:"100vh",paddingBottom:110}}>
+    <div style={{fontFamily:FONT,background:C.bg,color:C.t1,minHeight:"100%",paddingBottom:24}}>
       <style>{`
         ::-webkit-scrollbar{width:0;}
         @keyframes slideDown{from{opacity:0;transform:translateY(-4px);}to{opacity:1;transform:translateY(0);}}
@@ -815,7 +793,6 @@ function MobileActions() {
         </MobileCollapsibleSection>
       </div>
 
-      <MobileBottomNav/>
     </div>
   );
 }

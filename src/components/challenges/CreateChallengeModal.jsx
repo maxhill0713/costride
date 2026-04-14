@@ -870,25 +870,9 @@ function MobileCreateChallengeModal({ open, onClose, gyms = [], onSave, isLoadin
 }
 
 /* ══════════════════════════════════════════════════════════════
-   ROOT EXPORT — branches on isMobile
+   DESKTOP MODAL
 ══════════════════════════════════════════════════════════════ */
-export default function CreateChallengeModal({ open, onClose, gyms = [], onSave, isLoading }) {
-  const isMobile = useIsMobile();
-
-  /* ── MOBILE ── */
-  if (isMobile) {
-    return (
-      <MobileCreateChallengeModal
-        open={open}
-        onClose={onClose}
-        gyms={gyms}
-        onSave={onSave}
-        isLoading={isLoading}
-      />
-    );
-  }
-
-  /* ── DESKTOP (100% unchanged) ── */
+function DesktopCreateChallengeModal({ open, onClose, gyms = [], onSave, isLoading }) {
   const [form, setForm] = useState(DEFAULT_FORM);
   const set = (k, v) => setForm(f => ({ ...f, [k]: v }));
   const cat     = catFor(form.category);
@@ -1067,4 +1051,15 @@ export default function CreateChallengeModal({ open, onClose, gyms = [], onSave,
       </AnimatePresence>
     </>
   );
+}
+
+/* ══════════════════════════════════════════════════════════════
+   ROOT EXPORT — branches on isMobile
+══════════════════════════════════════════════════════════════ */
+export default function CreateChallengeModal({ open, onClose, gyms = [], onSave, isLoading }) {
+  const isMobile = useIsMobile();
+  if (isMobile) {
+    return <MobileCreateChallengeModal open={open} onClose={onClose} gyms={gyms} onSave={onSave} isLoading={isLoading} />;
+  }
+  return <DesktopCreateChallengeModal open={open} onClose={onClose} gyms={gyms} onSave={onSave} isLoading={isLoading} />;
 }
