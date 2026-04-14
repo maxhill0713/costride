@@ -83,7 +83,7 @@ export default function Progress() {
   const tabTriggerClass =
     'data-[state=active]:text-blue-400 data-[state=active]:border-b-2 data-[state=active]:border-blue-400 data-[state=active]:bg-transparent ' +
     'text-slate-400 hover:text-slate-300 border-b-2 border-transparent rounded-none px-0 pb-2 pt-0 ' +
-    'transition-colors bg-transparent text-[15px] justify-center leading-none flex items-center';
+    'transition-colors bg-transparent text-[16.5px] justify-center leading-none flex items-center';
 
   return (
     <div className="min-h-screen" style={{ background: 'linear-gradient(to bottom right, #02040a, #0d2360, #02040a)' }}>

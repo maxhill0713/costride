@@ -287,10 +287,10 @@ export default function Gyms() {
           <div className="max-w-6xl mx-auto">
             <div className="relative flex items-end justify-center h-[3.2rem] pt-2 pb-2">
               <TabsList className="flex bg-transparent p-0 gap-9 border-0 h-auto mb-[-1px]">
-                <TabsTrigger value="my-gyms" className="data-[state=active]:text-blue-400 data-[state=active]:border-b-2 data-[state=active]:border-blue-400 data-[state=active]:bg-transparent text-slate-400 hover:text-slate-300 border-b-2 border-transparent rounded-none px-0 pb-2 pt-0 transition-colors bg-transparent text-[15px] justify-center leading-none">
+                <TabsTrigger value="my-gyms" className="data-[state=active]:text-blue-400 data-[state=active]:border-b-2 data-[state=active]:border-blue-400 data-[state=active]:bg-transparent text-slate-400 hover:text-slate-300 border-b-2 border-transparent rounded-none px-0 pb-2 pt-0 transition-colors bg-transparent text-[16.5px] justify-center leading-none">
                   <Users className="w-4 h-4 mr-1.5" />My Gyms
                 </TabsTrigger>
-                <TabsTrigger value="explore" className="data-[state=active]:text-blue-400 data-[state=active]:border-b-2 data-[state=active]:border-blue-400 data-[state=active]:bg-transparent text-slate-400 hover:text-slate-300 border-b-2 border-transparent rounded-none px-0 pb-2 pt-0 transition-colors bg-transparent text-[15px] justify-center leading-none">
+                <TabsTrigger value="explore" className="data-[state=active]:text-blue-400 data-[state=active]:border-b-2 data-[state=active]:border-blue-400 data-[state=active]:bg-transparent text-slate-400 hover:text-slate-300 border-b-2 border-transparent rounded-none px-0 pb-2 pt-0 transition-colors bg-transparent text-[16.5px] justify-center leading-none">
                   <MapPin className="w-4 h-4 mr-1.5" />Explore
                 </TabsTrigger>
               </TabsList>
