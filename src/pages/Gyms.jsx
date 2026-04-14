@@ -484,7 +484,7 @@ export default function Gyms() {
       {confirmLeaveGym && (
         <>
           <div className="fixed inset-0 z-[10003] bg-slate-950/60 backdrop-blur-sm" onClick={() => setConfirmLeaveGym(null)} />
-          <div className="fixed left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2 w-11/12 max-w-sm z-[10004] bg-slate-900/80 backdrop-blur-md border border-slate-700/30 rounded-3xl shadow-2xl shadow-black/40 text-white p-6">
+          <div className="fixed left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2 w-[calc(100%-2rem)] max-w-[360px] z-[10004] bg-slate-900/80 backdrop-blur-md border border-slate-700/30 rounded-3xl shadow-2xl shadow-black/40 text-white p-6">
             <h3 className="text-xl font-black text-white mb-2">Leave {confirmLeaveGym.name}?</h3>
             <p className="text-slate-300 text-sm mb-6">Are you sure you want to leave this gym? You'll lose access to its community.</p>
             <div className="flex gap-3">
