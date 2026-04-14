@@ -321,7 +321,7 @@ export default function Gyms() {
         </div>
 
         {/* Spacer */}
-        <div style={{ height: '3.8rem' }} />
+        <div style={{ height: '3.6rem' }} />
 
         {/* ── My Gyms ── */}
         <TabsContent value="my-gyms" className="mt-0 px-3 md:px-4 py-1">
