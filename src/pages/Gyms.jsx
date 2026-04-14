@@ -404,6 +404,36 @@ export default function Gyms() {
               </div>
             }
 
+            {!searchQuery && (() => {
+              const primaryGym = userGyms.find(g => g.id === currentUser?.primary_gym_id) || userGyms[0];
+              if (!primaryGym?.latitude || !primaryGym?.longitude) return null;
+              const nearby = gyms
+                .filter(g => !memberGymIds.includes(g.id) && g.latitude && g.longitude)
+                .map(g => {
+                  const dLat = (g.latitude - primaryGym.latitude) * Math.PI / 180;
+                  const dLon = (g.longitude - primaryGym.longitude) * Math.PI / 180;
+                  const a = Math.sin(dLat/2)**2 + Math.cos(primaryGym.latitude * Math.PI/180) * Math.cos(g.latitude * Math.PI/180) * Math.sin(dLon/2)**2;
+                  const dist = 6371 * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+                  return { ...g, _dist: dist };
+                })
+                .filter(g => g._dist <= 20)
+                .sort((a, b) => (b.members_count || 0) - (a.members_count || 0))
+                .slice(0, 3);
+              if (nearby.length === 0) return null;
+              return (
+                <div className="mb-4">
+                  <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">Popular Nearby</p>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    {nearby.map(gym => (
+                      <div key={gym.id} className="group relative">
+                        <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-purple-500/20 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-all duration-500" />
+                        <GymCardInner gym={gym} isMember={false} />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              );
+            })()}
 
           </div>
         </TabsContent>
