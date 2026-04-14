@@ -156,7 +156,7 @@ return (
         <div style={{ display: "flex", gap: 4 }}>{d.platforms.map(p => <PlatformPill key={p} type={p} />)}</div>
         {d.aiGen && <AiBadge />}
         <div style={{ flex: 1 }} />
-        <button style={{ padding: isMobile ? "8px 14px" : "6px 13px", borderRadius: 7, fontSize: 11.5, fontWeight: 700, background: C.cyan, color: "#fff", border: "none", cursor: "pointer", fontFamily: FONT, minHeight: 44, boxShadow: "0 2px 6px rgba(77,127,255,0.2)" }}>
+        <button style={{ padding: isMobile ? "8px 14px" : "6px 13px", borderRadius: 7, fontSize: 11.5, fontWeight: 700, background: C.cyan, color: "#fff", border: "none", cursor: "pointer", fontFamily: FONT, minHeight: 44, boxShadow: "0 0 10px rgba(77,127,255,0.22), 0 2px 6px rgba(77,127,255,0.12)" }}>
 Review &amp; Schedule
         </button>
       </div>
@@ -363,7 +363,7 @@ Finally nailed that pose! <span style={{ color: C.cyan }}>@forgefitness</span> <
             <div style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 11.5, color: C.t2 }}><MessageCircle size={12} color={C.cyan} /> 4</div>
           </div>
         </div>
-        <button style={{ width: "100%", marginTop: 9, padding: "9px", borderRadius: 8, background: C.cyan, color: "#fff", border: "none", fontSize: 12.5, fontWeight: 700, cursor: "pointer", fontFamily: FONT, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, boxShadow: "0 2px 6px rgba(77,127,255,0.2)" }}>
+        <button style={{ width: "100%", marginTop: 9, padding: "9px", borderRadius: 8, background: C.cyan, color: "#fff", border: "none", fontSize: 12.5, fontWeight: 700, cursor: "pointer", fontFamily: FONT, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, boxShadow: "0 0 10px rgba(77,127,255,0.22), 0 2px 6px rgba(77,127,255,0.12)" }}>
           <Plus size={13} /> Add Member
         </button>
       </div>
@@ -423,7 +423,7 @@ return (
         <Flame size={20} color={C.cyan} />
       </div>
       <div style={{ fontSize: 13, fontWeight: 500, color: C.t2 }}>No {label} yet</div>
-      <button onClick={onAdd} style={{ padding: "7px 16px", borderRadius: 8, background: C.cyan, color: "#fff", border: "none", fontSize: 12.5, fontWeight: 700, cursor: "pointer", fontFamily: FONT, display: "flex", alignItems: "center", gap: 6, minHeight: 44, boxShadow: "0 2px 6px rgba(77,127,255,0.2)" }}>
+      <button onClick={onAdd} style={{ padding: "7px 16px", borderRadius: 8, background: C.cyan, color: "#fff", border: "none", fontSize: 12.5, fontWeight: 700, cursor: "pointer", fontFamily: FONT, display: "flex", alignItems: "center", gap: 6, minHeight: 44, boxShadow: "0 0 10px rgba(77,127,255,0.22), 0 2px 6px rgba(77,127,255,0.12)" }}>
         <Plus size={12} /> Create
       </button>
     </div>
@@ -434,7 +434,7 @@ return (
     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
       <div style={{ fontSize: 12, fontWeight: 500, color: C.t2 }}>{count} {label}</div>
       {!isMobile && (
-        <button onClick={onAdd} style={{ padding: "6px 14px", borderRadius: 7, background: C.cyan, color: "#fff", border: "none", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: FONT, display: "flex", alignItems: "center", gap: 5, minHeight: 44, boxShadow: "0 2px 6px rgba(77,127,255,0.2)" }}>
+        <button onClick={onAdd} style={{ padding: "6px 14px", borderRadius: 7, background: C.cyan, color: "#fff", border: "none", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: FONT, display: "flex", alignItems: "center", gap: 5, minHeight: 44, boxShadow: "0 0 10px rgba(77,127,255,0.22), 0 2px 6px rgba(77,127,255,0.12)" }}>
           <Plus size={11} /> {btnLabel}
         </button>
       )}
@@ -453,7 +453,7 @@ return (
 /* ─── FAB (mobile only) ──────────────────────────────────────── */
 function FAB({ onClick }) {
 return (
-    <button onClick={onClick} style={{ position: "fixed", bottom: 76, right: 18, zIndex: 190, width: 52, height: 52, borderRadius: "50%", background: C.cyan, border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 4px 12px rgba(77,127,255,0.25)" }}>
+    <button onClick={onClick} style={{ position: "fixed", bottom: 76, right: 18, zIndex: 190, width: 52, height: 52, borderRadius: "50%", background: C.cyan, border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 0 14px rgba(77,127,255,0.28), 0 4px 10px rgba(77,127,255,0.16)" }}>
       <Plus size={22} color="#fff" strokeWidth={2.5} />
     </button>
   );
@@ -486,7 +486,7 @@ Content Center <span style={{ color: C.t3, fontWeight: 300 }}>/</span> <span sty
                 <div style={{ fontSize: 12, color: C.t2, marginTop: 4 }}>Manage posts, events, challenges and polls</div>
               </div>
               <div style={{ position: "relative" }}>
-                <button onClick={() => setShowMenu(o => !o)} style={{ display: "flex", alignItems: "center", gap: 6, padding: "9px 18px", background: C.cyan, border: "none", borderRadius: 9, fontSize: 12.5, fontWeight: 700, color: "#fff", cursor: "pointer", fontFamily: FONT, boxShadow: "0 2px 8px rgba(77,127,255,0.2)" }}>
+                <button onClick={() => setShowMenu(o => !o)} style={{ display: "flex", alignItems: "center", gap: 6, padding: "9px 18px", background: C.cyan, border: "none", borderRadius: 9, fontSize: 12.5, fontWeight: 700, color: "#fff", cursor: "pointer", fontFamily: FONT, boxShadow: "0 0 10px rgba(77,127,255,0.22), 0 2px 8px rgba(77,127,255,0.12)" }}>
 Create New <ChevronDown size={11} />
                 </button>
                 {showMenu && (
