@@ -295,7 +295,7 @@ function MobileFAB({ openModal }) {
         </div>
       )}
       <button onClick={() => setOpen(o => !o)} aria-label="Create"
-        style={{ position: 'fixed', bottom: 'calc(72px + env(safe-area-inset-bottom))', right: 20, zIndex: 200, width: 52, height: 52, borderRadius: 26, background: T.cyan, border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 12px rgba(77,127,255,0.35)', cursor: 'pointer', color: '#fff', transition: 'transform 0.18s', WebkitTapHighlightColor: 'transparent', transform: open ? 'rotate(45deg)' : 'rotate(0deg)' }}>
+        style={{ position: 'fixed', bottom: 'calc(72px + env(safe-area-inset-bottom))', right: 20, zIndex: 200, width: 52, height: 52, borderRadius: 26, background: T.cyan, border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 0 16px rgba(77,127,255,0.32), 0 4px 10px rgba(77,127,255,0.20)', cursor: 'pointer', color: '#fff', transition: 'transform 0.18s', WebkitTapHighlightColor: 'transparent', transform: open ? 'rotate(45deg)' : 'rotate(0deg)' }}>
         <Plus style={{ width: 22, height: 22, strokeWidth: 2.5 }} />
       </button>
     </>
