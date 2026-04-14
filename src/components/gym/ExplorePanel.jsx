@@ -38,25 +38,7 @@ export default function ExplorePanel({ recentlyViewedGyms, nearbyGyms, GymCardIn
         </button>
       </div>
 
-      {/* Active underline indicator */}
-      <div className="relative flex justify-center mb-4">
-        <div className="flex gap-10">
-          <div
-            className="h-0.5 rounded-full transition-all duration-300"
-            style={{
-              width: 110,
-              background: activePanel === 'recent' ? '#94a3b8' : 'transparent',
-            }}
-          />
-          <div
-            className="h-0.5 rounded-full transition-all duration-300"
-            style={{
-              width: 110,
-              background: activePanel === 'nearby' ? '#475569' : 'transparent',
-            }}
-          />
-        </div>
-      </div>
+
 
       {/* Recently Viewed */}
       {activePanel === 'recent' && (
