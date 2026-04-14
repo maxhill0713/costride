@@ -1,10 +1,4 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.21';
-
-// SECURITY FIX [LOW]:
-// 1. SDK version bumped.
-// 2. Google Places API error details (including internal API messages) were returned to client.
-//    Now suppressed.
-// 3. searchQuery is now length-capped to prevent abuse.
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
 // In-memory rate limiter: max 10 requests per user per minute
 const rateLimitMap = new Map();
@@ -68,17 +62,12 @@ Deno.serve(async (req) => {
     }
 
     const data   = await response.json();
-    // SECURITY: Do NOT embed the API key in photo URLs returned to the client — the key
-    // would be visible in browser network logs and exploitable for unauthorized API calls.
-    // Instead we return the photo resource name; the client should proxy requests through
-    // the backend (or use a domain-restricted key in Google Cloud Console).
-    // As an interim measure we return photoName only (no key embedded).
     const places = (data.places || []).map(place => {
       let photoUrl = null;
       if (place.photos?.length > 0) {
         const photoName = place.photos[0].name;
-        // Safe: resource path only, no key. Frontend may call /api/gymPhoto?name=... proxy.
-        photoUrl = `https://places.googleapis.com/v1/${photoName}/media?maxHeightPx=800&maxWidthPx=800`;
+        // Include API key so image can be fetched server-side when gym is created
+        photoUrl = `https://places.googleapis.com/v1/${photoName}/media?key=${apiKey}&maxHeightPx=800&maxWidthPx=800`;
       }
       const parts    = place.formattedAddress?.split(', ') || [];
       const city     = parts.length >= 2 ? parts[parts.length - 2] : '';
