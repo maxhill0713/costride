@@ -63,39 +63,8 @@ const POSE_2_URL = 'https://media.base44.com/images/public/694b637358644e1c22c8e
 const SPARTAN_ICON_URL = 'https://media.base44.com/images/public/694b637358644e1c22c8ec6b/a72ee034d_spartan.png';
 const BEACH_ICON_URL = 'https://media.base44.com/images/public/694b637358644e1c22c8ec6b/9766d8d41_BEACH.png';
 
-// ── Workout logged sound ──────────────────────────────────────────────────────
-// Duolingo-style immediate feedback sound — fires the instant the user logs.
-// Bright ascending "achievement unlocked" feel: quick pop, rising notes, warm finish.
-function playWorkoutLoggedSound() {
-  try {
-    const ctx = new (window.AudioContext || window.webkitAudioContext)();
-    const now = ctx.currentTime;
-
-    const tone = (freq, start, dur, gain, type = 'sine') => {
-      const osc = ctx.createOscillator();
-      const g   = ctx.createGain();
-      osc.connect(g); g.connect(ctx.destination);
-      osc.type = type;
-      osc.frequency.setValueAtTime(freq, start);
-      g.gain.setValueAtTime(0, start);
-      g.gain.linearRampToValueAtTime(gain, start + 0.01);
-      g.gain.exponentialRampToValueAtTime(0.001, start + dur);
-      osc.start(start); osc.stop(start + dur + 0.05);
-    };
-
-    // Sharp initial "tap" thud
-    tone(180,  now,        0.06, 0.22, 'triangle');
-    // Quick rising chime — Duolingo "correct" energy
-    tone(660,  now + 0.04, 0.10, 0.20);
-    tone(880,  now + 0.12, 0.12, 0.24);
-    tone(1100, now + 0.21, 0.16, 0.20);
-    // Warm harmonic tail
-    tone(550,  now + 0.21, 0.20, 0.10);
-
-    if (navigator.vibrate) navigator.vibrate([20, 10, 40]);
-    setTimeout(() => ctx.close(), 800);
-  } catch (_) {}
-}
+// ── NOTE: playWorkoutLoggedSound removed — the streak celebration animation
+// provides all audio/haptic feedback when a workout is logged. ────────────────
 
 const STREAK_KEYFRAMES = `
   @keyframes streakBounceIn {
@@ -136,14 +105,6 @@ const STREAK_KEYFRAMES = `
   @keyframes streakParticleBurst {
     0%   { transform: translate(0,0) scale(1); opacity: 1; }
     100% { transform: translate(var(--tx),var(--ty)) scale(0); opacity: 0; }
-  }
-  @keyframes dayButtonBounce {
-    0%   { transform: scale(1); }
-    20%  { transform: scale(0.82); }
-    50%  { transform: scale(1.28); }
-    70%  { transform: scale(0.94); }
-    85%  { transform: scale(1.07); }
-    100% { transform: scale(1); }
   }
   @keyframes dayWiggle {
     0%, 60%, 100% { transform: rotate(0deg); }
@@ -608,7 +569,6 @@ export default function Home() {
     placeholderData: (prev) => prev,
   });
 
-  // Fetch active app challenges directly (the monthly ones like Discipline Builder, etc.)
   const { data: activeAppChallenges = [] } = useQuery({
     queryKey: ['activeAppChallenges'],
     queryFn: () => base44.entities.Challenge.filter({ is_app_challenge: true, status: 'active' }),
@@ -623,7 +583,6 @@ export default function Home() {
     queryFn: () => {
     const base = startOfWeek(new Date(), { weekStartsOn: 1 });
     base.setDate(base.getDate() + weekOffset * 7);
-    // Use local date strings (not UTC) to avoid BST/timezone day-shift bugs
     const pad = n => String(n).padStart(2, '0');
     const monday = `${base.getFullYear()}-${pad(base.getMonth()+1)}-${pad(base.getDate())}`;
     const sun = new Date(base);
@@ -842,7 +801,7 @@ export default function Home() {
       }
     }
     setWorkoutStartTime(null);
-    playWorkoutLoggedSound();
+    // NOTE: playWorkoutLoggedSound() removed — streak celebration provides audio feedback
     await queryClient.invalidateQueries({ queryKey: ['checkIns', currentUser?.id] });
     await queryClient.invalidateQueries({ queryKey: ['weeklyWorkoutLogs', currentUser?.id] });
     await queryClient.invalidateQueries({ queryKey: ['userChallengeParticipants', currentUser?.id] });
@@ -1098,7 +1057,6 @@ export default function Home() {
             mondayBase.setDate(mondayBase.getDate() + weekOffset * 7);
             const logsByDay = {};
             weeklyWorkoutLogs.forEach((l) => {
-              // Parse date-only strings using local time to avoid UTC midnight timezone shift
               const dateStr = (l.completed_date || '').split('T')[0];
               const parts = dateStr.split('-').map(Number);
               const d = (parts.length === 3 && parts[0])
@@ -1145,10 +1103,9 @@ export default function Home() {
                       transition={{ duration: 0.38, ease: [0.25, 0.46, 0.45, 0.94] }}
                       style={{ display: 'flex', flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'center', gap: 8, overflow: 'visible', position: 'relative', width: '100%', paddingTop: 14, paddingBottom: 14 }}>
                       {allDays.map((day, i) => {
-                        // A day can only be 'done' if it's today or in the past — never a future day
                         const isDayInFuture = weekOffset === 0 && day > todayDay;
                         const done = !isDayInFuture && loggedDays.has(day);
-                        const bounce = justLoggedDay === day && weekOffset === 0;
+                        // CHANGED: bounce removed — no initial circle pop animation when workout is logged
                         const isTodayCircle = day === todayDay && weekOffset === 0;
                         const joinDate = currentUser?.created_date || currentUser?.created_at || null;
                         const mondayThisWeek = startOfWeek(new Date(), { weekStartsOn: 1 });
@@ -1157,7 +1114,6 @@ export default function Home() {
                         const isPast = isFutureWeek ? false : weekOffset < 0 ? true : day < todayDay;
                         const isPreJoin = joinDayNum !== null && day < joinDayNum && weekOffset === 0;
                         const isInCurrentSplit = trainingDays.includes(day);
-                        // If logged, it's never a rest day — user may have swapped their rest day
                         const isRestDay = done ? false : !isInCurrentSplit;
                         const isMissed = !isRestDay && !done && isPast && !isPreJoin && !isFutureWeek;
                         const isPastOrTodayRestDay = isRestDay && (isPast || isTodayCircle);
@@ -1195,7 +1151,7 @@ export default function Home() {
                           return '0 4px 0 0 #111827, 0 6px 14px rgba(15,20,35,0.5), inset 0 1px 0 rgba(255,255,255,0.1), inset 0 -1px 0 rgba(0,0,0,0.25), inset 0 0 10px rgba(255,255,255,0.02)';
                         };
                         const getAnimation = () => {
-                          if (bounce) return 'dayButtonBounce 0.65s cubic-bezier(0.34,1.6,0.64,1) 0s 1 normal forwards';
+                          // CHANGED: bounce (justLoggedDay) animation removed — no immediate circle pop on log
                           if (isRestDay || done || isPreJoin) return 'none';
                           if (weekOffset !== 0) return 'none';
                           return `dayWiggle 2.4s ease-in-out ${i * 0.18}s infinite`;
