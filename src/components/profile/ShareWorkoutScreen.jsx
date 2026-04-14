@@ -1,15 +1,12 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Button } from '@/components/ui/button';
 import { Camera, X, ChevronDown, ChevronUp } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 
-// ─── How many exercises to show before expand chevron ───────────────────────
 const PREVIEW_COUNT = 3;
 
-// ─── Parse sets/reps/weight out of an exercise object ───────────────────────
 function parseEx(ex) {
   let sets = '-', reps = '-';
   if (ex.sets) sets = ex.sets;
@@ -30,7 +27,55 @@ function parseEx(ex) {
   return { sets, reps, weight };
 }
 
-// ─── Swipeable photo/summary panels ─────────────────────────────────────────
+// ── Shared 3D button (same as StreakCelebration) ──────────────────────────────
+function StyledButton({ enabled = true, onClick, label, variant = 'orange', loading = false }) {
+  const [pressed, setPressed] = useState(false);
+
+  const faceEnabled = {
+    orange: 'linear-gradient(to bottom, #fb923c, #f97316 40%, #ea580c)',
+    subtle: 'linear-gradient(to bottom, #334155, #1e293b 40%, #0f172a)',
+  }[variant];
+
+  const shadowEnabled = {
+    orange: '#c2410c',
+    subtle: '#0a0f1a',
+  }[variant];
+
+  return (
+    <div style={{ position: 'relative', width: '100%' }}>
+      <div style={{
+        position: 'absolute', inset: 0, borderRadius: 16,
+        background: enabled ? shadowEnabled : '#111827',
+        transform: 'translateY(4px)',
+      }} />
+      <button
+        disabled={!enabled || loading}
+        onMouseDown={() => (enabled && !loading) && setPressed(true)}
+        onMouseUp={() => { setPressed(false); if (enabled && !loading) onClick?.(); }}
+        onMouseLeave={() => setPressed(false)}
+        onTouchStart={() => (enabled && !loading) && setPressed(true)}
+        onTouchEnd={() => { setPressed(false); if (enabled && !loading) onClick?.(); }}
+        onTouchCancel={() => setPressed(false)}
+        style={{
+          position: 'relative', zIndex: 1,
+          width: '100%', padding: '13px 0', borderRadius: 16, border: 'none',
+          background: enabled ? faceEnabled : 'linear-gradient(to bottom, #2d3748, #1a202c 50%, #0f172a)',
+          color: enabled ? '#fff' : 'rgba(255,255,255,0.28)',
+          fontSize: 16, fontWeight: 900, cursor: (enabled && !loading) ? 'pointer' : 'default',
+          letterSpacing: '-0.01em',
+          WebkitTapHighlightColor: 'transparent', userSelect: 'none', outline: 'none',
+          transform: pressed ? 'translateY(4px)' : 'translateY(0)',
+          boxShadow: pressed || !enabled ? 'none' : 'inset 0 1px 0 rgba(255,255,255,0.2)',
+          transition: 'transform 0.07s ease, box-shadow 0.07s ease',
+        }}
+      >
+        {loading ? 'Sharing...' : label}
+      </button>
+    </div>
+  );
+}
+
+// ── Swipeable photo/summary panels ───────────────────────────────────────────
 function SwipeablePanels({ photoUrl, uploading, onPhotoClick, onRemovePhoto, exercises, PANEL_HEIGHT, PREVIEW_COUNT_POST, exercisesExpanded, setExercisesExpanded }) {
   const [slide, setSlide] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
@@ -156,7 +201,7 @@ function SwipeablePanels({ photoUrl, uploading, onPhotoClick, onRemovePhoto, exe
         )}
       </div>
 
-      {/* ── SUMMARY PANEL — peeking from right ── */}
+      {/* ── SUMMARY PANEL ── */}
       <div
         className="absolute top-0 h-full overflow-hidden"
         style={{
@@ -170,8 +215,8 @@ function SwipeablePanels({ photoUrl, uploading, onPhotoClick, onRemovePhoto, exe
   );
 }
 
-// ─── Main component ──────────────────────────────────────────────────────────
-export default function ShareWorkoutScreen({ workoutName, exercises, previousExercises = [], currentUser, gymName, gymId, onContinue, durationMinutes }) {
+// ── Main component ────────────────────────────────────────────────────────────
+export default function ShareWorkoutScreen({ workoutName, exercises, previousExercises = [], currentUser, gymName, gymId, onContinue, onShareComplete, durationMinutes }) {
   const [comment, setComment] = useState('');
   const [postTitle, setPostTitle] = useState(workoutName || '');
   const [photoUrl, setPhotoUrl] = useState(null);
@@ -236,15 +281,16 @@ export default function ShareWorkoutScreen({ workoutName, exercises, previousExe
       toast.success('Workout shared with your friends! 🔥');
       queryClient.invalidateQueries({ queryKey: ['friendPosts'] });
       queryClient.invalidateQueries({ queryKey: ['userPosts'] });
-      onContinue();
+      // Use onShareComplete for a gentle fade if available, otherwise fall back
+      (onShareComplete || onContinue)();
     } catch (err) {
       console.error('[ShareWorkout] failed:', err);
       toast.error('Failed to share workout — ' + (err?.message || 'unknown error'));
+      setSharing(false);
     }
-    finally { setSharing(false); }
   };
 
-  const PANEL_HEIGHT = 'min(71vw, 315px)';
+  const PANEL_HEIGHT = 'min(65vw, 290px)';
   const PREVIEW_COUNT_POST = 8;
 
   const durationStr = durationMinutes > 0 ? `${durationMinutes}m` : '—';
@@ -263,14 +309,14 @@ export default function ShareWorkoutScreen({ workoutName, exercises, previousExe
       className="fixed inset-0 z-[100] bg-black/85 backdrop-blur-md flex flex-col items-center justify-center px-6"
       style={{ paddingTop: 'env(safe-area-inset-top)', paddingBottom: 'env(safe-area-inset-bottom)' }}>
 
-      <div className="w-full flex flex-col items-center overflow-y-auto max-h-[85vh] pb-4">
+      <div className="w-full flex flex-col items-center overflow-y-auto max-h-[85vh] pb-2">
 
         {/* ── POST CARD PREVIEW ── */}
         <motion.div
-          initial={{ opacity: 0, y: 16 }}
+          initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1, type: 'spring', stiffness: 260, damping: 22 }}
-          className="w-full max-w-sm mb-5 overflow-hidden shadow-2xl shadow-black/40 rounded-xl relative"
+          className="w-full max-w-sm mb-4 overflow-hidden shadow-2xl shadow-black/40 rounded-xl relative"
           style={{
             background: 'linear-gradient(135deg, rgba(30,35,60,0.82) 0%, rgba(8,10,20,0.96) 100%)',
             border: '1px solid rgba(255,255,255,0.07)',
@@ -278,17 +324,15 @@ export default function ShareWorkoutScreen({ workoutName, exercises, previousExe
             WebkitBackdropFilter: 'blur(20px)',
           }}>
 
-          {/* Top shine */}
           <div className="absolute inset-x-0 top-0 h-px pointer-events-none z-10"
             style={{ background: 'linear-gradient(90deg, transparent 10%, rgba(255,255,255,0.1) 50%, transparent 90%)' }} />
-          {/* Glow blob */}
           <div className="absolute inset-0 pointer-events-none rounded-xl"
             style={{ background: 'radial-gradient(ellipse at 25% 35%, rgba(99,102,241,0.18) 0%, transparent 60%)' }} />
 
-          <div className="relative z-10 px-4 pt-3.5 pb-3">
+          <div className="relative z-10 px-4 pt-3 pb-3">
 
             {/* Editable title */}
-            <div className="relative mb-3">
+            <div className="relative mb-2.5">
               <input
                 type="text"
                 value={postTitle}
@@ -306,7 +350,7 @@ export default function ShareWorkoutScreen({ workoutName, exercises, previousExe
             </div>
 
             {/* Stat row */}
-            <div className="flex items-center mb-3">
+            <div className="flex items-center mb-2.5">
               <div className="flex flex-col items-center flex-1">
                 <span className="text-sm font-black text-white leading-tight">{exercises?.length > 0 ? exercises.length : '—'}</span>
                 <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mt-0.5">Exercises</span>
@@ -357,71 +401,41 @@ export default function ShareWorkoutScreen({ workoutName, exercises, previousExe
       </div>
 
       {/* Share with community toggle */}
-      <div className="w-full max-w-sm flex items-center justify-between px-1 py-3">
-        <div className="flex items-center gap-2">
-          <span className="text-sm font-semibold text-slate-300">Share with community</span>
-        </div>
+      <div className="w-full max-w-sm flex items-center justify-between px-1 py-2">
+        <span className="text-sm font-semibold text-slate-300">Share with community</span>
         <button
           onClick={() => setShareWithCommunity(!shareWithCommunity)}
           style={{
-            width: 44,
-            height: 28,
-            position: 'relative',
-            borderRadius: 14,
+            width: 44, height: 28, position: 'relative', borderRadius: 14,
             background: shareWithCommunity ? '#3b82f6' : 'rgba(100,116,139,0.4)',
-            transition: 'background 0.2s ease',
-            border: 'none',
-            cursor: 'pointer',
-            flexShrink: 0,
+            transition: 'background 0.2s ease', border: 'none', cursor: 'pointer', flexShrink: 0,
           }}>
-          <div
-            style={{
-              position: 'absolute',
-              top: 2,
-              width: 24,
-              height: 24,
-              borderRadius: '50%',
-              background: '#fff',
-              boxShadow: '0 1px 3px rgba(0,0,0,0.3)',
-              left: shareWithCommunity ? 18 : 2,
-              transition: 'left 0.2s ease',
-            }}
-          />
+          <div style={{
+            position: 'absolute', top: 2, width: 24, height: 24, borderRadius: '50%',
+            background: '#fff', boxShadow: '0 1px 3px rgba(0,0,0,0.3)',
+            left: shareWithCommunity ? 18 : 2, transition: 'left 0.2s ease',
+          }} />
         </button>
       </div>
 
-      {/* Buttons */}
+      {/* ── 3D Buttons ── */}
       <motion.div
-        initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.3 }}
-        className="w-full max-w-sm flex flex-col gap-3 pt-3">
-        <Button
+        initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.25 }}
+        className="w-full max-w-sm flex flex-col gap-3 pt-2">
+        <StyledButton
+          enabled={!sharing}
+          loading={sharing}
           onClick={handleShare}
-          disabled={sharing}
-          className="w-full h-13 bg-gradient-to-b from-orange-400 via-orange-500 to-orange-600 text-white font-black text-base rounded-2xl shadow-[0_4px_0_0_#c2410c,0_8px_20px_rgba(234,88,12,0.4)] active:shadow-none active:translate-y-[4px] active:scale-95 transition-all duration-100 border border-transparent flex items-center justify-center">
-          {sharing ? 'Sharing...' : 'Share Workout'}
-        </Button>
-        <button
+          label="Share Workout"
+          variant="orange"
+        />
+        <StyledButton
+          enabled={!sharing}
           onClick={onContinue}
-          style={{
-            width: '100%', padding: '12px 0', borderRadius: 16,
-            background: 'rgba(20,28,50,0.8)',
-            border: '1px solid rgba(255,255,255,0.12)',
-            borderBottom: '3px solid rgba(0,0,0,0.5)',
-            boxShadow: '0 2px 0 rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.07)',
-            color: 'rgba(255,255,255,0.55)', fontSize: 15, fontWeight: 700,
-            cursor: 'pointer', letterSpacing: '0.01em',
-            WebkitTapHighlightColor: 'transparent',
-            transition: 'transform 0.08s ease, box-shadow 0.08s ease',
-          }}
-          onMouseDown={(e) => { e.currentTarget.style.transform = 'translateY(3px)'; e.currentTarget.style.boxShadow = 'none'; }}
-          onMouseUp={(e) => { e.currentTarget.style.transform = ''; e.currentTarget.style.boxShadow = ''; }}
-          onMouseLeave={(e) => { e.currentTarget.style.transform = ''; e.currentTarget.style.boxShadow = ''; }}
-          onTouchStart={(e) => { e.currentTarget.style.transform = 'translateY(3px)'; e.currentTarget.style.boxShadow = 'none'; }}
-          onTouchEnd={(e) => { e.currentTarget.style.transform = ''; e.currentTarget.style.boxShadow = ''; }}
-        >
-          Continue
-        </button>
+          label="Continue"
+          variant="subtle"
+        />
       </motion.div>
     </motion.div>
   );
