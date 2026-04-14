@@ -614,24 +614,9 @@ function MobileCreatePollModal({ open, onClose, onSave, isLoading }) {
 }
 
 /* ══════════════════════════════════════════════════════════════
-   ROOT EXPORT — branches on isMobile
+   DESKTOP MODAL
 ══════════════════════════════════════════════════════════════ */
-export default function CreatePollModal({ open, onClose, onSave, isLoading }) {
-  const isMobile = useIsMobile();
-
-  /* ── MOBILE ── */
-  if (isMobile) {
-    return (
-      <MobileCreatePollModal
-        open={open}
-        onClose={onClose}
-        onSave={onSave}
-        isLoading={isLoading}
-      />
-    );
-  }
-
-  /* ── DESKTOP (100% unchanged) ── */
+function DesktopCreatePollModal({ open, onClose, onSave, isLoading }) {
   const [title,       setTitle]       = useState('');
   const [category,    setCategory]    = useState('');
   const [options,     setOptions]     = useState(['', '']);
@@ -783,4 +768,15 @@ export default function CreatePollModal({ open, onClose, onSave, isLoading }) {
       </div>
     </>
   );
+}
+
+/* ══════════════════════════════════════════════════════════════
+   ROOT EXPORT — branches on isMobile
+══════════════════════════════════════════════════════════════ */
+export default function CreatePollModal({ open, onClose, onSave, isLoading }) {
+  const isMobile = useIsMobile();
+  if (isMobile) {
+    return <MobileCreatePollModal open={open} onClose={onClose} onSave={onSave} isLoading={isLoading} />;
+  }
+  return <DesktopCreatePollModal open={open} onClose={onClose} onSave={onSave} isLoading={isLoading} />;
 }

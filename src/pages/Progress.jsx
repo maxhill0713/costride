@@ -97,10 +97,10 @@ export default function Progress() {
           style={{ paddingTop: 'calc(0.4rem + env(safe-area-inset-top))', paddingBottom: 0 }}
         >
           <div className="max-w-4xl mx-auto">
-            <div className="flex items-end h-[3.2rem] pt-2 pb-2">
+            <div className="relative flex items-end h-[3.2rem] pt-2 pb-2">
 
-              {/* Tabs row — flex-1 so it fills all space left of the icon */}
-              <TabsList className="flex flex-1 bg-transparent p-0 gap-6 border-0 h-auto mb-[-1px]">
+              {/* Centred tabs */}
+              <TabsList className="absolute left-1/2 -translate-x-1/2 flex bg-transparent p-0 gap-6 border-0 h-auto mb-[-1px] bottom-2">
                 <TabsTrigger value="analytics" className={tabTriggerClass}>
                   <BarChart3 className="w-4 h-4 mr-1.5" />Analytics
                 </TabsTrigger>
@@ -112,10 +112,10 @@ export default function Progress() {
                 </TabsTrigger>
               </TabsList>
 
-              {/* Message icon — plain flex sibling, no absolute positioning */}
+              {/* Message icon — pushed to the right */}
               <button
                 onClick={() => setShowTrainer(true)}
-                className="flex items-center justify-center w-8 h-8 mb-1.5 ml-4 flex-shrink-0 rounded-full text-slate-400 active:scale-90 transition-transform"
+                className="ml-auto flex items-center justify-center w-8 h-8 mb-1.5 flex-shrink-0 rounded-full text-slate-400 active:scale-90 transition-transform"
                 aria-label="Chats"
               >
                 <MessageCircle className="w-5 h-5" />
