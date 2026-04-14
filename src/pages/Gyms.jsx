@@ -175,6 +175,15 @@ export default function Gyms() {
     return matchesSearch && matchesType && matchesDistance && matchesEquipment && isGhostOrApproved;
   });
 
+  const inAppSearchResults = useMemo(() => {
+    if (!searchQuery || searchQuery.length < 2) return [];
+    const q = searchQuery.toLowerCase();
+    return gyms.filter(gym =>
+      !memberGymIds.includes(gym.id) &&
+      (gym.name?.toLowerCase().includes(q) || gym.city?.toLowerCase().includes(q))
+    );
+  }, [searchQuery, gyms, memberGymIds]);
+
   const toggleSave = gymId => setSavedGyms(prev => prev.includes(gymId) ? prev.filter(id => id !== gymId) : [...prev, gymId]);
 
   const searchPlaces = async query => {
@@ -375,6 +384,21 @@ export default function Gyms() {
                         </div>
                       </div>
                     </button>
+                  ))}
+                </div>
+              </div>
+            }
+
+            {/* In-app gym search results */}
+            {!searchingPlaces && searchQuery.length >= 2 && inAppSearchResults.length > 0 &&
+              <div className="rounded-xl p-3 space-y-2 bg-slate-900/95 border border-slate-800/60 shadow-xl mb-4">
+                <p className="text-xs font-semibold flex items-center gap-2"><Building2 className="w-3 h-3 text-blue-400" /><span className="text-blue-400">Found {inAppSearchResults.length} gym{inAppSearchResults.length > 1 ? 's' : ''} on CoStride</span></p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  {inAppSearchResults.slice(0, 6).map(gym => (
+                    <div key={gym.id} className="group relative">
+                      <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-purple-500/20 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-all duration-500" />
+                      <GymCardInner gym={gym} isMember={false} />
+                    </div>
                   ))}
                 </div>
               </div>
