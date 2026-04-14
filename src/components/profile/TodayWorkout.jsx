@@ -138,6 +138,7 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
   const frozenDurationRef = React.useRef(0);
   const [summaryLog, setSummaryLog] = useState(null);
   const [editingGroupedSet, setEditingGroupedSet] = useState(null);
+  const [showMissingData, setShowMissingData] = useState(false);
 
   // Load overrideDayKey from localStorage, but only if it was saved for today
   const [overrideDayKey, setOverrideDayKey] = useState(() => {
@@ -1048,6 +1049,13 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                   }
                       <Button
                     onClick={() => {
+                      const hasMissing = (todayWorkout.exercises || []).some(ex => {
+                        const sets = ex.sets || ex.setsReps?.split('x')?.[0];
+                        const reps = ex.reps || ex.setsReps?.split('x')?.[1];
+                        const weight = ex.weight;
+                        return !sets || !reps || !weight;
+                      });
+                      if (hasMissing) { setShowMissingData(true); return; }
                       setIsExpanded(false);
                       window.scrollTo({ top: 0, behavior: 'smooth' });
                       const captured = workoutDuration;
@@ -1170,6 +1178,25 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
       </Card>
 
       <HomeSummaryModal summaryLog={summaryLog} onClose={() => setSummaryLog(null)} />
+
+      {/* Missing data popup */}
+      {showMissingData && (
+        <div
+          className="fixed inset-0 z-[10010] flex items-center justify-center"
+          onClick={() => setShowMissingData(false)}>
+          <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" />
+          <div
+            className="relative mx-6 max-w-xs w-full rounded-3xl text-center px-6 py-7 shadow-2xl shadow-black/60"
+            style={{ background: 'linear-gradient(135deg, rgba(30,35,60,0.98) 0%, rgba(8,10,22,0.99) 100%)', border: '1px solid rgba(255,255,255,0.1)' }}
+            onClick={e => e.stopPropagation()}>
+            <div className="text-3xl mb-3">⚠️</div>
+            <p className="text-white font-black text-base leading-snug tracking-tight">
+              You've missed some data, fill it in and log your workout!
+            </p>
+            <p className="text-slate-500 text-xs mt-3">Tap anywhere to dismiss</p>
+          </div>
+        </div>
+      )}
 
       <WorkoutSwitcherModal
         open={showSwitcher}
