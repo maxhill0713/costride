@@ -11,7 +11,6 @@ const DAY_LABELS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
 // ── Audio ─────────────────────────────────────────────────────────────────────
 
-// Fires when pose swaps to celebrating icon + streak number increments
 function playCircleLevelUp() {
   try {
     const ctx = new (window.AudioContext || window.webkitAudioContext)();
@@ -38,7 +37,6 @@ function playCircleLevelUp() {
   } catch (_) {}
 }
 
-// Duolingo-style bright "correct!" chime — fires when today's circle pops blue
 function playDayCircleDing() {
   try {
     const ctx = new (window.AudioContext || window.webkitAudioContext)();
@@ -54,17 +52,15 @@ function playDayCircleDing() {
       g.gain.exponentialRampToValueAtTime(0.001, start + dur);
       osc.start(start); osc.stop(start + dur + 0.05);
     };
-    // Rising two-note "ding-dong" chime
-    t(880,  now,        0.18, 0.28);        // A5
-    t(1320, now + 0.13, 0.28, 0.32);        // E6
-    t(1760, now + 0.24, 0.20, 0.16);        // A6 shimmer
-    t(130,  now,        0.12, 0.16, 'triangle'); // warm thud
+    t(880,  now,        0.18, 0.28);
+    t(1320, now + 0.13, 0.28, 0.32);
+    t(1760, now + 0.24, 0.20, 0.16);
+    t(130,  now,        0.12, 0.16, 'triangle');
     if (navigator.vibrate) navigator.vibrate([30, 20, 60]);
     setTimeout(() => ctx.close(), 800);
   } catch (_) {}
 }
 
-// Light ascending tick per other circle — staircase of pitches, Duolingo-style
 function playCircleTick(seqIndex) {
   try {
     const ctx = new (window.AudioContext || window.webkitAudioContext)();
@@ -127,14 +123,37 @@ function injectDayStyles() {
   document.head.appendChild(s);
 }
 
-// ── 3D Continue button ────────────────────────────────────────────────────────
-function ContinueButton({ enabled, opacity, onClick }) {
+// ── Shared 3D button ──────────────────────────────────────────────────────────
+// variant: 'blue' | 'green' | 'subtle'
+// 'blue'   — streak/challenges continue (bright blue)
+// 'green'  — primary action on share screen (keep green theme)
+// 'subtle' — secondary action (dark, muted)
+function StyledButton({ enabled, opacity, onClick, label = 'Continue', variant = 'blue' }) {
   const [pressed, setPressed] = useState(false);
+
+  const faceEnabled = {
+    blue:   'linear-gradient(to bottom, #60a5fa, #3b82f6 40%, #1d4ed8)',
+    green:  'linear-gradient(to bottom, #4ade80, #22c55e 40%, #16a34a)',
+    subtle: 'linear-gradient(to bottom, #334155, #1e293b 40%, #0f172a)',
+  }[variant];
+
+  const faceDisabled = 'linear-gradient(to bottom, #2d3748, #1a202c 50%, #0f172a)';
+
+  const shadowEnabled = {
+    blue:   '#1a3fa8',
+    green:  '#15803d',
+    subtle: '#0a0f1a',
+  }[variant];
+
   return (
-    <div style={{ position: 'relative', width: '100%', opacity: opacity !== undefined ? opacity : 1, transition: 'opacity 0.8s ease' }}>
+    <div style={{
+      position: 'relative', width: '100%',
+      opacity: opacity !== undefined ? opacity : 1,
+      transition: 'opacity 0.8s ease',
+    }}>
       <div style={{
         position: 'absolute', inset: 0, borderRadius: 16,
-        background: enabled ? '#1a3fa8' : '#111827',
+        background: enabled ? shadowEnabled : '#111827',
         transform: 'translateY(4px)',
         transition: 'background 0.8s ease',
       }} />
@@ -149,9 +168,7 @@ function ContinueButton({ enabled, opacity, onClick }) {
         style={{
           position: 'relative', zIndex: 1,
           width: '100%', padding: '13px 0', borderRadius: 16, border: 'none',
-          background: enabled
-            ? 'linear-gradient(to bottom, #60a5fa, #3b82f6 40%, #1d4ed8)'
-            : 'linear-gradient(to bottom, #2d3748, #1a202c 50%, #0f172a)',
+          background: enabled ? faceEnabled : faceDisabled,
           color: enabled ? '#fff' : 'rgba(255,255,255,0.28)',
           fontSize: 16, fontWeight: 900, cursor: enabled ? 'pointer' : 'default',
           letterSpacing: '-0.01em',
@@ -161,10 +178,15 @@ function ContinueButton({ enabled, opacity, onClick }) {
           transition: 'transform 0.07s ease, box-shadow 0.07s ease, background 0.8s ease, color 0.8s ease',
         }}
       >
-        Continue
+        {label}
       </button>
     </div>
   );
+}
+
+// Alias kept for streak stage — always blue
+function ContinueButton(props) {
+  return <StyledButton {...props} label="Continue" variant="blue" />;
 }
 
 // ── EmbeddedDayCircles ────────────────────────────────────────────────────────
@@ -174,6 +196,8 @@ function EmbeddedDayCircles({ currentUser, weeklyWorkoutLogs, todayDow, startAni
   const [todayColoured, setTodayColoured]       = useState(false);
   const [colourPopIdx, setColourPopIdx]         = useState(-1);
   const [todayColourPop, setTodayColourPop]     = useState(false);
+  // wiggleActive: true during the brief all-circles-wiggle phase before any colouring
+  const [wiggleActive, setWiggleActive]         = useState(false);
   const todayRef     = useRef(null);
   const hasCompleted = useRef(false);
 
@@ -182,7 +206,6 @@ function EmbeddedDayCircles({ currentUser, weeklyWorkoutLogs, todayDow, startAni
   const allDays          = [1, 2, 3, 4, 5, 6, 7];
   const swappedRestDay   = getSwappedRestDay();
 
-  // loggedDays excludes today — today starts grey, pops blue separately
   const loggedDays = new Set();
   weeklyWorkoutLogs.forEach(l => {
     const d = new Date(l.completed_date).getDay();
@@ -195,17 +218,19 @@ function EmbeddedDayCircles({ currentUser, weeklyWorkoutLogs, todayDow, startAni
     if (!startAnimation) return;
     const timers = [];
 
-    // Phase 1 — all circles pop in grey, slightly slower spacing (90ms per circle, up from 65ms)
+    // Phase 1 — circles pop in one by one (grey), 90ms apart
     allDays.forEach((_, i) => {
       timers.push(setTimeout(() => setAnimatedIdx(i), i * 90));
     });
     const allVisibleAt = (allDays.length - 1) * 90 + 80;
-
-    // Notify parent that all circles are visible
     timers.push(setTimeout(() => onAllVisible?.(), allVisibleAt));
 
-    // Phase 2 — pause 500ms after all visible before today's circle pops blue
-    const todayColourAt = allVisibleAt + 500;
+    // Phase 1b — all circles wiggle together for 700ms before any colour
+    timers.push(setTimeout(() => setWiggleActive(true),  allVisibleAt + 80));
+    timers.push(setTimeout(() => setWiggleActive(false), allVisibleAt + 80 + 700));
+
+    // Phase 2 — today pops blue 800ms after all visible (after wiggle settles)
+    const todayColourAt = allVisibleAt + 800;
     timers.push(setTimeout(() => {
       setTodayColoured(true);
       setTodayColourPop(true);
@@ -213,8 +238,7 @@ function EmbeddedDayCircles({ currentUser, weeklyWorkoutLogs, todayDow, startAni
       setTimeout(() => setTodayColourPop(false), 600);
     }, todayColourAt));
 
-    // Phase 3 — other circles colour one-by-one, starting 400ms after today pops
-    // Slowed down: 220ms between each circle (up from 155ms)
+    // Phase 3 — other circles colour one by one, 400ms after today, 220ms apart
     const nonTodayStartAt = todayColourAt + 400;
     const nonTodayDays = allDays
       .map((day, i) => ({ day, i }))
@@ -228,7 +252,7 @@ function EmbeddedDayCircles({ currentUser, weeklyWorkoutLogs, todayDow, startAni
       }, nonTodayStartAt + seq * 220));
     });
 
-    // Phase 4 — complete (no particles/confetti)
+    // Phase 4 — done
     const lastAt = nonTodayStartAt + (nonTodayDays.length - 1) * 220 + 380;
     timers.push(setTimeout(() => {
       if (!hasCompleted.current) {
@@ -278,9 +302,11 @@ function EmbeddedDayCircles({ currentUser, weeklyWorkoutLogs, todayDow, startAni
       if (!isVisible) return 'none';
       if (isPopping)  return 'scCircleColourPop 0.55s cubic-bezier(0.34,1.3,0.64,1) forwards';
       if (isColoured) return 'none';
+      // Wiggle phase: all visible uncoloured circles bounce together
+      if (wiggleActive) return `scWiggle 2.4s ease-in-out ${i * 0.09}s infinite`;
       if (isToday)    return 'scCirclePop 0.9s cubic-bezier(0.34,1.3,0.64,1) forwards';
       if (done || isRestDay || isMissed) return 'scCirclePop 0.55s cubic-bezier(0.34,1.3,0.64,1) forwards';
-      return `scWiggle 2.4s ease-in-out ${i * 0.18}s infinite`;
+      return 'none';
     };
 
     return { isToday, done, isRestDay, isMissed, isPastRest, size, isVisible, isColoured, isPopping, getBg, getBorder, getBoxShadow, getAnim };
@@ -401,6 +427,110 @@ function EmbeddedDayCircles({ currentUser, weeklyWorkoutLogs, todayDow, startAni
   );
 }
 
+// ── ChallengesStage — isolated component so it owns its own enable-timer ──────
+function ChallengesStage({ celebrationChallenges, onChallengesContinue, BUTTON_BOTTOM, BUTTON_WIDTH }) {
+  const [continueEnabled, setContinueEnabled] = useState(false);
+  const [continueOpacity, setContinueOpacity] = useState(0);
+
+  useEffect(() => {
+    // The last bar starts at delay = 0.4 + lastIdx * 0.1 and fills over 1.2s
+    const lastIdx   = celebrationChallenges.length - 1;
+    const barDoneMs = (0.4 + lastIdx * 0.1 + 1.2) * 1000;
+    // Fade button in a little before it's pressable (visible but grey)
+    const t1 = setTimeout(() => setContinueOpacity(1),    barDoneMs - 200);
+    const t2 = setTimeout(() => setContinueEnabled(true), barDoneMs + 400);
+    return () => { clearTimeout(t1); clearTimeout(t2); };
+  }, [celebrationChallenges.length]);
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+      transition={{ duration: 0.4 }}
+      className="fixed inset-0 z-[100] flex flex-col items-center justify-center px-4"
+    >
+      <div style={{
+        transform: 'scale(0.9)', transformOrigin: 'top center',
+        width: '100%', maxWidth: '24rem',
+        paddingBottom: 'calc(env(safe-area-inset-bottom) + 80px)',
+      }} className="space-y-3">
+        {celebrationChallenges.map((challenge, idx) => {
+          const prevPct    = Math.min(100, Math.round((challenge.previous_value / challenge.target_value) * 100));
+          const newPct     = Math.min(100, Math.round((challenge.new_value / challenge.target_value) * 100));
+          const isComplete = newPct >= 100;
+          return (
+            <motion.div
+              key={challenge.id}
+              initial={{ opacity: 0, scale: 0.97 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.15 + idx * 0.1, duration: 0.3 }}
+              className="rounded-2xl overflow-hidden relative"
+              style={{
+                background: 'linear-gradient(135deg, rgba(16,19,40,0.96) 0%, rgba(6,8,18,0.99) 100%)',
+                border: '1px solid rgba(255,255,255,0.07)',
+                backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)',
+                boxShadow: '0 2px 12px rgba(0,0,0,0.35)',
+              }}
+            >
+              <div className="absolute inset-x-0 top-0 h-px pointer-events-none"
+                style={{ background: 'linear-gradient(90deg, transparent 10%, rgba(255,255,255,0.08) 50%, transparent 90%)' }} />
+              <div className="relative p-4 space-y-3">
+                <div className="flex items-start gap-3">
+                  <div className="w-12 h-12 rounded-xl overflow-hidden flex-shrink-0"
+                    style={{ border: '1px solid rgba(255,255,255,0.08)' }}>
+                    <img
+                      src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694b637358644e1c22c8ec6b/5a4c7be8b_Untitleddesign-7.jpg"
+                      alt="Challenge" className="w-full h-full object-cover"
+                    />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[15px] font-black text-white leading-tight truncate">{challenge.title}</p>
+                    <p className="text-[11px] text-slate-400 mt-0.5 leading-snug">{challenge.description}</p>
+                  </div>
+                </div>
+                <div>
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-[11px] font-bold text-slate-400">{challenge.new_value} / {challenge.target_value}</span>
+                    <span className="text-[11px] font-bold" style={{ color: isComplete ? '#34d399' : '#64748b' }}>
+                      {isComplete ? '✓ Complete' : `${newPct}%`}
+                    </span>
+                  </div>
+                  <div className="h-4 rounded-full overflow-hidden"
+                    style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.05)' }}>
+                    <motion.div
+                      initial={{ width: `${prevPct}%` }}
+                      animate={{ width: `${newPct}%` }}
+                      transition={{ delay: 0.4 + idx * 0.1, duration: 1.2, ease: 'easeOut' }}
+                      className="h-full rounded-full"
+                      style={{ background: isComplete ? 'linear-gradient(90deg, #34d399, #10b981)' : 'linear-gradient(90deg, #38bdf8, #60a5fa)' }}
+                    />
+                  </div>
+                </div>
+                <div className="flex items-center gap-3 rounded-xl px-3 py-2"
+                  style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }}>
+                  <UniqueBadge reward={challenge.reward} size="sm" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-0.5">Reward</p>
+                    <p className="text-[13px] font-black text-white truncate">{challenge.reward}</p>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          );
+        })}
+      </div>
+      <div style={{ position: 'absolute', bottom: BUTTON_BOTTOM, width: BUTTON_WIDTH }}>
+        <StyledButton
+          enabled={continueEnabled}
+          opacity={continueOpacity}
+          onClick={onChallengesContinue}
+          label="Continue"
+          variant="blue"
+        />
+      </div>
+    </motion.div>
+  );
+}
+
 // ── StreakCelebration ─────────────────────────────────────────────────────────
 function StreakCelebration({
   showStreakCelebration,
@@ -425,12 +555,9 @@ function StreakCelebration({
   const [startCircleAnimation, setStartCircleAnimation]   = useState(false);
   const [continueButtonVisible, setContinueButtonVisible] = useState(false);
   const [continueButtonEnabled, setContinueButtonEnabled] = useState(false);
-  // Separate opacity state for smooth fade-in of the button
   const [continueButtonOpacity, setContinueButtonOpacity] = useState(0);
   const [shareWorkoutExiting, setShareWorkoutExiting]     = useState(false);
-
-  // Shared dark backdrop across all stages — prevents any flash between them
-  const [showSharedBackground, setShowSharedBackground] = useState(false);
+  const [showSharedBackground, setShowSharedBackground]   = useState(false);
 
   useEffect(() => { injectDayStyles(); }, []);
 
@@ -463,7 +590,6 @@ function StreakCelebration({
       const p2    = document.getElementById('streak-anim-p2');
       if (!stage || !numEl) return;
 
-      // Reset
       stage.style.transition = 'none';
       stage.style.opacity    = '0';
       stage.style.transform  = 'scale(0.4) translateY(40px)';
@@ -486,7 +612,6 @@ function StreakCelebration({
         numEl.style.transform  = 'scale(1)';
       }, 1050);
 
-      // Pose swap + number increment + level-up sound
       const t3 = setTimeout(() => {
         if (p1) p1.style.display = 'none';
         if (p2) p2.style.display = 'block';
@@ -507,14 +632,10 @@ function StreakCelebration({
         }
       }, 1530);
 
-      // Pause 500ms after shake completes (shake ends ~1530+360=1890ms), then shift up
-      // Shift-up at ~2400ms — icon+number move to final position slowly (0.9s)
-      const t5 = setTimeout(() => {
-        setStreakPhase('final');
-      }, 2400);
+      // 500ms pause after shake completes (~1890ms), shift up at 2400ms
+      const t5 = setTimeout(() => setStreakPhase('final'), 2400);
 
-      // Circles become visible — layout is already at final position so no second shift
-      // Slightly later to let the shift-up complete more gracefully
+      // Circles mount at 3500ms
       const t6 = setTimeout(() => {
         setStreakPhase('circles');
         setStartCircleAnimation(true);
@@ -529,21 +650,15 @@ function StreakCelebration({
     return () => cancelAnimationFrame(raf);
   }, [showStreakCelebration, celebrationStreakNum]);
 
-  // Continue button fades in 400ms after circles start
-  // First make it visible (but transparent), then smoothly fade opacity to 1
-  // and enable interaction a bit after it's fully visible
   useEffect(() => {
     if (streakPhase === 'circles') {
-      // Show the element (opacity 0) after a short delay
       const t1 = setTimeout(() => setContinueButtonVisible(true), 400);
-      // Fade it in
-      const t2 = setTimeout(() => setContinueButtonOpacity(1), 450);
+      const t2 = setTimeout(() => setContinueButtonOpacity(1),    450);
       return () => { clearTimeout(t1); clearTimeout(t2); };
     }
   }, [streakPhase]);
 
   const handleCirclesComplete = () => {
-    // Enable the button with a smooth colour transition handled by ContinueButton itself
     setTimeout(() => setContinueButtonEnabled(true), 300);
   };
 
@@ -558,15 +673,12 @@ function StreakCelebration({
 
   const BUTTON_BOTTOM = 'calc(env(safe-area-inset-bottom) + 36px)';
   const BUTTON_WIDTH  = 'min(340px, 88vw)';
-
-  // Slightly slower shift-up so it feels more deliberate (0.9s, up from 0.7s)
-  const FINAL_Y = '-80px';
-
+  const FINAL_Y       = '-80px';
   const CIRCLES_SLOT_HEIGHT = 110;
 
   return (
     <>
-      {/* Persistent backdrop — slightly slower fade-in so it feels less sudden */}
+      {/* Persistent backdrop — gradual fade so the dark overlay isn't jarring */}
       {showSharedBackground && (
         <motion.div
           initial={{ opacity: 0 }}
@@ -582,7 +694,7 @@ function StreakCelebration({
         />
       )}
 
-      {/* STAGE 1 — Streak + Day Circles */}
+      {/* STAGE 1 — Streak number + Day Circles */}
       <AnimatePresence>
         {showStreakCelebration && (
           <motion.div
@@ -592,10 +704,6 @@ function StreakCelebration({
             transition={{ duration: 0.15 }}
             className="fixed inset-0 z-[100] flex flex-col items-center justify-center overflow-hidden"
           >
-            {/*
-              Outer wrapper: shifts up ONCE when phase reaches 'final'.
-              Slower transition (0.9s) so the movement feels more deliberate.
-            */}
             <div style={{
               display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16,
               transform: (streakPhase === 'final' || streakPhase === 'circles')
@@ -605,7 +713,6 @@ function StreakCelebration({
                 ? 'transform 0.9s cubic-bezier(0.4, 0, 0.2, 1)'
                 : 'none',
             }}>
-              {/* Pose image */}
               <div id="streak-anim-stage"
                 style={{ position: 'relative', width: 180, height: 180, opacity: 0, willChange: 'transform, opacity' }}>
                 <img id="streak-anim-p1" src={POSE_1_URL} alt="pose 1"
@@ -614,10 +721,8 @@ function StreakCelebration({
                   style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'contain', display: 'none' }} />
               </div>
 
-              {/* Streak number */}
               <div id="streak-anim-num" style={{
-                fontSize: 96,
-                fontWeight: 900, color: '#fff',
+                fontSize: 96, fontWeight: 900, color: '#fff',
                 textShadow: '0 4px 12px rgba(0,0,0,0.8)',
                 letterSpacing: '-0.04em', lineHeight: 1,
                 opacity: 0, transform: 'scale(0.5)',
@@ -625,11 +730,6 @@ function StreakCelebration({
                 {celebrationStreakNum - 1}
               </div>
 
-              {/*
-                Pre-reserved circles slot — always rendered once we're in 'final' or
-                'circles' phase, but invisible until 'circles' so the layout height
-                is already accounted for before the animation starts.
-              */}
               {(streakPhase === 'final' || streakPhase === 'circles') && (
                 <div style={{
                   width: BUTTON_WIDTH,
@@ -648,18 +748,15 @@ function StreakCelebration({
               )}
             </div>
 
-            {/* Continue button — smooth opacity fade, colour transitions when enabled */}
             {continueButtonVisible && (
-              <div
-                style={{
-                  position: 'absolute',
-                  bottom: BUTTON_BOTTOM,
-                  width: BUTTON_WIDTH,
-                  opacity: continueButtonOpacity,
-                  transform: continueButtonOpacity === 1 ? 'translateY(0)' : 'translateY(16px)',
-                  transition: 'opacity 0.9s ease, transform 0.9s ease',
-                }}
-              >
+              <div style={{
+                position: 'absolute',
+                bottom: BUTTON_BOTTOM,
+                width: BUTTON_WIDTH,
+                opacity: continueButtonOpacity,
+                transform: continueButtonOpacity === 1 ? 'translateY(0)' : 'translateY(16px)',
+                transition: 'opacity 0.9s ease, transform 0.9s ease',
+              }}>
                 <ContinueButton
                   enabled={continueButtonEnabled}
                   onClick={() => document.dispatchEvent(new CustomEvent('streakCelebrationContinue'))}
@@ -673,85 +770,13 @@ function StreakCelebration({
       {/* STAGE 2 — Challenges */}
       <AnimatePresence>
         {showChallengesCelebration && celebrationChallenges.length > 0 && (
-          <motion.div
-            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            transition={{ duration: 0.4 }}
-            className="fixed inset-0 z-[100] flex flex-col items-center justify-center px-4"
-          >
-            <div style={{
-              transform: 'scale(0.9)', transformOrigin: 'top center',
-              width: '100%', maxWidth: '24rem',
-              paddingBottom: 'calc(env(safe-area-inset-bottom) + 80px)',
-            }} className="space-y-3">
-              {celebrationChallenges.map((challenge, idx) => {
-                const prevPct    = Math.min(100, Math.round((challenge.previous_value / challenge.target_value) * 100));
-                const newPct     = Math.min(100, Math.round((challenge.new_value / challenge.target_value) * 100));
-                const isComplete = newPct >= 100;
-                return (
-                  <motion.div
-                    key={challenge.id}
-                    initial={{ opacity: 0, scale: 0.97 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ delay: 0.15 + idx * 0.1, duration: 0.3 }}
-                    className="rounded-2xl overflow-hidden relative"
-                    style={{
-                      background: 'linear-gradient(135deg, rgba(16,19,40,0.96) 0%, rgba(6,8,18,0.99) 100%)',
-                      border: '1px solid rgba(255,255,255,0.07)',
-                      backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)',
-                      boxShadow: '0 2px 12px rgba(0,0,0,0.35)',
-                    }}
-                  >
-                    <div className="absolute inset-x-0 top-0 h-px pointer-events-none"
-                      style={{ background: 'linear-gradient(90deg, transparent 10%, rgba(255,255,255,0.08) 50%, transparent 90%)' }} />
-                    <div className="relative p-4 space-y-3">
-                      <div className="flex items-start gap-3">
-                        <div className="w-12 h-12 rounded-xl overflow-hidden flex-shrink-0"
-                          style={{ border: '1px solid rgba(255,255,255,0.08)' }}>
-                          <img
-                            src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694b637358644e1c22c8ec6b/5a4c7be8b_Untitleddesign-7.jpg"
-                            alt="Challenge" className="w-full h-full object-cover"
-                          />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-[15px] font-black text-white leading-tight truncate">{challenge.title}</p>
-                          <p className="text-[11px] text-slate-400 mt-0.5 leading-snug">{challenge.description}</p>
-                        </div>
-                      </div>
-                      <div>
-                        <div className="flex items-center justify-between mb-1">
-                          <span className="text-[11px] font-bold text-slate-400">{challenge.new_value} / {challenge.target_value}</span>
-                          <span className="text-[11px] font-bold" style={{ color: isComplete ? '#34d399' : '#64748b' }}>
-                            {isComplete ? '✓ Complete' : `${newPct}%`}
-                          </span>
-                        </div>
-                        <div className="h-4 rounded-full overflow-hidden"
-                          style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.05)' }}>
-                          <motion.div
-                            initial={{ width: `${prevPct}%` }}
-                            animate={{ width: `${newPct}%` }}
-                            transition={{ delay: 0.4 + idx * 0.1, duration: 1.2, ease: 'easeOut' }}
-                            className="h-full rounded-full"
-                            style={{ background: isComplete ? 'linear-gradient(90deg, #34d399, #10b981)' : 'linear-gradient(90deg, #38bdf8, #60a5fa)' }}
-                          />
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-3 rounded-xl px-3 py-2"
-                        style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }}>
-                        <UniqueBadge reward={challenge.reward} size="sm" />
-                        <div className="flex-1 min-w-0">
-                          <p className="text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-0.5">Reward</p>
-                          <p className="text-[13px] font-black text-white truncate">{challenge.reward}</p>
-                        </div>
-                      </div>
-                    </div>
-                  </motion.div>
-                );
-              })}
-            </div>
-            <div style={{ position: 'absolute', bottom: BUTTON_BOTTOM, width: BUTTON_WIDTH }}>
-              <ContinueButton enabled={true} onClick={onChallengesContinue} />
-            </div>
-          </motion.div>
+          <ChallengesStage
+            key="challenges-stage"
+            celebrationChallenges={celebrationChallenges}
+            onChallengesContinue={onChallengesContinue}
+            BUTTON_BOTTOM={BUTTON_BOTTOM}
+            BUTTON_WIDTH={BUTTON_WIDTH}
+          />
         )}
       </AnimatePresence>
 
