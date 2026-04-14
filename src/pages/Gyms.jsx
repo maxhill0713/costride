@@ -325,12 +325,12 @@ export default function Gyms() {
         <div style={{ height: '3.6rem' }} />
 
         {/* ── My Gyms ── */}
-        <TabsContent value="my-gyms" className="mt-0 px-3 md:px-4 pt-8 pb-4">
+        <TabsContent value="my-gyms" className="mt-0 px-3 md:px-4 pt-16 pb-4">
           <MyGymsContent userGyms={userGyms} GymCardInner={GymCardInner} />
         </TabsContent>
 
         {/* ── Explore ── */}
-        <TabsContent value="explore" className="mt-0 px-3 md:px-4 pt-8 pb-4">
+        <TabsContent value="explore" className="mt-0 px-3 md:px-4 pt-16 pb-4">
           <div className="max-w-6xl mx-auto">
             {/* Search bar + filter — always visible */}
             <div className="flex items-center gap-2 mb-4">
