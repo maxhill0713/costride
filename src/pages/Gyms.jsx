@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect, useRef } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { MapPin, Star, Users, Dumbbell, Filter, Gift, BadgeCheck, Edit, Heart, Images, Plus, Search, Building2, Loader2, Crown, CheckCircle, X, MoreVertical, LogOut } from 'lucide-react';
@@ -164,29 +164,6 @@ export default function Gyms() {
 
   const recentlyViewedGyms = useMemo(() => recentlyViewedGymIds.map(id => gyms.find(g => g.id === id)).filter(Boolean).slice(0, 3), [recentlyViewedGymIds, gyms]);
 
-  // ── Popular Nearby: gyms within 20km of the user's primary gym, sorted by members_count ──
-  const popularNearbyGyms = useMemo(() => {
-    const primaryGym = userGymsData.find(g => g.id === currentUser?.primary_gym_id) || userGymsData[0];
-    if (!primaryGym?.latitude || !primaryGym?.longitude) return [];
-    const toRad = d => d * Math.PI / 180;
-    const haversine = (lat1, lon1, lat2, lon2) => {
-      const R = 6371;
-      const dLat = toRad(lat2 - lat1), dLon = toRad(lon2 - lon1);
-      const a = Math.sin(dLat/2)**2 + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon/2)**2;
-      return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-    };
-    const memberGymIdSet = new Set(memberGymIds);
-    return gyms
-      .filter(g => g.id !== primaryGym.id && !memberGymIdSet.has(g.id) && g.latitude && g.longitude)
-      .map(g => ({ ...g, _dist: haversine(primaryGym.latitude, primaryGym.longitude, g.latitude, g.longitude) }))
-      .filter(g => g._dist <= 20)
-      .sort((a, b) => (b.members_count || 0) - (a.members_count || 0))
-      .slice(0, 3);
-  }, [gyms, userGymsData, currentUser?.primary_gym_id, memberGymIds]);
-
-  const [nearbySection, setNearbySection] = useState('recent'); // 'recent' | 'nearby'
-  const nearbySliderRef = useRef(null);
-
   const filteredGyms = gyms.filter(gym => {
     const matchesSearch = gym.name?.toLowerCase().includes(searchQuery.toLowerCase()) || gym.city?.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesType = selectedType === 'all' || gym.type === selectedType;
@@ -319,7 +296,7 @@ export default function Gyms() {
               </TabsList>
 
               {/* Right buttons */}
-              <div className="absolute right-1 bottom-3.5 flex items-center gap-2">
+              <div className="absolute right-0 bottom-3.5 flex items-center gap-2">
                 <TabsContent value="my-gyms" className="mt-0 p-0 m-0">
                   {userGyms.length > 0 &&
                     <Button onClick={() => setShowPrimaryGymModal(true)} className="inline-flex items-center justify-center whitespace-nowrap font-bold transition-all duration-100 bg-gradient-to-b from-purple-400 via-purple-500 to-purple-600 text-white border-transparent rounded-md text-[10px] h-6 px-1.5 shadow-[0_2px_0_0_#5b21b6,inset_0_1px_0_rgba(255,255,255,0.2)] active:shadow-none active:translate-y-[2px] active:scale-95 transform-gpu">
@@ -415,67 +392,15 @@ export default function Gyms() {
 
             {!searchQuery && recentlyViewedGyms.length > 0 &&
               <div className="mb-4">
-                {/* ── Swipeable section headers ── */}
-                <div
-                  ref={nearbySliderRef}
-                  className="flex items-center justify-center gap-10 mb-4 select-none"
-                  onTouchStart={e => { nearbySliderRef.current._tx = e.touches[0].clientX; }}
-                  onTouchEnd={e => {
-                    const dx = e.changedTouches[0].clientX - (nearbySliderRef.current._tx || 0);
-                    if (dx < -40) setNearbySection('nearby');
-                    else if (dx > 40) setNearbySection('recent');
-                  }}
-                >
-                  <button
-                    onClick={() => setNearbySection('recent')}
-                    className="transition-all duration-200"
-                    style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
-                  >
-                    <span className={`text-xs font-bold uppercase tracking-widest transition-colors duration-200 ${nearbySection === 'recent' ? 'text-slate-300' : 'text-slate-600'}`}>
-                      Recently Viewed
-                    </span>
-
-                  </button>
-
-                  <button
-                    onClick={() => setNearbySection('nearby')}
-                    className="transition-all duration-200"
-                    style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
-                  >
-                    <span className={`text-xs font-bold uppercase tracking-widest transition-colors duration-200 ${nearbySection === 'nearby' ? 'text-slate-300' : 'text-slate-600'}`}>
-                      Popular Nearby
-                    </span>
-
-                  </button>
+                <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">Recently Viewed</p>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {recentlyViewedGyms.map(gym => (
+                    <div key={gym.id} className="group relative">
+                      <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-purple-500/20 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-all duration-500" />
+                      <GymCardInner gym={gym} isMember={false} />
+                    </div>
+                  ))}
                 </div>
-
-                {/* ── Recently Viewed panel ── */}
-                {nearbySection === 'recent' && (
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    {recentlyViewedGyms.map(gym => (
-                      <div key={gym.id} className="group relative">
-                        <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-purple-500/20 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-all duration-500" />
-                        <GymCardInner gym={gym} isMember={false} />
-                      </div>
-                    ))}
-                  </div>
-                )}
-
-                {/* ── Popular Nearby panel ── */}
-                {nearbySection === 'nearby' && (
-                  popularNearbyGyms.length > 0
-                    ? <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        {popularNearbyGyms.map(gym => (
-                          <div key={gym.id} className="group relative">
-                            <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-purple-500/20 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-all duration-500" />
-                            <GymCardInner gym={gym} isMember={false} />
-                          </div>
-                        ))}
-                      </div>
-                    : <div className="text-center py-10">
-                        <p className="text-slate-500 text-sm font-medium">There are currently no other CoStride gyms nearby.</p>
-                      </div>
-                )}
               </div>
             }
 
