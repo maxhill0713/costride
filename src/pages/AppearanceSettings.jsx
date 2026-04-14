@@ -1,28 +1,15 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
-import { createPageUrl } from '../utils';
-import { ChevronLeft } from 'lucide-react';
-
-const PAGE_BG = 'linear-gradient(135deg, #02040a 0%, #0d2360 50%, #02040a 100%)';
+import SettingsSubPageShell from '../components/settings/SettingsSubPageShell';
 
 export default function AppearanceSettings() {
   return (
-    <div style={{ minHeight: '100vh', background: PAGE_BG, color: '#fff', fontFamily: 'inherit' }}>
-      <div style={{ position: 'sticky', top: 'env(safe-area-inset-top)', zIndex: 10, background: 'rgba(15, 23, 37, 0.95)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', borderBottom: '2px solid rgba(59, 130, 246, 0.4)', padding: '10px 16px' }}>
-        <div style={{ maxWidth: 520, margin: '0 auto', display: 'flex', alignItems: 'center', gap: 4 }}>
-          <Link to={createPageUrl('Settings')} style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', padding: '4px 8px 4px 0' }}>
-            <ChevronLeft style={{ width: 22, height: 22, color: '#94a3b8' }} />
-          </Link>
-          <span style={{ fontSize: 18, fontWeight: 800, letterSpacing: '-0.025em', color: '#fff' }}>Appearance</span>
-        </div>
-      </div>
-
-      <div style={{ maxWidth: 520, margin: '0 auto', padding: '20px 16px 60px', display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 'calc(100vh - 60px)' }}>
+    <SettingsSubPageShell title="Appearance">
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 'calc(100vh - 120px)' }}>
         <div style={{ textAlign: 'center' }}>
           <p style={{ fontSize: 24, fontWeight: 800, color: '#fff', margin: '0 0 8px', letterSpacing: '-0.02em' }}>Coming Soon</p>
           <p style={{ fontSize: 14, fontWeight: 500, color: '#475569', margin: 0, maxWidth: 280, lineHeight: 1.6 }}>Greater customisation options and multiple language versions of the app are on the way. Stay tuned!</p>
         </div>
       </div>
-    </div>
+    </SettingsSubPageShell>
   );
 }

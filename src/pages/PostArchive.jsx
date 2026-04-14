@@ -1,12 +1,9 @@
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { Link } from 'react-router-dom';
-import { createPageUrl } from '../utils';
-import { ChevronLeft, Archive, Image } from 'lucide-react';
+import { Archive, Image } from 'lucide-react';
+import SettingsSubPageShell from '../components/settings/SettingsSubPageShell';
 import PostCard from '../components/feed/PostCard';
-
-const PAGE_BG = 'linear-gradient(135deg, #02040a 0%, #0d2360 50%, #02040a 100%)';
 
 export default function PostArchive() {
   const [selectedPost, setSelectedPost] = useState(null);
@@ -25,21 +22,12 @@ export default function PostArchive() {
   });
 
   return (
-    <div style={{ minHeight: '100vh', background: PAGE_BG, color: '#fff', fontFamily: 'inherit' }}>
-
-      {/* Sticky Header */}
-      <div style={{ position: 'sticky', top: 'env(safe-area-inset-top)', zIndex: 10, background: 'rgba(15, 23, 37, 0.95)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', borderBottom: '2px solid rgba(59, 130, 246, 0.4)', padding: '10px 16px' }}>
-        <div style={{ maxWidth: 520, margin: '0 auto', display: 'flex', alignItems: 'center', gap: 12 }}>
-          <Link to={createPageUrl('Settings')} style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', padding: '4px 8px 4px 0' }}>
-            <ChevronLeft style={{ width: 22, height: 22, color: '#94a3b8' }} />
-          </Link>
-          <span style={{ fontSize: 19, fontWeight: 900, letterSpacing: '-0.03em', color: '#fff' }}>Archive</span>
-          <span style={{ marginLeft: 'auto', fontSize: 12, fontWeight: 600, color: '#475569' }}>{posts.length} posts</span>
-        </div>
-      </div>
-
+    <SettingsSubPageShell
+      title="Archive"
+      rightContent={<span style={{ fontSize: 12, fontWeight: 600, color: '#475569' }}>{posts.length} posts</span>}
+    >
       {/* Info Banner */}
-      <div style={{ maxWidth: 520, margin: '0 auto', padding: '14px 16px 0' }}>
+      <div style={{ marginBottom: 0 }}>
         <div style={{ background: 'linear-gradient(135deg, rgba(30,35,60,0.72) 0%, rgba(8,10,20,0.88) 100%)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 12, padding: '11px 14px', display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
           <Archive style={{ width: 15, height: 15, color: '#60a5fa', flexShrink: 0 }} />
           <p style={{ fontSize: 12, color: '#64748b', lineHeight: 1.5, margin: 0 }}>
@@ -94,7 +82,7 @@ export default function PostArchive() {
       {/* Post lightbox */}
       {selectedPost && (
         <div
-          style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(8px)', zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}
+          style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(8px)', zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}
           onClick={() => setSelectedPost(null)}
         >
           <div onClick={(e) => e.stopPropagation()} style={{ width: '100%', maxWidth: 480 }}>
@@ -110,6 +98,6 @@ export default function PostArchive() {
           </div>
         </div>
       )}
-    </div>
+    </SettingsSubPageShell>
   );
 }

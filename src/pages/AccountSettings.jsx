@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { Link, useLocation } from 'react-router-dom';
-import { createPageUrl } from '../utils';
-import { ChevronLeft, Eye, EyeOff } from 'lucide-react';
+import { useLocation } from 'react-router-dom';
+import { Eye, EyeOff } from 'lucide-react';
+import SettingsSubPageShell from '../components/settings/SettingsSubPageShell';
 import { toast } from 'sonner';
 
 // ── Shared design tokens ─────────────────────────────────────────────────────
@@ -28,24 +28,7 @@ function useSectionHighlight() {
   return highlighted;
 }
 
-// ── Shared layout primitives ─────────────────────────────────────────────────
-function PageShell({ title, children }) {
-  return (
-    <div style={{ minHeight: '100vh', background: PAGE_BG, color: '#fff', fontFamily: 'inherit' }}>
-      <div style={{ position: 'sticky', top: 'env(safe-area-inset-top)', zIndex: 10, background: 'rgba(15, 23, 37, 0.95)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', borderBottom: '2px solid rgba(59, 130, 246, 0.4)', padding: '10px 16px' }}>
-        <div style={{ maxWidth: 520, margin: '0 auto', display: 'flex', alignItems: 'center', gap: 4 }}>
-          <Link to={createPageUrl('Settings')} style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', padding: '4px 8px 4px 0' }}>
-            <ChevronLeft style={{ width: 22, height: 22, color: '#94a3b8' }} />
-          </Link>
-          <span style={{ fontSize: 18, fontWeight: 800, letterSpacing: '-0.025em', color: '#fff' }}>{title}</span>
-        </div>
-      </div>
-      <div style={{ maxWidth: 520, margin: '0 auto', padding: '20px 16px 60px' }}>
-        {children}
-      </div>
-    </div>
-  );
-}
+
 
 // Section label above a group
 function SectionLabel({ children }) {
@@ -191,7 +174,7 @@ export default function AccountSettings() {
     updatePasswordMutation.mutate({ currentPassword, newPassword });
   };
 
-  if (!currentUser) return <PageShell title="Account"><p style={{ color: '#475569', textAlign: 'center', paddingTop: 40 }}>Loading…</p></PageShell>;
+  if (!currentUser) return <SettingsSubPageShell title="Account"><p style={{ color: '#475569', textAlign: 'center', paddingTop: 40 }}>Loading…</p></SettingsSubPageShell>;
 
   const eyeBtn = (show, toggle) => (
     <button onClick={toggle} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#475569', padding: '0 2px', display: 'flex', alignItems: 'center' }}>
@@ -200,7 +183,7 @@ export default function AccountSettings() {
   );
 
   return (
-    <PageShell title="Account">
+    <SettingsSubPageShell title="Account">
 
       {/* Email */}
       <SectionLabel>Email address</SectionLabel>
@@ -250,6 +233,6 @@ export default function AccountSettings() {
         </div>
       </Group>
 
-    </PageShell>
+    </SettingsSubPageShell>
   );
 }
