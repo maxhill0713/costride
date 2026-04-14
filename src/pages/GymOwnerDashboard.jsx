@@ -35,9 +35,7 @@ import EditGymLogoModal from '../components/gym/EditGymLogoModal';
 import EditPricingModal from '../components/gym/EditPricingModal';
 import GymJoinPoster from '../components/dashboard/GymJoinPoster';
 import MemberChatPanel from '../components/dashboard/MemberChatPanel';
-
 import { lazy, Suspense } from 'react';
-
 const TabOverview = lazy(() => import('../components/dashboard/TabOverview'));
 const TabMembersComponent = lazy(() => import('../components/dashboard/TabMembers'));
 const TabContentComponent = lazy(() => import('../components/dashboard/TabContent'));
@@ -53,7 +51,7 @@ const TabEngagement = lazy(() => import('../components/dashboard/TabEngagement')
 const TabRewards = lazy(() => import('../components/dashboard/TabRewards'));
 const TabCoachToday = lazy(() => import('../components/dashboard/TabCoachToday'));
 
-/* ─── Design Tokens — unified with Content page ──────────────── */
+/* ─── Design Tokens — unified with Content & Overview pages ─── */
 const T = {
   bg:        '#000000',
   sidebar:   '#0f0f12',
@@ -64,9 +62,9 @@ const T = {
   t1:        '#ffffff',
   t2:        '#8a8a94',
   t3:        '#444450',
-  cyan:      '#00e5c8',
-  cyanDim:   'rgba(0,229,200,0.10)',
-  cyanBrd:   'rgba(0,229,200,0.25)',
+  cyan:      '#4d7fff',
+  cyanDim:   'rgba(77,127,255,0.12)',
+  cyanBrd:   'rgba(77,127,255,0.28)',
   red:       '#ff4d6d',
   redDim:    'rgba(255,77,109,0.15)',
   amber:     '#f59e0b',
@@ -165,7 +163,6 @@ function KpiCard({ icon: Icon, label, value, sub, subColor, valueColor, footerBa
     </div>
   );
 }
-
 function CoachKpiCard(props) { return <KpiCard {...props} />; }
 
 /* ─── Generic card shell ─────────────────────────────────────── */
@@ -206,7 +203,7 @@ function classColor(cls) {
   return CLASS_TYPE_COLORS[Object.keys(CLASS_TYPE_COLORS).find((k) => n.includes(k)) || 'default'];
 }
 
-/* ─── Mobile KPI strip — horizontal scroll snap cards ───────── */
+/* ─── Mobile KPI strip ───────────────────────────────────────── */
 function MobileKpiStrip({ tab, isCoach, stats, posts, events, challenges, polls, coaches, classes, myClasses, allMemberships }) {
   const { todayCI = 0, activeThisWeek = 0, atRisk = 0, totalMembers = 0, newSignUps = 0, retentionRate = 0, monthChangePct = 0, activeThisMonth = 0 } = stats;
   let items;
@@ -256,58 +253,17 @@ function MobileKpiStrip({ tab, isCoach, stats, posts, events, challenges, polls,
       { label: 'Clients', value: allMemberships.length },
     ];
   } else { return null; }
-
   return (
     <>
       <style>{`
         .kpi-strip::-webkit-scrollbar { display: none; }
         .kpi-card { flex-shrink: 0; scroll-snap-align: start; }
       `}</style>
-      <div
-        className="kpi-strip"
-        style={{
-          flexShrink: 0,
-          display: 'flex',
-          gap: 10,
-          overflowX: 'auto',
-          scrollSnapType: 'x mandatory',
-          WebkitOverflowScrolling: 'touch',
-          padding: '12px 16px',
-          background: T.bg,
-          borderBottom: `1px solid ${T.brd}`,
-          scrollbarWidth: 'none',
-          msOverflowStyle: 'none',
-        }}
-      >
+      <div className="kpi-strip" style={{ flexShrink: 0, display: 'flex', gap: 10, overflowX: 'auto', scrollSnapType: 'x mandatory', WebkitOverflowScrolling: 'touch', padding: '12px 16px', background: T.bg, borderBottom: `1px solid ${T.brd}`, scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
         {items.map((item) => (
-          <div
-            key={item.label}
-            className="kpi-card"
-            style={{
-              background: T.card,
-              border: `1px solid ${item.color ? item.color + '35' : T.brd}`,
-              borderRadius: 14,
-              padding: '12px 18px',
-              minWidth: 92,
-              display: 'flex',
-              flexDirection: 'column',
-              gap: 5,
-              boxShadow: item.color ? `0 0 18px ${item.color}10` : 'none',
-            }}
-          >
-            <div style={{
-              fontSize: 26, fontWeight: 900, letterSpacing: '-0.05em',
-              lineHeight: 1, color: item.color || T.t1,
-            }}>
-              {item.value}
-            </div>
-            <div style={{
-              fontSize: 10, fontWeight: 700, textTransform: 'uppercase',
-              letterSpacing: '0.10em',
-              color: item.color ? item.color + 'bb' : T.t3,
-            }}>
-              {item.label}
-            </div>
+          <div key={item.label} className="kpi-card" style={{ background: T.card, border: `1px solid ${item.color ? item.color + '35' : T.brd}`, borderRadius: 14, padding: '12px 18px', minWidth: 92, display: 'flex', flexDirection: 'column', gap: 5 }}>
+            <div style={{ fontSize: 26, fontWeight: 900, letterSpacing: '-0.05em', lineHeight: 1, color: item.color || T.t1 }}>{item.value}</div>
+            <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.10em', color: item.color ? item.color + 'bb' : T.t3 }}>{item.label}</div>
           </div>
         ))}
       </div>
@@ -318,7 +274,6 @@ function MobileKpiStrip({ tab, isCoach, stats, posts, events, challenges, polls,
 /* ─── Mobile FAB ─────────────────────────────────────────────── */
 function MobileFAB({ openModal }) {
   const [open, setOpen] = useState(false);
-
   const items = [
     { emoji: '📝', label: 'Post',      modal: 'post'      },
     { emoji: '🏆', label: 'Challenge', modal: 'challenge' },
@@ -326,84 +281,21 @@ function MobileFAB({ openModal }) {
     { emoji: '📅', label: 'Event',     modal: 'event'     },
     { emoji: '⚙️', label: 'More',      modal: null        },
   ];
-
   return (
     <>
-      {/* Backdrop */}
+      {open && <div onClick={() => setOpen(false)} style={{ position: 'fixed', inset: 0, zIndex: 198, background: 'rgba(0,0,0,0.45)' }} />}
       {open && (
-        <div
-          onClick={() => setOpen(false)}
-          style={{ position: 'fixed', inset: 0, zIndex: 198, background: 'rgba(0,0,0,0.45)' }}
-        />
-      )}
-
-      {/* Option pills */}
-      {open && (
-        <div style={{
-          position: 'fixed',
-          bottom: 'calc(134px + env(safe-area-inset-bottom))',
-          right: 16,
-          zIndex: 199,
-          display: 'flex',
-          flexDirection: 'column',
-          gap: 10,
-          alignItems: 'flex-end',
-        }}>
+        <div style={{ position: 'fixed', bottom: 'calc(134px + env(safe-area-inset-bottom))', right: 16, zIndex: 199, display: 'flex', flexDirection: 'column', gap: 10, alignItems: 'flex-end' }}>
           {items.map(item => (
-            <button
-              key={item.label}
-              onClick={() => {
-                setOpen(false);
-                if (item.modal) openModal(item.modal);
-              }}
-              style={{
-                display: 'flex', alignItems: 'center', gap: 10,
-                padding: '11px 16px',
-                borderRadius: 14,
-                background: T.card,
-                border: `1px solid ${T.brd2}`,
-                color: T.t1,
-                fontSize: 14,
-                fontWeight: 600,
-                cursor: 'pointer',
-                boxShadow: '0 4px 20px rgba(0,0,0,0.7)',
-                WebkitTapHighlightColor: 'transparent',
-                minHeight: 48,
-                whiteSpace: 'nowrap',
-              }}
-            >
-              <span style={{ fontSize: 18 }}>{item.emoji}</span>
-              {item.label}
+            <button key={item.label} onClick={() => { setOpen(false); if (item.modal) openModal(item.modal); }}
+              style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '11px 16px', borderRadius: 14, background: T.card, border: `1px solid ${T.brd2}`, color: T.t1, fontSize: 14, fontWeight: 600, cursor: 'pointer', boxShadow: '0 4px 20px rgba(0,0,0,0.7)', WebkitTapHighlightColor: 'transparent', minHeight: 48, whiteSpace: 'nowrap' }}>
+              <span style={{ fontSize: 18 }}>{item.emoji}</span>{item.label}
             </button>
           ))}
         </div>
       )}
-
-      {/* FAB button */}
-      <button
-        onClick={() => setOpen(o => !o)}
-        aria-label="Create"
-        style={{
-          position: 'fixed',
-          bottom: 'calc(72px + env(safe-area-inset-bottom))',
-          right: 20,
-          zIndex: 200,
-          width: 52,
-          height: 52,
-          borderRadius: 26,
-          background: T.cyan,
-          border: 'none',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          boxShadow: `0 4px 20px rgba(0,229,200,0.45), 0 2px 10px rgba(0,0,0,0.6)`,
-          cursor: 'pointer',
-          color: '#000',
-          transition: 'transform 0.18s',
-          WebkitTapHighlightColor: 'transparent',
-          transform: open ? 'rotate(45deg)' : 'rotate(0deg)',
-        }}
-      >
+      <button onClick={() => setOpen(o => !o)} aria-label="Create"
+        style={{ position: 'fixed', bottom: 'calc(72px + env(safe-area-inset-bottom))', right: 20, zIndex: 200, width: 52, height: 52, borderRadius: 26, background: T.cyan, border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 12px rgba(77,127,255,0.35)', cursor: 'pointer', color: '#fff', transition: 'transform 0.18s', WebkitTapHighlightColor: 'transparent', transform: open ? 'rotate(45deg)' : 'rotate(0deg)' }}>
         <Plus style={{ width: 22, height: 22, strokeWidth: 2.5 }} />
       </button>
     </>
@@ -414,13 +306,11 @@ export default function GymOwnerDashboard() {
   const [tab, setTab] = useState('overview');
   const [collapsed, setCollapsed] = useState(false);
   const [isMobile, setIsMobile] = useState(() => window.innerWidth < 768);
-
   useEffect(() => {
     const fn = () => setIsMobile(window.innerWidth < 768);
     window.addEventListener('resize', fn);
     return () => window.removeEventListener('resize', fn);
   }, []);
-
   const [selectedGym, setSelectedGym] = useState(null);
   const [gymOpen, setGymOpen] = useState(false);
   const [modal, setModal] = useState(null);
@@ -439,35 +329,26 @@ export default function GymOwnerDashboard() {
   const [memberSearchOpen, setMemberSearchOpen] = useState(false);
   const [selectedQuickMember, setSelectedQuickMember] = useState(null);
   const memberSearchRef = React.useRef(null);
-
   const openModal = useCallback((name) => { if (name === 'message') { setTab('members'); return; } setModal(name); }, []);
   const closeModal = useCallback(() => setModal(null), []);
   const queryClient = useQueryClient();
   const navigate = useNavigate();
-
   const { data: currentUser } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me(), staleTime: 5 * 60 * 1000 });
   const [selectedCoachId, setSelectedCoachId] = useState(null);
-
   const effectiveAccountType = selectedCoachId ? 'coach' : currentUser?.account_type;
   const isCoach = effectiveAccountType === 'coach';
   const isGymOwner = effectiveAccountType === 'gym_owner';
   const dashRole = isCoach ? 'coach' : 'gym_owner';
   const roleLabel = isCoach ? 'Coach' : 'Gym Owner';
-
   const tabInitialised = React.useRef(false);
   useEffect(() => {
-    if (!tabInitialised.current && currentUser) {
-      setTab(isCoach ? 'today' : 'overview');
-      tabInitialised.current = true;
-    }
+    if (!tabInitialised.current && currentUser) { setTab(isCoach ? 'today' : 'overview'); tabInitialised.current = true; }
   }, [currentUser, isCoach]);
-
   useEffect(() => {
     const h = () => base44.auth.logout();
     document.addEventListener('dash-logout', h);
     return () => document.removeEventListener('dash-logout', h);
   }, []);
-
   useEffect(() => {
     const h = (e) => {
       if (e.detail === 'addClient') { setTab('members'); setTimeout(() => window.dispatchEvent(new CustomEvent('coachOpenAddClient')), 100); }
@@ -476,16 +357,11 @@ export default function GymOwnerDashboard() {
     window.addEventListener('coachAction', h);
     return () => window.removeEventListener('coachAction', h);
   }, [openModal]);
-
   const handleRoleSelect = (roleId) => {
     if (roleId === 'gym_owner') { setSelectedCoachId(null); } else { setSelectedCoachId(roleId); }
     setTab(roleId === 'gym_owner' ? 'overview' : 'today');
   };
-
-  const NAV = ALL_NAV.filter((item) => item.roles.includes(dashRole)).map((item) => ({
-    ...item, label: isCoach && item.coachLabel ? item.coachLabel : item.label
-  }));
-
+  const NAV = ALL_NAV.filter((item) => item.roles.includes(dashRole)).map((item) => ({ ...item, label: isCoach && item.coachLabel ? item.coachLabel : item.label }));
   const { data: gyms = [], error: gymsError } = useQuery({
     queryKey: ['ownerGyms', currentUser?.email],
     queryFn: async () => {
@@ -499,16 +375,12 @@ export default function GymOwnerDashboard() {
     },
     enabled: !!currentUser?.email, retry: 3, staleTime: 60 * 1000, refetchInterval: 60 * 1000, refetchIntervalInBackground: false
   });
-
   const myGyms = isCoach ? gyms : gyms.filter((g) => g.owner_email === currentUser?.email);
   const approvedGyms = myGyms.filter((g) => g.status === 'approved');
   const pendingGyms = isCoach ? [] : myGyms.filter((g) => g.status === 'pending');
-
   useEffect(() => { if (approvedGyms.length > 0 && !selectedGym) setSelectedGym(approvedGyms[0]); }, [approvedGyms, selectedGym]);
-
   const qo = { staleTime: 3 * 60 * 1000, placeholderData: (p) => p };
   const on = !!selectedGym;
-
   const { data: rewards = [] } = useQuery({ queryKey: ['rewards', selectedGym?.id], queryFn: () => base44.entities.Reward.filter({ gym_id: selectedGym.id }, 'title', 50), enabled: on, ...qo });
   const { data: classes = [] } = useQuery({ queryKey: ['classes', selectedGym?.id], queryFn: () => base44.entities.GymClass.filter({ gym_id: selectedGym.id }), enabled: on, ...qo });
   const { data: coaches = [] } = useQuery({ queryKey: ['coaches', selectedGym?.id], queryFn: () => base44.entities.Coach.filter({ gym_id: selectedGym.id }), enabled: on, ...qo });
@@ -527,22 +399,18 @@ export default function GymOwnerDashboard() {
     },
     enabled: on && isCoach, staleTime: 2 * 60 * 1000
   });
-
   const { data: stats = {} } = useQuery({
     queryKey: ['dashboardStats', selectedGym?.id, atRiskDays, chartRange],
     queryFn: () => base44.functions.invoke('getDashboardStats', { gymId: selectedGym.id, atRiskDays, chartRange }).then((r) => r.data),
     enabled: on, staleTime: 3 * 60 * 1000, placeholderData: (p) => p
   });
-
   const checkIns = stats.recentCheckIns || [];
   const recentActivity = stats.recentActivity || [];
   const allMemberships = stats.membersWithActivity || [];
   const effectiveMemberships = allMemberships;
-
   const inv = useCallback((...keys) => { keys.forEach((k) => queryClient.invalidateQueries({ queryKey: [k, selectedGym?.id] })); queryClient.invalidateQueries({ queryKey: ['dashboardStats', selectedGym?.id] }); }, [queryClient, selectedGym?.id]);
   const invGyms = useCallback(() => queryClient.invalidateQueries({ queryKey: ['gyms'] }), [queryClient]);
   const onErr = useCallback((e) => toast.error(e?.message || 'Something went wrong'), []);
-
   const createRewardM = useMutation({ mutationFn: (d) => base44.entities.Reward.create(d), onSuccess: () => inv('rewards'), onError: onErr });
   const deleteRewardM = useMutation({ mutationFn: (id) => base44.entities.Reward.delete(id), onSuccess: () => inv('rewards'), onError: onErr });
   const createClassM = useMutation({ mutationFn: (d) => base44.entities.GymClass.create(d), onSuccess: () => inv('classes'), onError: onErr });
@@ -564,9 +432,7 @@ export default function GymOwnerDashboard() {
   const deleteEventM = useMutation({ mutationFn: (id) => base44.entities.Event.delete(id), onSuccess: () => inv('events'), onError: onErr });
   const deleteChallengeM = useMutation({ mutationFn: (id) => base44.entities.Challenge.delete(id), onSuccess: () => inv('challenges'), onError: onErr });
   const deletePollM = useMutation({ mutationFn: (id) => base44.entities.Poll.delete(id), onSuccess: () => inv('polls'), onError: onErr });
-
   const now = new Date();
-
   const memberUserIds = useMemo(() => {
     const ids = new Set();
     (allMemberships || []).forEach((m) => { if (m.user_id) ids.add(m.user_id); });
@@ -574,14 +440,11 @@ export default function GymOwnerDashboard() {
     recentActivity.forEach((a) => { if (a.user_id) ids.add(a.user_id); });
     return [...ids].slice(0, 100);
   }, [allMemberships, checkIns, recentActivity]);
-
   const { data: memberUserRecords = [] } = useQuery({
     queryKey: ['memberUserRecords', selectedGym?.id, memberUserIds.join(',')],
     queryFn: () => base44.entities.User.filter({ id: { $in: memberUserIds } }),
-    enabled: !!selectedGym && memberUserIds.length > 0,
-    staleTime: 5 * 60 * 1000, gcTime: 15 * 60 * 1000
+    enabled: !!selectedGym && memberUserIds.length > 0, staleTime: 5 * 60 * 1000, gcTime: 15 * 60 * 1000
   });
-
   const memberAvatarMapResolved = useMemo(() => {
     const map = {};
     (allMemberships || []).forEach((m) => { if (m.user_id && m.avatar_url) map[m.user_id] = m.avatar_url; });
@@ -589,7 +452,6 @@ export default function GymOwnerDashboard() {
     if (currentUser?.id && currentUser.avatar_url) map[currentUser.id] = currentUser.avatar_url;
     return map;
   }, [allMemberships, memberUserRecords, currentUser]);
-
   const memberNameMap = useMemo(() => {
     const map = {};
     (allMemberships || []).forEach((m) => { if (m.user_id && m.user_name) map[m.user_id] = m.user_name; });
@@ -599,76 +461,44 @@ export default function GymOwnerDashboard() {
     if (currentUser?.id) { const name = currentUser.display_name || currentUser.username || currentUser.full_name; if (name) map[currentUser.id] = name; }
     return map;
   }, [allMemberships, checkIns, recentActivity, memberUserRecords, currentUser]);
-
-  const {
-    todayCI = 0, yesterdayCI = 0, todayVsYest = 0,
-    activeThisWeek = 0, weeklyChangePct = 0,
-    activeThisMonth = 0, totalMembers = 0, retentionRate = 0,
-    monthChangePct = 0, monthCiPer = [],
-    newSignUps = 0, cancelledEst = 0,
-    atRisk = 0, atRiskMembersData: atRiskMembersList = [],
-    memberLastCheckIn = {},
-    sparkData7 = [], monthGrowthData = [],
-    peakLabel = null, peakEndLabel = null, peakEntry = null,
-    satVsAvg = 0, chartDays = [], streaks = [],
-    avatarMap = {},
-    weekTrend = [], peakHours = [], busiestDays = [],
-    returnRate = 0, dailyAvg = 0, engagementSegments = {},
-    retentionFunnel = [], dropOffBuckets = [], churnSignals = [], week1ReturnTrend = [],
-    retentionBreakdown = {}, week1ReturnRate = {}, newNoReturnCount = 0,
-    ci7Count = 0, ci7pCount = 0, weeklyTrendCoach = 0, monthlyTrendCoach = 0,
-    returningCount = 0, newMembersThis30 = 0,
-    weeklyChart = [], monthlyChart = [],
-    engagementSegmentsCoach = {}, weekSpark = []
-  } = stats;
-
+  const { todayCI = 0, yesterdayCI = 0, todayVsYest = 0, activeThisWeek = 0, weeklyChangePct = 0, activeThisMonth = 0, totalMembers = 0, retentionRate = 0, monthChangePct = 0, monthCiPer = [], newSignUps = 0, cancelledEst = 0, atRisk = 0, atRiskMembersData: atRiskMembersList = [], memberLastCheckIn = {}, sparkData7 = [], monthGrowthData = [], peakLabel = null, peakEndLabel = null, peakEntry = null, satVsAvg = 0, chartDays = [], streaks = [], avatarMap = {}, weekTrend = [], peakHours = [], busiestDays = [], returnRate = 0, dailyAvg = 0, engagementSegments = {}, retentionFunnel = [], dropOffBuckets = [], churnSignals = [], week1ReturnTrend = [], retentionBreakdown = {}, week1ReturnRate = {}, newNoReturnCount = 0, ci7Count = 0, ci7pCount = 0, weeklyTrendCoach = 0, monthlyTrendCoach = 0, returningCount = 0, newMembersThis30 = 0, weeklyChart = [], monthlyChart = [], engagementSegmentsCoach = {}, weekSpark = [] } = stats;
   const ci30 = [];
   const avatarMapFull = useMemo(() => ({ ...avatarMap, ...memberAvatarMapResolved }), [avatarMap, memberAvatarMapResolved]);
-
   const activeCoachRecord = useMemo(() => {
     if (!isCoach) return null;
     if (selectedCoachId) return coaches.find((c) => c.id === selectedCoachId) || null;
     return coaches.find((c) => c.user_email === currentUser?.email) || null;
   }, [isCoach, selectedCoachId, coaches, currentUser]);
-
   const myClasses = useMemo(() => {
     if (!isCoach) return classes;
     if (activeCoachRecord) return classes.filter((c) => c.coach_id === activeCoachRecord.id || c.instructor === activeCoachRecord.name || c.coach_name === activeCoachRecord.name || c.coach_email === activeCoachRecord.user_email);
     return classes.filter((c) => c.instructor === currentUser?.full_name || c.instructor === currentUser?.email || c.coach_name === currentUser?.full_name || c.coach_email === currentUser?.email || c.coach_id === currentUser?.id);
   }, [classes, currentUser, isCoach, activeCoachRecord]);
-
   const coachMemberships = useMemo(() => {
     if (!isCoach) return allMemberships;
     const bookedClientIds = new Set(coachBookings.map(b => b.client_id).filter(Boolean));
     if (bookedClientIds.size > 0) return allMemberships.filter(m => bookedClientIds.has(m.user_id));
-    if (activeCoachRecord?.client_notes) {
-      const ids = Object.keys(activeCoachRecord.client_notes);
-      if (ids.length > 0) return allMemberships.filter(m => ids.includes(m.user_id));
-    }
+    if (activeCoachRecord?.client_notes) { const ids = Object.keys(activeCoachRecord.client_notes); if (ids.length > 0) return allMemberships.filter(m => ids.includes(m.user_id)); }
     return allMemberships;
   }, [isCoach, activeCoachRecord, allMemberships, coachBookings]);
-
   const coachCheckIns = useMemo(() => {
     if (!isCoach || !activeCoachRecord) return checkIns;
     const clientIds = activeCoachRecord.client_notes ? Object.keys(activeCoachRecord.client_notes) : null;
     if (clientIds && clientIds.length > 0) return checkIns.filter((c) => clientIds.includes(c.user_id));
     return checkIns;
   }, [isCoach, activeCoachRecord, checkIns]);
-
   const coachCi30 = [];
   const coachUserId = activeCoachRecord ? activeCoachRecord.id : currentUser?.id;
   const coachPosts = isCoach ? posts.filter((p) => p.author_id === coachUserId || p.created_by === coachUserId || !p.author_id) : posts;
   const coachEvents = isCoach ? events.filter((e) => e.created_by === coachUserId || e.coach_id === coachUserId || !e.created_by) : events;
   const coachChallenges = isCoach ? challenges.filter((c) => c.created_by === coachUserId || c.coach_id === coachUserId || !c.created_by) : challenges;
   const coachPolls = isCoach ? polls.filter((p) => p.created_by === coachUserId || !p.created_by) : polls;
-
   const priorities = [
     atRisk > 0 && { icon: AlertCircle, color: T.red, label: `${atRisk} members inactive 14+ days`, action: 'View members', fn: () => setTab('members') },
     !challenges.some((c) => c.status === 'active') && { icon: Trophy, color: T.amber, label: 'No active challenge running', action: 'Create one', fn: () => openModal('challenge') },
     polls.length === 0 && { icon: BarChart2, color: T.amber, label: 'No active polls', action: 'Create poll', fn: () => openModal('poll') },
     monthChangePct < 0 && { icon: TrendingDown, color: T.amber, label: 'Attendance down vs last month', action: 'View analytics', fn: () => setTab('analytics') }
   ].filter(Boolean).slice(0, 4);
-
   const tabPanels = NAV.map((item) => {
     let content = null;
     if (item.id === 'overview' && !isCoach) {
@@ -702,21 +532,17 @@ export default function GymOwnerDashboard() {
   /* ── Splash screens ── */
   const Splash = ({ children }) => (
     <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: T.bg }}>
-      <div style={{ background: T.card, border: `1px solid ${T.brd}`, borderRadius: 16, padding: '36px 24px', maxWidth: 380, width: '100%', textAlign: 'center' }}>
-        {children}
-      </div>
+      <div style={{ background: T.card, border: `1px solid ${T.brd}`, borderRadius: 16, padding: '36px 24px', maxWidth: 380, width: '100%', textAlign: 'center' }}>{children}</div>
     </div>
   );
-
   if (gymsError) return (
     <Splash>
       <X style={{ width: 26, height: 26, color: T.red, margin: '0 auto 12px' }} />
       <h2 style={{ color: T.t1, fontWeight: 800, marginBottom: 8 }}>Connection Error</h2>
       <p style={{ color: T.t2, fontSize: 13, marginBottom: 20 }}>{gymsError.message}</p>
-      <button onClick={() => window.location.reload()} style={{ background: T.cyan, color: '#000', border: 'none', borderRadius: 9, padding: '10px 20px', fontWeight: 700, cursor: 'pointer' }}>Retry</button>
+      <button onClick={() => window.location.reload()} style={{ background: T.cyan, color: '#fff', border: 'none', borderRadius: 9, padding: '10px 20px', fontWeight: 700, cursor: 'pointer' }}>Retry</button>
     </Splash>
   );
-
   if (approvedGyms.length === 0 && pendingGyms.length > 0) return (
     <Splash>
       <Clock style={{ width: 26, height: 26, color: T.amber, margin: '0 auto 12px' }} />
@@ -725,17 +551,16 @@ export default function GymOwnerDashboard() {
       <Link to={createPageUrl('Home')}><button style={{ background: T.card2, color: T.t1, border: `1px solid ${T.brd}`, borderRadius: 9, padding: '10px 20px', fontWeight: 700, cursor: 'pointer' }}>Back to Home</button></Link>
     </Splash>
   );
-
   if (myGyms.length === 0 && !isCoach) return (
     <Splash>
       <Dumbbell style={{ width: 26, height: 26, color: T.cyan, margin: '0 auto 12px' }} />
       <h2 style={{ color: T.t1, fontWeight: 800, marginBottom: 8 }}>No Gyms Yet</h2>
       <p style={{ color: T.t2, fontSize: 13, marginBottom: 20 }}>Register your gym to get started.</p>
-      <Link to={createPageUrl('GymSignup')}><button style={{ background: T.cyan, color: '#000', border: 'none', borderRadius: 9, padding: '10px 20px', fontWeight: 700, cursor: 'pointer' }}>Register Your Gym</button></Link>
+      <Link to={createPageUrl('GymSignup')}><button style={{ background: T.cyan, color: '#fff', border: 'none', borderRadius: 9, padding: '10px 20px', fontWeight: 700, cursor: 'pointer' }}>Register Your Gym</button></Link>
     </Splash>
   );
 
-  /* ── Shared modals (unchanged) ── */
+  /* ── Shared modals ── */
   const sharedModals = (
     <>
       <ManageClassesModal open={modal === 'classes'} onClose={closeModal} classes={classes} onCreateClass={(d) => createClassM.mutate(d)} onUpdateClass={(id, data) => updateClassM.mutate({ id, data })} onDeleteClass={(id) => deleteClassM.mutate(id)} gym={selectedGym} isLoading={createClassM.isPending || updateClassM.isPending} />
@@ -754,7 +579,6 @@ export default function GymOwnerDashboard() {
       <EditBasicInfoModal open={modal === 'editInfo'} onClose={closeModal} gym={selectedGym} onSave={(d) => updateGymM.mutate(d)} isLoading={updateGymM.isPending} />
       <EditGymLogoModal open={modal === 'logo'} onClose={closeModal} currentLogoUrl={selectedGym?.logo_url} onSave={(url) => updateGymM.mutate({ logo_url: url })} isLoading={updateGymM.isPending} />
       <EditPricingModal open={modal === 'pricing'} onClose={closeModal} gym={selectedGym} onSave={(d) => updateGymM.mutate(d)} isLoading={updateGymM.isPending} />
-
       <AlertDialog open={modal === 'deleteGym'} onOpenChange={(v) => !v && closeModal()}>
         <AlertDialogContent style={{ background: T.card, border: `1px solid rgba(255,77,109,0.25)`, maxWidth: 420 }}>
           <AlertDialogHeader>
@@ -773,7 +597,6 @@ export default function GymOwnerDashboard() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-
       <AlertDialog open={modal === 'deleteAccount'} onOpenChange={(v) => !v && closeModal()}>
         <AlertDialogContent style={{ background: T.card, border: `1px solid rgba(255,77,109,0.25)`, maxWidth: 420 }}>
           <AlertDialogHeader>
@@ -792,232 +615,81 @@ export default function GymOwnerDashboard() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-
       <GymJoinPoster gym={selectedGym} open={showPoster} onClose={() => setShowPoster(false)} />
       <MemberChatPanel open={showChat} onClose={() => setShowChat(false)} allMemberships={allMemberships} currentUser={currentUser} avatarMap={memberAvatarMapResolved} />
     </>
   );
 
   /* ════════════════════════════════════════════════════════════
-     MOBILE — fully redesigned, desktop-untouched guard above
+     MOBILE
      ════════════════════════════════════════════════════════════ */
   if (isMobile) return (
-    <div style={{
-      display: 'flex', flexDirection: 'column',
-      background: T.bg, height: '100dvh', overflow: 'hidden',
-    }}>
-
-      {/* ── Mobile header ────────────────────────────────────── */}
-      <header style={{
-        flexShrink: 0,
-        background: T.sidebar,
-        borderBottom: `1px solid ${T.brd}`,
-        height: 60,
-        padding: '0 16px',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        position: 'relative',
-      }}>
-        {/* Subtle cyan accent line at bottom of header */}
-        <div style={{
-          position: 'absolute', bottom: 0, left: 0, right: 0, height: 1,
-          background: `linear-gradient(90deg, transparent 0%, ${T.cyan}40 40%, ${T.cyan}40 60%, transparent 100%)`,
-          pointerEvents: 'none',
-        }} />
-
-        {/* Left: Logo + gym name + role */}
+    <div style={{ display: 'flex', flexDirection: 'column', background: T.bg, height: '100dvh', overflow: 'hidden' }}>
+      <header style={{ flexShrink: 0, background: T.sidebar, borderBottom: `1px solid ${T.brd}`, height: 60, padding: '0 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'relative' }}>
+        <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 1, background: `linear-gradient(90deg, transparent 0%, rgba(77,127,255,0.35) 40%, rgba(77,127,255,0.35) 60%, transparent 100%)`, pointerEvents: 'none' }} />
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0 }}>
-          <div style={{
-            width: 38, height: 38, borderRadius: 11, flexShrink: 0,
-            background: T.card,
-            border: `1.5px solid ${T.cyanBrd}`,
-            boxShadow: `0 0 14px ${T.cyanDim}`,
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            overflow: 'hidden',
-          }}>
+          <div style={{ width: 38, height: 38, borderRadius: 11, flexShrink: 0, background: T.card, border: `1.5px solid ${T.cyanBrd}`, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
             {selectedGym?.logo_url || selectedGym?.image_url
               ? <img src={selectedGym.logo_url || selectedGym.image_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
               : <Dumbbell style={{ width: 16, height: 16, color: T.cyan }} />
             }
           </div>
           <div style={{ minWidth: 0 }}>
-            <div style={{
-              fontSize: 14, fontWeight: 800, color: T.t1,
-              letterSpacing: '-0.03em', lineHeight: 1.15,
-              overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-              maxWidth: 160,
-            }}>
+            <div style={{ fontSize: 14, fontWeight: 800, color: T.t1, letterSpacing: '-0.03em', lineHeight: 1.15, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 160 }}>
               {selectedGym?.name || 'Dashboard'}
             </div>
-            <div style={{
-              marginTop: 2, display: 'inline-flex', alignItems: 'center', gap: 4,
-              fontSize: 9.5, fontWeight: 700, textTransform: 'uppercase',
-              letterSpacing: '0.12em', color: T.cyan,
-            }}>
-              <div style={{ width: 5, height: 5, borderRadius: '50%', background: T.cyan, flexShrink: 0 }} />
-              {roleLabel}
+            <div style={{ marginTop: 2, display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 9.5, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.12em', color: T.cyan }}>
+              <div style={{ width: 5, height: 5, borderRadius: '50%', background: T.cyan, flexShrink: 0 }} />{roleLabel}
             </div>
           </div>
         </div>
-
-        {/* Right: at-risk badge + QR + profile */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
           {atRisk > 0 && (
-            <button
-              onClick={() => setTab('members')}
-              style={{
-                background: T.redDim, color: T.red,
-                border: '1px solid rgba(255,77,109,0.35)',
-                borderRadius: 20, fontSize: 11, fontWeight: 800,
-                padding: '5px 10px', cursor: 'pointer',
-                display: 'flex', alignItems: 'center', gap: 4,
-                minHeight: 32,
-                WebkitTapHighlightColor: 'transparent',
-              }}
-            >
+            <button onClick={() => setTab('members')} style={{ background: T.redDim, color: T.red, border: '1px solid rgba(255,77,109,0.35)', borderRadius: 20, fontSize: 11, fontWeight: 800, padding: '5px 10px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4, minHeight: 32, WebkitTapHighlightColor: 'transparent' }}>
               <AlertTriangle style={{ width: 10, height: 10 }} />{atRisk}
             </button>
           )}
-
-          <button
-            onClick={() => openModal('qrScanner')}
-            style={{
-              width: 38, height: 38, borderRadius: 11,
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              background: T.card, border: `1px solid ${T.brd}`,
-              color: T.t2, cursor: 'pointer',
-              WebkitTapHighlightColor: 'transparent',
-              flexShrink: 0,
-            }}
-          >
+          <button onClick={() => openModal('qrScanner')} style={{ width: 38, height: 38, borderRadius: 11, display: 'flex', alignItems: 'center', justifyContent: 'center', background: T.card, border: `1px solid ${T.brd}`, color: T.t2, cursor: 'pointer', WebkitTapHighlightColor: 'transparent', flexShrink: 0 }}>
             <QrCode style={{ width: 16, height: 16 }} />
           </button>
-
-          {/* Profile avatar */}
-          <div style={{
-            width: 38, height: 38, borderRadius: 11, flexShrink: 0,
-            background: T.card2, border: `1px solid ${T.brd}`,
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            overflow: 'hidden', cursor: 'pointer',
-            fontSize: 15, fontWeight: 800, color: T.t1,
-          }}>
-            {currentUser?.avatar_url
-              ? <img src={currentUser.avatar_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-              : (currentUser?.full_name || currentUser?.email || '?').charAt(0).toUpperCase()
-            }
+          <div style={{ width: 38, height: 38, borderRadius: 11, flexShrink: 0, background: T.card2, border: `1px solid ${T.brd}`, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', cursor: 'pointer', fontSize: 15, fontWeight: 800, color: T.t1 }}>
+            {currentUser?.avatar_url ? <img src={currentUser.avatar_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : (currentUser?.full_name || currentUser?.email || '?').charAt(0).toUpperCase()}
           </div>
         </div>
       </header>
-
-      {/* ── KPI strip ─────────────────────────────────────────── */}
-      <MobileKpiStrip
-        tab={tab} isCoach={isCoach} stats={stats}
-        posts={posts} events={events} challenges={challenges} polls={polls}
-        coaches={coaches} classes={classes} myClasses={myClasses}
-        allMemberships={effectiveMemberships}
-      />
-
-      {/* ── Scrollable content ─────────────────────────────────── */}
-      <main style={{
-        flex: 1,
-        overflowY: 'auto',
-        overflowX: 'hidden',
-        padding: '14px 16px 96px',
-        WebkitOverflowScrolling: 'touch',
-        minWidth: 0,
-      }}>
+      <MobileKpiStrip tab={tab} isCoach={isCoach} stats={stats} posts={posts} events={events} challenges={challenges} polls={polls} coaches={coaches} classes={classes} myClasses={myClasses} allMemberships={effectiveMemberships} />
+      <main style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden', padding: '14px 16px 96px', WebkitOverflowScrolling: 'touch', minWidth: 0 }}>
         <Suspense fallback={<TabLoader />}>
           {tabPanels.map((p) => (
-            <div key={p.id} style={{ display: p.id === tab ? 'block' : 'none', minWidth: 0 }}>
-              {p.content}
-            </div>
+            <div key={p.id} style={{ display: p.id === tab ? 'block' : 'none', minWidth: 0 }}>{p.content}</div>
           ))}
         </Suspense>
       </main>
-
-      {/* ── FAB — primary action ───────────────────────────────── */}
       <MobileFAB openModal={openModal} />
-
-      {/* ── Bottom navigation ─────────────────────────────────── */}
-      <nav style={{
-        flexShrink: 0,
-        background: T.sidebar,
-        borderTop: `1px solid ${T.brd}`,
-        paddingBottom: 'env(safe-area-inset-bottom)',
-        paddingLeft: 8,
-        paddingRight: 8,
-        paddingTop: 8,
-      }}>
+      <nav style={{ flexShrink: 0, background: T.sidebar, borderTop: `1px solid ${T.brd}`, paddingBottom: 'env(safe-area-inset-bottom)', paddingLeft: 8, paddingRight: 8, paddingTop: 8 }}>
         <div style={{ display: 'flex', gap: 4 }}>
           {NAV.map((item) => {
             const active = tab === item.id;
             return (
-              <button
-                key={item.id}
-                onClick={() => setTab(item.id)}
-                style={{
-                  flex: 1,
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: 4,
-                  paddingTop: 9,
-                  paddingBottom: 9,
-                  border: 'none',
-                  cursor: 'pointer',
-                  borderRadius: 12,
-                  background: active ? T.cyanDim : 'transparent',
-                  color: active ? T.cyan : T.t3,
-                  transition: 'background 0.15s, color 0.15s',
-                  minHeight: 52,
-                  WebkitTapHighlightColor: 'transparent',
-                  position: 'relative',
-                }}
-              >
-                {/* Active top indicator */}
-                {active && (
-                  <div style={{
-                    position: 'absolute', top: 0,
-                    left: '30%', right: '30%',
-                    height: 2, borderRadius: '0 0 2px 2px',
-                    background: T.cyan,
-                  }} />
-                )}
+              <button key={item.id} onClick={() => setTab(item.id)} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 4, paddingTop: 9, paddingBottom: 9, border: 'none', cursor: 'pointer', borderRadius: 12, background: active ? T.cyanDim : 'transparent', color: active ? T.cyan : T.t3, transition: 'background 0.15s, color 0.15s', minHeight: 52, WebkitTapHighlightColor: 'transparent', position: 'relative' }}>
+                {active && <div style={{ position: 'absolute', top: 0, left: '30%', right: '30%', height: 2, borderRadius: '0 0 2px 2px', background: T.cyan }} />}
                 <item.icon style={{ width: 19, height: 19, strokeWidth: active ? 2.2 : 1.8 }} />
-                <span style={{
-                  fontSize: 9.5, letterSpacing: '0.02em',
-                  fontWeight: active ? 700 : 500,
-                  lineHeight: 1,
-                }}>
-                  {item.label}
-                </span>
+                <span style={{ fontSize: 9.5, letterSpacing: '0.02em', fontWeight: active ? 700 : 500, lineHeight: 1 }}>{item.label}</span>
               </button>
             );
           })}
         </div>
       </nav>
-
       {sharedModals}
     </div>
   );
 
   /* ════════════════════════════════════════════════════════════
-     DESKTOP — completely unchanged from original
+     DESKTOP
      ════════════════════════════════════════════════════════════ */
   return (
     <div style={{ display: 'flex', height: '100vh', overflow: 'hidden', background: T.bg }}>
-
-      {/* ── SIDEBAR ── */}
-      <aside style={{
-        flexShrink: 0, height: '100%', overflow: 'hidden',
-        background: T.sidebar, borderRight: `1px solid ${T.brd}`,
-        display: 'flex', flexDirection: 'column',
-        width: collapsed ? 56 : 220,
-        transition: 'width 220ms cubic-bezier(0.4,0,0.2,1)',
-      }}>
-        {/* Gym header */}
+      <aside style={{ flexShrink: 0, height: '100%', overflow: 'hidden', background: T.sidebar, borderRight: `1px solid ${T.brd}`, display: 'flex', flexDirection: 'column', width: collapsed ? 56 : 220, transition: 'width 220ms cubic-bezier(0.4,0,0.2,1)' }}>
         <div style={{ borderBottom: `1px solid ${T.brd}`, flexShrink: 0, padding: collapsed ? '13px 0' : '13px 14px' }}>
           {collapsed ? (
             <div style={{ display: 'flex', justifyContent: 'center' }}>
@@ -1028,7 +700,7 @@ export default function GymOwnerDashboard() {
             </div>
           ) : (
             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-              <div style={{ width: 34, height: 34, borderRadius: '50%', flexShrink: 0, background: T.card, border: `2px solid ${T.cyan}`, boxShadow: `0 0 8px ${T.cyanDim}`, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+              <div style={{ width: 34, height: 34, borderRadius: '50%', flexShrink: 0, background: T.card, border: `2px solid ${T.cyan}`, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
                 {selectedGym?.logo_url || selectedGym?.image_url
                   ? <img src={selectedGym.logo_url || selectedGym.image_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                   : <Dumbbell style={{ width: 14, height: 14, color: T.cyan }} />
@@ -1044,8 +716,6 @@ export default function GymOwnerDashboard() {
               </button>
             </div>
           )}
-
-          {/* Gym switcher */}
           {!collapsed && approvedGyms.length > 1 && (
             <div style={{ position: 'relative', marginTop: 10 }}>
               <button onClick={() => setGymOpen((o) => !o)} style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '6px 10px', borderRadius: 8, background: 'rgba(255,255,255,0.03)', border: `1px solid ${T.brd}`, color: T.t2, fontSize: 11, fontWeight: 600, cursor: 'pointer' }}>
@@ -1064,27 +734,12 @@ export default function GymOwnerDashboard() {
             </div>
           )}
         </div>
-
-        {/* Navigation */}
         <nav style={{ flex: 1, padding: '8px 0', overflowY: 'auto' }}>
-          {!collapsed && (
-            <div style={{ fontSize: 9, fontWeight: 700, color: T.t3, textTransform: 'uppercase', letterSpacing: '0.10em', padding: '4px 14px 6px' }}>Navigation</div>
-          )}
+          {!collapsed && <div style={{ fontSize: 9, fontWeight: 700, color: T.t3, textTransform: 'uppercase', letterSpacing: '0.10em', padding: '4px 14px 6px' }}>Navigation</div>}
           {NAV.map((item) => {
             const active = tab === item.id;
             return (
-              <button key={item.id} onClick={() => setTab(item.id)} style={{
-                display: 'flex', alignItems: 'center', width: '100%', border: 'none', cursor: 'pointer',
-                borderLeft: `2px solid ${active ? T.cyan : 'transparent'}`,
-                borderRadius: '0 8px 8px 0',
-                fontSize: 12.5, fontWeight: active ? 700 : 400, marginBottom: 1,
-                gap: collapsed ? 0 : 9,
-                padding: collapsed ? '10px 0' : '8px 14px',
-                justifyContent: collapsed ? 'center' : 'flex-start',
-                background: active ? T.cyanDim : 'transparent',
-                color: active ? T.t1 : T.t2,
-                transition: 'background 0.12s, color 0.12s, border-color 0.12s',
-              }}
+              <button key={item.id} onClick={() => setTab(item.id)} style={{ display: 'flex', alignItems: 'center', width: '100%', border: 'none', cursor: 'pointer', borderLeft: `2px solid ${active ? T.cyan : 'transparent'}`, borderRadius: '0 8px 8px 0', fontSize: 12.5, fontWeight: active ? 700 : 400, marginBottom: 1, gap: collapsed ? 0 : 9, padding: collapsed ? '10px 0' : '8px 14px', justifyContent: collapsed ? 'center' : 'flex-start', background: active ? T.cyanDim : 'transparent', color: active ? T.t1 : T.t2, transition: 'background 0.12s, color 0.12s, border-color 0.12s' }}
                 onMouseEnter={e => { if (!active) { e.currentTarget.style.background = 'rgba(255,255,255,0.03)'; e.currentTarget.style.color = T.t1; } }}
                 onMouseLeave={e => { if (!active) { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = T.t2; } }}>
                 <item.icon style={{ width: 14, height: 14, flexShrink: 0 }} />
@@ -1093,14 +748,11 @@ export default function GymOwnerDashboard() {
             );
           })}
         </nav>
-
-        {/* Upgrade prompt */}
         {!collapsed && isGymOwner && (
           <div style={{ padding: '0 10px 10px', flexShrink: 0 }}>
             <Link to={createPageUrl('Plus')}>
               <div style={{ padding: '11px 13px', borderRadius: 10, background: 'rgba(255,255,255,0.02)', border: `1px solid ${T.brd}`, cursor: 'pointer', transition: 'border-color 0.15s' }}
-                onMouseEnter={e => e.currentTarget.style.borderColor = T.brd2}
-                onMouseLeave={e => e.currentTarget.style.borderColor = T.brd}>
+                onMouseEnter={e => e.currentTarget.style.borderColor = T.brd2} onMouseLeave={e => e.currentTarget.style.borderColor = T.brd}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 2 }}>
                   <Crown style={{ width: 11, height: 11, color: T.t3 }} />
                   <span style={{ fontSize: 11, fontWeight: 700, color: T.t2 }}>Retention Pro</span>
@@ -1110,8 +762,6 @@ export default function GymOwnerDashboard() {
             </Link>
           </div>
         )}
-
-        {/* Footer links + logout */}
         <div style={{ flexShrink: 0, borderTop: `1px solid ${T.brd}` }}>
           {!collapsed && (
             <div style={{ padding: '10px 10px 4px' }}>
@@ -1131,10 +781,7 @@ export default function GymOwnerDashboard() {
           )}
           {collapsed && (
             <div style={{ padding: '8px 0' }}>
-              {[
-                { icon: Eye, to: createPageUrl('GymCommunity') + '?id=' + selectedGym?.id },
-                { icon: Users, to: createPageUrl('Home') }
-              ].map((l, i) => (
+              {[{ icon: Eye, to: createPageUrl('GymCommunity') + '?id=' + selectedGym?.id }, { icon: Users, to: createPageUrl('Home') }].map((l, i) => (
                 <Link key={i} to={l.to}>
                   <button style={{ width: '100%', display: 'flex', justifyContent: 'center', padding: '9px 0', border: 'none', background: 'transparent', color: T.t3, cursor: 'pointer', transition: 'color 0.12s' }}
                     onMouseEnter={e => e.currentTarget.style.color = T.t2} onMouseLeave={e => e.currentTarget.style.color = T.t3}>
@@ -1153,29 +800,16 @@ export default function GymOwnerDashboard() {
           </div>
         </div>
       </aside>
-
-      {/* ── MAIN ── */}
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, overflow: 'hidden' }}>
-
-        {/* ── TOP BAR ── */}
         <header style={{ height: 54, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 20px', background: T.sidebar, borderBottom: `1px solid ${T.brd}` }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
             <div style={{ fontSize: 12.5, fontWeight: 600, color: T.t2, letterSpacing: '-0.01em' }}>
               {new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' })}
             </div>
-
-            {/* Member search */}
             <div style={{ position: 'relative' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '5px 11px', borderRadius: 8, background: 'rgba(255,255,255,0.03)', border: `1px solid ${memberSearchOpen ? T.cyanBrd : T.brd}`, transition: 'border-color 0.15s' }}>
                 <svg width="11" height="11" viewBox="0 0 20 20" fill="none"><circle cx="8" cy="8" r="6" stroke={T.t3} strokeWidth="2"/><path d="M13 13l4 4" stroke={T.t3} strokeWidth="2" strokeLinecap="round"/></svg>
-                <input
-                  value={memberSearchQuery}
-                  onChange={e => { setMemberSearchQuery(e.target.value); setMemberSearchOpen(true); }}
-                  onFocus={() => setMemberSearchOpen(true)}
-                  onBlur={() => setTimeout(() => setMemberSearchOpen(false), 180)}
-                  placeholder="Search members..."
-                  style={{ width: 170, background: 'transparent', border: 'none', outline: 'none', color: T.t1, fontSize: 12 }}
-                />
+                <input value={memberSearchQuery} onChange={e => { setMemberSearchQuery(e.target.value); setMemberSearchOpen(true); }} onFocus={() => setMemberSearchOpen(true)} onBlur={() => setTimeout(() => setMemberSearchOpen(false), 180)} placeholder="Search members..." style={{ width: 170, background: 'transparent', border: 'none', outline: 'none', color: T.t1, fontSize: 12 }} />
                 {memberSearchQuery && (
                   <button onClick={() => { setMemberSearchQuery(''); setMemberSearchOpen(false); }} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, display: 'flex' }}>
                     <X style={{ width: 10, height: 10, color: T.t3 }} />
@@ -1192,8 +826,7 @@ export default function GymOwnerDashboard() {
                     ) : results.map(m => (
                       <button key={m.user_id} onMouseDown={() => { setSelectedQuickMember(m); setMemberSearchQuery(''); setMemberSearchOpen(false); }}
                         style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 9, padding: '9px 14px', background: 'transparent', border: 'none', cursor: 'pointer', textAlign: 'left', transition: 'background 0.1s' }}
-                        onMouseEnter={e => e.currentTarget.style.background = T.cyanDim}
-                        onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
+                        onMouseEnter={e => e.currentTarget.style.background = T.cyanDim} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
                         <div style={{ width: 26, height: 26, borderRadius: '50%', flexShrink: 0, background: T.card, border: `1px solid ${T.brd}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 800, color: T.t1, overflow: 'hidden' }}>
                           {avatarMapFull[m.user_id] ? <img src={avatarMapFull[m.user_id]} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : (m.user_name || '?').charAt(0).toUpperCase()}
                         </div>
@@ -1208,7 +841,6 @@ export default function GymOwnerDashboard() {
               })()}
             </div>
           </div>
-
           <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
             {isGymOwner && selectedGym?.join_code && (
               <button onClick={() => setShowPoster(true)} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '5px 11px', borderRadius: 7, background: 'rgba(255,255,255,0.03)', border: `1px solid ${T.brd}`, color: T.t2, fontSize: 11, fontWeight: 600, cursor: 'pointer', transition: 'border-color 0.15s' }}
@@ -1217,70 +849,43 @@ export default function GymOwnerDashboard() {
                 <span style={{ fontFamily: 'monospace', letterSpacing: '0.10em' }}>{selectedGym.join_code}</span>
               </button>
             )}
-
             {atRisk > 0 && (
               <button onClick={() => setTab('members')} style={{ background: T.redDim, color: T.red, border: '1px solid rgba(255,77,109,0.3)', borderRadius: 20, fontSize: 11, fontWeight: 700, padding: '5px 11px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4 }}>
                 <AlertTriangle style={{ width: 11, height: 11 }} />{atRisk} at risk
               </button>
             )}
-
             <button onClick={() => openModal('qrScanner')} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '6px 12px', borderRadius: 8, background: 'rgba(255,255,255,0.04)', color: T.t2, border: `1px solid ${T.brd}`, fontSize: 12, fontWeight: 600, cursor: 'pointer', transition: 'all 0.15s' }}
               onMouseEnter={e => { e.currentTarget.style.color = T.t1; e.currentTarget.style.borderColor = T.brd2; }}
               onMouseLeave={e => { e.currentTarget.style.color = T.t2; e.currentTarget.style.borderColor = T.brd; }}>
               <QrCode style={{ width: 12, height: 12 }} /> Scan QR
             </button>
-
-            <button onClick={() => openModal('post')} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '6px 14px', borderRadius: 8, background: T.cyan, color: '#000', border: 'none', fontSize: 12, fontWeight: 700, cursor: 'pointer', boxShadow: `0 0 16px ${T.cyanDim}`, transition: 'opacity 0.15s' }}
+            <button onClick={() => openModal('post')} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '6px 14px', borderRadius: 8, background: T.cyan, color: '#fff', border: 'none', fontSize: 12, fontWeight: 700, cursor: 'pointer', transition: 'opacity 0.15s' }}
               onMouseEnter={e => e.currentTarget.style.opacity = '0.9'} onMouseLeave={e => e.currentTarget.style.opacity = '1'}>
               <Plus style={{ width: 12, height: 12 }} /> New Post
             </button>
-
             <ProfileDropdown currentUser={currentUser} coaches={coaches} currentRole={selectedCoachId || (isCoach ? 'coach' : 'gym_owner')} onRoleSelect={handleRoleSelect} />
-
             <button onClick={() => setShowChat((o) => !o)} style={{ width: 32, height: 32, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', border: `1px solid ${showChat ? T.cyanBrd : T.brd}`, background: showChat ? T.cyanDim : 'rgba(255,255,255,0.03)', color: showChat ? T.cyan : T.t3, cursor: 'pointer', transition: 'all 0.15s' }}>
               <MessageCircle style={{ width: 13, height: 13 }} />
             </button>
           </div>
         </header>
-
-        {selectedQuickMember && (
-          <MemberQuickModal member={selectedQuickMember} onClose={() => setSelectedQuickMember(null)} checkIns={checkIns} avatarMap={avatarMapFull} />
-        )}
-
-        {/* ── CONTENT ── */}
+        {selectedQuickMember && <MemberQuickModal member={selectedQuickMember} onClose={() => setSelectedQuickMember(null)} checkIns={checkIns} avatarMap={avatarMapFull} />}
         <main style={{ flex: 1, overflow: 'hidden', padding: '20px 22px 28px', display: 'flex', flexDirection: 'column' }}>
           <div style={{ flex: 1, minHeight: 0, width: '100%', maxWidth: 1600, overflowY: 'auto' }}>
-            {/* ── Join Code Banner ── */}
             {isGymOwner && selectedGym?.join_code && (
-              <div
-                onClick={() => setShowPoster(true)}
-                style={{
-                  marginBottom: 18, borderRadius: 14, overflow: 'hidden', cursor: 'pointer',
-                  background: 'linear-gradient(135deg, #050c1a 0%, #071225 60%, #050810 100%)',
-                  border: '1px solid rgba(14,165,233,0.25)',
-                  boxShadow: '0 0 32px rgba(14,165,233,0.07)',
-                  position: 'relative',
-                  transition: 'border-color 0.18s',
-                }}
+              <div onClick={() => setShowPoster(true)} style={{ marginBottom: 18, borderRadius: 14, overflow: 'hidden', cursor: 'pointer', background: 'linear-gradient(135deg, #050c1a 0%, #071225 60%, #050810 100%)', border: '1px solid rgba(14,165,233,0.25)', position: 'relative', transition: 'border-color 0.18s' }}
                 onMouseEnter={e => e.currentTarget.style.borderColor = 'rgba(14,165,233,0.55)'}
-                onMouseLeave={e => e.currentTarget.style.borderColor = 'rgba(14,165,233,0.25)'}
-              >
-                {/* top accent line */}
+                onMouseLeave={e => e.currentTarget.style.borderColor = 'rgba(14,165,233,0.25)'}>
                 <div style={{ height: 3, background: 'linear-gradient(90deg,#0ea5e9,#06b6d4,#8b5cf6)', width: '100%' }} />
                 <div style={{ display: 'flex', alignItems: 'center', gap: 20, padding: '16px 22px' }}>
-                  {/* QR */}
                   <div style={{ background: '#fff', borderRadius: 10, padding: 8, flexShrink: 0, boxShadow: '0 0 0 1px rgba(14,165,233,0.3)' }}>
                     <QRCode value={`${window.location.origin}/Gyms?joinCode=${selectedGym.join_code}`} size={60} level="H" />
                   </div>
-                  {/* Code */}
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ fontSize: 10, fontWeight: 700, color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase', letterSpacing: '0.16em', marginBottom: 4 }}>Member Join Code</div>
-                    <div style={{ fontSize: 34, fontWeight: 900, letterSpacing: '0.22em', color: '#fff', fontFamily: "'Courier New', monospace", lineHeight: 1, textShadow: '0 0 20px rgba(14,165,233,0.4)' }}>
-                      {selectedGym.join_code}
-                    </div>
+                    <div style={{ fontSize: 34, fontWeight: 900, letterSpacing: '0.22em', color: '#fff', fontFamily: "'Courier New', monospace", lineHeight: 1 }}>{selectedGym.join_code}</div>
                     <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.3)', marginTop: 5 }}>Scan the QR or enter this code in the CoStride app</div>
                   </div>
-                  {/* CTA */}
                   <div style={{ flexShrink: 0, display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 8 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '7px 14px', borderRadius: 8, background: 'rgba(14,165,233,0.1)', border: '1px solid rgba(14,165,233,0.3)', color: '#38bdf8', fontSize: 12, fontWeight: 700 }}>
                       <QrCode style={{ width: 12, height: 12 }} /> View Flyer
@@ -1298,7 +903,6 @@ export default function GymOwnerDashboard() {
           </div>
         </main>
       </div>
-
       {sharedModals}
     </div>
   );
