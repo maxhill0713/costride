@@ -1051,7 +1051,8 @@ export default function TabEngagement({ selectedGym }) {
   const churnPrev    = Math.floor(totalRet * 0.4);
 
   const addFromRec = useCallback(rec => {
-    addRule({ trigger_id: rec.trigger_id, message: TEMPLATES[rec.trigger_id]?.(gymName, "{name}") || "", delay_hours: 0, enabled: true, stats: { sent:0,returned:0,rate:0,saved:0 } });
+    // Strip non-serializable fields (e.g. icon component refs) before storing in state
+    addRule({ trigger_id: rec.trigger_id, message: TEMPLATES[rec.trigger_id]?.(gymName, "{name}") || "", delay_hours: 0, enabled: true, stats: { sent:0, returned:0, rate:0, saved:0 } });
   }, [addRule, gymName]);
 
   const addPack = useCallback(pack => {
