@@ -76,7 +76,7 @@ return (
 }
 function Checkbox({ checked, onChange }) {
 return (
-    <div onClick={onChange} style={{ width: 14, height: 14, borderRadius: 3, cursor: "pointer", flexShrink: 0, background: checked ? C.cyan : "transparent", border: `1.5px solid ${checked ? C.cyan : C.t3}`, display: "flex", alignItems: "center", justifyContent: "center", boxShadow: checked ? `0 0 8px rgba(59,130,246,0.6)` : "none" }}>
+    <div onClick={onChange} style={{ width: 14, height: 14, borderRadius: 3, cursor: "pointer", flexShrink: 0, background: checked ? C.cyan : "transparent", border: `1.5px solid ${checked ? C.cyan : C.t3}`, display: "flex", alignItems: "center", justifyContent: "center", boxShadow: checked ? `0 0 4px rgba(59,130,246,0.2)` : "none" }}>
       {checked && <Check size={8} color="#fff" strokeWidth={3} />}
     </div>
   );
@@ -104,9 +104,9 @@ return (
       <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
         <span style={{ fontSize: 12, fontWeight: 600, color: C.t1, whiteSpace: "nowrap" }}>Content Success Journey</span>
         <div style={{ flex: 1, position: "relative", height: 5, background: "rgba(255,255,255,0.06)", borderRadius: 3, overflow: "hidden" }}>
-          <div style={{ position: "absolute", left: 0, top: 0, bottom: 0, width: "66%", background: BG(90), borderRadius: 3, boxShadow: `0 0 10px rgba(59,130,246,0.7)` }} />
+          <div style={{ position: "absolute", left: 0, top: 0, bottom: 0, width: "66%", background: BG(90), borderRadius: 3, boxShadow: `` }} />
         </div>
-        <span style={{ fontSize: 11, color: C.cyan, fontWeight: 600, whiteSpace: "nowrap", textShadow: `0 0 12px rgba(59,130,246,0.8)` }}>66%</span>
+        <span style={{ fontSize: 11, color: C.cyan, fontWeight: 600, whiteSpace: "nowrap", textShadow: "none" }}>66%</span>
       </div>
       <div style={{ display: "flex", gap: 0, marginTop: 9 }}>
         {[
@@ -115,7 +115,7 @@ return (
           { label: "Step 3: Review Insights",          done: false },
         ].map((s, i) => (
           <div key={i} style={{ flex: 1, display: "flex", alignItems: "center", gap: 5, paddingRight: i < 2 ? 8 : 0 }}>
-            <div style={{ width: 8, height: 8, borderRadius: "50%", background: s.done ? C.cyan : C.t3, flexShrink: 0, boxShadow: s.done ? `0 0 7px rgba(59,130,246,0.8)` : "none" }} />
+            <div style={{ width: 8, height: 8, borderRadius: "50%", background: s.done ? C.cyan : C.t3, flexShrink: 0, boxShadow: s.done ? `0 0 3px rgba(59,130,246,0.2)` : "none" }} />
             <span style={{ fontSize: 10.5, color: s.done ? C.cyan : C.t2, fontWeight: s.done ? 600 : 400 }}>{s.label}</span>
           </div>
         ))}
@@ -137,7 +137,7 @@ return (
     <div style={{ borderBottom: `1px solid ${C.brd}`, marginBottom: isMobile ? 0 : 14, ...(isMobile ? { position: "sticky", top: 0, zIndex: 90, background: C.bg } : {}) }}>
       <div ref={ref} style={{ display: "flex", alignItems: "center", gap: 2, ...(isMobile ? { overflowX: "auto", WebkitOverflowScrolling: "touch", scrollbarWidth: "none" } : {}) }}>
         {VISIBLE_TABS.map(tab => (
-          <button key={tab} data-active={active === tab} onClick={() => setActive(tab)} style={{ padding: isMobile ? "10px 16px" : "7px 14px", fontSize: 12.5, background: "transparent", border: "none", borderBottom: `2px solid ${active === tab ? C.cyan : "transparent"}`, color: active === tab ? C.t1 : C.t2, fontWeight: active === tab ? 700 : 400, cursor: "pointer", marginBottom: -1, fontFamily: FONT, transition: "color 0.15s", whiteSpace: "nowrap", flexShrink: 0, minHeight: 44, textShadow: active === tab ? `0 0 14px rgba(59,130,246,0.6)` : "none" }}>
+          <button key={tab} data-active={active === tab} onClick={() => setActive(tab)} style={{ padding: isMobile ? "10px 16px" : "7px 14px", fontSize: 12.5, background: "transparent", border: "none", borderBottom: `2px solid ${active === tab ? C.cyan : "transparent"}`, color: active === tab ? C.t1 : C.t2, fontWeight: active === tab ? 700 : 400, cursor: "pointer", marginBottom: -1, fontFamily: FONT, transition: "color 0.15s", whiteSpace: "nowrap", flexShrink: 0, minHeight: 44, textShadow: "none" }}>
             {tab}
           </button>
         ))}
@@ -164,7 +164,7 @@ return (
         <div style={{ display: "flex", gap: 4 }}>{d.platforms.map(p => <PlatformPill key={p} type={p} />)}</div>
         {d.aiGen && <AiBadge />}
         <div style={{ flex: 1 }} />
-        <button style={{ padding: isMobile ? "8px 14px" : "6px 13px", borderRadius: 7, fontSize: 11.5, fontWeight: 700, background: BG(), color: "#fff", border: "none", cursor: "pointer", fontFamily: FONT, minHeight: 44, boxShadow: "0 0 18px rgba(59,130,246,0.55), 0 2px 8px rgba(59,130,246,0.4)" }}>
+        <button style={{ padding: isMobile ? "8px 14px" : "6px 13px", borderRadius: 7, fontSize: 11.5, fontWeight: 700, background: BG(), color: "#fff", border: "none", cursor: "pointer", fontFamily: FONT, minHeight: 44, boxShadow: "0 2px 6px rgba(59,130,246,0.2)" }}>
 Review &amp; Schedule
         </button>
       </div>
@@ -204,7 +204,7 @@ return (
       <div style={{ fontSize: 11.5, color: C.t2 }}>{row.date}</div>
       <div>
         <span style={{ fontSize: 11.5, color: C.t3 }}>N/A</span>
-        {row.engBar > 0 && <div style={{ height: 3, background: "rgba(255,255,255,0.06)", borderRadius: 2, marginTop: 5, width: 60 }}><div style={{ width: `${row.engBar}%`, height: "100%", background: BG(90), borderRadius: 2, boxShadow: `0 0 6px rgba(59,130,246,0.7)` }} /></div>}
+        {row.engBar > 0 && <div style={{ height: 3, background: "rgba(255,255,255,0.06)", borderRadius: 2, marginTop: 5, width: 60 }}><div style={{ width: `${row.engBar}%`, height: "100%", background: BG(90), borderRadius: 2, boxShadow: `` }} /></div>}
       </div>
       <div onClick={e => e.stopPropagation()}>
         <button style={{ display: "flex", alignItems: "center", gap: 4, padding: "4px 10px", borderRadius: 6, fontSize: 11.5, fontWeight: 500, background: "rgba(255,255,255,0.04)", border: `1px solid ${C.brd}`, color: C.t2, cursor: "pointer", fontFamily: FONT }}>
@@ -242,7 +242,7 @@ return (
 function MobileContentCard({ row }) {
 const [checked, setChecked] = useState(false);
 return (
-    <div onClick={() => setChecked(p => !p)} style={{ background: checked ? C.cyanDim : C.card, border: `1px solid ${checked ? C.cyanBrd : C.brd}`, borderRadius: 10, padding: "14px 16px", marginBottom: 8, cursor: "pointer", transition: "border-color 0.15s, background 0.15s", boxShadow: checked ? `0 0 18px rgba(59,130,246,0.18)` : "none" }}>
+    <div onClick={() => setChecked(p => !p)} style={{ background: checked ? C.cyanDim : C.card, border: `1px solid ${checked ? C.cyanBrd : C.brd}`, borderRadius: 10, padding: "14px 16px", marginBottom: 8, cursor: "pointer", transition: "border-color 0.15s, background 0.15s", boxShadow: checked ? `0 0 6px rgba(59,130,246,0.08)` : "none" }}>
       <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
         <Avatar name={row.typeAvatar} size={34} />
         <div style={{ flex: 1, minWidth: 0 }}>
@@ -259,10 +259,10 @@ return (
       {row.engBar > 0 && (
         <div style={{ marginBottom: 12 }}>
           <div style={{ display: "flex", justifyContent: "space-between", fontSize: 10.5, color: C.t3, marginBottom: 4 }}>
-            <span>Engagement</span><span style={{ color: C.cyan, textShadow: `0 0 10px rgba(59,130,246,0.7)` }}>{row.engBar}%</span>
+            <span>Engagement</span><span style={{ color: C.cyan, textShadow: "none" }}>{row.engBar}%</span>
           </div>
           <div style={{ height: 4, background: "rgba(255,255,255,0.06)", borderRadius: 2, overflow: "hidden" }}>
-            <div style={{ width: `${row.engBar}%`, height: "100%", background: BG(90), borderRadius: 2, boxShadow: `0 0 8px rgba(59,130,246,0.7)` }} />
+            <div style={{ width: `${row.engBar}%`, height: "100%", background: BG(90), borderRadius: 2, boxShadow: `` }} />
           </div>
         </div>
       )}
@@ -307,7 +307,7 @@ return (
         <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
           {QUICK_IDEAS.map((q, i) => (
             <button key={i} style={{ width: "100%", padding: "8px 12px", borderRadius: 8, textAlign: "left", background: C.card, border: `1px solid ${C.brd}`, color: C.t2, fontSize: 11.5, fontWeight: 500, cursor: "pointer", fontFamily: FONT }}
-              onMouseEnter={e => { e.currentTarget.style.borderColor = C.cyanBrd; e.currentTarget.style.color = C.t1; e.currentTarget.style.boxShadow = `0 0 12px rgba(59,130,246,0.18)`; }}
+              onMouseEnter={e => { e.currentTarget.style.borderColor = C.cyanBrd; e.currentTarget.style.color = C.t1; e.currentTarget.style.boxShadow = ``; }}
               onMouseLeave={e => { e.currentTarget.style.borderColor = C.brd; e.currentTarget.style.color = C.t2; e.currentTarget.style.boxShadow = "none"; }}>
               {q}
             </button>
@@ -331,7 +331,7 @@ return (
                     ? "rgba(59,130,246,0.45)"
                     : "rgba(59,130,246,0.2)",
                 borderRadius: "2px 2px 0 0",
-                boxShadow: i < 2 ? `0 0 10px rgba(59,130,246,0.6)` : i < 4 ? `0 0 6px rgba(59,130,246,0.3)` : "none"
+                boxShadow: i < 2 ? `` : i < 4 ? `` : "none"
               }} />
             </div>
           ))}
@@ -341,7 +341,7 @@ return (
 Polls have <span style={{ color: C.t1, fontWeight: 600 }}>2× more engagement</span> than text posts.
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 4, cursor: "pointer" }}>
-          <span style={{ fontSize: 11.5, color: C.cyan, fontWeight: 600, textShadow: `0 0 12px rgba(59,130,246,0.7)` }}>Review Detailed Insights</span>
+          <span style={{ fontSize: 11.5, color: C.cyan, fontWeight: 600, textShadow: "none" }}>Review Detailed Insights</span>
           <ChevronRight size={11} color={C.cyan} />
         </div>
       </div>
@@ -371,7 +371,7 @@ Finally nailed that pose! <span style={{ color: C.cyan }}>@forgefitness</span> <
             <div style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 11.5, color: C.t2 }}><MessageCircle size={12} color={C.cyan} /> 4</div>
           </div>
         </div>
-        <button style={{ width: "100%", marginTop: 9, padding: "9px", borderRadius: 8, background: BG(), color: "#fff", border: "none", fontSize: 12.5, fontWeight: 700, cursor: "pointer", fontFamily: FONT, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, boxShadow: "0 0 22px rgba(59,130,246,0.55), 0 2px 10px rgba(59,130,246,0.4)" }}>
+        <button style={{ width: "100%", marginTop: 9, padding: "9px", borderRadius: 8, background: BG(), color: "#fff", border: "none", fontSize: 12.5, fontWeight: 700, cursor: "pointer", fontFamily: FONT, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, boxShadow: "0 2px 6px rgba(59,130,246,0.2)" }}>
           <Plus size={13} /> Add Member
         </button>
       </div>
@@ -398,7 +398,7 @@ return (
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
         <div style={{ fontSize: 13, fontWeight: 600, color: C.t1 }}>Actionable Insights</div>
         <div style={{ display: "flex", alignItems: "center", gap: 4, cursor: "pointer" }}>
-          <span style={{ fontSize: 11.5, color: C.cyan, fontWeight: 600, textShadow: `0 0 10px rgba(59,130,246,0.7)` }}>View all</span>
+          <span style={{ fontSize: 11.5, color: C.cyan, fontWeight: 600, textShadow: "none" }}>View all</span>
           <ChevronRight size={11} color={C.cyan} />
         </div>
       </div>
@@ -411,7 +411,7 @@ return (
                 ? BG(180)
                 : i < 4 ? "rgba(59,130,246,0.45)" : "rgba(59,130,246,0.2)",
               borderRadius: "2px 2px 0 0",
-              boxShadow: i < 2 ? `0 0 8px rgba(59,130,246,0.65)` : "none"
+              boxShadow: i < 2 ? `` : "none"
             }} />
           </div>
         ))}
@@ -427,11 +427,11 @@ Polls have <span style={{ color: C.t1, fontWeight: 600 }}>2× more engagement</s
 function EmptyState({ label, onAdd }) {
 return (
     <div style={{ display: "flex", flexDirection: "column", alignItems: "center", padding: "56px 0", gap: 12 }}>
-      <div style={{ width: 48, height: 48, borderRadius: 12, background: C.cyanDim, border: `1px solid ${C.cyanBrd}`, display: "flex", alignItems: "center", justifyContent: "center", boxShadow: `0 0 20px rgba(59,130,246,0.25)` }}>
+      <div style={{ width: 48, height: 48, borderRadius: 12, background: C.cyanDim, border: `1px solid ${C.cyanBrd}`, display: "flex", alignItems: "center", justifyContent: "center", boxShadow: `` }}>
         <Flame size={20} color={C.cyan} />
       </div>
       <div style={{ fontSize: 13, fontWeight: 500, color: C.t2 }}>No {label} yet</div>
-      <button onClick={onAdd} style={{ padding: "7px 16px", borderRadius: 8, background: BG(), color: "#fff", border: "none", fontSize: 12.5, fontWeight: 700, cursor: "pointer", fontFamily: FONT, display: "flex", alignItems: "center", gap: 6, minHeight: 44, boxShadow: "0 0 18px rgba(59,130,246,0.5)" }}>
+      <button onClick={onAdd} style={{ padding: "7px 16px", borderRadius: 8, background: BG(), color: "#fff", border: "none", fontSize: 12.5, fontWeight: 700, cursor: "pointer", fontFamily: FONT, display: "flex", alignItems: "center", gap: 6, minHeight: 44, boxShadow: "0 2px 6px rgba(59,130,246,0.2)" }}>
         <Plus size={12} /> Create
       </button>
     </div>
@@ -442,7 +442,7 @@ return (
     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
       <div style={{ fontSize: 12, fontWeight: 500, color: C.t2 }}>{count} {label}</div>
       {!isMobile && (
-        <button onClick={onAdd} style={{ padding: "6px 14px", borderRadius: 7, background: BG(), color: "#fff", border: "none", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: FONT, display: "flex", alignItems: "center", gap: 5, minHeight: 44, boxShadow: "0 0 16px rgba(59,130,246,0.5)" }}>
+        <button onClick={onAdd} style={{ padding: "6px 14px", borderRadius: 7, background: BG(), color: "#fff", border: "none", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: FONT, display: "flex", alignItems: "center", gap: 5, minHeight: 44, boxShadow: "0 2px 6px rgba(59,130,246,0.2)" }}>
           <Plus size={11} /> {btnLabel}
         </button>
       )}
@@ -452,7 +452,7 @@ return (
 function ListCard({ children, isMobile }) {
 return (
     <div style={{ background: C.card, border: `1px solid ${C.brd}`, borderRadius: 10, padding: isMobile ? "14px 16px" : "13px 16px", display: "flex", alignItems: "center", gap: 12, marginBottom: 8 }}
-      onMouseEnter={e => { e.currentTarget.style.borderColor = C.cyanBrd; e.currentTarget.style.boxShadow = `0 0 16px rgba(59,130,246,0.12)`; }}
+      onMouseEnter={e => { e.currentTarget.style.borderColor = C.cyanBrd; e.currentTarget.style.boxShadow = `0 0 6px rgba(59,130,246,0.06)`; }}
       onMouseLeave={e => { e.currentTarget.style.borderColor = C.brd; e.currentTarget.style.boxShadow = "none"; }}>
       {children}
     </div>
@@ -461,7 +461,7 @@ return (
 /* ─── FAB (mobile only) ──────────────────────────────────────── */
 function FAB({ onClick }) {
 return (
-    <button onClick={onClick} style={{ position: "fixed", bottom: 76, right: 18, zIndex: 190, width: 52, height: 52, borderRadius: "50%", background: BG(), border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 0 0 1px rgba(59,130,246,0.4), 0 0 24px rgba(59,130,246,0.65), 0 8px 28px rgba(59,130,246,0.45)" }}>
+    <button onClick={onClick} style={{ position: "fixed", bottom: 76, right: 18, zIndex: 190, width: 52, height: 52, borderRadius: "50%", background: BG(), border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 4px 12px rgba(59,130,246,0.25)" }}>
       <Plus size={22} color="#fff" strokeWidth={2.5} />
     </button>
   );
@@ -489,12 +489,12 @@ return (
             <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 12 }}>
               <div>
                 <h1 style={{ fontSize: 19, fontWeight: 700, color: C.t1, margin: 0, letterSpacing: "-0.02em", lineHeight: 1.25 }}>
-Content Center <span style={{ color: C.t3, fontWeight: 300 }}>/</span> <span style={{ color: C.cyan, textShadow: `0 0 18px rgba(59,130,246,0.6)` }}>Hub</span>
+Content Center <span style={{ color: C.t3, fontWeight: 300 }}>/</span> <span style={{ color: C.cyan, textShadow: "none" }}>Hub</span>
                 </h1>
                 <div style={{ fontSize: 12, color: C.t2, marginTop: 4 }}>Manage posts, events, challenges and polls</div>
               </div>
               <div style={{ position: "relative" }}>
-                <button onClick={() => setShowMenu(o => !o)} style={{ display: "flex", alignItems: "center", gap: 6, padding: "9px 18px", background: BG(), border: "none", borderRadius: 9, fontSize: 12.5, fontWeight: 700, color: "#fff", cursor: "pointer", fontFamily: FONT, boxShadow: "0 0 24px rgba(59,130,246,0.6), 0 2px 12px rgba(59,130,246,0.4)" }}>
+                <button onClick={() => setShowMenu(o => !o)} style={{ display: "flex", alignItems: "center", gap: 6, padding: "9px 18px", background: BG(), border: "none", borderRadius: 9, fontSize: 12.5, fontWeight: 700, color: "#fff", cursor: "pointer", fontFamily: FONT, boxShadow: "0 2px 8px rgba(59,130,246,0.2)" }}>
 Create New <ChevronDown size={11} />
                 </button>
                 {showMenu && (
@@ -585,7 +585,7 @@ Create New <ChevronDown size={11} />
               {polls.length === 0 ? <EmptyState label="polls" onAdd={() => openModal?.("poll")} /> :
                 polls.map(poll => (
                   <div key={poll.id} style={{ background: C.card, border: `1px solid ${C.brd}`, borderRadius: 10, padding: isMobile ? "14px 16px" : "13px 16px", marginBottom: 8 }}
-                    onMouseEnter={e => { e.currentTarget.style.borderColor = C.cyanBrd; e.currentTarget.style.boxShadow = `0 0 16px rgba(59,130,246,0.12)`; }}
+                    onMouseEnter={e => { e.currentTarget.style.borderColor = C.cyanBrd; e.currentTarget.style.boxShadow = `0 0 6px rgba(59,130,246,0.06)`; }}
                     onMouseLeave={e => { e.currentTarget.style.borderColor = C.brd; e.currentTarget.style.boxShadow = "none"; }}>
                     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
                       <div style={{ fontSize: 13, fontWeight: 600, color: C.t1 }}>{poll.question || poll.title}</div>
@@ -602,10 +602,10 @@ const pct      = Math.round(optVotes / total * 100);
 return (
                         <div key={i} style={{ marginBottom: 6 }}>
                           <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11.5, color: C.t2, marginBottom: 3 }}>
-                            <span>{optText}</span><span style={{ color: C.cyan, textShadow: `0 0 10px rgba(59,130,246,0.7)` }}>{pct}%</span>
+                            <span>{optText}</span><span style={{ color: C.cyan, textShadow: "none" }}>{pct}%</span>
                           </div>
                           <div style={{ height: 4, background: "rgba(255,255,255,0.06)", borderRadius: 2, overflow: "hidden" }}>
-                            <div style={{ width: `${pct}%`, height: "100%", background: BG(90), borderRadius: 2, boxShadow: `0 0 6px rgba(59,130,246,0.65)` }} />
+                            <div style={{ width: `${pct}%`, height: "100%", background: BG(90), borderRadius: 2, boxShadow: `` }} />
                           </div>
                         </div>
                       );
