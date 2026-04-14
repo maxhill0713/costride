@@ -1611,9 +1611,14 @@ export default function GymCommunity() {
                   </div>
                 </div>
                 <div className="flex flex-col gap-1.5 flex-shrink-0">
-                  {gym && isGhostGym && !isGymOwner &&
+                  {gym && isGhostGym && isMember && !isGymOwner &&
                   <button onClick={() => setShowInviteOwnerModal(true)} className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold text-white bg-gradient-to-b from-purple-400 via-purple-500 to-purple-600 shadow-[0_3px_0_0_#5b21b6,0_6px_20px_rgba(120,40,220,0.4)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100">
                       <Crown className="w-3.5 h-3.5" />Make Official
+                    </button>
+                  }
+                  {!isMember && !isGymOwner &&
+                  <button onClick={() => joinGhostGymMutation.mutate()} disabled={joinGhostGymMutation.isPending} className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold text-white bg-gradient-to-b from-purple-400 via-purple-500 to-purple-600 shadow-[0_3px_0_0_#5b21b6,0_6px_20px_rgba(120,40,220,0.4)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 transform-gpu">
+                      {joinGhostGymMutation.isPending ? 'Joining...' : 'Join Gym'}
                     </button>
                   }
                   {showOwnerControls &&
@@ -1647,81 +1652,8 @@ export default function GymCommunity() {
             {/* ── HOME ── */}
             <TabsContent value="home" className="space-y-3 mt-0 w-full" asChild>
               <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.25 }} className="space-y-3">
-                {isGhostGym && !isMember && !showOwnerControls &&
-                <div className="rounded-2xl p-4 flex items-center justify-between gap-3" style={{ background: 'linear-gradient(135deg, rgba(124,58,237,0.25), rgba(219,39,119,0.15))', border: '1px solid rgba(139,92,246,0.35)' }}>
-                    <div><p className="text-sm font-bold text-white mb-0.5">Unlock rewards & challenges</p><p className="text-xs text-slate-400">Join this gym community</p></div>
-                    <button onClick={() => joinGhostGymMutation.mutate()} disabled={joinGhostGymMutation.isPending} className="px-4 py-2 rounded-full text-xs font-bold text-white flex-shrink-0 active:scale-95 transition-transform" style={{ background: 'linear-gradient(135deg, #7c3aed, #db2777)' }}>
-                      {joinGhostGymMutation.isPending ? 'Joining...' : 'Join Gym'}
-                    </button>
-                  </div>
-                }
-                {!isMember && !isGhostGym && !showOwnerControls &&
-                <div className="space-y-2">
-                    <div className="flex gap-2">
-                      <RippleButton onClick={() => {setJoinPanel((p) => p === 'code' ? null : 'code');setJoinCodeError('');setJoinCodeSuccess(false);}}
-                    className="flex-1 flex items-center justify-center gap-2 py-3 rounded-2xl text-sm font-black transition-all duration-150 active:scale-95"
-                    style={{ background: joinPanel === 'code' ? 'linear-gradient(135deg,#1d4ed8,#1e40af)' : 'linear-gradient(135deg,rgba(29,78,216,0.25),rgba(30,64,175,0.15))', border: `1px solid ${joinPanel === 'code' ? 'rgba(59,130,246,0.6)' : 'rgba(59,130,246,0.3)'}`, boxShadow: joinPanel === 'code' ? '0 4px 0 0 #1e3a8a, 0 8px 24px rgba(59,130,246,0.3)' : '0 2px 0 0 rgba(0,0,0,0.4)', color: joinPanel === 'code' ? '#fff' : 'rgba(147,197,253,0.9)', transform: joinPanel === 'code' ? 'translateY(2px)' : 'translateY(0)' }}>
-                        <span style={{ fontSize: 16 }}>🔑</span><span>Join with Code</span>
-                        <span style={{ display: 'inline-block', transform: joinPanel === 'code' ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.3s cubic-bezier(0.34,1.4,0.64,1)', fontSize: 11, opacity: 0.7 }}>▼</span>
-                      </RippleButton>
-                      <RippleButton onClick={() => {setJoinPanel((p) => p === 'primary' ? null : 'primary');setPrimaryConfirmed(false);}}
-                    className="flex-1 flex items-center justify-center gap-2 py-3 rounded-2xl text-sm font-black transition-all duration-150 active:scale-95"
-                    style={{ background: joinPanel === 'primary' ? 'linear-gradient(135deg,#b45309,#92400e)' : 'linear-gradient(135deg,rgba(180,83,9,0.25),rgba(146,64,14,0.15))', border: `1px solid ${joinPanel === 'primary' ? 'rgba(251,191,36,0.55)' : 'rgba(251,191,36,0.25)'}`, boxShadow: joinPanel === 'primary' ? '0 4px 0 0 #78350f, 0 8px 24px rgba(251,191,36,0.25)' : '0 2px 0 0 rgba(0,0,0,0.4)', color: joinPanel === 'primary' ? '#fff' : 'rgba(253,230,138,0.9)', transform: joinPanel === 'primary' ? 'translateY(2px)' : 'translateY(0)' }}>
-                        <span style={{ fontSize: 16 }}>⭐</span><span>Set Primary</span>
-                        <span style={{ display: 'inline-block', transform: joinPanel === 'primary' ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.3s cubic-bezier(0.34,1.4,0.64,1)', fontSize: 11, opacity: 0.7 }}>▼</span>
-                      </RippleButton>
-                    </div>
-                    <SlidePanel open={joinPanel === 'code'}>
-                      <div className="rounded-2xl p-4 mt-1" style={{ background: CARD_BG, border: CARD_BORDER, backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', boxShadow: '0 8px 32px rgba(0,0,0,0.4)' }}>
-                        <p className="text-[13px] font-black text-white mb-1">Enter your gym invite code</p>
-                        <p className="text-[11px] mb-3" style={{ color: 'rgba(148,163,184,0.7)' }}>Ask your gym owner or a member for the code</p>
-                        {joinCodeSuccess ?
-                      <div className="flex flex-col items-center py-4 gap-2">
-                            <div className="w-14 h-14 rounded-full flex items-center justify-center text-3xl" style={{ background: 'rgba(16,185,129,0.15)', border: '2px solid rgba(16,185,129,0.4)' }}>✓</div>
-                            <p className="text-sm font-black text-emerald-400">You're in!</p>
-                            <p className="text-xs text-slate-400">Welcome to {gym?.name}</p>
-                          </div> :
 
-                      <>
-                            <div className="flex gap-2">
-                              <input value={joinCode} onChange={(e) => {setJoinCode(e.target.value.toUpperCase());setJoinCodeError('');}} placeholder="e.g. GYM-XK29" maxLength={10}
-                          className="flex-1 px-3 py-2.5 rounded-xl text-sm font-bold text-white placeholder-slate-600 outline-none"
-                          style={{ background: 'rgba(255,255,255,0.06)', border: `1px solid ${joinCodeError ? 'rgba(239,68,68,0.6)' : 'rgba(59,130,246,0.25)'}`, letterSpacing: '0.08em' }} />
-                              <button onClick={() => {if (!joinCode.trim()) {setJoinCodeError('Please enter a code');return;}setJoinCodeSuccess(true);}}
-                          className="px-4 py-2.5 rounded-xl text-sm font-black text-white active:scale-95 transition-transform"
-                          style={{ background: 'linear-gradient(135deg,#2563eb,#1d4ed8)', boxShadow: '0 3px 0 0 #1e3a8a' }}>Join</button>
-                            </div>
-                            {joinCodeError && <p className="text-[11px] text-red-400 mt-1.5 font-semibold">{joinCodeError}</p>}
-                          </>
-                      }
-                      </div>
-                    </SlidePanel>
-                    <SlidePanel open={joinPanel === 'primary'}>
-                      <div className="rounded-2xl p-4 mt-1" style={{ background: CARD_BG, border: CARD_BORDER, backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', boxShadow: '0 8px 32px rgba(0,0,0,0.4)' }}>
-                        {primaryConfirmed ?
-                      <div className="flex flex-col items-center py-4 gap-2">
-                            <div className="w-14 h-14 rounded-full flex items-center justify-center text-3xl" style={{ background: 'rgba(251,191,36,0.15)', border: '2px solid rgba(251,191,36,0.4)' }}>⭐</div>
-                            <p className="text-sm font-black text-yellow-400">{gym?.name} is now your primary gym!</p>
-                            <p className="text-xs text-slate-400">Your stats and check-ins will be tracked here</p>
-                          </div> :
 
-                      <>
-                            <div className="flex items-center gap-3 mb-3">
-                              <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 text-xl" style={{ background: 'rgba(251,191,36,0.12)', border: '1px solid rgba(251,191,36,0.25)' }}>🏋️</div>
-                              <div>
-                                <p className="text-[13px] font-black text-white leading-tight">Set as your home gym</p>
-                                <p className="text-[11px] mt-0.5" style={{ color: 'rgba(148,163,184,0.65)' }}>Your check-ins, leaderboard rank &amp; streak will be tracked at {gym?.name}</p>
-                              </div>
-                            </div>
-                            <button onClick={() => setPrimaryConfirmed(true)} className="w-full py-3 rounded-xl text-sm font-black text-white active:scale-95 transition-transform" style={{ background: 'linear-gradient(135deg,#d97706,#b45309)', boxShadow: '0 3px 0 0 #78350f, 0 6px 20px rgba(217,119,6,0.3)' }}>
-                              ⭐ Confirm — Set {gym?.name} as Primary
-                            </button>
-                          </>
-                      }
-                      </div>
-                    </SlidePanel>
-                  </div>
-                }
 
                 <BusyTimesChart checkIns={checkIns} gymId={gymId} />
 
