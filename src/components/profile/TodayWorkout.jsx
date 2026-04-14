@@ -861,7 +861,6 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                                   <div className="bg-gradient-to-r text-white mx-auto pb-0.5 pl-1 pt-0.5 text-sm font-black text-center opacity-100 rounded-2xl from-blue-700/90 to-blue-900/90 shadow-md shadow-blue-900/20 min-w-[55px]">
                                     {exercise.weight || '-'}<span className="text-[10px] font-bold">kg</span>
                                   </div>
-                                  {lastWorkout?.exercises?.[index] && getProgressIndicator(exercise, index)}
                                 </div>
                                 {!alreadyLoggedToday &&
                             <motion.button
@@ -948,7 +947,6 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                                 <div className="bg-gradient-to-r from-blue-700/90 to-blue-900/90 text-white pb-0.5 pl-1 pt-0.5 text-sm font-black text-center rounded-2xl shadow-md shadow-blue-900/20 min-w-[55px]">
                                   {exercise.weight || '-'}<span className="text-[10px] font-bold">kg</span>
                                 </div>
-                                {lastWorkout?.exercises?.[index] && getProgressIndicator(exercise, index)}
                               </div>
                               {!alreadyLoggedToday &&
                             <motion.button
