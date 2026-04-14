@@ -167,6 +167,7 @@ return (
           padding: "3px 9px", borderRadius: 5, cursor: "pointer",
           background: range === r ? C.cyanD : "transparent",
           border: range === r ? `1px solid ${C.cyanB}` : "1px solid transparent",
+          boxShadow: range === r ? '0 0 8px rgba(77,127,255,0.18)' : 'none',
           color: range === r ? C.cyan : C.t3,
           fontSize: 10.5, fontWeight: range === r ? 700 : 400, fontFamily: FONT,
         }}>{r}</button>
