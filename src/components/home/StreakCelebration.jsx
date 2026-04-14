@@ -37,6 +37,78 @@ function playCircleLevelUp() {
   } catch (_) {}
 }
 
+// Duolingo-style fire/explosion/pop sound for streak icon explode transition
+function playStreakExplosionSound() {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const now = ctx.currentTime;
+
+    const t = (freq, start, dur, gain, type = 'sine') => {
+      const osc = ctx.createOscillator();
+      const g   = ctx.createGain();
+      osc.connect(g); g.connect(ctx.destination);
+      osc.type = type;
+      osc.frequency.setValueAtTime(freq, start);
+      g.gain.setValueAtTime(0, start);
+      g.gain.linearRampToValueAtTime(gain, start + 0.01);
+      g.gain.exponentialRampToValueAtTime(0.001, start + dur);
+      osc.start(start); osc.stop(start + dur + 0.05);
+    };
+
+    // Low punch/thud — impact feel
+    t(80,   now,        0.18, 0.5,  'triangle');
+    t(55,   now,        0.25, 0.4,  'sawtooth');
+    // Mid crackle — fire snap
+    t(320,  now + 0.02, 0.12, 0.35, 'sawtooth');
+    t(480,  now + 0.04, 0.10, 0.28, 'square');
+    t(240,  now + 0.06, 0.14, 0.22, 'sawtooth');
+    // Rising warm tones — the "pop" moment
+    t(660,  now + 0.08, 0.20, 0.30);
+    t(880,  now + 0.13, 0.22, 0.28);
+    t(1100, now + 0.18, 0.18, 0.22);
+    // Bright sparkle top
+    t(1760, now + 0.22, 0.14, 0.14);
+    t(2200, now + 0.26, 0.10, 0.10);
+
+    if (navigator.vibrate) navigator.vibrate([15, 10, 50, 10, 30]);
+    setTimeout(() => ctx.close(), 800);
+  } catch (_) {}
+}
+
+// Duolingo-style challenge progress bar sound — ascending musical fill
+function playChallengeProgressSound(idx = 0) {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const now = ctx.currentTime;
+
+    const t = (freq, start, dur, gain, type = 'sine') => {
+      const osc = ctx.createOscillator();
+      const g   = ctx.createGain();
+      osc.connect(g); g.connect(ctx.destination);
+      osc.type = type;
+      osc.frequency.setValueAtTime(freq, start);
+      g.gain.setValueAtTime(0, start);
+      g.gain.linearRampToValueAtTime(gain, start + 0.01);
+      g.gain.exponentialRampToValueAtTime(0.001, start + dur);
+      osc.start(start); osc.stop(start + dur + 0.05);
+    };
+
+    // Offset pitch slightly per challenge card so multiple don't clash
+    const offset = idx * 0.08;
+
+    // Quick ascending "fill" sequence
+    t(440 + idx * 40, now + offset,        0.10, 0.15);
+    t(550 + idx * 40, now + offset + 0.08, 0.10, 0.18);
+    t(660 + idx * 40, now + offset + 0.16, 0.12, 0.20);
+    t(880 + idx * 40, now + offset + 0.24, 0.22, 0.24);
+    // Warm harmonic
+    t(440 + idx * 40, now + offset + 0.24, 0.20, 0.10);
+
+    if (navigator.vibrate) navigator.vibrate([10, 5, 20]);
+    setTimeout(() => ctx.close(), 600);
+  } catch (_) {}
+}
+
 function playDayCircleDing() {
   try {
     const ctx = new (window.AudioContext || window.webkitAudioContext)();
@@ -119,12 +191,18 @@ function injectDayStyles() {
       from { opacity: 0; transform: translateY(22px); }
       to   { opacity: 1; transform: translateY(0); }
     }
+    @keyframes streakIconExplode {
+      0%   { transform: scale(1);    opacity: 1; filter: brightness(1); }
+      30%  { transform: scale(1.35); opacity: 1; filter: brightness(1.6); }
+      55%  { transform: scale(1.85); opacity: 0.8; filter: brightness(2); }
+      80%  { transform: scale(2.8);  opacity: 0.35; filter: brightness(2.5); }
+      100% { transform: scale(4.2);  opacity: 0; filter: brightness(3); }
+    }
   `;
   document.head.appendChild(s);
 }
 
 // ── Shared 3D button ──────────────────────────────────────────────────────────
-// variant: 'blue' | 'green' | 'orange' | 'subtle'
 function StyledButton({ enabled, opacity, onClick, label = 'Continue', variant = 'blue' }) {
   const [pressed, setPressed] = useState(false);
 
@@ -183,20 +261,19 @@ function StyledButton({ enabled, opacity, onClick, label = 'Continue', variant =
   );
 }
 
-// Alias kept for streak stage — always blue
 function ContinueButton(props) {
   return <StyledButton {...props} label="Continue" variant="blue" />;
 }
 
 // ── EmbeddedDayCircles ────────────────────────────────────────────────────────
+// Past days pop in ALREADY coloured — no greyed-then-coloured reveal.
+// Today's circle still does its special colour-pop separately.
+// Future (unlogged, non-missed) days pop in grey as before.
 function EmbeddedDayCircles({ currentUser, weeklyWorkoutLogs, todayDow, startAnimation, onAllVisible, onAnimationComplete }) {
-  const [animatedIdx, setAnimatedIdx]           = useState(-1);
-  const [animatedColorIdx, setAnimatedColorIdx] = useState(-1);
-  const [todayColoured, setTodayColoured]       = useState(false);
-  const [colourPopIdx, setColourPopIdx]         = useState(-1);
-  const [todayColourPop, setTodayColourPop]     = useState(false);
-  const [wiggleActive, setWiggleActive]         = useState(false);
-  const todayRef     = useRef(null);
+  const [animatedIdx, setAnimatedIdx]     = useState(-1);
+  const [todayColoured, setTodayColoured] = useState(false);
+  const [todayColourPop, setTodayColourPop] = useState(false);
+  const [wiggleActive, setWiggleActive]   = useState(false);
   const hasCompleted = useRef(false);
 
   const todayDowAdjusted = todayDow || (() => { const d = new Date().getDay(); return d === 0 ? 7 : d; })();
@@ -216,15 +293,19 @@ function EmbeddedDayCircles({ currentUser, weeklyWorkoutLogs, todayDow, startAni
     if (!startAnimation) return;
     const timers = [];
 
+    // Pop in circles one by one
     allDays.forEach((_, i) => {
       timers.push(setTimeout(() => setAnimatedIdx(i), i * 90));
     });
+
     const allVisibleAt = (allDays.length - 1) * 90 + 80;
     timers.push(setTimeout(() => onAllVisible?.(), allVisibleAt));
 
+    // Brief wiggle after all visible
     timers.push(setTimeout(() => setWiggleActive(true),  allVisibleAt + 80));
     timers.push(setTimeout(() => setWiggleActive(false), allVisibleAt + 80 + 700));
 
+    // Today's circle gets its colour-pop with ding
     const todayColourAt = allVisibleAt + 800;
     timers.push(setTimeout(() => {
       setTodayColoured(true);
@@ -233,20 +314,8 @@ function EmbeddedDayCircles({ currentUser, weeklyWorkoutLogs, todayDow, startAni
       setTimeout(() => setTodayColourPop(false), 600);
     }, todayColourAt));
 
-    const nonTodayStartAt = todayColourAt + 400;
-    const nonTodayDays = allDays
-      .map((day, i) => ({ day, i }))
-      .filter(({ day }) => day !== todayDowAdjusted);
-
-    nonTodayDays.forEach(({ i }, seq) => {
-      timers.push(setTimeout(() => {
-        setAnimatedColorIdx(i);
-        setColourPopIdx(i);
-        playCircleTick(seq);
-      }, nonTodayStartAt + seq * 220));
-    });
-
-    const lastAt = nonTodayStartAt + (nonTodayDays.length - 1) * 220 + 380;
+    // Animation complete fires shortly after today's colour-pop
+    const lastAt = todayColourAt + 500;
     timers.push(setTimeout(() => {
       if (!hasCompleted.current) {
         hasCompleted.current = true;
@@ -267,41 +336,50 @@ function EmbeddedDayCircles({ currentUser, weeklyWorkoutLogs, todayDow, startAni
     const isPastRest = isRestDay && isPast;
     const size       = isToday ? 49 : 40;
     const isVisible  = i <= animatedIdx;
-    const isColoured = isToday ? todayColoured : i <= animatedColorIdx;
-    const isPopping  = isToday ? todayColourPop : (i === colourPopIdx);
+    const isPopping  = isToday ? todayColourPop : false;
+
+    // Past days (done, missed, pastRest) are immediately coloured when they pop in.
+    // Today starts grey and colour-pops separately.
+    // Future/upcoming grey circles stay grey.
+    const isImmediatelyColoured = !isToday && (doneBase || isMissed || isPastRest);
 
     const getBg = () => {
-      if (isToday)   return isColoured ? 'linear-gradient(to bottom, #60a5fa 0%, #3b82f6 35%, #1d4ed8 100%)' : 'linear-gradient(to bottom, #2d3748 0%, #1a202c 50%, #0f172a 100%)';
-      if (isRestDay) return (isPastRest && isColoured) ? 'linear-gradient(to bottom, #4ade80 0%, #22c55e 40%, #16a34a 100%)' : 'linear-gradient(to bottom, #2d3748 0%, #1a202c 50%, #0f172a 100%)';
-      if (done)      return isColoured ? 'linear-gradient(to bottom, #60a5fa 0%, #3b82f6 35%, #1d4ed8 100%)' : 'linear-gradient(to bottom, #2d3748 0%, #1a202c 50%, #0f172a 100%)';
-      if (isMissed)  return isColoured ? 'linear-gradient(to bottom, #f87171 0%, #ef4444 35%, #b91c1c 100%)' : 'linear-gradient(to bottom, #2d3748 0%, #1a202c 50%, #0f172a 100%)';
+      if (isToday) {
+        return done
+          ? 'linear-gradient(to bottom, #60a5fa 0%, #3b82f6 35%, #1d4ed8 100%)'
+          : 'linear-gradient(to bottom, #2d3748 0%, #1a202c 50%, #0f172a 100%)';
+      }
+      if (isRestDay) {
+        return isPastRest
+          ? 'linear-gradient(to bottom, #4ade80 0%, #22c55e 40%, #16a34a 100%)'
+          : 'linear-gradient(to bottom, #2d3748 0%, #1a202c 50%, #0f172a 100%)';
+      }
+      if (doneBase) return 'linear-gradient(to bottom, #60a5fa 0%, #3b82f6 35%, #1d4ed8 100%)';
+      if (isMissed) return 'linear-gradient(to bottom, #f87171 0%, #ef4444 35%, #b91c1c 100%)';
       return 'linear-gradient(to bottom, #2d3748 0%, #1a202c 50%, #0f172a 100%)';
     };
     const getBorder = () => {
-      if (isToday)   return isColoured ? '1px solid rgba(147,197,253,0.5)' : '1px solid rgba(71,85,105,0.7)';
-      if (isRestDay) return (isPastRest && isColoured) ? '1px solid rgba(74,222,128,0.5)' : '1px solid rgba(71,85,105,0.7)';
-      if (done)      return isColoured ? '1px solid rgba(147,197,253,0.5)' : '1px solid rgba(71,85,105,0.7)';
-      if (isMissed)  return isColoured ? '1px solid rgba(248,113,113,0.5)' : '1px solid rgba(71,85,105,0.7)';
+      if (isToday)   return done ? '1px solid rgba(147,197,253,0.5)' : '1px solid rgba(71,85,105,0.7)';
+      if (isRestDay) return isPastRest ? '1px solid rgba(74,222,128,0.5)' : '1px solid rgba(71,85,105,0.7)';
+      if (doneBase)  return '1px solid rgba(147,197,253,0.5)';
+      if (isMissed)  return '1px solid rgba(248,113,113,0.5)';
       return '1px solid rgba(71,85,105,0.7)';
     };
     const getBoxShadow = () => {
-      if (isToday)   return isColoured ? '0 4px 0 0 #1a3fa8, 0 7px 18px rgba(0,0,100,0.55), inset 0 1px 0 rgba(255,255,255,0.25)' : '0 4px 0 0 #111827, 0 6px 14px rgba(15,20,35,0.5), inset 0 1px 0 rgba(255,255,255,0.1)';
-      if (isRestDay) return (isPastRest && isColoured) ? '0 3px 0 0 #15803d, 0 5px 12px rgba(0,80,0,0.3), inset 0 1px 0 rgba(255,255,255,0.2)' : '0 4px 0 0 #111827, 0 6px 14px rgba(15,20,35,0.5), inset 0 1px 0 rgba(255,255,255,0.1)';
-      if (done)      return isColoured ? '0 4px 0 0 #1a3fa8, 0 7px 18px rgba(0,0,100,0.55), inset 0 1px 0 rgba(255,255,255,0.25)' : '0 4px 0 0 #111827, 0 6px 14px rgba(15,20,35,0.5), inset 0 1px 0 rgba(255,255,255,0.1)';
-      if (isMissed)  return isColoured ? '0 4px 0 0 #991b1b, inset 0 1px 0 rgba(255,255,255,0.25)' : '0 4px 0 0 #111827, 0 6px 14px rgba(15,20,35,0.5), inset 0 1px 0 rgba(255,255,255,0.1)';
+      if (isToday)   return done ? '0 4px 0 0 #1a3fa8, 0 7px 18px rgba(0,0,100,0.55), inset 0 1px 0 rgba(255,255,255,0.25)' : '0 4px 0 0 #111827, 0 6px 14px rgba(15,20,35,0.5), inset 0 1px 0 rgba(255,255,255,0.1)';
+      if (isRestDay) return isPastRest ? '0 3px 0 0 #15803d, 0 5px 12px rgba(0,80,0,0.3), inset 0 1px 0 rgba(255,255,255,0.2)' : '0 4px 0 0 #111827, 0 6px 14px rgba(15,20,35,0.5), inset 0 1px 0 rgba(255,255,255,0.1)';
+      if (doneBase)  return '0 4px 0 0 #1a3fa8, 0 7px 18px rgba(0,0,100,0.55), inset 0 1px 0 rgba(255,255,255,0.25)';
+      if (isMissed)  return '0 4px 0 0 #991b1b, inset 0 1px 0 rgba(255,255,255,0.25)';
       return '0 4px 0 0 #111827, 0 6px 14px rgba(15,20,35,0.5), inset 0 1px 0 rgba(255,255,255,0.1)';
     };
     const getAnim = () => {
       if (!isVisible) return 'none';
-      if (isPopping)  return 'scCircleColourPop 0.55s cubic-bezier(0.34,1.3,0.64,1) forwards';
-      if (isColoured) return 'none';
-      if (wiggleActive) return `scWiggle 2.4s ease-in-out ${i * 0.09}s infinite`;
-      if (isToday)    return 'scCirclePop 0.9s cubic-bezier(0.34,1.3,0.64,1) forwards';
-      if (done || isRestDay || isMissed) return 'scCirclePop 0.55s cubic-bezier(0.34,1.3,0.64,1) forwards';
-      return 'none';
+      if (isPopping && isToday)  return 'scCircleColourPop 0.55s cubic-bezier(0.34,1.3,0.64,1) forwards';
+      if (wiggleActive && !isImmediatelyColoured && !done) return `scWiggle 2.4s ease-in-out ${i * 0.09}s infinite`;
+      return 'scCirclePop 0.55s cubic-bezier(0.34,1.3,0.64,1) forwards';
     };
 
-    return { isToday, done, isRestDay, isMissed, isPastRest, size, isVisible, isColoured, isPopping, getBg, getBorder, getBoxShadow, getAnim };
+    return { isToday, done, isRestDay, isMissed, isPastRest, doneBase, size, isVisible, isImmediatelyColoured, isPopping, getBg, getBorder, getBoxShadow, getAnim };
   };
 
   return (
@@ -313,9 +391,12 @@ function EmbeddedDayCircles({ currentUser, weeklyWorkoutLogs, todayDow, startAni
     }}>
       {allDays.map((day, i) => {
         const p = getCircleProps(day, i);
-        const { isToday, done, isRestDay, isMissed, isPastRest, size, isVisible, isColoured, getBg, getBorder, getBoxShadow, getAnim } = p;
+        const { isToday, done, isRestDay, isMissed, isPastRest, doneBase, size, isVisible, isImmediatelyColoured, getBg, getBorder, getBoxShadow, getAnim } = p;
         const vOffset  = 9 + vertOffset(i) - (isToday ? 4 : 0);
         const iconSize = isToday ? 20 : 16;
+
+        // For past days: icon is shown as soon as visible (no waiting for colour-pop)
+        const showIcon = isImmediatelyColoured ? isVisible : (isToday ? done : (doneBase || isMissed || isPastRest));
 
         return (
           <div key={day} style={{
@@ -336,7 +417,6 @@ function EmbeddedDayCircles({ currentUser, weeklyWorkoutLogs, todayDow, startAni
               }} />
             )}
             <div
-              ref={isToday ? todayRef : null}
               style={{
                 width: size, height: size, borderRadius: '50%',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -366,21 +446,21 @@ function EmbeddedDayCircles({ currentUser, weeklyWorkoutLogs, todayDow, startAni
                     <path d="M50 50 C60 42 72 40 84 46 C84 52 78 60 68 60 C58 60 50 54 50 50Z" fill="none" stroke="rgba(148,163,184,0.55)" strokeWidth="1.5" />
                   </svg>
                 )
-              ) : done ? (
-                isColoured ? (
+              ) : done || doneBase ? (
+                showIcon ? (
                   <svg width={iconSize} height={iconSize} viewBox="0 0 20 20" fill="none">
                     <path
                       d="M4 10.5l4.5 4.5 7.5-9"
                       stroke="white" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"
                       strokeDasharray="40" strokeDashoffset="40"
-                      style={{ animation: 'scTickDraw 0.45s ease 0s forwards' }}
+                      style={{ animation: isImmediatelyColoured ? 'none' : 'scTickDraw 0.45s ease 0s forwards', strokeDashoffset: isImmediatelyColoured ? 0 : undefined }}
                     />
                   </svg>
                 ) : (
                   <div style={{ width: iconSize, height: iconSize }} />
                 )
               ) : isMissed ? (
-                isColoured ? (
+                showIcon ? (
                   <svg width={iconSize} height={iconSize} viewBox="0 0 20 20" fill="none">
                     <path d="M5 5l10 10M15 5L5 15" stroke="rgba(255,255,255,0.85)" strokeWidth="2.2" strokeLinecap="round" />
                   </svg>
@@ -401,9 +481,9 @@ function EmbeddedDayCircles({ currentUser, weeklyWorkoutLogs, todayDow, startAni
               transform: 'translateX(-50%)', fontSize: 8,
               fontWeight: isToday ? 900 : 700,
               color: isToday ? '#93c5fd'
-                : done     ? 'rgba(147,197,253,0.7)'
-                : isMissed ? 'rgba(248,113,113,0.6)'
-                : isRestDay && isPastRest ? 'rgba(74,222,128,0.7)'
+                : doneBase    ? 'rgba(147,197,253,0.7)'
+                : isMissed    ? 'rgba(248,113,113,0.6)'
+                : isPastRest  ? 'rgba(74,222,128,0.7)'
                 : 'rgba(100,116,139,0.5)',
               letterSpacing: '0.04em', textTransform: 'uppercase',
               whiteSpace: 'nowrap', pointerEvents: 'none',
@@ -420,18 +500,28 @@ function EmbeddedDayCircles({ currentUser, weeklyWorkoutLogs, todayDow, startAni
 }
 
 // ── ChallengesStage ────────────────────────────────────────────────────────────
-// Button appears much sooner (visible quickly) but only becomes pressable at the same time as before.
 function ChallengesStage({ celebrationChallenges, onChallengesContinue, BUTTON_BOTTOM, BUTTON_WIDTH }) {
   const [continueEnabled, setContinueEnabled] = useState(false);
   const [continueOpacity, setContinueOpacity] = useState(0);
+  const soundsFired = useRef(new Set());
 
   useEffect(() => {
     const lastIdx   = celebrationChallenges.length - 1;
     const barDoneMs = (0.4 + lastIdx * 0.1 + 1.2) * 1000;
 
-    // Button fades in very early — after the first card appears (~350ms)
+    // Fire progress sounds for each challenge bar as they animate
+    celebrationChallenges.forEach((_, idx) => {
+      const delay = (0.4 + idx * 0.1) * 1000 + 200;
+      const key = `bar-${idx}`;
+      setTimeout(() => {
+        if (!soundsFired.current.has(key)) {
+          soundsFired.current.add(key);
+          playChallengeProgressSound(idx);
+        }
+      }, delay);
+    });
+
     const t1 = setTimeout(() => setContinueOpacity(1), 350);
-    // Button becomes pressable when the last bar finishes filling
     const t2 = setTimeout(() => setContinueEnabled(true), barDoneMs + 400);
     return () => { clearTimeout(t1); clearTimeout(t2); };
   }, [celebrationChallenges.length]);
@@ -550,17 +640,27 @@ function StreakCelebration({
   const [continueButtonVisible, setContinueButtonVisible] = useState(false);
   const [continueButtonEnabled, setContinueButtonEnabled] = useState(false);
   const [continueButtonOpacity, setContinueButtonOpacity] = useState(0);
-  // Shared fade-out overlay for the final exit back to home
-  const [exitFading, setExitFading]                       = useState(false);
+
+  // Exit animation state — icon shifts down then explodes before transitioning
+  const [exitPhase, setExitPhase]         = useState('idle'); // 'idle' | 'fading' | 'shifting' | 'exploding' | 'done'
+  const [iconExploding, setIconExploding] = useState(false);
+  const [everythingFaded, setEverythingFaded] = useState(false);
+
+  // Shared background for stages
   const [showSharedBackground, setShowSharedBackground]   = useState(false);
+  // Suppress secondary backdrop flash on final exit
+  const [suppressBackdrop, setSuppressBackdrop] = useState(false);
 
   useEffect(() => { injectDayStyles(); }, []);
 
   useEffect(() => {
     if (showStreakCelebration || showChallengesCelebration || showShareWorkout) {
       setShowSharedBackground(true);
-    } else {
-      const t = setTimeout(() => setShowSharedBackground(false), 600);
+      setSuppressBackdrop(false);
+    } else if (!showStreakCelebration && !showChallengesCelebration && !showShareWorkout) {
+      // Suppress then remove backdrop immediately — no re-flash
+      setSuppressBackdrop(true);
+      const t = setTimeout(() => setShowSharedBackground(false), 10);
       return () => clearTimeout(t);
     }
   }, [showStreakCelebration, showChallengesCelebration, showShareWorkout]);
@@ -572,6 +672,9 @@ function StreakCelebration({
       setContinueButtonVisible(false);
       setContinueButtonEnabled(false);
       setContinueButtonOpacity(0);
+      setExitPhase('idle');
+      setIconExploding(false);
+      setEverythingFaded(false);
     }
   }, [showStreakCelebration]);
 
@@ -628,7 +731,6 @@ function StreakCelebration({
       }, 1530);
 
       const t5 = setTimeout(() => setStreakPhase('final'), 2400);
-
       const t6 = setTimeout(() => {
         setStreakPhase('circles');
         setStartCircleAnimation(true);
@@ -655,16 +757,38 @@ function StreakCelebration({
     setTimeout(() => setContinueButtonEnabled(true), 300);
   };
 
-  // ── Gentle fade-out helper ────────────────────────────────────────────────
-  // Triggers the shared-background fade then clears the share screen state.
-  const handleShareWorkoutComplete = () => {
-    setExitFading(true);
-    // Give the backdrop a head-start before unmounting everything
+  // ── Continue button pressed → icon explode transition ──────────────────────
+  const handleContinuePress = () => {
+    if (exitPhase !== 'idle') return;
+
+    // 1. Fade everything except the icon
+    setExitPhase('fading');
+    setEverythingFaded(true);
+
+    // 2. After fade, shift icon down to its original position
     setTimeout(() => {
-      setExitFading(false);
-      setShowShareWorkout(false);
-      setJustLoggedDay(null);
-    }, 480);
+      setExitPhase('shifting');
+    }, 320);
+
+    // 3. After icon settles, brief pause then explode
+    setTimeout(() => {
+      setExitPhase('exploding');
+      setIconExploding(true);
+      playStreakExplosionSound();
+    }, 320 + 700 + 500); // fade + shift duration + pause
+
+    // 4. Transition to next stage
+    setTimeout(() => {
+      setExitPhase('done');
+      document.dispatchEvent(new CustomEvent('streakCelebrationContinue'));
+    }, 320 + 700 + 500 + 450); // + explode duration
+  };
+
+  // Share screen complete — suppress backdrop re-flash entirely
+  const handleShareWorkoutComplete = () => {
+    setSuppressBackdrop(true);
+    setShowShareWorkout(false);
+    setJustLoggedDay(null);
   };
 
   const BUTTON_BOTTOM = 'calc(env(safe-area-inset-bottom) + 36px)';
@@ -672,20 +796,22 @@ function StreakCelebration({
   const FINAL_Y       = '-80px';
   const CIRCLES_SLOT_HEIGHT = 110;
 
+  // Icon position: shifted down when in shifting/exploding phase (back to approx original center)
+  const iconShiftY = exitPhase === 'shifting' || exitPhase === 'exploding' || exitPhase === 'done'
+    ? '120px'
+    : '0px';
+
   return (
     <>
-      {/* Persistent backdrop — fades out gently on exit */}
+      {/* Persistent backdrop */}
       {showSharedBackground && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: exitFading ? 0 : 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: exitFading ? 0.48 : 0.45, ease: 'easeOut' }}
+        <div
           style={{
             position: 'fixed', inset: 0, zIndex: 99,
-            background: 'rgba(0,0,0,0.92)',
-            backdropFilter: 'blur(4px)',
-            WebkitBackdropFilter: 'blur(4px)',
+            background: suppressBackdrop ? 'transparent' : 'rgba(0,0,0,0.92)',
+            backdropFilter: suppressBackdrop ? 'none' : 'blur(4px)',
+            WebkitBackdropFilter: suppressBackdrop ? 'none' : 'blur(4px)',
+            transition: 'background 0.45s ease, backdrop-filter 0.45s ease',
           }}
         />
       )}
@@ -700,37 +826,60 @@ function StreakCelebration({
             transition={{ duration: 0.15 }}
             className="fixed inset-0 z-[100] flex flex-col items-center justify-center overflow-hidden"
           >
+            {/* Streak icon — stays visible through exit, shifts down then explodes */}
             <div style={{
               display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16,
-              transform: (streakPhase === 'final' || streakPhase === 'circles')
-                ? `translateY(${FINAL_Y})`
-                : 'translateY(0px)',
-              transition: streakPhase === 'final'
-                ? 'transform 0.9s cubic-bezier(0.4, 0, 0.2, 1)'
-                : 'none',
+              transform: exitPhase === 'shifting' || exitPhase === 'exploding' || exitPhase === 'done'
+                ? `translateY(${iconShiftY})`
+                : (streakPhase === 'final' || streakPhase === 'circles')
+                  ? `translateY(${FINAL_Y})`
+                  : 'translateY(0px)',
+              transition: exitPhase === 'shifting'
+                ? 'transform 0.7s cubic-bezier(0.4, 0, 0.2, 1)'
+                : exitPhase === 'fading'
+                  ? 'none'
+                  : streakPhase === 'final'
+                    ? 'transform 0.9s cubic-bezier(0.4, 0, 0.2, 1)'
+                    : 'none',
             }}>
-              <div id="streak-anim-stage"
-                style={{ position: 'relative', width: 180, height: 180, opacity: 0, willChange: 'transform, opacity' }}>
+              {/* The streak icon — only this remains visible during exit */}
+              <div
+                id="streak-anim-stage"
+                style={{
+                  position: 'relative', width: 180, height: 180,
+                  opacity: 0, willChange: 'transform, opacity',
+                  animation: iconExploding ? 'streakIconExplode 0.45s ease forwards' : 'none',
+                }}
+              >
                 <img id="streak-anim-p1" src={POSE_1_URL} alt="pose 1"
                   style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'contain' }} />
                 <img id="streak-anim-p2" src={POSE_2_URL} alt="pose 2"
                   style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'contain', display: 'none' }} />
               </div>
 
-              <div id="streak-anim-num" style={{
-                fontSize: 96, fontWeight: 900, color: '#fff',
-                textShadow: '0 4px 12px rgba(0,0,0,0.8)',
-                letterSpacing: '-0.04em', lineHeight: 1,
-                opacity: 0, transform: 'scale(0.5)',
-              }}>
+              {/* Streak number — fades out when exit begins */}
+              <div
+                id="streak-anim-num"
+                style={{
+                  fontSize: 96, fontWeight: 900, color: '#fff',
+                  textShadow: '0 4px 12px rgba(0,0,0,0.8)',
+                  letterSpacing: '-0.04em', lineHeight: 1,
+                  opacity: everythingFaded ? 0 : 0,
+                  transform: 'scale(0.5)',
+                  transition: everythingFaded ? 'opacity 0.25s ease' : 'none',
+                }}
+              >
                 {celebrationStreakNum - 1}
               </div>
 
+              {/* Day circles slot — fades out when exit begins */}
               {(streakPhase === 'final' || streakPhase === 'circles') && (
                 <div style={{
                   width: BUTTON_WIDTH,
                   height: CIRCLES_SLOT_HEIGHT,
                   visibility: streakPhase === 'circles' ? 'visible' : 'hidden',
+                  opacity: everythingFaded ? 0 : 1,
+                  transition: everythingFaded ? 'opacity 0.25s ease' : 'none',
                 }}>
                   <EmbeddedDayCircles
                     currentUser={currentUser}
@@ -744,18 +893,20 @@ function StreakCelebration({
               )}
             </div>
 
+            {/* Continue button — fades out when exit begins */}
             {continueButtonVisible && (
               <div style={{
                 position: 'absolute',
                 bottom: BUTTON_BOTTOM,
                 width: BUTTON_WIDTH,
-                opacity: continueButtonOpacity,
-                transform: continueButtonOpacity === 1 ? 'translateY(0)' : 'translateY(16px)',
-                transition: 'opacity 0.9s ease, transform 0.9s ease',
+                opacity: everythingFaded ? 0 : continueButtonOpacity,
+                transform: (everythingFaded || continueButtonOpacity === 0) ? 'translateY(16px)' : 'translateY(0)',
+                transition: everythingFaded ? 'opacity 0.25s ease, transform 0.25s ease' : 'opacity 0.9s ease, transform 0.9s ease',
+                pointerEvents: everythingFaded ? 'none' : 'auto',
               }}>
                 <ContinueButton
-                  enabled={continueButtonEnabled}
-                  onClick={() => document.dispatchEvent(new CustomEvent('streakCelebrationContinue'))}
+                  enabled={continueButtonEnabled && exitPhase === 'idle'}
+                  onClick={handleContinuePress}
                 />
               </div>
             )}
@@ -781,9 +932,9 @@ function StreakCelebration({
         {showShareWorkout && (
           <motion.div
             initial={{ opacity: 0 }}
-            animate={{ opacity: exitFading ? 0 : 1 }}
+            animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: exitFading ? 0.48 : 0.4, ease: 'easeOut' }}
+            transition={{ duration: 0.4, ease: 'easeOut' }}
             style={{ position: 'fixed', inset: 0, zIndex: 100 }}
           >
             <ShareWorkoutScreen
