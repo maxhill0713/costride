@@ -1,22 +1,20 @@
 import { useState, useEffect, useRef } from "react";
 import {
-  ChevronDown, Plus, Flame, Facebook, Instagram, Heart, MessageCircle,
-  ChevronRight, Check, AlertTriangle, X, MoreHorizontal,
+ChevronDown, Plus, Flame, Facebook, Instagram, Heart, MessageCircle,
+ChevronRight, Check, AlertTriangle, X, MoreHorizontal,
 } from "lucide-react";
-
 /* ─── MOBILE HOOK ────────────────────────────────────────────── */
 function useIsMobile(breakpoint = 768) {
-  const [isMobile, setIsMobile] = useState(
-    typeof window !== "undefined" ? window.innerWidth < breakpoint : false
+const [isMobile, setIsMobile] = useState(
+typeof window !== "undefined" ? window.innerWidth < breakpoint : false
   );
   useEffect(() => {
-    const handler = () => setIsMobile(window.innerWidth < breakpoint);
+const handler = () => setIsMobile(window.innerWidth < breakpoint);
     window.addEventListener("resize", handler);
-    return () => window.removeEventListener("resize", handler);
+return () => window.removeEventListener("resize", handler);
   }, [breakpoint]);
-  return isMobile;
+return isMobile;
 }
-
 /* ─── TOKENS ─────────────────────────────────────────────────── */
 const C = {
   bg:       "#000000",
@@ -27,69 +25,61 @@ const C = {
   t1:       "#ffffff",
   t2:       "#8a8a94",
   t3:       "#444450",
-  cyan:     "#4f7eff",
-  cyanDim:  "rgba(79,126,255,0.1)",
-  cyanBrd:  "rgba(79,126,255,0.28)",
+  cyan:     "#2f5fff",          // ← richer, deeper royal blue
+  cyanDim:  "rgba(47,95,255,0.14)",
+  cyanBrd:  "rgba(47,95,255,0.38)",
   red:      "#ff4d6d",
   redDim:   "rgba(255,77,109,0.15)",
   green:    "#22c55e",
   greenDim: "rgba(34,197,94,0.12)",
 };
-
 const FONT = "'DM Sans', 'Segoe UI', system-ui, sans-serif";
-
 /* ─── PRIMITIVES ─────────────────────────────────────────────── */
 function Avatar({ name = "", size = 28 }) {
-  const palette = ["#6366f1","#8b5cf6","#ec4899","#14b8a6","#f59e0b","#ef4444","#3b82f6","#10b981"];
-  const bg = palette[(name.charCodeAt(0) || 0) % palette.length];
-  const letters = name.split(" ").map(w => w[0]).join("").toUpperCase().slice(0, 2) || "?";
-  return (
+const palette = ["#6366f1","#8b5cf6","#ec4899","#14b8a6","#f59e0b","#ef4444","#3b82f6","#10b981"];
+const bg = palette[(name.charCodeAt(0) || 0) % palette.length];
+const letters = name.split(" ").map(w => w[0]).join("").toUpperCase().slice(0, 2) || "?";
+return (
     <div style={{ width: size, height: size, borderRadius: "50%", flexShrink: 0, background: bg, border: `1.5px solid ${C.card}`, color: "#fff", fontSize: size * 0.36, fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center" }}>
       {letters}
     </div>
   );
 }
-
 function PlatformPill({ type }) {
-  const map = {
+const map = {
     instagram: { bg: "rgba(168,85,247,0.12)", brd: "rgba(168,85,247,0.3)", Icon: Instagram, color: "#a855f7" },
     facebook:  { bg: "rgba(59,130,246,0.12)",  brd: "rgba(59,130,246,0.3)",  Icon: Facebook,  color: "#60a5fa" },
   };
-  const s = map[type]; if (!s) return null;
-  return (
+const s = map[type]; if (!s) return null;
+return (
     <div style={{ width: 22, height: 22, borderRadius: 6, background: s.bg, border: `1px solid ${s.brd}`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
       <s.Icon size={11} color={s.color} />
     </div>
   );
 }
-
 function AiBadge() {
-  return <span style={{ padding: "2px 6px", borderRadius: 4, background: C.cyanDim, border: `1px solid ${C.cyanBrd}`, fontSize: 9.5, fontWeight: 800, color: C.cyan, letterSpacing: "0.05em" }}>AI</span>;
+return <span style={{ padding: "2px 6px", borderRadius: 4, background: C.cyanDim, border: `1px solid ${C.cyanBrd}`, fontSize: 9.5, fontWeight: 800, color: C.cyan, letterSpacing: "0.05em" }}>AI</span>;
 }
-
 function ScheduledBadge() {
-  return (
+return (
     <span style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "2px 8px", borderRadius: 20, background: C.greenDim, border: "1px solid rgba(34,197,94,0.25)", fontSize: 11, fontWeight: 700, color: C.green }}>
       <div style={{ width: 5, height: 5, borderRadius: "50%", background: C.green }} />Scheduled
     </span>
   );
 }
-
 function Checkbox({ checked, onChange }) {
-  return (
-    <div onClick={onChange} style={{ width: 14, height: 14, borderRadius: 3, cursor: "pointer", flexShrink: 0, background: checked ? C.cyan : "transparent", border: `1.5px solid ${checked ? C.cyan : C.t3}`, display: "flex", alignItems: "center", justifyContent: "center" }}>
+return (
+    <div onClick={onChange} style={{ width: 14, height: 14, borderRadius: 3, cursor: "pointer", flexShrink: 0, background: checked ? C.cyan : "transparent", border: `1.5px solid ${checked ? C.cyan : C.t3}`, display: "flex", alignItems: "center", justifyContent: "center", boxShadow: checked ? `0 0 8px rgba(47,95,255,0.6)` : "none" }}>
       {checked && <Check size={8} color="#fff" strokeWidth={3} />}
     </div>
   );
 }
-
 function DeleteBtn({ onClick }) {
-  return <button onClick={onClick} style={{ background: C.redDim, border: `1px solid rgba(255,77,109,0.3)`, borderRadius: 6, padding: "4px 10px", color: C.red, fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: FONT, flexShrink: 0, minHeight: 36 }}>Delete</button>;
+return <button onClick={onClick} style={{ background: C.redDim, border: `1px solid rgba(255,77,109,0.3)`, borderRadius: 6, padding: "4px 10px", color: C.red, fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: FONT, flexShrink: 0, minHeight: 36 }}>Delete</button>;
 }
-
 /* ─── ALERT BANNER ───────────────────────────────────────────── */
 function AlertBanner({ onDismiss, isMobile }) {
-  return (
+return (
     <div style={{ background: C.card2, border: `1px solid rgba(255,77,109,0.25)`, borderRadius: 10, padding: isMobile ? "12px 14px" : "10px 14px", marginBottom: 10, display: "flex", alignItems: "center", gap: 10 }}>
       <AlertTriangle size={13} color={C.red} style={{ flexShrink: 0 }} />
       <span style={{ fontSize: 12.5, fontWeight: 600, color: C.t1 }}>Attention Required: Critical Churn Interventions</span>
@@ -100,17 +90,16 @@ function AlertBanner({ onDismiss, isMobile }) {
     </div>
   );
 }
-
 /* ─── JOURNEY CARD ───────────────────────────────────────────── */
 function JourneyCard() {
-  return (
+return (
     <div style={{ background: C.card, border: `1px solid ${C.brd}`, borderRadius: 10, padding: "11px 16px", marginBottom: 10 }}>
       <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
         <span style={{ fontSize: 12, fontWeight: 600, color: C.t1, whiteSpace: "nowrap" }}>Content Success Journey</span>
         <div style={{ flex: 1, position: "relative", height: 5, background: "rgba(255,255,255,0.06)", borderRadius: 3, overflow: "hidden" }}>
-          <div style={{ position: "absolute", left: 0, top: 0, bottom: 0, width: "66%", background: `linear-gradient(90deg,${C.cyan},#2d5ce8)`, borderRadius: 3 }} />
+          <div style={{ position: "absolute", left: 0, top: 0, bottom: 0, width: "66%", background: `linear-gradient(90deg,${C.cyan},#1a3de8)`, borderRadius: 3, boxShadow: `0 0 10px rgba(47,95,255,0.7)` }} />
         </div>
-        <span style={{ fontSize: 11, color: C.cyan, fontWeight: 600, whiteSpace: "nowrap" }}>66%</span>
+        <span style={{ fontSize: 11, color: C.cyan, fontWeight: 600, whiteSpace: "nowrap", textShadow: `0 0 12px rgba(47,95,255,0.8)` }}>66%</span>
       </div>
       <div style={{ display: "flex", gap: 0, marginTop: 9 }}>
         {[
@@ -119,7 +108,7 @@ function JourneyCard() {
           { label: "Step 3: Review Insights",          done: false },
         ].map((s, i) => (
           <div key={i} style={{ flex: 1, display: "flex", alignItems: "center", gap: 5, paddingRight: i < 2 ? 8 : 0 }}>
-            <div style={{ width: 8, height: 8, borderRadius: "50%", background: s.done ? C.cyan : C.t3, flexShrink: 0 }} />
+            <div style={{ width: 8, height: 8, borderRadius: "50%", background: s.done ? C.cyan : C.t3, flexShrink: 0, boxShadow: s.done ? `0 0 7px rgba(47,95,255,0.8)` : "none" }} />
             <span style={{ fontSize: 10.5, color: s.done ? C.cyan : C.t2, fontWeight: s.done ? 600 : 400 }}>{s.label}</span>
           </div>
         ))}
@@ -127,24 +116,21 @@ function JourneyCard() {
     </div>
   );
 }
-
 /* ─── TABS ───────────────────────────────────────────────────── */
 const VISIBLE_TABS = ["Drafts", "Scheduled", "Events", "Challenges", "Polls", "Posts"];
-
 function Tabs({ active, setActive, isMobile }) {
-  const ref = useRef(null);
+const ref = useRef(null);
   useEffect(() => {
-    if (isMobile && ref.current) {
-      const el = ref.current.querySelector("[data-active='true']");
-      if (el) el.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
+if (isMobile && ref.current) {
+const el = ref.current.querySelector("[data-active='true']");
+if (el) el.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
     }
   }, [active, isMobile]);
-
-  return (
+return (
     <div style={{ borderBottom: `1px solid ${C.brd}`, marginBottom: isMobile ? 0 : 14, ...(isMobile ? { position: "sticky", top: 0, zIndex: 90, background: C.bg } : {}) }}>
       <div ref={ref} style={{ display: "flex", alignItems: "center", gap: 2, ...(isMobile ? { overflowX: "auto", WebkitOverflowScrolling: "touch", scrollbarWidth: "none" } : {}) }}>
         {VISIBLE_TABS.map(tab => (
-          <button key={tab} data-active={active === tab} onClick={() => setActive(tab)} style={{ padding: isMobile ? "10px 16px" : "7px 14px", fontSize: 12.5, background: "transparent", border: "none", borderBottom: `2px solid ${active === tab ? C.cyan : "transparent"}`, color: active === tab ? C.t1 : C.t2, fontWeight: active === tab ? 700 : 400, cursor: "pointer", marginBottom: -1, fontFamily: FONT, transition: "color 0.15s", whiteSpace: "nowrap", flexShrink: 0, minHeight: 44 }}>
+          <button key={tab} data-active={active === tab} onClick={() => setActive(tab)} style={{ padding: isMobile ? "10px 16px" : "7px 14px", fontSize: 12.5, background: "transparent", border: "none", borderBottom: `2px solid ${active === tab ? C.cyan : "transparent"}`, color: active === tab ? C.t1 : C.t2, fontWeight: active === tab ? 700 : 400, cursor: "pointer", marginBottom: -1, fontFamily: FONT, transition: "color 0.15s", whiteSpace: "nowrap", flexShrink: 0, minHeight: 44, textShadow: active === tab ? `0 0 14px rgba(47,95,255,0.6)` : "none" }}>
             {tab}
           </button>
         ))}
@@ -152,15 +138,13 @@ function Tabs({ active, setActive, isMobile }) {
     </div>
   );
 }
-
 /* ─── DRAFT CARDS ────────────────────────────────────────────── */
 const DRAFTS = [
   { id: "d1", author: "AI Gym",  title: "AI Draft: Motivation Monday", sub: "Ready to crush your goals with...", platforms: ["instagram", "facebook"], aiGen: true  },
   { id: "d2", author: "Priya S", title: "Draft: New Class Poll",        sub: "What class should we add next?...", platforms: ["instagram"],            aiGen: false },
 ];
-
 function DraftCard({ d, isMobile }) {
-  return (
+return (
     <div style={{ background: C.card, border: `1px solid ${C.brd}`, borderRadius: 10, overflow: "hidden" }} onMouseEnter={e => e.currentTarget.style.borderColor = C.cyanBrd} onMouseLeave={e => e.currentTarget.style.borderColor = C.brd}>
       <div style={{ padding: isMobile ? "14px 16px 12px" : "12px 14px 10px", display: "flex", alignItems: "flex-start", gap: 9 }}>
         <Avatar name={d.author} size={isMobile ? 34 : 30} />
@@ -173,14 +157,13 @@ function DraftCard({ d, isMobile }) {
         <div style={{ display: "flex", gap: 4 }}>{d.platforms.map(p => <PlatformPill key={p} type={p} />)}</div>
         {d.aiGen && <AiBadge />}
         <div style={{ flex: 1 }} />
-        <button style={{ padding: isMobile ? "8px 14px" : "6px 13px", borderRadius: 7, fontSize: 11.5, fontWeight: 700, background: C.cyan, color: "#fff", border: "none", cursor: "pointer", fontFamily: FONT, minHeight: 44, boxShadow: "0 0 14px rgba(79,126,255,0.3)" }}>
-          Review &amp; Schedule
+        <button style={{ padding: isMobile ? "8px 14px" : "6px 13px", borderRadius: 7, fontSize: 11.5, fontWeight: 700, background: `linear-gradient(135deg, ${C.cyan} 0%, #1a3de8 100%)`, color: "#fff", border: "none", cursor: "pointer", fontFamily: FONT, minHeight: 44, boxShadow: "0 0 18px rgba(47,95,255,0.55), 0 2px 8px rgba(47,95,255,0.4)" }}>
+Review &amp; Schedule
         </button>
       </div>
     </div>
   );
 }
-
 /* ─── CONTENT TABLE (desktop) ────────────────────────────────── */
 const TABLE_ROWS = [
   { id: "r1", typeAvatar: "MG", typeLabel: "Motivation Monday AI", platforms: ["instagram", "facebook"], aiGen: true,  date: "Apr 13, 9:00 AM", engBar: 70 },
@@ -188,11 +171,9 @@ const TABLE_ROWS = [
   { id: "r3", typeAvatar: "MG", typeLabel: "Motivation Monday AI", platforms: ["instagram", "facebook"], aiGen: true,  date: "Apr 13, 9:00 AM", engBar: 50 },
   { id: "r4", typeAvatar: "PS", typeLabel: "Priya Sharma",          platforms: ["instagram", "facebook"], aiGen: true,  date: "Apr 13, 9:00 AM", engBar: 30 },
 ];
-
 const COL = "28px 2fr 90px 110px 130px 100px 130px";
-
 function TableHeader() {
-  return (
+return (
     <div style={{ display: "grid", gridTemplateColumns: COL, gap: 6, padding: "7px 12px", background: "rgba(255,255,255,0.02)", borderBottom: `1px solid ${C.brd}` }}>
       {["", "TYPE", "CHANNEL", "STATUS", "PUBLISH DATE", "ENGAGEMENT", "ACTION"].map((c, i) => (
         <div key={i} style={{ fontSize: 9.5, fontWeight: 600, color: C.t3, letterSpacing: "0.08em", textTransform: "uppercase" }}>{c}</div>
@@ -200,10 +181,9 @@ function TableHeader() {
     </div>
   );
 }
-
 function TableRow({ row, checked, onToggle, last }) {
-  return (
-    <div style={{ display: "grid", gridTemplateColumns: COL, gap: 6, padding: "9px 12px", alignItems: "center", cursor: "pointer", background: checked ? C.cyanDim : "transparent", borderBottom: last ? "none" : `1px solid ${C.brd}` }}
+return (
+    <div style={{ display: "grid", gridTemplateColumns: COL, gap: 6, padding: "9px 12px", alignItems: "center", cursor: "pointer", background: checked ? C.cyanDim : "transparent", borderBottom: last ? "none" : `1px solid ${C.brd}`, boxShadow: checked ? `inset 0 0 20px rgba(47,95,255,0.06)` : "none" }}
       onMouseEnter={e => { if (!checked) e.currentTarget.style.background = "rgba(255,255,255,0.02)"; }}
       onMouseLeave={e => { if (!checked) e.currentTarget.style.background = "transparent"; }}
       onClick={onToggle}>
@@ -217,24 +197,22 @@ function TableRow({ row, checked, onToggle, last }) {
       <div style={{ fontSize: 11.5, color: C.t2 }}>{row.date}</div>
       <div>
         <span style={{ fontSize: 11.5, color: C.t3 }}>N/A</span>
-        {row.engBar > 0 && <div style={{ height: 3, background: "rgba(255,255,255,0.06)", borderRadius: 2, marginTop: 5, width: 60 }}><div style={{ width: `${row.engBar}%`, height: "100%", background: C.cyan, borderRadius: 2 }} /></div>}
+        {row.engBar > 0 && <div style={{ height: 3, background: "rgba(255,255,255,0.06)", borderRadius: 2, marginTop: 5, width: 60 }}><div style={{ width: `${row.engBar}%`, height: "100%", background: `linear-gradient(90deg, ${C.cyan}, #1a3de8)`, borderRadius: 2, boxShadow: `0 0 6px rgba(47,95,255,0.7)` }} /></div>}
       </div>
       <div onClick={e => e.stopPropagation()}>
         <button style={{ display: "flex", alignItems: "center", gap: 4, padding: "4px 10px", borderRadius: 6, fontSize: 11.5, fontWeight: 500, background: "rgba(255,255,255,0.04)", border: `1px solid ${C.brd}`, color: C.t2, cursor: "pointer", fontFamily: FONT }}>
-          Review, Edit <ChevronDown size={9} />
+Review, Edit <ChevronDown size={9} />
         </button>
       </div>
     </div>
   );
 }
-
 function ScheduledRow({ row, last }) {
-  const [checked, setChecked] = useState(false);
-  return <TableRow row={row} checked={checked} onToggle={() => setChecked(p => !p)} last={last} />;
+const [checked, setChecked] = useState(false);
+return <TableRow row={row} checked={checked} onToggle={() => setChecked(p => !p)} last={last} />;
 }
-
 function ScheduledTable() {
-  return (
+return (
     <div style={{ background: C.card, border: `1px solid ${C.brd}`, borderRadius: 10, overflow: "hidden" }}>
       <TableHeader />
       {TABLE_ROWS.map((row, i) => (
@@ -243,23 +221,21 @@ function ScheduledTable() {
     </div>
   );
 }
-
 function ContentTable() {
-  const [checked, setChecked] = useState(new Set());
-  const toggle = id => setChecked(p => { const s = new Set(p); s.has(id) ? s.delete(id) : s.add(id); return s; });
-  return (
+const [checked, setChecked] = useState(new Set());
+const toggle = id => setChecked(p => { const s = new Set(p); s.has(id) ? s.delete(id) : s.add(id); return s; });
+return (
     <div style={{ background: C.card, border: `1px solid ${C.brd}`, borderRadius: 10, overflow: "hidden" }}>
       <TableHeader />
       {TABLE_ROWS.map((row, i) => <TableRow key={row.id} row={row} checked={checked.has(row.id)} onToggle={() => toggle(row.id)} last={i === TABLE_ROWS.length - 1} />)}
     </div>
   );
 }
-
 /* ─── MOBILE CONTENT CARD ────────────────────────────────────── */
 function MobileContentCard({ row }) {
-  const [checked, setChecked] = useState(false);
-  return (
-    <div onClick={() => setChecked(p => !p)} style={{ background: checked ? C.cyanDim : C.card, border: `1px solid ${checked ? C.cyanBrd : C.brd}`, borderRadius: 10, padding: "14px 16px", marginBottom: 8, cursor: "pointer", transition: "border-color 0.15s, background 0.15s" }}>
+const [checked, setChecked] = useState(false);
+return (
+    <div onClick={() => setChecked(p => !p)} style={{ background: checked ? C.cyanDim : C.card, border: `1px solid ${checked ? C.cyanBrd : C.brd}`, borderRadius: 10, padding: "14px 16px", marginBottom: 8, cursor: "pointer", transition: "border-color 0.15s, background 0.15s", boxShadow: checked ? `0 0 18px rgba(47,95,255,0.18)` : "none" }}>
       <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
         <Avatar name={row.typeAvatar} size={34} />
         <div style={{ flex: 1, minWidth: 0 }}>
@@ -276,25 +252,24 @@ function MobileContentCard({ row }) {
       {row.engBar > 0 && (
         <div style={{ marginBottom: 12 }}>
           <div style={{ display: "flex", justifyContent: "space-between", fontSize: 10.5, color: C.t3, marginBottom: 4 }}>
-            <span>Engagement</span><span style={{ color: C.cyan }}>{row.engBar}%</span>
+            <span>Engagement</span><span style={{ color: C.cyan, textShadow: `0 0 10px rgba(47,95,255,0.7)` }}>{row.engBar}%</span>
           </div>
           <div style={{ height: 4, background: "rgba(255,255,255,0.06)", borderRadius: 2, overflow: "hidden" }}>
-            <div style={{ width: `${row.engBar}%`, height: "100%", background: C.cyan, borderRadius: 2 }} />
+            <div style={{ width: `${row.engBar}%`, height: "100%", background: `linear-gradient(90deg, ${C.cyan}, #1a3de8)`, borderRadius: 2, boxShadow: `0 0 8px rgba(47,95,255,0.7)` }} />
           </div>
         </div>
       )}
       <div onClick={e => e.stopPropagation()}>
         <button style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 5, padding: "11px", borderRadius: 8, fontSize: 12.5, fontWeight: 600, background: "rgba(255,255,255,0.04)", border: `1px solid ${C.brd}`, color: C.t2, cursor: "pointer", fontFamily: FONT, minHeight: 44 }}>
-          Review &amp; Edit <ChevronDown size={11} />
+Review &amp; Edit <ChevronDown size={11} />
         </button>
       </div>
     </div>
   );
 }
-
 /* ─── FEED ROW ───────────────────────────────────────────────── */
 function FeedRow({ isMobile }) {
-  return (
+return (
     <div style={{ background: C.card, border: `1px solid ${C.brd}`, borderRadius: 10, marginTop: 10 }}>
       <div style={{ padding: "8px 14px", borderBottom: `1px solid ${C.brd}` }}>
         <span style={{ fontSize: 12.5, fontWeight: 600, color: C.t1 }}>Community Feed</span>
@@ -313,13 +288,11 @@ function FeedRow({ isMobile }) {
     </div>
   );
 }
-
 /* ─── RIGHT SIDEBAR (desktop) ────────────────────────────────── */
 const BAR_DATA = [{ h: 60 }, { h: 85 }, { h: 35 }, { h: 60 }, { h: 28 }, { h: 22 }, { h: 18 }];
 const QUICK_IDEAS = ["Generate AI Motivation Monday", "Post Member Spotlight", "Create Weekend Challenge Poll"];
-
 function RightSidebar() {
-  return (
+return (
     <div style={{ width: 252, flexShrink: 0, background: C.sidebar, borderLeft: `1px solid ${C.brd}`, padding: "14px 12px", display: "flex", flexDirection: "column", gap: 14, overflowY: "auto" }}>
       <div>
         <div style={{ fontSize: 12.5, fontWeight: 600, color: C.t1, marginBottom: 2 }}>What to Post Today?</div>
@@ -327,8 +300,8 @@ function RightSidebar() {
         <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
           {QUICK_IDEAS.map((q, i) => (
             <button key={i} style={{ width: "100%", padding: "8px 12px", borderRadius: 8, textAlign: "left", background: C.card, border: `1px solid ${C.brd}`, color: C.t2, fontSize: 11.5, fontWeight: 500, cursor: "pointer", fontFamily: FONT }}
-              onMouseEnter={e => { e.currentTarget.style.borderColor = C.cyanBrd; e.currentTarget.style.color = C.t1; }}
-              onMouseLeave={e => { e.currentTarget.style.borderColor = C.brd; e.currentTarget.style.color = C.t2; }}>
+              onMouseEnter={e => { e.currentTarget.style.borderColor = C.cyanBrd; e.currentTarget.style.color = C.t1; e.currentTarget.style.boxShadow = `0 0 12px rgba(47,95,255,0.18)`; }}
+              onMouseLeave={e => { e.currentTarget.style.borderColor = C.brd; e.currentTarget.style.color = C.t2; e.currentTarget.style.boxShadow = "none"; }}>
               {q}
             </button>
           ))}
@@ -343,16 +316,25 @@ function RightSidebar() {
           </div>
           {BAR_DATA.map((b, i) => (
             <div key={i} style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "flex-end", height: "100%" }}>
-              <div style={{ width: "100%", height: `${b.h}%`, background: i < 2 ? C.cyan : i < 4 ? "rgba(79,126,255,0.5)" : "rgba(79,126,255,0.25)", borderRadius: "2px 2px 0 0" }} />
+              <div style={{
+                width: "100%", height: `${b.h}%`,
+                background: i < 2
+                  ? `linear-gradient(180deg, ${C.cyan} 0%, #1a3de8 100%)`
+                  : i < 4
+                    ? "rgba(47,95,255,0.45)"
+                    : "rgba(47,95,255,0.2)",
+                borderRadius: "2px 2px 0 0",
+                boxShadow: i < 2 ? `0 0 10px rgba(47,95,255,0.6)` : i < 4 ? `0 0 6px rgba(47,95,255,0.3)` : "none"
+              }} />
             </div>
           ))}
         </div>
         <div style={{ height: 1, background: C.brd, marginBottom: 10, marginLeft: 24 }} />
         <div style={{ fontSize: 11.5, color: C.t2, lineHeight: 1.6, marginBottom: 8 }}>
-          Polls have <span style={{ color: C.t1, fontWeight: 600 }}>2× more engagement</span> than text posts.
+Polls have <span style={{ color: C.t1, fontWeight: 600 }}>2× more engagement</span> than text posts.
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 4, cursor: "pointer" }}>
-          <span style={{ fontSize: 11.5, color: C.cyan, fontWeight: 600 }}>Review Detailed Insights</span>
+          <span style={{ fontSize: 11.5, color: C.cyan, fontWeight: 600, textShadow: `0 0 12px rgba(47,95,255,0.7)` }}>Review Detailed Insights</span>
           <ChevronRight size={11} color={C.cyan} />
         </div>
       </div>
@@ -365,7 +347,7 @@ function RightSidebar() {
             <span style={{ fontSize: 12, fontWeight: 600, color: C.t1 }}>Sarah</span>
           </div>
           <div style={{ padding: "0 12px 8px", fontSize: 11.5, color: C.t2, lineHeight: 1.55 }}>
-            Finally nailed that pose! <span style={{ color: C.cyan }}>@forgefitness</span> <span style={{ color: C.cyan }}>#yogagoals</span>
+Finally nailed that pose! <span style={{ color: C.cyan }}>@forgefitness</span> <span style={{ color: C.cyan }}>#yogagoals</span>
           </div>
           <div style={{ margin: "0 12px 10px", borderRadius: 8, height: 90, background: "rgba(255,255,255,0.03)", border: `1px solid ${C.brd}`, display: "flex", alignItems: "center", justifyContent: "center" }}>
             <svg width="40" height="40" viewBox="0 0 48 48" fill="none">
@@ -382,17 +364,16 @@ function RightSidebar() {
             <div style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 11.5, color: C.t2 }}><MessageCircle size={12} color={C.cyan} /> 4</div>
           </div>
         </div>
-        <button style={{ width: "100%", marginTop: 9, padding: "9px", borderRadius: 8, background: C.cyan, color: "#fff", border: "none", fontSize: 12.5, fontWeight: 700, cursor: "pointer", fontFamily: FONT, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, boxShadow: "0 0 16px rgba(79,126,255,0.3)" }}>
+        <button style={{ width: "100%", marginTop: 9, padding: "9px", borderRadius: 8, background: `linear-gradient(135deg, ${C.cyan} 0%, #1a3de8 100%)`, color: "#fff", border: "none", fontSize: 12.5, fontWeight: 700, cursor: "pointer", fontFamily: FONT, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, boxShadow: "0 0 22px rgba(47,95,255,0.55), 0 2px 10px rgba(47,95,255,0.4)" }}>
           <Plus size={13} /> Add Member
         </button>
       </div>
     </div>
   );
 }
-
 /* ─── MOBILE CONTEXTUAL CARDS ────────────────────────────────── */
 function MobileQuickIdeas() {
-  return (
+return (
     <div style={{ background: C.card, border: `1px solid ${C.brd}`, borderRadius: 10, padding: "14px 16px", marginBottom: 10 }}>
       <div style={{ fontSize: 13, fontWeight: 600, color: C.t1, marginBottom: 2 }}>What to Post Today?</div>
       <div style={{ fontSize: 11, color: C.t2, marginBottom: 10 }}>Guided ideas for today</div>
@@ -404,114 +385,110 @@ function MobileQuickIdeas() {
     </div>
   );
 }
-
 function MobileInsights() {
-  return (
+return (
     <div style={{ background: C.card, border: `1px solid ${C.brd}`, borderRadius: 10, padding: "14px 16px", marginBottom: 10 }}>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
         <div style={{ fontSize: 13, fontWeight: 600, color: C.t1 }}>Actionable Insights</div>
         <div style={{ display: "flex", alignItems: "center", gap: 4, cursor: "pointer" }}>
-          <span style={{ fontSize: 11.5, color: C.cyan, fontWeight: 600 }}>View all</span>
+          <span style={{ fontSize: 11.5, color: C.cyan, fontWeight: 600, textShadow: `0 0 10px rgba(47,95,255,0.7)` }}>View all</span>
           <ChevronRight size={11} color={C.cyan} />
         </div>
       </div>
       <div style={{ display: "flex", gap: 4, alignItems: "flex-end", height: 52, marginBottom: 8 }}>
         {BAR_DATA.map((b, i) => (
           <div key={i} style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "flex-end", height: "100%" }}>
-            <div style={{ width: "100%", height: `${b.h}%`, background: i < 2 ? C.cyan : i < 4 ? "rgba(79,126,255,0.5)" : "rgba(79,126,255,0.2)", borderRadius: "2px 2px 0 0" }} />
+            <div style={{
+              width: "100%", height: `${b.h}%`,
+              background: i < 2
+                ? `linear-gradient(180deg, ${C.cyan} 0%, #1a3de8 100%)`
+                : i < 4 ? "rgba(47,95,255,0.45)" : "rgba(47,95,255,0.2)",
+              borderRadius: "2px 2px 0 0",
+              boxShadow: i < 2 ? `0 0 8px rgba(47,95,255,0.65)` : "none"
+            }} />
           </div>
         ))}
       </div>
       <div style={{ height: 1, background: C.brd, marginBottom: 8 }} />
       <div style={{ fontSize: 12, color: C.t2, lineHeight: 1.6 }}>
-        Polls have <span style={{ color: C.t1, fontWeight: 600 }}>2× more engagement</span> than text posts.
+Polls have <span style={{ color: C.t1, fontWeight: 600 }}>2× more engagement</span> than text posts.
       </div>
     </div>
   );
 }
-
 /* ─── EMPTY STATE ────────────────────────────────────────────── */
 function EmptyState({ label, onAdd }) {
-  return (
+return (
     <div style={{ display: "flex", flexDirection: "column", alignItems: "center", padding: "56px 0", gap: 12 }}>
-      <div style={{ width: 48, height: 48, borderRadius: 12, background: C.cyanDim, border: `1px solid ${C.cyanBrd}`, display: "flex", alignItems: "center", justifyContent: "center" }}>
+      <div style={{ width: 48, height: 48, borderRadius: 12, background: C.cyanDim, border: `1px solid ${C.cyanBrd}`, display: "flex", alignItems: "center", justifyContent: "center", boxShadow: `0 0 20px rgba(47,95,255,0.25)` }}>
         <Flame size={20} color={C.cyan} />
       </div>
       <div style={{ fontSize: 13, fontWeight: 500, color: C.t2 }}>No {label} yet</div>
-      <button onClick={onAdd} style={{ padding: "7px 16px", borderRadius: 8, background: C.cyan, color: "#fff", border: "none", fontSize: 12.5, fontWeight: 700, cursor: "pointer", fontFamily: FONT, display: "flex", alignItems: "center", gap: 6, minHeight: 44 }}>
+      <button onClick={onAdd} style={{ padding: "7px 16px", borderRadius: 8, background: `linear-gradient(135deg, ${C.cyan} 0%, #1a3de8 100%)`, color: "#fff", border: "none", fontSize: 12.5, fontWeight: 700, cursor: "pointer", fontFamily: FONT, display: "flex", alignItems: "center", gap: 6, minHeight: 44, boxShadow: "0 0 18px rgba(47,95,255,0.5)" }}>
         <Plus size={12} /> Create
       </button>
     </div>
   );
 }
-
 function SectionHeader({ count, label, onAdd, btnLabel, isMobile }) {
-  return (
+return (
     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
       <div style={{ fontSize: 12, fontWeight: 500, color: C.t2 }}>{count} {label}</div>
       {!isMobile && (
-        <button onClick={onAdd} style={{ padding: "6px 14px", borderRadius: 7, background: C.cyan, color: "#fff", border: "none", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: FONT, display: "flex", alignItems: "center", gap: 5, minHeight: 44 }}>
+        <button onClick={onAdd} style={{ padding: "6px 14px", borderRadius: 7, background: `linear-gradient(135deg, ${C.cyan} 0%, #1a3de8 100%)`, color: "#fff", border: "none", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: FONT, display: "flex", alignItems: "center", gap: 5, minHeight: 44, boxShadow: "0 0 16px rgba(47,95,255,0.5)" }}>
           <Plus size={11} /> {btnLabel}
         </button>
       )}
     </div>
   );
 }
-
 function ListCard({ children, isMobile }) {
-  return (
+return (
     <div style={{ background: C.card, border: `1px solid ${C.brd}`, borderRadius: 10, padding: isMobile ? "14px 16px" : "13px 16px", display: "flex", alignItems: "center", gap: 12, marginBottom: 8 }}
-      onMouseEnter={e => e.currentTarget.style.borderColor = C.cyanBrd}
-      onMouseLeave={e => e.currentTarget.style.borderColor = C.brd}>
+      onMouseEnter={e => { e.currentTarget.style.borderColor = C.cyanBrd; e.currentTarget.style.boxShadow = `0 0 16px rgba(47,95,255,0.12)`; }}
+      onMouseLeave={e => { e.currentTarget.style.borderColor = C.brd; e.currentTarget.style.boxShadow = "none"; }}>
       {children}
     </div>
   );
 }
-
 /* ─── FAB (mobile only) ──────────────────────────────────────── */
 function FAB({ onClick }) {
-  return (
-    <button onClick={onClick} style={{ position: "fixed", bottom: 76, right: 18, zIndex: 190, width: 52, height: 52, borderRadius: "50%", background: C.cyan, border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 0 0 1px rgba(79,126,255,0.3), 0 8px 28px rgba(79,126,255,0.4)" }}>
+return (
+    <button onClick={onClick} style={{ position: "fixed", bottom: 76, right: 18, zIndex: 190, width: 52, height: 52, borderRadius: "50%", background: `linear-gradient(135deg, ${C.cyan} 0%, #1a3de8 100%)`, border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 0 0 1px rgba(47,95,255,0.4), 0 0 24px rgba(47,95,255,0.65), 0 8px 28px rgba(47,95,255,0.45)" }}>
       <Plus size={22} color="#fff" strokeWidth={2.5} />
     </button>
   );
 }
-
 /* ─── ROOT ───────────────────────────────────────────────────── */
 export default function ContentPage({ events = [], challenges = [], polls = [], posts = [], openModal, onDeleteEvent, onDeleteChallenge, onDeletePost }) {
-  const isMobile = useIsMobile();
-  const [tab, setTab]   = useState("Drafts");
-  const [alert, setAlert] = useState(true);
-  const [showMenu, setShowMenu] = useState(false);
-
-  const createItems = [
+const isMobile = useIsMobile();
+const [tab, setTab]   = useState("Drafts");
+const [alert, setAlert] = useState(true);
+const [showMenu, setShowMenu] = useState(false);
+const createItems = [
     { label: "📝 New Post",      action: () => { openModal?.("post");      setShowMenu(false); setTab("Posts");      } },
     { label: "📅 New Event",     action: () => { openModal?.("event");     setShowMenu(false); setTab("Events");     } },
     { label: "🏆 New Challenge", action: () => { openModal?.("challenge"); setShowMenu(false); setTab("Challenges"); } },
     { label: "📊 New Poll",      action: () => { openModal?.("poll");      setShowMenu(false); setTab("Polls");      } },
   ];
-
-  return (
+return (
     <div style={{ display: "flex", flex: 1, minHeight: 0, background: C.bg, color: C.t1, fontFamily: FONT, fontSize: 13, lineHeight: 1.5, WebkitFontSmoothing: "antialiased" }}>
-
       {/* ── MAIN SCROLL ── */}
       <div style={{ flex: 1, overflowY: "auto", minWidth: 0, ...(isMobile ? { paddingBottom: 80 } : {}) }}>
-
         {/* Header section */}
         <div style={{ padding: isMobile ? "14px 14px 0" : "16px 20px 0" }}>
-
           {/* Desktop page title + Create button */}
           {!isMobile && (
             <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 12 }}>
               <div>
                 <h1 style={{ fontSize: 19, fontWeight: 700, color: C.t1, margin: 0, letterSpacing: "-0.02em", lineHeight: 1.25 }}>
-                  Content Center <span style={{ color: C.t3, fontWeight: 300 }}>/</span> <span style={{ color: C.cyan }}>Hub</span>
+Content Center <span style={{ color: C.t3, fontWeight: 300 }}>/</span> <span style={{ color: C.cyan, textShadow: `0 0 18px rgba(47,95,255,0.6)` }}>Hub</span>
                 </h1>
                 <div style={{ fontSize: 12, color: C.t2, marginTop: 4 }}>Manage posts, events, challenges and polls</div>
               </div>
               <div style={{ position: "relative" }}>
-                <button onClick={() => setShowMenu(o => !o)} style={{ display: "flex", alignItems: "center", gap: 6, padding: "9px 18px", background: C.cyan, border: "none", borderRadius: 9, fontSize: 12.5, fontWeight: 700, color: "#fff", cursor: "pointer", fontFamily: FONT, boxShadow: "0 0 20px rgba(79,126,255,0.35)" }}>
-                  Create New <ChevronDown size={11} />
+                <button onClick={() => setShowMenu(o => !o)} style={{ display: "flex", alignItems: "center", gap: 6, padding: "9px 18px", background: `linear-gradient(135deg, ${C.cyan} 0%, #1a3de8 100%)`, border: "none", borderRadius: 9, fontSize: 12.5, fontWeight: 700, color: "#fff", cursor: "pointer", fontFamily: FONT, boxShadow: "0 0 24px rgba(47,95,255,0.6), 0 2px 12px rgba(47,95,255,0.4)" }}>
+Create New <ChevronDown size={11} />
                 </button>
                 {showMenu && (
                   <>
@@ -530,20 +507,16 @@ export default function ContentPage({ events = [], challenges = [], polls = [], 
               </div>
             </div>
           )}
-
           {alert && <AlertBanner onDismiss={() => setAlert(false)} isMobile={isMobile} />}
           {isMobile && (<><MobileQuickIdeas /><MobileInsights /></>)}
           <JourneyCard />
         </div>
-
         {/* Sticky tabs */}
         <div style={{ padding: isMobile ? "0 14px" : "0 20px" }}>
           <Tabs active={tab} setActive={setTab} isMobile={isMobile} />
         </div>
-
         {/* Tab panels */}
         <div style={{ padding: isMobile ? "10px 14px 24px" : "0 20px 40px" }}>
-
           {tab === "Drafts" && (
             <>
               <div style={{ fontSize: 11.5, fontWeight: 600, color: C.t2, marginBottom: 9, marginTop: isMobile ? 2 : 0 }}>Draft Content</div>
@@ -555,13 +528,11 @@ export default function ContentPage({ events = [], challenges = [], polls = [], 
               <FeedRow isMobile={isMobile} />
             </>
           )}
-
           {tab === "Scheduled" && (
             isMobile
               ? <div style={{ paddingTop: 10 }}>{TABLE_ROWS.map(row => <MobileContentCard key={row.id} row={row} />)}</div>
               : <ScheduledTable />
           )}
-
           {tab === "Events" && (
             <>
               <SectionHeader count={events.length} label="Events" onAdd={() => openModal?.("event")} btnLabel="Add Event" isMobile={isMobile} />
@@ -580,7 +551,6 @@ export default function ContentPage({ events = [], challenges = [], polls = [], 
               }
             </>
           )}
-
           {tab === "Challenges" && (
             <>
               <SectionHeader count={challenges.length} label="Challenges" onAdd={() => openModal?.("challenge")} btnLabel="New Challenge" isMobile={isMobile} />
@@ -602,15 +572,14 @@ export default function ContentPage({ events = [], challenges = [], polls = [], 
               }
             </>
           )}
-
           {tab === "Polls" && (
             <>
               <SectionHeader count={polls.length} label="Polls" onAdd={() => openModal?.("poll")} btnLabel="New Poll" isMobile={isMobile} />
               {polls.length === 0 ? <EmptyState label="polls" onAdd={() => openModal?.("poll")} /> :
                 polls.map(poll => (
                   <div key={poll.id} style={{ background: C.card, border: `1px solid ${C.brd}`, borderRadius: 10, padding: isMobile ? "14px 16px" : "13px 16px", marginBottom: 8 }}
-                    onMouseEnter={e => e.currentTarget.style.borderColor = C.cyanBrd}
-                    onMouseLeave={e => e.currentTarget.style.borderColor = C.brd}>
+                    onMouseEnter={e => { e.currentTarget.style.borderColor = C.cyanBrd; e.currentTarget.style.boxShadow = `0 0 16px rgba(47,95,255,0.12)`; }}
+                    onMouseLeave={e => { e.currentTarget.style.borderColor = C.brd; e.currentTarget.style.boxShadow = "none"; }}>
                     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
                       <div style={{ fontSize: 13, fontWeight: 600, color: C.t1 }}>{poll.question || poll.title}</div>
                       <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
@@ -619,17 +588,17 @@ export default function ContentPage({ events = [], challenges = [], polls = [], 
                       </div>
                     </div>
                     {(poll.options || []).map((opt, i) => {
-                      const optText  = typeof opt === "object" ? (opt.text || opt.label || String(i + 1)) : opt;
-                      const optVotes = typeof opt === "object" ? (opt.votes || 0) : ((poll.votes || {})[opt] || 0);
-                      const total    = Math.max((poll.voters || []).length, 1);
-                      const pct      = Math.round(optVotes / total * 100);
-                      return (
+const optText  = typeof opt === "object" ? (opt.text || opt.label || String(i + 1)) : opt;
+const optVotes = typeof opt === "object" ? (opt.votes || 0) : ((poll.votes || {})[opt] || 0);
+const total    = Math.max((poll.voters || []).length, 1);
+const pct      = Math.round(optVotes / total * 100);
+return (
                         <div key={i} style={{ marginBottom: 6 }}>
                           <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11.5, color: C.t2, marginBottom: 3 }}>
-                            <span>{optText}</span><span style={{ color: C.cyan }}>{pct}%</span>
+                            <span>{optText}</span><span style={{ color: C.cyan, textShadow: `0 0 10px rgba(47,95,255,0.7)` }}>{pct}%</span>
                           </div>
                           <div style={{ height: 4, background: "rgba(255,255,255,0.06)", borderRadius: 2, overflow: "hidden" }}>
-                            <div style={{ width: `${pct}%`, height: "100%", background: C.cyan, borderRadius: 2 }} />
+                            <div style={{ width: `${pct}%`, height: "100%", background: `linear-gradient(90deg, ${C.cyan}, #1a3de8)`, borderRadius: 2, boxShadow: `0 0 6px rgba(47,95,255,0.65)` }} />
                           </div>
                         </div>
                       );
@@ -639,7 +608,6 @@ export default function ContentPage({ events = [], challenges = [], polls = [], 
               }
             </>
           )}
-
           {tab === "Posts" && (
             <>
               <SectionHeader count={posts.length} label="Posts" onAdd={() => openModal?.("post")} btnLabel="New Post" isMobile={isMobile} />
@@ -658,13 +626,10 @@ export default function ContentPage({ events = [], challenges = [], polls = [], 
               }
             </>
           )}
-
         </div>
       </div>
-
       {/* Right sidebar — desktop only */}
       {!isMobile && <RightSidebar />}
-
       {/* Mobile FAB + menu */}
       {isMobile && (
         <>
@@ -683,8 +648,6 @@ export default function ContentPage({ events = [], challenges = [], polls = [], 
           )}
         </>
       )}
-
     </div>
   );
 }
-
