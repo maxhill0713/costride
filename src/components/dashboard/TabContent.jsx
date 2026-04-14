@@ -25,17 +25,17 @@ const C = {
   t1:       "#ffffff",
   t2:       "#8a8a94",
   t3:       "#444450",
-  cyan:     "#3b82f6",          // blue-500
-  cyanDim:  "rgba(59,130,246,0.14)",
-  cyanBrd:  "rgba(59,130,246,0.38)",
+  cyan:     "#4d7fff",          // blue-500
+  cyanDim:  "rgba(77,127,255,0.12)",
+  cyanBrd:  "rgba(77,127,255,0.28)",
   red:      "#ff4d6d",
   redDim:   "rgba(255,77,109,0.15)",
   green:    "#22c55e",
   greenDim: "rgba(34,197,94,0.12)",
   // gradient stops: blue-500 → blue-600 → blue-700
-  gradStart: "#3b82f6",         // blue-500
-  gradMid:   "#2563eb",         // blue-600
-  gradEnd:   "#1d4ed8",         // blue-700
+  gradStart: "#4d7fff",         // blue-500
+  gradMid:   "#2952cc",         // blue-600
+  gradEnd:   "#1a4fd6",         // blue-700
 };
 // Helper so every gradient uses the same three-stop ramp
 const BG = (deg = 135) =>
@@ -43,7 +43,7 @@ const BG = (deg = 135) =>
 const FONT = "'DM Sans', 'Segoe UI', system-ui, sans-serif";
 /* ─── PRIMITIVES ─────────────────────────────────────────────── */
 function Avatar({ name = "", size = 28 }) {
-const palette = ["#6366f1","#8b5cf6","#ec4899","#14b8a6","#f59e0b","#ef4444","#3b82f6","#10b981"];
+const palette = ["#6366f1","#8b5cf6","#ec4899","#14b8a6","#f59e0b","#ef4444","#4d7fff","#10b981"];
 const bg = palette[(name.charCodeAt(0) || 0) % palette.length];
 const letters = name.split(" ").map(w => w[0]).join("").toUpperCase().slice(0, 2) || "?";
 return (
@@ -55,7 +55,7 @@ return (
 function PlatformPill({ type }) {
 const map = {
     instagram: { bg: "rgba(168,85,247,0.12)", brd: "rgba(168,85,247,0.3)", Icon: Instagram, color: "#a855f7" },
-    facebook:  { bg: "rgba(59,130,246,0.12)",  brd: "rgba(59,130,246,0.3)",  Icon: Facebook,  color: "#60a5fa" },
+    facebook:  { bg: "rgba(77,127,255,0.12)",  brd: "rgba(77,127,255,0.3)",  Icon: Facebook,  color: "#60a5fa" },
   };
 const s = map[type]; if (!s) return null;
 return (
@@ -76,7 +76,7 @@ return (
 }
 function Checkbox({ checked, onChange }) {
 return (
-    <div onClick={onChange} style={{ width: 14, height: 14, borderRadius: 3, cursor: "pointer", flexShrink: 0, background: checked ? C.cyan : "transparent", border: `1.5px solid ${checked ? C.cyan : C.t3}`, display: "flex", alignItems: "center", justifyContent: "center", boxShadow: checked ? `0 0 4px rgba(59,130,246,0.2)` : "none" }}>
+    <div onClick={onChange} style={{ width: 14, height: 14, borderRadius: 3, cursor: "pointer", flexShrink: 0, background: checked ? C.cyan : "transparent", border: `1.5px solid ${checked ? C.cyan : C.t3}`, display: "flex", alignItems: "center", justifyContent: "center", boxShadow: checked ? `0 0 4px rgba(77,127,255,0.2)` : "none" }}>
       {checked && <Check size={8} color="#fff" strokeWidth={3} />}
     </div>
   );
@@ -115,7 +115,7 @@ return (
           { label: "Step 3: Review Insights",          done: false },
         ].map((s, i) => (
           <div key={i} style={{ flex: 1, display: "flex", alignItems: "center", gap: 5, paddingRight: i < 2 ? 8 : 0 }}>
-            <div style={{ width: 8, height: 8, borderRadius: "50%", background: s.done ? C.cyan : C.t3, flexShrink: 0, boxShadow: s.done ? `0 0 3px rgba(59,130,246,0.2)` : "none" }} />
+            <div style={{ width: 8, height: 8, borderRadius: "50%", background: s.done ? C.cyan : C.t3, flexShrink: 0, boxShadow: s.done ? `0 0 3px rgba(77,127,255,0.2)` : "none" }} />
             <span style={{ fontSize: 10.5, color: s.done ? C.cyan : C.t2, fontWeight: s.done ? 600 : 400 }}>{s.label}</span>
           </div>
         ))}
@@ -164,7 +164,7 @@ return (
         <div style={{ display: "flex", gap: 4 }}>{d.platforms.map(p => <PlatformPill key={p} type={p} />)}</div>
         {d.aiGen && <AiBadge />}
         <div style={{ flex: 1 }} />
-        <button style={{ padding: isMobile ? "8px 14px" : "6px 13px", borderRadius: 7, fontSize: 11.5, fontWeight: 700, background: BG(), color: "#fff", border: "none", cursor: "pointer", fontFamily: FONT, minHeight: 44, boxShadow: "0 2px 6px rgba(59,130,246,0.2)" }}>
+        <button style={{ padding: isMobile ? "8px 14px" : "6px 13px", borderRadius: 7, fontSize: 11.5, fontWeight: 700, background: BG(), color: "#fff", border: "none", cursor: "pointer", fontFamily: FONT, minHeight: 44, boxShadow: "0 2px 6px rgba(77,127,255,0.2)" }}>
 Review &amp; Schedule
         </button>
       </div>
@@ -190,7 +190,7 @@ return (
 }
 function TableRow({ row, checked, onToggle, last }) {
 return (
-    <div style={{ display: "grid", gridTemplateColumns: COL, gap: 6, padding: "9px 12px", alignItems: "center", cursor: "pointer", background: checked ? C.cyanDim : "transparent", borderBottom: last ? "none" : `1px solid ${C.brd}`, boxShadow: checked ? `inset 0 0 20px rgba(59,130,246,0.06)` : "none" }}
+    <div style={{ display: "grid", gridTemplateColumns: COL, gap: 6, padding: "9px 12px", alignItems: "center", cursor: "pointer", background: checked ? C.cyanDim : "transparent", borderBottom: last ? "none" : `1px solid ${C.brd}`, boxShadow: checked ? `inset 0 0 20px rgba(77,127,255,0.06)` : "none" }}
       onMouseEnter={e => { if (!checked) e.currentTarget.style.background = "rgba(255,255,255,0.02)"; }}
       onMouseLeave={e => { if (!checked) e.currentTarget.style.background = "transparent"; }}
       onClick={onToggle}>
@@ -242,7 +242,7 @@ return (
 function MobileContentCard({ row }) {
 const [checked, setChecked] = useState(false);
 return (
-    <div onClick={() => setChecked(p => !p)} style={{ background: checked ? C.cyanDim : C.card, border: `1px solid ${checked ? C.cyanBrd : C.brd}`, borderRadius: 10, padding: "14px 16px", marginBottom: 8, cursor: "pointer", transition: "border-color 0.15s, background 0.15s", boxShadow: checked ? `0 0 6px rgba(59,130,246,0.08)` : "none" }}>
+    <div onClick={() => setChecked(p => !p)} style={{ background: checked ? C.cyanDim : C.card, border: `1px solid ${checked ? C.cyanBrd : C.brd}`, borderRadius: 10, padding: "14px 16px", marginBottom: 8, cursor: "pointer", transition: "border-color 0.15s, background 0.15s", boxShadow: checked ? `0 0 6px rgba(77,127,255,0.08)` : "none" }}>
       <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
         <Avatar name={row.typeAvatar} size={34} />
         <div style={{ flex: 1, minWidth: 0 }}>
@@ -328,8 +328,8 @@ return (
                 background: i < 2
                   ? BG(180)
                   : i < 4
-                    ? "rgba(59,130,246,0.45)"
-                    : "rgba(59,130,246,0.2)",
+                    ? "rgba(77,127,255,0.45)"
+                    : "rgba(77,127,255,0.2)",
                 borderRadius: "2px 2px 0 0",
                 boxShadow: i < 2 ? `` : i < 4 ? `` : "none"
               }} />
@@ -371,7 +371,7 @@ Finally nailed that pose! <span style={{ color: C.cyan }}>@forgefitness</span> <
             <div style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 11.5, color: C.t2 }}><MessageCircle size={12} color={C.cyan} /> 4</div>
           </div>
         </div>
-        <button style={{ width: "100%", marginTop: 9, padding: "9px", borderRadius: 8, background: BG(), color: "#fff", border: "none", fontSize: 12.5, fontWeight: 700, cursor: "pointer", fontFamily: FONT, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, boxShadow: "0 2px 6px rgba(59,130,246,0.2)" }}>
+        <button style={{ width: "100%", marginTop: 9, padding: "9px", borderRadius: 8, background: BG(), color: "#fff", border: "none", fontSize: 12.5, fontWeight: 700, cursor: "pointer", fontFamily: FONT, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, boxShadow: "0 2px 6px rgba(77,127,255,0.2)" }}>
           <Plus size={13} /> Add Member
         </button>
       </div>
@@ -409,7 +409,7 @@ return (
               width: "100%", height: `${b.h}%`,
               background: i < 2
                 ? BG(180)
-                : i < 4 ? "rgba(59,130,246,0.45)" : "rgba(59,130,246,0.2)",
+                : i < 4 ? "rgba(77,127,255,0.45)" : "rgba(77,127,255,0.2)",
               borderRadius: "2px 2px 0 0",
               boxShadow: i < 2 ? `` : "none"
             }} />
@@ -431,7 +431,7 @@ return (
         <Flame size={20} color={C.cyan} />
       </div>
       <div style={{ fontSize: 13, fontWeight: 500, color: C.t2 }}>No {label} yet</div>
-      <button onClick={onAdd} style={{ padding: "7px 16px", borderRadius: 8, background: BG(), color: "#fff", border: "none", fontSize: 12.5, fontWeight: 700, cursor: "pointer", fontFamily: FONT, display: "flex", alignItems: "center", gap: 6, minHeight: 44, boxShadow: "0 2px 6px rgba(59,130,246,0.2)" }}>
+      <button onClick={onAdd} style={{ padding: "7px 16px", borderRadius: 8, background: BG(), color: "#fff", border: "none", fontSize: 12.5, fontWeight: 700, cursor: "pointer", fontFamily: FONT, display: "flex", alignItems: "center", gap: 6, minHeight: 44, boxShadow: "0 2px 6px rgba(77,127,255,0.2)" }}>
         <Plus size={12} /> Create
       </button>
     </div>
@@ -442,7 +442,7 @@ return (
     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
       <div style={{ fontSize: 12, fontWeight: 500, color: C.t2 }}>{count} {label}</div>
       {!isMobile && (
-        <button onClick={onAdd} style={{ padding: "6px 14px", borderRadius: 7, background: BG(), color: "#fff", border: "none", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: FONT, display: "flex", alignItems: "center", gap: 5, minHeight: 44, boxShadow: "0 2px 6px rgba(59,130,246,0.2)" }}>
+        <button onClick={onAdd} style={{ padding: "6px 14px", borderRadius: 7, background: BG(), color: "#fff", border: "none", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: FONT, display: "flex", alignItems: "center", gap: 5, minHeight: 44, boxShadow: "0 2px 6px rgba(77,127,255,0.2)" }}>
           <Plus size={11} /> {btnLabel}
         </button>
       )}
@@ -452,7 +452,7 @@ return (
 function ListCard({ children, isMobile }) {
 return (
     <div style={{ background: C.card, border: `1px solid ${C.brd}`, borderRadius: 10, padding: isMobile ? "14px 16px" : "13px 16px", display: "flex", alignItems: "center", gap: 12, marginBottom: 8 }}
-      onMouseEnter={e => { e.currentTarget.style.borderColor = C.cyanBrd; e.currentTarget.style.boxShadow = `0 0 6px rgba(59,130,246,0.06)`; }}
+      onMouseEnter={e => { e.currentTarget.style.borderColor = C.cyanBrd; e.currentTarget.style.boxShadow = `0 0 6px rgba(77,127,255,0.06)`; }}
       onMouseLeave={e => { e.currentTarget.style.borderColor = C.brd; e.currentTarget.style.boxShadow = "none"; }}>
       {children}
     </div>
@@ -461,7 +461,7 @@ return (
 /* ─── FAB (mobile only) ──────────────────────────────────────── */
 function FAB({ onClick }) {
 return (
-    <button onClick={onClick} style={{ position: "fixed", bottom: 76, right: 18, zIndex: 190, width: 52, height: 52, borderRadius: "50%", background: BG(), border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 4px 12px rgba(59,130,246,0.25)" }}>
+    <button onClick={onClick} style={{ position: "fixed", bottom: 76, right: 18, zIndex: 190, width: 52, height: 52, borderRadius: "50%", background: BG(), border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 4px 12px rgba(77,127,255,0.25)" }}>
       <Plus size={22} color="#fff" strokeWidth={2.5} />
     </button>
   );
@@ -494,7 +494,7 @@ Content Center <span style={{ color: C.t3, fontWeight: 300 }}>/</span> <span sty
                 <div style={{ fontSize: 12, color: C.t2, marginTop: 4 }}>Manage posts, events, challenges and polls</div>
               </div>
               <div style={{ position: "relative" }}>
-                <button onClick={() => setShowMenu(o => !o)} style={{ display: "flex", alignItems: "center", gap: 6, padding: "9px 18px", background: BG(), border: "none", borderRadius: 9, fontSize: 12.5, fontWeight: 700, color: "#fff", cursor: "pointer", fontFamily: FONT, boxShadow: "0 2px 8px rgba(59,130,246,0.2)" }}>
+                <button onClick={() => setShowMenu(o => !o)} style={{ display: "flex", alignItems: "center", gap: 6, padding: "9px 18px", background: BG(), border: "none", borderRadius: 9, fontSize: 12.5, fontWeight: 700, color: "#fff", cursor: "pointer", fontFamily: FONT, boxShadow: "0 2px 8px rgba(77,127,255,0.2)" }}>
 Create New <ChevronDown size={11} />
                 </button>
                 {showMenu && (
@@ -585,7 +585,7 @@ Create New <ChevronDown size={11} />
               {polls.length === 0 ? <EmptyState label="polls" onAdd={() => openModal?.("poll")} /> :
                 polls.map(poll => (
                   <div key={poll.id} style={{ background: C.card, border: `1px solid ${C.brd}`, borderRadius: 10, padding: isMobile ? "14px 16px" : "13px 16px", marginBottom: 8 }}
-                    onMouseEnter={e => { e.currentTarget.style.borderColor = C.cyanBrd; e.currentTarget.style.boxShadow = `0 0 6px rgba(59,130,246,0.06)`; }}
+                    onMouseEnter={e => { e.currentTarget.style.borderColor = C.cyanBrd; e.currentTarget.style.boxShadow = `0 0 6px rgba(77,127,255,0.06)`; }}
                     onMouseLeave={e => { e.currentTarget.style.borderColor = C.brd; e.currentTarget.style.boxShadow = "none"; }}>
                     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
                       <div style={{ fontSize: 13, fontWeight: 600, color: C.t1 }}>{poll.question || poll.title}</div>
