@@ -128,19 +128,19 @@ export default function Progress() {
         {/* Spacer */}
         <div style={{ height: '3.6rem' }} />
 
-        <TabsContent value="analytics" className="mt-0 px-3 md:px-4 py-1 pb-[130px] md:pb-5">
+        <TabsContent value="analytics" className="mt-0 px-3 md:px-4 pt-4 pb-[130px] md:pb-5">
           <div className="max-w-4xl mx-auto">
             <AnalyticsTab currentUser={currentUser} workoutLogs={workoutLogs} checkIns={checkIns} animateCharts={analyticsAnimKey} />
           </div>
         </TabsContent>
 
-        <TabsContent value="goals" className="mt-0 px-3 md:px-4 py-1 pb-[130px] md:pb-5">
+        <TabsContent value="goals" className="mt-0 px-3 md:px-4 pt-4 pb-[130px] md:pb-5">
           <div className="max-w-4xl mx-auto">
             <TargetsTab currentUser={currentUser} />
           </div>
         </TabsContent>
 
-        <TabsContent value="nutrition" className="mt-0 px-3 md:px-4 py-1 pb-[130px] md:pb-5">
+        <TabsContent value="nutrition" className="mt-0 px-3 md:px-4 pt-4 pb-[130px] md:pb-5">
           <div className="max-w-4xl mx-auto">
             <NutritionTab />
           </div>

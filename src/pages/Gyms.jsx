@@ -12,6 +12,7 @@ import { createPageUrl } from '../utils';
 import EditHeroImageModal from '../components/gym/EditHeroImageModal';
 import JoinWithCodeModal from '../components/gym/JoinWithCodeModal';
 import ExplorePanel from '../components/gym/ExplorePanel';
+import MyGymsContent from '../components/gym/MyGymsContent';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 
@@ -324,74 +325,63 @@ export default function Gyms() {
         <div style={{ height: '3.6rem' }} />
 
         {/* ── My Gyms ── */}
-        <TabsContent value="my-gyms" className="mt-0 px-3 md:px-4 py-1">
-          <div className="max-w-6xl mx-auto">
-            {userGyms.length === 0
-              ? <div className="text-center py-12"><p className="text-slate-400">No gym memberships yet</p></div>
-              : <div className="grid md:grid-cols-2 gap-4">
-                  {userGyms.map(gym => (
-                    <div key={gym.id} className="group relative">
-                      <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-purple-500/20 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-all duration-500" />
-                      <GymCardInner gym={gym} isMember={true} />
-                    </div>
-                  ))}
-                </div>
-            }
-          </div>
+        <TabsContent value="my-gyms" className="mt-0 px-3 md:px-4 pt-4 pb-4">
+          <MyGymsContent userGyms={userGyms} GymCardInner={GymCardInner} />
         </TabsContent>
 
         {/* ── Explore ── */}
-        <TabsContent value="explore" className="mt-0 px-3 md:px-4 py-1">
+        <TabsContent value="explore" className="mt-0 px-3 md:px-4 pt-4 pb-4">
           <div className="max-w-6xl mx-auto">
-            <div className="space-y-2 mb-4">
-              <div className="flex items-center gap-2">
-                <div className="relative flex-1">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
-                  <Input placeholder="Search gyms or add new..." value={searchQuery} onChange={e => setSearchQuery(sanitiseGymSearch(e.target.value))} maxLength={60} autoComplete="off" autoCorrect="off" spellCheck="false" style={{ fontSize: '16px' }} className="h-9 pl-10 pr-10 bg-white/10 border border-white/20 hover:border-white/40 focus-visible:outline-none focus-visible:border-blue-400 focus-visible:bg-white/15 text-white placeholder:text-slate-300 rounded-xl transition-all duration-200 w-full" />
-                  {searchingPlaces && <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-blue-400 animate-spin" />}
-                </div>
-                <button onClick={() => setShowFilterModal(true)} className="relative flex-shrink-0 w-11 h-9 rounded-xl flex items-center justify-center border transition-all bg-white/10 border-white/20 hover:border-white/40 text-slate-400">
-                  <Filter className="w-5 h-5" />
-                  {(selectedType !== 'all' || maxDistance !== 'all' || selectedEquipment !== 'all') && <span className="absolute -top-1 -right-1 w-3 h-3 bg-blue-500 rounded-full" />}
-                </button>
+            {/* Search bar + filter — always visible */}
+            <div className="flex items-center gap-2 mb-4">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                <Input placeholder="Search gyms or add new..." value={searchQuery} onChange={e => setSearchQuery(sanitiseGymSearch(e.target.value))} maxLength={60} autoComplete="off" autoCorrect="off" spellCheck="false" style={{ fontSize: '16px' }} className="h-9 pl-10 pr-10 bg-white/10 border border-white/20 hover:border-white/40 focus-visible:outline-none focus-visible:border-blue-400 focus-visible:bg-white/15 text-white placeholder:text-slate-300 rounded-xl transition-all duration-200 w-full" />
+                {searchingPlaces && <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-blue-400 animate-spin" />}
               </div>
-
-              {searchingPlaces && searchQuery.length >= 2 &&
-                <div className="rounded-xl p-3 space-y-2 bg-slate-800/90 border border-slate-700/50 animate-pulse">
-                  <div className="h-4 w-40 bg-slate-700/60 rounded-lg" />
-                  <div className="space-y-2">
-                    {[...Array(3)].map((_, i) => <div key={i} className="rounded-xl bg-slate-700/50 border border-slate-600/40 overflow-hidden flex items-stretch"><div className="w-20 h-20 flex-shrink-0 bg-slate-600/60" /><div className="flex-1 p-3 flex flex-col justify-center gap-2"><div className="h-4 bg-slate-600/60 rounded w-3/4" /><div className="h-3 bg-slate-600/40 rounded w-1/2" /></div></div>)}
-                  </div>
-                </div>
-              }
-
-              {!searchingPlaces && searchQuery.length >= 2 && placesResults.length > 0 &&
-                <div className="rounded-xl p-3 space-y-2 bg-slate-900/95 border border-slate-800/60 shadow-xl">
-                  <p className="text-xs font-semibold flex items-center gap-2"><Plus className="w-3 h-3 text-green-400" /><span className="text-green-400">Found {placesResults.length} gyms on Google Places</span></p>
-                  <div className="space-y-2">
-                    {placesResults.slice(0, 5).map(place => (
-                      <button key={place.place_id} onClick={() => handleSelectPlace(place)} className="w-full text-left rounded-xl bg-slate-700/50 border border-slate-600/40 hover:border-green-500/50 hover:bg-slate-700/80 transition-all overflow-hidden">
-                        <div className="flex items-stretch">
-                          <div className="w-20 h-20 flex-shrink-0 bg-gradient-to-br from-slate-600 to-slate-700 overflow-hidden">
-                            {place.photo_url ? <img src={place.photo_url} alt={place.name} className="w-full h-full object-cover" loading="lazy" /> : <div className="w-full h-full flex items-center justify-center"><Dumbbell className="w-6 h-6 text-slate-500" /></div>}
-                          </div>
-                          <div className="flex-1 min-w-0 p-3 flex flex-col justify-center">
-                            <h4 className="font-semibold text-white text-sm mb-0.5 truncate">{place.name}</h4>
-                            <div className="flex items-center gap-1 text-slate-400 text-xs"><MapPin className="w-3 h-3 flex-shrink-0" /><span className="truncate">{place.address}</span></div>
-                            {place.rating && <div className="flex items-center gap-1 mt-1"><Star className="w-3 h-3 fill-yellow-400 text-yellow-400" /><span className="text-slate-300 text-xs">{place.rating}</span></div>}
-                          </div>
-                          <div className="flex items-center pr-3">
-                            <Badge className="bg-gradient-to-b from-green-400 via-green-500 to-green-600 text-white border-transparent shadow-[0_3px_0_0_#065f46] active:shadow-none active:translate-y-[2px] active:scale-95 transform-gpu text-xs font-bold px-2.5 py-0.5 rounded-lg">Add</Badge>
-                          </div>
-                        </div>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              }
+              <button onClick={() => setShowFilterModal(true)} className="relative flex-shrink-0 w-11 h-9 rounded-xl flex items-center justify-center border transition-all bg-white/10 border-white/20 hover:border-white/40 text-slate-400">
+                <Filter className="w-5 h-5" />
+                {(selectedType !== 'all' || maxDistance !== 'all' || selectedEquipment !== 'all') && <span className="absolute -top-1 -right-1 w-3 h-3 bg-blue-500 rounded-full" />}
+              </button>
             </div>
 
-            {!searchQuery && (() => {
+            {/* Search results — inline, pushes content down */}
+            {searchingPlaces && searchQuery.length >= 2 &&
+              <div className="rounded-xl p-3 space-y-2 bg-slate-800/90 border border-slate-700/50 animate-pulse mb-4">
+                <div className="h-4 w-40 bg-slate-700/60 rounded-lg" />
+                <div className="space-y-2">
+                  {[...Array(3)].map((_, i) => <div key={i} className="rounded-xl bg-slate-700/50 border border-slate-600/40 overflow-hidden flex items-stretch"><div className="w-20 h-20 flex-shrink-0 bg-slate-600/60" /><div className="flex-1 p-3 flex flex-col justify-center gap-2"><div className="h-4 bg-slate-600/60 rounded w-3/4" /><div className="h-3 bg-slate-600/40 rounded w-1/2" /></div></div>)}
+                </div>
+              </div>
+            }
+
+            {!searchingPlaces && searchQuery.length >= 2 && placesResults.length > 0 &&
+              <div className="rounded-xl p-3 space-y-2 bg-slate-900/95 border border-slate-800/60 shadow-xl mb-4">
+                <p className="text-xs font-semibold flex items-center gap-2"><Plus className="w-3 h-3 text-green-400" /><span className="text-green-400">Found {placesResults.length} gyms on Google Places</span></p>
+                <div className="space-y-2">
+                  {placesResults.slice(0, 5).map(place => (
+                    <button key={place.place_id} onClick={() => handleSelectPlace(place)} className="w-full text-left rounded-xl bg-slate-700/50 border border-slate-600/40 hover:border-green-500/50 hover:bg-slate-700/80 transition-all overflow-hidden">
+                      <div className="flex items-stretch">
+                        <div className="w-20 h-20 flex-shrink-0 bg-gradient-to-br from-slate-600 to-slate-700 overflow-hidden">
+                          {place.photo_url ? <img src={place.photo_url} alt={place.name} className="w-full h-full object-cover" loading="lazy" /> : <div className="w-full h-full flex items-center justify-center"><Dumbbell className="w-6 h-6 text-slate-500" /></div>}
+                        </div>
+                        <div className="flex-1 min-w-0 p-3 flex flex-col justify-center">
+                          <h4 className="font-semibold text-white text-sm mb-0.5 truncate">{place.name}</h4>
+                          <div className="flex items-center gap-1 text-slate-400 text-xs"><MapPin className="w-3 h-3 flex-shrink-0" /><span className="truncate">{place.address}</span></div>
+                          {place.rating && <div className="flex items-center gap-1 mt-1"><Star className="w-3 h-3 fill-yellow-400 text-yellow-400" /><span className="text-slate-300 text-xs">{place.rating}</span></div>}
+                        </div>
+                        <div className="flex items-center pr-3">
+                          <Badge className="bg-gradient-to-b from-green-400 via-green-500 to-green-600 text-white border-transparent shadow-[0_3px_0_0_#065f46] active:shadow-none active:translate-y-[2px] active:scale-95 transform-gpu text-xs font-bold px-2.5 py-0.5 rounded-lg">Add</Badge>
+                        </div>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            }
+
+            {/* ExplorePanel — always rendered, always visible */}
+            {(() => {
               const primaryGym = userGyms.find(g => g.id === currentUser?.primary_gym_id) || userGyms[0];
               const nearbyGyms = primaryGym?.latitude && primaryGym?.longitude
                 ? gyms
