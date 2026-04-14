@@ -124,16 +124,14 @@ function injectDayStyles() {
 }
 
 // ── Shared 3D button ──────────────────────────────────────────────────────────
-// variant: 'blue' | 'green' | 'subtle'
-// 'blue'   — streak/challenges continue (bright blue)
-// 'green'  — primary action on share screen (keep green theme)
-// 'subtle' — secondary action (dark, muted)
+// variant: 'blue' | 'green' | 'orange' | 'subtle'
 function StyledButton({ enabled, opacity, onClick, label = 'Continue', variant = 'blue' }) {
   const [pressed, setPressed] = useState(false);
 
   const faceEnabled = {
     blue:   'linear-gradient(to bottom, #60a5fa, #3b82f6 40%, #1d4ed8)',
     green:  'linear-gradient(to bottom, #4ade80, #22c55e 40%, #16a34a)',
+    orange: 'linear-gradient(to bottom, #fb923c, #f97316 40%, #ea580c)',
     subtle: 'linear-gradient(to bottom, #334155, #1e293b 40%, #0f172a)',
   }[variant];
 
@@ -142,6 +140,7 @@ function StyledButton({ enabled, opacity, onClick, label = 'Continue', variant =
   const shadowEnabled = {
     blue:   '#1a3fa8',
     green:  '#15803d',
+    orange: '#c2410c',
     subtle: '#0a0f1a',
   }[variant];
 
@@ -196,7 +195,6 @@ function EmbeddedDayCircles({ currentUser, weeklyWorkoutLogs, todayDow, startAni
   const [todayColoured, setTodayColoured]       = useState(false);
   const [colourPopIdx, setColourPopIdx]         = useState(-1);
   const [todayColourPop, setTodayColourPop]     = useState(false);
-  // wiggleActive: true during the brief all-circles-wiggle phase before any colouring
   const [wiggleActive, setWiggleActive]         = useState(false);
   const todayRef     = useRef(null);
   const hasCompleted = useRef(false);
@@ -218,18 +216,15 @@ function EmbeddedDayCircles({ currentUser, weeklyWorkoutLogs, todayDow, startAni
     if (!startAnimation) return;
     const timers = [];
 
-    // Phase 1 — circles pop in one by one (grey), 90ms apart
     allDays.forEach((_, i) => {
       timers.push(setTimeout(() => setAnimatedIdx(i), i * 90));
     });
     const allVisibleAt = (allDays.length - 1) * 90 + 80;
     timers.push(setTimeout(() => onAllVisible?.(), allVisibleAt));
 
-    // Phase 1b — all circles wiggle together for 700ms before any colour
     timers.push(setTimeout(() => setWiggleActive(true),  allVisibleAt + 80));
     timers.push(setTimeout(() => setWiggleActive(false), allVisibleAt + 80 + 700));
 
-    // Phase 2 — today pops blue 800ms after all visible (after wiggle settles)
     const todayColourAt = allVisibleAt + 800;
     timers.push(setTimeout(() => {
       setTodayColoured(true);
@@ -238,7 +233,6 @@ function EmbeddedDayCircles({ currentUser, weeklyWorkoutLogs, todayDow, startAni
       setTimeout(() => setTodayColourPop(false), 600);
     }, todayColourAt));
 
-    // Phase 3 — other circles colour one by one, 400ms after today, 220ms apart
     const nonTodayStartAt = todayColourAt + 400;
     const nonTodayDays = allDays
       .map((day, i) => ({ day, i }))
@@ -252,7 +246,6 @@ function EmbeddedDayCircles({ currentUser, weeklyWorkoutLogs, todayDow, startAni
       }, nonTodayStartAt + seq * 220));
     });
 
-    // Phase 4 — done
     const lastAt = nonTodayStartAt + (nonTodayDays.length - 1) * 220 + 380;
     timers.push(setTimeout(() => {
       if (!hasCompleted.current) {
@@ -302,7 +295,6 @@ function EmbeddedDayCircles({ currentUser, weeklyWorkoutLogs, todayDow, startAni
       if (!isVisible) return 'none';
       if (isPopping)  return 'scCircleColourPop 0.55s cubic-bezier(0.34,1.3,0.64,1) forwards';
       if (isColoured) return 'none';
-      // Wiggle phase: all visible uncoloured circles bounce together
       if (wiggleActive) return `scWiggle 2.4s ease-in-out ${i * 0.09}s infinite`;
       if (isToday)    return 'scCirclePop 0.9s cubic-bezier(0.34,1.3,0.64,1) forwards';
       if (done || isRestDay || isMissed) return 'scCirclePop 0.55s cubic-bezier(0.34,1.3,0.64,1) forwards';
@@ -427,17 +419,19 @@ function EmbeddedDayCircles({ currentUser, weeklyWorkoutLogs, todayDow, startAni
   );
 }
 
-// ── ChallengesStage — isolated component so it owns its own enable-timer ──────
+// ── ChallengesStage ────────────────────────────────────────────────────────────
+// Button appears much sooner (visible quickly) but only becomes pressable at the same time as before.
 function ChallengesStage({ celebrationChallenges, onChallengesContinue, BUTTON_BOTTOM, BUTTON_WIDTH }) {
   const [continueEnabled, setContinueEnabled] = useState(false);
   const [continueOpacity, setContinueOpacity] = useState(0);
 
   useEffect(() => {
-    // The last bar starts at delay = 0.4 + lastIdx * 0.1 and fills over 1.2s
     const lastIdx   = celebrationChallenges.length - 1;
     const barDoneMs = (0.4 + lastIdx * 0.1 + 1.2) * 1000;
-    // Fade button in a little before it's pressable (visible but grey)
-    const t1 = setTimeout(() => setContinueOpacity(1),    barDoneMs - 200);
+
+    // Button fades in very early — after the first card appears (~350ms)
+    const t1 = setTimeout(() => setContinueOpacity(1), 350);
+    // Button becomes pressable when the last bar finishes filling
     const t2 = setTimeout(() => setContinueEnabled(true), barDoneMs + 400);
     return () => { clearTimeout(t1); clearTimeout(t2); };
   }, [celebrationChallenges.length]);
@@ -556,7 +550,8 @@ function StreakCelebration({
   const [continueButtonVisible, setContinueButtonVisible] = useState(false);
   const [continueButtonEnabled, setContinueButtonEnabled] = useState(false);
   const [continueButtonOpacity, setContinueButtonOpacity] = useState(0);
-  const [shareWorkoutExiting, setShareWorkoutExiting]     = useState(false);
+  // Shared fade-out overlay for the final exit back to home
+  const [exitFading, setExitFading]                       = useState(false);
   const [showSharedBackground, setShowSharedBackground]   = useState(false);
 
   useEffect(() => { injectDayStyles(); }, []);
@@ -632,10 +627,8 @@ function StreakCelebration({
         }
       }, 1530);
 
-      // 500ms pause after shake completes (~1890ms), shift up at 2400ms
       const t5 = setTimeout(() => setStreakPhase('final'), 2400);
 
-      // Circles mount at 3500ms
       const t6 = setTimeout(() => {
         setStreakPhase('circles');
         setStartCircleAnimation(true);
@@ -662,13 +655,16 @@ function StreakCelebration({
     setTimeout(() => setContinueButtonEnabled(true), 300);
   };
 
-  const handleShareWorkoutContinue = () => {
-    setShareWorkoutExiting(true);
+  // ── Gentle fade-out helper ────────────────────────────────────────────────
+  // Triggers the shared-background fade then clears the share screen state.
+  const handleShareWorkoutComplete = () => {
+    setExitFading(true);
+    // Give the backdrop a head-start before unmounting everything
     setTimeout(() => {
-      setShareWorkoutExiting(false);
+      setExitFading(false);
       setShowShareWorkout(false);
       setJustLoggedDay(null);
-    }, 500);
+    }, 480);
   };
 
   const BUTTON_BOTTOM = 'calc(env(safe-area-inset-bottom) + 36px)';
@@ -678,13 +674,13 @@ function StreakCelebration({
 
   return (
     <>
-      {/* Persistent backdrop — gradual fade so the dark overlay isn't jarring */}
+      {/* Persistent backdrop — fades out gently on exit */}
       {showSharedBackground && (
         <motion.div
           initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
+          animate={{ opacity: exitFading ? 0 : 1 }}
           exit={{ opacity: 0 }}
-          transition={{ duration: 0.45, ease: 'easeOut' }}
+          transition={{ duration: exitFading ? 0.48 : 0.45, ease: 'easeOut' }}
           style={{
             position: 'fixed', inset: 0, zIndex: 99,
             background: 'rgba(0,0,0,0.92)',
@@ -784,10 +780,10 @@ function StreakCelebration({
       <AnimatePresence>
         {showShareWorkout && (
           <motion.div
-            initial={{ opacity: 1 }}
-            animate={{ opacity: shareWorkoutExiting ? 0 : 1 }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: exitFading ? 0 : 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.5 }}
+            transition={{ duration: exitFading ? 0.48 : 0.4, ease: 'easeOut' }}
             style={{ position: 'fixed', inset: 0, zIndex: 100 }}
           >
             <ShareWorkoutScreen
@@ -796,7 +792,8 @@ function StreakCelebration({
               previousExercises={celebrationPreviousExercises}
               durationMinutes={celebrationDurationMinutes}
               currentUser={currentUser}
-              onContinue={handleShareWorkoutContinue}
+              onContinue={handleShareWorkoutComplete}
+              onShareComplete={handleShareWorkoutComplete}
             />
           </motion.div>
         )}
