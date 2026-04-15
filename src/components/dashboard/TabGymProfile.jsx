@@ -8,7 +8,7 @@ import {
   Image, Camera, Dumbbell, MapPin, Users, Tag,
   ExternalLink, Zap, TrendingUp, TrendingDown,
   Minus, ChevronDown, ChevronUp, BadgeCheck,
-  ArrowUpRight, ArrowDownRight,
+  ArrowUpRight, ArrowDownRight, UserPlus, Trash2, GraduationCap,
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../../utils';
@@ -228,7 +228,141 @@ function buildInsight({ communityScore, engScore, activityCount, hasLogo, hasHer
 /* ══════════════════════════════════════════════════════════════
    MAIN COMPONENT
 ══════════════════════════════════════════════════════════════ */
-export default function TabGymProfile({ gym, openModal }) {
+/* ─── COACHES SECTION ───────────────────────────────────────── */
+function CoachesSection({ coaches, onManage, onDelete }) {
+  const ini = (n = '') => (n || '?').split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
+
+  return (
+    <div style={{
+      background: C.card, border: `1px solid ${C.brd}`,
+      borderRadius: 10, overflow: 'hidden', marginBottom: 10,
+    }}>
+      {/* Header */}
+      <div style={{
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        padding: '13px 18px', borderBottom: coaches.length > 0 ? `1px solid ${C.brd}` : 'none',
+      }}>
+        <div>
+          <div style={{ fontSize: 13, fontWeight: 700, color: C.t1 }}>Coaches & Staff</div>
+          <div style={{ fontSize: 11, color: C.t3, marginTop: 2 }}>
+            {coaches.length === 0 ? 'No coaches added yet — invite your first coach.' : `${coaches.length} coach${coaches.length !== 1 ? 'es' : ''} on your team`}
+          </div>
+        </div>
+        <button
+          onClick={onManage}
+          style={{
+            display: 'flex', alignItems: 'center', gap: 6,
+            padding: '7px 13px', borderRadius: 8, fontSize: 12, fontWeight: 700,
+            background: C.cyanDim, color: C.cyan, border: `1px solid ${C.cyanBrd}`,
+            cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0,
+          }}
+        >
+          <UserPlus style={{ width: 12, height: 12 }} />
+          {coaches.length === 0 ? 'Add Coach' : 'Manage'}
+        </button>
+      </div>
+
+      {/* Coach rows */}
+      {coaches.map((coach, i) => (
+        <div key={coach.id} style={{
+          display: 'flex', alignItems: 'center', gap: 12,
+          padding: '12px 18px',
+          borderBottom: i < coaches.length - 1 ? `1px solid ${C.brd}` : 'none',
+        }}>
+          {/* Avatar */}
+          <div style={{
+            width: 36, height: 36, borderRadius: '50%', flexShrink: 0,
+            background: C.card2, border: `1px solid ${C.brd}`,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontSize: 11, fontWeight: 800, color: C.cyan, overflow: 'hidden',
+          }}>
+            {coach.avatar_url
+              ? <img src={coach.avatar_url} alt={coach.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              : ini(coach.name)
+            }
+          </div>
+
+          {/* Info */}
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontSize: 13, fontWeight: 600, color: C.t1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              {coach.name}
+            </div>
+            <div style={{ fontSize: 11, color: C.t3, marginTop: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              {coach.specialties?.length > 0 ? coach.specialties.slice(0, 2).join(' · ') : coach.user_email || 'No specialties listed'}
+            </div>
+          </div>
+
+          {/* Rating */}
+          {coach.rating && (
+            <span style={{ fontSize: 11, fontWeight: 700, color: C.amber, flexShrink: 0 }}>★ {coach.rating}</span>
+          )}
+
+          {/* Can post badge */}
+          {coach.can_post && (
+            <span style={{
+              fontSize: 10, fontWeight: 700, padding: '2px 7px', borderRadius: 20,
+              background: C.cyanDim, color: C.cyan, border: `1px solid ${C.cyanBrd}`,
+              flexShrink: 0,
+            }}>Can post</span>
+          )}
+
+          {/* Delete */}
+          <button
+            onClick={() => onDelete(coach.id)}
+            style={{
+              width: 28, height: 28, borderRadius: 7, flexShrink: 0,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              background: 'transparent', border: `1px solid ${C.brd}`, cursor: 'pointer',
+              color: C.t3, transition: 'all 0.12s',
+            }}
+            onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(255,77,109,0.4)'; e.currentTarget.style.color = '#ff4d6d'; }}
+            onMouseLeave={e => { e.currentTarget.style.borderColor = C.brd; e.currentTarget.style.color = C.t3; }}
+          >
+            <Trash2 style={{ width: 11, height: 11 }} />
+          </button>
+        </div>
+      ))}
+
+      {/* Empty CTA */}
+      {coaches.length === 0 && (
+        <div style={{ padding: '20px 18px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10 }}>
+          <div style={{
+            width: 40, height: 40, borderRadius: 12,
+            background: C.cyanDim, border: `1px solid ${C.cyanBrd}`,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+          }}>
+            <GraduationCap style={{ width: 18, height: 18, color: C.cyan }} />
+          </div>
+          <div style={{ textAlign: 'center' }}>
+            <div style={{ fontSize: 13, fontWeight: 700, color: C.t2 }}>No coaches yet</div>
+            <div style={{ fontSize: 11, color: C.t3, marginTop: 3 }}>Add coaches to showcase your team and let them post to the community feed.</div>
+          </div>
+          <button
+            onClick={onManage}
+            style={{
+              padding: '8px 18px', borderRadius: 8, fontSize: 12, fontWeight: 700,
+              background: C.cyanDim, color: C.cyan, border: `1px solid ${C.cyanBrd}`,
+              cursor: 'pointer',
+            }}
+          >
+            + Add First Coach
+          </button>
+        </div>
+      )}
+
+      {/* Score bar */}
+      <div style={{ height: 3, background: 'rgba(255,255,255,0.04)' }}>
+        <div style={{
+          height: '100%', width: coaches.length > 0 ? '100%' : '0%',
+          background: C.cyan, opacity: 0.5, transition: 'width 0.6s ease',
+          borderRadius: '0 2px 0 0',
+        }} />
+      </div>
+    </div>
+  );
+}
+
+export default function TabGymProfile({ gym, openModal, coaches = [], onDeleteCoach }) {
   if (!gym) return (
     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 80, color: C.t3, fontSize: 13, fontFamily: FONT }}>
       No gym selected
@@ -439,6 +573,15 @@ export default function TabGymProfile({ gym, openModal }) {
           onClick={() => openModal('equipment')}
         />
       </Section>
+
+      {/* ═══════════════════════════════════════════════════════
+          SECTION 4 — COACHES & STAFF
+      ═══════════════════════════════════════════════════════ */}
+      <CoachesSection
+        coaches={coaches}
+        onManage={() => openModal('coaches')}
+        onDelete={(id) => onDeleteCoach && onDeleteCoach(id)}
+      />
 
       {/* ── FOOTER CALLOUT ──────────────────────────────────── */}
       <div style={{
