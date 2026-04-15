@@ -683,7 +683,52 @@ export default function TabGymProfile({ gym, openModal, setShowPoster }) {
               <span style={{ width: 6, height: 6, borderRadius: '50%', background: T.green, display: 'inline-block' }} /> Live
             </span>
           </div>
-          <PhoneMockup gym={gym} />
+          {/* Phone shell */}
+          <div style={{
+            margin: '0 auto',
+            width: 232,
+            background: '#0a0a0c',
+            border: `2px solid ${T.brd2}`,
+            borderRadius: 36,
+            overflow: 'hidden',
+            boxShadow: '0 20px 60px rgba(0,0,0,0.6)',
+            position: 'relative',
+          }}>
+            {/* Notch */}
+            <div style={{ height: 28, background: '#0a0a0c', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <div style={{ width: 60, height: 8, borderRadius: 4, background: T.brd2 }} />
+            </div>
+            {/* iframe viewport */}
+            <div style={{ height: 480, overflow: 'hidden', position: 'relative' }}>
+              <iframe
+                src={previewUrl}
+                style={{
+                  width: 390,
+                  height: 844,
+                  border: 'none',
+                  transform: 'scale(0.595)',
+                  transformOrigin: 'top left',
+                  pointerEvents: 'none',
+                }}
+                title="Member App Preview"
+                scrolling="no"
+              />
+            </div>
+            {/* Home bar */}
+            <div style={{ height: 24, background: '#0a0a0c', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <div style={{ width: 80, height: 4, borderRadius: 2, background: T.brd2 }} />
+            </div>
+          </div>
+          <Link to={previewUrl} target="_blank" style={{ textDecoration: 'none' }}>
+            <button style={{
+              width: '100%', marginTop: 12, padding: '8px 0', borderRadius: 9,
+              background: T.cyanDim, border: `1px solid ${T.cyanBrd}`,
+              color: T.cyan, fontSize: 12, fontWeight: 700, cursor: 'pointer',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+            }}>
+              <ExternalLink style={{ width: 11, height: 11 }} /> Open Full View
+            </button>
+          </Link>
         </div>
 
         {/* Retention Impact */}
