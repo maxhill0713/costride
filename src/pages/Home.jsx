@@ -201,7 +201,7 @@ export default function Home() {
   const [pressedDay, setPressedDay] = useState(null);
   const [weekOffset, setWeekOffset] = useState(0);
   const [slideDirection, setSlideDirection] = useState(0);
-  const [, forceUpdateSwaps] = useState(0);
+  const [, forceUpdateSwaps] = useState(0); // v2
   const celebTimers = useRef([]);
 
   const [headerState, setHeaderState] = useState('top');
