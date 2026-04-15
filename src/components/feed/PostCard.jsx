@@ -665,7 +665,7 @@ function PostCard({ post, onLike, onComment, onSave, onDelete, fullWidth = false
 
   // ── WORKOUT POST ──────────────────────────────────────────────────────────
   if (isWorkoutPost) {
-    const exercises = post.workout_exercises || [];
+    const exercises = (post.workout_exercises || []).filter(Boolean);
     const hasPhoto = !!post.image_url;
     const SUMMARY_WIDTH = '92%';
     const PANEL_HEIGHT = 'min(85.8vw, 380px)';
@@ -696,7 +696,7 @@ function PostCard({ post, onLike, onComment, onSave, onDelete, fullWidth = false
             <div className="text-[8px] font-bold text-slate-400 uppercase tracking-widest" style={{ paddingLeft: 6 }}>Weight</div>
           </div>
           <div className="space-y-1 flex-1 overflow-hidden">
-            {(exercisesExpanded ? exercises : exercises.slice(0, PREVIEW_COUNT)).map((ex, idx) => <ExerciseRow key={idx} ex={ex} idx={idx} />)}
+            {(exercisesExpanded ? exercises : exercises.slice(0, PREVIEW_COUNT)).filter(Boolean).map((ex, idx) => <ExerciseRow key={idx} ex={ex} idx={idx} />)}
           </div>
           {exercises.length > PREVIEW_COUNT && (
             <button onClick={() => setExercisesExpanded(v => !v)} className="mt-1 w-full flex items-center justify-center gap-1 py-0.5 text-[10px] font-bold text-slate-500 hover:text-slate-300 transition-colors flex-shrink-0">
