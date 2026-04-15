@@ -956,8 +956,8 @@ export default function Home() {
               <div className="flex flex-col items-center justify-center gap-2">
                 <div className="flex items-center -space-x-2">
                   {(() => {
-                    const friendCheckInUsers = enrichedCheckInUsers.filter((u) => friendIdList.includes(u.user_id));
-                    const displayedUsers = friendCheckInUsers.slice(0, 5);
+                   const friendCheckInUsers = enrichedCheckInUsers.filter((u) => u && u.user_id && friendIdList.includes(u.user_id));
+                   const displayedUsers = friendCheckInUsers.slice(0, 5);
                     const remainingCount = Math.max(0, friendCheckInUsers.length - 5);
                     return (
                       <>
@@ -1026,7 +1026,7 @@ export default function Home() {
                       <span className="text-xs text-slate-300 font-medium">{getCommunityText()}</span>
                       <div className="flex items-center gap-2">
                         <div className="flex items-center -space-x-2">
-                          {enrichedCheckInUsers.slice(0, 2).map((u) => (
+                          {enrichedCheckInUsers.filter(u => u && u.user_id).slice(0, 2).map((u) => (
                             <div key={u.user_id} className="relative">
                               {u.avatar_url ? (
                                 <img src={u.avatar_url} alt={u.display_name || u.username} className="w-6 h-6 rounded-full object-cover border-2 border-slate-700" loading="lazy" />
