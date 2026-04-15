@@ -1,7 +1,6 @@
 /**
  * TabGymProfile — Forge Fitness Dashboard
- * Layout matches screenshot: 2-col Profile Diagnosis + full-width below.
- * Exact ContentPage colour tokens (#4d7fff).
+ * Color tokens unified with ContentPage (#4d7fff blue system).
  */
 import React, { useState } from 'react';
 import {
@@ -9,12 +8,12 @@ import {
   ArrowUpRight, ArrowDownRight, Minus, ChevronDown, ChevronUp,
   Instagram, Facebook, Twitter, Globe, MapPin, Tag,
   Users, Dumbbell, Star, Trash2, GraduationCap, UserPlus,
-  CheckCircle2, AlertTriangle,
+  CheckCircle2, AlertTriangle, Plus,
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../../utils';
 
-/* ─── TOKENS ────────────────────────────────────────────────── */
+/* ─── TOKENS — exact ContentPage palette ────────────────────── */
 const C = {
   bg:       '#000000',
   card:     '#141416',
@@ -28,7 +27,7 @@ const C = {
   cyanDim:  'rgba(77,127,255,0.12)',
   cyanBrd:  'rgba(77,127,255,0.28)',
   red:      '#ff4d6d',
-  redDim:   'rgba(255,77,109,0.12)',
+  redDim:   'rgba(255,77,109,0.15)',
   redBrd:   'rgba(255,77,109,0.28)',
   amber:    '#f59e0b',
   amberDim: 'rgba(245,158,11,0.12)',
@@ -37,7 +36,8 @@ const C = {
   greenDim: 'rgba(34,197,94,0.12)',
   greenBrd: 'rgba(34,197,94,0.28)',
 };
-const FONT = "'DM Sans','Segoe UI',system-ui,sans-serif";
+const FONT   = "'DM Sans','Segoe UI',system-ui,sans-serif";
+const SHADOW = '0 0 10px rgba(77,127,255,0.22), 0 2px 6px rgba(77,127,255,0.12)';
 
 /* ─── HELPERS ───────────────────────────────────────────────── */
 function qualityState(score) {
@@ -68,7 +68,6 @@ function buildInsight({ communityScore, engScore, postsWeek, hasLogo, hasHero, g
 function MetricCard({ label, primary, secondary, color, trend, trendLabel }) {
   const TrendIcon = trend === 'up' ? ArrowUpRight : trend === 'down' ? ArrowDownRight : null;
   const trendColor = trend === 'up' ? C.green : C.red;
-  const state = typeof primary === 'string' && primary !== String(parseInt(primary)) ? null : qualityState(parseInt(primary) || 0);
   return (
     <div style={{ background: C.card, border: `1px solid ${C.brd}`, borderRadius: 10, padding: '14px 16px', position: 'relative', overflow: 'hidden' }}>
       <div style={{ fontSize: 9.5, fontWeight: 700, color: C.t3, textTransform: 'uppercase', letterSpacing: '0.09em', marginBottom: 10 }}>{label}</div>
@@ -81,7 +80,6 @@ function MetricCard({ label, primary, secondary, color, trend, trendLabel }) {
           </span>
         )}
       </div>
-      {/* Bottom accent bar */}
       <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 3, background: (color || C.cyan) + '55' }} />
     </div>
   );
@@ -90,7 +88,11 @@ function MetricCard({ label, primary, secondary, color, trend, trendLabel }) {
 /* ─── INSIGHT BAR ───────────────────────────────────────────── */
 function InsightBar({ text }) {
   return (
-    <div style={{ padding: '10px 15px', borderRadius: 9, background: C.card2, border: `1px solid ${C.brd}`, borderLeft: `2px solid ${C.cyan}`, display: 'flex', alignItems: 'center', gap: 9, marginBottom: 18 }}>
+    <div style={{
+      padding: '10px 15px', borderRadius: 9,
+      background: C.card2, border: `1px solid ${C.brd}`, borderLeft: `2px solid ${C.cyan}`,
+      display: 'flex', alignItems: 'center', gap: 9, marginBottom: 18,
+    }}>
       <Zap style={{ width: 12, height: 12, color: C.cyan, flexShrink: 0 }} />
       <span style={{ fontSize: 12.5, color: C.t2, lineHeight: 1.5 }}>{text}</span>
     </div>
@@ -107,37 +109,43 @@ function SectionHeader({ title, subtitle }) {
   );
 }
 
-/* ─── ITEM CARD — wraps each visual card ────────────────────── */
-function ItemCard({ title, score, microcopy, onClick, children, noPad }) {
+/* ─── STATUS BADGE ──────────────────────────────────────────── */
+function StatusBadge({ score }) {
   const state = qualityState(score);
+  return (
+    <span style={{
+      fontSize: 10, fontWeight: 700, padding: '2px 9px', borderRadius: 20, flexShrink: 0,
+      color: state.color, background: state.dim, border: `1px solid ${state.brd}`, whiteSpace: 'nowrap',
+    }}>
+      {state.label}
+    </span>
+  );
+}
+
+/* ─── ITEM CARD ─────────────────────────────────────────────── */
+function ItemCard({ title, score, microcopy, onClick, children }) {
   return (
     <div
       onClick={onClick}
       style={{
         background: C.card, border: `1px solid ${C.brd}`, borderRadius: 10,
         overflow: 'hidden', display: 'flex', flexDirection: 'column',
-        cursor: onClick ? 'pointer' : 'default', position: 'relative',
+        cursor: onClick ? 'pointer' : 'default',
+        transition: 'border-color 0.15s',
       }}
-      onMouseEnter={e => onClick && (e.currentTarget.style.borderColor = C.brd2)}
+      onMouseEnter={e => onClick && (e.currentTarget.style.borderColor = C.cyanBrd)}
       onMouseLeave={e => onClick && (e.currentTarget.style.borderColor = C.brd)}
     >
-      {/* Card header */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '11px 14px', flexShrink: 0 }}>
         <div>
           <div style={{ fontSize: 12.5, fontWeight: 700, color: C.t1 }}>{title}</div>
           {microcopy && <div style={{ fontSize: 10.5, color: C.t3, marginTop: 2 }}>{microcopy}</div>}
         </div>
-        <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 9px', borderRadius: 20, flexShrink: 0, marginLeft: 10, color: state.color, background: state.dim, border: `1px solid ${state.brd}`, whiteSpace: 'nowrap' }}>
-          {state.label}
-        </span>
+        <StatusBadge score={score} />
       </div>
-      {/* Visual content */}
-      <div style={{ flex: 1, ...(!noPad && {}) }}>
-        {children}
-      </div>
-      {/* Quality bar */}
+      <div style={{ flex: 1 }}>{children}</div>
       <div style={{ height: 3, background: 'rgba(255,255,255,0.04)', flexShrink: 0 }}>
-        <div style={{ height: '100%', width: `${score}%`, background: state.color, opacity: 0.6, transition: 'width 0.6s ease' }} />
+        <div style={{ height: '100%', width: `${score}%`, background: qualityState(score).color, opacity: 0.6, transition: 'width 0.6s ease' }} />
       </div>
     </div>
   );
@@ -162,7 +170,7 @@ function LogoVisual({ logoUrl }) {
 /* ─── COVER IMAGE VISUAL ────────────────────────────────────── */
 function CoverVisual({ imageUrl }) {
   return (
-    <div style={{ height: 160, borderTop: `1px solid ${C.brd}`, overflow: 'hidden', position: 'relative' }}>
+    <div style={{ height: 160, borderTop: `1px solid ${C.brd}`, overflow: 'hidden' }}>
       {imageUrl
         ? <img src={imageUrl} alt="Cover" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
         : <div style={{ width: '100%', height: '100%', background: 'rgba(255,255,255,0.02)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: 6 }}>
@@ -206,7 +214,7 @@ function GalleryVisual({ gallery }) {
   );
 }
 
-/* ─── MAP / KEYWORDS VISUAL ─────────────────────────────────── */
+/* ─── MAP VISUAL ────────────────────────────────────────────── */
 function MapVisual({ gym }) {
   const hasAddress = gym.address || gym.city || gym.postcode;
   const query = encodeURIComponent([gym.name, gym.address, gym.city, gym.postcode].filter(Boolean).join(', '));
@@ -241,7 +249,7 @@ function MapVisual({ gym }) {
 function SocialVisual({ gym }) {
   const links = [
     { key: 'instagram_url', Icon: Instagram, label: 'Instagram', color: '#a855f7' },
-    { key: 'facebook_url',  Icon: Facebook,  label: 'Facebook',  color: '#3b82f6' },
+    { key: 'facebook_url',  Icon: Facebook,  label: 'Facebook',  color: '#60a5fa' },
     { key: 'twitter_url',   Icon: Twitter,   label: 'Twitter',   color: '#38bdf8' },
     { key: 'website_url',   Icon: Globe,     label: 'Website',   color: C.cyan    },
   ];
@@ -250,7 +258,14 @@ function SocialVisual({ gym }) {
     <div style={{ padding: '10px 14px 14px', borderTop: `1px solid ${C.brd}`, display: 'flex', flexWrap: 'wrap', gap: 8 }}>
       {present.length > 0 ? present.map((l) => (
         <a key={l.key} href={gym[l.key]} target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '6px 11px', borderRadius: 7, background: C.card2, border: `1px solid ${C.brd}`, cursor: 'pointer' }}>
+          <div style={{
+            display: 'flex', alignItems: 'center', gap: 6, padding: '6px 11px',
+            borderRadius: 7, background: C.card2, border: `1px solid ${C.brd}`, cursor: 'pointer',
+            transition: 'border-color 0.15s',
+          }}
+            onMouseEnter={e => e.currentTarget.style.borderColor = C.brd2}
+            onMouseLeave={e => e.currentTarget.style.borderColor = C.brd}
+          >
             <l.Icon style={{ width: 12, height: 12, color: l.color }} />
             <span style={{ fontSize: 11.5, fontWeight: 600, color: C.t2 }}>{l.label}</span>
           </div>
@@ -271,7 +286,14 @@ function CoachesVisual({ coaches, onManage }) {
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, padding: '16px 0' }}>
           <GraduationCap style={{ width: 22, height: 22, color: C.t3 }} />
           <span style={{ fontSize: 11, color: C.t3 }}>No coaches added yet.</span>
-          <button onClick={onManage} style={{ padding: '6px 14px', borderRadius: 7, fontSize: 11.5, fontWeight: 700, background: C.cyanDim, color: C.cyan, border: `1px solid ${C.cyanBrd}`, cursor: 'pointer' }}>
+          <button
+            onClick={onManage}
+            style={{
+              padding: '6px 14px', borderRadius: 7, fontSize: 11.5, fontWeight: 700,
+              background: C.cyan, color: '#fff', border: 'none', cursor: 'pointer',
+              fontFamily: FONT, boxShadow: SHADOW,
+            }}
+          >
             + Add Coach
           </button>
         </div>
@@ -297,8 +319,12 @@ function CoachesVisual({ coaches, onManage }) {
               )}
             </div>
           ))}
-          {/* Add coach button */}
-          <div onClick={onManage} style={{ flexShrink: 0, width: 100, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 6, padding: '8px 6px', borderRadius: 9, background: 'transparent', border: `1px dashed ${C.brd2}`, cursor: 'pointer' }}>
+          <div
+            onClick={onManage}
+            style={{ flexShrink: 0, width: 100, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 6, padding: '8px 6px', borderRadius: 9, background: 'transparent', border: `1px dashed ${C.brd2}`, cursor: 'pointer', transition: 'border-color 0.15s' }}
+            onMouseEnter={e => e.currentTarget.style.borderColor = C.cyanBrd}
+            onMouseLeave={e => e.currentTarget.style.borderColor = C.brd2}
+          >
             <UserPlus style={{ width: 18, height: 18, color: C.t3 }} />
             <span style={{ fontSize: 10, color: C.t3, textAlign: 'center' }}>Add coach</span>
           </div>
@@ -308,19 +334,29 @@ function CoachesVisual({ coaches, onManage }) {
   );
 }
 
-/* ─── FULL-WIDTH ROW SECTION (Trust, Amenities, Equipment) ─── */
+/* ─── FULL-WIDTH SECTION ────────────────────────────────────── */
 function FullSection({ title, subtitle, score, defaultOpen = true, children }) {
   const [open, setOpen] = useState(defaultOpen);
   const state = qualityState(score);
   return (
     <div style={{ background: C.card, border: `1px solid ${score < 40 ? C.redBrd : C.brd}`, borderRadius: 10, overflow: 'hidden', marginBottom: 10 }}>
-      <button onClick={() => setOpen(o => !o)} style={{ width: '100%', display: 'flex', alignItems: 'center', padding: '13px 18px', background: 'transparent', border: 'none', borderBottom: open ? `1px solid ${C.brd}` : 'none', cursor: 'pointer', gap: 10, textAlign: 'left' }}>
+      <button
+        onClick={() => setOpen(o => !o)}
+        style={{
+          width: '100%', display: 'flex', alignItems: 'center', padding: '13px 18px',
+          background: 'transparent', border: 'none', borderBottom: open ? `1px solid ${C.brd}` : 'none',
+          cursor: 'pointer', gap: 10, textAlign: 'left', fontFamily: FONT,
+        }}
+      >
         <div style={{ flex: 1 }}>
           <div style={{ fontSize: 13, fontWeight: 700, color: C.t1 }}>{title}</div>
           {subtitle && <div style={{ fontSize: 11, color: C.t3, marginTop: 2 }}>{subtitle}</div>}
         </div>
-        <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 9px', borderRadius: 20, color: state.color, background: state.dim, border: `1px solid ${state.brd}`, flexShrink: 0, whiteSpace: 'nowrap' }}>{state.label}</span>
-        {open ? <ChevronUp style={{ width: 13, height: 13, color: C.t3, flexShrink: 0 }} /> : <ChevronDown style={{ width: 13, height: 13, color: C.t3, flexShrink: 0 }} />}
+        <StatusBadge score={score} />
+        {open
+          ? <ChevronUp style={{ width: 13, height: 13, color: C.t3, flexShrink: 0 }} />
+          : <ChevronDown style={{ width: 13, height: 13, color: C.t3, flexShrink: 0 }} />
+        }
       </button>
       {open && (
         <>
@@ -334,48 +370,69 @@ function FullSection({ title, subtitle, score, defaultOpen = true, children }) {
   );
 }
 
-/* ─── TRUST ROW (Info + Pricing side by side) ───────────────── */
+/* ─── TRUST ROW ─────────────────────────────────────────────── */
 function TrustRow({ gym, openModal }) {
-  const infoScore = gym.name ? 100 : 0;
+  const infoScore    = gym.name  ? 100 : 0;
   const pricingScore = gym.price ? 100 : 0;
-  const infoState = qualityState(infoScore);
+  const infoState    = qualityState(infoScore);
   const pricingState = qualityState(pricingScore);
   return (
     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1 }}>
-      <div onClick={() => openModal('editInfo')} style={{ padding: '13px 18px', cursor: 'pointer', borderRight: `1px solid ${C.brd}` }}
-        onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.015)'}
-        onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <span style={{ fontSize: 13, fontWeight: 600, color: C.t1 }}>Gym Info</span>
-          <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 20, color: infoState.color, background: infoState.dim, border: `1px solid ${infoState.brd}` }}>{infoState.label}</span>
+      {[
+        {
+          label: 'Gym Info',
+          state: infoState,
+          desc: gym.name
+            ? 'Name, address, and contact details are present.'
+            : "Core gym details are missing — members can't verify what's on offer.",
+          action: () => openModal('editInfo'),
+        },
+        {
+          label: 'Pricing',
+          state: pricingState,
+          desc: gym.price
+            ? `Listed at ${gym.price} — visible to members before joining.`
+            : 'Missing pricing creates uncertainty and reduces conversion.',
+          action: () => openModal('pricing'),
+        },
+      ].map((item, i) => (
+        <div
+          key={i}
+          onClick={item.action}
+          style={{ padding: '13px 18px', cursor: 'pointer', borderRight: i === 0 ? `1px solid ${C.brd}` : 'none', transition: 'background 0.15s' }}
+          onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.015)'}
+          onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
+            <span style={{ fontSize: 13, fontWeight: 600, color: C.t1 }}>{item.label}</span>
+            <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 20, color: item.state.color, background: item.state.dim, border: `1px solid ${item.state.brd}` }}>
+              {item.state.label}
+            </span>
+          </div>
+          <div style={{ fontSize: 11, color: C.t3 }}>{item.desc}</div>
         </div>
-        <div style={{ fontSize: 11, color: C.t3, marginTop: 3 }}>
-          {gym.name ? 'Name, address, and contact details are present.' : 'Core gym details are missing — members can\'t verify what\'s on offer.'}
-        </div>
-      </div>
-      <div onClick={() => openModal('pricing')} style={{ padding: '13px 18px', cursor: 'pointer' }}
-        onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.015)'}
-        onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <span style={{ fontSize: 13, fontWeight: 600, color: C.t1 }}>Pricing</span>
-          <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 20, color: pricingState.color, background: pricingState.dim, border: `1px solid ${pricingState.brd}` }}>{pricingState.label}</span>
-        </div>
-        <div style={{ fontSize: 11, color: C.t3, marginTop: 3 }}>
-          {gym.price ? `Listed at ${gym.price} — visible to members before joining.` : 'Missing pricing creates uncertainty and reduces conversion.'}
-        </div>
-      </div>
+      ))}
     </div>
   );
 }
 
-/* ─── TAGS LIST (Amenities / Equipment) ─────────────────────── */
+/* ─── TAGS LIST ─────────────────────────────────────────────── */
 function TagsList({ items, emptyText, onClick }) {
   return (
     <div style={{ padding: '12px 18px' }}>
       {(!items || items.length === 0) ? (
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <span style={{ fontSize: 11, color: C.t3 }}>{emptyText}</span>
-          <button onClick={onClick} style={{ fontSize: 11.5, fontWeight: 700, padding: '5px 12px', borderRadius: 7, background: C.cyanDim, color: C.cyan, border: `1px solid ${C.cyanBrd}`, cursor: 'pointer' }}>+ Add</button>
+          <button
+            onClick={onClick}
+            style={{
+              fontSize: 11.5, fontWeight: 700, padding: '5px 12px', borderRadius: 7,
+              background: C.cyan, color: '#fff', border: 'none', cursor: 'pointer',
+              fontFamily: FONT, boxShadow: SHADOW, display: 'flex', alignItems: 'center', gap: 4,
+            }}
+          >
+            <Plus style={{ width: 11, height: 11 }} /> Add
+          </button>
         </div>
       ) : (
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 7 }}>
@@ -384,7 +441,16 @@ function TagsList({ items, emptyText, onClick }) {
               {typeof item === 'object' ? item.name || item.label : item}
             </span>
           ))}
-          <button onClick={onClick} style={{ fontSize: 11.5, padding: '4px 11px', borderRadius: 20, background: 'transparent', border: `1px dashed ${C.brd2}`, color: C.t3, cursor: 'pointer' }}>+ Edit</button>
+          <button
+            onClick={onClick}
+            style={{
+              fontSize: 11.5, padding: '4px 11px', borderRadius: 20,
+              background: C.cyanDim, border: `1px solid ${C.cyanBrd}`, color: C.cyan,
+              cursor: 'pointer', fontFamily: FONT, fontWeight: 700,
+            }}
+          >
+            + Edit
+          </button>
         </div>
       )}
     </div>
@@ -414,7 +480,6 @@ export default function TabGymProfile({ gym, openModal, coaches = [], onDeleteCo
   const hasSocial      = !!(gym.instagram_url || gym.facebook_url || gym.twitter_url || gym.website_url);
   const hasAddress     = !!(gym.address || gym.city || gym.postcode);
 
-  /* Scores */
   const impressionScore = Math.round(([hasLogo, hasHero, galleryCount >= 3].filter(Boolean).length / 3) * 100);
   const trustScore      = Math.round(([hasInfo, hasPricing].filter(Boolean).length / 2) * 100);
   const discoveryScore  = Math.round(([hasAddress, hasSocial, coaches.length > 0].filter(Boolean).length / 3) * 100);
@@ -422,10 +487,10 @@ export default function TabGymProfile({ gym, openModal, coaches = [], onDeleteCo
   const equipmentScore  = equipmentCount >= 5 ? 100 : equipmentCount > 0 ? 50 : 0;
   const coachesScore    = coaches.length >= 2 ? 100 : coaches.length > 0 ? 60 : 0;
 
-  const communityScore  = gym.community_strength || Math.round((impressionScore + trustScore + discoveryScore) / 3);
-  const communityState  = qualityState(communityScore);
-  const eng             = engLabel(rawEngScore);
-  const act             = actLabel(postsWeek);
+  const communityScore = gym.community_strength || Math.round((impressionScore + trustScore + discoveryScore) / 3);
+  const communityState = qualityState(communityScore);
+  const eng            = engLabel(rawEngScore);
+  const act            = actLabel(postsWeek);
 
   const actSecondary = postsWeek === 0 ? 'No posts this week' : `${postsWeek}+ posts and comments this week.`;
 
@@ -440,7 +505,7 @@ export default function TabGymProfile({ gym, openModal, coaches = [], onDeleteCo
   const previewUrl = createPageUrl('GymCommunity') + '?id=' + gym.id;
 
   return (
-    <div style={{ fontFamily: FONT, maxWidth: 1080, padding: '2px 0 40px' }}>
+    <div style={{ fontFamily: FONT, maxWidth: 1080, padding: '2px 0 40px', color: C.t1 }}>
 
       {/* ── PAGE HEADER ───────────────────────────────────── */}
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 20, gap: 12 }}>
@@ -454,7 +519,15 @@ export default function TabGymProfile({ gym, openModal, coaches = [], onDeleteCo
           </p>
         </div>
         <Link to={previewUrl} target="_blank" style={{ textDecoration: 'none', flexShrink: 0 }}>
-          <button style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 15px', borderRadius: 8, fontSize: 12, fontWeight: 700, background: C.card, border: `1px solid ${C.brd}`, color: C.t2, cursor: 'pointer', whiteSpace: 'nowrap' }}>
+          <button style={{
+            display: 'flex', alignItems: 'center', gap: 6, padding: '8px 15px', borderRadius: 8,
+            fontSize: 12, fontWeight: 700, background: C.card, border: `1px solid ${C.brd}`,
+            color: C.t2, cursor: 'pointer', whiteSpace: 'nowrap', fontFamily: FONT,
+            transition: 'border-color 0.15s, color 0.15s',
+          }}
+            onMouseEnter={e => { e.currentTarget.style.borderColor = C.cyanBrd; e.currentTarget.style.color = C.t1; }}
+            onMouseLeave={e => { e.currentTarget.style.borderColor = C.brd; e.currentTarget.style.color = C.t2; }}
+          >
             <ExternalLink style={{ width: 11, height: 11 }} /> Member View
           </button>
         </Link>
@@ -492,7 +565,7 @@ export default function TabGymProfile({ gym, openModal, coaches = [], onDeleteCo
         />
       </div>
 
-      {/* ── INSIGHT ───────────────────────────────────────── */}
+      {/* ── INSIGHT BAR ───────────────────────────────────── */}
       <InsightBar text={insight} />
 
       {/* ── PROFILE DIAGNOSIS LABEL ───────────────────────── */}
@@ -503,14 +576,12 @@ export default function TabGymProfile({ gym, openModal, coaches = [], onDeleteCo
       {/* ══ TWO-COLUMN GRID ════════════════════════════════ */}
       <div style={{ display: 'grid', gridTemplateColumns: '55% 1fr', gap: 10, marginBottom: 10 }}>
 
-        {/* ── LEFT: FIRST IMPRESSION ──────────────────────── */}
+        {/* LEFT — First Impression */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
           <SectionHeader
             title="First Impression"
             subtitle="What a member sees the moment they find your gym."
           />
-
-          {/* Logo + Cover Image — side by side */}
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
             <ItemCard
               title="Logo / Profile Photo"
@@ -520,7 +591,6 @@ export default function TabGymProfile({ gym, openModal, coaches = [], onDeleteCo
             >
               <LogoVisual logoUrl={gym.logo_url} />
             </ItemCard>
-
             <ItemCard
               title="Cover Image"
               score={coverScore}
@@ -530,15 +600,13 @@ export default function TabGymProfile({ gym, openModal, coaches = [], onDeleteCo
               <CoverVisual imageUrl={gym.image_url} />
             </ItemCard>
           </div>
-
-          {/* Photo Gallery — full width */}
           <ItemCard
             title="Photo Gallery"
             score={galleryScore}
             microcopy={
               galleryCount >= 5 ? `Rich gallery with ${galleryCount}+ photos.`
               : galleryCount > 0 ? `${galleryCount} photo${galleryCount !== 1 ? 's' : ''} — more variety builds confidence.`
-              : 'No gallery. Members can\'t visualise the space before visiting.'
+              : "No gallery. Members can't visualise the space before visiting."
             }
             onClick={() => openModal('photos')}
           >
@@ -546,24 +614,20 @@ export default function TabGymProfile({ gym, openModal, coaches = [], onDeleteCo
           </ItemCard>
         </div>
 
-        {/* ── RIGHT: DISCOVERY ────────────────────────────── */}
+        {/* RIGHT — Discovery */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
           <SectionHeader
             title="Discovery"
             subtitle="What makes your gym distinct — and searchable."
           />
-
-          {/* Keywords & Tags / Map */}
           <ItemCard
             title="Keywords & Tags"
             score={mapScore}
-            microcopy="Populates, e.g. hours, address, address."
+            microcopy="Populates hours, address, and location data."
             onClick={() => openModal('editInfo')}
           >
             <MapVisual gym={gym} />
           </ItemCard>
-
-          {/* Social Media Links */}
           <ItemCard
             title="Social Media Links"
             score={socialScore}
@@ -572,8 +636,6 @@ export default function TabGymProfile({ gym, openModal, coaches = [], onDeleteCo
           >
             <SocialVisual gym={gym} />
           </ItemCard>
-
-          {/* Coaches & Staff */}
           <ItemCard
             title="Coaches & Staff"
             score={coachesScore}
@@ -585,9 +647,8 @@ export default function TabGymProfile({ gym, openModal, coaches = [], onDeleteCo
         </div>
       </div>
 
-      {/* ══ FULL-WIDTH SECTIONS BELOW ══════════════════════ */}
+      {/* ══ FULL-WIDTH SECTIONS ════════════════════════════ */}
 
-      {/* Trust & Clarity */}
       <FullSection
         title="Trust & Clarity"
         subtitle="Information members need to feel confident before joining."
@@ -597,7 +658,6 @@ export default function TabGymProfile({ gym, openModal, coaches = [], onDeleteCo
         <TrustRow gym={gym} openModal={openModal} />
       </FullSection>
 
-      {/* Amenities */}
       <FullSection
         title="Amenities"
         subtitle="Highlight what members can access and enjoy."
@@ -611,7 +671,6 @@ export default function TabGymProfile({ gym, openModal, coaches = [], onDeleteCo
         />
       </FullSection>
 
-      {/* Equipment */}
       <FullSection
         title="Equipment"
         subtitle="Help members find the equipment they care about."
@@ -626,18 +685,29 @@ export default function TabGymProfile({ gym, openModal, coaches = [], onDeleteCo
       </FullSection>
 
       {/* ── FOOTER ────────────────────────────────────────── */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '13px 18px', marginTop: 4, background: C.card, border: `1px solid ${C.brd}`, borderRadius: 10 }}>
-        <div style={{ width: 34, height: 34, borderRadius: 9, flexShrink: 0, background: C.cyanDim, border: `1px solid ${C.cyanBrd}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <div style={{
+        display: 'flex', alignItems: 'center', gap: 14, padding: '13px 18px',
+        marginTop: 4, background: C.card, border: `1px solid ${C.brd}`, borderRadius: 10,
+      }}>
+        <div style={{
+          width: 34, height: 34, borderRadius: 9, flexShrink: 0,
+          background: C.cyanDim, border: `1px solid ${C.cyanBrd}`,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+        }}>
           <TrendingUp style={{ width: 14, height: 14, color: C.cyan }} />
         </div>
         <div style={{ flex: 1 }}>
           <div style={{ fontSize: 13, fontWeight: 700, color: C.t1 }}>Retention impact</div>
           <div style={{ fontSize: 11, color: C.t3, marginTop: 2 }}>
-            Gyms with complete profiles and active communities retain members <span style={{ color: C.t2, fontWeight: 600 }}>2.3× longer</span> on average.
+            Gyms with complete profiles and active communities retain members{' '}
+            <span style={{ color: C.t2, fontWeight: 600 }}>2.3× longer</span> on average.
           </div>
         </div>
         <Link to={previewUrl} target="_blank" style={{ textDecoration: 'none', flexShrink: 0 }}>
-          <span style={{ fontSize: 12, fontWeight: 700, color: C.cyan, display: 'flex', alignItems: 'center', gap: 4, cursor: 'pointer' }}>
+          <span style={{
+            fontSize: 12, fontWeight: 700, color: C.cyan,
+            display: 'flex', alignItems: 'center', gap: 4, cursor: 'pointer',
+          }}>
             See member view <ExternalLink style={{ width: 11, height: 11 }} />
           </span>
         </Link>
