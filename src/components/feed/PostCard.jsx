@@ -803,14 +803,14 @@ function PostCard({ post, onLike, onComment, onSave, onDelete, fullWidth = false
             {Object.keys(localReactions).length > 0 && (
               <button onClick={() => setShowReactionsModal(true)} className="flex items-center hover:opacity-80 transition-opacity mr-2">
                 <div className="flex items-center" style={{ gap: 0 }}>
-                  {Object.entries(localReactions).slice(0, 3).map(([uid, variant], i) => (
+                  {Object.entries(localReactions && typeof localReactions === 'object' && !Array.isArray(localReactions) ? localReactions : {}).slice(0, 3).map(([uid, variant], i) => (
                     <div key={uid} className="relative w-6 h-6" style={{ marginLeft: i === 0 ? 0 : '-6px', zIndex: 3 - i }}>
                       {variant === 'sunglasses'
                         ? <div className="relative w-full h-full flex items-center justify-center"><img src={STREAK_ICON_URL} alt="streak" className="w-6 h-6" style={{ objectFit: 'contain' }} /><svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 64 64"><circle cx="20" cy="24" r="6" fill="none" stroke="black" strokeWidth="1.5" /><circle cx="44" cy="24" r="6" fill="none" stroke="black" strokeWidth="1.5" /><line x1="26" y1="24" x2="38" y2="24" stroke="black" strokeWidth="1.5" /></svg></div>
                         : <img src={STREAK_ICON_URL} alt="streak" className="w-20 h-20 -mt-6" style={{ objectFit: 'contain' }} />}
                     </div>
                   ))}
-                  {Object.keys(localReactions).length > 3 && <div className="flex items-center gap-0.5 ml-1"><Plus className="w-3 h-3 text-slate-300" /><span className="text-xs font-bold text-slate-300">{Object.keys(localReactions).length - 3}</span></div>}
+                  {Object.keys(localReactions && typeof localReactions === 'object' && !Array.isArray(localReactions) ? localReactions : {}).length > 3 && <div className="flex items-center gap-0.5 ml-1"><Plus className="w-3 h-3 text-slate-300" /><span className="text-xs font-bold text-slate-300">{Object.keys(localReactions).length - 3}</span></div>}
                 </div>
               </button>
             )}
