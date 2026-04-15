@@ -625,7 +625,7 @@ export default function Home() {
   const todayIsRestDay = !(currentUser?.training_days || []).includes(todayDowAdjusted);
   const showCheckInButton = !todayIsRestDay || workoutOverrideDay !== null;
 
-  const friendPosts = useMemo(() => allPosts.filter((post) =>
+  const friendPosts = useMemo(() => allPosts.filter(Boolean).filter((post) =>
     friendIdList.includes(post.member_id) &&
     !post.is_system_generated &&
     !post.content?.includes('well done') &&
@@ -1057,7 +1057,7 @@ export default function Home() {
             const mondayBase = startOfWeek(new Date(), { weekStartsOn: 1 });
             mondayBase.setDate(mondayBase.getDate() + weekOffset * 7);
             const logsByDay = {};
-            weeklyWorkoutLogs.forEach((l) => {
+            weeklyWorkoutLogs.filter(Boolean).forEach((l) => {
               const dateStr = (l.completed_date || '').split('T')[0];
               const parts = dateStr.split('-').map(Number);
               const d = (parts.length === 3 && parts[0])
