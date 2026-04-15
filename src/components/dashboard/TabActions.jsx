@@ -10,34 +10,38 @@ import {
   Flame, Star, Bell, Gift, TrendingUp, TrendingDown, Activity,
   MessageCircle, Plus, Eye, RefreshCw, MoreHorizontal, Sparkles,
   UserPlus, BookOpen, Target, DollarSign, BarChart2, Filter,
+
 } from "lucide-react";
 
-/* ─── TOKENS — exact ContentPage palette ────────────────────── */
+/* ─── TOKENS ─────────────────────────────────────────────────── */
 const C = {
-  bg:       "#000000",
-  sidebar:  "#0f0f12",
-  card:     "#141416",
-  card2:    "#1a1a1f",
-  brd:      "#222226",
-  brd2:     "#2a2a30",
-  t1:       "#ffffff",
-  t2:       "#8a8a94",
-  t3:       "#444450",
-  cyan:     "#4d7fff",
-  cyanDim:  "rgba(77,127,255,0.12)",
-  cyanBrd:  "rgba(77,127,255,0.28)",
+  bg:       "#080809",
+  sidebar:  "#0c0c0e",
+  card:     "#111113",
+  card2:    "#0c0c0e",
+  cardHov:  "#161618",
+  brd:      "#1e1e22",
+  brdHov:   "#2a2a30",
+  t1:       "#f0f0f2",
+  t2:       "#72727c",
+  t3:       "#3a3a42",
+  t4:       "#28282f",
+  cyan:     "#00e5c8",
+  cyanDim:  "rgba(0,229,200,0.07)",
+  cyanBrd:  "rgba(0,229,200,0.18)",
+  cyanGlow: "rgba(0,229,200,0.12)",
   red:      "#f04a68",
-  redDim:   "rgba(240,74,104,0.10)",
-  redBrd:   "rgba(240,74,104,0.25)",
+  redDim:   "rgba(240,74,104,0.08)",
+  redBrd:   "rgba(240,74,104,0.18)",
   amber:    "#e8940a",
-  amberDim: "rgba(232,148,10,0.10)",
-  amberBrd: "rgba(232,148,10,0.25)",
+  amberDim: "rgba(232,148,10,0.08)",
+  amberBrd: "rgba(232,148,10,0.18)",
   green:    "#1eb85a",
-  greenDim: "rgba(30,184,90,0.10)",
-  greenBrd: "rgba(30,184,90,0.25)",
+  greenDim: "rgba(30,184,90,0.08)",
+  greenBrd: "rgba(30,184,90,0.18)",
   blue:     "#4f97f5",
-  blueDim:  "rgba(79,151,245,0.10)",
-  blueBrd:  "rgba(79,151,245,0.25)",
+  blueDim:  "rgba(79,151,245,0.08)",
+  blueBrd:  "rgba(79,151,245,0.18)",
 };
 const FONT = "'DM Sans','Segoe UI',system-ui,sans-serif";
 
@@ -150,7 +154,7 @@ function Av({initials, size=22}) {
 function UrgencyDot({urgency}) {
   const u = URGENCY[urgency];
   if (!u?.dot) return null;
-  return <span style={{width:5,height:5,borderRadius:"50%",background:u.color,display:"inline-block",flexShrink:0}}/>;
+  return <span style={{width:5,height:5,borderRadius:"50%",background:u.color,display:"inline-block",flexShrink:0,boxShadow:`0 0 8px ${u.color}`}}/>;
 }
 
 function Tag({label,color}) {
@@ -171,8 +175,8 @@ function ImpactPill({label,color}) {
 
 function SuccessBar({pct,color}) {
   return (
-    <div style={{height:2,background:"rgba(255,255,255,0.06)",borderRadius:2,overflow:"hidden",flex:1,minWidth:60}}>
-      <div style={{width:`${pct}%`,height:"100%",background:color,borderRadius:2,opacity:0.8}}/>
+    <div style={{height:2,background:C.t4,borderRadius:2,overflow:"hidden",flex:1,minWidth:60}}>
+      <div style={{width:`${pct}%`,height:"100%",background:`linear-gradient(90deg, ${color}99, ${color})`,borderRadius:2}}/>
     </div>
   );
 }
@@ -182,12 +186,12 @@ function CTA({label,icon:Icon,primary,onClick}) {
     <button onClick={onClick} style={{
       display:"flex",alignItems:"center",gap:5,
       padding:primary?"7px 15px":"6px 12px",
-      borderRadius:7,fontSize:11.5,fontWeight:700,cursor:"pointer",fontFamily:FONT,
-      background:primary ? C.cyan : "rgba(255,255,255,0.03)",
-      border:primary ? "none" : `1px solid ${C.brd}`,
-      color:primary ? "#fff" : C.t2,
-      boxShadow:primary ? "0 0 10px rgba(77,127,255,0.22), 0 2px 6px rgba(77,127,255,0.12)" : "none",
-      flexShrink:0, transition:"all 0.15s",
+      borderRadius:7,fontSize:11.5,fontWeight:600,cursor:"pointer",fontFamily:FONT,
+      background:primary?`linear-gradient(135deg,${C.cyan},#00c9b0)`:"rgba(255,255,255,0.03)",
+      border:primary?"none":`1px solid ${C.brd}`,
+      color:primary?"#000":C.t2,
+      boxShadow:primary?`0 2px 20px rgba(0,229,200,0.18)`:"none",
+      flexShrink:0,letterSpacing:primary?"0.01em":"normal",transition:"all 0.15s",
     }}>
       {Icon && <Icon size={11}/>}{label}
     </button>
@@ -198,7 +202,7 @@ function Divider() {
   return <div style={{height:1,background:C.brd}}/>;
 }
 
-/* ─── ACTION CARD (desktop) ──────────────────────────────────── */
+/* ─── DESKTOP ONLY — shared card & feed ─────────────────────── */
 function ActionCard({action, onDismiss, onAct}) {
   const [expanded,setExpanded] = useState(false);
   const [acted,setActed]       = useState(false);
@@ -283,7 +287,7 @@ function ActionCard({action, onDismiss, onAct}) {
 function FeedRow({item,i,total}) {
   const [sent,setSent] = useState(false);
   return (
-    <div style={{display:"flex",alignItems:"center",gap:10,padding:"10px 14px",borderBottom:i<total-1?`1px solid ${C.brd}`:"none",background:item.isNew?`${C.cyan}08`:"transparent",transition:"background 0.4s"}}>
+    <div style={{display:"flex",alignItems:"center",gap:10,padding:"10px 14px",borderBottom:i<total-1?`1px solid ${C.brd}`:"none",background:item.isNew?`${C.cyan}05`:"transparent",transition:"background 0.4s"}}>
       <div style={{width:28,height:28,borderRadius:7,flexShrink:0,background:`${item.color}10`,border:`1px solid ${item.color}22`,display:"flex",alignItems:"center",justifyContent:"center"}}>
         <item.icon size={11} color={item.color}/>
       </div>
@@ -305,25 +309,25 @@ function FeedRow({item,i,total}) {
   );
 }
 
-/* ─── KPI STRIP (desktop) ────────────────────────────────────── */
 function KpiStrip() {
   const stats = [
-    {icon:AlertTriangle, label:"Urgent Actions",  val:"3",    sub:"need attention now",        accentColor:C.red   },
-    {icon:DollarSign,    label:"Revenue at Risk", val:"$540", sub:"from inactive members",     accentColor:C.cyan, valColor:C.cyan },
-    {icon:Check,         label:"Completed Today", val:"3",    sub:"actions taken this morning",accentColor:C.green },
-    {icon:Activity,      label:"Avg Response",    val:"<2h",  sub:"across all action types",   accentColor:C.blue  },
+    {icon:AlertTriangle,label:"Urgent Actions",val:"3",sub:"need attention now",    accentColor:C.red,  valColor:C.t1 },
+    {icon:DollarSign,   label:"Revenue at Risk",val:"$540",sub:"from inactive members",accentColor:C.cyan, valColor:C.cyan},
+    {icon:Check,        label:"Completed Today",val:"3",sub:"actions taken this morning",accentColor:C.green,valColor:C.t1},
+    {icon:Activity,     label:"Avg Response",   val:"<2h",sub:"across all action types", accentColor:C.blue, valColor:C.t1},
   ];
   return (
     <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:8,marginBottom:16}}>
       {stats.map((s,i)=>(
-        <div key={i} style={{background:C.card,border:`1px solid ${C.brd}`,borderRadius:10,padding:"14px 16px"}}>
+        <div key={i} style={{background:C.card,border:`1px solid ${C.brd}`,borderRadius:10,padding:"14px 16px",position:"relative",overflow:"hidden"}}>
+          <div style={{position:"absolute",top:0,left:0,right:0,height:1,background:`linear-gradient(90deg,transparent,${s.accentColor}40,transparent)`}}/>
           <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:10}}>
             <div style={{width:28,height:28,borderRadius:7,background:`${s.accentColor}10`,border:`1px solid ${s.accentColor}22`,display:"flex",alignItems:"center",justifyContent:"center"}}>
               <s.icon size={12} color={s.accentColor}/>
             </div>
             <ArrowUpRight size={11} color={C.t3}/>
           </div>
-          <div style={{fontSize:26,fontWeight:700,color:s.valColor||C.t1,letterSpacing:"-0.04em",lineHeight:1,marginBottom:5,fontVariantNumeric:"tabular-nums"}}>
+          <div style={{fontSize:26,fontWeight:700,color:s.valColor,letterSpacing:"-0.04em",lineHeight:1,marginBottom:5,fontVariantNumeric:"tabular-nums",...(s.valColor===C.cyan?{textShadow:`0 0 24px ${C.cyanGlow}`}:{})}}>
             {s.val}
           </div>
           <div style={{fontSize:11,fontWeight:600,color:C.t2,marginBottom:1}}>{s.label}</div>
@@ -334,7 +338,6 @@ function KpiStrip() {
   );
 }
 
-/* ─── RIGHT SIDEBAR (desktop) ────────────────────────────────── */
 function RightSidebar() {
   const [showMore,setShowMore] = useState(false);
   const [sentMap,setSentMap]   = useState({});
@@ -355,8 +358,9 @@ function RightSidebar() {
     </div>
   );
   return (
-    <div style={{width:252,flexShrink:0,background:C.sidebar,borderLeft:`1px solid ${C.brd}`,padding:"16px 14px",display:"flex",flexDirection:"column",gap:16,overflowY:"auto"}}>
-      <div style={{padding:"13px",borderRadius:10,background:C.card,border:`1px solid ${C.cyanBrd}`}}>
+    <div style={{width:252,flexShrink:0,background:C.card2,borderLeft:`1px solid ${C.brd}`,padding:"16px 14px",display:"flex",flexDirection:"column",gap:16,overflowY:"auto"}}>
+      <div style={{padding:"13px",borderRadius:10,background:C.card,border:`1px solid ${C.cyanBrd}`,position:"relative",overflow:"hidden"}}>
+        <div style={{position:"absolute",top:0,left:0,right:0,height:1,background:`linear-gradient(90deg,transparent,${C.cyan}60,transparent)`}}/>
         <div style={{display:"flex",alignItems:"center",gap:7,marginBottom:8}}>
           <div style={{width:22,height:22,borderRadius:6,background:C.cyanDim,border:`1px solid ${C.cyanBrd}`,display:"flex",alignItems:"center",justifyContent:"center"}}><Sparkles size={10} color={C.cyan}/></div>
           <span style={{fontSize:11.5,fontWeight:700,color:C.t1}}>AI Coach</span>
@@ -377,7 +381,7 @@ function RightSidebar() {
             {title:"Missing a welcome workflow",body:"Engage new members with a same-day welcome that increases 2nd-visit rate by 30%.",cta:"Create Automation"},
             {title:"Win-back rule: inactive 30d",body:"Members inactive 30+ days have 91% churn risk. Automated re-engagement recovers 1 in 4.",cta:"Add Rule"},
           ].map((s,i)=>(
-            <div key={i} style={{padding:"11px 12px",borderRadius:8,background:C.card2,border:`1px solid ${C.brd}`,marginBottom:7}}>
+            <div key={i} style={{padding:"11px 12px",borderRadius:8,background:C.card,border:`1px solid ${C.brd}`,marginBottom:7}}>
               <div style={{fontSize:11.5,fontWeight:600,color:C.t1,marginBottom:4}}>{s.title}</div>
               <div style={{fontSize:10.5,color:C.t2,lineHeight:1.55,marginBottom:9}}>{s.body}</div>
               <CTA label={s.cta} icon={Plus} primary={false}/>
@@ -392,7 +396,7 @@ function RightSidebar() {
             {title:"Reminder for Tuesday HIIT",sub:"Post now to fill remaining 11 spots.",cta:"Send Reminder"},
             {title:"Recovery workshop — tomorrow",sub:"Quick class preview gets more sign-ups.",cta:"Create Post"},
           ].map((s,i)=>(
-            <div key={i} style={{padding:"11px 12px",borderRadius:8,background:C.card2,border:`1px solid ${C.brd}`,marginBottom:7}}>
+            <div key={i} style={{padding:"11px 12px",borderRadius:8,background:C.card,border:`1px solid ${C.brd}`,marginBottom:7}}>
               <div style={{fontSize:11.5,fontWeight:600,color:C.t1,marginBottom:3}}>{s.title}</div>
               <div style={{fontSize:10.5,color:C.t2,lineHeight:1.5,marginBottom:8}}>{s.sub}</div>
               <CTA label={s.cta} primary={false}/>
@@ -436,7 +440,7 @@ function MobileTopBar({urgentCount}) {
           <span style={{fontSize:17,fontWeight:800,color:C.t1,letterSpacing:"-0.03em"}}>Actions</span>
           {urgentCount > 0 && (
             <span style={{fontSize:10,fontWeight:700,color:C.red,background:C.redDim,border:`1px solid ${C.redBrd}`,padding:"2px 8px",borderRadius:20,display:"flex",alignItems:"center",gap:4}}>
-              <span style={{width:5,height:5,borderRadius:"50%",background:C.red,display:"inline-block"}}/>
+              <span style={{width:5,height:5,borderRadius:"50%",background:C.red,display:"inline-block",boxShadow:`0 0 6px ${C.red}`}}/>
               {urgentCount} urgent
             </span>
           )}
@@ -450,25 +454,27 @@ function MobileTopBar({urgentCount}) {
   );
 }
 
+/* 2×2 KPI grid matching the Overview pattern */
 function MobileKpiGrid() {
   const stats = [
-    {icon:AlertTriangle, label:"Urgent",       val:"3",    sub:"need attention",   accentColor:C.red   },
-    {icon:DollarSign,    label:"At Risk",      val:"$540", sub:"inactive members", accentColor:C.cyan, valColor:C.cyan },
-    {icon:Check,         label:"Done Today",   val:"3",    sub:"actions taken",    accentColor:C.green },
-    {icon:Activity,      label:"Avg Response", val:"<2h",  sub:"across all types", accentColor:C.blue  },
+    {icon:AlertTriangle,label:"Urgent",      val:"3",    sub:"need attention",       accentColor:C.red,  valColor:C.t1 },
+    {icon:DollarSign,   label:"At Risk",     val:"$540", sub:"inactive members",     accentColor:C.cyan, valColor:C.cyan},
+    {icon:Check,        label:"Done Today",  val:"3",    sub:"actions taken",        accentColor:C.green,valColor:C.t1 },
+    {icon:Activity,     label:"Avg Response",val:"<2h",  sub:"across all types",     accentColor:C.blue, valColor:C.t1 },
   ];
   return (
     <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
       {stats.map((s,i)=>(
         <div key={i} style={{background:C.card,border:`1px solid ${C.brd}`,borderRadius:14,padding:"13px 13px 11px",position:"relative",overflow:"hidden"}}>
-          <div style={{position:"absolute",top:-18,right:-18,width:60,height:60,borderRadius:"50%",background:s.accentColor,opacity:0.05,filter:"blur(18px)",pointerEvents:"none"}}/>
+          <div style={{position:"absolute",top:0,left:0,right:0,height:1,background:`linear-gradient(90deg,transparent,${s.accentColor}50,transparent)`}}/>
+          <div style={{position:"absolute",top:-18,right:-18,width:60,height:60,borderRadius:"50%",background:s.accentColor,opacity:0.06,filter:"blur(18px)",pointerEvents:"none"}}/>
           <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:9}}>
             <span style={{fontSize:11,color:C.t2,fontWeight:500}}>{s.label}</span>
             <div style={{width:22,height:22,borderRadius:6,background:`${s.accentColor}18`,border:`1px solid ${s.accentColor}28`,display:"flex",alignItems:"center",justifyContent:"center"}}>
               <s.icon size={11} color={s.accentColor}/>
             </div>
           </div>
-          <div style={{fontSize:30,fontWeight:800,letterSpacing:"-0.04em",lineHeight:1,color:s.valColor||C.t1,marginBottom:4}}>
+          <div style={{fontSize:30,fontWeight:800,letterSpacing:"-0.04em",lineHeight:1,color:s.valColor,marginBottom:4,...(s.valColor===C.cyan?{textShadow:`0 0 20px ${C.cyanGlow}`}:{})}}>
             {s.val}
           </div>
           <div style={{fontSize:10.5,color:C.t3}}>{s.sub}</div>
@@ -478,9 +484,11 @@ function MobileKpiGrid() {
   );
 }
 
+/* AI Coach card — surfaced from sidebar */
 function MobileAICoach() {
   return (
-    <div style={{padding:"14px",borderRadius:14,background:C.card,border:`1px solid ${C.cyanBrd}`}}>
+    <div style={{padding:"14px",borderRadius:14,background:C.card,border:`1px solid ${C.cyanBrd}`,position:"relative",overflow:"hidden"}}>
+      <div style={{position:"absolute",top:0,left:0,right:0,height:1,background:`linear-gradient(90deg,transparent,${C.cyan}60,transparent)`}}/>
       <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:9}}>
         <div style={{width:26,height:26,borderRadius:7,background:C.cyanDim,border:`1px solid ${C.cyanBrd}`,display:"flex",alignItems:"center",justifyContent:"center"}}>
           <Sparkles size={12} color={C.cyan}/>
@@ -500,6 +508,7 @@ function MobileAICoach() {
   );
 }
 
+/* Compact mobile action card */
 function MobileActionCard({action, onDismiss}) {
   const [acted, setActed] = useState(false);
   const [expanded, setExpanded] = useState(false);
@@ -507,15 +516,18 @@ function MobileActionCard({action, onDismiss}) {
   return (
     <div style={{background:C.card,border:`1px solid ${C.brd}`,borderLeft:`3px solid ${u.color}`,borderRadius:14,overflow:"hidden",opacity:acted?0.45:1,transition:"opacity 0.3s"}}>
       <div style={{padding:"13px 13px 12px",display:"flex",gap:11,alignItems:"flex-start"}}>
+        {/* Icon */}
         <div style={{width:36,height:36,borderRadius:10,flexShrink:0,background:`${u.color}10`,border:`1px solid ${u.color}22`,display:"flex",alignItems:"center",justifyContent:"center"}}>
           <action.icon size={15} color={u.color}/>
         </div>
         <div style={{flex:1,minWidth:0}}>
+          {/* Header row */}
           <div style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between",gap:6,marginBottom:5}}>
             <div style={{flex:1,minWidth:0}}>
               <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:5,flexWrap:"wrap"}}>
                 <UrgencyDot urgency={action.urgency}/>
                 <Tag label={action.tag} color={action.tagColor}/>
+                <span style={{fontSize:9.5,color:u.color,fontWeight:600}}>{action.impactColor===u.color ? action.impact : ""}</span>
               </div>
               <div style={{fontSize:13,fontWeight:700,color:C.t1,lineHeight:1.35,marginBottom:5}}>{action.title}</div>
               <div style={{fontSize:11.5,color:C.t2,lineHeight:1.5,marginBottom:8}}>{action.subtitle}</div>
@@ -524,6 +536,8 @@ function MobileActionCard({action, onDismiss}) {
               <X size={10} color={C.t3}/>
             </button>
           </div>
+
+          {/* Member avatars */}
           {action.members.length > 0 && (
             <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:9}}>
               <div style={{display:"flex"}}>
@@ -533,6 +547,8 @@ function MobileActionCard({action, onDismiss}) {
               <span style={{fontSize:10.5,color:C.t3}}>{action.members.length} members</span>
             </div>
           )}
+
+          {/* Stats row */}
           <div style={{display:"flex",gap:12,alignItems:"center",marginBottom:11}}>
             {action.stats.map((s,i)=>(
               <div key={i} style={{display:"flex",alignItems:"baseline",gap:3}}>
@@ -541,10 +557,14 @@ function MobileActionCard({action, onDismiss}) {
               </div>
             ))}
           </div>
+
+          {/* Success bar */}
           <div style={{display:"flex",alignItems:"center",gap:7,marginBottom:12}}>
             <SuccessBar pct={action.successRate} color={u.color}/>
             <span style={{fontSize:10,color:C.t3,flexShrink:0}}>{action.successRate}% success</span>
           </div>
+
+          {/* CTAs */}
           {acted ? (
             <div style={{display:"flex",alignItems:"center",gap:6,padding:"9px 13px",borderRadius:9,background:C.greenDim,border:`1px solid ${C.greenBrd}`}}>
               <Check size={13} color={C.green}/>
@@ -552,7 +572,7 @@ function MobileActionCard({action, onDismiss}) {
             </div>
           ) : (
             <div style={{display:"flex",gap:8}}>
-              <button onClick={()=>setActed(true)} style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",gap:6,padding:"10px 0",borderRadius:10,background:C.cyan,border:"none",color:"#fff",fontSize:13,fontWeight:700,cursor:"pointer",fontFamily:FONT,boxShadow:"0 0 10px rgba(77,127,255,0.22), 0 2px 6px rgba(77,127,255,0.12)"}}>
+              <button onClick={()=>setActed(true)} style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",gap:6,padding:"10px 0",borderRadius:10,background:`linear-gradient(135deg,${C.cyan},#00c9b0)`,border:"none",color:"#000",fontSize:13,fontWeight:700,cursor:"pointer",fontFamily:FONT,boxShadow:`0 2px 16px rgba(0,229,200,0.22)`}}>
                 <action.ctaIcon size={13}/>{action.cta}
               </button>
               <button onClick={()=>setExpanded(v=>!v)} style={{width:42,display:"flex",alignItems:"center",justifyContent:"center",borderRadius:10,background:"rgba(255,255,255,0.03)",border:`1px solid ${C.brd}`,cursor:"pointer"}}>
@@ -562,6 +582,8 @@ function MobileActionCard({action, onDismiss}) {
           )}
         </div>
       </div>
+
+      {/* Expanded AI insight */}
       {expanded && (
         <div style={{padding:"12px 14px 13px",borderTop:`1px solid ${C.brd}`,background:"rgba(255,255,255,0.012)"}}>
           <div style={{fontSize:12,color:C.t2,lineHeight:1.65}}>
@@ -573,6 +595,7 @@ function MobileActionCard({action, onDismiss}) {
   );
 }
 
+/* Collapsible section for mobile sidebar content */
 function MobileCollapsibleSection({icon:Icon, iconColor, title, badge, children}) {
   const [open, setOpen] = useState(false);
   return (
@@ -594,10 +617,11 @@ function MobileCollapsibleSection({icon:Icon, iconColor, title, badge, children}
   );
 }
 
+/* Mobile feed row — slightly larger tap targets */
 function MobileFeedRow({item,i,total}) {
   const [sent,setSent] = useState(false);
   return (
-    <div style={{display:"flex",alignItems:"center",gap:11,padding:"12px 14px",borderBottom:i<total-1?`1px solid ${C.brd}`:"none",background:item.isNew?`${C.cyan}08`:"transparent",transition:"background 0.4s"}}>
+    <div style={{display:"flex",alignItems:"center",gap:11,padding:"12px 14px",borderBottom:i<total-1?`1px solid ${C.brd}`:"none",background:item.isNew?`${C.cyan}05`:"transparent",transition:"background 0.4s"}}>
       <div style={{width:32,height:32,borderRadius:9,flexShrink:0,background:`${item.color}10`,border:`1px solid ${item.color}22`,display:"flex",alignItems:"center",justifyContent:"center"}}>
         <item.icon size={13} color={item.color}/>
       </div>
@@ -647,6 +671,7 @@ function MobileActions() {
   const filtered = filter==="All" ? actions : actions.filter(a=>a.tag===filter);
   const shown    = showAll ? filtered : filtered.slice(0,3);
   const urgentCount = actions.filter(a=>a.urgency==="critical"||a.urgency==="high").length;
+
   const [sentQW, setSentQW] = useState({});
   const quickWins = [
     {id:"qw1",label:"Send motivational message to all active members",cta:"Send Post"},
@@ -656,10 +681,26 @@ function MobileActions() {
 
   return (
     <div style={{fontFamily:FONT,background:C.bg,color:C.t1,minHeight:"100%",paddingBottom:24}}>
+      <style>{`
+        ::-webkit-scrollbar{width:0;}
+        @keyframes slideDown{from{opacity:0;transform:translateY(-4px);}to{opacity:1;transform:translateY(0);}}
+      `}</style>
+
       <MobileTopBar urgentCount={urgentCount}/>
-      <div style={{padding:"0 16px",marginBottom:20}}><MobileKpiGrid/></div>
-      <div style={{padding:"0 16px",marginBottom:20}}><MobileAICoach/></div>
+
+      {/* KPI Grid */}
       <div style={{padding:"0 16px",marginBottom:20}}>
+        <MobileKpiGrid/>
+      </div>
+
+      {/* AI Coach */}
+      <div style={{padding:"0 16px",marginBottom:20}}>
+        <MobileAICoach/>
+      </div>
+
+      {/* Priority Actions */}
+      <div style={{padding:"0 16px",marginBottom:20}}>
+        {/* Section header + filter pills */}
         <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:10}}>
           <div style={{display:"flex",alignItems:"center",gap:7}}>
             <Shield size={13} color={C.t3}/>
@@ -670,6 +711,8 @@ function MobileActions() {
             {showAll?"Show less":`All ${filtered.length}`}<ChevronRight size={12} color={C.cyan}/>
           </span>
         </div>
+
+        {/* Filter scroll */}
         <div style={{overflowX:"auto",paddingBottom:4,marginBottom:12,marginLeft:-16,paddingLeft:16}}>
           <div style={{display:"flex",gap:6,paddingRight:16,width:"max-content"}}>
             {FILTERS.map(f=>(
@@ -679,6 +722,7 @@ function MobileActions() {
             ))}
           </div>
         </div>
+
         <div style={{display:"flex",flexDirection:"column",gap:10}}>
           {shown.length===0 ? (
             <div style={{padding:"36px",textAlign:"center",background:C.card,border:`1px solid ${C.brd}`,borderRadius:14}}>
@@ -691,10 +735,12 @@ function MobileActions() {
           ))}
         </div>
       </div>
+
+      {/* Action Feed */}
       <div style={{padding:"0 16px",marginBottom:20}}>
         <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:10}}>
           <div style={{display:"flex",alignItems:"center",gap:7}}>
-            <span style={{width:7,height:7,borderRadius:"50%",background:C.green,display:"inline-block"}}/>
+            <span style={{width:7,height:7,borderRadius:"50%",background:C.green,display:"inline-block",boxShadow:`0 0 6px ${C.green}`}}/>
             <span style={{fontSize:15,fontWeight:700,color:C.t1,letterSpacing:"-0.01em"}}>Action Feed</span>
           </div>
           <span style={{fontSize:10.5,color:C.t3}}>{feed.length} events</span>
@@ -710,6 +756,8 @@ function MobileActions() {
           )}
         </div>
       </div>
+
+      {/* Collapsible: Automations */}
       <div style={{padding:"0 16px",marginBottom:10}}>
         <MobileCollapsibleSection icon={Zap} iconColor={C.amber} title="Automations" badge="2 suggested">
           <div style={{display:"flex",flexDirection:"column",gap:8}}>
@@ -728,13 +776,15 @@ function MobileActions() {
           </div>
         </MobileCollapsibleSection>
       </div>
+
+      {/* Collapsible: Quick Wins */}
       <div style={{padding:"0 16px",marginBottom:20}}>
         <MobileCollapsibleSection icon={Flame} iconColor={C.cyan} title="Quick Wins" badge={`${quickWins.length} actions`}>
           <div style={{display:"flex",flexDirection:"column",gap:10}}>
             {quickWins.map(qw=>(
               <div key={qw.id} style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between",gap:12}}>
                 <span style={{fontSize:12.5,color:C.t2,flex:1,lineHeight:1.5}}>{qw.label}</span>
-                <button onClick={()=>setSentQW(p=>({...p,[qw.id]:true}))} style={{padding:"6px 13px",borderRadius:8,fontSize:11.5,fontWeight:700,cursor:"pointer",fontFamily:FONT,flexShrink:0,whiteSpace:"nowrap",background:sentQW[qw.id]?C.greenDim:C.cyan,border:sentQW[qw.id]?`1px solid ${C.greenBrd}`:"none",color:sentQW[qw.id]?C.green:"#fff",transition:"all 0.2s",boxShadow:sentQW[qw.id]?"none":"0 0 10px rgba(77,127,255,0.22), 0 2px 6px rgba(77,127,255,0.12)"}}>
+                <button onClick={()=>setSentQW(p=>({...p,[qw.id]:true}))} style={{padding:"6px 13px",borderRadius:8,fontSize:11.5,fontWeight:700,cursor:"pointer",fontFamily:FONT,flexShrink:0,whiteSpace:"nowrap",background:sentQW[qw.id]?C.greenDim:`linear-gradient(135deg,${C.cyan},#00c9b0)`,border:sentQW[qw.id]?`1px solid ${C.greenBrd}`:"none",color:sentQW[qw.id]?C.green:"#000",transition:"all 0.2s"}}>
                   {sentQW[qw.id]?"Done ✓":qw.cta}
                 </button>
               </div>
@@ -742,12 +792,13 @@ function MobileActions() {
           </div>
         </MobileCollapsibleSection>
       </div>
+
     </div>
   );
 }
 
 /* ══════════════════════════════════════════════════════════════
-   DESKTOP ROOT
+   DESKTOP ROOT — unchanged
 ══════════════════════════════════════════════════════════════ */
 function DesktopActions() {
   const [actions,setActions]   = useState(PRIORITY_ACTIONS);
@@ -788,6 +839,7 @@ function DesktopActions() {
       `}</style>
       <div style={{flex:1,display:"flex",flexDirection:"column",minWidth:0,overflow:"hidden"}}>
         <div style={{flex:1,overflowY:"auto",padding:"18px 22px 52px"}}>
+          {/* Page header */}
           <div style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between",marginBottom:16}}>
             <div>
               <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:4}}>
@@ -799,7 +851,7 @@ function DesktopActions() {
                 </h1>
                 {urgentCount>0 && (
                   <span style={{fontSize:9.5,fontWeight:700,color:C.red,background:C.redDim,border:`1px solid ${C.redBrd}`,padding:"2px 8px",borderRadius:20,display:"flex",alignItems:"center",gap:5,letterSpacing:"0.02em"}}>
-                    <span style={{width:5,height:5,borderRadius:"50%",background:C.red,display:"inline-block"}}/>{urgentCount} urgent
+                    <span style={{width:5,height:5,borderRadius:"50%",background:C.red,display:"inline-block",boxShadow:`0 0 6px ${C.red}`}}/>{urgentCount} urgent
                   </span>
                 )}
               </div>
@@ -809,12 +861,15 @@ function DesktopActions() {
               <button onClick={()=>setShowDone(v=>!v)} style={{display:"flex",alignItems:"center",gap:5,padding:"7px 12px",borderRadius:7,background:"rgba(255,255,255,0.02)",border:`1px solid ${C.brd}`,color:C.t2,fontSize:11.5,fontWeight:500,cursor:"pointer",fontFamily:FONT}}>
                 <Check size={10}/> {showDone?"Hide":"Show"} completed
               </button>
-              <button onClick={()=>setViewAll(v=>!v)} style={{display:"flex",alignItems:"center",gap:5,padding:"7px 14px",borderRadius:7,background:C.cyanDim,border:`1px solid ${C.cyanBrd}`,color:C.cyan,fontSize:11.5,fontWeight:600,cursor:"pointer",fontFamily:FONT,boxShadow:"0 0 10px rgba(77,127,255,0.22), 0 2px 6px rgba(77,127,255,0.12)"}}>
+              <button onClick={()=>setViewAll(v=>!v)} style={{display:"flex",alignItems:"center",gap:5,padding:"7px 14px",borderRadius:7,background:C.cyanDim,border:`1px solid ${C.cyanBrd}`,color:C.cyan,fontSize:11.5,fontWeight:600,cursor:"pointer",fontFamily:FONT,boxShadow:`0 0 12px ${C.cyanGlow}`}}>
                 <Eye size={10}/> View All {actions.length}
               </button>
             </div>
           </div>
+
           <KpiStrip/>
+
+          {/* Priority Actions panel */}
           <div style={{background:C.card,border:`1px solid ${C.brd}`,borderRadius:12,overflow:"hidden",marginBottom:10}}>
             <div style={{padding:"11px 16px",borderBottom:`1px solid ${C.brd}`,display:"flex",alignItems:"center",justifyContent:"space-between",background:"rgba(255,255,255,0.01)"}}>
               <div style={{display:"flex",alignItems:"center",gap:8}}>
@@ -850,6 +905,8 @@ function DesktopActions() {
               )}
             </div>
           </div>
+
+          {/* Completed today */}
           {showDone && (
             <div style={{background:C.card,border:`1px solid ${C.brd}`,borderRadius:12,overflow:"hidden",marginBottom:10}}>
               <div style={{padding:"11px 16px",borderBottom:`1px solid ${C.brd}`,display:"flex",alignItems:"center",gap:8,background:"rgba(255,255,255,0.01)"}}>
@@ -868,10 +925,12 @@ function DesktopActions() {
               ))}
             </div>
           )}
+
+          {/* Action Feed */}
           <div style={{background:C.card,border:`1px solid ${C.brd}`,borderRadius:12,overflow:"hidden"}}>
             <div style={{padding:"11px 16px",borderBottom:`1px solid ${C.brd}`,display:"flex",alignItems:"center",justifyContent:"space-between",background:"rgba(255,255,255,0.01)"}}>
               <div style={{display:"flex",alignItems:"center",gap:8}}>
-                <span style={{width:6,height:6,borderRadius:"50%",background:C.green,display:"inline-block"}}/>
+                <span style={{width:6,height:6,borderRadius:"50%",background:C.green,display:"inline-block",boxShadow:`0 0 6px ${C.green}`}}/>
                 <span style={{fontSize:12.5,fontWeight:600,color:C.t1}}>Action Feed</span>
                 <span style={{fontSize:10,color:C.t3}}>{feed.length} events</span>
               </div>

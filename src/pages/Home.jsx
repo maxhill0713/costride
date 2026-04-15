@@ -201,7 +201,7 @@ export default function Home() {
   const [pressedDay, setPressedDay] = useState(null);
   const [weekOffset, setWeekOffset] = useState(0);
   const [slideDirection, setSlideDirection] = useState(0);
-  const [, forceUpdateSwaps] = useState(0); // v2
+  const [, forceUpdateSwaps] = useState(0);
   const celebTimers = useRef([]);
 
   const [headerState, setHeaderState] = useState('top');
@@ -1335,7 +1335,7 @@ export default function Home() {
 
           {socialFeedPosts.length > 0 && (
             <div className="space-y-3">
-              {socialFeedPosts.filter(post => post?.id).map((post) => (
+              {socialFeedPosts.map((post) => (
                 <PostCard key={post.id} post={post} fullWidth={true} currentUser={currentUser} isOwnProfile={post.member_id === currentUser?.id} onLike={() => {}} onComment={() => {}} onSave={() => {}} onDelete={() => queryClient.invalidateQueries({ queryKey: ['posts'] })} friends={friends} sentFriendRequests={sentFriendRequests} onAddFriend={(user) => addFriendMutation.mutate(user)} />
               ))}
             </div>

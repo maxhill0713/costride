@@ -495,7 +495,7 @@ export default function GymOwnerDashboard() {
     } else if (item.id === 'engagement') {
       content = <TabEngagement selectedGym={selectedGym} allMemberships={effectiveMemberships} atRisk={atRisk} totalMembers={totalMembers} />;
     } else if (item.id === 'gym_profile') {
-      content = <TabGymProfile gym={selectedGym} openModal={openModal} setShowPoster={setShowPoster} coaches={coaches} onDeleteCoach={(id) => deleteCoachM.mutate(id)} />;
+      content = <TabGymProfile gym={selectedGym} openModal={openModal} setShowPoster={setShowPoster} />;
     } else if (item.id === 'actions') {
       content = <TabActions />;
     }
@@ -808,27 +808,6 @@ export default function GymOwnerDashboard() {
             {atRisk > 0 && (
               <button onClick={() => setTab('members')} style={{ background: T.redDim, color: T.red, border: '1px solid rgba(255,77,109,0.3)', borderRadius: 20, fontSize: 11, fontWeight: 700, padding: '5px 11px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4 }}>
                 <AlertTriangle style={{ width: 11, height: 11 }} />{atRisk} at risk
-              </button>
-            )}
-            {isGymOwner && coaches.length > 0 && (
-              <button
-                onClick={() => handleRoleSelect(coaches[0].id)}
-                style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '6px 12px', borderRadius: 8, background: 'rgba(99,102,241,0.1)', color: '#818cf8', border: '1px solid rgba(99,102,241,0.28)', fontSize: 12, fontWeight: 700, cursor: 'pointer', transition: 'all 0.15s' }}
-                onMouseEnter={e => { e.currentTarget.style.background = 'rgba(99,102,241,0.18)'; }}
-                onMouseLeave={e => { e.currentTarget.style.background = 'rgba(99,102,241,0.1)'; }}
-                title="Switch to coach dashboard view"
-              >
-                <Crown style={{ width: 12, height: 12 }} /> Coach View
-              </button>
-            )}
-            {isCoach && (
-              <button
-                onClick={() => handleRoleSelect('gym_owner')}
-                style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '6px 12px', borderRadius: 8, background: T.cyanDim, color: T.cyan, border: `1px solid ${T.cyanBrd}`, fontSize: 12, fontWeight: 700, cursor: 'pointer', transition: 'all 0.15s' }}
-                onMouseEnter={e => { e.currentTarget.style.background = 'rgba(77,127,255,0.2)'; }}
-                onMouseLeave={e => { e.currentTarget.style.background = T.cyanDim; }}
-              >
-                <LayoutDashboard style={{ width: 12, height: 12 }} /> Owner View
               </button>
             )}
             <button onClick={() => openModal('qrScanner')} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '6px 12px', borderRadius: 8, background: 'rgba(255,255,255,0.04)', color: T.t2, border: `1px solid ${T.brd}`, fontSize: 12, fontWeight: 600, cursor: 'pointer', transition: 'all 0.15s' }}
