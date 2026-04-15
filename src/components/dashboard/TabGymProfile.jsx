@@ -8,7 +8,7 @@ import {
   ChevronRight, ChevronDown, ChevronUp, BadgeCheck, MapPin,
   Star, Users, Tag, ExternalLink, Zap, MessageSquare,
   PenSquare, BookOpen, TrendingUp, CheckCircle2, AlertTriangle,
-  BarChart2, Rocket, Home, Calendar, User as UserIcon,
+  BarChart2, Rocket, Home, Calendar, User as UserIcon, Trophy,
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../../utils';
@@ -321,126 +321,277 @@ function PhoneMockup({ gym }) {
     </div>
   );
 
-  // Faithful Gym Community screen — matches actual GymCommunity page
+  // Faithful Gym Community screen — identical to the real GymCommunity page
   const CommunityScreen = () => {
     const [commTab, setCommTab] = useState('home');
+
+    const TABS = [
+      { id: 'home', label: 'Home', icon: '🏠' },
+      { id: 'activity', label: 'Activity', icon: '⚡' },
+      { id: 'challenges', label: 'Challenges', icon: '🏆' },
+      { id: 'classes', label: 'Classes', icon: '🏋️' },
+    ];
+
     return (
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflowY: 'auto', background: 'linear-gradient(to bottom right,#02040a,#0d2360,#02040a)' }}>
-        {/* Hero */}
-        <div style={{ position: 'relative', height: 80, overflow: 'hidden', flexShrink: 0 }}>
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', background: 'linear-gradient(to bottom right,#02040a,#0d2360,#02040a)' }}>
+
+        {/* ── Hero — identical to real page ── */}
+        <div style={{ position: 'relative', overflow: 'hidden', flexShrink: 0, minHeight: 90 }}>
+          {/* Background image */}
           {gym?.image_url
-            ? <img src={gym.image_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: 0.55 }} />
-            : <div style={{ width: '100%', height: '100%', background: 'linear-gradient(135deg,#1e3a8a,#0f172a)' }} />}
-          <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom,rgba(2,4,10,0.3),rgba(2,4,10,0.0) 40%,rgba(2,4,10,0.75))' }} />
-          <div style={{ position: 'absolute', bottom: 6, left: 8, display: 'flex', alignItems: 'center', gap: 5 }}>
-            <div style={{ width: 22, height: 22, borderRadius: '50%', background: '#0a0f1e', border: `1.5px solid ${T.cyan}`, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', flexShrink: 0 }}>
-              {gym?.logo_url ? <img src={gym.logo_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <Dumbbell style={{ width: 9, height: 9, color: T.cyan }} />}
-            </div>
-            <div>
-              <div style={{ fontSize: 9, fontWeight: 900, color: '#fff', lineHeight: 1 }}>{gymName}</div>
-              <div style={{ fontSize: 7, color: 'rgba(255,255,255,0.5)' }}>{gymCity}</div>
+            ? <img src={gym.image_url} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center', opacity: 0.55 }} />
+            : <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(135deg, #0f172a 0%, #1e3a5f 100%)' }} />
+          }
+          {/* Gradients matching real page exactly */}
+          <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, rgba(2,4,10,0.3) 0%, rgba(2,4,10,0.0) 40%, rgba(2,4,10,0.75) 100%)' }} />
+          <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to right, rgba(2,4,10,0.5) 0%, transparent 60%)' }} />
+
+          {/* Gym name + city row */}
+          <div style={{ position: 'relative', zIndex: 10, padding: '10px 10px 0' }}>
+            <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 4 }}>
+              <div style={{ flex: 1, marginRight: 8 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginBottom: 2 }}>
+                  <span style={{ fontSize: 12, fontWeight: 900, color: '#fff', letterSpacing: '-0.02em', lineHeight: 1.1 }}>{gymName}</span>
+                  {gym?.verified && <BadgeCheck style={{ width: 10, height: 10, color: '#60a5fa', flexShrink: 0 }} />}
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <span style={{ fontSize: 7.5, color: 'rgba(255,255,255,0.6)', display: 'flex', alignItems: 'center', gap: 2 }}>
+                    <MapPin style={{ width: 7, height: 7 }} />{gymCity}
+                  </span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 3, padding: '1px 5px', borderRadius: 99, background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.15)' }}>
+                    <Users style={{ width: 7, height: 7, color: 'rgba(255,255,255,0.7)' }} />
+                    <span style={{ fontSize: 7, fontWeight: 700, color: '#fff' }}>{memberCount} members</span>
+                  </div>
+                </div>
+              </div>
+              {/* Logo */}
+              <div style={{ width: 28, height: 28, borderRadius: '50%', background: '#0a0f1e', border: `1.5px solid ${T.cyan}`, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', flexShrink: 0, boxShadow: `0 0 8px ${T.cyan}44` }}>
+                {gym?.logo_url
+                  ? <img src={gym.logo_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  : <Dumbbell style={{ width: 11, height: 11, color: T.cyan }} />}
+              </div>
             </div>
           </div>
-          {gym?.claim_status === 'claimed' && (
-            <div style={{ position: 'absolute', top: 6, right: 8, display: 'flex', alignItems: 'center', gap: 2, background: T.greenDim, border: `1px solid ${T.greenBrd}`, borderRadius: 99, padding: '2px 5px' }}>
-              <BadgeCheck style={{ width: 6, height: 6, color: T.green }} />
-              <span style={{ fontSize: 6, fontWeight: 700, color: T.green }}>Official</span>
-            </div>
-          )}
+
+          {/* Tab bar — exact same tabs as real page */}
+          <div style={{ position: 'relative', zIndex: 10, borderBottom: '1px solid rgba(255,255,255,0.07)', overflowX: 'auto', scrollbarWidth: 'none', display: 'flex', padding: '4px 6px 0', gap: 4 }}>
+            {TABS.map(t => {
+              const active = commTab === t.id;
+              return (
+                <button key={t.id} onClick={() => setCommTab(t.id)} style={{
+                  flexShrink: 0, display: 'flex', alignItems: 'center', gap: 3,
+                  padding: '4px 7px', borderRadius: 99, fontSize: 7.5, fontWeight: 700,
+                  background: active ? 'linear-gradient(to bottom, #3b82f6, #2563eb, #1d4ed8)' : 'rgba(15,23,42,0.8)',
+                  color: active ? '#fff' : 'rgba(148,163,184,0.7)',
+                  border: active ? '1px solid transparent' : '1px solid rgba(100,116,139,0.4)',
+                  borderBottom: active ? '2px solid #1a3fa8' : '2px solid rgba(0,0,0,0.5)',
+                  boxShadow: active ? '0 2px 0 rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.2), 0 4px 12px rgba(37,99,235,0.35)' : '0 2px 0 rgba(0,0,0,0.35)',
+                  cursor: 'pointer', marginBottom: 4,
+                }}>
+                  {t.label}
+                </button>
+              );
+            })}
+          </div>
         </div>
-        {/* Tab bar */}
-        <div style={{ display: 'flex', borderBottom: '1px solid rgba(255,255,255,0.07)', background: 'rgba(2,4,10,0.9)', flexShrink: 0 }}>
-          {['home','activity','challenges','classes'].map(t => (
-            <button key={t} onClick={() => setCommTab(t)} style={{ flex: 1, padding: '5px 2px', background: 'none', border: 'none', borderBottom: commTab === t ? `2px solid ${T.cyan}` : '2px solid transparent', fontSize: 6.5, fontWeight: 700, color: commTab === t ? T.cyan : 'rgba(255,255,255,0.4)', cursor: 'pointer', textTransform: 'capitalize' }}>
-              {t}
-            </button>
-          ))}
-        </div>
-        {/* Tab content */}
-        <div style={{ flex: 1, overflowY: 'auto', padding: '8px' }}>
+
+        {/* ── Tab content ── */}
+        <div style={{ flex: 1, overflowY: 'auto', padding: '8px', display: 'flex', flexDirection: 'column', gap: 6 }}>
+
+          {/* HOME tab */}
           {commTab === 'home' && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-              {/* Active now */}
-              <div style={{ padding: '6px 8px', background: 'rgba(255,255,255,0.04)', borderRadius: 8, border: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', gap: 6 }}>
-                <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#22c55e', flexShrink: 0 }} />
-                <span style={{ fontSize: 8, fontWeight: 700, color: '#fff' }}>5 Active Now</span>
-                {['AT','PS','JR','MK'].map((i, idx) => (
-                  <div key={idx} style={{ width: 16, height: 16, borderRadius: '50%', background: ['#3b82f6','#8b5cf6','#10b981','#f59e0b'][idx], display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 5.5, fontWeight: 800, color: '#fff', marginLeft: idx > 0 ? -4 : 0 }}>{i}</div>
-                ))}
+            <>
+              {/* Busy times bar chart mock */}
+              <div style={{ padding: '8px 9px', background: 'rgba(255,255,255,0.04)', borderRadius: 9, border: '1px solid rgba(255,255,255,0.06)' }}>
+                <div style={{ fontSize: 8, fontWeight: 800, color: 'rgba(255,255,255,0.5)', marginBottom: 6, display: 'flex', alignItems: 'center', gap: 4 }}>
+                  <span style={{ width: 5, height: 5, borderRadius: '50%', background: '#22c55e', display: 'inline-block' }} />
+                  Gym Traffic · Live
+                </div>
+                <div style={{ display: 'flex', alignItems: 'flex-end', gap: 3, height: 28 }}>
+                  {[20, 35, 50, 75, 90, 100, 85, 60, 45, 30, 20, 15].map((h, i) => (
+                    <div key={i} style={{ flex: 1, height: `${h}%`, borderRadius: 3, background: i === 5 ? '#3b82f6' : 'rgba(59,130,246,0.3)', transition: 'height 0.3s' }} />
+                  ))}
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 3 }}>
+                  <span style={{ fontSize: 6, color: 'rgba(255,255,255,0.25)' }}>6am</span>
+                  <span style={{ fontSize: 6, color: 'rgba(255,255,255,0.25)' }}>12pm</span>
+                  <span style={{ fontSize: 6, color: 'rgba(255,255,255,0.25)' }}>6pm</span>
+                </div>
               </div>
+
+              {/* Member spotlight */}
+              <div style={{ padding: '8px 9px', background: 'rgba(251,191,36,0.06)', borderRadius: 9, border: '1px solid rgba(251,191,36,0.2)' }}>
+                <div style={{ fontSize: 7.5, fontWeight: 800, color: '#fbbf24', marginBottom: 5 }}>⭐ Member Spotlight</div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+                  <div style={{ width: 26, height: 26, borderRadius: '50%', background: '#1d4ed8', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 8, fontWeight: 900, color: '#fff', border: '2px solid #fbbf24' }}>JR</div>
+                  <div>
+                    <div style={{ fontSize: 8.5, fontWeight: 700, color: '#fff' }}>Jamie R.</div>
+                    <div style={{ fontSize: 7, color: 'rgba(255,255,255,0.45)' }}>🔥 30-day streak · Most active this month</div>
+                  </div>
+                </div>
+              </div>
+
               {/* Community posts */}
               {posts.map(p => (
-                <div key={p.id} style={{ padding: '7px 8px', background: 'rgba(255,255,255,0.04)', borderRadius: 9, border: '1px solid rgba(255,255,255,0.06)' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginBottom: 4 }}>
-                    <div style={{ width: 16, height: 16, borderRadius: '50%', background: p.color, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 6, fontWeight: 800, color: '#fff' }}>{p.initials}</div>
-                    <span style={{ fontSize: 8, fontWeight: 700, color: '#fff', flex: 1 }}>{p.name}</span>
-                    <span style={{ fontSize: 6.5, color: 'rgba(255,255,255,0.3)' }}>{p.time}</span>
+                <div key={p.id} style={{ padding: '7px 8px', background: 'linear-gradient(135deg, rgba(30,35,60,0.82), rgba(8,10,20,0.96))', borderRadius: 9, border: '1px solid rgba(255,255,255,0.07)' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginBottom: 4 }}>
+                    <div style={{ width: 18, height: 18, borderRadius: '50%', background: p.color, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 6.5, fontWeight: 800, color: '#fff', flexShrink: 0 }}>{p.initials}</div>
+                    <span style={{ fontSize: 8.5, fontWeight: 700, color: '#fff', flex: 1 }}>{p.name}</span>
+                    <span style={{ fontSize: 7, color: 'rgba(255,255,255,0.3)' }}>{p.time}</span>
                   </div>
-                  <p style={{ fontSize: 7.5, color: 'rgba(226,232,240,0.75)', margin: 0, lineHeight: 1.4 }}>{p.text}</p>
-                  <div style={{ display: 'flex', gap: 8, marginTop: 4 }}>
-                    <button onClick={() => setLiked(l => ({ ...l, [p.id]: !l[p.id] }))} style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontSize: 7, color: liked[p.id] ? '#f472b6' : 'rgba(255,255,255,0.3)' }}>♡ {p.likes}</button>
+                  <p style={{ fontSize: 8, color: 'rgba(226,232,240,0.8)', margin: 0, lineHeight: 1.4 }}>{p.text}</p>
+                  <div style={{ display: 'flex', gap: 10, marginTop: 5 }}>
+                    <button onClick={() => setLiked(l => ({ ...l, [p.id]: !l[p.id] }))}
+                      style={{ display: 'flex', alignItems: 'center', gap: 2, background: 'none', border: 'none', padding: 0, cursor: 'pointer', color: liked[p.id] ? '#f472b6' : 'rgba(255,255,255,0.3)', fontSize: 7 }}>
+                      {liked[p.id] ? '♥' : '♡'} {p.likes + (liked[p.id] ? 1 : 0)}
+                    </button>
                     <span style={{ fontSize: 7, color: 'rgba(255,255,255,0.3)' }}>💬 {p.comments}</span>
                   </div>
                 </div>
               ))}
-            </div>
+            </>
           )}
+
+          {/* ACTIVITY tab */}
           {commTab === 'activity' && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
-              {[
-                { text: `Alex T. checked in at ${gymName}`, time: '10m', icon: '📍' },
-                { text: 'Priya S. hit a new squat PR — 100kg! 🏆', time: '1h', icon: '🏆' },
-                { text: 'Jamie R. joined the 30-Day Challenge', time: '2h', icon: '🎯' },
-                { text: 'Marcus K. logged a workout', time: '3h', icon: '💪' },
-              ].map((a, i) => (
-                <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 6, padding: '6px 8px', background: 'rgba(255,255,255,0.03)', borderRadius: 8, border: '1px solid rgba(255,255,255,0.05)' }}>
-                  <span style={{ fontSize: 12 }}>{a.icon}</span>
-                  <div style={{ flex: 1 }}>
-                    <p style={{ fontSize: 7.5, color: 'rgba(226,232,240,0.8)', margin: 0, lineHeight: 1.4 }}>{a.text}</p>
-                    <span style={{ fontSize: 6.5, color: 'rgba(255,255,255,0.3)' }}>{a.time} ago</span>
-                  </div>
+            <>
+              {/* Active Now strip */}
+              <div style={{ padding: '7px 9px', background: 'linear-gradient(135deg, rgba(30,35,60,0.82), rgba(8,10,20,0.96))', borderRadius: 9, border: '1px solid rgba(255,255,255,0.07)', display: 'flex', alignItems: 'center', gap: 8 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 5, flexShrink: 0 }}>
+                  <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#22c55e', display: 'inline-block', boxShadow: '0 0 5px rgba(34,197,94,0.8)' }} />
+                  <span style={{ fontSize: 8, fontWeight: 800, color: 'rgba(255,255,255,0.85)', whiteSpace: 'nowrap' }}>5 Active Now</span>
                 </div>
-              ))}
-            </div>
+                <div style={{ display: 'flex' }}>
+                  {['AT','PS','JR','MK','SC'].map((ini, i) => (
+                    <div key={i} style={{ width: 20, height: 20, borderRadius: '50%', background: ['#1a2a4a','#2a1a3a','#1a2e20','#2e1a1a','#1a2535'][i], border: '2px solid rgba(6,8,18,0.9)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 6, fontWeight: 800, color: ['#93c5fd','#c4b5fd','#86efac','#fca5a5','#7dd3fc'][i], marginLeft: i > 0 ? -5 : 0 }}>{ini}</div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Gym Activity Feed */}
+              <div style={{ background: 'linear-gradient(135deg, rgba(30,35,60,0.82), rgba(8,10,20,0.96))', borderRadius: 9, border: '1px solid rgba(255,255,255,0.07)', overflow: 'hidden' }}>
+                <div style={{ padding: '7px 9px', borderBottom: '1px solid rgba(255,255,255,0.055)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <span style={{ fontSize: 8.5, fontWeight: 900, color: '#fff' }}>Gym Activity Feed</span>
+                  <span style={{ fontSize: 7, color: 'rgba(255,255,255,0.28)' }}>4 activities</span>
+                </div>
+                {[
+                  { ini: 'AT', color: '#1a2a4a', textColor: '#93c5fd', name: 'Alex T.', verb: 'checked in', badge: '📍', badgeColor: '#60a5fa', time: '10m', detail: 'At the gym' },
+                  { ini: 'PS', color: '#2a1a3a', textColor: '#c4b5fd', name: 'Priya S.', verb: 'hit a new PR 🔥', badge: '🏆', badgeColor: '#eab308', time: '1h', detail: 'Squat · 100 kg' },
+                  { ini: 'JR', color: '#1a2e20', textColor: '#86efac', name: 'Jamie R.', verb: 'joined a challenge 🏆', badge: '🎯', badgeColor: '#f97316', time: '2h', detail: '30-Day Consistency' },
+                  { ini: 'MK', color: '#2e1a1a', textColor: '#fca5a5', name: 'Marcus K.', verb: 'logged a workout', badge: '🏋️', badgeColor: '#a78bfa', time: '3h', detail: 'Deadlift · 45 min' },
+                ].map((a, i) => (
+                  <div key={i} style={{ display: 'flex', gap: 7, padding: '7px 9px', borderBottom: i < 3 ? '1px solid rgba(255,255,255,0.045)' : 'none' }}>
+                    <div style={{ position: 'relative', flexShrink: 0 }}>
+                      <div style={{ width: 24, height: 24, borderRadius: '50%', background: a.color, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 7, fontWeight: 800, color: a.textColor, border: '1.5px solid rgba(255,255,255,0.08)' }}>{a.ini}</div>
+                      <div style={{ position: 'absolute', bottom: -1, right: -1, width: 10, height: 10, borderRadius: '50%', background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 6 }}>{a.badge}</div>
+                    </div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontSize: 8, color: 'rgba(226,232,240,0.9)', lineHeight: 1.35 }}>
+                        <span style={{ fontWeight: 800, color: '#fff' }}>{a.name}</span>{' '}
+                        <span style={{ color: 'rgba(226,232,240,0.7)' }}>{a.verb}</span>
+                      </div>
+                      <span style={{ fontSize: 7, color: 'rgba(255,255,255,0.35)', fontWeight: 600 }}>{a.detail}</span>
+                    </div>
+                    <span style={{ fontSize: 7, color: 'rgba(148,163,184,0.45)', fontWeight: 600, flexShrink: 0 }}>{a.time}</span>
+                  </div>
+                ))}
+              </div>
+
+              {/* Leaderboard teaser */}
+              <div style={{ padding: '9px 10px', background: 'linear-gradient(135deg, rgba(30,35,60,0.82), rgba(8,10,20,0.96))', borderRadius: 9, border: '1px solid rgba(255,215,0,0.18)', display: 'flex', alignItems: 'center', gap: 8 }}>
+                <div style={{ width: 28, height: 28, borderRadius: 9, background: 'rgba(255,215,0,0.1)', border: '1px solid rgba(255,215,0,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <Trophy style={{ width: 12, height: 12, color: '#FFD700' }} />
+                </div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: 8.5, fontWeight: 900, color: '#fff' }}>Community Leaderboard</div>
+                  <div style={{ fontSize: 7, color: 'rgba(255,255,255,0.35)' }}>12 athletes ranked this week</div>
+                </div>
+                <ChevronRight style={{ width: 10, height: 10, color: 'rgba(255,255,255,0.4)', flexShrink: 0 }} />
+              </div>
+            </>
           )}
+
+          {/* CHALLENGES tab */}
           {commTab === 'challenges' && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+            <>
               {[
-                { title: '30-Day Consistency', reward: '£10 gift card', progress: 18, target: 30, color: '#f59e0b' },
-                { title: 'Squat Challenge', reward: 'Free shake', progress: 3, target: 5, color: '#8b5cf6' },
+                { title: '30-Day Consistency', desc: 'Log 30 workouts this month', reward: '£10 gift card 🎁', progress: 18, target: 30, color: '#f59e0b', joined: true },
+                { title: 'Squat Challenge', desc: 'Hit 5 squat PRs this month', reward: 'Free protein shake 🥤', progress: 3, target: 5, color: '#8b5cf6', joined: false },
+                { title: 'Weekend Warrior', desc: 'Train on 5 weekends', reward: '2× Streak Freezes ❄️', progress: 1, target: 5, color: '#3b82f6', joined: false },
               ].map((c, i) => (
-                <div key={i} style={{ padding: '8px 9px', background: 'rgba(255,255,255,0.04)', borderRadius: 9, border: '1px solid rgba(255,255,255,0.07)' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-                    <span style={{ fontSize: 8.5, fontWeight: 700, color: '#fff' }}>{c.title}</span>
-                    <span style={{ fontSize: 7, color: c.color, fontWeight: 700 }}>🏆 {c.reward}</span>
+                <div key={i} style={{ padding: '9px 10px', background: 'linear-gradient(135deg, rgba(30,35,60,0.82), rgba(8,10,20,0.96))', borderRadius: 9, border: `1px solid ${c.joined ? 'rgba(52,211,153,0.25)' : 'rgba(255,255,255,0.07)'}` }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 4 }}>
+                    <div>
+                      <div style={{ fontSize: 9, fontWeight: 800, color: '#fff', marginBottom: 1 }}>{c.title}</div>
+                      <div style={{ fontSize: 7.5, color: 'rgba(255,255,255,0.4)' }}>{c.desc}</div>
+                    </div>
+                    {c.joined
+                      ? <span style={{ fontSize: 7, fontWeight: 800, color: '#34d399', background: 'rgba(52,211,153,0.12)', border: '1px solid rgba(52,211,153,0.3)', borderRadius: 99, padding: '2px 6px' }}>✓ Joined</span>
+                      : <button style={{ fontSize: 7, fontWeight: 800, color: '#fff', background: 'linear-gradient(to bottom,#3b82f6,#1d4ed8)', border: 'none', borderBottom: '2px solid #1a3fa8', borderRadius: 99, padding: '3px 8px', cursor: 'pointer' }}>Join</button>
+                    }
                   </div>
                   <div style={{ height: 4, borderRadius: 99, background: 'rgba(255,255,255,0.08)', marginBottom: 3 }}>
                     <div style={{ height: '100%', borderRadius: 99, background: c.color, width: `${(c.progress / c.target) * 100}%` }} />
                   </div>
-                  <span style={{ fontSize: 7, color: 'rgba(255,255,255,0.4)' }}>{c.progress}/{c.target} complete</span>
-                </div>
-              ))}
-            </div>
-          )}
-          {commTab === 'classes' && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
-              {[
-                { name: 'Morning HIIT', time: '06:30', coach: 'Sam T.', color: '#ef4444', spots: 3 },
-                { name: 'Strength & Power', time: '09:00', coach: 'Alex R.', color: '#8b5cf6', spots: 8 },
-                { name: 'Evening CrossFit', time: '18:00', coach: 'Sam T.', color: '#f59e0b', spots: 2 },
-              ].map((c, i) => (
-                <div key={i} style={{ padding: '7px 8px', background: 'rgba(255,255,255,0.04)', borderRadius: 9, border: '1px solid rgba(255,255,255,0.07)', borderLeft: `2.5px solid ${c.color}` }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <div>
-                      <div style={{ fontSize: 8.5, fontWeight: 700, color: '#fff' }}>{c.name}</div>
-                      <div style={{ fontSize: 7, color: 'rgba(255,255,255,0.4)' }}>{c.time} · {c.coach}</div>
-                    </div>
-                    <button style={{ padding: '2px 7px', borderRadius: 5, background: 'rgba(59,130,246,0.15)', border: '1px solid rgba(59,130,246,0.3)', color: '#60a5fa', fontSize: 7, fontWeight: 700, cursor: 'pointer' }}>Book</button>
+                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                    <span style={{ fontSize: 7, color: 'rgba(255,255,255,0.4)' }}>{c.progress}/{c.target} complete</span>
+                    <span style={{ fontSize: 7, color: c.color, fontWeight: 700 }}>{c.reward}</span>
                   </div>
                 </div>
               ))}
-            </div>
+            </>
           )}
+
+          {/* CLASSES tab */}
+          {commTab === 'classes' && (
+            <>
+              {/* Day selector strip */}
+              <div style={{ display: 'flex', gap: 4, overflowX: 'auto', scrollbarWidth: 'none' }}>
+                {['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].map((d, i) => (
+                  <div key={d} style={{ flexShrink: 0, minWidth: 28, padding: '4px 2px', borderRadius: 8, textAlign: 'center', background: i === 2 ? 'linear-gradient(to bottom,#3b82f6,#1d4ed8)' : 'rgba(20,28,60,0.8)', border: i === 2 ? '1px solid transparent' : '1px solid rgba(255,255,255,0.09)', borderBottom: i === 2 ? '2px solid #1a3fa8' : '2px solid rgba(0,0,0,0.5)' }}>
+                    <div style={{ fontSize: 6, fontWeight: 700, color: i === 2 ? 'rgba(255,255,255,0.7)' : 'rgba(255,255,255,0.3)', textTransform: 'uppercase' }}>{d}</div>
+                    <div style={{ fontSize: 11, fontWeight: 900, color: i === 2 ? '#fff' : 'rgba(255,255,255,0.45)' }}>{15 + i}</div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Class cards — matching PremiumClassCard style */}
+              {[
+                { name: 'Morning HIIT', instructor: 'Sam T.', time: '06:30', emoji: '⚡', color: '#f87171', bg: 'rgba(239,68,68,0.12)', left: 3, cap: 12, img: 'https://images.unsplash.com/photo-1517963879433-6ad2171073a4?w=300&q=60' },
+                { name: 'Strength & Conditioning', instructor: 'Coach Dan', time: '10:00', emoji: '🏋️', color: '#818cf8', bg: 'rgba(99,102,241,0.12)', left: 8, cap: 8, img: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=300&q=60' },
+                { name: 'Evening CrossFit', instructor: 'Alex R.', time: '18:00', emoji: '⚡', color: '#f87171', bg: 'rgba(239,68,68,0.12)', left: 2, cap: 16, img: 'https://images.unsplash.com/photo-1517963879433-6ad2171073a4?w=300&q=60' },
+              ].map((c, i) => (
+                <div key={i} style={{ borderRadius: 12, overflow: 'hidden', background: 'linear-gradient(135deg, rgba(30,35,60,0.82), rgba(8,10,20,0.96))', border: '1px solid rgba(255,255,255,0.07)', borderBottom: '2px solid rgba(0,0,0,0.55)' }}>
+                  {/* Color accent bar */}
+                  <div style={{ height: 2, background: `linear-gradient(90deg,${c.color}cc,${c.color}44)` }} />
+                  {/* Image */}
+                  <div style={{ position: 'relative', height: 65, overflow: 'hidden' }}>
+                    <img src={c.img} alt={c.name} style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: 0.7 }} />
+                    <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, transparent 20%, rgba(8,10,22,0.97) 100%)' }} />
+                    <div style={{ position: 'absolute', top: 5, left: 7, display: 'flex', alignItems: 'center', gap: 3, fontSize: 7, fontWeight: 900, color: c.color, background: 'rgba(0,0,0,0.65)', border: `1px solid ${c.color}55`, borderRadius: 99, padding: '1px 6px' }}>
+                      <span style={{ fontSize: 9 }}>{c.emoji}</span> HIIT
+                    </div>
+                    {c.left <= 3 && <div style={{ position: 'absolute', top: 5, right: 7, fontSize: 7, fontWeight: 900, color: '#fbbf24', background: 'rgba(0,0,0,0.68)', border: '1px solid rgba(251,191,36,0.4)', borderRadius: 99, padding: '1px 6px' }}>🔥 {c.left} left</div>}
+                    <div style={{ position: 'absolute', bottom: 5, left: 8 }}>
+                      <div style={{ fontSize: 9, fontWeight: 900, color: '#fff' }}>{c.name}</div>
+                      <div style={{ fontSize: 7, color: 'rgba(255,255,255,0.6)' }}>with {c.instructor}</div>
+                    </div>
+                  </div>
+                  {/* Footer */}
+                  <div style={{ padding: '6px 8px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <div>
+                      <span style={{ fontSize: 8.5, fontWeight: 800, color: '#60a5fa' }}>{c.time}</span>
+                      <span style={{ fontSize: 7, color: 'rgba(255,255,255,0.35)', marginLeft: 5 }}>{c.left} spots left</span>
+                    </div>
+                    <button style={{ padding: '4px 10px', borderRadius: 8, background: 'linear-gradient(to bottom,#3b82f6,#1d4ed8)', border: 'none', borderBottom: '2px solid #1a3fa8', color: '#fff', fontSize: 7.5, fontWeight: 900, cursor: 'pointer' }}>
+                      Book Spot
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </>
+          )}
+
         </div>
       </div>
     );
