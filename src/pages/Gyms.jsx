@@ -359,7 +359,9 @@ export default function Gyms() {
               <div className="rounded-xl p-3 space-y-2 bg-slate-800/90 border border-slate-700/50 animate-pulse mb-4">
                 <div className="h-4 w-40 bg-slate-700/60 rounded-lg" />
                 <div className="space-y-2">
-                  {[...Array(3)].map((_, i) => <div key={i} className="rounded-xl bg-slate-700/50 border border-slate-600/40 overflow-hidden flex items-stretch"><div className="w-20 h-20 flex-shrink-0 bg-slate-600/60" /><div className="flex-1 p-3 flex flex-col justify-center gap-2"><div className="h-4 bg-slate-600/60 rounded w-3/4" /><div className="h-3 bg-slate-600/40 rounded w-1/2" /></div></div>)}
+                  <div className="rounded-xl bg-slate-700/50 border border-slate-600/40 overflow-hidden flex items-stretch"><div className="w-20 h-20 flex-shrink-0 bg-slate-600/60" /><div className="flex-1 p-3 flex flex-col justify-center gap-2"><div className="h-4 bg-slate-600/60 rounded w-3/4" /><div className="h-3 bg-slate-600/40 rounded w-1/2" /></div></div>
+                  <div className="rounded-xl bg-slate-700/50 border border-slate-600/40 overflow-hidden flex items-stretch"><div className="w-20 h-20 flex-shrink-0 bg-slate-600/60" /><div className="flex-1 p-3 flex flex-col justify-center gap-2"><div className="h-4 bg-slate-600/60 rounded w-3/4" /><div className="h-3 bg-slate-600/40 rounded w-1/2" /></div></div>
+                  <div className="rounded-xl bg-slate-700/50 border border-slate-600/40 overflow-hidden flex items-stretch"><div className="w-20 h-20 flex-shrink-0 bg-slate-600/60" /><div className="flex-1 p-3 flex flex-col justify-center gap-2"><div className="h-4 bg-slate-600/60 rounded w-3/4" /><div className="h-3 bg-slate-600/40 rounded w-1/2" /></div></div>
                 </div>
               </div>
             }

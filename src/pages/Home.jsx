@@ -755,26 +755,15 @@ export default function Home() {
         <div className="max-w-4xl mx-auto px-4 space-y-4 pb-4">
           <div className="rounded-2xl bg-slate-800/60 animate-pulse h-40" />
           <div className="flex gap-3 overflow-hidden">
-            {[...Array(5)].map((_, i) => (
-              <div key={i} className="flex flex-col items-center gap-1.5 flex-shrink-0">
-                <div className="w-14 h-14 rounded-full bg-slate-700/60 animate-pulse" />
-                <div className="w-10 h-2.5 rounded bg-slate-700/60 animate-pulse" />
-              </div>
-            ))}
+            <div className="flex flex-col items-center gap-1.5 flex-shrink-0"><div className="w-14 h-14 rounded-full bg-slate-700/60 animate-pulse" /><div className="w-10 h-2.5 rounded bg-slate-700/60 animate-pulse" /></div>
+            <div className="flex flex-col items-center gap-1.5 flex-shrink-0"><div className="w-14 h-14 rounded-full bg-slate-700/60 animate-pulse" /><div className="w-10 h-2.5 rounded bg-slate-700/60 animate-pulse" /></div>
+            <div className="flex flex-col items-center gap-1.5 flex-shrink-0"><div className="w-14 h-14 rounded-full bg-slate-700/60 animate-pulse" /><div className="w-10 h-2.5 rounded bg-slate-700/60 animate-pulse" /></div>
+            <div className="flex flex-col items-center gap-1.5 flex-shrink-0"><div className="w-14 h-14 rounded-full bg-slate-700/60 animate-pulse" /><div className="w-10 h-2.5 rounded bg-slate-700/60 animate-pulse" /></div>
+            <div className="flex flex-col items-center gap-1.5 flex-shrink-0"><div className="w-14 h-14 rounded-full bg-slate-700/60 animate-pulse" /><div className="w-10 h-2.5 rounded bg-slate-700/60 animate-pulse" /></div>
           </div>
-          {[...Array(3)].map((_, i) => (
-            <div key={i} className="rounded-2xl bg-slate-800/60 p-4 space-y-3 animate-pulse">
-              <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-full bg-slate-700/60" />
-                <div className="space-y-1.5 flex-1">
-                  <div className="h-3 rounded bg-slate-700/60 w-1/3" />
-                  <div className="h-2.5 rounded bg-slate-700/60 w-1/5" />
-                </div>
-              </div>
-              <div className="h-3 rounded bg-slate-700/60 w-5/6" />
-              <div className="h-3 rounded bg-slate-700/60 w-2/3" />
-            </div>
-          ))}
+          <div className="rounded-2xl bg-slate-800/60 p-4 space-y-3 animate-pulse"><div className="flex items-center gap-3"><div className="w-9 h-9 rounded-full bg-slate-700/60" /><div className="space-y-1.5 flex-1"><div className="h-3 rounded bg-slate-700/60 w-1/3" /><div className="h-2.5 rounded bg-slate-700/60 w-1/5" /></div></div><div className="h-3 rounded bg-slate-700/60 w-5/6" /><div className="h-3 rounded bg-slate-700/60 w-2/3" /></div>
+          <div className="rounded-2xl bg-slate-800/60 p-4 space-y-3 animate-pulse"><div className="flex items-center gap-3"><div className="w-9 h-9 rounded-full bg-slate-700/60" /><div className="space-y-1.5 flex-1"><div className="h-3 rounded bg-slate-700/60 w-1/3" /><div className="h-2.5 rounded bg-slate-700/60 w-1/5" /></div></div><div className="h-3 rounded bg-slate-700/60 w-5/6" /><div className="h-3 rounded bg-slate-700/60 w-2/3" /></div>
+          <div className="rounded-2xl bg-slate-800/60 p-4 space-y-3 animate-pulse"><div className="flex items-center gap-3"><div className="w-9 h-9 rounded-full bg-slate-700/60" /><div className="space-y-1.5 flex-1"><div className="h-3 rounded bg-slate-700/60 w-1/3" /><div className="h-2.5 rounded bg-slate-700/60 w-1/5" /></div></div><div className="h-3 rounded bg-slate-700/60 w-5/6" /><div className="h-3 rounded bg-slate-700/60 w-2/3" /></div>
         </div>
       </div>
     );
