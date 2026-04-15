@@ -218,7 +218,7 @@ function Tab({ label, icon: Icon, active, onClick }) {
 
 /* ─────────────────────────── mini phone mockup ─────────────────────── */
 function PhoneMockup({ gym }) {
-  const [activeScreen, setActiveScreen] = useState('feed');
+  const [activeScreen, setActiveScreen] = useState('community');
   const [liked, setLiked] = useState({});
 
   const gymName = gym?.name || 'Your Gym';
