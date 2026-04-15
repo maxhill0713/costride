@@ -1410,7 +1410,7 @@ export default function Home() {
         currentUser={currentUser}
         gymId={primaryGymIdForQuery}
         showDaysCelebration={showDaysCelebration}
-        weeklyWorkoutLogs={weeklyWorkoutLogs}
+        weeklyWorkoutLogs={weeklyWorkoutLogs.filter(Boolean)}
         todayDowAdjusted={todayDowAdjusted}
         setShowShareWorkout={setShowShareWorkout}
         setShowDaysCelebration={setShowDaysCelebration}
