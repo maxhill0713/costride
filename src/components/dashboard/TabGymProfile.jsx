@@ -218,7 +218,7 @@ function Tab({ label, icon: Icon, active, onClick }) {
 
 /* ─────────────────────────── mini phone mockup ─────────────────────── */
 function PhoneMockup({ gym }) {
-  const [activeScreen, setActiveScreen] = useState('feed');
+  const [activeScreen, setActiveScreen] = useState('home');
   const [liked, setLiked] = useState({});
 
   const gymName = gym?.name || 'Your Gym';
@@ -234,275 +234,127 @@ function PhoneMockup({ gym }) {
     { id: 3, name: 'Jamie R.', initials: 'JR', color: '#10b981', time: '6h ago', text: '30-day streak complete! Consistency is everything 💪', likes: 34, comments: 9 },
   ];
 
-  // Faithful Home screen — matches actual Home page layout
-  const HomeScreen = () => (
-    <div style={{ flex: 1, overflowY: 'auto', background: 'linear-gradient(to bottom right, #02040a, #0d2360, #02040a)' }}>
-      {/* CoStride header */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '8px 12px 4px', position: 'relative' }}>
-        <div style={{ fontSize: 7, color: 'rgba(255,255,255,0.4)', position: 'absolute', left: 12, display: 'flex', alignItems: 'center', gap: 3 }}>
-          <span style={{ fontSize: 18 }}>🔥</span>
-          <span style={{ fontSize: 11, fontWeight: 900, color: '#fff' }}>12</span>
+  const SCREEN = {
+    home: (
+      <div style={{ flex: 1, overflowY: 'auto', background: 'linear-gradient(to bottom, #02040a, #0d2360 50%, #02040a)' }}>
+        {/* Hero */}
+        <div style={{ position: 'relative', height: 100, overflow: 'hidden' }}>
+          {gym?.image_url
+            ? <img src={gym.image_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: 0.6 }} />
+            : <div style={{ width: '100%', height: '100%', background: 'linear-gradient(135deg,#1e3a8a,#0f172a)' }} />}
+          <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(2,4,10,0.9), transparent)' }} />
+          <div style={{ position: 'absolute', bottom: 8, left: 10, display: 'flex', alignItems: 'center', gap: 6 }}>
+            <div style={{ width: 28, height: 28, borderRadius: '50%', background: '#0a0f1e', border: `2px solid ${T.cyan}`, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', flexShrink: 0 }}>
+              {gym?.logo_url ? <img src={gym.logo_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <Dumbbell style={{ width: 11, height: 11, color: T.cyan }} />}
+            </div>
+            <div>
+              <div style={{ fontSize: 10, fontWeight: 800, color: '#fff', lineHeight: 1 }}>{gymName}</div>
+              <div style={{ fontSize: 8, color: 'rgba(255,255,255,0.5)' }}>{gymCity} · {gymType}</div>
+            </div>
+          </div>
+          {gym?.claim_status === 'claimed' && (
+            <div style={{ position: 'absolute', top: 8, right: 8, display: 'flex', alignItems: 'center', gap: 3, background: T.greenDim, border: `1px solid ${T.greenBrd}`, borderRadius: 99, padding: '2px 6px' }}>
+              <BadgeCheck style={{ width: 7, height: 7, color: T.green }} />
+              <span style={{ fontSize: 7, fontWeight: 700, color: T.green }}>Official</span>
+            </div>
+          )}
         </div>
-        <span style={{ fontSize: 13, fontWeight: 900, background: 'linear-gradient(to right,#3b82f6,#93c5fd)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>CoStride</span>
-        <Users style={{ width: 14, height: 14, color: 'rgba(255,255,255,0.5)', position: 'absolute', right: 12 }} />
-      </div>
 
-      {/* Weekly circles — identical to real app */}
-      <div style={{ display: 'flex', justifyContent: 'center', gap: 5, padding: '8px 10px 4px', alignItems: 'flex-end' }}>
-        {[
-          { done: true,  rest: false, today: false },
-          { done: true,  rest: false, today: false },
-          { done: false, rest: true,  today: false },
-          { done: true,  rest: false, today: true  },
-          { done: false, rest: false, today: false },
-          { done: false, rest: true,  today: false },
-          { done: false, rest: false, today: false },
-        ].map((d, i) => {
-          const size = d.today ? 32 : 26;
-          const bg = d.rest
-            ? (d.done ? 'linear-gradient(to bottom,#4ade80,#22c55e,#16a34a)' : 'linear-gradient(to bottom,#2d3748,#1a202c)')
-            : d.done ? 'linear-gradient(to bottom,#60a5fa,#3b82f6,#1d4ed8)'
-            : d.today ? 'linear-gradient(to bottom,#2d3748,#1a202c)'
-            : 'linear-gradient(to bottom,#2d3748,#0f172a)';
-          const wave = [0, 4, 7, 6, 3, -1, -3];
-          return (
-            <div key={i} style={{ position: 'relative', marginBottom: wave[i] }}>
-              {d.today && <div style={{ position: 'absolute', width: size + 8, height: size + 8, top: -4, left: -4, borderRadius: '50%', border: '2px solid rgba(148,163,184,0.4)', animation: 'todayRingPulse 2s ease-in-out infinite' }} />}
-              <div style={{ width: size, height: size, borderRadius: '50%', background: bg, display: 'flex', alignItems: 'center', justifyContent: 'center', border: d.done ? '1px solid rgba(147,197,253,0.4)' : '1px solid rgba(71,85,105,0.6)', boxShadow: d.done ? '0 3px 0 #1a3fa8' : '0 3px 0 #111827' }}>
-                {d.rest ? <span style={{ fontSize: 9 }}>🌿</span>
-                  : d.done ? <span style={{ fontSize: 8, color: '#fff', fontWeight: 900 }}>✓</span>
-                  : <div style={{ width: 8, height: 8, borderRadius: '50%', border: '1.5px solid rgba(100,116,139,0.5)' }} />}
+        {/* Stats strip */}
+        <div style={{ display: 'flex', borderBottom: `1px solid rgba(255,255,255,0.06)` }}>
+          {[
+            { label: 'Members', value: memberCount },
+            { label: 'Rating', value: rating },
+            { label: 'Price', value: price },
+          ].map((s, i) => (
+            <div key={i} style={{ flex: 1, padding: '7px 4px', textAlign: 'center', borderRight: i < 2 ? '1px solid rgba(255,255,255,0.06)' : 'none' }}>
+              <div style={{ fontSize: 11, fontWeight: 900, color: '#fff', letterSpacing: '-0.02em' }}>{s.value}</div>
+              <div style={{ fontSize: 7, color: 'rgba(255,255,255,0.3)', marginTop: 1 }}>{s.label}</div>
+            </div>
+          ))}
+        </div>
+
+        {/* Check in button */}
+        <div style={{ padding: '8px 10px', borderBottom: `1px solid rgba(255,255,255,0.06)` }}>
+          <button style={{ width: '100%', padding: '7px', borderRadius: 10, background: 'linear-gradient(135deg,#3b82f6,#2563eb)', border: 'none', color: '#fff', fontSize: 9, fontWeight: 800, cursor: 'pointer', letterSpacing: '0.05em' }}>
+            ✓ CHECK IN
+          </button>
+        </div>
+
+        {/* Feed */}
+        <div style={{ padding: '8px 10px 4px' }}>
+          <div style={{ fontSize: 9, fontWeight: 800, color: 'rgba(255,255,255,0.4)', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 8 }}>Community Feed</div>
+          {posts.map((p, i) => (
+            <div key={p.id} style={{ marginBottom: 8, padding: '8px 9px', background: 'rgba(255,255,255,0.04)', borderRadius: 10, border: '1px solid rgba(255,255,255,0.06)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginBottom: 5 }}>
+                <div style={{ width: 18, height: 18, borderRadius: '50%', background: p.color, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 7, fontWeight: 800, color: '#fff', flexShrink: 0 }}>{p.initials}</div>
+                <span style={{ fontSize: 9, fontWeight: 700, color: '#fff', flex: 1 }}>{p.name}</span>
+                <span style={{ fontSize: 7, color: 'rgba(255,255,255,0.3)' }}>{p.time}</span>
+              </div>
+              <p style={{ fontSize: 8.5, color: 'rgba(226,232,240,0.8)', margin: 0, lineHeight: 1.45 }}>{p.text}</p>
+              <div style={{ display: 'flex', gap: 10, marginTop: 5 }}>
+                <button onClick={() => setLiked(l => ({ ...l, [p.id]: !l[p.id] }))}
+                  style={{ display: 'flex', alignItems: 'center', gap: 3, background: 'none', border: 'none', cursor: 'pointer', color: liked[p.id] ? '#f472b6' : 'rgba(255,255,255,0.3)', fontSize: 7.5, fontWeight: 700, padding: 0 }}>
+                  ♡ {p.likes + (liked[p.id] ? 1 : 0)}
+                </button>
+                <span style={{ fontSize: 7.5, color: 'rgba(255,255,255,0.3)' }}>💬 {p.comments}</span>
               </div>
             </div>
-          );
-        })}
-      </div>
-
-      {/* Community card — identical to real app */}
-      <div style={{ margin: '6px 8px', borderRadius: 10, overflow: 'hidden', height: 70, position: 'relative', border: '1px solid rgba(255,255,255,0.07)', background: 'linear-gradient(135deg,rgba(30,35,60,0.82),rgba(8,10,20,0.96))' }}>
-        {gym?.image_url && <img src={gym.image_url} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', opacity: 0.6 }} />}
-        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.85), transparent)' }} />
-        <div style={{ position: 'absolute', bottom: 8, left: 10, right: 10, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
-          <div>
-            <div style={{ fontSize: 9, fontWeight: 700, color: '#fff' }}>Your Community</div>
-            <div style={{ fontSize: 7.5, color: 'rgba(255,255,255,0.6)', marginTop: 1 }}>{gymName}</div>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-            <div style={{ display: 'flex' }}>
-              {['AT','PS'].map((i, idx) => (
-                <div key={idx} style={{ width: 14, height: 14, borderRadius: '50%', background: ['#3b82f6','#8b5cf6'][idx], border: '1.5px solid #0d2360', marginLeft: idx > 0 ? -4 : 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 5, fontWeight: 800, color: '#fff' }}>{i}</div>
-              ))}
-            </div>
-            <span style={{ fontSize: 7, color: 'rgba(255,255,255,0.5)' }}>›</span>
-          </div>
+          ))}
         </div>
       </div>
-
-      {/* Social feed posts */}
-      <div style={{ padding: '4px 8px 8px' }}>
-        {posts.map((p) => (
-          <div key={p.id} style={{ marginBottom: 6, padding: '7px 8px', background: 'rgba(255,255,255,0.04)', borderRadius: 9, border: '1px solid rgba(255,255,255,0.06)' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginBottom: 4 }}>
-              <div style={{ width: 17, height: 17, borderRadius: '50%', background: p.color, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 6, fontWeight: 800, color: '#fff', flexShrink: 0 }}>{p.initials}</div>
-              <span style={{ fontSize: 8.5, fontWeight: 700, color: '#fff', flex: 1 }}>{p.name}</span>
-              <span style={{ fontSize: 7, color: 'rgba(255,255,255,0.3)' }}>{p.time}</span>
-            </div>
-            <p style={{ fontSize: 8, color: 'rgba(226,232,240,0.75)', margin: 0, lineHeight: 1.4 }}>{p.text}</p>
-            <div style={{ display: 'flex', gap: 10, marginTop: 4 }}>
-              <button onClick={() => setLiked(l => ({ ...l, [p.id]: !l[p.id] }))}
-                style={{ display: 'flex', alignItems: 'center', gap: 2, background: 'none', border: 'none', cursor: 'pointer', color: liked[p.id] ? '#f472b6' : 'rgba(255,255,255,0.3)', fontSize: 7, padding: 0 }}>
-                ♡ {p.likes + (liked[p.id] ? 1 : 0)}
-              </button>
-              <span style={{ fontSize: 7, color: 'rgba(255,255,255,0.3)' }}>💬 {p.comments}</span>
+    ),
+    members: (
+      <div style={{ flex: 1, overflowY: 'auto', background: '#02040a', padding: '10px' }}>
+        <div style={{ fontSize: 10, fontWeight: 800, color: '#fff', marginBottom: 10 }}>Members ({memberCount})</div>
+        {[
+          { initials: 'AT', name: 'Alex T.', color: '#3b82f6', streak: 14, pr: 'Deadlift 180kg' },
+          { initials: 'PS', name: 'Priya S.', color: '#8b5cf6', streak: 8, pr: 'Squat 100kg' },
+          { initials: 'JR', name: 'Jamie R.', color: '#10b981', streak: 30, pr: 'Bench 120kg' },
+          { initials: 'MK', name: 'Marcus K.', color: '#f59e0b', streak: 5, pr: 'OHP 80kg' },
+          { initials: 'SC', name: 'Sara C.', color: '#ef4444', streak: 22, pr: 'Row 140kg' },
+        ].map((m, i) => (
+          <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '7px 0', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+            <div style={{ width: 26, height: 26, borderRadius: '50%', background: m.color, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 8, fontWeight: 800, color: '#fff', flexShrink: 0 }}>{m.initials}</div>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontSize: 9, fontWeight: 700, color: '#fff' }}>{m.name}</div>
+              <div style={{ fontSize: 7.5, color: 'rgba(255,255,255,0.35)' }}>🔥 {m.streak}d streak · {m.pr}</div>
             </div>
           </div>
         ))}
       </div>
-    </div>
-  );
-
-  // Faithful Gym Community screen — matches actual GymCommunity page
-  const CommunityScreen = () => {
-    const [commTab, setCommTab] = useState('home');
-    return (
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflowY: 'auto', background: 'linear-gradient(to bottom right,#02040a,#0d2360,#02040a)' }}>
-        {/* Hero */}
-        <div style={{ position: 'relative', height: 80, overflow: 'hidden', flexShrink: 0 }}>
-          {gym?.image_url
-            ? <img src={gym.image_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: 0.55 }} />
-            : <div style={{ width: '100%', height: '100%', background: 'linear-gradient(135deg,#1e3a8a,#0f172a)' }} />}
-          <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom,rgba(2,4,10,0.3),rgba(2,4,10,0.0) 40%,rgba(2,4,10,0.75))' }} />
-          <div style={{ position: 'absolute', bottom: 6, left: 8, display: 'flex', alignItems: 'center', gap: 5 }}>
-            <div style={{ width: 22, height: 22, borderRadius: '50%', background: '#0a0f1e', border: `1.5px solid ${T.cyan}`, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', flexShrink: 0 }}>
-              {gym?.logo_url ? <img src={gym.logo_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <Dumbbell style={{ width: 9, height: 9, color: T.cyan }} />}
-            </div>
-            <div>
-              <div style={{ fontSize: 9, fontWeight: 900, color: '#fff', lineHeight: 1 }}>{gymName}</div>
-              <div style={{ fontSize: 7, color: 'rgba(255,255,255,0.5)' }}>{gymCity}</div>
+    ),
+    classes: (
+      <div style={{ flex: 1, overflowY: 'auto', background: '#02040a', padding: '10px' }}>
+        <div style={{ fontSize: 10, fontWeight: 800, color: '#fff', marginBottom: 10 }}>Today's Classes</div>
+        {[
+          { name: 'Morning HIIT', time: '06:30', coach: 'Sam T.', spots: 3, color: '#ef4444' },
+          { name: 'Strength & Power', time: '09:00', coach: 'Alex R.', spots: 8, color: '#8b5cf6' },
+          { name: 'Lunchtime Yoga', time: '12:30', coach: 'Lisa M.', spots: 12, color: '#10b981' },
+          { name: 'Evening CrossFit', time: '18:00', coach: 'Sam T.', spots: 2, color: '#f59e0b' },
+        ].map((c, i) => (
+          <div key={i} style={{ marginBottom: 7, padding: '8px 9px', background: 'rgba(255,255,255,0.04)', borderRadius: 10, border: '1px solid rgba(255,255,255,0.07)', borderLeft: `3px solid ${c.color}` }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+              <div>
+                <div style={{ fontSize: 9, fontWeight: 700, color: '#fff' }}>{c.name}</div>
+                <div style={{ fontSize: 7.5, color: 'rgba(255,255,255,0.4)', marginTop: 2 }}>{c.time} · {c.coach}</div>
+              </div>
+              <button style={{ padding: '3px 8px', borderRadius: 6, background: c.spots <= 3 ? 'rgba(239,68,68,0.15)' : 'rgba(59,130,246,0.15)', border: `1px solid ${c.spots <= 3 ? 'rgba(239,68,68,0.3)' : 'rgba(59,130,246,0.3)'}`, color: c.spots <= 3 ? '#f87171' : '#60a5fa', fontSize: 7.5, fontWeight: 700, cursor: 'pointer' }}>
+                {c.spots <= 3 ? `${c.spots} left` : 'Book'}
+              </button>
             </div>
           </div>
-          {gym?.claim_status === 'claimed' && (
-            <div style={{ position: 'absolute', top: 6, right: 8, display: 'flex', alignItems: 'center', gap: 2, background: T.greenDim, border: `1px solid ${T.greenBrd}`, borderRadius: 99, padding: '2px 5px' }}>
-              <BadgeCheck style={{ width: 6, height: 6, color: T.green }} />
-              <span style={{ fontSize: 6, fontWeight: 700, color: T.green }}>Official</span>
-            </div>
-          )}
-        </div>
-        {/* Tab bar */}
-        <div style={{ display: 'flex', borderBottom: '1px solid rgba(255,255,255,0.07)', background: 'rgba(2,4,10,0.9)', flexShrink: 0 }}>
-          {['home','activity','challenges','classes'].map(t => (
-            <button key={t} onClick={() => setCommTab(t)} style={{ flex: 1, padding: '5px 2px', background: 'none', border: 'none', borderBottom: commTab === t ? `2px solid ${T.cyan}` : '2px solid transparent', fontSize: 6.5, fontWeight: 700, color: commTab === t ? T.cyan : 'rgba(255,255,255,0.4)', cursor: 'pointer', textTransform: 'capitalize' }}>
-              {t}
-            </button>
-          ))}
-        </div>
-        {/* Tab content */}
-        <div style={{ flex: 1, overflowY: 'auto', padding: '8px' }}>
-          {commTab === 'home' && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-              {/* Active now */}
-              <div style={{ padding: '6px 8px', background: 'rgba(255,255,255,0.04)', borderRadius: 8, border: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', gap: 6 }}>
-                <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#22c55e', flexShrink: 0 }} />
-                <span style={{ fontSize: 8, fontWeight: 700, color: '#fff' }}>5 Active Now</span>
-                {['AT','PS','JR','MK'].map((i, idx) => (
-                  <div key={idx} style={{ width: 16, height: 16, borderRadius: '50%', background: ['#3b82f6','#8b5cf6','#10b981','#f59e0b'][idx], display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 5.5, fontWeight: 800, color: '#fff', marginLeft: idx > 0 ? -4 : 0 }}>{i}</div>
-                ))}
-              </div>
-              {/* Community posts */}
-              {posts.map(p => (
-                <div key={p.id} style={{ padding: '7px 8px', background: 'rgba(255,255,255,0.04)', borderRadius: 9, border: '1px solid rgba(255,255,255,0.06)' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginBottom: 4 }}>
-                    <div style={{ width: 16, height: 16, borderRadius: '50%', background: p.color, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 6, fontWeight: 800, color: '#fff' }}>{p.initials}</div>
-                    <span style={{ fontSize: 8, fontWeight: 700, color: '#fff', flex: 1 }}>{p.name}</span>
-                    <span style={{ fontSize: 6.5, color: 'rgba(255,255,255,0.3)' }}>{p.time}</span>
-                  </div>
-                  <p style={{ fontSize: 7.5, color: 'rgba(226,232,240,0.75)', margin: 0, lineHeight: 1.4 }}>{p.text}</p>
-                  <div style={{ display: 'flex', gap: 8, marginTop: 4 }}>
-                    <button onClick={() => setLiked(l => ({ ...l, [p.id]: !l[p.id] }))} style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontSize: 7, color: liked[p.id] ? '#f472b6' : 'rgba(255,255,255,0.3)' }}>♡ {p.likes}</button>
-                    <span style={{ fontSize: 7, color: 'rgba(255,255,255,0.3)' }}>💬 {p.comments}</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-          {commTab === 'activity' && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
-              {[
-                { text: `Alex T. checked in at ${gymName}`, time: '10m', icon: '📍' },
-                { text: 'Priya S. hit a new squat PR — 100kg! 🏆', time: '1h', icon: '🏆' },
-                { text: 'Jamie R. joined the 30-Day Challenge', time: '2h', icon: '🎯' },
-                { text: 'Marcus K. logged a workout', time: '3h', icon: '💪' },
-              ].map((a, i) => (
-                <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 6, padding: '6px 8px', background: 'rgba(255,255,255,0.03)', borderRadius: 8, border: '1px solid rgba(255,255,255,0.05)' }}>
-                  <span style={{ fontSize: 12 }}>{a.icon}</span>
-                  <div style={{ flex: 1 }}>
-                    <p style={{ fontSize: 7.5, color: 'rgba(226,232,240,0.8)', margin: 0, lineHeight: 1.4 }}>{a.text}</p>
-                    <span style={{ fontSize: 6.5, color: 'rgba(255,255,255,0.3)' }}>{a.time} ago</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-          {commTab === 'challenges' && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-              {[
-                { title: '30-Day Consistency', reward: '£10 gift card', progress: 18, target: 30, color: '#f59e0b' },
-                { title: 'Squat Challenge', reward: 'Free shake', progress: 3, target: 5, color: '#8b5cf6' },
-              ].map((c, i) => (
-                <div key={i} style={{ padding: '8px 9px', background: 'rgba(255,255,255,0.04)', borderRadius: 9, border: '1px solid rgba(255,255,255,0.07)' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-                    <span style={{ fontSize: 8.5, fontWeight: 700, color: '#fff' }}>{c.title}</span>
-                    <span style={{ fontSize: 7, color: c.color, fontWeight: 700 }}>🏆 {c.reward}</span>
-                  </div>
-                  <div style={{ height: 4, borderRadius: 99, background: 'rgba(255,255,255,0.08)', marginBottom: 3 }}>
-                    <div style={{ height: '100%', borderRadius: 99, background: c.color, width: `${(c.progress / c.target) * 100}%` }} />
-                  </div>
-                  <span style={{ fontSize: 7, color: 'rgba(255,255,255,0.4)' }}>{c.progress}/{c.target} complete</span>
-                </div>
-              ))}
-            </div>
-          )}
-          {commTab === 'classes' && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
-              {[
-                { name: 'Morning HIIT', time: '06:30', coach: 'Sam T.', color: '#ef4444', spots: 3 },
-                { name: 'Strength & Power', time: '09:00', coach: 'Alex R.', color: '#8b5cf6', spots: 8 },
-                { name: 'Evening CrossFit', time: '18:00', coach: 'Sam T.', color: '#f59e0b', spots: 2 },
-              ].map((c, i) => (
-                <div key={i} style={{ padding: '7px 8px', background: 'rgba(255,255,255,0.04)', borderRadius: 9, border: '1px solid rgba(255,255,255,0.07)', borderLeft: `2.5px solid ${c.color}` }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <div>
-                      <div style={{ fontSize: 8.5, fontWeight: 700, color: '#fff' }}>{c.name}</div>
-                      <div style={{ fontSize: 7, color: 'rgba(255,255,255,0.4)' }}>{c.time} · {c.coach}</div>
-                    </div>
-                    <button style={{ padding: '2px 7px', borderRadius: 5, background: 'rgba(59,130,246,0.15)', border: '1px solid rgba(59,130,246,0.3)', color: '#60a5fa', fontSize: 7, fontWeight: 700, cursor: 'pointer' }}>Book</button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
+        ))}
       </div>
-    );
+    ),
   };
 
-  // Faithful Gyms screen — matches actual Gyms page discover tab
-  const GymsScreen = () => (
-    <div style={{ flex: 1, overflowY: 'auto', background: 'linear-gradient(to bottom right,#02040a,#0d2360,#02040a)', padding: '8px' }}>
-      <div style={{ fontSize: 11, fontWeight: 900, color: '#fff', marginBottom: 8, letterSpacing: '-0.02em' }}>Discover Gyms</div>
-      {/* My gym */}
-      <div style={{ marginBottom: 8, borderRadius: 10, overflow: 'hidden', height: 60, position: 'relative', border: '1px solid rgba(77,127,255,0.4)' }}>
-        {gym?.image_url && <img src={gym.image_url} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', opacity: 0.5 }} />}
-        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top,rgba(0,0,0,0.9),transparent)' }} />
-        <div style={{ position: 'absolute', top: 5, left: 8, display: 'flex', alignItems: 'center', gap: 4 }}>
-          <div style={{ fontSize: 7, fontWeight: 700, color: T.cyan, background: T.cyanDim, border: `1px solid ${T.cyanBrd}`, borderRadius: 99, padding: '1px 5px' }}>YOUR GYM</div>
-        </div>
-        <div style={{ position: 'absolute', bottom: 6, left: 8, right: 8, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
-          <div>
-            <div style={{ fontSize: 9, fontWeight: 800, color: '#fff' }}>{gymName}</div>
-            <div style={{ fontSize: 7, color: 'rgba(255,255,255,0.5)', display: 'flex', alignItems: 'center', gap: 2 }}>
-              <MapPin style={{ width: 6, height: 6 }} />{gymCity}
-            </div>
-          </div>
-          <div style={{ display: 'flex', gap: 1 }}>
-            {[1,2,3,4,5].map(s => <span key={s} style={{ fontSize: 7, color: '#f59e0b' }}>★</span>)}
-          </div>
-        </div>
-      </div>
-      {/* Nearby gyms */}
-      <div style={{ fontSize: 8, fontWeight: 700, color: 'rgba(255,255,255,0.4)', marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.1em' }}>Nearby</div>
-      {[
-        { name: 'Iron Forge', city: 'Manchester', type: 'powerlifting', dist: '0.3km', rating: 4.7, members: 189 },
-        { name: 'CrossFit Central', city: 'Manchester', type: 'crossfit', dist: '0.8km', rating: 4.9, members: 342 },
-        { name: 'Boxing Club MCR', city: 'Manchester', type: 'boxing', dist: '1.2km', rating: 4.6, members: 124 },
-      ].map((g, i) => (
-        <div key={i} style={{ marginBottom: 6, padding: '7px 8px', background: 'rgba(255,255,255,0.04)', borderRadius: 9, border: '1px solid rgba(255,255,255,0.07)', display: 'flex', alignItems: 'center', gap: 8 }}>
-          <div style={{ width: 28, height: 28, borderRadius: 7, background: ['#1e3a5f','#2a1a3a','#1a2e1a'][i], display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, border: '1px solid rgba(255,255,255,0.08)' }}>
-            <Dumbbell style={{ width: 10, height: 10, color: ['#60a5fa','#a78bfa','#34d399'][i] }} />
-          </div>
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontSize: 8.5, fontWeight: 700, color: '#fff' }}>{g.name}</div>
-            <div style={{ fontSize: 7, color: 'rgba(255,255,255,0.4)', display: 'flex', alignItems: 'center', gap: 3 }}>
-              <MapPin style={{ width: 6, height: 6 }} />{g.dist} · {g.members} members
-            </div>
-          </div>
-          <div style={{ textAlign: 'right', flexShrink: 0 }}>
-            <div style={{ fontSize: 7, color: '#f59e0b', fontWeight: 700 }}>★ {g.rating}</div>
-            <button style={{ fontSize: 6.5, padding: '2px 6px', borderRadius: 5, background: T.cyanDim, border: `1px solid ${T.cyanBrd}`, color: T.cyan, fontWeight: 700, cursor: 'pointer', marginTop: 2 }}>Join</button>
-          </div>
-        </div>
-      ))}
-    </div>
-  );
-
-  const SCREENS = { feed: <HomeScreen />, community: <CommunityScreen />, gyms: <GymsScreen /> };
-
   const NAV = [
-    { id: 'feed',      icon: Home,     label: 'Home'      },
-    { id: 'gyms',      icon: Dumbbell, label: 'Gyms'      },
-    { id: 'community', icon: Users,    label: 'Community' },
-    { id: 'progress',  icon: TrendingUp, label: 'Progress'  },
-    { id: 'profile',   icon: UserIcon, label: 'Profile'   },
+    { id: 'home', icon: Home, label: 'Home' },
+    { id: 'members', icon: Users, label: 'Members' },
+    { id: null, icon: null, label: '+', special: true },
+    { id: 'classes', icon: Calendar, label: 'Classes' },
+    { id: 'profile', icon: UserIcon, label: 'Profile' },
   ];
 
   return (
@@ -519,7 +371,7 @@ function PhoneMockup({ gym }) {
 
       {/* Screen content */}
       <div style={{ height: 420, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-        {SCREENS[activeScreen] || SCREENS.feed}
+        {SCREEN[activeScreen] || SCREEN.home}
       </div>
 
       {/* Bottom nav */}
