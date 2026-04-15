@@ -523,15 +523,14 @@ function PostCard({ post, onLike, onComment, onSave, onDelete, fullWidth = false
   const hasMedia = !!(post.video_url || post.image_url);
 
   const userStreakVariant = useMemo(() => currentUser?.streak_variant || 'default', [currentUser?.streak_variant]);
-  const safeReactions = (r) => (r && typeof r === 'object' && !Array.isArray(r)) ? { ...r } : {};
   const [localReacted, setLocalReacted] = useState(() => !!(post.reactions && currentUser?.id && post.reactions[currentUser?.id]));
-  const [localReactions, setLocalReactions] = useState(() => safeReactions(post.reactions));
+  const [localReactions, setLocalReactions] = useState(() => ({ ...(post.reactions || {}) }));
   const prevReactionsRef = React.useRef(post.reactions);
   useEffect(() => {
     if (post.reactions !== prevReactionsRef.current) {
       prevReactionsRef.current = post.reactions;
       setLocalReacted(!!(post.reactions && currentUser?.id && post.reactions[currentUser?.id]));
-      setLocalReactions(safeReactions(post.reactions));
+      setLocalReactions({ ...(post.reactions || {}) });
     }
   }, [post.reactions, currentUser?.id]);
   const hasReacted = localReacted;
@@ -666,7 +665,7 @@ function PostCard({ post, onLike, onComment, onSave, onDelete, fullWidth = false
 
   // ── WORKOUT POST ──────────────────────────────────────────────────────────
   if (isWorkoutPost) {
-    const exercises = (post.workout_exercises || []).filter(Boolean);
+    const exercises = post.workout_exercises || [];
     const hasPhoto = !!post.image_url;
     const SUMMARY_WIDTH = '92%';
     const PANEL_HEIGHT = 'min(85.8vw, 380px)';
@@ -697,7 +696,7 @@ function PostCard({ post, onLike, onComment, onSave, onDelete, fullWidth = false
             <div className="text-[8px] font-bold text-slate-400 uppercase tracking-widest" style={{ paddingLeft: 6 }}>Weight</div>
           </div>
           <div className="space-y-1 flex-1 overflow-hidden">
-            {(exercisesExpanded ? exercises : exercises.slice(0, PREVIEW_COUNT)).filter(Boolean).map((ex, idx) => <ExerciseRow key={idx} ex={ex} idx={idx} />)}
+            {(exercisesExpanded ? exercises : exercises.slice(0, PREVIEW_COUNT)).map((ex, idx) => <ExerciseRow key={idx} ex={ex} idx={idx} />)}
           </div>
           {exercises.length > PREVIEW_COUNT && (
             <button onClick={() => setExercisesExpanded(v => !v)} className="mt-1 w-full flex items-center justify-center gap-1 py-0.5 text-[10px] font-bold text-slate-500 hover:text-slate-300 transition-colors flex-shrink-0">
@@ -803,14 +802,14 @@ function PostCard({ post, onLike, onComment, onSave, onDelete, fullWidth = false
             {Object.keys(localReactions).length > 0 && (
               <button onClick={() => setShowReactionsModal(true)} className="flex items-center hover:opacity-80 transition-opacity mr-2">
                 <div className="flex items-center" style={{ gap: 0 }}>
-                  {Object.entries(localReactions && typeof localReactions === 'object' && !Array.isArray(localReactions) ? localReactions : {}).slice(0, 3).map(([uid, variant], i) => (
+                  {Object.entries(localReactions).slice(0, 3).map(([uid, variant], i) => (
                     <div key={uid} className="relative w-6 h-6" style={{ marginLeft: i === 0 ? 0 : '-6px', zIndex: 3 - i }}>
                       {variant === 'sunglasses'
                         ? <div className="relative w-full h-full flex items-center justify-center"><img src={STREAK_ICON_URL} alt="streak" className="w-6 h-6" style={{ objectFit: 'contain' }} /><svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 64 64"><circle cx="20" cy="24" r="6" fill="none" stroke="black" strokeWidth="1.5" /><circle cx="44" cy="24" r="6" fill="none" stroke="black" strokeWidth="1.5" /><line x1="26" y1="24" x2="38" y2="24" stroke="black" strokeWidth="1.5" /></svg></div>
                         : <img src={STREAK_ICON_URL} alt="streak" className="w-20 h-20 -mt-6" style={{ objectFit: 'contain' }} />}
                     </div>
                   ))}
-                  {Object.keys(localReactions && typeof localReactions === 'object' && !Array.isArray(localReactions) ? localReactions : {}).length > 3 && <div className="flex items-center gap-0.5 ml-1"><Plus className="w-3 h-3 text-slate-300" /><span className="text-xs font-bold text-slate-300">{Object.keys(localReactions).length - 3}</span></div>}
+                  {Object.keys(localReactions).length > 3 && <div className="flex items-center gap-0.5 ml-1"><Plus className="w-3 h-3 text-slate-300" /><span className="text-xs font-bold text-slate-300">{Object.keys(localReactions).length - 3}</span></div>}
                 </div>
               </button>
             )}

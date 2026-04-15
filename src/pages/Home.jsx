@@ -625,7 +625,7 @@ export default function Home() {
   const todayIsRestDay = !(currentUser?.training_days || []).includes(todayDowAdjusted);
   const showCheckInButton = !todayIsRestDay || workoutOverrideDay !== null;
 
-  const friendPosts = useMemo(() => allPosts.filter(Boolean).filter((post) =>
+  const friendPosts = useMemo(() => allPosts.filter((post) =>
     friendIdList.includes(post.member_id) &&
     !post.is_system_generated &&
     !post.content?.includes('well done') &&
@@ -668,8 +668,7 @@ export default function Home() {
 
   const socialFeedPosts = useMemo(() => {
     const threeDaysAgo = new Date(Date.now() - 3 * 24 * 60 * 60 * 1000);
-    return allPosts.filter(Boolean).filter(post =>
-      post && post.id && post.member_id &&
+    return allPosts.filter(post =>
       (friendIdList.includes(post.member_id) || post.member_id === currentUser?.id) &&
       (post.content || post.image_url || post.video_url || post.workout_name) &&
       !post.gym_join &&
@@ -956,8 +955,8 @@ export default function Home() {
               <div className="flex flex-col items-center justify-center gap-2">
                 <div className="flex items-center -space-x-2">
                   {(() => {
-                   const friendCheckInUsers = enrichedCheckInUsers.filter((u) => u && u.user_id && friendIdList.includes(u.user_id));
-                   const displayedUsers = friendCheckInUsers.slice(0, 5);
+                    const friendCheckInUsers = enrichedCheckInUsers.filter((u) => friendIdList.includes(u.user_id));
+                    const displayedUsers = friendCheckInUsers.slice(0, 5);
                     const remainingCount = Math.max(0, friendCheckInUsers.length - 5);
                     return (
                       <>
@@ -1026,7 +1025,7 @@ export default function Home() {
                       <span className="text-xs text-slate-300 font-medium">{getCommunityText()}</span>
                       <div className="flex items-center gap-2">
                         <div className="flex items-center -space-x-2">
-                          {enrichedCheckInUsers.filter(u => u && u.user_id).slice(0, 2).map((u) => (
+                          {enrichedCheckInUsers.slice(0, 2).map((u) => (
                             <div key={u.user_id} className="relative">
                               {u.avatar_url ? (
                                 <img src={u.avatar_url} alt={u.display_name || u.username} className="w-6 h-6 rounded-full object-cover border-2 border-slate-700" loading="lazy" />
@@ -1057,7 +1056,7 @@ export default function Home() {
             const mondayBase = startOfWeek(new Date(), { weekStartsOn: 1 });
             mondayBase.setDate(mondayBase.getDate() + weekOffset * 7);
             const logsByDay = {};
-            weeklyWorkoutLogs.filter(l => l && l.completed_date).forEach((l) => {
+            weeklyWorkoutLogs.forEach((l) => {
               const dateStr = (l.completed_date || '').split('T')[0];
               const parts = dateStr.split('-').map(Number);
               const d = (parts.length === 3 && parts[0])
@@ -1179,7 +1178,7 @@ export default function Home() {
                                     if (done && workoutLog) return workoutLog.workout_name || workoutLog.title || workoutLog.workout_type || workoutLog.name || workoutLog.split_name || 'Workout';
                                     if (done) return 'Workout';
                                     const customTypes = currentUser?.custom_workout_types;
-                                    const splitDay = customTypes ? Array.isArray(customTypes) ? customTypes.filter(Boolean).find((s) => s && (s.day === day || s.day_of_week === day)) : customTypes[day] : null;
+                                    const splitDay = customTypes ? Array.isArray(customTypes) ? customTypes.find((s) => s.day === day || s.day_of_week === day) : customTypes[day] : null;
                                     return splitDay?.name || splitDay?.title || splitDay?.workout_type || 'Training Day';
                                   })(),
                                   dateLabel: done && workoutLog?.completed_date
@@ -1254,6 +1253,7 @@ export default function Home() {
                                 <div style={{ width: isTodayCircle ? 18 : 14, height: isTodayCircle ? 18 : 14, borderRadius: '50%', border: isTodayCircle ? '2px solid rgba(148,163,184,0.6)' : '2px solid rgba(100,116,139,0.35)', background: isTodayCircle ? 'rgba(255,255,255,0.05)' : 'transparent', boxShadow: isTodayCircle ? 'inset 0 1px 3px rgba(0,0,0,0.4)' : 'none' }} />
                               )}
                             </button>
+                            <AnimatePresence></AnimatePresence>
                           </div>
                         );
                       })}
@@ -1335,7 +1335,7 @@ export default function Home() {
 
           {socialFeedPosts.length > 0 && (
             <div className="space-y-3">
-              {socialFeedPosts.filter(post => post && post.id && post.member_id).map((post) => (
+              {socialFeedPosts.map((post) => (
                 <PostCard key={post.id} post={post} fullWidth={true} currentUser={currentUser} isOwnProfile={post.member_id === currentUser?.id} onLike={() => {}} onComment={() => {}} onSave={() => {}} onDelete={() => queryClient.invalidateQueries({ queryKey: ['posts'] })} friends={friends} sentFriendRequests={sentFriendRequests} onAddFriend={(user) => addFriendMutation.mutate(user)} />
               ))}
             </div>
@@ -1355,7 +1355,32 @@ export default function Home() {
             </Card>
           )}
 
-
+          {/* ── DEV: Test log workout animation ── */}
+          <button
+            onClick={() => handleWorkoutLogged(
+              [{ title: 'Summer Squat Challenge', reward: 'Free protein shake', previous_value: 3, new_value: 7, target_value: 10, emoji: '🏋️' }],
+              [
+                { exercise: 'Bench Press', sets: '4', reps: '8', weight: '80' },
+                { exercise: 'Squat', sets: '3', reps: '10', weight: '100' },
+                { exercise: 'Deadlift', sets: '3', reps: '5', weight: '120' },
+              ],
+              'Push Day A',
+              [
+                { exercise: 'Bench Press', sets: '4', reps: '8', weight: '77.5' },
+                { exercise: 'Squat', sets: '3', reps: '10', weight: '97.5' },
+              ]
+            )}
+            style={{
+              position: 'fixed', bottom: 96, right: 16, zIndex: 9000,
+              padding: '10px 14px', borderRadius: 12,
+              background: 'linear-gradient(135deg,#7c3aed,#4f46e5)',
+              color: '#fff', fontWeight: 800, fontSize: 11,
+              border: '1px solid rgba(255,255,255,0.2)',
+              boxShadow: '0 4px 12px rgba(124,58,237,0.5)',
+              cursor: 'pointer', letterSpacing: '0.04em',
+            }}>
+            🧪 TEST LOG
+          </button>
         </div>
       </div>
 
@@ -1432,7 +1457,7 @@ export default function Home() {
           const workout = currentUser?.custom_workout_types?.[viewWorkoutDay];
           if (!workout) return null;
           const workoutName = workout.name || 'Training Day';
-          const exercises = (workout.exercises || []).filter(Boolean);
+          const exercises = workout.exercises || [];
           const monday = startOfWeek(new Date(), { weekStartsOn: 1 });
           const slotDate = new Date(monday);
           slotDate.setDate(monday.getDate() + (viewWorkoutDay - 1));

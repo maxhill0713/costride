@@ -1,15 +1,14 @@
 /**
  * TabGymProfile — Forge Fitness Dashboard
- * Redesigned with dashboard card layout (Foundry-style).
  * Color tokens unified with ContentPage (#4d7fff blue system).
  */
 import React, { useState } from 'react';
 import {
   Image, ExternalLink, Zap, TrendingUp, BadgeCheck,
-  ArrowUpRight, ArrowDownRight, Instagram, Facebook,
-  Twitter, Globe, MapPin, Tag, Users, Dumbbell, Star,
-  GraduationCap, UserPlus, Plus, Upload, Settings,
-  Camera, Wrench,
+  ArrowUpRight, ArrowDownRight, Minus, ChevronDown, ChevronUp,
+  Instagram, Facebook, Twitter, Globe, MapPin, Tag,
+  Users, Dumbbell, Star, Trash2, GraduationCap, UserPlus,
+  CheckCircle2, AlertTriangle, Plus,
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../../utils';
@@ -54,7 +53,7 @@ function engLabel(s) {
 function actLabel(n) {
   if (n >= 5)  return { label: 'Very High', color: C.green };
   if (n >= 2)  return { label: 'Moderate',  color: C.amber };
-  return       { label: 'Low',              color: C.red   };
+  return       { label: 'Low',     color: C.red   };
 }
 function buildInsight({ communityScore, engScore, postsWeek, hasLogo, hasHero, galleryCount, amenitiesCount, price }) {
   if (!hasLogo && !hasHero) return "Your gym has no photos yet — members won't be able to visualise the space before joining.";
@@ -65,62 +64,52 @@ function buildInsight({ communityScore, engScore, postsWeek, hasLogo, hasHero, g
   return "Your gym is making progress — a few more improvements will noticeably boost member confidence.";
 }
 
-const AMENITY_ICONS = {
-  wifi: '📶', shower: '🚿', sauna: '🧖', parking: '🅿️',
-  café: '☕', cafe: '☕', coffee: '☕', pool: '🏊',
-  towel: '🛁', lockers: '🔒', yoga: '🧘', spa: '💆',
-  childcare: '👶', juice: '🥤', bar: '🥂', gym: '🏋️',
-};
-function getAmenityIcon(name) {
-  const key = (name || '').toLowerCase();
-  for (const [k, v] of Object.entries(AMENITY_ICONS)) {
-    if (key.includes(k)) return v;
-  }
-  return '✓';
-}
-
-/* ─── SHARED: DASH CARD WRAPPER ─────────────────────────────── */
-function DashCard({ children, style }) {
+/* ─── METRIC CARD ───────────────────────────────────────────── */
+function MetricCard({ label, primary, secondary, color, trend, trendLabel }) {
+  const TrendIcon = trend === 'up' ? ArrowUpRight : trend === 'down' ? ArrowDownRight : null;
+  const trendColor = trend === 'up' ? C.green : C.red;
   return (
-    <div style={{
-      background: C.card,
-      border: `1px solid ${C.brd}`,
-      borderRadius: 12,
-      overflow: 'hidden',
-      ...style,
-    }}>
-      {children}
+    <div style={{ background: C.card, border: `1px solid ${C.brd}`, borderRadius: 10, padding: '14px 16px', position: 'relative', overflow: 'hidden' }}>
+      <div style={{ fontSize: 9.5, fontWeight: 700, color: C.t3, textTransform: 'uppercase', letterSpacing: '0.09em', marginBottom: 10 }}>{label}</div>
+      <div style={{ fontSize: 28, fontWeight: 800, color: color || C.t1, letterSpacing: '-0.03em', lineHeight: 1 }}>{primary}</div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginTop: 7 }}>
+        {secondary && <span style={{ fontSize: 11, color: C.t2 }}>{secondary}</span>}
+        {trend && TrendIcon && (
+          <span style={{ display: 'flex', alignItems: 'center', gap: 2, fontSize: 10.5, fontWeight: 700, color: trendColor }}>
+            <TrendIcon style={{ width: 10, height: 10 }} />{trendLabel}
+          </span>
+        )}
+      </div>
+      <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 3, background: (color || C.cyan) + '55' }} />
     </div>
   );
 }
 
-/* ─── SHARED: CARD HEADER ───────────────────────────────────── */
-function CardHeader({ title, action, actionLabel, actionIcon: ActionIcon }) {
+/* ─── INSIGHT BAR ───────────────────────────────────────────── */
+function InsightBar({ text }) {
   return (
     <div style={{
-      display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-      padding: '13px 16px', borderBottom: `1px solid ${C.brd}`,
+      padding: '10px 15px', borderRadius: 9,
+      background: C.card2, border: `1px solid ${C.brd}`, borderLeft: `2px solid ${C.cyan}`,
+      display: 'flex', alignItems: 'center', gap: 9, marginBottom: 18,
     }}>
+      <Zap style={{ width: 12, height: 12, color: C.cyan, flexShrink: 0 }} />
+      <span style={{ fontSize: 12.5, color: C.t2, lineHeight: 1.5 }}>{text}</span>
+    </div>
+  );
+}
+
+/* ─── SECTION HEADER CARD ───────────────────────────────────── */
+function SectionHeader({ title, subtitle }) {
+  return (
+    <div style={{ background: C.card, border: `1px solid ${C.brd}`, borderRadius: 10, padding: '13px 16px', marginBottom: 10 }}>
       <div style={{ fontSize: 14, fontWeight: 800, color: C.t1, letterSpacing: '-0.01em' }}>{title}</div>
-      {action && (
-        <button
-          onClick={action}
-          style={{
-            display: 'flex', alignItems: 'center', gap: 5,
-            padding: '5px 12px', borderRadius: 7, fontSize: 11.5, fontWeight: 700,
-            background: C.cyan, color: '#fff', border: 'none', cursor: 'pointer',
-            fontFamily: FONT, boxShadow: SHADOW,
-          }}
-        >
-          {ActionIcon && <ActionIcon style={{ width: 11, height: 11 }} />}
-          {actionLabel}
-        </button>
-      )}
+      {subtitle && <div style={{ fontSize: 11, color: C.t3, marginTop: 3 }}>{subtitle}</div>}
     </div>
   );
 }
 
-/* ─── SHARED: STATUS BADGE ──────────────────────────────────── */
+/* ─── STATUS BADGE ──────────────────────────────────────────── */
 function StatusBadge({ score }) {
   const state = qualityState(score);
   return (
@@ -133,450 +122,116 @@ function StatusBadge({ score }) {
   );
 }
 
-/* ─── SHARED: ACTION BUTTON ─────────────────────────────────── */
-function ActionBtn({ label, onClick, icon: Icon, primary, flex }) {
+/* ─── ITEM CARD ─────────────────────────────────────────────── */
+function ItemCard({ title, score, microcopy, onClick, children }) {
   return (
-    <button
+    <div
       onClick={onClick}
       style={{
-        display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5,
-        padding: '7px 13px', borderRadius: 8, fontSize: 11.5, fontWeight: 700, cursor: 'pointer',
-        fontFamily: FONT,
-        border: `1px solid ${primary ? C.cyan : C.brd}`,
-        background: primary ? C.cyan : C.card2,
-        color: primary ? '#fff' : C.t2,
-        boxShadow: primary ? SHADOW : 'none',
-        flex: flex ? 1 : undefined,
-        transition: 'opacity 0.15s',
+        background: C.card, border: `1px solid ${C.brd}`, borderRadius: 10,
+        overflow: 'hidden', display: 'flex', flexDirection: 'column',
+        cursor: onClick ? 'pointer' : 'default',
+        transition: 'border-color 0.15s',
       }}
-      onMouseEnter={e => e.currentTarget.style.opacity = '0.82'}
-      onMouseLeave={e => e.currentTarget.style.opacity = '1'}
+      onMouseEnter={e => onClick && (e.currentTarget.style.borderColor = C.cyanBrd)}
+      onMouseLeave={e => onClick && (e.currentTarget.style.borderColor = C.brd)}
     >
-      {Icon && <Icon style={{ width: 11, height: 11 }} />}
-      {label}
-    </button>
-  );
-}
-
-/* ─── SHARED: METRIC CARD ───────────────────────────────────── */
-function MetricCard({ label, primary, secondary, color, trend, trendLabel }) {
-  const TrendIcon = trend === 'up' ? ArrowUpRight : trend === 'down' ? ArrowDownRight : null;
-  const trendColor = trend === 'up' ? C.green : C.red;
-  return (
-    <DashCard style={{ position: 'relative' }}>
-      <div style={{ padding: '14px 16px' }}>
-        <div style={{ fontSize: 9.5, fontWeight: 700, color: C.t3, textTransform: 'uppercase', letterSpacing: '0.09em', marginBottom: 10 }}>
-          {label}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '11px 14px', flexShrink: 0 }}>
+        <div>
+          <div style={{ fontSize: 12.5, fontWeight: 700, color: C.t1 }}>{title}</div>
+          {microcopy && <div style={{ fontSize: 10.5, color: C.t3, marginTop: 2 }}>{microcopy}</div>}
         </div>
-        <div style={{ fontSize: 28, fontWeight: 800, color: color || C.t1, letterSpacing: '-0.03em', lineHeight: 1 }}>
-          {primary}
-        </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginTop: 7 }}>
-          {secondary && <span style={{ fontSize: 11, color: C.t2 }}>{secondary}</span>}
-          {trend && TrendIcon && (
-            <span style={{ display: 'flex', alignItems: 'center', gap: 2, fontSize: 10.5, fontWeight: 700, color: trendColor }}>
-              <TrendIcon style={{ width: 10, height: 10 }} />{trendLabel}
-            </span>
-          )}
-        </div>
-      </div>
-      <div style={{ height: 3, background: (color || C.cyan) + '55' }} />
-    </DashCard>
-  );
-}
-
-/* ─── SHARED: INSIGHT BAR ───────────────────────────────────── */
-function InsightBar({ text }) {
-  return (
-    <div style={{
-      padding: '10px 15px', borderRadius: 9,
-      background: C.card2, border: `1px solid ${C.brd}`, borderLeft: `2px solid ${C.cyan}`,
-      display: 'flex', alignItems: 'center', gap: 9, marginBottom: 14,
-    }}>
-      <Zap style={{ width: 12, height: 12, color: C.cyan, flexShrink: 0 }} />
-      <span style={{ fontSize: 12.5, color: C.t2, lineHeight: 1.5 }}>{text}</span>
-    </div>
-  );
-}
-
-/* ─── PROFILE STRENGTH BAR ──────────────────────────────────── */
-function ProfileStrengthBar({ score, hint }) {
-  const state = qualityState(score);
-  return (
-    <div style={{ padding: '11px 16px', borderTop: `1px solid ${C.brd}` }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
-        <span style={{ fontSize: 12, color: C.t2 }}>
-          Profile Strength:{' '}
-          <span style={{ color: state.color, fontWeight: 700 }}>{score}%</span>
-          {hint && <span style={{ color: C.t3, fontWeight: 400 }}> ({hint})</span>}
-        </span>
         <StatusBadge score={score} />
       </div>
-      <div style={{ height: 5, background: C.brd, borderRadius: 3, overflow: 'hidden' }}>
-        <div style={{
-          height: '100%', width: `${score}%`,
-          background: state.color, borderRadius: 3, transition: 'width 0.6s ease',
-        }} />
+      <div style={{ flex: 1 }}>{children}</div>
+      <div style={{ height: 3, background: 'rgba(255,255,255,0.04)', flexShrink: 0 }}>
+        <div style={{ height: '100%', width: `${score}%`, background: qualityState(score).color, opacity: 0.6, transition: 'width 0.6s ease' }} />
       </div>
     </div>
   );
 }
 
-/* ══════════════════════════════════════════════════════════════
-   SECTION CARDS
-══════════════════════════════════════════════════════════════ */
-
-/* ─── 1. PROFILE PAGE & BRANDING ───────────────────────────── */
-function ProfileBrandingCard({ gym, openModal, profileScore }) {
-  const hasLogo = !!gym.logo_url;
-  const hasHero = !!gym.image_url;
-
-  const hint = profileScore < 50
-    ? 'Add gallery photos to improve'
-    : profileScore < 80
-    ? 'Add pricing and social links to improve'
-    : undefined;
-
+/* ─── LOGO VISUAL ───────────────────────────────────────────── */
+function LogoVisual({ logoUrl }) {
   return (
-    <DashCard>
-      <CardHeader title="Profile Page & Branding" />
-      <div style={{ display: 'flex', gap: 14, padding: 16 }}>
-        {/* Logo circle */}
-        <div style={{ flexShrink: 0, width: 140 }}>
-          <div style={{
-            width: '100%', aspectRatio: '1', borderRadius: 12, overflow: 'hidden',
-            border: `1px solid ${C.brd}`, background: C.card2,
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-          }}>
-            {hasLogo
-              ? <img src={gym.logo_url} alt="Logo" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-              : <Dumbbell style={{ width: 32, height: 32, color: C.t3 }} />
-            }
+    <div style={{ height: 160, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,255,255,0.02)', borderTop: `1px solid ${C.brd}` }}>
+      {logoUrl
+        ? <div style={{ width: 110, height: 110, borderRadius: '50%', overflow: 'hidden', border: `2px solid ${C.brd2}` }}>
+            <img src={logoUrl} alt="Logo" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
           </div>
-        </div>
-        {/* Cover image */}
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{
-            width: '100%', height: 130, borderRadius: 10, overflow: 'hidden',
-            border: `1px solid ${C.brd}`, background: C.card2,
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-          }}>
-            {hasHero
-              ? <img src={gym.image_url} alt="Cover" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-              : <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
-                  <Image style={{ width: 24, height: 24, color: C.t3 }} />
-                  <span style={{ fontSize: 11, color: C.t3 }}>No cover image</span>
-                </div>
-            }
+        : <div style={{ width: 110, height: 110, borderRadius: '50%', background: C.card2, border: `2px dashed ${C.brd2}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <Dumbbell style={{ width: 28, height: 28, color: C.t3 }} />
           </div>
-        </div>
-      </div>
-      {/* Button row */}
-      <div style={{ display: 'flex', gap: 8, padding: '0 16px 14px' }}>
-        <ActionBtn label="Upgrade/Change Logo" onClick={() => openModal('logo')} icon={Upload} primary flex />
-        <ActionBtn label="Replace Cover Image" onClick={() => openModal('heroPhoto')} icon={Image} flex />
-      </div>
-      <ProfileStrengthBar score={profileScore} hint={hint} />
-    </DashCard>
+      }
+    </div>
   );
 }
 
-/* ─── 2. PHOTO GALLERY MANAGEMENT ──────────────────────────── */
-function PhotoGalleryCard({ gym, openModal, galleryCount }) {
-  const photos = (gym.gallery || []).filter(Boolean).slice(0, 5).map(g => g.url || g);
-  const hintText = galleryCount === 0
-    ? 'No photos yet.'
-    : galleryCount < 8
-      ? `Photos: ${galleryCount}. Needs ${8 - galleryCount} more for optimal impact.`
-      : `${galleryCount} photos — great coverage.`;
-
+/* ─── COVER IMAGE VISUAL ────────────────────────────────────── */
+function CoverVisual({ imageUrl }) {
   return (
-    <DashCard>
-      <CardHeader title="Photo Gallery Management" action={() => openModal('photos')} actionLabel="Edit Gallery" actionIcon={Settings} />
-      {/* 2-row × 3-col grid — 5 photos + 1 upload slot */}
-      <div style={{
-        display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)',
-        gridTemplateRows: 'repeat(2, 1fr)', gap: 2,
-        height: 204, padding: '2px 2px 0',
-      }}>
-        {Array.from({ length: 5 }, (_, i) => (
+    <div style={{ height: 160, borderTop: `1px solid ${C.brd}`, overflow: 'hidden' }}>
+      {imageUrl
+        ? <img src={imageUrl} alt="Cover" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+        : <div style={{ width: '100%', height: '100%', background: 'rgba(255,255,255,0.02)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: 6 }}>
+            <Image style={{ width: 24, height: 24, color: C.t3 }} />
+            <span style={{ fontSize: 11, color: C.t3 }}>No cover image</span>
+          </div>
+      }
+    </div>
+  );
+}
+
+/* ─── PHOTO GALLERY VISUAL ──────────────────────────────────── */
+function GalleryVisual({ gallery }) {
+  const photos = (gallery || []).slice(0, 9).map(g => g.url || g);
+  if (photos.length === 0) {
+    return (
+      <div style={{ height: 170, borderTop: `1px solid ${C.brd}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: 6, background: 'rgba(255,255,255,0.02)' }}>
+        <Image style={{ width: 24, height: 24, color: C.t3 }} />
+        <span style={{ fontSize: 11, color: C.t3 }}>No photos yet</span>
+      </div>
+    );
+  }
+  return (
+    <div style={{ height: 170, borderTop: `1px solid ${C.brd}`, overflow: 'hidden', position: 'relative' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 2, height: '100%' }}>
+        {Array.from({ length: 6 }, (_, i) => (
           <div key={i} style={{ overflow: 'hidden', background: C.card2 }}>
             {photos[i]
-              ? <img src={photos[i]} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
-              : <div style={{ width: '100%', height: '100%', background: 'rgba(255,255,255,0.025)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <Camera style={{ width: 16, height: 16, color: C.t3 }} />
-                </div>
+              ? <img src={photos[i]} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              : <div style={{ width: '100%', height: '100%', background: 'rgba(255,255,255,0.03)' }} />
             }
           </div>
         ))}
-        {/* Upload slot */}
-        <div
-          onClick={() => openModal('photos')}
-          style={{
-            overflow: 'hidden', background: C.cyanDim, border: `1px solid ${C.cyanBrd}`,
-            display: 'flex', flexDirection: 'column', alignItems: 'center',
-            justifyContent: 'center', gap: 5, cursor: 'pointer', transition: 'background 0.15s',
-          }}
-          onMouseEnter={e => e.currentTarget.style.background = 'rgba(77,127,255,0.22)'}
-          onMouseLeave={e => e.currentTarget.style.background = C.cyanDim}
-        >
-          <Upload style={{ width: 18, height: 18, color: C.cyan }} />
-          <span style={{ fontSize: 10, fontWeight: 700, color: C.cyan, textAlign: 'center', lineHeight: 1.3 }}>
-            Upload New<br />Photos
-          </span>
+      </div>
+      {photos.length > 6 && (
+        <div style={{ position: 'absolute', bottom: 8, right: 8, fontSize: 10, fontWeight: 700, color: '#fff', background: 'rgba(0,0,0,0.7)', padding: '3px 8px', borderRadius: 5 }}>
+          +{photos.length - 6} more
         </div>
-      </div>
-      <div style={{ padding: '9px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <span style={{ fontSize: 11, color: C.t3 }}>{hintText}</span>
-        {galleryCount > 0 && <StatusBadge score={galleryCount >= 5 ? 100 : galleryCount >= 3 ? 60 : 20} />}
-      </div>
-    </DashCard>
-  );
-}
-
-/* ─── 3. TRUST & CLARITY ────────────────────────────────────── */
-function TrustCard({ gym, openModal }) {
-  const rows = [
-    {
-      label: 'Gym Name & Info',
-      value: gym.name || '—',
-      score: gym.name ? 100 : 0,
-      action: () => openModal('editInfo'),
-    },
-    {
-      label: 'Pricing',
-      value: gym.price ? gym.price : 'Not set',
-      score: gym.price ? 100 : 0,
-      action: () => openModal('pricing'),
-    },
-    {
-      label: 'Address',
-      value: [gym.address, gym.city, gym.postcode].filter(Boolean).join(', ') || 'Not added',
-      score: (gym.address || gym.city) ? 100 : 0,
-      action: () => openModal('editInfo'),
-    },
-    {
-      label: 'Contact Details',
-      value: gym.phone || gym.email || 'Not added',
-      score: (gym.phone || gym.email) ? 100 : 0,
-      action: () => openModal('editInfo'),
-    },
-  ];
-
-  return (
-    <DashCard style={{ display: 'flex', flexDirection: 'column' }}>
-      <CardHeader title="Trust & Clarity" action={() => openModal('editInfo')} actionLabel="Edit Info" actionIcon={Settings} />
-      <div style={{ flex: 1 }}>
-        {rows.map((row, i) => {
-          const state = qualityState(row.score);
-          return (
-            <div
-              key={i}
-              onClick={row.action}
-              style={{
-                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                padding: '10px 16px', cursor: 'pointer',
-                borderBottom: i < rows.length - 1 ? `1px solid ${C.brd}` : 'none',
-                transition: 'background 0.15s',
-              }}
-              onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.02)'}
-              onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
-            >
-              <div style={{ minWidth: 0, flex: 1 }}>
-                <div style={{ fontSize: 11.5, fontWeight: 600, color: C.t1 }}>{row.label}</div>
-                <div style={{ fontSize: 10.5, color: C.t3, marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 160 }}>
-                  {row.value}
-                </div>
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
-                <div style={{ width: 6, height: 6, borderRadius: '50%', background: state.color }} />
-                <span style={{ fontSize: 10, fontWeight: 700, color: state.color }}>{state.label}</span>
-              </div>
-            </div>
-          );
-        })}
-      </div>
-    </DashCard>
-  );
-}
-
-/* ─── 4. AMENITIES MANAGEMENT ───────────────────────────────── */
-function AmenitiesCard({ gym, openModal }) {
-  const items = gym.amenities || [];
-
-  return (
-    <DashCard style={{ display: 'flex', flexDirection: 'column' }}>
-      <CardHeader title="Amenities Management" action={() => openModal('amenities')} actionLabel="+ Add New" actionIcon={Plus} />
-      {items.length === 0 ? (
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 10, padding: '28px 16px' }}>
-          <Tag style={{ width: 22, height: 22, color: C.t3 }} />
-          <span style={{ fontSize: 11.5, color: C.t3, textAlign: 'center' }}>No amenities listed yet.</span>
-          <button onClick={() => openModal('amenities')} style={{
-            padding: '6px 16px', borderRadius: 8, fontSize: 12, fontWeight: 700,
-            background: C.cyan, color: '#fff', border: 'none', cursor: 'pointer',
-            fontFamily: FONT, boxShadow: SHADOW,
-          }}>
-            + Add New Amenity
-          </button>
-        </div>
-      ) : (
-        <>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', flex: 1 }}>
-            {items.filter(Boolean).slice(0, 6).map((item, i) => {
-              const name = typeof item === 'object' ? (item.name || item.label) : item;
-              const isLast3 = i >= 3;
-              return (
-                <div
-                  key={i}
-                  onClick={() => openModal('amenities')}
-                  style={{
-                    display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-                    gap: 5, padding: '14px 8px', cursor: 'pointer', position: 'relative',
-                    borderRight: (i % 3 < 2) ? `1px solid ${C.brd}` : 'none',
-                    borderBottom: !isLast3 ? `1px solid ${C.brd}` : 'none',
-                    transition: 'background 0.15s',
-                  }}
-                  onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.025)'}
-                  onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
-                >
-                  {/* Active dot */}
-                  <div style={{ width: 7, height: 7, borderRadius: '50%', background: C.green, position: 'absolute', top: 8, right: 8 }} />
-                  <span style={{ fontSize: 22, lineHeight: 1 }}>{getAmenityIcon(name)}</span>
-                  <span style={{ fontSize: 10.5, color: C.t2, fontWeight: 600, textAlign: 'center', lineHeight: 1.2 }}>{name}</span>
-                </div>
-              );
-            })}
-          </div>
-          {items.length > 6 && (
-            <div style={{
-              padding: '8px 16px', borderTop: `1px solid ${C.brd}`,
-              display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-            }}>
-              <span style={{ fontSize: 11, color: C.t3 }}>+{items.length - 6} more</span>
-              <button onClick={() => openModal('amenities')} style={{ fontSize: 11.5, fontWeight: 700, color: C.cyan, background: 'none', border: 'none', cursor: 'pointer', fontFamily: FONT }}>
-                Edit Amenity Details
-              </button>
-            </div>
-          )}
-        </>
       )}
-    </DashCard>
+    </div>
   );
 }
 
-/* ─── 5. EQUIPMENT INVENTORY ────────────────────────────────── */
-function EquipmentCard({ gym, openModal }) {
-  const items = gym.equipment || [];
-
-  return (
-    <DashCard style={{ display: 'flex', flexDirection: 'column' }}>
-      <CardHeader title="Equipment Inventory" action={() => openModal('equipment')} actionLabel="+ Add" actionIcon={Plus} />
-      {items.length === 0 ? (
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 10, padding: '28px 16px' }}>
-          <Dumbbell style={{ width: 22, height: 22, color: C.t3 }} />
-          <span style={{ fontSize: 11.5, color: C.t3, textAlign: 'center' }}>No equipment listed yet.</span>
-          <button onClick={() => openModal('equipment')} style={{
-            padding: '6px 16px', borderRadius: 8, fontSize: 12, fontWeight: 700,
-            background: C.cyan, color: '#fff', border: 'none', cursor: 'pointer',
-            fontFamily: FONT, boxShadow: SHADOW,
-          }}>
-            + Add New Equipment
-          </button>
-        </div>
-      ) : (
-        <>
-          {/* Status filter chips */}
-          <div style={{ display: 'flex', gap: 6, padding: '8px 14px 8px', borderBottom: `1px solid ${C.brd}` }}>
-            <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 5, background: C.card2, color: C.t2, border: `1px solid ${C.brd}` }}>
-              Status ▾
-            </span>
-            <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 5, background: C.greenDim, color: C.green, border: `1px solid ${C.greenBrd}` }}>
-              operational
-            </span>
-            <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 5, background: C.amberDim, color: C.amber, border: `1px solid ${C.amberBrd}` }}>
-              needs repair
-            </span>
-          </div>
-          {/* Equipment list */}
-          <div style={{ flex: 1 }}>
-            {items.filter(Boolean).slice(0, 5).map((item, i) => {
-              const name   = typeof item === 'object' ? (item.name || item.label) : item;
-              const status = (typeof item === 'object' && item.status) || 'operational';
-              const repair = status === 'needs repair';
-              return (
-                <div
-                  key={i}
-                  onClick={() => openModal('equipment')}
-                  style={{
-                    display: 'flex', alignItems: 'center', gap: 10, padding: '9px 14px',
-                    borderBottom: i < items.slice(0, 5).length - 1 ? `1px solid ${C.brd}` : 'none',
-                    cursor: 'pointer', transition: 'background 0.15s',
-                  }}
-                  onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.025)'}
-                  onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
-                >
-                  <div style={{
-                    width: 34, height: 34, borderRadius: 8, flexShrink: 0,
-                    background: C.card2, border: `1px solid ${C.brd}`,
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  }}>
-                    <Dumbbell style={{ width: 14, height: 14, color: C.t3 }} />
-                  </div>
-                  <span style={{ flex: 1, fontSize: 12, fontWeight: 600, color: C.t1 }}>{name}</span>
-                  <span style={{
-                    fontSize: 9.5, fontWeight: 700, padding: '2px 7px', borderRadius: 5,
-                    background: repair ? C.amberDim : C.greenDim,
-                    color: repair ? C.amber : C.green,
-                    border: `1px solid ${repair ? C.amberBrd : C.greenBrd}`,
-                    whiteSpace: 'nowrap',
-                  }}>
-                    {status}
-                  </span>
-                </div>
-              );
-            })}
-          </div>
-          {/* Action buttons */}
-          <div style={{ display: 'flex', gap: 8, padding: '10px 14px', borderTop: `1px solid ${C.brd}` }}>
-            <ActionBtn label="View Full Inventory" onClick={() => openModal('equipment')} primary flex />
-            <ActionBtn label="Schedule Maintenance" onClick={() => openModal('equipment')} icon={Wrench} flex />
-          </div>
-          <div style={{ padding: '0 14px 10px' }}>
-            <span style={{ fontSize: 10.5, color: C.t3 }}>
-              Critical Maintenance: <span style={{ color: C.red, fontWeight: 700 }}>0</span>
-              {'  '}Scheduled: <span style={{ color: C.amber, fontWeight: 700 }}>
-                {items.filter(i => typeof i === 'object' && i.scheduled_maintenance).length}
-              </span>
-            </span>
-          </div>
-        </>
-      )}
-    </DashCard>
-  );
-}
-
-/* ─── 6. DISCOVERY & REACH ──────────────────────────────────── */
-function DiscoveryCard({ gym, openModal }) {
-  const hasAddress = !!(gym.address || gym.city || gym.postcode);
+/* ─── MAP VISUAL ────────────────────────────────────────────── */
+function MapVisual({ gym }) {
+  const hasAddress = gym.address || gym.city || gym.postcode;
   const query = encodeURIComponent([gym.name, gym.address, gym.city, gym.postcode].filter(Boolean).join(', '));
-  const socials = [
-    { key: 'instagram_url', Icon: Instagram, label: 'Instagram', color: '#a855f7' },
-    { key: 'facebook_url',  Icon: Facebook,  label: 'Facebook',  color: '#60a5fa' },
-    { key: 'twitter_url',   Icon: Twitter,   label: 'Twitter',   color: '#38bdf8' },
-    { key: 'website_url',   Icon: Globe,     label: 'Website',   color: C.cyan    },
-  ];
-  const presentSocials = socials.filter(l => gym[l.key]);
-
   return (
-    <DashCard>
-      <CardHeader title="Discovery & Reach" action={() => openModal('editInfo')} actionLabel="Edit Details" actionIcon={Settings} />
-      {/* Map */}
-      <div style={{ margin: '12px 14px 0', borderRadius: 9, overflow: 'hidden', height: 155, border: `1px solid ${C.brd}`, background: C.card2 }}>
+    <div style={{ borderTop: `1px solid ${C.brd}` }}>
+      {hasAddress && (
+        <div style={{ padding: '8px 14px', display: 'flex', alignItems: 'center', gap: 6 }}>
+          <MapPin style={{ width: 11, height: 11, color: C.t3, flexShrink: 0 }} />
+          <span style={{ fontSize: 11, color: C.t2 }}>{[gym.address, gym.city, gym.postcode].filter(Boolean).join(', ')}</span>
+        </div>
+      )}
+      <div style={{ height: 140, overflow: 'hidden', position: 'relative', margin: '0 14px 14px', borderRadius: 8, background: C.card2, border: `1px solid ${C.brd}` }}>
         {hasAddress
           ? <iframe
               title="map"
               width="100%" height="100%"
-              style={{ border: 'none', filter: 'grayscale(0.3) invert(0.9) hue-rotate(180deg)', borderRadius: 9 }}
+              style={{ border: 'none', filter: 'grayscale(0.3) invert(0.9) hue-rotate(180deg)', borderRadius: 8 }}
               loading="lazy"
               src={`https://maps.google.com/maps?q=${query}&output=embed&z=14`}
             />
@@ -586,140 +241,219 @@ function DiscoveryCard({ gym, openModal }) {
             </div>
         }
       </div>
-      {hasAddress && (
-        <div style={{ padding: '8px 16px 0', display: 'flex', alignItems: 'center', gap: 5 }}>
-          <MapPin style={{ width: 11, height: 11, color: C.t3, flexShrink: 0 }} />
-          <span style={{ fontSize: 11, color: C.t2 }}>{[gym.address, gym.city, gym.postcode].filter(Boolean).join(', ')}</span>
-        </div>
-      )}
-      {/* Social links */}
-      <div style={{ padding: '12px 14px 14px', borderTop: `1px solid ${C.brd}`, marginTop: 12 }}>
-        <div style={{ fontSize: 10, fontWeight: 700, color: C.t3, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 9 }}>
-          Social Media
-        </div>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 7 }}>
-          {presentSocials.length > 0 ? presentSocials.map((l) => (
-            <a key={l.key} href={gym[l.key]} target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none' }}>
-              <div style={{
-                display: 'flex', alignItems: 'center', gap: 6,
-                padding: '6px 11px', borderRadius: 7,
-                background: C.card2, border: `1px solid ${C.brd}`, cursor: 'pointer',
-                transition: 'border-color 0.15s',
-              }}
-                onMouseEnter={e => e.currentTarget.style.borderColor = C.brd2}
-                onMouseLeave={e => e.currentTarget.style.borderColor = C.brd}
-              >
-                <l.Icon style={{ width: 12, height: 12, color: l.color }} />
-                <span style={{ fontSize: 11.5, fontWeight: 600, color: C.t2 }}>{l.label}</span>
-              </div>
-            </a>
-          )) : (
-            <button onClick={() => openModal('editInfo')} style={{
-              fontSize: 11.5, padding: '6px 14px', borderRadius: 7,
-              background: C.cyanDim, border: `1px solid ${C.cyanBrd}`,
-              color: C.cyan, cursor: 'pointer', fontFamily: FONT, fontWeight: 700,
-            }}>
-              + Add Social Links
-            </button>
-          )}
-        </div>
-      </div>
-    </DashCard>
+    </div>
   );
 }
 
-/* ─── 7. COACHES & STAFF ────────────────────────────────────── */
-function CoachesCard({ coaches, openModal }) {
+/* ─── SOCIAL MEDIA VISUAL ───────────────────────────────────── */
+function SocialVisual({ gym }) {
+  const links = [
+    { key: 'instagram_url', Icon: Instagram, label: 'Instagram', color: '#a855f7' },
+    { key: 'facebook_url',  Icon: Facebook,  label: 'Facebook',  color: '#60a5fa' },
+    { key: 'twitter_url',   Icon: Twitter,   label: 'Twitter',   color: '#38bdf8' },
+    { key: 'website_url',   Icon: Globe,     label: 'Website',   color: C.cyan    },
+  ];
+  const present = links.filter(l => gym[l.key]);
+  return (
+    <div style={{ padding: '10px 14px 14px', borderTop: `1px solid ${C.brd}`, display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+      {present.length > 0 ? present.map((l) => (
+        <a key={l.key} href={gym[l.key]} target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none' }}>
+          <div style={{
+            display: 'flex', alignItems: 'center', gap: 6, padding: '6px 11px',
+            borderRadius: 7, background: C.card2, border: `1px solid ${C.brd}`, cursor: 'pointer',
+            transition: 'border-color 0.15s',
+          }}
+            onMouseEnter={e => e.currentTarget.style.borderColor = C.brd2}
+            onMouseLeave={e => e.currentTarget.style.borderColor = C.brd}
+          >
+            <l.Icon style={{ width: 12, height: 12, color: l.color }} />
+            <span style={{ fontSize: 11.5, fontWeight: 600, color: C.t2 }}>{l.label}</span>
+          </div>
+        </a>
+      )) : (
+        <span style={{ fontSize: 11, color: C.t3 }}>No social links added yet.</span>
+      )}
+    </div>
+  );
+}
+
+/* ─── COACHES VISUAL ────────────────────────────────────────── */
+function CoachesVisual({ coaches, onManage }) {
   const ini = (n = '') => (n || '?').split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
   return (
-    <DashCard style={{ display: 'flex', flexDirection: 'column' }}>
-      <CardHeader title="Coaches & Staff" action={() => openModal('coaches')} actionLabel="+ Add Coach" actionIcon={UserPlus} />
+    <div style={{ borderTop: `1px solid ${C.brd}`, padding: '12px 14px 14px' }}>
       {coaches.length === 0 ? (
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 10, padding: '28px 16px' }}>
-          <GraduationCap style={{ width: 24, height: 24, color: C.t3 }} />
-          <span style={{ fontSize: 11.5, color: C.t3 }}>No coaches added yet.</span>
-          <button onClick={() => openModal('coaches')} style={{
-            padding: '7px 18px', borderRadius: 8, fontSize: 12, fontWeight: 700,
-            background: C.cyan, color: '#fff', border: 'none', cursor: 'pointer',
-            fontFamily: FONT, boxShadow: SHADOW,
-          }}>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, padding: '16px 0' }}>
+          <GraduationCap style={{ width: 22, height: 22, color: C.t3 }} />
+          <span style={{ fontSize: 11, color: C.t3 }}>No coaches added yet.</span>
+          <button
+            onClick={onManage}
+            style={{
+              padding: '6px 14px', borderRadius: 7, fontSize: 11.5, fontWeight: 700,
+              background: C.cyan, color: '#fff', border: 'none', cursor: 'pointer',
+              fontFamily: FONT, boxShadow: SHADOW,
+            }}
+          >
             + Add Coach
           </button>
         </div>
       ) : (
-        <div style={{ padding: '14px 14px 14px' }}>
-          <div style={{ display: 'flex', gap: 10, overflowX: 'auto', paddingBottom: 4, scrollbarWidth: 'none' }}>
-            {coaches.filter(Boolean).map((coach) => (
-              <div key={coach.id} style={{
-                flexShrink: 0, width: 96,
-                display: 'flex', flexDirection: 'column', alignItems: 'center',
-                gap: 6, padding: '10px 6px', borderRadius: 10,
-                background: C.card2, border: `1px solid ${C.brd}`,
-              }}>
-                <div style={{
-                  width: 50, height: 50, borderRadius: '50%',
-                  overflow: 'hidden', border: `2px solid ${C.brd2}`,
-                  background: C.brd, flexShrink: 0,
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontSize: 14, fontWeight: 800, color: C.cyan,
-                }}>
-                  {coach.avatar_url
-                    ? <img src={coach.avatar_url} alt={coach.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                    : ini(coach.name)}
-                </div>
-                <div style={{ fontSize: 11, fontWeight: 700, color: C.t1, textAlign: 'center', lineHeight: 1.3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', width: '100%', paddingInline: 4 }}>
-                  {coach.name}
-                </div>
-                {coach.specialties?.length > 0 && (
-                  <div style={{ fontSize: 9.5, color: C.t3, textAlign: 'center', lineHeight: 1.3 }}>
-                    {coach.specialties.slice(0, 2).join(' · ')}
-                  </div>
-                )}
-                {coach.rating && (
-                  <div style={{ fontSize: 10, fontWeight: 700, color: C.amber, display: 'flex', alignItems: 'center', gap: 2 }}>
-                    <Star style={{ width: 9, height: 9 }} /> {coach.rating}
-                  </div>
-                )}
+        <div style={{ display: 'flex', gap: 10, overflowX: 'auto', paddingBottom: 4, scrollbarWidth: 'none' }}>
+          {coaches.map((coach) => (
+            <div key={coach.id} style={{ flexShrink: 0, width: 100, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, padding: '8px 6px', borderRadius: 9, background: C.card2, border: `1px solid ${C.brd}` }}>
+              <div style={{ width: 52, height: 52, borderRadius: '50%', overflow: 'hidden', border: `2px solid ${C.brd2}`, flexShrink: 0, background: C.brd, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, fontWeight: 800, color: C.cyan }}>
+                {coach.avatar_url
+                  ? <img src={coach.avatar_url} alt={coach.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  : ini(coach.name)}
               </div>
-            ))}
-            <div
-              onClick={() => openModal('coaches')}
-              style={{
-                flexShrink: 0, width: 96,
-                display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-                gap: 6, padding: '10px 6px', borderRadius: 10,
-                background: 'transparent', border: `1px dashed ${C.brd2}`, cursor: 'pointer',
-                transition: 'border-color 0.15s',
-              }}
-              onMouseEnter={e => e.currentTarget.style.borderColor = C.cyanBrd}
-              onMouseLeave={e => e.currentTarget.style.borderColor = C.brd2}
-            >
-              <UserPlus style={{ width: 18, height: 18, color: C.t3 }} />
-              <span style={{ fontSize: 10, color: C.t3, textAlign: 'center' }}>Add coach</span>
+              <div style={{ fontSize: 11, fontWeight: 700, color: C.t1, textAlign: 'center', lineHeight: 1.3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', width: '100%', paddingInline: 4 }}>{coach.name}</div>
+              {coach.specialties?.length > 0 && (
+                <div style={{ fontSize: 9.5, color: C.t3, textAlign: 'center', lineHeight: 1.3, overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
+                  {coach.specialties.slice(0, 2).join(' · ')}
+                </div>
+              )}
+              {coach.rating && (
+                <div style={{ fontSize: 10, fontWeight: 700, color: C.amber, display: 'flex', alignItems: 'center', gap: 2 }}>
+                  <Star style={{ width: 9, height: 9 }} /> {coach.rating}
+                </div>
+              )}
             </div>
+          ))}
+          <div
+            onClick={onManage}
+            style={{ flexShrink: 0, width: 100, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 6, padding: '8px 6px', borderRadius: 9, background: 'transparent', border: `1px dashed ${C.brd2}`, cursor: 'pointer', transition: 'border-color 0.15s' }}
+            onMouseEnter={e => e.currentTarget.style.borderColor = C.cyanBrd}
+            onMouseLeave={e => e.currentTarget.style.borderColor = C.brd2}
+          >
+            <UserPlus style={{ width: 18, height: 18, color: C.t3 }} />
+            <span style={{ fontSize: 10, color: C.t3, textAlign: 'center' }}>Add coach</span>
           </div>
         </div>
       )}
-    </DashCard>
+    </div>
   );
 }
 
-/* ─── 8. QUICK ADMIN ACTIONS ────────────────────────────────── */
-function QuickActions({ openModal }) {
-  const actions = [
-    { label: 'Reset QR Codes',        action: () => openModal('qrCodes')   },
-    { label: 'Send Member Broadcast', action: () => openModal('broadcast')  },
-    { label: 'Update Gym Hours',      action: () => openModal('hours')      },
-  ];
+/* ─── FULL-WIDTH SECTION ────────────────────────────────────── */
+function FullSection({ title, subtitle, score, defaultOpen = true, children }) {
+  const [open, setOpen] = useState(defaultOpen);
+  const state = qualityState(score);
   return (
-    <DashCard>
-      <CardHeader title="Quick Admin Actions" />
-      <div style={{ display: 'flex', gap: 8, padding: '12px 14px 14px' }}>
-        {actions.map((a, i) => (
-          <ActionBtn key={i} label={a.label} onClick={a.action} flex />
-        ))}
-      </div>
-    </DashCard>
+    <div style={{ background: C.card, border: `1px solid ${score < 40 ? C.redBrd : C.brd}`, borderRadius: 10, overflow: 'hidden', marginBottom: 10 }}>
+      <button
+        onClick={() => setOpen(o => !o)}
+        style={{
+          width: '100%', display: 'flex', alignItems: 'center', padding: '13px 18px',
+          background: 'transparent', border: 'none', borderBottom: open ? `1px solid ${C.brd}` : 'none',
+          cursor: 'pointer', gap: 10, textAlign: 'left', fontFamily: FONT,
+        }}
+      >
+        <div style={{ flex: 1 }}>
+          <div style={{ fontSize: 13, fontWeight: 700, color: C.t1 }}>{title}</div>
+          {subtitle && <div style={{ fontSize: 11, color: C.t3, marginTop: 2 }}>{subtitle}</div>}
+        </div>
+        <StatusBadge score={score} />
+        {open
+          ? <ChevronUp style={{ width: 13, height: 13, color: C.t3, flexShrink: 0 }} />
+          : <ChevronDown style={{ width: 13, height: 13, color: C.t3, flexShrink: 0 }} />
+        }
+      </button>
+      {open && (
+        <>
+          {children}
+          <div style={{ height: 3, background: 'rgba(255,255,255,0.04)' }}>
+            <div style={{ height: '100%', width: `${score}%`, background: state.color, opacity: 0.5, transition: 'width 0.6s ease' }} />
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
+/* ─── TRUST ROW ─────────────────────────────────────────────── */
+function TrustRow({ gym, openModal }) {
+  const infoScore    = gym.name  ? 100 : 0;
+  const pricingScore = gym.price ? 100 : 0;
+  const infoState    = qualityState(infoScore);
+  const pricingState = qualityState(pricingScore);
+  return (
+    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1 }}>
+      {[
+        {
+          label: 'Gym Info',
+          state: infoState,
+          desc: gym.name
+            ? 'Name, address, and contact details are present.'
+            : "Core gym details are missing — members can't verify what's on offer.",
+          action: () => openModal('editInfo'),
+        },
+        {
+          label: 'Pricing',
+          state: pricingState,
+          desc: gym.price
+            ? `Listed at ${gym.price} — visible to members before joining.`
+            : 'Missing pricing creates uncertainty and reduces conversion.',
+          action: () => openModal('pricing'),
+        },
+      ].map((item, i) => (
+        <div
+          key={i}
+          onClick={item.action}
+          style={{ padding: '13px 18px', cursor: 'pointer', borderRight: i === 0 ? `1px solid ${C.brd}` : 'none', transition: 'background 0.15s' }}
+          onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.015)'}
+          onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
+            <span style={{ fontSize: 13, fontWeight: 600, color: C.t1 }}>{item.label}</span>
+            <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 20, color: item.state.color, background: item.state.dim, border: `1px solid ${item.state.brd}` }}>
+              {item.state.label}
+            </span>
+          </div>
+          <div style={{ fontSize: 11, color: C.t3 }}>{item.desc}</div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/* ─── TAGS LIST ─────────────────────────────────────────────── */
+function TagsList({ items, emptyText, onClick }) {
+  return (
+    <div style={{ padding: '12px 18px' }}>
+      {(!items || items.length === 0) ? (
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <span style={{ fontSize: 11, color: C.t3 }}>{emptyText}</span>
+          <button
+            onClick={onClick}
+            style={{
+              fontSize: 11.5, fontWeight: 700, padding: '5px 12px', borderRadius: 7,
+              background: C.cyan, color: '#fff', border: 'none', cursor: 'pointer',
+              fontFamily: FONT, boxShadow: SHADOW, display: 'flex', alignItems: 'center', gap: 4,
+            }}
+          >
+            <Plus style={{ width: 11, height: 11 }} /> Add
+          </button>
+        </div>
+      ) : (
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 7 }}>
+          {items.map((item, i) => (
+            <span key={i} style={{ fontSize: 11.5, padding: '4px 11px', borderRadius: 20, background: C.card2, border: `1px solid ${C.brd}`, color: C.t2 }}>
+              {typeof item === 'object' ? item.name || item.label : item}
+            </span>
+          ))}
+          <button
+            onClick={onClick}
+            style={{
+              fontSize: 11.5, padding: '4px 11px', borderRadius: 20,
+              background: C.cyanDim, border: `1px solid ${C.cyanBrd}`, color: C.cyan,
+              cursor: 'pointer', fontFamily: FONT, fontWeight: 700,
+            }}
+          >
+            + Edit
+          </button>
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -733,8 +467,7 @@ export default function TabGymProfile({ gym, openModal, coaches = [], onDeleteCo
     </div>
   );
 
-  /* ── Computed scores ── */
-  const galleryCount   = (gym.gallery || []).filter(Boolean).length;
+  const galleryCount   = gym.gallery?.length    || 0;
   const amenitiesCount = gym.amenities?.length   || 0;
   const equipmentCount = gym.equipment?.length   || 0;
   const hasLogo        = !!gym.logo_url;
@@ -750,42 +483,35 @@ export default function TabGymProfile({ gym, openModal, coaches = [], onDeleteCo
   const impressionScore = Math.round(([hasLogo, hasHero, galleryCount >= 3].filter(Boolean).length / 3) * 100);
   const trustScore      = Math.round(([hasInfo, hasPricing].filter(Boolean).length / 2) * 100);
   const discoveryScore  = Math.round(([hasAddress, hasSocial, coaches.length > 0].filter(Boolean).length / 3) * 100);
+  const amenitiesScore  = amenitiesCount >= 4 ? 100 : amenitiesCount > 0 ? 50 : 0;
+  const equipmentScore  = equipmentCount >= 5 ? 100 : equipmentCount > 0 ? 50 : 0;
+  const coachesScore    = coaches.length >= 2 ? 100 : coaches.length > 0 ? 60 : 0;
 
   const communityScore = gym.community_strength || Math.round((impressionScore + trustScore + discoveryScore) / 3);
   const communityState = qualityState(communityScore);
   const eng            = engLabel(rawEngScore);
   const act            = actLabel(postsWeek);
 
-  const profileScore = Math.min(100, Math.round(
-    (hasLogo ? 25 : 0) +
-    (hasHero  ? 20 : 0) +
-    (galleryCount >= 3 ? 20 : galleryCount > 0 ? 10 : 0) +
-    (hasInfo  ? 15 : 0) +
-    (hasPricing ? 10 : 0) +
-    (hasSocial  ? 10 : 0)
-  ));
+  const actSecondary = postsWeek === 0 ? 'No posts this week' : `${postsWeek}+ posts and comments this week.`;
 
-  const actSecondary = postsWeek === 0
-    ? 'No posts this week'
-    : `${postsWeek}+ posts and comments this week`;
+  const insight = buildInsight({ communityScore, engScore: rawEngScore, postsWeek, hasLogo, hasHero, galleryCount, amenitiesCount, price: hasPricing });
 
-  const insight = buildInsight({
-    communityScore, engScore: rawEngScore, postsWeek,
-    hasLogo, hasHero, galleryCount, amenitiesCount, price: hasPricing,
-  });
+  const logoScore    = hasLogo ? 100 : 0;
+  const coverScore   = hasHero ? 100 : 0;
+  const galleryScore = galleryCount >= 5 ? 100 : galleryCount > 0 ? 50 : 0;
+  const mapScore     = hasAddress ? 100 : 0;
+  const socialScore  = hasSocial ? 100 : 0;
 
   const previewUrl = createPageUrl('GymCommunity') + '?id=' + gym.id;
 
   return (
     <div style={{ fontFamily: FONT, maxWidth: 1080, padding: '2px 0 40px', color: C.t1 }}>
 
-      {/* ── PAGE HEADER ─────────────────────────────────── */}
+      {/* ── PAGE HEADER ───────────────────────────────────── */}
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 20, gap: 12 }}>
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 5 }}>
-            <h2 style={{ fontSize: 20, fontWeight: 800, color: C.t1, margin: 0, letterSpacing: '-0.03em' }}>
-              {gym.name}
-            </h2>
+            <h2 style={{ fontSize: 20, fontWeight: 800, color: C.t1, margin: 0, letterSpacing: '-0.03em' }}>{gym.name}</h2>
             {gym.verified && <BadgeCheck style={{ width: 16, height: 16, color: C.cyan }} />}
           </div>
           <p style={{ fontSize: 12, color: C.t3, margin: 0, lineHeight: 1.5, maxWidth: 480 }}>
@@ -793,22 +519,21 @@ export default function TabGymProfile({ gym, openModal, coaches = [], onDeleteCo
           </p>
         </div>
         <Link to={previewUrl} target="_blank" style={{ textDecoration: 'none', flexShrink: 0 }}>
-          <button
-            style={{
-              display: 'flex', alignItems: 'center', gap: 6, padding: '8px 15px', borderRadius: 8,
-              fontSize: 12, fontWeight: 700, background: C.card, border: `1px solid ${C.brd}`,
-              color: C.t2, cursor: 'pointer', whiteSpace: 'nowrap', fontFamily: FONT,
-              transition: 'border-color 0.15s, color 0.15s',
-            }}
+          <button style={{
+            display: 'flex', alignItems: 'center', gap: 6, padding: '8px 15px', borderRadius: 8,
+            fontSize: 12, fontWeight: 700, background: C.card, border: `1px solid ${C.brd}`,
+            color: C.t2, cursor: 'pointer', whiteSpace: 'nowrap', fontFamily: FONT,
+            transition: 'border-color 0.15s, color 0.15s',
+          }}
             onMouseEnter={e => { e.currentTarget.style.borderColor = C.cyanBrd; e.currentTarget.style.color = C.t1; }}
-            onMouseLeave={e => { e.currentTarget.style.borderColor = C.brd;     e.currentTarget.style.color = C.t2; }}
+            onMouseLeave={e => { e.currentTarget.style.borderColor = C.brd; e.currentTarget.style.color = C.t2; }}
           >
             <ExternalLink style={{ width: 11, height: 11 }} /> Member View
           </button>
         </Link>
       </div>
 
-      {/* ── METRIC CARDS ─────────────────────────────────── */}
+      {/* ── METRIC CARDS ──────────────────────────────────── */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 9, marginBottom: 14 }}>
         <MetricCard
           label="Community Strength"
@@ -840,57 +565,153 @@ export default function TabGymProfile({ gym, openModal, coaches = [], onDeleteCo
         />
       </div>
 
-      {/* ── INSIGHT BAR ──────────────────────────────────── */}
+      {/* ── INSIGHT BAR ───────────────────────────────────── */}
       <InsightBar text={insight} />
 
-      {/* ── ROW 2: Profile Branding | Photo Gallery ──────── */}
+      {/* ── PROFILE DIAGNOSIS LABEL ───────────────────────── */}
+      <div style={{ fontSize: 9.5, fontWeight: 700, color: C.t3, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 10 }}>
+        Profile Diagnosis
+      </div>
+
+      {/* ══ TWO-COLUMN GRID ════════════════════════════════ */}
       <div style={{ display: 'grid', gridTemplateColumns: '55% 1fr', gap: 10, marginBottom: 10 }}>
-        <ProfileBrandingCard gym={gym} openModal={openModal} profileScore={profileScore} />
-        <PhotoGalleryCard gym={gym} openModal={openModal} galleryCount={galleryCount} />
-      </div>
 
-      {/* ── ROW 3: Trust | Amenities | Equipment ─────────── */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10, marginBottom: 10 }}>
-        <TrustCard gym={gym} openModal={openModal} />
-        <AmenitiesCard gym={gym} openModal={openModal} />
-        <EquipmentCard gym={gym} openModal={openModal} />
-      </div>
-
-      {/* ── ROW 4: Discovery | Coaches ───────────────────── */}
-      <div style={{ display: 'grid', gridTemplateColumns: '55% 1fr', gap: 10, marginBottom: 10 }}>
-        <DiscoveryCard gym={gym} openModal={openModal} />
-        <CoachesCard coaches={coaches} openModal={openModal} />
-      </div>
-
-      {/* ── QUICK ADMIN ACTIONS ──────────────────────────── */}
-      <div style={{ marginBottom: 10 }}>
-        <QuickActions openModal={openModal} />
-      </div>
-
-      {/* ── RETENTION FOOTER ─────────────────────────────── */}
-      <DashCard>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '13px 18px' }}>
-          <div style={{
-            width: 34, height: 34, borderRadius: 9, flexShrink: 0,
-            background: C.cyanDim, border: `1px solid ${C.cyanBrd}`,
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-          }}>
-            <TrendingUp style={{ width: 14, height: 14, color: C.cyan }} />
+        {/* LEFT — First Impression */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          <SectionHeader
+            title="First Impression"
+            subtitle="What a member sees the moment they find your gym."
+          />
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+            <ItemCard
+              title="Logo / Profile Photo"
+              score={logoScore}
+              microcopy={hasLogo ? 'Shown on your gym card and header.' : 'No logo reduces recognition at first glance.'}
+              onClick={() => openModal('logo')}
+            >
+              <LogoVisual logoUrl={gym.logo_url} />
+            </ItemCard>
+            <ItemCard
+              title="Cover Image"
+              score={coverScore}
+              microcopy={hasHero ? 'Visible across your gym page.' : 'No cover makes your page feel empty.'}
+              onClick={() => openModal('heroPhoto')}
+            >
+              <CoverVisual imageUrl={gym.image_url} />
+            </ItemCard>
           </div>
-          <div style={{ flex: 1 }}>
-            <div style={{ fontSize: 13, fontWeight: 700, color: C.t1 }}>Retention impact</div>
-            <div style={{ fontSize: 11, color: C.t3, marginTop: 2 }}>
-              Gyms with complete profiles and active communities retain members{' '}
-              <span style={{ color: C.t2, fontWeight: 600 }}>2.3× longer</span> on average.
-            </div>
-          </div>
-          <Link to={previewUrl} target="_blank" style={{ textDecoration: 'none', flexShrink: 0 }}>
-            <span style={{ fontSize: 12, fontWeight: 700, color: C.cyan, display: 'flex', alignItems: 'center', gap: 4, cursor: 'pointer' }}>
-              See member view <ExternalLink style={{ width: 11, height: 11 }} />
-            </span>
-          </Link>
+          <ItemCard
+            title="Photo Gallery"
+            score={galleryScore}
+            microcopy={
+              galleryCount >= 5 ? `Rich gallery with ${galleryCount}+ photos.`
+              : galleryCount > 0 ? `${galleryCount} photo${galleryCount !== 1 ? 's' : ''} — more variety builds confidence.`
+              : "No gallery. Members can't visualise the space before visiting."
+            }
+            onClick={() => openModal('photos')}
+          >
+            <GalleryVisual gallery={gym.gallery} />
+          </ItemCard>
         </div>
-      </DashCard>
+
+        {/* RIGHT — Discovery */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          <SectionHeader
+            title="Discovery"
+            subtitle="What makes your gym distinct — and searchable."
+          />
+          <ItemCard
+            title="Keywords & Tags"
+            score={mapScore}
+            microcopy="Populates hours, address, and location data."
+            onClick={() => openModal('editInfo')}
+          >
+            <MapVisual gym={gym} />
+          </ItemCard>
+          <ItemCard
+            title="Social Media Links"
+            score={socialScore}
+            microcopy={hasSocial ? 'Social presence increases discoverability.' : 'No social links. Reduces visibility and trust.'}
+            onClick={() => openModal('editInfo')}
+          >
+            <SocialVisual gym={gym} />
+          </ItemCard>
+          <ItemCard
+            title="Coaches & Staff"
+            score={coachesScore}
+            microcopy={coaches.length > 0 ? `${coaches.length} coach${coaches.length !== 1 ? 'es' : ''} on your team.` : 'Add coaches to showcase your team.'}
+            onClick={() => openModal('coaches')}
+          >
+            <CoachesVisual coaches={coaches} onManage={() => openModal('coaches')} />
+          </ItemCard>
+        </div>
+      </div>
+
+      {/* ══ FULL-WIDTH SECTIONS ════════════════════════════ */}
+
+      <FullSection
+        title="Trust & Clarity"
+        subtitle="Information members need to feel confident before joining."
+        score={trustScore}
+        defaultOpen={trustScore < 100}
+      >
+        <TrustRow gym={gym} openModal={openModal} />
+      </FullSection>
+
+      <FullSection
+        title="Amenities"
+        subtitle="Highlight what members can access and enjoy."
+        score={amenitiesScore}
+        defaultOpen={amenitiesScore < 100}
+      >
+        <TagsList
+          items={gym.amenities}
+          emptyText="No amenities listed. Members can't compare what you offer."
+          onClick={() => openModal('amenities')}
+        />
+      </FullSection>
+
+      <FullSection
+        title="Equipment"
+        subtitle="Help members find the equipment they care about."
+        score={equipmentScore}
+        defaultOpen={equipmentScore < 100}
+      >
+        <TagsList
+          items={gym.equipment}
+          emptyText="No equipment listed. A common reason members choose a competitor."
+          onClick={() => openModal('equipment')}
+        />
+      </FullSection>
+
+      {/* ── FOOTER ────────────────────────────────────────── */}
+      <div style={{
+        display: 'flex', alignItems: 'center', gap: 14, padding: '13px 18px',
+        marginTop: 4, background: C.card, border: `1px solid ${C.brd}`, borderRadius: 10,
+      }}>
+        <div style={{
+          width: 34, height: 34, borderRadius: 9, flexShrink: 0,
+          background: C.cyanDim, border: `1px solid ${C.cyanBrd}`,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+        }}>
+          <TrendingUp style={{ width: 14, height: 14, color: C.cyan }} />
+        </div>
+        <div style={{ flex: 1 }}>
+          <div style={{ fontSize: 13, fontWeight: 700, color: C.t1 }}>Retention impact</div>
+          <div style={{ fontSize: 11, color: C.t3, marginTop: 2 }}>
+            Gyms with complete profiles and active communities retain members{' '}
+            <span style={{ color: C.t2, fontWeight: 600 }}>2.3× longer</span> on average.
+          </div>
+        </div>
+        <Link to={previewUrl} target="_blank" style={{ textDecoration: 'none', flexShrink: 0 }}>
+          <span style={{
+            fontSize: 12, fontWeight: 700, color: C.cyan,
+            display: 'flex', alignItems: 'center', gap: 4, cursor: 'pointer',
+          }}>
+            See member view <ExternalLink style={{ width: 11, height: 11 }} />
+          </span>
+        </Link>
+      </div>
 
     </div>
   );

@@ -10,10 +10,6 @@ export default function EditGymLogoModal({ open, onClose, currentLogoUrl, onSave
   const [logoUrl, setLogoUrl] = useState(currentLogoUrl || '');
   const [uploading, setUploading] = useState(false);
 
-  React.useEffect(() => {
-    if (open) setLogoUrl(currentLogoUrl || '');
-  }, [open, currentLogoUrl]);
-
   const handleFileUpload = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
