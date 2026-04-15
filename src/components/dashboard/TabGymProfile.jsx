@@ -218,127 +218,178 @@ function Tab({ label, icon: Icon, active, onClick }) {
 
 /* ─────────────────────────── mini phone mockup ─────────────────────── */
 function PhoneMockup({ gym }) {
-  return (
-    <div style={{
-      background: '#0a0a0c', border: `2px solid ${T.brd2}`, borderRadius: 24,
-      overflow: 'hidden', width: '100%', boxShadow: '0 20px 60px rgba(0,0,0,0.6)',
-    }}>
-      {/* status bar */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 16px 4px', background: '#0a0a0c' }}>
-        <span style={{ fontSize: 10, fontWeight: 700, color: T.t1 }}>9:41</span>
-        <div style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
-          <div style={{ width: 12, height: 6, border: `1px solid ${T.t2}`, borderRadius: 2, position: 'relative' }}>
-            <div style={{ position: 'absolute', inset: 1, right: 3, background: T.t1, borderRadius: 1 }} />
-          </div>
-          <div style={{ fontSize: 8, color: T.t2 }}>●● ▲</div>
-        </div>
-      </div>
+  const [activeScreen, setActiveScreen] = useState('home');
+  const [liked, setLiked] = useState({});
 
-      {/* hero */}
-      <div style={{ height: 90, background: T.card2, position: 'relative', overflow: 'hidden' }}>
-        {gym?.image_url
-          ? <img src={gym.image_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: 0.7 }} />
-          : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <Dumbbell style={{ width: 24, height: 24, color: T.t3 }} />
-            </div>}
-        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.8), transparent)' }} />
-        {/* logo */}
-        <div style={{
-          position: 'absolute', bottom: 8, left: 10, display: 'flex', alignItems: 'center', gap: 6,
-        }}>
-          <div style={{
-            width: 32, height: 32, borderRadius: '50%',
-            background: T.card, border: `2px solid ${T.cyan}`,
-            display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden',
-          }}>
-            {gym?.logo_url
-              ? <img src={gym.logo_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-              : <Dumbbell style={{ width: 12, height: 12, color: T.cyan }} />}
-          </div>
-          <div>
-            <div style={{ fontSize: 9, fontWeight: 800, color: '#fff' }}>{gym?.name || 'Your Gym'}</div>
-            <div style={{ fontSize: 8, color: 'rgba(255,255,255,0.5)', display: 'flex', alignItems: 'center', gap: 2 }}>
-              <MapPin style={{ width: 7, height: 7 }} />
-              {gym?.city || 'City'} · {gym?.type || 'General'}
+  const gymName = gym?.name || 'Your Gym';
+  const gymCity = gym?.city || 'City';
+  const gymType = gym?.type || 'General';
+  const memberCount = gym?.members_count || 247;
+  const rating = gym?.rating || 4.8;
+  const price = gym?.price || '£45/mo';
+
+  const posts = [
+    { id: 1, name: 'Alex T.', initials: 'AT', color: '#3b82f6', time: '2h ago', text: `Just smashed a new deadlift PR at ${gymName}! 🔥 Community here is unreal.`, likes: 18, comments: 4 },
+    { id: 2, name: 'Priya S.', initials: 'PS', color: '#8b5cf6', time: '4h ago', text: 'Morning HIIT class was 🔥 Coach Sam never lets us slack. See you all tomorrow!', likes: 12, comments: 2 },
+    { id: 3, name: 'Jamie R.', initials: 'JR', color: '#10b981', time: '6h ago', text: '30-day streak complete! Consistency is everything 💪', likes: 34, comments: 9 },
+  ];
+
+  const SCREEN = {
+    home: (
+      <div style={{ flex: 1, overflowY: 'auto', background: 'linear-gradient(to bottom, #02040a, #0d2360 50%, #02040a)' }}>
+        {/* Hero */}
+        <div style={{ position: 'relative', height: 100, overflow: 'hidden' }}>
+          {gym?.image_url
+            ? <img src={gym.image_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: 0.6 }} />
+            : <div style={{ width: '100%', height: '100%', background: 'linear-gradient(135deg,#1e3a8a,#0f172a)' }} />}
+          <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(2,4,10,0.9), transparent)' }} />
+          <div style={{ position: 'absolute', bottom: 8, left: 10, display: 'flex', alignItems: 'center', gap: 6 }}>
+            <div style={{ width: 28, height: 28, borderRadius: '50%', background: '#0a0f1e', border: `2px solid ${T.cyan}`, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', flexShrink: 0 }}>
+              {gym?.logo_url ? <img src={gym.logo_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <Dumbbell style={{ width: 11, height: 11, color: T.cyan }} />}
+            </div>
+            <div>
+              <div style={{ fontSize: 10, fontWeight: 800, color: '#fff', lineHeight: 1 }}>{gymName}</div>
+              <div style={{ fontSize: 8, color: 'rgba(255,255,255,0.5)' }}>{gymCity} · {gymType}</div>
             </div>
           </div>
+          {gym?.claim_status === 'claimed' && (
+            <div style={{ position: 'absolute', top: 8, right: 8, display: 'flex', alignItems: 'center', gap: 3, background: T.greenDim, border: `1px solid ${T.greenBrd}`, borderRadius: 99, padding: '2px 6px' }}>
+              <BadgeCheck style={{ width: 7, height: 7, color: T.green }} />
+              <span style={{ fontSize: 7, fontWeight: 700, color: T.green }}>Official</span>
+            </div>
+          )}
         </div>
-      </div>
 
-      {/* rating row */}
-      <div style={{ padding: '8px 12px', borderBottom: `1px solid ${T.brd}`, display: 'flex', alignItems: 'center', gap: 6 }}>
-        <div style={{ display: 'flex', gap: 1 }}>
-          {[1,2,3,4,5].map(s => (
-            <Star key={s} style={{ width: 9, height: 9, color: T.amber, fill: T.amber }} />
+        {/* Stats strip */}
+        <div style={{ display: 'flex', borderBottom: `1px solid rgba(255,255,255,0.06)` }}>
+          {[
+            { label: 'Members', value: memberCount },
+            { label: 'Rating', value: rating },
+            { label: 'Price', value: price },
+          ].map((s, i) => (
+            <div key={i} style={{ flex: 1, padding: '7px 4px', textAlign: 'center', borderRight: i < 2 ? '1px solid rgba(255,255,255,0.06)' : 'none' }}>
+              <div style={{ fontSize: 11, fontWeight: 900, color: '#fff', letterSpacing: '-0.02em' }}>{s.value}</div>
+              <div style={{ fontSize: 7, color: 'rgba(255,255,255,0.3)', marginTop: 1 }}>{s.label}</div>
+            </div>
           ))}
         </div>
-        <span style={{ fontSize: 9, fontWeight: 700, color: T.t1 }}>{gym?.rating || '4.8'}</span>
-        <span style={{ fontSize: 9, color: T.t3 }}>({gym?.members_count || 524} Members)</span>
-        {gym?.claim_status === 'claimed' && (
-          <span style={{ marginLeft: 'auto', fontSize: 9, fontWeight: 700, color: T.green, display: 'flex', alignItems: 'center', gap: 3 }}>
-            <BadgeCheck style={{ width: 9, height: 9 }} /> Official Gym
-          </span>
-        )}
-      </div>
 
-      {/* official badge */}
-      <div style={{ padding: '8px 12px', borderBottom: `1px solid ${T.brd}` }}>
-        <div style={{
-          padding: '7px 10px', borderRadius: 8, background: T.greenDim,
-          border: `1px solid ${T.greenBrd}`, display: 'flex', alignItems: 'center',
-          justifyContent: 'center', gap: 6,
-        }}>
-          <BadgeCheck style={{ width: 10, height: 10, color: T.green }} />
-          <span style={{ fontSize: 10, fontWeight: 700, color: T.green }}>Official Gym</span>
+        {/* Check in button */}
+        <div style={{ padding: '8px 10px', borderBottom: `1px solid rgba(255,255,255,0.06)` }}>
+          <button style={{ width: '100%', padding: '7px', borderRadius: 10, background: 'linear-gradient(135deg,#3b82f6,#2563eb)', border: 'none', color: '#fff', fontSize: 9, fontWeight: 800, cursor: 'pointer', letterSpacing: '0.05em' }}>
+            ✓ CHECK IN
+          </button>
         </div>
-      </div>
 
-      {/* community feed */}
-      <div style={{ padding: '8px 12px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-          <span style={{ fontSize: 10, fontWeight: 700, color: T.t1 }}>Community Feed</span>
-          <span style={{ fontSize: 9, color: T.cyan }}>See All ›</span>
-        </div>
-        {[
-          { name: 'Sarah M.', time: '2h ago', text: 'Great morning class with amazing energy! Feeling stronger every week 💪' },
-          { name: 'Mike R.',  time: '16 ago', text: 'Love the community here – everyone pushes each other to be better 🙌' },
-        ].map((p, i) => (
-          <div key={i} style={{ marginBottom: i === 0 ? 8 : 0, paddingBottom: i === 0 ? 8 : 0, borderBottom: i === 0 ? `1px solid ${T.brd}` : 'none' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
-              <div style={{ width: 16, height: 16, borderRadius: '50%', background: T.card2, border: `1px solid ${T.brd}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <UserIcon style={{ width: 8, height: 8, color: T.t3 }} />
+        {/* Feed */}
+        <div style={{ padding: '8px 10px 4px' }}>
+          <div style={{ fontSize: 9, fontWeight: 800, color: 'rgba(255,255,255,0.4)', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 8 }}>Community Feed</div>
+          {posts.map((p, i) => (
+            <div key={p.id} style={{ marginBottom: 8, padding: '8px 9px', background: 'rgba(255,255,255,0.04)', borderRadius: 10, border: '1px solid rgba(255,255,255,0.06)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginBottom: 5 }}>
+                <div style={{ width: 18, height: 18, borderRadius: '50%', background: p.color, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 7, fontWeight: 800, color: '#fff', flexShrink: 0 }}>{p.initials}</div>
+                <span style={{ fontSize: 9, fontWeight: 700, color: '#fff', flex: 1 }}>{p.name}</span>
+                <span style={{ fontSize: 7, color: 'rgba(255,255,255,0.3)' }}>{p.time}</span>
               </div>
-              <span style={{ fontSize: 9, fontWeight: 700, color: T.t1 }}>{p.name}</span>
-              <span style={{ fontSize: 8, color: T.t3, marginLeft: 'auto' }}>{p.time}</span>
+              <p style={{ fontSize: 8.5, color: 'rgba(226,232,240,0.8)', margin: 0, lineHeight: 1.45 }}>{p.text}</p>
+              <div style={{ display: 'flex', gap: 10, marginTop: 5 }}>
+                <button onClick={() => setLiked(l => ({ ...l, [p.id]: !l[p.id] }))}
+                  style={{ display: 'flex', alignItems: 'center', gap: 3, background: 'none', border: 'none', cursor: 'pointer', color: liked[p.id] ? '#f472b6' : 'rgba(255,255,255,0.3)', fontSize: 7.5, fontWeight: 700, padding: 0 }}>
+                  ♡ {p.likes + (liked[p.id] ? 1 : 0)}
+                </button>
+                <span style={{ fontSize: 7.5, color: 'rgba(255,255,255,0.3)' }}>💬 {p.comments}</span>
+              </div>
             </div>
-            <p style={{ fontSize: 9, color: T.t2, margin: 0, lineHeight: 1.4 }}>{p.text}</p>
-            <div style={{ display: 'flex', gap: 8, marginTop: 4 }}>
-              <span style={{ fontSize: 8, color: T.t3 }}>♡ 12</span>
-              <span style={{ fontSize: 8, color: T.t3 }}>💬 4</span>
+          ))}
+        </div>
+      </div>
+    ),
+    members: (
+      <div style={{ flex: 1, overflowY: 'auto', background: '#02040a', padding: '10px' }}>
+        <div style={{ fontSize: 10, fontWeight: 800, color: '#fff', marginBottom: 10 }}>Members ({memberCount})</div>
+        {[
+          { initials: 'AT', name: 'Alex T.', color: '#3b82f6', streak: 14, pr: 'Deadlift 180kg' },
+          { initials: 'PS', name: 'Priya S.', color: '#8b5cf6', streak: 8, pr: 'Squat 100kg' },
+          { initials: 'JR', name: 'Jamie R.', color: '#10b981', streak: 30, pr: 'Bench 120kg' },
+          { initials: 'MK', name: 'Marcus K.', color: '#f59e0b', streak: 5, pr: 'OHP 80kg' },
+          { initials: 'SC', name: 'Sara C.', color: '#ef4444', streak: 22, pr: 'Row 140kg' },
+        ].map((m, i) => (
+          <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '7px 0', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+            <div style={{ width: 26, height: 26, borderRadius: '50%', background: m.color, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 8, fontWeight: 800, color: '#fff', flexShrink: 0 }}>{m.initials}</div>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontSize: 9, fontWeight: 700, color: '#fff' }}>{m.name}</div>
+              <div style={{ fontSize: 7.5, color: 'rgba(255,255,255,0.35)' }}>🔥 {m.streak}d streak · {m.pr}</div>
             </div>
           </div>
         ))}
       </div>
-
-      {/* bottom nav */}
-      <div style={{
-        display: 'flex', justifyContent: 'space-around', alignItems: 'center',
-        padding: '10px 8px 12px', borderTop: `1px solid ${T.brd}`, background: T.card,
-      }}>
+    ),
+    classes: (
+      <div style={{ flex: 1, overflowY: 'auto', background: '#02040a', padding: '10px' }}>
+        <div style={{ fontSize: 10, fontWeight: 800, color: '#fff', marginBottom: 10 }}>Today's Classes</div>
         {[
-          { icon: Home, label: 'Home' },
-          { icon: Users, label: 'Community' },
-          { icon: null,  label: '+', special: true },
-          { icon: Calendar, label: 'Bookings' },
-          { icon: UserIcon, label: 'Profile' },
-        ].map((n, i) => (
-          <div key={i} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
-            {n.special
-              ? <div style={{ width: 24, height: 24, borderRadius: '50%', background: T.cyan, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, fontWeight: 700, color: '#fff' }}>+</div>
-              : n.icon && <n.icon style={{ width: 13, height: 13, color: i === 1 ? T.cyan : T.t3 }} />}
-            <span style={{ fontSize: 8, color: i === 1 ? T.cyan : T.t3 }}>{n.label}</span>
+          { name: 'Morning HIIT', time: '06:30', coach: 'Sam T.', spots: 3, color: '#ef4444' },
+          { name: 'Strength & Power', time: '09:00', coach: 'Alex R.', spots: 8, color: '#8b5cf6' },
+          { name: 'Lunchtime Yoga', time: '12:30', coach: 'Lisa M.', spots: 12, color: '#10b981' },
+          { name: 'Evening CrossFit', time: '18:00', coach: 'Sam T.', spots: 2, color: '#f59e0b' },
+        ].map((c, i) => (
+          <div key={i} style={{ marginBottom: 7, padding: '8px 9px', background: 'rgba(255,255,255,0.04)', borderRadius: 10, border: '1px solid rgba(255,255,255,0.07)', borderLeft: `3px solid ${c.color}` }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+              <div>
+                <div style={{ fontSize: 9, fontWeight: 700, color: '#fff' }}>{c.name}</div>
+                <div style={{ fontSize: 7.5, color: 'rgba(255,255,255,0.4)', marginTop: 2 }}>{c.time} · {c.coach}</div>
+              </div>
+              <button style={{ padding: '3px 8px', borderRadius: 6, background: c.spots <= 3 ? 'rgba(239,68,68,0.15)' : 'rgba(59,130,246,0.15)', border: `1px solid ${c.spots <= 3 ? 'rgba(239,68,68,0.3)' : 'rgba(59,130,246,0.3)'}`, color: c.spots <= 3 ? '#f87171' : '#60a5fa', fontSize: 7.5, fontWeight: 700, cursor: 'pointer' }}>
+                {c.spots <= 3 ? `${c.spots} left` : 'Book'}
+              </button>
+            </div>
           </div>
         ))}
+      </div>
+    ),
+  };
+
+  const NAV = [
+    { id: 'home', icon: Home, label: 'Home' },
+    { id: 'members', icon: Users, label: 'Members' },
+    { id: null, icon: null, label: '+', special: true },
+    { id: 'classes', icon: Calendar, label: 'Classes' },
+    { id: 'profile', icon: UserIcon, label: 'Profile' },
+  ];
+
+  return (
+    <div style={{
+      background: '#0a0a0c', border: `2px solid ${T.brd2}`, borderRadius: 28,
+      overflow: 'hidden', width: '100%', boxShadow: '0 20px 60px rgba(0,0,0,0.7)',
+      display: 'flex', flexDirection: 'column',
+    }}>
+      {/* Status bar */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 14px 4px', background: '#0a0a0c', flexShrink: 0 }}>
+        <span style={{ fontSize: 9, fontWeight: 700, color: T.t1 }}>9:41</span>
+        <div style={{ fontSize: 7, color: T.t2 }}>●●● ▲ 🔋</div>
+      </div>
+
+      {/* Screen content */}
+      <div style={{ height: 420, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+        {SCREEN[activeScreen] || SCREEN.home}
+      </div>
+
+      {/* Bottom nav */}
+      <div style={{ display: 'flex', justifyContent: 'space-around', alignItems: 'center', padding: '8px 6px 10px', borderTop: `1px solid rgba(255,255,255,0.06)`, background: 'rgba(10,10,12,0.98)', flexShrink: 0 }}>
+        {NAV.map((n, i) => (
+          <button key={i} onClick={() => n.id && setActiveScreen(n.id)}
+            style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, background: 'none', border: 'none', cursor: n.id ? 'pointer' : 'default', padding: '2px 4px' }}>
+            {n.special
+              ? <div style={{ width: 26, height: 26, borderRadius: '50%', background: 'linear-gradient(135deg,#3b82f6,#2563eb)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, fontWeight: 700, color: '#fff' }}>+</div>
+              : n.icon && <n.icon style={{ width: 14, height: 14, color: activeScreen === n.id ? T.cyan : 'rgba(255,255,255,0.35)' }} />}
+            <span style={{ fontSize: 7.5, color: activeScreen === n.id ? T.cyan : 'rgba(255,255,255,0.3)', fontWeight: activeScreen === n.id ? 700 : 400 }}>{n.label}</span>
+          </button>
+        ))}
+      </div>
+
+      {/* Home bar */}
+      <div style={{ height: 18, background: '#0a0a0c', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+        <div style={{ width: 60, height: 3, borderRadius: 2, background: T.brd2 }} />
       </div>
     </div>
   );
@@ -683,41 +734,7 @@ export default function TabGymProfile({ gym, openModal, setShowPoster }) {
               <span style={{ width: 6, height: 6, borderRadius: '50%', background: T.green, display: 'inline-block' }} /> Live
             </span>
           </div>
-          {/* Phone shell */}
-          <div style={{
-            margin: '0 auto',
-            width: 232,
-            background: '#0a0a0c',
-            border: `2px solid ${T.brd2}`,
-            borderRadius: 36,
-            overflow: 'hidden',
-            boxShadow: '0 20px 60px rgba(0,0,0,0.6)',
-            position: 'relative',
-          }}>
-            {/* Notch */}
-            <div style={{ height: 28, background: '#0a0a0c', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <div style={{ width: 60, height: 8, borderRadius: 4, background: T.brd2 }} />
-            </div>
-            {/* iframe viewport */}
-            <div style={{ height: 480, overflow: 'hidden', position: 'relative' }}>
-              <iframe
-                src={previewUrl}
-                style={{
-                  width: 390,
-                  height: 844,
-                  border: 'none',
-                  transform: 'scale(0.595)',
-                  transformOrigin: 'top left',
-                  pointerEvents: 'auto',
-                }}
-                title="Member App Preview"
-              />
-            </div>
-            {/* Home bar */}
-            <div style={{ height: 24, background: '#0a0a0c', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <div style={{ width: 80, height: 4, borderRadius: 2, background: T.brd2 }} />
-            </div>
-          </div>
+          <PhoneMockup gym={gym} />
           <Link to={previewUrl} target="_blank" style={{ textDecoration: 'none' }}>
             <button style={{
               width: '100%', marginTop: 12, padding: '8px 0', borderRadius: 9,
