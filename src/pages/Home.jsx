@@ -1404,8 +1404,8 @@ export default function Home() {
         celebrationChallenges={celebrationChallenges}
         showShareWorkout={showShareWorkout}
         celebrationWorkoutName={celebrationWorkoutName}
-        celebrationExercises={celebrationExercises}
-        celebrationPreviousExercises={celebrationPreviousExercises}
+        celebrationExercises={(celebrationExercises || []).filter(Boolean)}
+        celebrationPreviousExercises={(celebrationPreviousExercises || []).filter(Boolean)}
         celebrationDurationMinutes={celebrationDurationMinutes}
         currentUser={currentUser}
         gymId={primaryGymIdForQuery}
