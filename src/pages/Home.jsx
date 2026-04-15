@@ -1178,7 +1178,7 @@ export default function Home() {
                                     if (done && workoutLog) return workoutLog.workout_name || workoutLog.title || workoutLog.workout_type || workoutLog.name || workoutLog.split_name || 'Workout';
                                     if (done) return 'Workout';
                                     const customTypes = currentUser?.custom_workout_types;
-                                    const splitDay = customTypes ? Array.isArray(customTypes) ? customTypes.find((s) => s.day === day || s.day_of_week === day) : customTypes[day] : null;
+                                    const splitDay = customTypes ? Array.isArray(customTypes) ? customTypes.filter(Boolean).find((s) => s && (s.day === day || s.day_of_week === day)) : customTypes[day] : null;
                                     return splitDay?.name || splitDay?.title || splitDay?.workout_type || 'Training Day';
                                   })(),
                                   dateLabel: done && workoutLog?.completed_date
