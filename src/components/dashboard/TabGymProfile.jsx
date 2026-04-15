@@ -283,7 +283,7 @@ function ProfileBrandingCard({ gym, openModal, profileScore }) {
 
 /* ─── 2. PHOTO GALLERY MANAGEMENT ──────────────────────────── */
 function PhotoGalleryCard({ gym, openModal, galleryCount }) {
-  const photos = (gym.gallery || []).slice(0, 5).map(g => g.url || g);
+  const photos = (gym.gallery || []).filter(Boolean).slice(0, 5).map(g => g.url || g);
   const hintText = galleryCount === 0
     ? 'No photos yet.'
     : galleryCount < 8
