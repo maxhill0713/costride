@@ -960,7 +960,7 @@ export default function Home() {
                     const remainingCount = Math.max(0, friendCheckInUsers.length - 5);
                     return (
                       <>
-                        {displayedUsers.map((u) => (
+                        {displayedUsers.filter(Boolean).map((u) => (
                           <div key={u.user_id} className="relative group">
                             {u.avatar_url ? (
                               <img src={u.avatar_url} alt={u.display_name || u.username} className="w-8 h-8 rounded-full object-cover border-2 border-green-700" loading="lazy" />
@@ -1025,7 +1025,7 @@ export default function Home() {
                       <span className="text-xs text-slate-300 font-medium">{getCommunityText()}</span>
                       <div className="flex items-center gap-2">
                         <div className="flex items-center -space-x-2">
-                          {enrichedCheckInUsers.slice(0, 2).map((u) => (
+                          {enrichedCheckInUsers.filter(Boolean).slice(0, 2).map((u) => (
                             <div key={u.user_id} className="relative">
                               {u.avatar_url ? (
                                 <img src={u.avatar_url} alt={u.display_name || u.username} className="w-6 h-6 rounded-full object-cover border-2 border-slate-700" loading="lazy" />
