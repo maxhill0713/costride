@@ -411,7 +411,7 @@ export default function Home() {
       base44.functions.invoke('getFriendPosts', {
         friendIds: friendIdList,
         limit: 200,
-      }).then(res => (res.data?.posts || []).filter(Boolean)),
+      }).then(res => res.data?.posts || []),
     enabled: !!currentUser,
     staleTime: 1 * 60 * 1000,
     gcTime: 5 * 60 * 1000,
@@ -960,7 +960,7 @@ export default function Home() {
                     const remainingCount = Math.max(0, friendCheckInUsers.length - 5);
                     return (
                       <>
-                        {displayedUsers.filter(Boolean).map((u) => (
+                        {displayedUsers.map((u) => (
                           <div key={u.user_id} className="relative group">
                             {u.avatar_url ? (
                               <img src={u.avatar_url} alt={u.display_name || u.username} className="w-8 h-8 rounded-full object-cover border-2 border-green-700" loading="lazy" />
@@ -1025,7 +1025,7 @@ export default function Home() {
                       <span className="text-xs text-slate-300 font-medium">{getCommunityText()}</span>
                       <div className="flex items-center gap-2">
                         <div className="flex items-center -space-x-2">
-                          {enrichedCheckInUsers.filter(Boolean).slice(0, 2).map((u) => (
+                          {enrichedCheckInUsers.slice(0, 2).map((u) => (
                             <div key={u.user_id} className="relative">
                               {u.avatar_url ? (
                                 <img src={u.avatar_url} alt={u.display_name || u.username} className="w-6 h-6 rounded-full object-cover border-2 border-slate-700" loading="lazy" />
@@ -1056,7 +1056,7 @@ export default function Home() {
             const mondayBase = startOfWeek(new Date(), { weekStartsOn: 1 });
             mondayBase.setDate(mondayBase.getDate() + weekOffset * 7);
             const logsByDay = {};
-            weeklyWorkoutLogs.filter(Boolean).forEach((l) => {
+            weeklyWorkoutLogs.forEach((l) => {
               const dateStr = (l.completed_date || '').split('T')[0];
               const parts = dateStr.split('-').map(Number);
               const d = (parts.length === 3 && parts[0])
@@ -1335,7 +1335,7 @@ export default function Home() {
 
           {socialFeedPosts.length > 0 && (
             <div className="space-y-3">
-              {socialFeedPosts.filter(Boolean).map((post) => (
+              {socialFeedPosts.map((post) => (
                 <PostCard key={post.id} post={post} fullWidth={true} currentUser={currentUser} isOwnProfile={post.member_id === currentUser?.id} onLike={() => {}} onComment={() => {}} onSave={() => {}} onDelete={() => queryClient.invalidateQueries({ queryKey: ['posts'] })} friends={friends} sentFriendRequests={sentFriendRequests} onAddFriend={(user) => addFriendMutation.mutate(user)} />
               ))}
             </div>
@@ -1404,13 +1404,13 @@ export default function Home() {
         celebrationChallenges={celebrationChallenges}
         showShareWorkout={showShareWorkout}
         celebrationWorkoutName={celebrationWorkoutName}
-        celebrationExercises={(celebrationExercises || []).filter(Boolean)}
-        celebrationPreviousExercises={(celebrationPreviousExercises || []).filter(Boolean)}
+        celebrationExercises={celebrationExercises}
+        celebrationPreviousExercises={celebrationPreviousExercises}
         celebrationDurationMinutes={celebrationDurationMinutes}
         currentUser={currentUser}
         gymId={primaryGymIdForQuery}
         showDaysCelebration={showDaysCelebration}
-        weeklyWorkoutLogs={weeklyWorkoutLogs.filter(Boolean)}
+        weeklyWorkoutLogs={weeklyWorkoutLogs}
         todayDowAdjusted={todayDowAdjusted}
         setShowShareWorkout={setShowShareWorkout}
         setShowDaysCelebration={setShowDaysCelebration}
