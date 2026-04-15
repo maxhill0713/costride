@@ -668,8 +668,8 @@ export default function Home() {
 
   const socialFeedPosts = useMemo(() => {
     const threeDaysAgo = new Date(Date.now() - 3 * 24 * 60 * 60 * 1000);
-    return allPosts.filter(post =>
-      post && post.id &&
+    return allPosts.filter(Boolean).filter(post =>
+      post && post.id && post.member_id &&
       (friendIdList.includes(post.member_id) || post.member_id === currentUser?.id) &&
       (post.content || post.image_url || post.video_url || post.workout_name) &&
       !post.gym_join &&
@@ -1057,7 +1057,7 @@ export default function Home() {
             const mondayBase = startOfWeek(new Date(), { weekStartsOn: 1 });
             mondayBase.setDate(mondayBase.getDate() + weekOffset * 7);
             const logsByDay = {};
-            weeklyWorkoutLogs.filter(Boolean).forEach((l) => {
+            weeklyWorkoutLogs.filter(l => l && l.completed_date).forEach((l) => {
               const dateStr = (l.completed_date || '').split('T')[0];
               const parts = dateStr.split('-').map(Number);
               const d = (parts.length === 3 && parts[0])
@@ -1335,7 +1335,7 @@ export default function Home() {
 
           {socialFeedPosts.length > 0 && (
             <div className="space-y-3">
-              {socialFeedPosts.filter(post => post && post.id).map((post) => (
+              {socialFeedPosts.filter(post => post && post.id && post.member_id).map((post) => (
                 <PostCard key={post.id} post={post} fullWidth={true} currentUser={currentUser} isOwnProfile={post.member_id === currentUser?.id} onLike={() => {}} onComment={() => {}} onSave={() => {}} onDelete={() => queryClient.invalidateQueries({ queryKey: ['posts'] })} friends={friends} sentFriendRequests={sentFriendRequests} onAddFriend={(user) => addFriendMutation.mutate(user)} />
               ))}
             </div>
