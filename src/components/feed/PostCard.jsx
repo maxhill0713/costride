@@ -523,14 +523,15 @@ function PostCard({ post, onLike, onComment, onSave, onDelete, fullWidth = false
   const hasMedia = !!(post.video_url || post.image_url);
 
   const userStreakVariant = useMemo(() => currentUser?.streak_variant || 'default', [currentUser?.streak_variant]);
+  const safeReactions = (r) => (r && typeof r === 'object' && !Array.isArray(r)) ? { ...r } : {};
   const [localReacted, setLocalReacted] = useState(() => !!(post.reactions && currentUser?.id && post.reactions[currentUser?.id]));
-  const [localReactions, setLocalReactions] = useState(() => ({ ...(post.reactions || {}) }));
+  const [localReactions, setLocalReactions] = useState(() => safeReactions(post.reactions));
   const prevReactionsRef = React.useRef(post.reactions);
   useEffect(() => {
     if (post.reactions !== prevReactionsRef.current) {
       prevReactionsRef.current = post.reactions;
       setLocalReacted(!!(post.reactions && currentUser?.id && post.reactions[currentUser?.id]));
-      setLocalReactions({ ...(post.reactions || {}) });
+      setLocalReactions(safeReactions(post.reactions));
     }
   }, [post.reactions, currentUser?.id]);
   const hasReacted = localReacted;
