@@ -708,9 +708,10 @@ export default function TabGymProfile({ gym, openModal, setShowPoster }) {
                   border: 'none',
                   transform: 'scale(0.595)',
                   transformOrigin: 'top left',
-                  pointerEvents: 'auto',
+                  pointerEvents: 'none',
                 }}
                 title="Member App Preview"
+                scrolling="no"
               />
             </div>
             {/* Home bar */}
