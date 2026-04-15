@@ -657,38 +657,54 @@ function PhoneMockup({ gym }) {
   ];
 
   return (
-    <div style={{
-      background: '#0a0a0c', border: `2px solid ${T.brd2}`, borderRadius: 28,
-      overflow: 'hidden', width: '100%', boxShadow: '0 20px 60px rgba(0,0,0,0.7)',
-      display: 'flex', flexDirection: 'column',
-    }}>
-      {/* Status bar */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 14px 4px', background: '#0a0a0c', flexShrink: 0 }}>
-        <span style={{ fontSize: 9, fontWeight: 700, color: T.t1 }}>9:41</span>
-        <div style={{ fontSize: 7, color: T.t2 }}>●●● ▲ 🔋</div>
-      </div>
-
-      {/* Screen content */}
-      <div style={{ height: 420, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-        {SCREENS[activeScreen] || SCREENS.feed}
-      </div>
-
-      {/* Bottom nav */}
-      <div style={{ display: 'flex', justifyContent: 'space-around', alignItems: 'center', padding: '8px 6px 10px', borderTop: `1px solid rgba(255,255,255,0.06)`, background: 'rgba(10,10,12,0.98)', flexShrink: 0 }}>
-        {NAV.map((n, i) => (
-          <button key={i} onClick={() => n.id && setActiveScreen(n.id)}
-            style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, background: 'none', border: 'none', cursor: n.id ? 'pointer' : 'default', padding: '2px 4px' }}>
-            {n.special
-              ? <div style={{ width: 26, height: 26, borderRadius: '50%', background: 'linear-gradient(135deg,#3b82f6,#2563eb)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, fontWeight: 700, color: '#fff' }}>+</div>
-              : n.icon && <n.icon style={{ width: 14, height: 14, color: activeScreen === n.id ? T.cyan : 'rgba(255,255,255,0.35)' }} />}
-            <span style={{ fontSize: 7.5, color: activeScreen === n.id ? T.cyan : 'rgba(255,255,255,0.3)', fontWeight: activeScreen === n.id ? 700 : 400 }}>{n.label}</span>
-          </button>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+      {/* Screen toggle pills above phone */}
+      <div style={{ display: 'flex', gap: 4 }}>
+        {[
+          { id: 'community', label: '🏋️ Gym Page' },
+          { id: 'feed',      label: '🏠 Home Feed' },
+        ].map(s => (
+          <button key={s.id} onClick={() => setActiveScreen(s.id)} style={{
+            flex: 1, padding: '5px 0', borderRadius: 8, fontSize: 9.5, fontWeight: 700,
+            background: activeScreen === s.id ? T.cyanDim : 'rgba(255,255,255,0.04)',
+            color: activeScreen === s.id ? T.cyan : T.t2,
+            border: `1px solid ${activeScreen === s.id ? T.cyanBrd : T.brd}`,
+            cursor: 'pointer', transition: 'all 0.15s',
+          }}>{s.label}</button>
         ))}
       </div>
 
-      {/* Home bar */}
-      <div style={{ height: 18, background: '#0a0a0c', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-        <div style={{ width: 60, height: 3, borderRadius: 2, background: T.brd2 }} />
+      <div style={{
+        background: '#0a0a0c', border: `2px solid ${T.brd2}`, borderRadius: 28,
+        overflow: 'hidden', width: '100%', boxShadow: '0 20px 60px rgba(0,0,0,0.7)',
+        display: 'flex', flexDirection: 'column',
+      }}>
+        {/* Status bar */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 14px 4px', background: '#0a0a0c', flexShrink: 0 }}>
+          <span style={{ fontSize: 9, fontWeight: 700, color: T.t1 }}>9:41</span>
+          <div style={{ fontSize: 7, color: T.t2 }}>●●● ▲ 🔋</div>
+        </div>
+
+        {/* Screen content */}
+        <div style={{ height: 420, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+          {SCREENS[activeScreen] || SCREENS.community}
+        </div>
+
+        {/* Bottom nav */}
+        <div style={{ display: 'flex', justifyContent: 'space-around', alignItems: 'center', padding: '8px 6px 10px', borderTop: `1px solid rgba(255,255,255,0.06)`, background: 'rgba(10,10,12,0.98)', flexShrink: 0 }}>
+          {NAV.map((n, i) => (
+            <button key={i} onClick={() => n.id && setActiveScreen(n.id)}
+              style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, background: 'none', border: 'none', cursor: n.id ? 'pointer' : 'default', padding: '2px 4px' }}>
+              {n.icon && <n.icon style={{ width: 14, height: 14, color: activeScreen === n.id ? T.cyan : 'rgba(255,255,255,0.35)' }} />}
+              <span style={{ fontSize: 7.5, color: activeScreen === n.id ? T.cyan : 'rgba(255,255,255,0.3)', fontWeight: activeScreen === n.id ? 700 : 400 }}>{n.label}</span>
+            </button>
+          ))}
+        </div>
+
+        {/* Home bar */}
+        <div style={{ height: 18, background: '#0a0a0c', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+          <div style={{ width: 60, height: 3, borderRadius: 2, background: T.brd2 }} />
+        </div>
       </div>
     </div>
   );
