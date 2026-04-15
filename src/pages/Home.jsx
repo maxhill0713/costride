@@ -411,7 +411,7 @@ export default function Home() {
       base44.functions.invoke('getFriendPosts', {
         friendIds: friendIdList,
         limit: 200,
-      }).then(res => res.data?.posts || []),
+      }).then(res => (res.data?.posts || []).filter(Boolean)),
     enabled: !!currentUser,
     staleTime: 1 * 60 * 1000,
     gcTime: 5 * 60 * 1000,
@@ -1056,7 +1056,7 @@ export default function Home() {
             const mondayBase = startOfWeek(new Date(), { weekStartsOn: 1 });
             mondayBase.setDate(mondayBase.getDate() + weekOffset * 7);
             const logsByDay = {};
-            weeklyWorkoutLogs.forEach((l) => {
+            weeklyWorkoutLogs.filter(Boolean).forEach((l) => {
               const dateStr = (l.completed_date || '').split('T')[0];
               const parts = dateStr.split('-').map(Number);
               const d = (parts.length === 3 && parts[0])
