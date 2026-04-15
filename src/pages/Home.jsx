@@ -1106,6 +1106,7 @@ export default function Home() {
                       {allDays.map((day, i) => {
                         const isDayInFuture = weekOffset === 0 && day > todayDay;
                         const done = !isDayInFuture && loggedDays.has(day);
+                        // CHANGED: bounce removed — no initial circle pop animation when workout is logged
                         const isTodayCircle = day === todayDay && weekOffset === 0;
                         const joinDate = currentUser?.created_date || currentUser?.created_at || null;
                         const mondayThisWeek = startOfWeek(new Date(), { weekStartsOn: 1 });
@@ -1151,6 +1152,7 @@ export default function Home() {
                           return '0 4px 0 0 #111827, 0 6px 14px rgba(15,20,35,0.5), inset 0 1px 0 rgba(255,255,255,0.1), inset 0 -1px 0 rgba(0,0,0,0.25), inset 0 0 10px rgba(255,255,255,0.02)';
                         };
                         const getAnimation = () => {
+                          // CHANGED: bounce (justLoggedDay) animation removed — no immediate circle pop on log
                           if (isRestDay || done || isPreJoin) return 'none';
                           if (weekOffset !== 0) return 'none';
                           return `dayWiggle 2.4s ease-in-out ${i * 0.18}s infinite`;
@@ -1352,6 +1354,7 @@ export default function Home() {
               </div>
             </Card>
           )}
+
 
         </div>
       </div>
