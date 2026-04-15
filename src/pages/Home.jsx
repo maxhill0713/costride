@@ -669,6 +669,7 @@ export default function Home() {
   const socialFeedPosts = useMemo(() => {
     const threeDaysAgo = new Date(Date.now() - 3 * 24 * 60 * 60 * 1000);
     return allPosts.filter(post =>
+      post && post.id &&
       (friendIdList.includes(post.member_id) || post.member_id === currentUser?.id) &&
       (post.content || post.image_url || post.video_url || post.workout_name) &&
       !post.gym_join &&
@@ -1355,32 +1356,7 @@ export default function Home() {
             </Card>
           )}
 
-          {/* ── DEV: Test log workout animation ── */}
-          <button
-            onClick={() => handleWorkoutLogged(
-              [{ title: 'Summer Squat Challenge', reward: 'Free protein shake', previous_value: 3, new_value: 7, target_value: 10, emoji: '🏋️' }],
-              [
-                { exercise: 'Bench Press', sets: '4', reps: '8', weight: '80' },
-                { exercise: 'Squat', sets: '3', reps: '10', weight: '100' },
-                { exercise: 'Deadlift', sets: '3', reps: '5', weight: '120' },
-              ],
-              'Push Day A',
-              [
-                { exercise: 'Bench Press', sets: '4', reps: '8', weight: '77.5' },
-                { exercise: 'Squat', sets: '3', reps: '10', weight: '97.5' },
-              ]
-            )}
-            style={{
-              position: 'fixed', bottom: 96, right: 16, zIndex: 9000,
-              padding: '10px 14px', borderRadius: 12,
-              background: 'linear-gradient(135deg,#7c3aed,#4f46e5)',
-              color: '#fff', fontWeight: 800, fontSize: 11,
-              border: '1px solid rgba(255,255,255,0.2)',
-              boxShadow: '0 4px 12px rgba(124,58,237,0.5)',
-              cursor: 'pointer', letterSpacing: '0.04em',
-            }}>
-            🧪 TEST LOG
-          </button>
+
         </div>
       </div>
 
