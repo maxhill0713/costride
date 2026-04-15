@@ -1432,7 +1432,7 @@ export default function Home() {
           const workout = currentUser?.custom_workout_types?.[viewWorkoutDay];
           if (!workout) return null;
           const workoutName = workout.name || 'Training Day';
-          const exercises = workout.exercises || [];
+          const exercises = (workout.exercises || []).filter(Boolean);
           const monday = startOfWeek(new Date(), { weekStartsOn: 1 });
           const slotDate = new Date(monday);
           slotDate.setDate(monday.getDate() + (viewWorkoutDay - 1));
