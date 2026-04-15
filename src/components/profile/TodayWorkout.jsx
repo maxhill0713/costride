@@ -774,7 +774,7 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                   </div>
 
                   {/* Exercise groups */}
-                  {buildExerciseGroups(todayWorkout.exercises).map((group) => {
+                  {buildExerciseGroups(todayWorkout.exercises).filter(Boolean).map((group) => {
                   const isGrouped = group.items.length > 1;
 
                   if (!isGrouped) {
@@ -885,7 +885,7 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                       animate={{}}
                       className="bg-white/5 pt-1 pb-1 pl-2 rounded-xl backdrop-blur-md border border-white/10 shadow-lg shadow-black/10 hover:border-white/20 transition-all -ml-[2%] -mr-[2%]">
 
-                        {sorted.map(({ exercise, index }, setIdx) => {
+                        {sorted.filter(item => item && item.exercise).map(({ exercise, index }, setIdx) => {
                         const setLabel = `Set ${setIdx + 1}`;
                         const isEditingThis = editingGroupedSet?.index === index;
 
