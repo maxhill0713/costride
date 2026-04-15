@@ -734,7 +734,7 @@ export default function TabGymProfile({ gym, openModal, coaches = [], onDeleteCo
   );
 
   /* ── Computed scores ── */
-  const galleryCount   = gym.gallery?.length    || 0;
+  const galleryCount   = (gym.gallery || []).filter(Boolean).length;
   const amenitiesCount = gym.amenities?.length   || 0;
   const equipmentCount = gym.equipment?.length   || 0;
   const hasLogo        = !!gym.logo_url;
