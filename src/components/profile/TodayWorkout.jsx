@@ -593,7 +593,7 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
   const buildExerciseGroups = (exercises) => {
     const groups = [];
     const nameToGroupIdx = {};
-    (exercises || []).forEach((exercise, index) => {
+    (exercises || []).filter(Boolean).forEach((exercise, index) => {
       const key = (exercise.exercise || '').trim().toLowerCase();
       if (!key) {
         groups.push({ key: `__empty_${index}`, name: exercise.exercise || '', items: [{ exercise, index }] });
@@ -977,7 +977,7 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                         <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest text-center -ml-9">Rest</div>
                       </div>
 
-                      {todayWorkout.cardio.map((c, index) =>
+                      {todayWorkout.cardio.filter(Boolean).map((c, index) =>
                   <motion.div
                     key={`cardio-${index}`}
                     className="bg-white/5 pt-2 py-2 pl-2 rounded-xl backdrop-blur-md border border-white/10 shadow-lg shadow-black/10 items-center hover:border-white/20 transition-all -ml-[2%] -mr-[2%] mb-2"
