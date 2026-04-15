@@ -422,7 +422,7 @@ function AmenitiesCard({ gym, openModal }) {
       ) : (
         <>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', flex: 1 }}>
-            {items.slice(0, 6).map((item, i) => {
+            {items.filter(Boolean).slice(0, 6).map((item, i) => {
               const name = typeof item === 'object' ? (item.name || item.label) : item;
               const isLast3 = i >= 3;
               return (
@@ -499,7 +499,7 @@ function EquipmentCard({ gym, openModal }) {
           </div>
           {/* Equipment list */}
           <div style={{ flex: 1 }}>
-            {items.slice(0, 5).map((item, i) => {
+            {items.filter(Boolean).slice(0, 5).map((item, i) => {
               const name   = typeof item === 'object' ? (item.name || item.label) : item;
               const status = (typeof item === 'object' && item.status) || 'operational';
               const repair = status === 'needs repair';
@@ -649,7 +649,7 @@ function CoachesCard({ coaches, openModal }) {
       ) : (
         <div style={{ padding: '14px 14px 14px' }}>
           <div style={{ display: 'flex', gap: 10, overflowX: 'auto', paddingBottom: 4, scrollbarWidth: 'none' }}>
-            {coaches.map((coach) => (
+            {coaches.filter(Boolean).map((coach) => (
               <div key={coach.id} style={{
                 flexShrink: 0, width: 96,
                 display: 'flex', flexDirection: 'column', alignItems: 'center',
