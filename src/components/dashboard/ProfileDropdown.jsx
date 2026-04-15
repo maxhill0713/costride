@@ -34,11 +34,11 @@ export default function ProfileDropdown({ currentUser, coaches, onRoleSelect, cu
 
   // Build role options: owner + each coach
   const roleOptions = [
-    { id: 'gym_owner', label: currentUser?.full_name || 'Gym Owner', sublabel: 'Gym Owner · Full access', icon: Crown },
+    { id: 'gym_owner', label: 'Gym Owner', sublabel: 'Full access', icon: Crown },
     ...(coaches || []).map(c => ({
       id: c.id,
       label: c.name,
-      sublabel: c.user_email === currentUser?.email ? 'Coach view (you)' : 'Coach view',
+      sublabel: 'Coach view',
       icon: User,
       email: c.user_email,
       avatar: c.avatar_url,
@@ -81,14 +81,9 @@ export default function ProfileDropdown({ currentUser, coaches, onRoleSelect, cu
           borderRadius: 12, boxShadow: '0 12px 40px rgba(0,0,0,0.7)',
           minWidth: 220, overflow: 'hidden',
         }}>
-          {/* Header */}
+          {/* Current user info */}
           <div style={{ padding: '12px 14px 10px', borderBottom: `1px solid rgba(255,255,255,0.06)` }}>
-            <div style={{ fontSize: 11, fontWeight: 700, color: D.t3, textTransform: 'uppercase', letterSpacing: '0.08em' }}>Switch Dashboard</div>
-            {(coaches || []).length === 0 && (
-              <div style={{ fontSize: 10, color: D.t3, marginTop: 5, lineHeight: 1.45 }}>
-                Add coaches via Manage Coaches to enable coach views.
-              </div>
-            )}
+            <div style={{ fontSize: 11, fontWeight: 700, color: D.t3, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>Switch view</div>
           </div>
 
           {/* Role options */}
