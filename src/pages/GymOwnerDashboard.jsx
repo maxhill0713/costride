@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { base44 } from '@/api/base44Client';
@@ -8,7 +8,7 @@ import {
   Eye, Menu, LayoutDashboard, FileText, BarChart3, Settings,
   LogOut, ChevronDown, AlertTriangle, QrCode,
   Plus, Dumbbell, Clock, Crown, Trash2, X,
-  Sun, Zap, Calendar,
+  Sun, Zap, Calendar, Building2, MoreHorizontal,
   MessageCircle } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '../utils';
@@ -50,8 +50,9 @@ const TabCoachProfile = lazy(() => import('../components/dashboard/TabCoachProfi
 const TabEngagement = lazy(() => import('../components/dashboard/TabEngagement'));
 const TabRewards = lazy(() => import('../components/dashboard/TabRewards'));
 const TabCoachToday = lazy(() => import('../components/dashboard/TabCoachToday'));
+const TabGymProfile = lazy(() => import('../components/dashboard/TabGymProfile'));
 
-/* ─── Design Tokens — unified with Content & Overview pages ─── */
+/* ─── Design Tokens ─── */
 const T = {
   bg:        '#000000',
   sidebar:   '#0f0f12',
@@ -73,9 +74,6 @@ const T = {
   greenDim:  'rgba(34,197,94,0.12)',
 };
 
-/* Keep hex values for SVG / data-driven color needs */
-const HEX = { blue: T.cyan, red: T.red, amber: T.amber, green: T.green };
-
 function TabLoader() {
   return (
     <div style={{ display: 'flex', justifyContent: 'center', padding: 40 }}>
@@ -86,18 +84,18 @@ function TabLoader() {
 }
 
 const ALL_NAV = [
-  { id: 'overview',   label: 'Overview',     icon: LayoutDashboard, roles: ['gym_owner'] },
-  { id: 'today',      label: 'Today',        icon: Sun,             roles: ['coach'] },
-  { id: 'members',    label: 'Members', coachLabel: 'Clients', icon: Users, roles: ['gym_owner', 'coach'] },
-  { id: 'schedule',   label: 'Schedule',     icon: Calendar,        roles: ['coach'] },
-  { id: 'content',    label: 'Content',      icon: FileText,        roles: ['gym_owner', 'coach'] },
-  { id: 'analytics',  label: 'Analytics',    icon: BarChart3,       roles: ['gym_owner'] },
-  { id: 'profile',    label: 'Profile',      icon: Crown,           roles: ['coach'] },
-  { id: 'engagement', label: 'Automations',  icon: Zap,             roles: ['gym_owner'] },
-  { id: 'actions',    label: 'Actions',      icon: Settings,        roles: ['gym_owner'] },
+  { id: 'overview',    label: 'Overview',    icon: LayoutDashboard, roles: ['gym_owner'] },
+  { id: 'today',       label: 'Today',       icon: Sun,             roles: ['coach'] },
+  { id: 'members',     label: 'Members', coachLabel: 'Clients', icon: Users, roles: ['gym_owner', 'coach'] },
+  { id: 'schedule',    label: 'Schedule',    icon: Calendar,        roles: ['coach'] },
+  { id: 'content',     label: 'Content',     icon: FileText,        roles: ['gym_owner', 'coach'] },
+  { id: 'analytics',   label: 'Analytics',   icon: BarChart3,       roles: ['gym_owner'] },
+  { id: 'profile',     label: 'Profile',     icon: Crown,           roles: ['coach'] },
+  { id: 'gym_profile', label: 'Gym Profile', icon: Building2,       roles: ['gym_owner'] },
+  { id: 'engagement',  label: 'Automations', icon: Zap,             roles: ['gym_owner'] },
+  { id: 'actions',     label: 'Actions',     icon: Settings,        roles: ['gym_owner'] },
 ];
 
-/* ─── Sparkline ─────────────────────────────────────────────── */
 const Spark = ({ data = [], color = T.cyan, height = 32 }) => {
   if (!data.length) return null;
   const w = 100, h = height;
@@ -123,7 +121,6 @@ const Spark = ({ data = [], color = T.cyan, height = 32 }) => {
   );
 };
 
-/* ─── Delta badge ────────────────────────────────────────────── */
 const Delta = ({ val }) => {
   const up = val > 0, flat = val === 0;
   const style = flat
@@ -138,72 +135,6 @@ const Delta = ({ val }) => {
   );
 };
 
-/* ─── KPI card ───────────────────────────────────────────────── */
-function KpiCard({ icon: Icon, label, value, sub, subColor, valueColor, footerBar, footerColor, trend }) {
-  return (
-    <div style={{ background: T.card, border: `1px solid ${T.brd}`, borderRadius: 14, padding: 18, position: 'relative', overflow: 'hidden', transition: 'border-color 0.2s' }}
-      onMouseEnter={e => e.currentTarget.style.borderColor = T.brd2}
-      onMouseLeave={e => e.currentTarget.style.borderColor = T.brd}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
-        <span style={{ fontSize: 9.5, fontWeight: 700, letterSpacing: '0.10em', textTransform: 'uppercase', color: T.t3 }}>{label}</span>
-        <div style={{ width: 26, height: 26, borderRadius: 7, background: 'rgba(255,255,255,0.04)', border: `1px solid ${T.brd}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-          <Icon style={{ width: 12, height: 12, color: T.t3 }} />
-        </div>
-      </div>
-      <div style={{ fontSize: 30, fontWeight: 800, letterSpacing: '-0.04em', lineHeight: 1, margin: '8px 0', color: valueColor || T.t1 }}>{value}</div>
-      <div style={{ fontSize: 11, display: 'flex', alignItems: 'center', gap: 6, color: subColor || T.t2 }}>
-        <span>{sub}</span>
-        {trend != null && <Delta val={trend} />}
-      </div>
-      {footerBar != null && (
-        <div style={{ marginTop: 10, height: 2, borderRadius: 9, background: 'rgba(255,255,255,0.06)', overflow: 'hidden' }}>
-          <div style={{ height: '100%', borderRadius: 9, transition: 'width 0.7s ease-out', width: `${Math.min(100, footerBar)}%`, background: footerColor || T.cyan }} />
-        </div>
-      )}
-    </div>
-  );
-}
-function CoachKpiCard(props) { return <KpiCard {...props} />; }
-
-/* ─── Generic card shell ─────────────────────────────────────── */
-function DashCard({ children, className, accentColor, title, action, onAction, style }) {
-  return (
-    <div style={{ background: T.card, border: `1px solid ${T.brd}`, borderRadius: 12, position: 'relative', overflow: 'hidden', ...style }}>
-      {accentColor && (
-        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 1.5, pointerEvents: 'none', background: `linear-gradient(90deg, ${accentColor}50 0%, ${accentColor}18 60%, transparent 100%)` }} />
-      )}
-      {title && (
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 16px 0' }}>
-          <span style={{ fontSize: 13, fontWeight: 700, color: T.t1 }}>{title}</span>
-          {onAction && (
-            <button onClick={onAction} style={{ fontSize: 11, fontWeight: 600, color: T.cyan, background: T.cyanDim, border: `1px solid ${T.cyanBrd}`, borderRadius: 7, padding: '4px 10px', cursor: 'pointer' }}>
-              {action || 'View all'}
-            </button>
-          )}
-        </div>
-      )}
-      {children}
-    </div>
-  );
-}
-const CoachCard = DashCard;
-
-/* ─── Mini avatar ────────────────────────────────────────────── */
-function MiniAvatar({ name, src, size = 30 }) {
-  return (
-    <div style={{ width: size, height: size, borderRadius: '50%', flexShrink: 0, background: 'rgba(255,255,255,0.08)', border: `1px solid ${T.brd}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, color: T.t2, overflow: 'hidden', fontSize: size * 0.36 }}>
-      {src ? <img src={src} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="" /> : (name || '?').charAt(0).toUpperCase()}
-    </div>
-  );
-}
-
-const CLASS_TYPE_COLORS = { hiit: T.red, yoga: T.green, strength: T.cyan, spin: T.cyan, boxing: T.red, cardio: T.amber, pilates: T.green, default: T.cyan };
-function classColor(cls) {
-  const n = (cls?.class_type || cls?.name || '').toLowerCase();
-  return CLASS_TYPE_COLORS[Object.keys(CLASS_TYPE_COLORS).find((k) => n.includes(k)) || 'default'];
-}
-
-/* ─── Mobile KPI strip ───────────────────────────────────────── */
 function MobileKpiStrip({ tab, isCoach, stats, posts, events, challenges, polls, coaches, classes, myClasses, allMemberships }) {
   const { todayCI = 0, activeThisWeek = 0, atRisk = 0, totalMembers = 0, newSignUps = 0, retentionRate = 0, monthChangePct = 0, activeThisMonth = 0 } = stats;
   let items;
@@ -241,12 +172,6 @@ function MobileKpiStrip({ tab, isCoach, stats, posts, events, challenges, polls,
       { label: 'Active',  value: activeThisWeek },
       { label: 'At Risk', value: atRisk, color: atRisk > 0 ? T.red : null },
     ];
-  } else if (tab === 'gym') {
-    items = [
-      { label: 'Coaches',  value: coaches.length },
-      { label: 'Classes',  value: classes.length },
-      { label: 'Members',  value: totalMembers },
-    ];
   } else if ((tab === 'today' || tab === 'schedule') && isCoach) {
     items = [
       { label: 'Classes', value: myClasses.length },
@@ -255,11 +180,8 @@ function MobileKpiStrip({ tab, isCoach, stats, posts, events, challenges, polls,
   } else { return null; }
   return (
     <>
-      <style>{`
-        .kpi-strip::-webkit-scrollbar { display: none; }
-        .kpi-card { flex-shrink: 0; scroll-snap-align: start; }
-      `}</style>
-      <div className="kpi-strip" style={{ flexShrink: 0, display: 'flex', gap: 10, overflowX: 'auto', scrollSnapType: 'x mandatory', WebkitOverflowScrolling: 'touch', padding: '12px 16px', background: T.bg, borderBottom: `1px solid ${T.brd}`, scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+      <style>{`.kpi-strip::-webkit-scrollbar{display:none}.kpi-card{flex-shrink:0;scroll-snap-align:start}`}</style>
+      <div className="kpi-strip" style={{ flexShrink: 0, display: 'flex', gap: 10, overflowX: 'auto', scrollSnapType: 'x mandatory', WebkitOverflowScrolling: 'touch', padding: '12px 16px', background: T.bg, borderBottom: `1px solid ${T.brd}`, scrollbarWidth: 'none' }}>
         {items.map((item) => (
           <div key={item.label} className="kpi-card" style={{ background: T.card, border: `1px solid ${item.color ? item.color + '35' : T.brd}`, borderRadius: 14, padding: '12px 18px', minWidth: 92, display: 'flex', flexDirection: 'column', gap: 5 }}>
             <div style={{ fontSize: 26, fontWeight: 900, letterSpacing: '-0.05em', lineHeight: 1, color: item.color || T.t1 }}>{item.value}</div>
@@ -271,7 +193,6 @@ function MobileKpiStrip({ tab, isCoach, stats, posts, events, challenges, polls,
   );
 }
 
-/* ─── Mobile FAB ─────────────────────────────────────────────── */
 function MobileFAB({ openModal }) {
   const [open, setOpen] = useState(false);
   const items = [
@@ -279,7 +200,6 @@ function MobileFAB({ openModal }) {
     { emoji: '🏆', label: 'Challenge', modal: 'challenge' },
     { emoji: '📊', label: 'Poll',      modal: 'poll'      },
     { emoji: '📅', label: 'Event',     modal: 'event'     },
-    { emoji: '⚙️', label: 'More',      modal: null        },
   ];
   return (
     <>
@@ -287,7 +207,7 @@ function MobileFAB({ openModal }) {
       {open && (
         <div style={{ position: 'fixed', bottom: 'calc(134px + env(safe-area-inset-bottom))', right: 16, zIndex: 199, display: 'flex', flexDirection: 'column', gap: 10, alignItems: 'flex-end' }}>
           {items.map(item => (
-            <button key={item.label} onClick={() => { setOpen(false); if (item.modal) openModal(item.modal); }}
+            <button key={item.label} onClick={() => { setOpen(false); openModal(item.modal); }}
               style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '11px 16px', borderRadius: 14, background: T.card, border: `1px solid ${T.brd2}`, color: T.t1, fontSize: 14, fontWeight: 600, cursor: 'pointer', boxShadow: '0 4px 20px rgba(0,0,0,0.7)', WebkitTapHighlightColor: 'transparent', minHeight: 48, whiteSpace: 'nowrap' }}>
               <span style={{ fontSize: 18 }}>{item.emoji}</span>{item.label}
             </button>
@@ -298,6 +218,58 @@ function MobileFAB({ openModal }) {
         style={{ position: 'fixed', bottom: 'calc(72px + env(safe-area-inset-bottom))', right: 20, zIndex: 200, width: 52, height: 52, borderRadius: 26, background: T.cyan, border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 0 16px rgba(77,127,255,0.32), 0 4px 10px rgba(77,127,255,0.20)', cursor: 'pointer', color: '#fff', transition: 'transform 0.18s', WebkitTapHighlightColor: 'transparent', transform: open ? 'rotate(45deg)' : 'rotate(0deg)' }}>
         <Plus style={{ width: 22, height: 22, strokeWidth: 2.5 }} />
       </button>
+    </>
+  );
+}
+
+function MobileBottomNav({ tab, setTab, NAV }) {
+  const [showMore, setShowMore] = useState(false);
+  const primaryIds = ['overview', 'members', 'content', 'gym_profile'];
+  const primaryNav = NAV.filter(n => primaryIds.includes(n.id));
+  const overflowNav = NAV.filter(n => !primaryIds.includes(n.id));
+  const overflowActive = overflowNav.some(n => n.id === tab);
+
+  return (
+    <>
+      {showMore && (
+        <>
+          <div onClick={() => setShowMore(false)} style={{ position: 'fixed', inset: 0, zIndex: 198, background: 'rgba(0,0,0,0.55)' }} />
+          <div style={{ position: 'fixed', bottom: 'calc(72px + env(safe-area-inset-bottom))', left: 12, right: 12, zIndex: 199, background: '#0f0f12', border: `1px solid #222226`, borderRadius: 16, overflow: 'hidden', boxShadow: '0 -8px 32px rgba(0,0,0,0.7)' }}>
+            {overflowNav.map((item, i) => {
+              const active = tab === item.id;
+              return (
+                <button key={item.id} onClick={() => { setTab(item.id); setShowMore(false); }}
+                  style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 14, padding: '14px 18px', border: 'none', borderBottom: i < overflowNav.length - 1 ? `1px solid #222226` : 'none', background: active ? 'rgba(77,127,255,0.10)' : 'transparent', color: active ? '#4d7fff' : '#8a8a94', cursor: 'pointer', fontFamily: 'inherit', WebkitTapHighlightColor: 'transparent' }}>
+                  <item.icon style={{ width: 18, height: 18, flexShrink: 0 }} />
+                  <span style={{ fontSize: 14, fontWeight: active ? 700 : 500 }}>{item.label}</span>
+                  {active && <div style={{ marginLeft: 'auto', width: 6, height: 6, borderRadius: '50%', background: '#4d7fff' }} />}
+                </button>
+              );
+            })}
+          </div>
+        </>
+      )}
+      <nav style={{ flexShrink: 0, background: '#0f0f12', borderTop: `1px solid #222226`, paddingBottom: 'env(safe-area-inset-bottom)', paddingLeft: 8, paddingRight: 8, paddingTop: 8 }}>
+        <div style={{ display: 'flex', gap: 4 }}>
+          {primaryNav.map((item) => {
+            const active = tab === item.id;
+            return (
+              <button key={item.id} onClick={() => { setTab(item.id); setShowMore(false); }}
+                style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 4, paddingTop: 9, paddingBottom: 9, border: 'none', cursor: 'pointer', borderRadius: 12, background: active ? 'rgba(77,127,255,0.12)' : 'transparent', color: active ? '#4d7fff' : '#444450', transition: 'background 0.15s, color 0.15s', minHeight: 52, WebkitTapHighlightColor: 'transparent', position: 'relative' }}>
+                {active && <div style={{ position: 'absolute', top: 0, left: '30%', right: '30%', height: 2, borderRadius: '0 0 2px 2px', background: '#4d7fff' }} />}
+                <item.icon style={{ width: 19, height: 19, strokeWidth: active ? 2.2 : 1.8 }} />
+                <span style={{ fontSize: 9.5, letterSpacing: '0.02em', fontWeight: active ? 700 : 500, lineHeight: 1 }}>{item.label}</span>
+              </button>
+            );
+          })}
+          <button onClick={() => setShowMore(o => !o)}
+            style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 4, paddingTop: 9, paddingBottom: 9, border: 'none', cursor: 'pointer', borderRadius: 12, background: (overflowActive || showMore) ? 'rgba(77,127,255,0.12)' : 'transparent', color: (overflowActive || showMore) ? '#4d7fff' : '#444450', transition: 'background 0.15s, color 0.15s', minHeight: 52, WebkitTapHighlightColor: 'transparent', position: 'relative' }}>
+            {(overflowActive || showMore) && <div style={{ position: 'absolute', top: 0, left: '30%', right: '30%', height: 2, borderRadius: '0 0 2px 2px', background: '#4d7fff' }} />}
+            <MoreHorizontal style={{ width: 19, height: 19, strokeWidth: (overflowActive || showMore) ? 2.2 : 1.8 }} />
+            <span style={{ fontSize: 9.5, letterSpacing: '0.02em', fontWeight: (overflowActive || showMore) ? 700 : 500, lineHeight: 1 }}>More</span>
+          </button>
+        </div>
+      </nav>
     </>
   );
 }
@@ -328,7 +300,6 @@ export default function GymOwnerDashboard() {
   const [memberSearchQuery, setMemberSearchQuery] = useState('');
   const [memberSearchOpen, setMemberSearchOpen] = useState(false);
   const [selectedQuickMember, setSelectedQuickMember] = useState(null);
-  const memberSearchRef = React.useRef(null);
   const openModal = useCallback((name) => { if (name === 'message') { setTab('members'); return; } setModal(name); }, []);
   const closeModal = useCallback(() => setModal(null), []);
   const queryClient = useQueryClient();
@@ -523,6 +494,8 @@ export default function GymOwnerDashboard() {
       content = <TabCoachProfile selectedGym={selectedGym} currentUser={currentUser} />;
     } else if (item.id === 'engagement') {
       content = <TabEngagement selectedGym={selectedGym} allMemberships={effectiveMemberships} atRisk={atRisk} totalMembers={totalMembers} />;
+    } else if (item.id === 'gym_profile') {
+      content = <TabGymProfile gym={selectedGym} openModal={openModal} setShowPoster={setShowPoster} />;
     } else if (item.id === 'actions') {
       content = <TabActions />;
     }
@@ -620,9 +593,7 @@ export default function GymOwnerDashboard() {
     </>
   );
 
-  /* ════════════════════════════════════════════════════════════
-     MOBILE
-     ════════════════════════════════════════════════════════════ */
+  /* ════════════════ MOBILE ════════════════ */
   if (isMobile) return (
     <div style={{ display: 'flex', flexDirection: 'column', background: T.bg, height: '100dvh', overflow: 'hidden' }}>
       <header style={{ flexShrink: 0, background: T.sidebar, borderBottom: `1px solid ${T.brd}`, height: 60, padding: '0 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'relative' }}>
@@ -666,27 +637,12 @@ export default function GymOwnerDashboard() {
         </Suspense>
       </main>
       <MobileFAB openModal={openModal} />
-      <nav style={{ flexShrink: 0, background: T.sidebar, borderTop: `1px solid ${T.brd}`, paddingBottom: 'env(safe-area-inset-bottom)', paddingLeft: 8, paddingRight: 8, paddingTop: 8 }}>
-        <div style={{ display: 'flex', gap: 4 }}>
-          {NAV.map((item) => {
-            const active = tab === item.id;
-            return (
-              <button key={item.id} onClick={() => setTab(item.id)} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 4, paddingTop: 9, paddingBottom: 9, border: 'none', cursor: 'pointer', borderRadius: 12, background: active ? T.cyanDim : 'transparent', color: active ? T.cyan : T.t3, transition: 'background 0.15s, color 0.15s', minHeight: 52, WebkitTapHighlightColor: 'transparent', position: 'relative' }}>
-                {active && <div style={{ position: 'absolute', top: 0, left: '30%', right: '30%', height: 2, borderRadius: '0 0 2px 2px', background: T.cyan }} />}
-                <item.icon style={{ width: 19, height: 19, strokeWidth: active ? 2.2 : 1.8 }} />
-                <span style={{ fontSize: 9.5, letterSpacing: '0.02em', fontWeight: active ? 700 : 500, lineHeight: 1 }}>{item.label}</span>
-              </button>
-            );
-          })}
-        </div>
-      </nav>
+      <MobileBottomNav tab={tab} setTab={setTab} NAV={NAV} />
       {sharedModals}
     </div>
   );
 
-  /* ════════════════════════════════════════════════════════════
-     DESKTOP
-     ════════════════════════════════════════════════════════════ */
+  /* ════════════════ DESKTOP ════════════════ */
   return (
     <div style={{ display: 'flex', height: '100vh', overflow: 'hidden', background: T.bg }}>
       <aside style={{ flexShrink: 0, height: '100%', overflow: 'hidden', background: T.sidebar, borderRight: `1px solid ${T.brd}`, display: 'flex', flexDirection: 'column', width: collapsed ? 56 : 220, transition: 'width 220ms cubic-bezier(0.4,0,0.2,1)' }}>
