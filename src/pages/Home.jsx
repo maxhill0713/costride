@@ -1335,7 +1335,7 @@ export default function Home() {
 
           {socialFeedPosts.length > 0 && (
             <div className="space-y-3">
-              {socialFeedPosts.map((post) => (
+              {socialFeedPosts.filter(post => post?.id).map((post) => (
                 <PostCard key={post.id} post={post} fullWidth={true} currentUser={currentUser} isOwnProfile={post.member_id === currentUser?.id} onLike={() => {}} onComment={() => {}} onSave={() => {}} onDelete={() => queryClient.invalidateQueries({ queryKey: ['posts'] })} friends={friends} sentFriendRequests={sentFriendRequests} onAddFriend={(user) => addFriendMutation.mutate(user)} />
               ))}
             </div>
