@@ -1,19 +1,6 @@
 /**
  * MembersPageAI — Desktop (unchanged) + Mobile Redesign
- * Forge Fitness design system · Cyan accent · DM Sans
- *
- * Mobile additions:
- *  - useIsMobile hook for responsive branching
- *  - MobileHeader        : sticky top bar with search + alerts
- *  - MobileFilterChips   : horizontally scrollable pill chips
- *  - MobileMemberCard    : spacious, thumb-friendly cards
- *  - MobilePreviewSheet  : slide-up bottom sheet (replaces side panel)
- *  - MobileStatsModal    : slide-up bottom sheet (replaces right panel)
- *  - MobileActionSheet   : action-picker bottom sheet
- *  - MobileMessageToast  : full-width bottom toast
- *  - BottomNavBar        : fixed 5-tab bottom navigation
- *
- * Desktop: 100% structurally and visually unchanged.
+ * Forge Fitness design system · Navy Blue accent · DM Sans
  */
 import { useState, useMemo, useCallback, useEffect, useRef } from "react";
 import {
@@ -39,9 +26,9 @@ const C = {
   t1:      "#ffffff",
   t2:      "#8a8a94",
   t3:      "#444450",
-  cyan:    "#00e5c8",
-  cyanD:   "rgba(0,229,200,0.08)",
-  cyanB:   "rgba(0,229,200,0.22)",
+  cyan:    "#4d7fff",
+  cyanD:   "rgba(77,127,255,0.08)",
+  cyanB:   "rgba(77,127,255,0.25)",
   red:     "#ff4d6d",
   redD:    "rgba(255,77,109,0.1)",
   redB:    "rgba(255,77,109,0.25)",
@@ -147,7 +134,7 @@ function Sidebar() {
       display: "flex", flexDirection: "column", height: "100vh", fontFamily: FONT,
     }}>
       <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "14px", borderBottom: `1px solid ${C.brd}` }}>
-        <div style={{ width: 28, height: 28, borderRadius: 8, background: "linear-gradient(135deg,#00e5c8,#00a896)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13 }}>🔥</div>
+        <div style={{ width: 28, height: 28, borderRadius: 8, background: "linear-gradient(135deg,#4d7fff,#1a4fd6)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13 }}>🔥</div>
         <div>
           <div style={{ fontSize: 13, fontWeight: 700, color: C.t1, letterSpacing: "-0.02em" }}>Forge Fitness</div>
           <div style={{ fontSize: 10, color: C.t2 }}>GYM OWNER</div>
@@ -550,7 +537,7 @@ function MemberPreview({ m, onClose, onMessage }) {
       <div style={{ padding: "12px 14px", borderTop: `1px solid ${C.brd}` }}>
         <button onClick={() => onMessage(m)} style={{
           width: "100%", padding: "9px", borderRadius: 8,
-          background: C.cyan, border: "none", color: "#000",
+          background: C.cyan, border: "none", color: "#fff",
           fontSize: 12, fontWeight: 700, cursor: "pointer",
           display: "flex", alignItems: "center", justifyContent: "center", gap: 5,
           fontFamily: FONT,
@@ -599,7 +586,7 @@ function MessageToast({ member, onClose }) {
           marginTop: 9, width: "100%", padding: "8px", borderRadius: 8, border: "none",
           fontSize: 12, fontWeight: 700, cursor: "pointer",
           display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
-          background: sent ? C.card : C.cyan, color: sent ? C.cyan : "#000",
+          background: sent ? C.card : C.cyan, color: sent ? C.cyan : "#fff",
           transition: "all 0.2s", fontFamily: FONT,
         }}>
           {sent ? <><Check style={{ width: 11, height: 11 }} /> Sent</> : <><Send style={{ width: 11, height: 11 }} /> Send to {member.name.split(" ")[0]}</>}
@@ -611,17 +598,13 @@ function MessageToast({ member, onClose }) {
 
 /* ══════════════════════════════════════════════════════════════
    MOBILE-ONLY COMPONENTS
-   All components below render only when isMobile = true.
-   Desktop layout never references these.
 ══════════════════════════════════════════════════════════════ */
 
-/* ─── SHARED: BOTTOM SHEET BACKDROP + WRAPPER ────────────────── */
 function BottomSheet({ open, onClose, maxHeight = "88vh", children, noPadding = false }) {
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
     if (open) {
-      // Double rAF ensures transition triggers after initial paint
       const id = requestAnimationFrame(() =>
         requestAnimationFrame(() => setVisible(true))
       );
@@ -635,7 +618,6 @@ function BottomSheet({ open, onClose, maxHeight = "88vh", children, noPadding = 
 
   return (
     <div style={{ position: "fixed", inset: 0, zIndex: 600, fontFamily: FONT }}>
-      {/* Backdrop */}
       <div
         onClick={onClose}
         style={{
@@ -647,7 +629,6 @@ function BottomSheet({ open, onClose, maxHeight = "88vh", children, noPadding = 
           transition: "opacity 0.3s ease",
         }}
       />
-      {/* Sheet */}
       <div style={{
         position: "absolute", bottom: 0, left: 0, right: 0,
         background: C.sidebar,
@@ -661,7 +642,6 @@ function BottomSheet({ open, onClose, maxHeight = "88vh", children, noPadding = 
         transition: "transform 0.38s cubic-bezier(0.32, 0.72, 0, 1)",
         overflow: "hidden",
       }}>
-        {/* Drag handle */}
         <div style={{ padding: "14px 0 6px", display: "flex", justifyContent: "center", flexShrink: 0 }}>
           <div style={{ width: 40, height: 4, borderRadius: 2, background: C.brd2 }} />
         </div>
@@ -673,7 +653,6 @@ function BottomSheet({ open, onClose, maxHeight = "88vh", children, noPadding = 
   );
 }
 
-/* ─── MOBILE: HEADER ─────────────────────────────────────────── */
 function MobileHeader({ atRiskCount, onStatsOpen }) {
   return (
     <div style={{
@@ -682,7 +661,6 @@ function MobileHeader({ atRiskCount, onStatsOpen }) {
       fontFamily: FONT,
       flexShrink: 0,
     }}>
-      {/* Top row */}
       <div style={{
         display: "flex", alignItems: "center", justifyContent: "space-between",
         padding: "14px 16px 10px",
@@ -690,7 +668,7 @@ function MobileHeader({ atRiskCount, onStatsOpen }) {
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
           <div style={{
             width: 36, height: 36, borderRadius: 10,
-            background: "linear-gradient(135deg,#00e5c8,#00a896)",
+            background: "linear-gradient(135deg,#4d7fff,#1a4fd6)",
             display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18,
             flexShrink: 0,
           }}>🔥</div>
@@ -725,8 +703,6 @@ function MobileHeader({ atRiskCount, onStatsOpen }) {
           </button>
         </div>
       </div>
-
-      {/* Search bar */}
       <div style={{ padding: "0 16px 14px" }}>
         <div style={{
           display: "flex", alignItems: "center", gap: 10,
@@ -741,7 +717,6 @@ function MobileHeader({ atRiskCount, onStatsOpen }) {
   );
 }
 
-/* ─── MOBILE: FILTER CHIPS ───────────────────────────────────── */
 function MobileFilterChips({ filter, setFilter, counts }) {
   const chips = [
     { id: "all",      label: "All",      count: counts.all,      dot: null    },
@@ -757,7 +732,6 @@ function MobileFilterChips({ filter, setFilter, counts }) {
       display: "flex", gap: 8,
       overflowX: "auto", padding: "10px 16px",
       background: C.bg, flexShrink: 0,
-      // Hide scrollbar cross-browser
       scrollbarWidth: "none",
       msOverflowStyle: "none",
       WebkitOverflowScrolling: "touch",
@@ -799,7 +773,6 @@ function MobileFilterChips({ filter, setFilter, counts }) {
   );
 }
 
-/* ─── MOBILE: MEMBER CARD ────────────────────────────────────── */
 function MobileMemberCard({ m, onPreview, onMessage }) {
   const s        = statusSty(m.status);
   const visitCol = m.ds >= 14 ? C.red : m.ds <= 1 ? C.cyan : C.t2;
@@ -822,7 +795,6 @@ function MobileMemberCard({ m, onPreview, onMessage }) {
         transition: "background 0.1s, border-color 0.1s",
       }}
     >
-      {/* Card header */}
       <div style={{ padding: "14px 14px 12px", display: "flex", alignItems: "center", gap: 12 }}>
         <div style={{ position: "relative", flexShrink: 0 }}>
           <Av m={m} size={44} />
@@ -859,7 +831,6 @@ function MobileMemberCard({ m, onPreview, onMessage }) {
         </div>
       </div>
 
-      {/* Stats strip */}
       <div style={{
         display: "grid", gridTemplateColumns: "1fr 1fr 1fr",
         borderTop: `1px solid ${C.brd}`,
@@ -885,9 +856,7 @@ function MobileMemberCard({ m, onPreview, onMessage }) {
         ))}
       </div>
 
-      {/* Churn bar + action */}
       <div style={{ padding: "12px 14px", borderTop: `1px solid ${C.brd}` }}>
-        {/* Mini churn progress */}
         <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
           <div style={{ flex: 1, height: 3, background: C.brd, borderRadius: 2, overflow: "hidden" }}>
             <div style={{
@@ -900,7 +869,6 @@ function MobileMemberCard({ m, onPreview, onMessage }) {
             {m.rc}% success
           </span>
         </div>
-        {/* Action CTA */}
         <button
           onClick={(e) => { e.stopPropagation(); onMessage(m); }}
           style={{
@@ -924,7 +892,6 @@ function MobileMemberCard({ m, onPreview, onMessage }) {
   );
 }
 
-/* ─── MOBILE: MEMBER PREVIEW SHEET ──────────────────────────── */
 function MobilePreviewSheet({ m, onClose, onMessage }) {
   const [sheetOpen, setSheetOpen] = useState(true);
 
@@ -940,7 +907,6 @@ function MobilePreviewSheet({ m, onClose, onMessage }) {
 
   return (
     <BottomSheet open={sheetOpen} onClose={handleClose} maxHeight="90vh" noPadding>
-      {/* Header */}
       <div style={{
         padding: "4px 18px 16px",
         borderBottom: `1px solid ${C.brd}`,
@@ -968,9 +934,7 @@ function MobilePreviewSheet({ m, onClose, onMessage }) {
         </button>
       </div>
 
-      {/* Scrollable body */}
       <div style={{ flex: 1, overflowY: "auto", padding: "16px 16px 0" }}>
-        {/* Status + streak */}
         <div style={{ display: "flex", gap: 10, marginBottom: 14 }}>
           {(() => {
             const s = statusSty(m.status);
@@ -1005,7 +969,6 @@ function MobilePreviewSheet({ m, onClose, onMessage }) {
           )}
         </div>
 
-        {/* Stats grid */}
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 14 }}>
           {[
             {
@@ -1046,7 +1009,6 @@ function MobilePreviewSheet({ m, onClose, onMessage }) {
           ))}
         </div>
 
-        {/* Recommended action card */}
         <div style={{
           padding: "16px", borderRadius: 12, marginBottom: 16,
           background: C.cyanD, border: `1.5px solid ${C.cyanB}`,
@@ -1055,7 +1017,7 @@ function MobilePreviewSheet({ m, onClose, onMessage }) {
             AI Recommended Action
           </div>
           <div style={{ fontSize: 15, fontWeight: 700, color: C.t1, marginBottom: 12 }}>{m.action}</div>
-          <div style={{ height: 4, background: "rgba(0,229,200,0.15)", borderRadius: 2, overflow: "hidden", marginBottom: 6 }}>
+          <div style={{ height: 4, background: "rgba(77,127,255,0.15)", borderRadius: 2, overflow: "hidden", marginBottom: 6 }}>
             <div style={{ width: `${m.rc}%`, height: "100%", background: C.cyan, borderRadius: 2 }} />
           </div>
           <div style={{ fontSize: 11.5, color: C.t2 }}>
@@ -1064,14 +1026,13 @@ function MobilePreviewSheet({ m, onClose, onMessage }) {
         </div>
       </div>
 
-      {/* Sticky CTA */}
       <div style={{ padding: "14px 16px 28px", borderTop: `1px solid ${C.brd}`, flexShrink: 0 }}>
         <button
           onClick={handleAction}
           style={{
             width: "100%", padding: "15px",
             borderRadius: 14, background: C.cyan, border: "none",
-            color: "#000", fontSize: 15, fontWeight: 800,
+            color: "#fff", fontSize: 15, fontWeight: 800,
             cursor: "pointer", fontFamily: FONT,
             display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
           }}
@@ -1084,7 +1045,6 @@ function MobilePreviewSheet({ m, onClose, onMessage }) {
   );
 }
 
-/* ─── MOBILE: ACTION SHEET (action picker before send) ───────── */
 function MobileActionSheet({ member, onClose, onConfirm }) {
   const [sel, setSel] = useState(member?.action ?? ACTIONS[0]);
   const [sheetOpen, setSheetOpen] = useState(true);
@@ -1103,7 +1063,6 @@ function MobileActionSheet({ member, onClose, onConfirm }) {
 
   return (
     <BottomSheet open={sheetOpen} onClose={handleClose} maxHeight="80vh" noPadding>
-      {/* Header */}
       <div style={{
         padding: "4px 18px 14px",
         borderBottom: `1px solid ${C.brd}`,
@@ -1126,7 +1085,6 @@ function MobileActionSheet({ member, onClose, onConfirm }) {
         </button>
       </div>
 
-      {/* Action list */}
       <div style={{ flex: 1, overflowY: "auto", padding: "10px 14px 0" }}>
         {ACTIONS.map(a => {
           const on = a === sel;
@@ -1145,7 +1103,7 @@ function MobileActionSheet({ member, onClose, onConfirm }) {
               <span style={{ fontSize: 14, fontWeight: on ? 700 : 500, color: on ? C.cyan : C.t1 }}>{a}</span>
               {on && (
                 <div style={{ width: 22, height: 22, borderRadius: "50%", background: C.cyan, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                  <Check style={{ width: 12, height: 12, color: "#000" }} />
+                  <Check style={{ width: 12, height: 12, color: "#fff" }} />
                 </div>
               )}
             </div>
@@ -1153,14 +1111,13 @@ function MobileActionSheet({ member, onClose, onConfirm }) {
         })}
       </div>
 
-      {/* CTA */}
       <div style={{ padding: "14px 14px 28px", borderTop: `1px solid ${C.brd}`, flexShrink: 0 }}>
         <button
           onClick={handleSend}
           style={{
             width: "100%", padding: "14px",
             borderRadius: 12, background: C.cyan, border: "none",
-            color: "#000", fontSize: 14, fontWeight: 800,
+            color: "#fff", fontSize: 14, fontWeight: 800,
             cursor: "pointer", fontFamily: FONT,
             display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
           }}
@@ -1173,7 +1130,6 @@ function MobileActionSheet({ member, onClose, onConfirm }) {
   );
 }
 
-/* ─── MOBILE: STATS SHEET ────────────────────────────────────── */
 function MobileStatsSheet({ open, onClose, members }) {
   const [sheetOpen, setSheetOpen] = useState(open);
 
@@ -1194,7 +1150,6 @@ function MobileStatsSheet({ open, onClose, members }) {
 
   return (
     <BottomSheet open={sheetOpen} onClose={handleClose} maxHeight="92vh" noPadding>
-      {/* Header */}
       <div style={{
         padding: "4px 18px 16px",
         borderBottom: `1px solid ${C.brd}`,
@@ -1217,9 +1172,7 @@ function MobileStatsSheet({ open, onClose, members }) {
         </button>
       </div>
 
-      {/* Content */}
       <div style={{ flex: 1, overflowY: "auto", padding: "16px" }}>
-        {/* Hero stat */}
         <div style={{
           padding: "20px", borderRadius: 16, marginBottom: 14,
           background: C.card, border: `1px solid ${C.brd}`,
@@ -1238,7 +1191,6 @@ function MobileStatsSheet({ open, onClose, members }) {
           </div>
         </div>
 
-        {/* Mini stat grid */}
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 20 }}>
           {[
             { label: "Active",  val: active,       col: C.cyan, pct: "+8%",  up: true  },
@@ -1260,7 +1212,6 @@ function MobileStatsSheet({ open, onClose, members }) {
           ))}
         </div>
 
-        {/* Visit trend */}
         <div style={{ marginBottom: 20 }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
             <div style={{ fontSize: 14, fontWeight: 700, color: C.t1 }}>Visit Trend</div>
@@ -1286,7 +1237,6 @@ function MobileStatsSheet({ open, onClose, members }) {
           </div>
         </div>
 
-        {/* Churn trend */}
         <div style={{ marginBottom: 20 }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
             <div style={{ fontSize: 14, fontWeight: 700, color: C.t1 }}>Churn Risk</div>
@@ -1312,7 +1262,6 @@ function MobileStatsSheet({ open, onClose, members }) {
           </div>
         </div>
 
-        {/* Drop-off peaks */}
         <div style={{ marginBottom: 28 }}>
           <div style={{ fontSize: 14, fontWeight: 700, color: C.t1, marginBottom: 14 }}>Drop-off Peaks</div>
           <div style={{ background: C.card, border: `1px solid ${C.brd}`, borderRadius: 14, overflow: "hidden" }}>
@@ -1350,7 +1299,6 @@ function MobileStatsSheet({ open, onClose, members }) {
   );
 }
 
-/* ─── MOBILE: BOTTOM NAVIGATION ──────────────────────────────── */
 function BottomNavBar({ activeTab, setActiveTab }) {
   const items = [
     { id: "overview",  Icon: LayoutDashboard, label: "Overview"  },
@@ -1401,7 +1349,6 @@ function BottomNavBar({ activeTab, setActiveTab }) {
   );
 }
 
-/* ─── MOBILE: MESSAGE TOAST ──────────────────────────────────── */
 function MobileMessageToast({ member, onClose }) {
   const [sent, setSent]   = useState(false);
   const [open, setOpen]   = useState(true);
@@ -1425,7 +1372,6 @@ function MobileMessageToast({ member, onClose }) {
 
   return (
     <BottomSheet open={open} onClose={handleClose} maxHeight="75vh" noPadding>
-      {/* Header */}
       <div style={{
         padding: "4px 18px 14px",
         borderBottom: `1px solid ${C.brd}`,
@@ -1459,9 +1405,7 @@ function MobileMessageToast({ member, onClose }) {
         </button>
       </div>
 
-      {/* Body */}
       <div style={{ flex: 1, overflowY: "auto", padding: "16px" }}>
-        {/* Recipient badge */}
         <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
           <Av m={member} size={36} />
           <div style={{ flex: 1 }}>
@@ -1470,7 +1414,6 @@ function MobileMessageToast({ member, onClose }) {
           </div>
         </div>
 
-        {/* Message textarea */}
         <div style={{ marginBottom: 10 }}>
           <div style={{ fontSize: 11, color: C.t3, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 8 }}>Message</div>
           <textarea
@@ -1491,7 +1434,6 @@ function MobileMessageToast({ member, onClose }) {
           <span style={{ color: C.cyan, fontWeight: 700 }}>{member.rc}%</span> predicted return rate
         </div>
 
-        {/* Send button */}
         <button
           onClick={handleSend}
           disabled={sent}
@@ -1501,7 +1443,7 @@ function MobileMessageToast({ member, onClose }) {
             fontSize: 15, fontWeight: 800, cursor: "pointer",
             display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
             background: sent ? C.card : C.cyan,
-            color: sent ? C.cyan : "#000",
+            color: sent ? C.cyan : "#fff",
             transition: "all 0.25s",
             fontFamily: FONT,
           }}
@@ -1519,22 +1461,17 @@ function MobileMessageToast({ member, onClose }) {
 
 /* ══════════════════════════════════════════════════════════════
    ROOT COMPONENT
-   Renders mobile layout or desktop layout based on viewport.
-   All state is shared between both layouts.
 ══════════════════════════════════════════════════════════════ */
 export default function MembersPageAI() {
   const members  = MEMBERS;
   const isMobile = useIsMobile();
 
-  // Shared state
-  const [filter,     setFilter]    = useState("all");
-  const [sort,       setSort]      = useState("lastVisit");
-  const [preview,    setPreview]   = useState(null);
-  const [msgTarget,  setMsgTarget] = useState(null);
-
-  // Mobile-only state
-  const [statsOpen,  setStatsOpen] = useState(false);
-  const [activeTab,  setActiveTab] = useState("members");
+  const [filter,       setFilter]      = useState("all");
+  const [sort,         setSort]        = useState("lastVisit");
+  const [preview,      setPreview]     = useState(null);
+  const [msgTarget,    setMsgTarget]   = useState(null);
+  const [statsOpen,    setStatsOpen]   = useState(false);
+  const [activeTab,    setActiveTab]   = useState("members");
   const [actionTarget, setActionTarget] = useState(null);
 
   const counts = useMemo(() => ({
@@ -1565,23 +1502,20 @@ export default function MembersPageAI() {
     setPreview(null);
   }, []);
 
-  // Mobile: tap action button on card → show action picker sheet
   const handleCardAction = useCallback(m => {
     setActionTarget(m);
   }, []);
 
-  // Mobile: after action picked → show message compose sheet
   const handleActionConfirm = useCallback(m => {
     setActionTarget(null);
     setTimeout(() => setMsgTarget(m), 50);
   }, []);
 
-  // Bottom nav: tapping Stats opens the stats sheet
   const handleTabChange = useCallback(tab => {
     setActiveTab(tab);
     if (tab === "stats") {
       setStatsOpen(true);
-      setActiveTab("members"); // reset back to members after opening
+      setActiveTab("members");
     }
   }, []);
 
@@ -1592,9 +1526,7 @@ export default function MembersPageAI() {
         display: "flex", flexDirection: "column",
         height: "100%", background: C.bg, color: C.t1,
         fontFamily: FONT, overflow: "hidden",
-        // Inject hide-scrollbar style for filter chips
       }}>
-        {/* Sticky header block */}
         <div style={{ flexShrink: 0, position: "sticky", top: 0, zIndex: 100 }}>
           <MobileHeader
             atRiskCount={counts.atRisk}
@@ -1605,7 +1537,6 @@ export default function MembersPageAI() {
             setFilter={setFilter}
             counts={counts}
           />
-          {/* Sort + count row */}
           <div style={{
             display: "flex", alignItems: "center", justifyContent: "space-between",
             padding: "6px 16px 8px",
@@ -1635,7 +1566,6 @@ export default function MembersPageAI() {
           </div>
         </div>
 
-        {/* Scrollable member list */}
         <div style={{ flex: 1, overflowY: "auto", paddingTop: 10, paddingBottom: 90 }}>
           {visible.length === 0 ? (
             <div style={{ padding: "64px 16px", textAlign: "center" }}>
@@ -1653,12 +1583,8 @@ export default function MembersPageAI() {
           ))}
         </div>
 
-        {/* Fixed bottom nav */}
         <BottomNavBar activeTab={activeTab} setActiveTab={handleTabChange} />
 
-        {/* ── MOBILE OVERLAYS ── */}
-
-        {/* Member preview bottom sheet */}
         {preview && (
           <MobilePreviewSheet
             m={preview}
@@ -1666,8 +1592,6 @@ export default function MembersPageAI() {
             onMessage={handleMsg}
           />
         )}
-
-        {/* Action picker sheet */}
         {actionTarget && (
           <MobileActionSheet
             member={actionTarget}
@@ -1675,16 +1599,12 @@ export default function MembersPageAI() {
             onConfirm={handleActionConfirm}
           />
         )}
-
-        {/* Message compose sheet */}
         {msgTarget && (
           <MobileMessageToast
             member={msgTarget}
             onClose={() => setMsgTarget(null)}
           />
         )}
-
-        {/* Analytics sheet */}
         {statsOpen && (
           <MobileStatsSheet
             open={statsOpen}
@@ -1696,14 +1616,11 @@ export default function MembersPageAI() {
     );
   }
 
-  /* ─── DESKTOP LAYOUT (100% unchanged) ───────────────────────── */
+  /* ─── DESKTOP LAYOUT ───────────────────────────────────────── */
   return (
     <div style={{ display: "flex", height: "100%", background: C.bg, color: C.t1, fontFamily: FONT, overflow: "hidden" }}>
       <div style={{ flex: 1, display: "flex", overflow: "hidden" }}>
-
-        {/* Center */}
         <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden", minWidth: 0 }}>
-          {/* Page header */}
           <div style={{ padding: "14px 18px 12px", display: "flex", alignItems: "center", justifyContent: "space-between", borderBottom: `1px solid ${C.brd}`, flexShrink: 0 }}>
             <div>
               <div style={{ fontSize: 18, fontWeight: 700, color: C.t1, letterSpacing: "-0.02em" }}>
@@ -1723,7 +1640,7 @@ export default function MembersPageAI() {
               <button style={{
                 display: "flex", alignItems: "center", gap: 6, padding: "6px 14px",
                 borderRadius: 7, background: C.cyan, border: "none",
-                color: "#000", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: FONT,
+                color: "#fff", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: FONT,
               }}>
                 <Plus style={{ width: 12, height: 12 }} /> Invite Member
               </button>
@@ -1732,7 +1649,6 @@ export default function MembersPageAI() {
 
           <FilterTabs filter={filter} setFilter={setFilter} counts={counts} />
 
-          {/* Table */}
           <div style={{ flex: 1, overflowY: "auto" }}>
             <TableHead sort={sort} setSort={setSort} />
             {visible.length === 0 ? (
@@ -1750,7 +1666,6 @@ export default function MembersPageAI() {
               />
             ))}
 
-            {/* Pagination */}
             <div style={{ padding: "8px 18px", borderTop: `1px solid ${C.brd}`, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
               <div style={{ display: "flex", gap: 4 }}>
                 {[ChevronLeft, ChevronRight].map((Icon, i) => (
