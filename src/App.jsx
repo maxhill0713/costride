@@ -1,4 +1,3 @@
-import { lazy, Suspense } from 'react';
 import { Toaster } from "@/components/ui/toaster"
 import { QueryClientProvider } from '@tanstack/react-query'
 import { queryClientInstance } from '@/lib/query-client'
@@ -10,50 +9,41 @@ import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 
 import Layout from './Layout';
 
-const Home                = lazy(() => import('./pages/Home'));
-const Gyms                = lazy(() => import('./pages/Gyms'));
-const Progress            = lazy(() => import('./pages/Progress.jsx'));
-const Profile             = lazy(() => import('./pages/Profile'));
-const Settings            = lazy(() => import('./pages/Settings'));
-const RedeemReward        = lazy(() => import('./pages/RedeemReward'));
-const GymOwnerDashboard   = lazy(() => import('./pages/GymOwnerDashboard'));
-const Onboarding          = lazy(() => import('./pages/Onboarding'));
-const GymSignup           = lazy(() => import('./pages/GymSignup'));
-const MemberSignup        = lazy(() => import('./pages/MemberSignup'));
-const Plus                = lazy(() => import('./pages/Plus'));
-const UserProfile         = lazy(() => import('./pages/UserProfile'));
-const Friends             = lazy(() => import('./pages/Friends'));
-const Messages            = lazy(() => import('./pages/Messages'));
-const Notifications       = lazy(() => import('./pages/Notifications'));
-const GymCommunity        = lazy(() => import('./pages/GymCommunity'));
-const AccountSettings     = lazy(() => import('./pages/AccountSettings'));
-const ProfileSettings     = lazy(() => import('./pages/ProfileSettings'));
-const PrivacySettings     = lazy(() => import('./pages/PrivacySettings'));
-const AppearanceSettings  = lazy(() => import('./pages/AppearanceSettings'));
-const NotificationSettings = lazy(() => import('./pages/NotificationSettings'));
-const SubscriptionSettings = lazy(() => import('./pages/SubscriptionSettings'));
-const HelpSupport         = lazy(() => import('./pages/HelpSupport'));
-const AdminGyms           = lazy(() => import('./pages/AdminGyms'));
-const AddGym              = lazy(() => import('./pages/AddGym'));
-const ClaimGym            = lazy(() => import('./pages/ClaimGym'));
-const GymRequests         = lazy(() => import('./pages/GymRequests'));
-const GymUnderReview      = lazy(() => import('./pages/GymUnderReview'));
-const InviteOwner         = lazy(() => import('./pages/InviteOwner'));
-const Leaderboard         = lazy(() => import('./pages/Leaderboard'));
-const Premium             = lazy(() => import('./pages/Premium'));
-const Community           = lazy(() => import('./pages/Community'));
-const ModeratorDashboard  = lazy(() => import('./pages/ModeratorDashboard'));
-const NotificationsHub    = lazy(() => import('./pages/NotificationsHub'));
-const PostArchive         = lazy(() => import('./pages/PostArchive'));
-
-function PageLoader() {
-  return (
-    <div style={{ position: 'fixed', inset: 0, background: '#080e18', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      <div style={{ width: 32, height: 32, border: '3px solid rgba(59,130,246,0.2)', borderTopColor: '#3b82f6', borderRadius: '50%', animation: 'spin 0.7s linear infinite' }} />
-      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
-    </div>
-  );
-}
+import Home                from './pages/Home';
+import Gyms                from './pages/Gyms';
+import Progress            from './pages/Progress.jsx';
+import Profile             from './pages/Profile';
+import Settings            from './pages/Settings';
+import RedeemReward        from './pages/RedeemReward';
+import GymOwnerDashboard   from './pages/GymOwnerDashboard';
+import Onboarding          from './pages/Onboarding';
+import GymSignup           from './pages/GymSignup';
+import MemberSignup        from './pages/MemberSignup';
+import Plus                from './pages/Plus';
+import UserProfile         from './pages/UserProfile';
+import Friends             from './pages/Friends';
+import Messages            from './pages/Messages';
+import Notifications       from './pages/Notifications';
+import GymCommunity        from './pages/GymCommunity';
+import AccountSettings     from './pages/AccountSettings';
+import ProfileSettings     from './pages/ProfileSettings';
+import PrivacySettings     from './pages/PrivacySettings';
+import AppearanceSettings  from './pages/AppearanceSettings';
+import NotificationSettings from './pages/NotificationSettings';
+import SubscriptionSettings from './pages/SubscriptionSettings';
+import HelpSupport         from './pages/HelpSupport';
+import AdminGyms           from './pages/AdminGyms';
+import AddGym              from './pages/AddGym';
+import ClaimGym            from './pages/ClaimGym';
+import GymRequests         from './pages/GymRequests';
+import GymUnderReview      from './pages/GymUnderReview';
+import InviteOwner         from './pages/InviteOwner';
+import Leaderboard         from './pages/Leaderboard';
+import Premium             from './pages/Premium';
+import Community           from './pages/Community';
+import ModeratorDashboard  from './pages/ModeratorDashboard';
+import NotificationsHub    from './pages/NotificationsHub';
+import PostArchive         from './pages/PostArchive';
 
 const LayoutWrapper = ({ children, currentPageName }) => (
   <Layout currentPageName={currentPageName}>{children}</Layout>
@@ -83,7 +73,6 @@ const AuthenticatedApp = () => {
   }
 
   return (
-    <Suspense fallback={<PageLoader />}>
     <Routes>
       <Route path="/" element={<Navigate to="/Home" replace />} />
       <Route path="/Home" element={<LayoutWrapper currentPageName="Home"><Home /></LayoutWrapper>} />
@@ -123,7 +112,6 @@ const AuthenticatedApp = () => {
       <Route path="/PostArchive" element={<LayoutWrapper currentPageName="PostArchive"><PostArchive /></LayoutWrapper>} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
-    </Suspense>
   );
 };
 
