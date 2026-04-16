@@ -10,7 +10,6 @@ import {
   Users, Dumbbell, Star, Trash2, GraduationCap, UserPlus,
   CheckCircle2, AlertTriangle, Plus,
 } from 'lucide-react';
-import { Link } from 'react-router-dom';
 import { createPageUrl } from '../../utils';
 
 /* ─── TOKENS — exact ContentPage palette ────────────────────── */
@@ -518,7 +517,7 @@ export default function TabGymProfile({ gym, openModal, coaches = [], onDeleteCo
             How your gym appears and performs for members — strengths, gaps, and what matters most.
           </p>
         </div>
-        <Link to={previewUrl} target="_blank" style={{ textDecoration: 'none', flexShrink: 0 }}>
+        <a href={previewUrl} target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none', flexShrink: 0 }}>
           <button style={{
             display: 'flex', alignItems: 'center', gap: 6, padding: '8px 15px', borderRadius: 8,
             fontSize: 12, fontWeight: 700, background: C.card, border: `1px solid ${C.brd}`,
@@ -530,7 +529,7 @@ export default function TabGymProfile({ gym, openModal, coaches = [], onDeleteCo
           >
             <ExternalLink style={{ width: 11, height: 11 }} /> Member View
           </button>
-        </Link>
+        </a>
       </div>
 
       {/* ── METRIC CARDS ──────────────────────────────────── */}
@@ -703,14 +702,14 @@ export default function TabGymProfile({ gym, openModal, coaches = [], onDeleteCo
             <span style={{ color: C.t2, fontWeight: 600 }}>2.3× longer</span> on average.
           </div>
         </div>
-        <Link to={previewUrl} target="_blank" style={{ textDecoration: 'none', flexShrink: 0 }}>
+        <a href={previewUrl} target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none', flexShrink: 0 }}>
           <span style={{
             fontSize: 12, fontWeight: 700, color: C.cyan,
             display: 'flex', alignItems: 'center', gap: 4, cursor: 'pointer',
           }}>
             See member view <ExternalLink style={{ width: 11, height: 11 }} />
           </span>
-        </Link>
+        </a>
       </div>
 
     </div>
