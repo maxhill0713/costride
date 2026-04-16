@@ -2,6 +2,8 @@
  * TabEngagement — Forge Fitness design system
  * Mobile-first responsive: adapts on ≤768px, desktop layout unchanged.
  * No sidebar / topbar — those are injected by the shell.
+ *
+ * Cyan color updated to match ContentPage blue: #4d7fff
  */
 
 import { useState, useEffect, useRef, useCallback } from "react";
@@ -23,9 +25,9 @@ const C = {
   t1:       "#ffffff",
   t2:       "#8a8a94",
   t3:       "#444450",
-  cyan:     "#00e5c8",
-  cyanDim:  "rgba(0,229,200,0.1)",
-  cyanBrd:  "rgba(0,229,200,0.25)",
+  cyan:     "#4d7fff",
+  cyanDim:  "rgba(77,127,255,0.12)",
+  cyanBrd:  "rgba(77,127,255,0.28)",
   red:      "#ff4d6d",
   redDim:   "rgba(255,77,109,0.15)",
   amber:    "#f59e0b",
@@ -173,7 +175,7 @@ function IconBox({ Icon, color = C.t3, size = 14, boxSize = 30 }) {
 function Btn({ children, onClick, variant = "ghost", style: extraStyle = {} }) {
   const base = { display: "flex", alignItems: "center", gap: 5, padding: "6px 12px", borderRadius: 7, fontSize: 12, fontWeight: 600, cursor: "pointer", border: "none", fontFamily: FONT, transition: "all 0.15s" };
   const variants = {
-    primary:   { background: C.cyan,  color: "#000", border: "none", boxShadow: "0 0 16px rgba(0,229,200,0.25)" },
+    primary:   { background: C.cyan,  color: "#fff", border: "none", boxShadow: "0 0 16px rgba(77,127,255,0.25)" },
     secondary: { background: "rgba(255,255,255,0.04)", color: C.t2, border: `1px solid ${C.brd}` },
     ghost:     { background: "rgba(255,255,255,0.03)", color: C.t3, border: `1px solid ${C.brd}` },
     danger:    { background: C.redDim, color: C.red, border: `1px solid rgba(255,77,109,0.3)` },
@@ -749,7 +751,7 @@ function AddRulePanel({ gymName, existingIds, onAdd, onClose }) {
    MOBILE ADD RULE DRAWER — step-based full-screen drawer
 ═══════════════════════════════════════════════════════════════ */
 function MobileAddDrawer({ gymName, existingIds, onAdd, onClose }) {
-  const [step, setStep]    = useState(1);   // 1 = trigger, 2 = message, 3 = timing
+  const [step, setStep]    = useState(1);
   const [cat, setCat]      = useState("All");
   const [selected, setSel] = useState(null);
   const [msg, setMsg]      = useState("");
@@ -783,10 +785,8 @@ function MobileAddDrawer({ gymName, existingIds, onAdd, onClose }) {
       display: "flex", flexDirection: "column", justifyContent: "flex-end",
       animation: "fadeIn 0.2s ease",
     }}>
-      {/* Tap backdrop to close */}
       <div style={{ position: "absolute", inset: 0 }} onClick={onClose} />
 
-      {/* Drawer */}
       <div style={{
         position: "relative",
         background: C.card,
@@ -798,12 +798,10 @@ function MobileAddDrawer({ gymName, existingIds, onAdd, onClose }) {
         boxShadow: "0 -20px 60px rgba(0,0,0,0.6)",
       }}>
 
-        {/* Drag handle */}
         <div style={{ display: "flex", justifyContent: "center", padding: "12px 0 4px" }}>
           <div style={{ width: 36, height: 4, borderRadius: 2, background: C.brd2 }} />
         </div>
 
-        {/* Header */}
         <div style={{ padding: "10px 18px 14px", borderBottom: `1px solid ${C.brd}` }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
             <div style={{ fontSize: 16, fontWeight: 700, color: C.t1 }}>New automation</div>
@@ -812,7 +810,6 @@ function MobileAddDrawer({ gymName, existingIds, onAdd, onClose }) {
             </button>
           </div>
 
-          {/* Step indicator */}
           <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
             {[1, 2, 3].map(s => (
               <div key={s} style={{ display: "flex", alignItems: "center", gap: 6, flex: s < 3 ? 1 : "none" }}>
@@ -822,7 +819,7 @@ function MobileAddDrawer({ gymName, existingIds, onAdd, onClose }) {
                   fontSize: 10, fontWeight: 700,
                   background: step > s ? C.cyan : step === s ? C.cyanDim : "rgba(255,255,255,0.04)",
                   border: `1px solid ${step >= s ? C.cyanBrd : C.brd}`,
-                  color: step > s ? "#000" : step === s ? C.cyan : C.t3,
+                  color: step > s ? "#fff" : step === s ? C.cyan : C.t3,
                   transition: "all 0.2s",
                 }}>
                   {step > s ? <CheckCircle size={10} /> : s}
@@ -836,10 +833,8 @@ function MobileAddDrawer({ gymName, existingIds, onAdd, onClose }) {
           </div>
         </div>
 
-        {/* Scrollable content */}
         <div style={{ flex: 1, overflowY: "auto", padding: "18px 18px 4px", WebkitOverflowScrolling: "touch" }}>
 
-          {/* Step 1: Select trigger */}
           {step === 1 && (
             <div>
               <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 14 }}>
@@ -871,7 +866,7 @@ function MobileAddDrawer({ gymName, existingIds, onAdd, onClose }) {
                       </div>
                       {isSel && (
                         <div style={{ width: 20, height: 20, borderRadius: "50%", background: C.cyan, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                          <CheckCircle size={11} color="#000" />
+                          <CheckCircle size={11} color="#fff" />
                         </div>
                       )}
                     </button>
@@ -886,10 +881,8 @@ function MobileAddDrawer({ gymName, existingIds, onAdd, onClose }) {
             </div>
           )}
 
-          {/* Step 2: Write message */}
           {step === 2 && selected && (
             <div>
-              {/* Selected trigger badge */}
               <div style={{ padding: "10px 13px", borderRadius: 10, background: C.cyanDim, border: `1px solid ${C.cyanBrd}`, marginBottom: 18, display: "flex", alignItems: "center", gap: 9 }}>
                 <selected.Icon size={14} color={C.cyan} />
                 <div>
@@ -921,7 +914,6 @@ function MobileAddDrawer({ gymName, existingIds, onAdd, onClose }) {
             </div>
           )}
 
-          {/* Step 3: Choose timing */}
           {step === 3 && (
             <div>
               <div style={{ fontSize: 13, color: C.t2, lineHeight: 1.6, marginBottom: 18 }}>
@@ -944,7 +936,7 @@ function MobileAddDrawer({ gymName, existingIds, onAdd, onClose }) {
                     </div>
                     {delay === d.v && (
                       <div style={{ width: 20, height: 20, borderRadius: "50%", background: C.cyan, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                        <CheckCircle size={11} color="#000" />
+                        <CheckCircle size={11} color="#fff" />
                       </div>
                     )}
                   </button>
@@ -954,7 +946,6 @@ function MobileAddDrawer({ gymName, existingIds, onAdd, onClose }) {
           )}
         </div>
 
-        {/* Sticky bottom CTA */}
         <div style={{ padding: "14px 18px", borderTop: `1px solid ${C.brd}`, background: C.card, display: "flex", gap: 10 }}>
           {step > 1 ? (
             <button onClick={() => setStep(s => s - 1)} style={{
@@ -974,10 +965,10 @@ function MobileAddDrawer({ gymName, existingIds, onAdd, onClose }) {
               onClick={() => canAdvance && setStep(s => s + 1)}
               style={{
                 flex: 1, height: 50, borderRadius: 12, cursor: canAdvance ? "pointer" : "default",
-                background: canAdvance ? C.cyan : "rgba(0,229,200,0.15)",
-                border: "none", color: canAdvance ? "#000" : "rgba(0,229,200,0.4)",
+                background: canAdvance ? C.cyan : "rgba(77,127,255,0.15)",
+                border: "none", color: canAdvance ? "#fff" : "rgba(77,127,255,0.4)",
                 fontSize: 15, fontWeight: 700, fontFamily: FONT,
-                boxShadow: canAdvance ? "0 0 20px rgba(0,229,200,0.3)" : "none",
+                boxShadow: canAdvance ? "0 0 20px rgba(77,127,255,0.3)" : "none",
                 transition: "all 0.2s",
                 display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
               }}
@@ -990,8 +981,8 @@ function MobileAddDrawer({ gymName, existingIds, onAdd, onClose }) {
               style={{
                 flex: 1, height: 50, borderRadius: 12, cursor: "pointer",
                 background: C.cyan, border: "none",
-                color: "#000", fontSize: 15, fontWeight: 700, fontFamily: FONT,
-                boxShadow: "0 0 20px rgba(0,229,200,0.35)",
+                color: "#fff", fontSize: 15, fontWeight: 700, fontFamily: FONT,
+                boxShadow: "0 0 20px rgba(77,127,255,0.35)",
                 display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
               }}
             >
@@ -1015,7 +1006,6 @@ export default function TabEngagement({ selectedGym }) {
   const [activity, setActivity] = useState(MOCK_ACTIVITY);
   const liveIdx = useRef(0);
 
-  /* ── Mobile detection ──────────────────────────────────────── */
   const [isMobile, setIsMobile] = useState(
     typeof window !== "undefined" ? window.innerWidth <= 768 : false
   );
@@ -1051,7 +1041,6 @@ export default function TabEngagement({ selectedGym }) {
   const churnPrev    = Math.floor(totalRet * 0.4);
 
   const addFromRec = useCallback(rec => {
-    // Strip non-serializable fields (e.g. icon component refs) before storing in state
     addRule({ trigger_id: rec.trigger_id, message: TEMPLATES[rec.trigger_id]?.(gymName, "{name}") || "", delay_hours: 0, enabled: true, stats: { sent:0, returned:0, rate:0, saved:0 } });
   }, [addRule, gymName]);
 
@@ -1071,7 +1060,6 @@ export default function TabEngagement({ selectedGym }) {
         @keyframes fadeIn     { from { opacity:0 } to { opacity:1 } }
       `}</style>
 
-      {/* Mobile add drawer — rendered outside main content flow */}
       {isMobile && showAdd && (
         <MobileAddDrawer
           gymName={gymName}
@@ -1109,7 +1097,6 @@ export default function TabEngagement({ selectedGym }) {
             </p>
           </div>
 
-          {/* Add rule button */}
           {!isMobile && (
             <Btn variant={showAdd ? "ghost" : "primary"} onClick={() => setShowAdd(v => !v)}>
               {showAdd ? <><X size={11} /> Cancel</> : <><Plus size={11} /> Add rule</>}
@@ -1202,7 +1189,7 @@ export default function TabEngagement({ selectedGym }) {
               <TemplatePacks existingIds={existingIds} onAddPack={addPack} />
             </div>
 
-            {/* Activity feed — mobile only, inline below rules */}
+            {/* Activity feed — mobile only */}
             {isMobile && (
               <div style={{ borderTop: `1px solid ${C.brd}`, paddingTop: 20 }}>
                 <ActivityFeed events={activity} isMobile={isMobile} />
@@ -1210,7 +1197,7 @@ export default function TabEngagement({ selectedGym }) {
             )}
           </div>
 
-          {/* Activity feed — desktop only, sticky sidebar */}
+          {/* Activity feed — desktop only */}
           {!isMobile && (
             <div style={{ position: "sticky", top: 16 }}>
               <ActivityFeed events={activity} isMobile={false} />
@@ -1231,9 +1218,9 @@ export default function TabEngagement({ selectedGym }) {
               style={{
                 width: "100%", height: 52, borderRadius: 14,
                 background: C.cyan, border: "none",
-                color: "#000", fontSize: 15, fontWeight: 700, fontFamily: FONT,
+                color: "#fff", fontSize: 15, fontWeight: 700, fontFamily: FONT,
                 cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
-                boxShadow: "0 0 30px rgba(0,229,200,0.4), 0 4px 20px rgba(0,0,0,0.5)",
+                boxShadow: "0 0 30px rgba(77,127,255,0.4), 0 4px 20px rgba(0,0,0,0.5)",
                 WebkitTapHighlightColor: "transparent",
               }}
             >
