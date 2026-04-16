@@ -17,11 +17,11 @@ ComposedChart,
 } from "recharts";
 /* ─── TOKENS ─────────────────────────────────────────────────── */
 const C = {
-  bg:      "#0b0b0d",
-  card:    "#0f1015",
-  card2:   "#13131a",
-  brd:     "#1c1c24",
-  brd2:    "#242430",
+  bg:      "#000000",
+  card:    "#141416",
+  card2:   "#1a1a1f",
+  brd:     "#222226",
+  brd2:    "#2a2a30",
   t1:      "#ffffff",
   t2:      "#8a8a94",
   t3:      "#444450",
@@ -197,7 +197,7 @@ const tCol = up ? C.cyan : C.red;
 return (
           <div key={i} style={{
             background: C.card,
-            border: "none",
+            border: `1px solid ${C.brd}`,
             borderRadius: 10,
             padding: isMobile ? "11px 12px" : "13px 14px",
           }}>
