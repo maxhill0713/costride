@@ -50,6 +50,7 @@ const TabCoachProfile = lazy(() => import('../components/dashboard/TabCoachProfi
 const TabEngagement = lazy(() => import('../components/dashboard/TabEngagement'));
 const TabRewards = lazy(() => import('../components/dashboard/TabRewards'));
 const TabCoachToday = lazy(() => import('../components/dashboard/TabCoachToday'));
+const TabGymProfile = lazy(() => import('../components/dashboard/TabGymProfile'));
 
 /* ─── Design Tokens — unified with Content & Overview pages ─── */
 const T = {
@@ -93,6 +94,7 @@ const ALL_NAV = [
   { id: 'content',    label: 'Content',      icon: FileText,        roles: ['gym_owner', 'coach'] },
   { id: 'analytics',  label: 'Analytics',    icon: BarChart3,       roles: ['gym_owner'] },
   { id: 'profile',    label: 'Profile',      icon: Crown,           roles: ['coach'] },
+  { id: 'gymprofile', label: 'Gym Profile',  icon: Dumbbell,        roles: ['gym_owner'] },
   { id: 'engagement', label: 'Automations',  icon: Zap,             roles: ['gym_owner'] },
   { id: 'actions',    label: 'Actions',      icon: Settings,        roles: ['gym_owner'] },
 ];
@@ -523,6 +525,8 @@ export default function GymOwnerDashboard() {
       content = <TabCoachProfile selectedGym={selectedGym} currentUser={currentUser} />;
     } else if (item.id === 'engagement') {
       content = <TabEngagement selectedGym={selectedGym} allMemberships={effectiveMemberships} atRisk={atRisk} totalMembers={totalMembers} />;
+    } else if (item.id === 'gymprofile') {
+      content = <TabGymProfile selectedGym={selectedGym} currentUser={currentUser} />;
     } else if (item.id === 'actions') {
       content = <TabActions />;
     }
