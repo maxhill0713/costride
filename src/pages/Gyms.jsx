@@ -153,7 +153,10 @@ export default function Gyms() {
       return { exists: false, gym: await base44.entities.Gym.create(gymData) };
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['gyms'] }); queryClient.invalidateQueries({ queryKey: ['gymMemberships'] });
+      queryClient.invalidateQueries({ queryKey: ['gyms'] });
+      queryClient.invalidateQueries({ queryKey: ['gymMemberships'] });
+      queryClient.invalidateQueries({ queryKey: ['memberGyms', currentUser?.id] });
+      queryClient.invalidateQueries({ queryKey: ['currentUser'] });
       setShowAddGymModal(false); setShowConfirmJoin(false); setSelectedPlaceGym(null); setPendingGymData(null); setPlacesResults([]); setSearchQuery('');
     },
   });
