@@ -371,7 +371,7 @@ export default function Gyms() {
                 <p className="text-xs font-semibold flex items-center gap-2"><Plus className="w-3 h-3 text-green-400" /><span className="text-green-400">Found {placesResults.length} gyms on Google Places</span></p>
                 <div className="space-y-2">
                   {placesResults.slice(0, 5).map(place => (
-                    <button key={place.place_id} onClick={() => handleSelectPlace(place)} className="w-full text-left rounded-xl bg-slate-700/50 border border-slate-600/40 hover:border-green-500/50 hover:bg-slate-700/80 transition-all overflow-hidden">
+                    <div key={place.place_id} className="rounded-xl bg-slate-700/50 border border-slate-600/40 overflow-hidden">
                       <div className="flex items-stretch">
                         <div className="w-20 h-20 flex-shrink-0 bg-gradient-to-br from-slate-600 to-slate-700 overflow-hidden">
                           {place.photo_url ? <img src={place.photo_url} alt={place.name} className="w-full h-full object-cover" loading="lazy" /> : <div className="w-full h-full flex items-center justify-center"><Dumbbell className="w-6 h-6 text-slate-500" /></div>}
@@ -382,10 +382,10 @@ export default function Gyms() {
                           {place.rating && <div className="flex items-center gap-1 mt-1"><Star className="w-3 h-3 fill-yellow-400 text-yellow-400" /><span className="text-slate-300 text-xs">{place.rating}</span></div>}
                         </div>
                         <div className="flex items-center pr-3">
-                          <Badge className="bg-gradient-to-b from-green-400 via-green-500 to-green-600 text-white border-transparent shadow-[0_3px_0_0_#065f46] active:shadow-none active:translate-y-[2px] active:scale-95 transform-gpu text-xs font-bold px-2.5 py-0.5 rounded-lg">Add</Badge>
+                          <button onClick={() => handleSelectPlace(place)} className="bg-gradient-to-b from-green-400 via-green-500 to-green-600 text-white border-transparent shadow-[0_3px_0_0_#065f46] active:shadow-none active:translate-y-[2px] active:scale-95 transform-gpu text-xs font-bold px-2.5 py-1 rounded-lg">Add</button>
                         </div>
                       </div>
-                    </button>
+                    </div>
                   ))}
                 </div>
               </div>
