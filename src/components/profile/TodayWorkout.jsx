@@ -4,7 +4,7 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Dumbbell, Edit2, Check, X, TrendingUp, TrendingDown, ChevronDown, Clock, Calculator, BookOpen, Info, ChevronLeft, Pencil } from 'lucide-react';
+import { Dumbbell, Edit2, Check, X, TrendingUp, TrendingDown, ChevronDown, Clock, Calculator, BookOpen, Info, ChevronLeft, Pencil, ArrowLeftRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
@@ -15,7 +15,7 @@ import HomeSummaryModal from '../home/WorkoutSummaryModal.jsx';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 
 import { useTimer } from '../TimerContext';
-import { recordTrainedOnRestDay, useRestDayCredit as applyRestDayCredit, hasRestDayCredit } from '../../lib/weekSwaps.js';
+import { recordTrainedOnRestDay, useRestDayCredit as applyRestDayCredit, hasRestDayCredit, recordRestSwap, getRestSwap, clearRestSwap } from '../../lib/weekSwaps.js';
 
 const DAY_NAMES_FULL = ['', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 
@@ -57,7 +57,18 @@ function WorkoutSwitcherModal({ open, onClose, currentUser, activeDayKey, adjust
   const futureFreeRestDays = creditAvailable
     ? [1, 2, 3, 4, 5, 6, 7].filter((d) => {
         if (trainingDays.includes(d)) return false;
-        if (d <= adjustedDay) return false; // must be future
+        if (d <= adjustedDay) return false;
+        return true;
+      })
+    : [];
+
+  // Future rest days available for "move today's workout here, rest today" swap
+  // Only show if today is actually a training day (has a real workout)
+  const todayIsTrainingDay = trainingDays.includes(adjustedDay);
+  const futureRestDaysForSwap = todayIsTrainingDay
+    ? [1, 2, 3, 4, 5, 6, 7].filter((d) => {
+        if (trainingDays.includes(d)) return false; // must be a rest day in normal split
+        if (d <= adjustedDay) return false; // must be in the future this week
         return true;
       })
     : [];
@@ -74,6 +85,28 @@ function WorkoutSwitcherModal({ open, onClose, currentUser, activeDayKey, adjust
           <h3 className="text-xl font-black text-white tracking-tight text-center">Switch Workout</h3>
         </div>
         <div className="px-3 pb-4 space-y-1.5 max-h-[60vh] overflow-y-auto">
+
+          {/* Move workout to future rest day */}
+          {futureRestDaysForSwap.length > 0 && (
+            <>
+              <p className="text-xs text-slate-400 font-semibold px-1 pt-1 pb-0.5">Move today's workout to a rest day</p>
+              {futureRestDaysForSwap.map((d) => (
+                <button
+                  key={`swap-rest-${d}`}
+                  onClick={() => { onSelect(d, 'move-to-rest'); onClose(); }}
+                  className="w-full text-left rounded-2xl border border-orange-500/40 bg-orange-500/10 hover:bg-orange-500/20 transition-all duration-200 px-4 py-3 flex items-center gap-3">
+                  <ArrowLeftRight className="w-4 h-4 text-orange-400 flex-shrink-0" />
+                  <div>
+                    <p className="text-base font-black text-orange-300">Rest on {DAY_NAMES_FULL[adjustedDay]}, train on {DAY_NAMES_FULL[d]}</p>
+                    <p className="text-xs text-orange-400/70 mt-0.5">Today becomes rest · {DAY_NAMES_FULL[d]} becomes your workout</p>
+                  </div>
+                </button>
+              ))}
+              <div className="border-t border-slate-700/40 pt-1" />
+            </>
+          )}
+
+          {/* Train on rest day (existing credit system) */}
           {futureFreeRestDays.length > 0 && (
             <>
               <p className="text-xs text-slate-400 font-semibold px-1 pt-1 pb-0.5">Make a rest day a training day</p>
@@ -153,6 +186,16 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
     }
   });
 
+  // Rest swap: today is forced rest, workout moved to a future day
+  const [restSwapActive, setRestSwapActive] = useState(() => {
+    const swap = getRestSwap();
+    if (!swap) return false;
+    const today = new Date();
+    const dow = today.getDay();
+    const todayNum = dow === 0 ? 7 : dow;
+    return swap.fromDay === todayNum;
+  });
+
   // Persist overrideDayKey to localStorage whenever it changes
   useEffect(() => {
     try {
@@ -194,6 +237,11 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
 
   const getTodayWorkout = () => {
     if (!currentUser?.custom_workout_types) return null;
+
+    // Rest swap active: today is a rest day, workout moved to future day
+    if (restSwapActive) {
+      return { name: 'Rest Day', exercises: [], cardio: [] };
+    }
 
     if (overrideDayKey !== null) {
       const workout = currentUser.custom_workout_types[overrideDayKey];
@@ -1206,8 +1254,15 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
         adjustedDay={adjustedDay}
         onSelect={(dayKey, mode) => {
           if (mode === 'rest-to-training') {
-            // utility function (not a hook), safe to call in callbacks
             applyRestDayCredit(dayKey);
+            window.dispatchEvent(new Event('weekSwapChanged'));
+          } else if (mode === 'move-to-rest') {
+            // Today becomes rest, today's workout is moved to dayKey (a future rest day)
+            recordRestSwap(adjustedDay, dayKey);
+            setRestSwapActive(true);
+            setOverrideDayKey(null);
+            setEditingIndex(null);
+            onOverrideDayChange?.(null);
             window.dispatchEvent(new Event('weekSwapChanged'));
           } else {
             const newOverride = dayKey === adjustedDay ? null : dayKey;

@@ -1,5 +1,6 @@
 // Week swap state persisted in localStorage
 // Tracks when a user trains on a rest day, granting them one future rest-day swap credit
+// Also tracks "move today's workout to a future rest day" (rest swap)
 
 function getWeekKey() {
   const now = new Date();
@@ -60,4 +61,39 @@ export function getSwappedRestDay() {
 export function hasRestDayCredit() {
   const data = getWeekSwaps();
   return !!(data?.trainedOnRestDay && !data.usedRestDayCredit);
+}
+
+// ── Rest Swap: move today's workout to a future rest day ──────────────────────
+// Key stored separately so it doesn't interfere with the rest-day credit system
+const RS_KEY = 'restSwap';
+
+function getRSWeekKey() {
+  return getWeekKey();
+}
+
+export function getRestSwap() {
+  try {
+    const raw = localStorage.getItem(RS_KEY);
+    if (!raw) return null;
+    const data = JSON.parse(raw);
+    if (data.week !== getRSWeekKey()) {
+      localStorage.removeItem(RS_KEY);
+      return null;
+    }
+    return data; // { week, fromDay, toDay }
+  } catch {
+    return null;
+  }
+}
+
+// Call when user swaps today's workout to a future rest day.
+// fromDay = today's dayNum (1-7), toDay = the future rest day number
+export function recordRestSwap(fromDay, toDay) {
+  try {
+    localStorage.setItem(RS_KEY, JSON.stringify({ week: getRSWeekKey(), fromDay, toDay }));
+  } catch {}
+}
+
+export function clearRestSwap() {
+  try { localStorage.removeItem(RS_KEY); } catch {}
 }

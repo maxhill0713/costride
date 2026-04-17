@@ -23,7 +23,7 @@ import { isToday, differenceInDays, startOfWeek, startOfDay } from 'date-fns';
 import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import LocationBasedCheckInButton from '../components/gym/LocationBasedCheckInButton';
-import { getSwappedRestDay } from '../lib/weekSwaps.js';
+import { getSwappedRestDay, getRestSwap } from '../lib/weekSwaps.js';
 
 const sanitiseUsernameQuery = (v) =>
   v.replace(/[^a-zA-Z0-9_.\- ]/g, '').slice(0, 30);
@@ -1040,9 +1040,21 @@ export default function Home() {
           {memberGym?.id && (() => {
             const baseTrainingDays = (currentUser?.training_days || []).filter((d) => d >= 1 && d <= 7);
             const swappedRestDay = weekOffset === 0 ? getSwappedRestDay() : null;
-            const trainingDays = swappedRestDay && !baseTrainingDays.includes(swappedRestDay)
+
+            // Rest swap: today becomes rest, a future rest day becomes training
+            const restSwap = weekOffset === 0 ? getRestSwap() : null;
+
+            let trainingDays = swappedRestDay && !baseTrainingDays.includes(swappedRestDay)
               ? [...baseTrainingDays, swappedRestDay]
               : baseTrainingDays;
+
+            if (restSwap) {
+              // Remove fromDay (today), add toDay (the future rest day it was moved to)
+              trainingDays = trainingDays.filter(d => d !== restSwap.fromDay);
+              if (!trainingDays.includes(restSwap.toDay)) {
+                trainingDays = [...trainingDays, restSwap.toDay];
+              }
+            }
             if (trainingDays.length === 0) return null;
             const mondayBase = startOfWeek(new Date(), { weekStartsOn: 1 });
             mondayBase.setDate(mondayBase.getDate() + weekOffset * 7);
