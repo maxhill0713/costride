@@ -365,7 +365,7 @@ function FeedCard({ item, memberAvatarMap, liked, onLike, index }) {
             width: 16, height: 16, borderRadius: '50%',
             background: type.iconBg, border: `1.5px solid rgba(6,8,18,0.9)`,
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            boxShadow: '0 1px 4px rgba(0,0,0,0.4)' }}>
+            boxShadow: '0 1px 4px rgba(0,0,0,0.4)' }} className=" hidden hidden">
             <TypeIcon style={{ width: 8, height: 8, color: type.iconColor }} />
           </div>
         </div>
@@ -1553,9 +1553,9 @@ export default function GymCommunity() {
   const banMemberMutation = useMutation({ mutationFn: (userId) => base44.entities.Gym.update(gymId, { banned_members: [...(gym?.banned_members || []), userId] }), onSuccess: () => {queryClient.invalidateQueries({ queryKey: ['gym', gymId] });} });
   const unbanMemberMutation = useMutation({ mutationFn: (userId) => base44.entities.Gym.update(gymId, { banned_members: (gym?.banned_members || []).filter((id) => id !== userId) }), onSuccess: () => {queryClient.invalidateQueries({ queryKey: ['gym', gymId] });} });
   const joinGhostGymMutation = useMutation({ mutationFn: async () => {
-    const currentMemberships = await base44.entities.GymMembership.filter({ user_id: currentUser.id, status: 'active' });
-    if (currentMemberships.length >= 3) throw new Error('You can only be a member of up to 3 gyms. Please leave a gym before joining a new one.');
-    await base44.entities.GymMembership.create({ user_id: currentUser.id, user_name: currentUser.full_name, user_email: currentUser.email, gym_id: gym.id, gym_name: gym.name, status: 'active', join_date: new Date().toISOString().split('T')[0], membership_type: 'lifetime' });if (!currentUser.primary_gym_id) {await base44.auth.updateMe({ primary_gym_id: gym.id });}}, onSuccess: () => {queryClient.invalidateQueries({ queryKey: ['gymMembership', currentUser?.id, gymId] });queryClient.invalidateQueries({ queryKey: ['gymMemberships', currentUser?.id] });queryClient.invalidateQueries({ queryKey: ['currentUser'] });} });
+      const currentMemberships = await base44.entities.GymMembership.filter({ user_id: currentUser.id, status: 'active' });
+      if (currentMemberships.length >= 3) throw new Error('You can only be a member of up to 3 gyms. Please leave a gym before joining a new one.');
+      await base44.entities.GymMembership.create({ user_id: currentUser.id, user_name: currentUser.full_name, user_email: currentUser.email, gym_id: gym.id, gym_name: gym.name, status: 'active', join_date: new Date().toISOString().split('T')[0], membership_type: 'lifetime' });if (!currentUser.primary_gym_id) {await base44.auth.updateMe({ primary_gym_id: gym.id });}}, onSuccess: () => {queryClient.invalidateQueries({ queryKey: ['gymMembership', currentUser?.id, gymId] });queryClient.invalidateQueries({ queryKey: ['gymMemberships', currentUser?.id] });queryClient.invalidateQueries({ queryKey: ['currentUser'] });} });
   const joinChallengeMutation = useMutation({ mutationFn: async (challenge) => {await base44.functions.invoke('joinChallenge', { challengeId: challenge.id });}, onMutate: async (challenge) => {await queryClient.cancelQueries({ queryKey: ['challengeParticipants', currentUser?.id] });const previous = queryClient.getQueryData(['challengeParticipants', currentUser?.id]);queryClient.setQueryData(['challengeParticipants', currentUser?.id], (old = []) => [...old, { id: `temp-${challenge.id}`, user_id: currentUser.id, challenge_id: challenge.id, challenge_title: challenge.title, progress: 0, completed: false }]);return { previous };}, onError: (err, challenge, context) => {queryClient.setQueryData(['challengeParticipants', currentUser?.id], context.previous);}, onSuccess: () => {queryClient.invalidateQueries({ queryKey: ['challengeParticipants', currentUser?.id] });queryClient.invalidateQueries({ queryKey: ['challenges', gymId] });queryClient.invalidateQueries({ queryKey: ['challenges'] });queryClient.invalidateQueries({ queryKey: ['activeChallenges'] });base44.entities.Notification.create({ user_id: currentUser.id, type: 'challenge', title: '💪 Challenge Joined!', message: 'Good luck on your new challenge!', icon: '🎯' });} });
 
   const isGymOwner = currentUser && gym && currentUser.email === gym.owner_email && currentUser.account_type === 'gym_owner';
