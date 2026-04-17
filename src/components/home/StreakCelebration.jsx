@@ -9,11 +9,34 @@ const POSE_2_URL = 'https://media.base44.com/images/public/694b637358644e1c22c8e
 
 const DAY_LABELS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
+// ── Shared AudioContext — created once on first user gesture, reused for all sounds ──
+let _sharedCtx = null;
+
+function getAudioCtx() {
+  try {
+    if (!_sharedCtx || _sharedCtx.state === 'closed') {
+      _sharedCtx = new (window.AudioContext || window.webkitAudioContext)();
+    }
+    if (_sharedCtx.state === 'suspended') {
+      _sharedCtx.resume();
+    }
+    return _sharedCtx;
+  } catch (_) {
+    return null;
+  }
+}
+
+// Call this on any user gesture to pre-unlock the audio context
+function unlockAudio() {
+  const ctx = getAudioCtx();
+  if (ctx && ctx.state === 'suspended') ctx.resume();
+}
+
 // ── Audio ─────────────────────────────────────────────────────────────────────
 
 function playCircleLevelUp() {
   try {
-    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const ctx = getAudioCtx(); if (!ctx) return;
     const t = (freq, start, dur, gain, type = 'sine') => {
       const osc = ctx.createOscillator();
       const g   = ctx.createGain();
@@ -33,13 +56,12 @@ function playCircleLevelUp() {
     t(1047, now + 0.27, 0.22, 0.12);
     t(110,  now + 0.27, 0.18, 0.14, 'triangle');
     if (navigator.vibrate) navigator.vibrate([40, 30, 80]);
-    setTimeout(() => ctx.close(), 1000);
   } catch (_) {}
 }
 
 function playStreakAnticipationSound() {
   try {
-    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const ctx = getAudioCtx(); if (!ctx) return;
     const now = ctx.currentTime;
     const dur = 0.28;
 
@@ -85,7 +107,6 @@ function playStreakAnticipationSound() {
     osc.stop(now + dur + 0.05);
 
     if (navigator.vibrate) navigator.vibrate([15]);
-    setTimeout(() => ctx.close(), 600);
   } catch (_) {}
 }
 
@@ -95,7 +116,7 @@ function playStreakAnticipationSound() {
 // Kept subtle — total gain well below clipping.
 function playStreakUnlockSound() {
   try {
-    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const ctx = getAudioCtx(); if (!ctx) return;
     const now = ctx.currentTime;
     const dur = 0.72;
 
@@ -171,13 +192,12 @@ function playStreakUnlockSound() {
     noise.stop(now + dur + 0.05);
 
     if (navigator.vibrate) navigator.vibrate([15, 10, 40]);
-    setTimeout(() => ctx.close(), 1000);
   } catch (_) {}
 }
 
 function playIconSlideDownSound() {
   try {
-    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const ctx = getAudioCtx(); if (!ctx) return;
     const now = ctx.currentTime;
     const dur = 0.38;
 
@@ -208,13 +228,12 @@ function playIconSlideDownSound() {
     noise.stop(now + dur + 0.05);
 
     if (navigator.vibrate) navigator.vibrate([10]);
-    setTimeout(() => ctx.close(), 600);
   } catch (_) {}
 }
 
 function playChallengeProgressSound(idx = 0) {
   try {
-    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const ctx = getAudioCtx(); if (!ctx) return;
     const now = ctx.currentTime;
     const dur = 1.1;
 
@@ -277,13 +296,12 @@ function playChallengeProgressSound(idx = 0) {
     osc2.start(now);
     osc2.stop(now + dur + 0.05);
 
-    setTimeout(() => ctx.close(), 1500);
   } catch (_) {}
 }
 
 function playTodayCircleFillSound() {
   try {
-    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const ctx = getAudioCtx(); if (!ctx) return;
     const now = ctx.currentTime;
     const t = (freq, start, dur, gain, type = 'sine') => {
       const osc = ctx.createOscillator();
@@ -300,13 +318,12 @@ function playTodayCircleFillSound() {
     t(990,  now + 0.10, 0.30, 0.14);
     t(98,   now,        0.10, 0.06, 'triangle');
     if (navigator.vibrate) navigator.vibrate([20]);
-    setTimeout(() => ctx.close(), 600);
   } catch (_) {}
 }
 
 function playDayCircleDing() {
   try {
-    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const ctx = getAudioCtx(); if (!ctx) return;
     const now = ctx.currentTime;
     const t = (freq, start, dur, gain, type = 'sine') => {
       const osc = ctx.createOscillator();
@@ -324,7 +341,6 @@ function playDayCircleDing() {
     t(1760, now + 0.24, 0.20, 0.16);
     t(130,  now,        0.12, 0.16, 'triangle');
     if (navigator.vibrate) navigator.vibrate([30, 20, 60]);
-    setTimeout(() => ctx.close(), 800);
   } catch (_) {}
 }
 
@@ -972,6 +988,10 @@ function StreakCelebration({
   // ── Continue pressed: number fades first, then icon slides alone, then explodes ──
   const handleContinuePress = () => {
     if (exitPhase !== 'idle') return;
+
+    // Unlock the shared AudioContext on this user gesture so all subsequent
+    // timed sounds (circles, ding, etc.) play reliably
+    unlockAudio();
 
     // Step 1 — fade number, circles, and button simultaneously
     setExitPhase('fading');
