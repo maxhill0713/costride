@@ -438,7 +438,7 @@ function FeedCard({ item, memberAvatarMap, liked, onLike, index }) {
           <span style={{ fontSize: 10.5, color: 'rgba(148,163,184,0.45)', fontWeight: 600 }}>
             {timeAgo(item.date)}
           </span>
-          {(item.type === 'post' || item.type === 'lift') && (
+          {item.type === 'post' && (
             <span style={{ fontSize: 10, fontWeight: 700, color: 'rgba(148,163,184,0.65)' }}>
               {(item.data?.reactions?.length || 0)} Reacts
             </span>
