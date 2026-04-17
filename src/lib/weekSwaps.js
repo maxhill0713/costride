@@ -63,6 +63,37 @@ export function hasRestDayCredit() {
   return !!(data?.trainedOnRestDay && !data.usedRestDayCredit);
 }
 
+// ── Credit Rest: use a rest-day credit to make today a rest day ───────────────
+// Stored separately — records that the user spent their credit to rest today
+const CR_KEY = 'creditRest';
+
+export function getCreditRestDay() {
+  try {
+    const raw = localStorage.getItem(CR_KEY);
+    if (!raw) return null;
+    const data = JSON.parse(raw);
+    if (data.week !== getWeekKey()) {
+      localStorage.removeItem(CR_KEY);
+      return null;
+    }
+    return data.dayNum; // the day number that was turned into a rest day
+  } catch {
+    return null;
+  }
+}
+
+// Call when user uses their rest-day credit to make a training day a rest day.
+// Also marks the credit as used.
+export function recordCreditRestDay(dayNum) {
+  const current = getWeekSwaps();
+  if (current) {
+    save({ ...current, usedRestDayCredit: true, swappedRestDay: null });
+  }
+  try {
+    localStorage.setItem(CR_KEY, JSON.stringify({ week: getWeekKey(), dayNum }));
+  } catch {}
+}
+
 // ── Rest Swap: move today's workout to a future rest day ──────────────────────
 // Key stored separately so it doesn't interfere with the rest-day credit system
 const RS_KEY = 'restSwap';

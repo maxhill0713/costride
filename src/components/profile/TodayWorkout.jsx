@@ -15,7 +15,7 @@ import HomeSummaryModal from '../home/WorkoutSummaryModal.jsx';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 
 import { useTimer } from '../TimerContext';
-import { recordTrainedOnRestDay, useRestDayCredit as applyRestDayCredit, hasRestDayCredit, recordRestSwap, getRestSwap, clearRestSwap } from '../../lib/weekSwaps.js';
+import { recordTrainedOnRestDay, useRestDayCredit as applyRestDayCredit, hasRestDayCredit, recordRestSwap, getRestSwap, clearRestSwap, recordCreditRestDay, getCreditRestDay } from '../../lib/weekSwaps.js';
 
 const DAY_NAMES_FULL = ['', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 
@@ -52,22 +52,17 @@ function WorkoutSwitcherModal({ open, onClose, currentUser, activeDayKey, adjust
       return a.dayKey - b.dayKey;
     });
 
-  // Rest day credit: show future rest days as swappable if user trained on a rest day earlier
+  // If user has a rest-day credit (trained on a rest day earlier this week),
+  // show ONLY the "Rest Day" option — no orange swap options.
   const creditAvailable = hasRestDayCredit();
-  const futureFreeRestDays = creditAvailable
+
+  // "Move today's workout to a rest day" — only show if today is actually a training day,
+  // not in rest-swap mode, AND no credit is available (credit takes priority).
+  const todayIsTrainingDay = trainingDays.includes(adjustedDay) && !restSwapActive;
+  const futureRestDaysForSwap = (!creditAvailable && todayIsTrainingDay)
     ? [1, 2, 3, 4, 5, 6, 7].filter((d) => {
         if (trainingDays.includes(d)) return false;
         if (d <= adjustedDay) return false;
-        return true;
-      })
-    : [];
-
-  // "Move today's workout to a rest day" — only show if today is ACTUALLY a training day (not already swapped to rest)
-  const todayIsTrainingDay = trainingDays.includes(adjustedDay) && !restSwapActive;
-  const futureRestDaysForSwap = todayIsTrainingDay
-    ? [1, 2, 3, 4, 5, 6, 7].filter((d) => {
-        if (trainingDays.includes(d)) return false; // must be a rest day in normal split
-        if (d <= adjustedDay) return false; // must be in the future this week
         return true;
       })
     : [];
@@ -95,7 +90,24 @@ function WorkoutSwitcherModal({ open, onClose, currentUser, activeDayKey, adjust
             </button>
           )}
 
-          {/* Move workout to future rest day — only if today is actually a training day (not in rest-swap mode) */}
+          {/* Rest Day via credit — user trained on a rest day earlier this week.
+              Show ONLY this button (hides orange swap options). No strings attached. */}
+          {!restSwapActive && creditAvailable && todayIsTrainingDay && (
+            <>
+              <button
+                onClick={() => { onSelect(adjustedDay, 'use-credit-rest'); onClose(); }}
+                className="w-full text-left rounded-2xl border border-green-500/40 bg-green-500/10 hover:bg-green-500/20 transition-all duration-200 px-4 py-3 flex items-center gap-3">
+                <ArrowLeftRight className="w-4 h-4 text-green-400 flex-shrink-0" />
+                <div>
+                  <p className="text-base font-black text-green-300">Rest Day</p>
+                  <p className="text-xs text-green-500/80 mt-0.5">You earned this by training on a rest day</p>
+                </div>
+              </button>
+              <div className="border-t border-slate-700/40 pt-1" />
+            </>
+          )}
+
+          {/* Move workout to future rest day — only if no credit available */}
           {!restSwapActive && futureRestDaysForSwap.length > 0 && (
             <>
               {futureRestDaysForSwap.map((d) => (
@@ -108,22 +120,6 @@ function WorkoutSwitcherModal({ open, onClose, currentUser, activeDayKey, adjust
                 </button>
               ))}
               <div className="border-t border-slate-700/40 pt-1" />
-            </>
-          )}
-
-          {/* Train on rest day (existing credit system) */}
-          {!restSwapActive && futureFreeRestDays.length > 0 && (
-            <>
-              <p className="text-xs text-slate-400 font-semibold px-1 pt-1 pb-0.5">Make a rest day a training day</p>
-              {futureFreeRestDays.map((d) => (
-                <button
-                  key={`rest-${d}`}
-                  onClick={() => { onSelect(d, 'rest-to-training'); onClose(); }}
-                  className="w-full text-left rounded-2xl border border-green-500/40 bg-green-500/10 hover:bg-green-500/20 transition-all duration-200 px-4 py-3">
-                  <p className="text-base font-black text-green-300">{DAY_NAMES_FULL[d]}</p>
-                </button>
-              ))}
-              {workoutDays.length > 0 && <div className="border-t border-slate-700/40 pt-1" />}
             </>
           )}
 
@@ -239,11 +235,21 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
 
   const activeDayKey = overrideDayKey !== null ? overrideDayKey : adjustedDay;
 
+  // Credit rest: user spent their credit to make today a rest day
+  const [creditRestActive, setCreditRestActive] = useState(() => {
+    return getCreditRestDay() === (new Date().getDay() === 0 ? 7 : new Date().getDay());
+  });
+
   const getTodayWorkout = () => {
     if (!currentUser?.custom_workout_types) return null;
 
     // Rest swap active: today is a rest day, workout moved to future day
     if (restSwapActive) {
+      return { name: 'Rest Day', exercises: [], cardio: [] };
+    }
+
+    // Credit rest: user used their earned credit to rest today
+    if (creditRestActive) {
       return { name: 'Rest Day', exercises: [], cardio: [] };
     }
 
@@ -1258,7 +1264,15 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
         adjustedDay={adjustedDay}
         restSwapActive={restSwapActive}
         onSelect={(dayKey, mode) => {
-          if (mode === 'rest-to-training') {
+          if (mode === 'use-credit-rest') {
+            // Spend the credit — today becomes a rest day, no strings attached
+            recordCreditRestDay(adjustedDay);
+            setCreditRestActive(true);
+            setOverrideDayKey(null);
+            setEditingIndex(null);
+            onOverrideDayChange?.(null);
+            window.dispatchEvent(new Event('weekSwapChanged'));
+          } else if (mode === 'rest-to-training') {
             applyRestDayCredit(dayKey);
             window.dispatchEvent(new Event('weekSwapChanged'));
           } else if (mode === 'move-to-rest') {
