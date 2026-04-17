@@ -380,8 +380,8 @@ export default function ShareWorkoutScreen({ workoutName, exercises, previousExe
               </div>
               <div className="w-px self-stretch bg-white/10" />
               <div className="flex flex-col items-center flex-1">
-                <span className="text-sm font-black text-white leading-tight">{volumeStr}</span>
-                <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mt-0.5">Volume</span>
+                <span className="text-sm font-black text-white leading-tight">{currentUser?.current_streak ?? currentUser?.streak ?? '—'}</span>
+                <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mt-0.5">Streak</span>
               </div>
             </div>
 

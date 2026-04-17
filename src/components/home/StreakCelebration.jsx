@@ -829,7 +829,7 @@ function StreakCelebration({
       setSuppressBackdrop(false);
     } else if (!showStreakCelebration && !showChallengesCelebration && !showShareWorkout) {
       setSuppressBackdrop(true);
-      const t = setTimeout(() => setShowSharedBackground(false), 10);
+      const t = setTimeout(() => setShowSharedBackground(false), 600);
       return () => clearTimeout(t);
     }
   }, [showStreakCelebration, showChallengesCelebration, showShareWorkout]);
