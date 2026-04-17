@@ -1375,6 +1375,7 @@ export default function Home() {
         celebrationDurationMinutes={celebrationDurationMinutes}
         currentUser={currentUser}
         gymId={primaryGymIdForQuery}
+        gymName={memberGym?.name || null}
         showDaysCelebration={showDaysCelebration}
         weeklyWorkoutLogs={weeklyWorkoutLogs}
         todayDowAdjusted={todayDowAdjusted}
