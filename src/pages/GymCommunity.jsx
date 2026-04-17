@@ -361,13 +361,13 @@ function FeedCard({ item, memberAvatarMap, liked, onLike, index }) {
             <img src={avatar} alt={item.userName} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> :
             ini(item.userName)}
           </div>
-          <div style={{ position: 'absolute', bottom: -2, right: -2,
-            width: 16, height: 16, borderRadius: '50%',
-            background: type.iconBg, border: `1.5px solid rgba(6,8,18,0.9)`,
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            boxShadow: '0 1px 4px rgba(0,0,0,0.4)' }} className=" hidden hidden">
-            <TypeIcon style={{ width: 8, height: 8, color: type.iconColor }} />
-          </div>
+          
+
+
+
+
+
+          
         </div>
 
         {/* Content */}
