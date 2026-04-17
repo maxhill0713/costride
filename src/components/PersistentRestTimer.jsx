@@ -32,7 +32,6 @@ const PULSE_CSS = `
     0%   { background-position: -200% center; }
     100% { background-position: 200% center; }
   }
-  /* Rest-segment warning pulses red <-> green (not blue) */
   @keyframes rest-seg-bg-pulse {
     0%, 100% { background: linear-gradient(to bottom, #7f1d1d, #991b1b, #450a0a); }
     50%       { background: linear-gradient(to bottom, #14532d, #166534, #052e16); }
@@ -294,7 +293,6 @@ export default function PersistentRestTimer({ isActive, restTimer, initialRestTi
   const todayWorkout = timerWorkout;
   const isLandscape  = useIsLandscape();
 
-  // CHANGED: expanded now starts true when openTimerBar fires (open fullscreen directly)
   const [expanded, setExpanded]             = useState(false);
   const [barVisible, setBarVisible]         = useState(false);
   const [paused, setPaused]                 = useState(false);
@@ -318,7 +316,6 @@ export default function PersistentRestTimer({ isActive, restTimer, initialRestTi
 
   useEffect(() => { injectPulseStyles(); }, []);
 
-  // CHANGED: openTimerBar now opens fullscreen directly (setExpanded(true)) and shows bar
   useEffect(() => {
     if (openTimerBar) {
       setBarVisible(true);
@@ -336,7 +333,7 @@ export default function PersistentRestTimer({ isActive, restTimer, initialRestTi
   const t     = typeof restTimer === 'number' ? restTimer : (restTimer !== '' ? parseInt(restTimer) || 0 : 0);
   const total = initialRestTime || 90;
 
-  // ── Sound helpers ──────────────────────────────────────────────────────────
+  /* ── Sound helpers ── */
   const getAudioCtx = () => {
     if (!window._timerAudioCtx) {
       window._timerAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -364,12 +361,7 @@ export default function PersistentRestTimer({ isActive, restTimer, initialRestTi
     } catch (e) {}
   };
 
-  const playTripleBell = () => {
-    playBell(0);
-    playBell(0.55);
-    playBell(1.1);
-  };
-
+  const playTripleBell = () => { playBell(0); playBell(0.55); playBell(1.1); };
   const playRoundStartBell = () => { playBell(0); };
 
   const playClap = () => {
@@ -469,14 +461,29 @@ export default function PersistentRestTimer({ isActive, restTimer, initialRestTi
     }
   }, [t, isActive]);
 
+  // ─────────────────────────────────────────────────────────────────────────
+  // FIX 1 — smoothProgress
+  //   • Not running (pre-start or paused) → always 1 (full ring).
+  //     Adjusting the rest time with +/- will NOT drain the circle.
+  //   • Running → animate the drawdown in real-time via rAF.
+  // ─────────────────────────────────────────────────────────────────────────
   useEffect(() => {
     if (rafRef.current) cancelAnimationFrame(rafRef.current);
-    if (!isActive || t === 0 || paused) {
-      const segTotal = cardioMode && cardioSegments[currentSegIdx] ? cardioSegments[currentSegIdx].secs : total;
-      setSmoothProgress(segTotal > 0 ? Math.max(0, t / segTotal) : 0);
+
+    if (!isActive || paused) {
+      setSmoothProgress(1);
       return;
     }
-    const segTotal = cardioMode && cardioSegments[currentSegIdx] ? cardioSegments[currentSegIdx].secs : total;
+
+    const segTotal = cardioMode && cardioSegments[currentSegIdx]
+      ? cardioSegments[currentSegIdx].secs
+      : total;
+
+    if (t === 0 || segTotal === 0) {
+      setSmoothProgress(0);
+      return;
+    }
+
     lastTickRef.current = Date.now();
     const animate = () => {
       const elapsed = (Date.now() - lastTickRef.current) / 1000;
@@ -495,8 +502,7 @@ export default function PersistentRestTimer({ isActive, restTimer, initialRestTi
   const isPulsing     = isWarning && !isRestSegment;
 
   const PULSE_DURATION = '2.2s ease-in-out infinite';
-
-  const staticBarBg = 'linear-gradient(90deg, #1a3470 0%, #172554 100%)';
+  const staticBarBg    = 'linear-gradient(90deg, #1a3470 0%, #172554 100%)';
 
   const cardioExercises = todayWorkout?.cardio || [];
   const currentSeg      = cardioMode && cardioSegments[currentSegIdx];
@@ -557,7 +563,6 @@ export default function PersistentRestTimer({ isActive, restTimer, initialRestTi
     onTimerStateChange(true);
   };
 
-  // CHANGED: handleCloseAll hides both fullscreen and bar
   const handleCloseAll = () => {
     onTimerStateChange(false);
     onTimerValueChange('');
@@ -606,11 +611,12 @@ export default function PersistentRestTimer({ isActive, restTimer, initialRestTi
 
   if (!barVisible && !isActive && !showFinished && !showCompletion) return null;
 
-  // ── Rest timer controls (time display + −/+ adjusters) used in fullscreen ──
-  // CHANGED: moved out of bar into fullscreen, sat between Go button and cardio list
+  // ─────────────────────────────────────────────────────────────────────────
+  // FIX 2 — RestTimerControls: marginTop increased (36px) so it's not crowded
+  //         below the Go button.
+  // ─────────────────────────────────────────────────────────────────────────
   const RestTimerControls = () => (
-    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, marginTop: 16 }}>
-      {/* Minus */}
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, marginTop: 36 }}>
       <div style={{ position: 'relative' }}>
         <div style={{ position: 'absolute', inset: 0, borderRadius: 10, background: '#1a3fa8', transform: 'translateY(3px)' }} />
         <button
@@ -632,7 +638,6 @@ export default function PersistentRestTimer({ isActive, restTimer, initialRestTi
         </button>
       </div>
 
-      {/* Time display */}
       <span style={{
         fontWeight: 900, fontSize: 32, color: '#e2e8f0',
         minWidth: 72, textAlign: 'center', fontVariantNumeric: 'tabular-nums',
@@ -641,7 +646,6 @@ export default function PersistentRestTimer({ isActive, restTimer, initialRestTi
         {fmt(parseInt(restTimer) || 90)}
       </span>
 
-      {/* Plus */}
       <div style={{ position: 'relative' }}>
         <div style={{ position: 'absolute', inset: 0, borderRadius: 10, background: '#1a3fa8', transform: 'translateY(3px)' }} />
         <button
@@ -665,7 +669,6 @@ export default function PersistentRestTimer({ isActive, restTimer, initialRestTi
     </div>
   );
 
-  // Cardio routines list (reused in both portrait + landscape)
   const CardioRouteList = ({ compact = false }) =>
     cardioExercises.length > 0 && !cardioMode ? (
       <div>
@@ -718,7 +721,7 @@ export default function PersistentRestTimer({ isActive, restTimer, initialRestTi
               overflow: 'hidden',
             }}>
 
-            {/* CHANGED: Top-left × — closes everything (fullscreen + bar) */}
+            {/* Top-left × — closes everything */}
             <button
               onClick={handleCloseAll}
               style={{
@@ -732,7 +735,7 @@ export default function PersistentRestTimer({ isActive, restTimer, initialRestTi
               <X style={{ width: 22, height: 22 }} />
             </button>
 
-            {/* CHANGED: Top-right chevron — collapse to bar only (not close entirely) */}
+            {/* Top-right chevron — collapse to bar */}
             <button onClick={() => setExpanded(false)}
               style={{
                 position: 'absolute', top: 16, right: 16, zIndex: 10,
@@ -755,6 +758,7 @@ export default function PersistentRestTimer({ isActive, restTimer, initialRestTi
                     {roundLabel}
                   </p>
                 )}
+
                 {/* Circle */}
                 <div style={{ position: 'relative', width: 248, height: 248, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'visible' }}>
                   {cardioMode && cardioSegments.length > 1
@@ -797,12 +801,12 @@ export default function PersistentRestTimer({ isActive, restTimer, initialRestTi
                   )}
                 </div>
 
-                {/* CHANGED: Rest timer time-adjust controls shown between Go button area and cardio list, only when not active and not cardio mode */}
+                {/* FIX 2: +/- controls sit comfortably below Go (marginTop 36px) */}
                 {!timerActive && !cardioMode && (
                   <RestTimerControls />
                 )}
 
-                {/* CHANGED: Cardio routines list below rest timer controls (or below Go if cardio selected) */}
+                {/* Cardio routines list */}
                 {!cardioMode && (
                   <div style={{ marginTop: 24, width: '80%', maxWidth: 280 }}>
                     <CardioRouteList />
@@ -814,7 +818,6 @@ export default function PersistentRestTimer({ isActive, restTimer, initialRestTi
             {/* ══ LANDSCAPE ══════════════════════════════════════════════════ */}
             {isLandscape && (
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flex: 1, position: 'relative' }}>
-
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, marginBottom: 8, marginTop: -16 }}>
                   <p style={{ fontSize: cardioMode ? 22 : 18, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', margin: 0, color: staticText, animation: textAnimation }}>
                     {isFinished ? 'Done!' : displayTitle}
@@ -836,35 +839,21 @@ export default function PersistentRestTimer({ isActive, restTimer, initialRestTi
                   </span>
                 </div>
 
-                {/* CHANGED: Rest controls shown in landscape between circle and bottom-right buttons area when not active */}
                 {!timerActive && !cardioMode && (
                   <div style={{ marginTop: 12 }}>
                     <RestTimerControls />
                   </div>
                 )}
 
-                {/* Buttons — bottom-right corner */}
-                <div style={{
-                  position: 'absolute',
-                  bottom: 20,
-                  right: 24,
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'stretch',
-                  gap: 10,
-                  width: 148,
-                }}>
+                {/* Buttons — bottom-right */}
+                <div style={{ position: 'absolute', bottom: 20, right: 24, display: 'flex', flexDirection: 'column', alignItems: 'stretch', gap: 10, width: 148 }}>
                   {!timerActive ? (
                     <>
                       <PressBtn onClick={handleGo} bg="linear-gradient(to bottom, #22c55e, #16a34a, #15803d)" shadow="#14532d" style={{ width: '100%', height: 50 }}>
                         Go
                       </PressBtn>
                       {cardioMode ? (
-                        <PressBtn
-                          onClick={handleCancelCardio}
-                          bg="linear-gradient(to bottom, #6b7280, #4b5563, #374151)"
-                          shadow="#1f2937"
-                          style={{ width: '100%', height: 50 }}>
+                        <PressBtn onClick={handleCancelCardio} bg="linear-gradient(to bottom, #6b7280, #4b5563, #374151)" shadow="#1f2937" style={{ width: '100%', height: 50 }}>
                           Cancel
                         </PressBtn>
                       ) : (
@@ -892,24 +881,25 @@ export default function PersistentRestTimer({ isActive, restTimer, initialRestTi
       </AnimatePresence>
 
       {/* ── Persistent bar ── */}
-      {/* CHANGED: simplified bar — left: ×, centre: "Rest Timer" + countdown, right: ↑ chevron */}
+      {/* FIX 3: bottom = calc(62px + safe-area) — sits flush on top of the 62px nav bar  */}
+      {/* FIX 4: label is inline-left of the time, both bigger                             */}
       {!expanded && !showCompletion && (
         <div
           style={{
             position: 'fixed', left: 0, right: 0,
-            bottom: 'calc(79px + env(safe-area-inset-bottom))',
-            zIndex: 400, padding: '0 14px',
+            bottom: 'calc(62px + env(safe-area-inset-bottom))',
+            zIndex: 400,
             height: 56,
             display: 'flex', alignItems: 'center',
+            paddingLeft: 4, paddingRight: 4,
             background: staticBarBg,
             animation: isPulsing ? `timer-bar-bg-pulse ${PULSE_DURATION}` : 'none',
             borderTop: '1px solid rgba(37,99,235,0.5)',
             boxShadow: '0 -4px 24px rgba(0,0,0,0.35)',
             backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
-            paddingBottom: 4,
           }}>
 
-          {/* CHANGED: Left side — × closes everything */}
+          {/* Left: × closes everything */}
           <button
             onClick={handleCloseAll}
             style={{
@@ -917,30 +907,41 @@ export default function PersistentRestTimer({ isActive, restTimer, initialRestTi
               padding: 4, flexShrink: 0,
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               color: 'rgba(255,255,255,0.6)',
-              width: 36, height: 36,
+              width: 40, height: 40,
             }}>
             <X style={{ width: 18, height: 18 }} />
           </button>
 
-          {/* CHANGED: Centre — title + live countdown (tapping expands to fullscreen) */}
+          {/* Centre: label left of time, both larger, row layout */}
           <button
             onClick={() => setExpanded(true)}
             style={{
-              flex: 1, display: 'flex', flexDirection: 'column',
+              flex: 1,
+              display: 'flex', flexDirection: 'row',
               alignItems: 'center', justifyContent: 'center',
-              background: 'none', border: 'none', cursor: isFinished ? 'default' : 'pointer',
-              gap: 1,
+              background: 'none', border: 'none',
+              cursor: isFinished ? 'default' : 'pointer',
+              gap: 10,
             }}>
+            {/* Label */}
             <span style={{
-              fontSize: 10, fontWeight: 800, textTransform: 'uppercase',
-              letterSpacing: '0.1em', color: staticText,
+              fontSize: 15,
+              fontWeight: 800,
+              textTransform: 'uppercase',
+              letterSpacing: '0.08em',
+              color: staticText,
               animation: isPulsing ? `timer-text-pulse ${PULSE_DURATION}` : 'none',
               lineHeight: 1,
+              whiteSpace: 'nowrap',
             }}>
               {isFinished ? 'Done!' : displayTitle}
             </span>
+
+            {/* Time */}
             <span style={{
-              fontWeight: 900, fontSize: 22, fontVariantNumeric: 'tabular-nums',
+              fontWeight: 900,
+              fontSize: 28,
+              fontVariantNumeric: 'tabular-nums',
               color: isActive ? staticAccent : '#e2e8f0',
               lineHeight: 1,
               animation: isPulsing ? `timer-text-pulse ${PULSE_DURATION}` : 'none',
@@ -949,7 +950,7 @@ export default function PersistentRestTimer({ isActive, restTimer, initialRestTi
             </span>
           </button>
 
-          {/* CHANGED: Right side — ↑ chevron expands to fullscreen */}
+          {/* Right: ↑ chevron expands to fullscreen */}
           <button
             onClick={() => setExpanded(true)}
             style={{
@@ -957,7 +958,7 @@ export default function PersistentRestTimer({ isActive, restTimer, initialRestTi
               padding: 4, flexShrink: 0,
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               color: 'rgba(255,255,255,0.6)',
-              width: 36, height: 36,
+              width: 40, height: 40,
             }}>
             <ChevronUp style={{ width: 20, height: 20 }} />
           </button>
