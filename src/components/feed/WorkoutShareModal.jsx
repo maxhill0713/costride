@@ -334,7 +334,7 @@ async function drawBreakdownCard(post, gymName) {
   [
     { l: 'EXERCISES', v: String(exercises.length || '\u2014') },
     { l: 'DURATION',  v: post.workout_duration || '\u2014' },
-    { l: 'VOLUME',    v: post.workout_volume || '\u2014' }
+    { l: 'STREAK',    v: String(getPostStreak(post) || '\u2014') }
   ].forEach(function(s, i) {
     var px = PAD + i * (pillW + pillGap);
     drawGlassPill(ctx, px, statTop, pillW, pillH, 18);
@@ -543,7 +543,7 @@ function BreakdownPreview({ post, gymName }) {
           {[
             { label: 'Exercises', value: exercises.length || '\u2014' },
             { label: 'Duration',  value: post.workout_duration || '\u2014' },
-            { label: 'Volume',    value: post.workout_volume || '\u2014' }
+            { label: 'Streak',    value: getPostStreak(post) || '\u2014' }
           ].map(function(item) {
             return (
               <div key={item.label} style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.16)', borderRadius: 6, padding: '4px 3px', textAlign: 'center', backdropFilter: 'blur(4px)', WebkitBackdropFilter: 'blur(4px)', boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.09)' }}>
