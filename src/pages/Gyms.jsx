@@ -561,9 +561,11 @@ export default function Gyms() {
           <DialogHeader><DialogTitle className="text-xl font-bold">Add Gym to CoStride</DialogTitle></DialogHeader>
           {selectedPlaceGym && (
             <div className="space-y-4">
-              <div className="bg-slate-800/60 border border-slate-700/40 rounded-xl p-4">
-                <div className="flex items-start gap-3">
-                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center flex-shrink-0"><Building2 className="w-6 h-6 text-white" /></div>
+              <div className="bg-slate-800/60 border border-slate-700/40 rounded-xl overflow-hidden">
+                {selectedPlaceGym.photo_url && (
+                  <img src={selectedPlaceGym.photo_url} alt={selectedPlaceGym.name} className="w-full h-40 object-cover" />
+                )}
+                <div className="flex items-start gap-3 p-4">
                   <div className="flex-1">
                     <h3 className="font-bold text-white text-lg mb-1">{selectedPlaceGym.name}</h3>
                     <div className="flex items-start gap-2 text-slate-300 text-sm mb-2"><MapPin className="w-4 h-4 flex-shrink-0 mt-0.5" /><span>{selectedPlaceGym.address}</span></div>
