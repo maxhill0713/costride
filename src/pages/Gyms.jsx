@@ -74,6 +74,7 @@ export default function Gyms() {
   const [showConfirmJoin, setShowConfirmJoin] = useState(false);
   const [pendingGymData, setPendingGymData] = useState(null);
   const [showGymLimitModal, setShowGymLimitModal] = useState(false);
+  const [showCreationLimitModal, setShowCreationLimitModal] = useState(false);
   const queryClient = useQueryClient();
 
   const prefetchGymData = (gymId) => {
@@ -149,24 +150,10 @@ export default function Gyms() {
 
   const createGymMutation = useMutation({
     mutationFn: async gymData => {
-      // Use the addGym backend function (handles RLS for gym creation)
       const res = await base44.functions.invoke('addGym', { gymData });
-      const gym = res.data.gym;
+      if (res.data?.error === 'GYM_CREATION_LIMIT') throw new Error('GYM_CREATION_LIMIT');
+      const gym = res.data?.gym;
       if (!gym) throw new Error('Failed to create gym');
-      // Now join the gym as a member
-      const alreadyMember = await base44.entities.GymMembership.filter({ user_id: currentUser?.id, gym_id: gym.id, status: 'active' });
-      if (alreadyMember.length === 0) {
-        await base44.entities.GymMembership.create({
-          user_id: currentUser?.id,
-          user_name: currentUser?.full_name,
-          user_email: currentUser?.email,
-          gym_id: gym.id,
-          gym_name: gym.name,
-          status: 'active',
-          join_date: new Date().toISOString().split('T')[0],
-          membership_type: 'monthly',
-        });
-      }
       return gym;
     },
     onSuccess: () => {
@@ -175,6 +162,12 @@ export default function Gyms() {
       queryClient.invalidateQueries({ queryKey: ['memberGyms', currentUser?.id] });
       queryClient.invalidateQueries({ queryKey: ['currentUser'] });
       setShowAddGymModal(false); setShowConfirmJoin(false); setSelectedPlaceGym(null); setPendingGymData(null); setPlacesResults([]); setSearchQuery('');
+    },
+    onError: err => {
+      if (err.message === 'GYM_CREATION_LIMIT') {
+        setShowAddGymModal(false);
+        setShowCreationLimitModal(true);
+      }
     },
   });
 
@@ -222,11 +215,8 @@ export default function Gyms() {
 
   const handleCreateGym = async () => {
     if (!selectedPlaceGym) return;
+    // Membership limit: non-owners can only be in 3 gyms at once
     if (gymMemberships.length >= 3 && !isOwner) { setShowAddGymModal(false); setShowGymLimitModal(true); return; }
-    if (!isOwner) {
-      const ghost = gyms.filter(g => g.created_by === currentUser?.email && !g.admin_id && !g.owner_email);
-      if (ghost.length >= 3) { alert('You have reached the limit of 3 ghost gyms.'); return; }
-    }
     const parts = selectedPlaceGym.address.split(',');
     const city = parts.length >= 2 ? parts[parts.length - 2].trim() : selectedPlaceGym.address;
     const gymData = { name: selectedPlaceGym.name, address: selectedPlaceGym.address, city, google_place_id: selectedPlaceGym.place_id, latitude: selectedPlaceGym.latitude, longitude: selectedPlaceGym.longitude, type: gymType, claim_status: isOwner ? 'claimed' : 'unclaimed', admin_id: isOwner ? currentUser?.id : null, owner_email: isOwner ? currentUser?.email : null, verified: isOwner, status: 'approved', members_count: 0, image_url: selectedPlaceGym.photo_url || null };
@@ -582,6 +572,19 @@ export default function Gyms() {
             <h3 className="text-xl font-black text-white mb-2">Gym Limit Reached</h3>
             <p className="text-slate-300 text-sm mb-6">You can only be a member of up to 3 gyms at once. Please leave one of your current gyms before joining a new one.</p>
             <button onClick={() => setShowGymLimitModal(false)} className="w-full py-2.5 rounded-xl font-bold text-sm text-slate-200 bg-gradient-to-b from-slate-600 via-slate-700 to-slate-800 border border-slate-500/40 shadow-[0_3px_0_0_#1e293b,0_6px_16px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.08)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 transform-gpu">
+              Got it
+            </button>
+          </div>
+        </>
+      )}
+
+      {showCreationLimitModal && (
+        <>
+          <div className="fixed inset-0 z-[10003] bg-slate-950/60 backdrop-blur-sm" onClick={() => setShowCreationLimitModal(false)} />
+          <div className="fixed left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2 w-[calc(100%-2rem)] max-w-[360px] z-[10004] bg-slate-900/80 backdrop-blur-md border border-slate-700/30 rounded-3xl shadow-2xl shadow-black/40 text-white p-6">
+            <h3 className="text-xl font-black text-white mb-2">Gym Addition Limit Reached</h3>
+            <p className="text-slate-300 text-sm mb-6">You can only add up to 5 new gyms to CoStride. This limit helps keep the platform tidy. If your gym is missing, ask its owner to claim it.</p>
+            <button onClick={() => setShowCreationLimitModal(false)} className="w-full py-2.5 rounded-xl font-bold text-sm text-slate-200 bg-gradient-to-b from-slate-600 via-slate-700 to-slate-800 border border-slate-500/40 shadow-[0_3px_0_0_#1e293b,0_6px_16px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.08)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 transform-gpu">
               Got it
             </button>
           </div>

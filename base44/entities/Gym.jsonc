@@ -14,6 +14,10 @@
       "type": "string",
       "description": "User ID of the gym owner/admin"
     },
+    "created_by_user_id": {
+      "type": "string",
+      "description": "User ID of the user who added this gym to the platform"
+    },
     "google_place_id": {
       "type": "string",
       "description": "Unique Google Places ID"
@@ -126,7 +130,7 @@
       "items": {
         "type": "string"
       },
-      "description": "Gym specializations (e.g., 'Weight Loss', 'Muscle Gain', 'Bulking Programs')"
+      "description": "Gym specializations"
     },
     "banned_members": {
       "type": "array",
