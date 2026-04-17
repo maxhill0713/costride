@@ -27,7 +27,7 @@ function parseEx(ex) {
   return { sets, reps, weight };
 }
 
-// ── Shared 3D button (same as StreakCelebration) ──────────────────────────────
+// ── Shared 3D press-down button ───────────────────────────────────────────────
 function StyledButton({ enabled = true, onClick, label, variant = 'orange', loading = false }) {
   const [pressed, setPressed] = useState(false);
 
@@ -41,31 +41,35 @@ function StyledButton({ enabled = true, onClick, label, variant = 'orange', load
     subtle: '#0a0f1a',
   }[variant];
 
+  const isActive = enabled && !loading;
+
   return (
     <div style={{ position: 'relative', width: '100%' }}>
+      {/* 3D bottom shadow — moves up when pressed */}
       <div style={{
         position: 'absolute', inset: 0, borderRadius: 16,
-        background: enabled ? shadowEnabled : '#111827',
-        transform: 'translateY(4px)',
+        background: isActive ? shadowEnabled : '#111827',
+        transform: pressed ? 'translateY(1px)' : 'translateY(4px)',
+        transition: 'transform 0.07s ease, background 0.2s ease',
       }} />
       <button
-        disabled={!enabled || loading}
-        onMouseDown={() => (enabled && !loading) && setPressed(true)}
-        onMouseUp={() => { setPressed(false); if (enabled && !loading) onClick?.(); }}
+        disabled={!isActive}
+        onMouseDown={() => isActive && setPressed(true)}
+        onMouseUp={() => { setPressed(false); if (isActive) onClick?.(); }}
         onMouseLeave={() => setPressed(false)}
-        onTouchStart={() => (enabled && !loading) && setPressed(true)}
-        onTouchEnd={() => { setPressed(false); if (enabled && !loading) onClick?.(); }}
+        onTouchStart={(e) => { e.preventDefault(); isActive && setPressed(true); }}
+        onTouchEnd={(e) => { e.preventDefault(); setPressed(false); if (isActive) onClick?.(); }}
         onTouchCancel={() => setPressed(false)}
         style={{
           position: 'relative', zIndex: 1,
           width: '100%', padding: '13px 0', borderRadius: 16, border: 'none',
-          background: enabled ? faceEnabled : 'linear-gradient(to bottom, #2d3748, #1a202c 50%, #0f172a)',
-          color: enabled ? '#fff' : 'rgba(255,255,255,0.28)',
-          fontSize: 16, fontWeight: 900, cursor: (enabled && !loading) ? 'pointer' : 'default',
+          background: isActive ? faceEnabled : 'linear-gradient(to bottom, #2d3748, #1a202c 50%, #0f172a)',
+          color: isActive ? '#fff' : 'rgba(255,255,255,0.28)',
+          fontSize: 16, fontWeight: 900, cursor: isActive ? 'pointer' : 'default',
           letterSpacing: '-0.01em',
           WebkitTapHighlightColor: 'transparent', userSelect: 'none', outline: 'none',
           transform: pressed ? 'translateY(4px)' : 'translateY(0)',
-          boxShadow: pressed || !enabled ? 'none' : 'inset 0 1px 0 rgba(255,255,255,0.2)',
+          boxShadow: pressed || !isActive ? 'none' : 'inset 0 1px 0 rgba(255,255,255,0.2)',
           transition: 'transform 0.07s ease, box-shadow 0.07s ease',
         }}
       >
@@ -224,12 +228,22 @@ export default function ShareWorkoutScreen({ workoutName, exercises, previousExe
   const [sharing, setSharing] = useState(false);
   const [exercisesExpanded, setExercisesExpanded] = useState(false);
   const [shareWithCommunity, setShareWithCommunity] = useState(false);
+  // Fade-out overlay — prevents abrupt exit
+  const [fadingOut, setFadingOut] = useState(false);
   const fileInputRef = useRef(null);
   const queryClient = useQueryClient();
 
   useEffect(() => {
     setPostTitle(workoutName || '');
   }, [workoutName]);
+
+  const triggerFadeOut = (callback) => {
+    setFadingOut(true);
+    setTimeout(() => {
+      setFadingOut(false);
+      callback();
+    }, 600);
+  };
 
   const handlePhotoUpload = async (e) => {
     const file = e.target.files?.[0];
@@ -281,13 +295,17 @@ export default function ShareWorkoutScreen({ workoutName, exercises, previousExe
       toast.success('Workout shared with your friends! 🔥');
       queryClient.invalidateQueries({ queryKey: ['friendPosts'] });
       queryClient.invalidateQueries({ queryKey: ['userPosts'] });
-      // Use onShareComplete for a gentle fade if available, otherwise fall back
-      (onShareComplete || onContinue)();
+      // Gentle fade-out before calling complete
+      triggerFadeOut(() => (onShareComplete || onContinue)());
     } catch (err) {
       console.error('[ShareWorkout] failed:', err);
       toast.error('Failed to share workout — ' + (err?.message || 'unknown error'));
       setSharing(false);
     }
+  };
+
+  const handleContinue = () => {
+    triggerFadeOut(() => onContinue());
   };
 
   const PANEL_HEIGHT = 'min(65vw, 290px)';
@@ -303,9 +321,9 @@ export default function ShareWorkoutScreen({ workoutName, exercises, previousExe
   return (
     <motion.div
       initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
+      animate={{ opacity: fadingOut ? 0 : 1 }}
       exit={{ opacity: 0 }}
-      transition={{ duration: 0.4 }}
+      transition={{ duration: fadingOut ? 0.55 : 0.4, ease: 'easeOut' }}
       className="fixed inset-0 z-[100] bg-black/85 backdrop-blur-md flex flex-col items-center justify-center px-6"
       style={{ paddingTop: 'env(safe-area-inset-top)', paddingBottom: 'env(safe-area-inset-bottom)' }}>
 
@@ -418,21 +436,21 @@ export default function ShareWorkoutScreen({ workoutName, exercises, previousExe
         </button>
       </div>
 
-      {/* ── 3D Buttons ── */}
+      {/* ── 3D Press-Down Buttons ── */}
       <motion.div
         initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.25 }}
         className="w-full max-w-sm flex flex-col gap-3 pt-2">
         <StyledButton
-          enabled={!sharing}
+          enabled={!sharing && !fadingOut}
           loading={sharing}
           onClick={handleShare}
           label="Share Workout"
           variant="orange"
         />
         <StyledButton
-          enabled={!sharing}
-          onClick={onContinue}
+          enabled={!sharing && !fadingOut}
+          onClick={handleContinue}
           label="Continue"
           variant="subtle"
         />
