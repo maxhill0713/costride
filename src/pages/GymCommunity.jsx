@@ -432,24 +432,10 @@ function FeedCard({ item, memberAvatarMap, liked, onLike, index }) {
           </div>
         </div>
 
-        {/* Right side: time + like */}
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end',
-          justifyContent: 'space-between', flexShrink: 0, minWidth: 40 }}>
-          <span style={{ fontSize: 10.5, color: 'rgba(148,163,184,0.45)', fontWeight: 600 }}>
-            {timeAgo(item.date)}
-          </span>
-          <button onClick={() => onLike(item.id)}
-          style={{ display: 'flex', alignItems: 'center', gap: 3, padding: '4px 6px',
-            borderRadius: 8, border: 'none', cursor: 'pointer',
-            background: liked ? 'rgba(244,114,182,0.12)' : 'transparent',
-            color: liked ? '#f472b6' : 'rgba(148,163,184,0.35)',
-            fontSize: 11, fontWeight: 700, transition: 'all 0.15s' }}>
-            <Heart style={{ width: 12, height: 12, fill: liked ? '#f472b6' : 'none',
-              transition: 'fill 0.15s',
-              animation: liked ? 'af-like 0.3s ease' : 'none' }} />
-            {fakeLikes + (liked ? 1 : 0)}
-          </button>
-        </div>
+        {/* Right side: time only */}
+        <span style={{ fontSize: 10.5, color: 'rgba(148,163,184,0.45)', fontWeight: 600 }}>
+          {timeAgo(item.date)}
+        </span>
       </div>
 
       {/* Expanded post content */}
