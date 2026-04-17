@@ -103,7 +103,7 @@ export default function MemberSpotlight({ checkIns, memberAvatarMap }) {
           
           <span style={{ fontSize: 14, fontWeight: 900, color: '#fff', letterSpacing: '-0.01em' }}>Member Spotlight</span>
         </div>
-        <span style={{ fontSize: 11, fontWeight: 600, color: 'rgba(255,255,255,0.28)' }}>{collapsed ? 'show' : 'hide'}</span>
+        <span style={{ fontSize: 11, fontWeight: 600, color: 'rgba(255,255,255,0.28)' }} className=" hidden">{collapsed ? 'show' : 'hide'}</span>
       </button>
 
       <AnimatePresence initial={false}>
