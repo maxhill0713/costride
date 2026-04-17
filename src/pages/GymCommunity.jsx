@@ -340,13 +340,7 @@ function FeedCard({ item, memberAvatarMap, liked, onLike, index }) {
   const TypeIcon = type.icon;
 
   const timeAgo = (d) => {
-    if (!d) return '';
-    let date = new Date(d);
-    // Treat naive ISO strings (no Z or offset) as UTC to match server storage
-    if (typeof d === 'string' && !d.endsWith('Z') && !d.match(/[+-]\d{2}:\d{2}$/)) {
-      date = new Date(d + 'Z');
-    }
-    const s = (Date.now() - date) / 1000;
+    const s = (Date.now() - new Date(d)) / 1000;
     if (s < 60) return 'just now';
     if (s < 3600) return `${Math.floor(s / 60)}m`;
     if (s < 86400) return `${Math.floor(s / 3600)}h`;
@@ -438,17 +432,23 @@ function FeedCard({ item, memberAvatarMap, liked, onLike, index }) {
           </div>
         </div>
 
-        {/* Right side: time + reacts */}
+        {/* Right side: time + like */}
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end',
-          justifyContent: 'space-between', flexShrink: 0, minWidth: 40, gap: 4 }}>
+          justifyContent: 'space-between', flexShrink: 0, minWidth: 40 }}>
           <span style={{ fontSize: 10.5, color: 'rgba(148,163,184,0.45)', fontWeight: 600 }}>
             {timeAgo(item.date)}
           </span>
-          {item.type === 'post' && (
-            <span style={{ fontSize: 10, fontWeight: 700, color: 'rgba(148,163,184,0.65)' }}>
-              {Object.keys(item.data?.reactions || {}).length} Reacts
-            </span>
-          )}
+          <button onClick={() => onLike(item.id)}
+          style={{ display: 'flex', alignItems: 'center', gap: 3, padding: '4px 6px',
+            borderRadius: 8, border: 'none', cursor: 'pointer',
+            background: liked ? 'rgba(244,114,182,0.12)' : 'transparent',
+            color: liked ? '#f472b6' : 'rgba(148,163,184,0.35)',
+            fontSize: 11, fontWeight: 700, transition: 'all 0.15s' }}>
+            <Heart style={{ width: 12, height: 12, fill: liked ? '#f472b6' : 'none',
+              transition: 'fill 0.15s',
+              animation: liked ? 'af-like 0.3s ease' : 'none' }} />
+            {fakeLikes + (liked ? 1 : 0)}
+          </button>
         </div>
       </div>
 
@@ -1605,7 +1605,12 @@ export default function GymCommunity() {
                   </div>
                   <div className="flex items-center gap-3">
                     <p className="text-white/60 text-[11px] flex items-center gap-1"><MapPin className="w-3 h-3" />{gym?.city}</p>
-
+                    {gym && !isGhostGym &&
+                    <div className="flex items-center gap-1 px-2 py-0.5 rounded-full" style={{ background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.15)' }}>
+                        <Users className="w-3 h-3 text-white/70" />
+                        <span className="text-[11px] font-bold text-white">{gym?.members_count || 0} members</span>
+                      </div>
+                    }
                   </div>
                 </div>
                 <div className="flex flex-col gap-1.5 flex-shrink-0">
