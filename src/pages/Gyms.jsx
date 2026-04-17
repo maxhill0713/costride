@@ -149,14 +149,11 @@ export default function Gyms() {
 
   const createGymMutation = useMutation({
     mutationFn: async gymData => {
-      const existing = await base44.entities.Gym.filter({ google_place_id: gymData.google_place_id });
-      let gym;
-      if (existing.length > 0) {
-        gym = existing[0];
-      } else {
-        gym = await base44.entities.Gym.create(gymData);
-      }
-      // Join the gym as a member
+      // Use the addGym backend function (handles RLS for gym creation)
+      const res = await base44.functions.invoke('addGym', { gymData });
+      const gym = res.data.gym;
+      if (!gym) throw new Error('Failed to create gym');
+      // Now join the gym as a member
       const alreadyMember = await base44.entities.GymMembership.filter({ user_id: currentUser?.id, gym_id: gym.id, status: 'active' });
       if (alreadyMember.length === 0) {
         await base44.entities.GymMembership.create({
@@ -169,8 +166,6 @@ export default function Gyms() {
           join_date: new Date().toISOString().split('T')[0],
           membership_type: 'monthly',
         });
-        await base44.entities.Gym.update(gym.id, { members_count: (gym.members_count || 0) + 1 });
-
       }
       return gym;
     },
