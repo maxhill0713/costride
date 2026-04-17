@@ -932,6 +932,9 @@ function StreakCelebration({
         numEl.style.transition = 'opacity 0.15s ease, transform 0.55s cubic-bezier(0.34,1.8,0.64,1)';
         numEl.style.opacity    = '1';
         numEl.style.transform  = 'scale(1)';
+        // After the entrance animation settles, clear the imperative transition
+        // so React's numberFaded override (opacity 0 + transition 0.25s ease) can cleanly take over
+        setTimeout(() => { numEl.style.transition = ''; }, 700);
       }, 1050);
 
       const t2b = setTimeout(() => {
@@ -1110,17 +1113,19 @@ function StreakCelebration({
                   style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'contain', display: 'none' }} />
               </div>
 
-              {/* Streak number — fades with circles/button, NOT with the icon slide */}
+              {/* Streak number — animated by JS imperative style, fades out with circles/button on exit */}
               <div
                 id="streak-anim-num"
                 style={{
                   fontSize: 96, fontWeight: 900, color: '#fff',
                   textShadow: '0 4px 12px rgba(0,0,0,0.8)',
                   letterSpacing: '-0.04em', lineHeight: 1,
-                  opacity: numberFaded ? 0 : 0,   // starts at 0; JS animation sets it to 1, then numberFaded returns it to 0
-                  transform: 'scale(0.5)',
-                  transition: numberFaded ? 'opacity 0.25s ease' : 'none',
+                  opacity: 0,
+                  transform: 'scale(0.3)',
                   pointerEvents: 'none',
+                  // When numberFaded flips to true we override with an inline fade-out.
+                  // JS animation handles the "fade in + scale up" imperatively before this.
+                  ...(numberFaded ? { opacity: 0, transition: 'opacity 0.25s ease' } : {}),
                 }}
               >
                 {celebrationStreakNum - 1}
