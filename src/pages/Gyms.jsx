@@ -170,9 +170,7 @@ export default function Gyms() {
           membership_type: 'monthly',
         });
         await base44.entities.Gym.update(gym.id, { members_count: (gym.members_count || 0) + 1 });
-        if (!currentUser?.primary_gym_id) {
-          await base44.auth.updateMe({ primary_gym_id: gym.id });
-        }
+
       }
       return gym;
     },
