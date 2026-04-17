@@ -150,8 +150,31 @@ export default function Gyms() {
   const createGymMutation = useMutation({
     mutationFn: async gymData => {
       const existing = await base44.entities.Gym.filter({ google_place_id: gymData.google_place_id });
-      if (existing.length > 0) return { exists: true, gym: existing[0] };
-      return { exists: false, gym: await base44.entities.Gym.create(gymData) };
+      let gym;
+      if (existing.length > 0) {
+        gym = existing[0];
+      } else {
+        gym = await base44.entities.Gym.create(gymData);
+      }
+      // Join the gym as a member
+      const alreadyMember = await base44.entities.GymMembership.filter({ user_id: currentUser?.id, gym_id: gym.id, status: 'active' });
+      if (alreadyMember.length === 0) {
+        await base44.entities.GymMembership.create({
+          user_id: currentUser?.id,
+          user_name: currentUser?.full_name,
+          user_email: currentUser?.email,
+          gym_id: gym.id,
+          gym_name: gym.name,
+          status: 'active',
+          join_date: new Date().toISOString().split('T')[0],
+          membership_type: 'monthly',
+        });
+        await base44.entities.Gym.update(gym.id, { members_count: (gym.members_count || 0) + 1 });
+        if (!currentUser?.primary_gym_id) {
+          await base44.auth.updateMe({ primary_gym_id: gym.id });
+        }
+      }
+      return gym;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['gyms'] });
