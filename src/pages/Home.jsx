@@ -1443,7 +1443,12 @@ export default function Home() {
 
       <AnimatePresence>
         {viewWorkoutDay !== null && (() => {
-          const workout = currentUser?.custom_workout_types?.[viewWorkoutDay];
+          // If restSwap is active and we're viewing the target day, show today's original workout
+          const restSwapData = getRestSwap();
+          const effectiveViewDay = (restSwapData && viewWorkoutDay === restSwapData.toDay)
+            ? restSwapData.fromDay
+            : viewWorkoutDay;
+          const workout = currentUser?.custom_workout_types?.[effectiveViewDay];
           if (!workout) return null;
           const workoutName = workout.name || 'Training Day';
           const exercises = workout.exercises || [];
