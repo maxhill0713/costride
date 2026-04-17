@@ -54,6 +54,12 @@ export default function JoinGymModal({ open, onClose, gym, currentUser }) {
 
   const processPaymentMutation = useMutation({
     mutationFn: async ({ paymentMethodId }) => {
+      // Check membership limit before joining
+      const currentMemberships = await base44.entities.GymMembership.filter({ user_id: currentUser.id, status: 'active' });
+      if (currentMemberships.length >= 3) {
+        throw new Error('You can only be a member of up to 3 gyms. Please leave a gym before joining a new one.');
+      }
+
       // Create payment record
       const payment = await base44.entities.Payment.create({
         user_id: currentUser.id,
