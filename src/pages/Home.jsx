@@ -1374,8 +1374,18 @@ export default function Home() {
         celebrationPreviousExercises={celebrationPreviousExercises}
         celebrationDurationMinutes={celebrationDurationMinutes}
         currentUser={currentUser}
-        gymId={primaryGymIdForQuery}
-        gymName={memberGym?.name || null}
+        gymId={(() => {
+          const todayCI = allCheckIns.find(c => c.user_id === currentUser?.id && isToday(new Date(c.check_in_date)));
+          return todayCI?.gym_id || primaryGymIdForQuery;
+        })()}
+        gymName={(() => {
+          const todayCI = allCheckIns.find(c => c.user_id === currentUser?.id && isToday(new Date(c.check_in_date)));
+          if (todayCI?.gym_id) {
+            const g = allMemberGyms.find(g => g.id === todayCI.gym_id);
+            return g?.name || todayCI.gym_name || null;
+          }
+          return memberGym?.name || null;
+        })()}
         showDaysCelebration={showDaysCelebration}
         weeklyWorkoutLogs={weeklyWorkoutLogs}
         todayDowAdjusted={todayDowAdjusted}
