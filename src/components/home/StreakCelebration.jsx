@@ -37,75 +37,124 @@ function playCircleLevelUp() {
   } catch (_) {}
 }
 
-// Duolingo-style fire/explosion/pop sound for streak icon explode transition
+// Swoosh/whoosh sound as icon expands and fades — no musical tones, just air movement
 function playStreakExplosionSound() {
   try {
     const ctx = new (window.AudioContext || window.webkitAudioContext)();
     const now = ctx.currentTime;
+    const dur = 0.55;
 
-    const t = (freq, start, dur, gain, type = 'sine') => {
-      const osc = ctx.createOscillator();
-      const g   = ctx.createGain();
-      osc.connect(g); g.connect(ctx.destination);
-      osc.type = type;
-      osc.frequency.setValueAtTime(freq, start);
-      g.gain.setValueAtTime(0, start);
-      g.gain.linearRampToValueAtTime(gain, start + 0.01);
-      g.gain.exponentialRampToValueAtTime(0.001, start + dur);
-      osc.start(start); osc.stop(start + dur + 0.05);
-    };
+    // White noise buffer for the swoosh body
+    const bufLen = Math.ceil(ctx.sampleRate * dur);
+    const buf = ctx.createBuffer(1, bufLen, ctx.sampleRate);
+    const data = buf.getChannelData(0);
+    for (let i = 0; i < bufLen; i++) data[i] = Math.random() * 2 - 1;
 
-    // Low punch/thud — impact feel
-    t(80,   now,        0.18, 0.5,  'triangle');
-    t(55,   now,        0.25, 0.4,  'sawtooth');
-    // Mid crackle — fire snap
-    t(320,  now + 0.02, 0.12, 0.35, 'sawtooth');
-    t(480,  now + 0.04, 0.10, 0.28, 'square');
-    t(240,  now + 0.06, 0.14, 0.22, 'sawtooth');
-    // Rising warm tones — the "pop" moment
-    t(660,  now + 0.08, 0.20, 0.30);
-    t(880,  now + 0.13, 0.22, 0.28);
-    t(1100, now + 0.18, 0.18, 0.22);
-    // Bright sparkle top
-    t(1760, now + 0.22, 0.14, 0.14);
-    t(2200, now + 0.26, 0.10, 0.10);
+    const noise = ctx.createBufferSource();
+    noise.buffer = buf;
 
-    if (navigator.vibrate) navigator.vibrate([15, 10, 50, 10, 30]);
+    // Bandpass filter — shapes the noise into a whoosh (mid-range air sound)
+    const bp = ctx.createBiquadFilter();
+    bp.type = 'bandpass';
+    bp.frequency.setValueAtTime(600, now);
+    bp.frequency.exponentialRampToValueAtTime(2800, now + dur * 0.5);
+    bp.Q.setValueAtTime(0.8, now);
+
+    // High-shelf to add air at the top
+    const hs = ctx.createBiquadFilter();
+    hs.type = 'highshelf';
+    hs.frequency.setValueAtTime(3000, now);
+    hs.gain.setValueAtTime(6, now);
+
+    const gainNode = ctx.createGain();
+    gainNode.gain.setValueAtTime(0, now);
+    gainNode.gain.linearRampToValueAtTime(0.45, now + 0.04);
+    gainNode.gain.exponentialRampToValueAtTime(0.001, now + dur);
+
+    noise.connect(bp);
+    bp.connect(hs);
+    hs.connect(gainNode);
+    gainNode.connect(ctx.destination);
+
+    noise.start(now);
+    noise.stop(now + dur + 0.05);
+
+    if (navigator.vibrate) navigator.vibrate([15, 10, 40]);
     setTimeout(() => ctx.close(), 800);
   } catch (_) {}
 }
 
-// Duolingo-style challenge progress bar sound — ascending musical fill
+// Challenge fill sound — a rising "zoooop" that sweeps upward as the bar fills
 function playChallengeProgressSound(idx = 0) {
   try {
     const ctx = new (window.AudioContext || window.webkitAudioContext)();
     const now = ctx.currentTime;
+    const dur = 1.1; // matches the bar fill duration
 
-    const t = (freq, start, dur, gain, type = 'sine') => {
-      const osc = ctx.createOscillator();
-      const g   = ctx.createGain();
-      osc.connect(g); g.connect(ctx.destination);
-      osc.type = type;
-      osc.frequency.setValueAtTime(freq, start);
-      g.gain.setValueAtTime(0, start);
-      g.gain.linearRampToValueAtTime(gain, start + 0.01);
-      g.gain.exponentialRampToValueAtTime(0.001, start + dur);
-      osc.start(start); osc.stop(start + dur + 0.05);
-    };
+    // White noise buffer for textured whoosh component
+    const bufLen = Math.ceil(ctx.sampleRate * dur);
+    const buf = ctx.createBuffer(1, bufLen, ctx.sampleRate);
+    const data = buf.getChannelData(0);
+    for (let i = 0; i < bufLen; i++) data[i] = Math.random() * 2 - 1;
 
-    // Offset pitch slightly per challenge card so multiple don't clash
-    const offset = idx * 0.08;
+    const noise = ctx.createBufferSource();
+    noise.buffer = buf;
 
-    // Quick ascending "fill" sequence
-    t(440 + idx * 40, now + offset,        0.10, 0.15);
-    t(550 + idx * 40, now + offset + 0.08, 0.10, 0.18);
-    t(660 + idx * 40, now + offset + 0.16, 0.12, 0.20);
-    t(880 + idx * 40, now + offset + 0.24, 0.22, 0.24);
-    // Warm harmonic
-    t(440 + idx * 40, now + offset + 0.24, 0.20, 0.10);
+    const nbp = ctx.createBiquadFilter();
+    nbp.type = 'bandpass';
+    nbp.frequency.setValueAtTime(300 + idx * 80, now);
+    nbp.frequency.exponentialRampToValueAtTime(2200 + idx * 200, now + dur * 0.85);
+    nbp.Q.setValueAtTime(1.2, now);
+
+    const nGain = ctx.createGain();
+    nGain.gain.setValueAtTime(0, now);
+    nGain.gain.linearRampToValueAtTime(0.18, now + 0.05);
+    nGain.gain.exponentialRampToValueAtTime(0.001, now + dur);
+
+    noise.connect(nbp);
+    nbp.connect(nGain);
+    nGain.connect(ctx.destination);
+
+    // Rising oscillator sweep — the main "zooop" tone
+    const osc = ctx.createOscillator();
+    osc.type = 'sine';
+    const startFreq = 160 + idx * 30;
+    const endFreq   = 900 + idx * 80;
+    osc.frequency.setValueAtTime(startFreq, now);
+    osc.frequency.exponentialRampToValueAtTime(endFreq, now + dur * 0.9);
+
+    const oGain = ctx.createGain();
+    oGain.gain.setValueAtTime(0, now);
+    oGain.gain.linearRampToValueAtTime(0.22, now + 0.06);
+    oGain.gain.setValueAtTime(0.22, now + dur * 0.75);
+    oGain.gain.exponentialRampToValueAtTime(0.001, now + dur);
+
+    osc.connect(oGain);
+    oGain.connect(ctx.destination);
+
+    // Harmonic second tone slightly offset — adds richness
+    const osc2 = ctx.createOscillator();
+    osc2.type = 'triangle';
+    osc2.frequency.setValueAtTime(startFreq * 1.5, now);
+    osc2.frequency.exponentialRampToValueAtTime(endFreq * 1.5, now + dur * 0.9);
+
+    const oGain2 = ctx.createGain();
+    oGain2.gain.setValueAtTime(0, now);
+    oGain2.gain.linearRampToValueAtTime(0.10, now + 0.08);
+    oGain2.gain.exponentialRampToValueAtTime(0.001, now + dur * 0.92);
+
+    osc2.connect(oGain2);
+    oGain2.connect(ctx.destination);
+
+    noise.start(now);
+    noise.stop(now + dur + 0.05);
+    osc.start(now);
+    osc.stop(now + dur + 0.05);
+    osc2.start(now);
+    osc2.stop(now + dur + 0.05);
 
     if (navigator.vibrate) navigator.vibrate([10, 5, 20]);
-    setTimeout(() => ctx.close(), 600);
+    setTimeout(() => ctx.close(), 1500);
   } catch (_) {}
 }
 
@@ -133,25 +182,6 @@ function playDayCircleDing() {
   } catch (_) {}
 }
 
-function playCircleTick(seqIndex) {
-  try {
-    const ctx = new (window.AudioContext || window.webkitAudioContext)();
-    const now = ctx.currentTime;
-    const freq = 520 + seqIndex * 38;
-    const osc = ctx.createOscillator();
-    const g   = ctx.createGain();
-    osc.connect(g); g.connect(ctx.destination);
-    osc.type = 'sine';
-    osc.frequency.setValueAtTime(freq, now);
-    osc.frequency.exponentialRampToValueAtTime(freq * 1.12, now + 0.06);
-    g.gain.setValueAtTime(0, now);
-    g.gain.linearRampToValueAtTime(0.13, now + 0.008);
-    g.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
-    osc.start(now); osc.stop(now + 0.15);
-    setTimeout(() => ctx.close(), 300);
-  } catch (_) {}
-}
-
 function injectDayStyles() {
   if (document.getElementById('sc-day-styles')) return;
   const s = document.createElement('style');
@@ -170,6 +200,14 @@ function injectDayStyles() {
       55%  { transform: scale(0.91); }
       72%  { transform: scale(1.09); }
       85%  { transform: scale(0.97); }
+      100% { transform: scale(1); }
+    }
+    @keyframes scPastCirclePop {
+      0%   { transform: scale(1); }
+      30%  { transform: scale(1.18); }
+      52%  { transform: scale(0.92); }
+      70%  { transform: scale(1.08); }
+      85%  { transform: scale(0.98); }
       100% { transform: scale(1); }
     }
     @keyframes scWiggle {
@@ -191,12 +229,12 @@ function injectDayStyles() {
       from { opacity: 0; transform: translateY(22px); }
       to   { opacity: 1; transform: translateY(0); }
     }
-    @keyframes streakIconExplode {
-      0%   { transform: scale(1);    opacity: 1; filter: brightness(1); }
-      30%  { transform: scale(1.35); opacity: 1; filter: brightness(1.6); }
-      55%  { transform: scale(1.85); opacity: 0.8; filter: brightness(2); }
-      80%  { transform: scale(2.8);  opacity: 0.35; filter: brightness(2.5); }
-      100% { transform: scale(4.2);  opacity: 0; filter: brightness(3); }
+    @keyframes streakIconExpand {
+      0%   { transform: scale(1);   opacity: 1;   filter: brightness(1); }
+      20%  { transform: scale(1.2); opacity: 1;   filter: brightness(1.15); }
+      55%  { transform: scale(2.2); opacity: 0.7; filter: brightness(1.3); }
+      80%  { transform: scale(3.6); opacity: 0.25; filter: brightness(1.5); }
+      100% { transform: scale(5.0); opacity: 0;   filter: brightness(1.8); }
     }
   `;
   document.head.appendChild(s);
@@ -231,8 +269,8 @@ function StyledButton({ enabled, opacity, onClick, label = 'Continue', variant =
       <div style={{
         position: 'absolute', inset: 0, borderRadius: 16,
         background: enabled ? shadowEnabled : '#111827',
-        transform: 'translateY(4px)',
-        transition: 'background 0.8s ease',
+        transform: pressed ? 'translateY(1px)' : 'translateY(4px)',
+        transition: 'background 0.8s ease, transform 0.07s ease',
       }} />
       <button
         disabled={!enabled}
@@ -240,7 +278,7 @@ function StyledButton({ enabled, opacity, onClick, label = 'Continue', variant =
         onMouseUp={() => { setPressed(false); if (enabled) onClick?.(); }}
         onMouseLeave={() => setPressed(false)}
         onTouchStart={() => enabled && setPressed(true)}
-        onTouchEnd={() => { setPressed(false); if (enabled) onClick?.(); }}
+        onTouchEnd={(e) => { e.preventDefault(); setPressed(false); if (enabled) onClick?.(); }}
         onTouchCancel={() => setPressed(false)}
         style={{
           position: 'relative', zIndex: 1,
@@ -266,14 +304,13 @@ function ContinueButton(props) {
 }
 
 // ── EmbeddedDayCircles ────────────────────────────────────────────────────────
-// Past days pop in ALREADY coloured — no greyed-then-coloured reveal.
-// Today's circle still does its special colour-pop separately.
-// Future (unlogged, non-missed) days pop in grey as before.
 function EmbeddedDayCircles({ currentUser, weeklyWorkoutLogs, todayDow, startAnimation, onAllVisible, onAnimationComplete }) {
-  const [animatedIdx, setAnimatedIdx]     = useState(-1);
-  const [todayColoured, setTodayColoured] = useState(false);
-  const [todayColourPop, setTodayColourPop] = useState(false);
-  const [wiggleActive, setWiggleActive]   = useState(false);
+  const [animatedIdx, setAnimatedIdx]         = useState(-1);
+  const [todayColoured, setTodayColoured]     = useState(false);
+  const [todayColourPop, setTodayColourPop]   = useState(false);
+  // Track which past circles should do their celebratory re-pop when today pops
+  const [pastCirclePop, setPastCirclePop]     = useState(false);
+  const [wiggleActive, setWiggleActive]       = useState(false);
   const hasCompleted = useRef(false);
 
   const todayDowAdjusted = todayDow || (() => { const d = new Date().getDay(); return d === 0 ? 7 : d; })();
@@ -305,13 +342,14 @@ function EmbeddedDayCircles({ currentUser, weeklyWorkoutLogs, todayDow, startAni
     timers.push(setTimeout(() => setWiggleActive(true),  allVisibleAt + 80));
     timers.push(setTimeout(() => setWiggleActive(false), allVisibleAt + 80 + 700));
 
-    // Today's circle gets its colour-pop with ding
+    // Today's circle gets its colour-pop with ding + past circles pop simultaneously
     const todayColourAt = allVisibleAt + 800;
     timers.push(setTimeout(() => {
       setTodayColoured(true);
       setTodayColourPop(true);
+      setPastCirclePop(true);
       playDayCircleDing();
-      setTimeout(() => setTodayColourPop(false), 600);
+      setTimeout(() => { setTodayColourPop(false); setPastCirclePop(false); }, 650);
     }, todayColourAt));
 
     // Animation complete fires shortly after today's colour-pop
@@ -336,12 +374,12 @@ function EmbeddedDayCircles({ currentUser, weeklyWorkoutLogs, todayDow, startAni
     const isPastRest = isRestDay && isPast;
     const size       = isToday ? 49 : 40;
     const isVisible  = i <= animatedIdx;
-    const isPopping  = isToday ? todayColourPop : false;
+    const isColouringNow = isToday ? todayColourPop : false;
 
-    // Past days (done, missed, pastRest) are immediately coloured when they pop in.
-    // Today starts grey and colour-pops separately.
-    // Future/upcoming grey circles stay grey.
+    // Past circles that have data (done, missed, pastRest) — immediate colour on pop
     const isImmediatelyColoured = !isToday && (doneBase || isMissed || isPastRest);
+    // Past circles doing their re-pop when today turns blue
+    const isPastPopping = pastCirclePop && isImmediatelyColoured;
 
     const getBg = () => {
       if (isToday) {
@@ -374,12 +412,13 @@ function EmbeddedDayCircles({ currentUser, weeklyWorkoutLogs, todayDow, startAni
     };
     const getAnim = () => {
       if (!isVisible) return 'none';
-      if (isPopping && isToday)  return 'scCircleColourPop 0.55s cubic-bezier(0.34,1.3,0.64,1) forwards';
+      if (isColouringNow && isToday) return 'scCircleColourPop 0.55s cubic-bezier(0.34,1.3,0.64,1) forwards';
+      if (isPastPopping) return 'scPastCirclePop 0.5s cubic-bezier(0.34,1.3,0.64,1) forwards';
       if (wiggleActive && !isImmediatelyColoured && !done) return `scWiggle 2.4s ease-in-out ${i * 0.09}s infinite`;
       return 'scCirclePop 0.55s cubic-bezier(0.34,1.3,0.64,1) forwards';
     };
 
-    return { isToday, done, isRestDay, isMissed, isPastRest, doneBase, size, isVisible, isImmediatelyColoured, isPopping, getBg, getBorder, getBoxShadow, getAnim };
+    return { isToday, done, isRestDay, isMissed, isPastRest, doneBase, size, isVisible, isImmediatelyColoured, isColouringNow, isPastPopping, getBg, getBorder, getBoxShadow, getAnim };
   };
 
   return (
@@ -395,7 +434,7 @@ function EmbeddedDayCircles({ currentUser, weeklyWorkoutLogs, todayDow, startAni
         const vOffset  = 9 + vertOffset(i) - (isToday ? 4 : 0);
         const iconSize = isToday ? 20 : 16;
 
-        // For past days: icon is shown as soon as visible (no waiting for colour-pop)
+        // For past days: icon is shown as soon as visible
         const showIcon = isImmediatelyColoured ? isVisible : (isToday ? done : (doneBase || isMissed || isPastRest));
 
         return (
@@ -468,10 +507,13 @@ function EmbeddedDayCircles({ currentUser, weeklyWorkoutLogs, todayDow, startAni
                   <div style={{ width: iconSize, height: iconSize }} />
                 )
               ) : (
+                /* Grey empty circle — for today (pre-colour-pop) AND upcoming unlogged days.
+                   Today uses the larger inner ring style matching a "planned workout" day. */
                 <div style={{
                   width: isToday ? 18 : 14, height: isToday ? 18 : 14, borderRadius: '50%',
                   border: isToday ? '2px solid rgba(148,163,184,0.6)' : '2px solid rgba(100,116,139,0.35)',
                   background: isToday ? 'rgba(255,255,255,0.05)' : 'transparent',
+                  boxShadow: isToday ? 'inset 0 1px 3px rgba(0,0,0,0.4)' : 'none',
                 }} />
               )}
             </div>
@@ -503,15 +545,17 @@ function EmbeddedDayCircles({ currentUser, weeklyWorkoutLogs, todayDow, startAni
 function ChallengesStage({ celebrationChallenges, onChallengesContinue, BUTTON_BOTTOM, BUTTON_WIDTH }) {
   const [continueEnabled, setContinueEnabled] = useState(false);
   const [continueOpacity, setContinueOpacity] = useState(0);
+  // Track whether user pressed continue so we can run slide-out animation
+  const [sliding, setSliding] = useState(false);
   const soundsFired = useRef(new Set());
 
   useEffect(() => {
     const lastIdx   = celebrationChallenges.length - 1;
-    const barDoneMs = (0.4 + lastIdx * 0.1 + 1.2) * 1000;
+    const barDoneMs = (0.6 + lastIdx * 0.12 + 1.2) * 1000;
 
     // Fire progress sounds for each challenge bar as they animate
     celebrationChallenges.forEach((_, idx) => {
-      const delay = (0.4 + idx * 0.1) * 1000 + 200;
+      const delay = (0.6 + idx * 0.12) * 1000 + 150;
       const key = `bar-${idx}`;
       setTimeout(() => {
         if (!soundsFired.current.has(key)) {
@@ -521,10 +565,21 @@ function ChallengesStage({ celebrationChallenges, onChallengesContinue, BUTTON_B
       }, delay);
     });
 
-    const t1 = setTimeout(() => setContinueOpacity(1), 350);
-    const t2 = setTimeout(() => setContinueEnabled(true), barDoneMs + 400);
+    // Continue button fades in a bit later than before
+    const t1 = setTimeout(() => setContinueOpacity(1), 700);
+    const t2 = setTimeout(() => setContinueEnabled(true), barDoneMs + 600);
     return () => { clearTimeout(t1); clearTimeout(t2); };
   }, [celebrationChallenges.length]);
+
+  const handleContinuePress = () => {
+    if (!continueEnabled || sliding) return;
+    setSliding(true);
+  };
+
+  // When slide-out animation completes, fire the actual continue callback
+  const handleSlideComplete = () => {
+    onChallengesContinue();
+  };
 
   return (
     <motion.div
@@ -545,8 +600,17 @@ function ChallengesStage({ celebrationChallenges, onChallengesContinue, BUTTON_B
             <motion.div
               key={challenge.id}
               initial={{ opacity: 0, scale: 0.97 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.15 + idx * 0.1, duration: 0.3 }}
+              animate={sliding
+                ? { opacity: 0, x: '-110%', transition: { duration: 0.55, delay: idx * 0.07, ease: [0.55, 0, 1, 0.45] } }
+                : { opacity: 1, scale: 1 }
+              }
+              transition={{ delay: 0.25 + idx * 0.12, duration: 0.35 }}
+              onAnimationComplete={() => {
+                // When the last card finishes sliding, fire continue
+                if (sliding && idx === celebrationChallenges.length - 1) {
+                  handleSlideComplete();
+                }
+              }}
               className="rounded-2xl overflow-hidden relative"
               style={{
                 background: 'linear-gradient(135deg, rgba(16,19,40,0.96) 0%, rgba(6,8,18,0.99) 100%)',
@@ -583,7 +647,7 @@ function ChallengesStage({ celebrationChallenges, onChallengesContinue, BUTTON_B
                     <motion.div
                       initial={{ width: `${prevPct}%` }}
                       animate={{ width: `${newPct}%` }}
-                      transition={{ delay: 0.4 + idx * 0.1, duration: 1.2, ease: 'easeOut' }}
+                      transition={{ delay: 0.6 + idx * 0.12, duration: 1.2, ease: 'easeOut' }}
                       className="h-full rounded-full"
                       style={{ background: isComplete ? 'linear-gradient(90deg, #34d399, #10b981)' : 'linear-gradient(90deg, #38bdf8, #60a5fa)' }}
                     />
@@ -604,9 +668,9 @@ function ChallengesStage({ celebrationChallenges, onChallengesContinue, BUTTON_B
       </div>
       <div style={{ position: 'absolute', bottom: BUTTON_BOTTOM, width: BUTTON_WIDTH }}>
         <StyledButton
-          enabled={continueEnabled}
+          enabled={continueEnabled && !sliding}
           opacity={continueOpacity}
-          onClick={onChallengesContinue}
+          onClick={handleContinuePress}
           label="Continue"
           variant="blue"
         />
@@ -627,6 +691,7 @@ function StreakCelebration({
   celebrationPreviousExercises,
   celebrationDurationMinutes,
   currentUser,
+  gymId,
   showDaysCelebration,
   weeklyWorkoutLogs,
   todayDowAdjusted,
@@ -641,15 +706,14 @@ function StreakCelebration({
   const [continueButtonEnabled, setContinueButtonEnabled] = useState(false);
   const [continueButtonOpacity, setContinueButtonOpacity] = useState(0);
 
-  // Exit animation state — icon shifts down then explodes before transitioning
+  // Exit animation state
   const [exitPhase, setExitPhase]         = useState('idle'); // 'idle' | 'fading' | 'shifting' | 'exploding' | 'done'
   const [iconExploding, setIconExploding] = useState(false);
   const [everythingFaded, setEverythingFaded] = useState(false);
 
-  // Shared background for stages
-  const [showSharedBackground, setShowSharedBackground]   = useState(false);
-  // Suppress secondary backdrop flash on final exit
-  const [suppressBackdrop, setSuppressBackdrop] = useState(false);
+  // Persistent shared background — prevents flash between stages
+  const [showSharedBackground, setShowSharedBackground] = useState(false);
+  const [suppressBackdrop, setSuppressBackdrop]         = useState(false);
 
   useEffect(() => { injectDayStyles(); }, []);
 
@@ -658,7 +722,6 @@ function StreakCelebration({
       setShowSharedBackground(true);
       setSuppressBackdrop(false);
     } else if (!showStreakCelebration && !showChallengesCelebration && !showShareWorkout) {
-      // Suppress then remove backdrop immediately — no re-flash
       setSuppressBackdrop(true);
       const t = setTimeout(() => setShowSharedBackground(false), 10);
       return () => clearTimeout(t);
@@ -757,34 +820,34 @@ function StreakCelebration({
     setTimeout(() => setContinueButtonEnabled(true), 300);
   };
 
-  // ── Continue button pressed → icon explode transition ──────────────────────
+  // ── Continue pressed → number fades with everything, icon swooshes down then expands ──
   const handleContinuePress = () => {
     if (exitPhase !== 'idle') return;
 
-    // 1. Fade everything except the icon
+    // 1. Fade everything (including number)
     setExitPhase('fading');
     setEverythingFaded(true);
 
-    // 2. After fade, shift icon down to its original position
+    // 2. After fade, shift icon down
     setTimeout(() => {
       setExitPhase('shifting');
     }, 320);
 
-    // 3. After icon settles, brief pause then explode
+    // 3. After icon settles, brief pause then expand/explode
     setTimeout(() => {
       setExitPhase('exploding');
       setIconExploding(true);
       playStreakExplosionSound();
-    }, 320 + 700 + 500); // fade + shift duration + pause
+    }, 320 + 700 + 500);
 
     // 4. Transition to next stage
     setTimeout(() => {
       setExitPhase('done');
       document.dispatchEvent(new CustomEvent('streakCelebrationContinue'));
-    }, 320 + 700 + 500 + 450); // + explode duration
+    }, 320 + 700 + 500 + 500);
   };
 
-  // Share screen complete — suppress backdrop re-flash entirely
+  // Share screen complete — gentle fade back to home
   const handleShareWorkoutComplete = () => {
     setSuppressBackdrop(true);
     setShowShareWorkout(false);
@@ -793,17 +856,24 @@ function StreakCelebration({
 
   const BUTTON_BOTTOM = 'calc(env(safe-area-inset-bottom) + 36px)';
   const BUTTON_WIDTH  = 'min(340px, 88vw)';
-  const FINAL_Y       = '-80px';
+  // Reduced shift amount — icon and number move up slightly less
+  const FINAL_Y       = '-65px';
   const CIRCLES_SLOT_HEIGHT = 110;
+  // Circles appear a bit lower — more spacing below the icon+number group
+  const CIRCLES_MARGIN_TOP = 24;
 
-  // Icon position: shifted down when in shifting/exploding phase (back to approx original center)
   const iconShiftY = exitPhase === 'shifting' || exitPhase === 'exploding' || exitPhase === 'done'
     ? '120px'
     : '0px';
 
+  // The streak icon retains its original colour family as it expands — no brightness blowout
+  const expandStyle = iconExploding
+    ? { animation: 'streakIconExpand 0.5s ease forwards' }
+    : {};
+
   return (
     <>
-      {/* Persistent backdrop */}
+      {/* Persistent backdrop — keeps background consistent across all stages */}
       {showSharedBackground && (
         <div
           style={{
@@ -826,7 +896,7 @@ function StreakCelebration({
             transition={{ duration: 0.15 }}
             className="fixed inset-0 z-[100] flex flex-col items-center justify-center overflow-hidden"
           >
-            {/* Streak icon — stays visible through exit, shifts down then explodes */}
+            {/* Icon + number group — shifts up together, then icon continues alone */}
             <div style={{
               display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16,
               transform: exitPhase === 'shifting' || exitPhase === 'exploding' || exitPhase === 'done'
@@ -842,13 +912,13 @@ function StreakCelebration({
                     ? 'transform 0.9s cubic-bezier(0.4, 0, 0.2, 1)'
                     : 'none',
             }}>
-              {/* The streak icon — only this remains visible during exit */}
+              {/* Streak icon */}
               <div
                 id="streak-anim-stage"
                 style={{
                   position: 'relative', width: 180, height: 180,
                   opacity: 0, willChange: 'transform, opacity',
-                  animation: iconExploding ? 'streakIconExplode 0.45s ease forwards' : 'none',
+                  ...expandStyle,
                 }}
               >
                 <img id="streak-anim-p1" src={POSE_1_URL} alt="pose 1"
@@ -857,7 +927,7 @@ function StreakCelebration({
                   style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'contain', display: 'none' }} />
               </div>
 
-              {/* Streak number — fades out when exit begins */}
+              {/* Streak number — fades out WITH everything else when continue is pressed */}
               <div
                 id="streak-anim-num"
                 style={{
@@ -872,11 +942,12 @@ function StreakCelebration({
                 {celebrationStreakNum - 1}
               </div>
 
-              {/* Day circles slot — fades out when exit begins */}
+              {/* Day circles — slightly lower with extra margin top */}
               {(streakPhase === 'final' || streakPhase === 'circles') && (
                 <div style={{
                   width: BUTTON_WIDTH,
                   height: CIRCLES_SLOT_HEIGHT,
+                  marginTop: CIRCLES_MARGIN_TOP,
                   visibility: streakPhase === 'circles' ? 'visible' : 'hidden',
                   opacity: everythingFaded ? 0 : 1,
                   transition: everythingFaded ? 'opacity 0.25s ease' : 'none',
@@ -893,7 +964,7 @@ function StreakCelebration({
               )}
             </div>
 
-            {/* Continue button — fades out when exit begins */}
+            {/* Continue button */}
             {continueButtonVisible && (
               <div style={{
                 position: 'absolute',
@@ -934,7 +1005,7 @@ function StreakCelebration({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.4, ease: 'easeOut' }}
+            transition={{ duration: 0.5, ease: 'easeOut' }}
             style={{ position: 'fixed', inset: 0, zIndex: 100 }}
           >
             <ShareWorkoutScreen
@@ -943,6 +1014,7 @@ function StreakCelebration({
               previousExercises={celebrationPreviousExercises}
               durationMinutes={celebrationDurationMinutes}
               currentUser={currentUser}
+              gymId={gymId}
               onContinue={handleShareWorkoutComplete}
               onShareComplete={handleShareWorkoutComplete}
             />
