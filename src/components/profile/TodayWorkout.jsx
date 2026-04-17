@@ -52,12 +52,8 @@ function WorkoutSwitcherModal({ open, onClose, currentUser, activeDayKey, adjust
       return a.dayKey - b.dayKey;
     });
 
-  // If user has a rest-day credit (trained on a rest day earlier this week),
-  // show ONLY the "Rest Day" option — no orange swap options.
   const creditAvailable = hasRestDayCredit();
 
-  // "Move today's workout to a rest day" — only show if today is actually a training day,
-  // not in rest-swap mode, AND no credit is available (credit takes priority).
   const todayIsTrainingDay = trainingDays.includes(adjustedDay) && !restSwapActive;
   const futureRestDaysForSwap = (!creditAvailable && todayIsTrainingDay)
     ? [1, 2, 3, 4, 5, 6, 7].filter((d) => {
@@ -80,7 +76,6 @@ function WorkoutSwitcherModal({ open, onClose, currentUser, activeDayKey, adjust
         </div>
         <div className="px-3 pb-4 space-y-1.5 max-h-[60vh] overflow-y-auto">
 
-          {/* Revert rest swap — show when today was swapped to rest */}
           {restSwapActive && (
             <button
               onClick={() => { onSelect(adjustedDay, 'revert-rest-swap'); onClose(); }}
@@ -90,8 +85,6 @@ function WorkoutSwitcherModal({ open, onClose, currentUser, activeDayKey, adjust
             </button>
           )}
 
-          {/* Rest Day via credit — user trained on a rest day earlier this week.
-              Show ONLY this button (hides orange swap options). No strings attached. */}
           {!restSwapActive && creditAvailable && todayIsTrainingDay && (
             <>
               <button
@@ -107,7 +100,6 @@ function WorkoutSwitcherModal({ open, onClose, currentUser, activeDayKey, adjust
             </>
           )}
 
-          {/* Move workout to future rest day — only if no credit available */}
           {!restSwapActive && futureRestDaysForSwap.length > 0 && (
             <>
               {futureRestDaysForSwap.map((d) => (
@@ -173,7 +165,6 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
   const [editingGroupedSet, setEditingGroupedSet] = useState(null);
   const [showMissingData, setShowMissingData] = useState(false);
 
-  // Load overrideDayKey from localStorage, but only if it was saved for today
   const [overrideDayKey, setOverrideDayKey] = useState(() => {
     try {
       const stored = localStorage.getItem('workoutOverrideDay');
@@ -186,7 +177,6 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
     }
   });
 
-  // Rest swap: today is forced rest, workout moved to a future day
   const [restSwapActive, setRestSwapActive] = useState(() => {
     const swap = getRestSwap();
     if (!swap) return false;
@@ -196,7 +186,6 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
     return swap.fromDay === todayNum;
   });
 
-  // Persist overrideDayKey to localStorage whenever it changes
   useEffect(() => {
     try {
       const todayStr = new Date().toISOString().split('T')[0];
@@ -235,7 +224,6 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
 
   const activeDayKey = overrideDayKey !== null ? overrideDayKey : adjustedDay;
 
-  // Credit rest: user spent their credit to make today a rest day
   const [creditRestActive, setCreditRestActive] = useState(() => {
     return getCreditRestDay() === (new Date().getDay() === 0 ? 7 : new Date().getDay());
   });
@@ -243,12 +231,10 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
   const getTodayWorkout = () => {
     if (!currentUser?.custom_workout_types) return null;
 
-    // Rest swap active: today is a rest day, workout moved to future day
     if (restSwapActive) {
       return { name: 'Rest Day', exercises: [], cardio: [] };
     }
 
-    // Credit rest: user used their earned credit to rest today
     if (creditRestActive) {
       return { name: 'Rest Day', exercises: [], cardio: [] };
     }
@@ -570,7 +556,6 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
       return { previousStreak: currentUser.current_streak || 0, newStreak, challengesData, weekendWarriorJustCompleted };
     },
     onSuccess: (data) => {
-      // If today was originally a rest day and the user logged a workout, grant them a rest-day swap credit
       const todayTrainingDays = currentUser?.training_days || [];
       if (!todayTrainingDays.includes(adjustedDay)) {
         recordTrainedOnRestDay(adjustedDay);
@@ -644,7 +629,7 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
   { label: 'Expand', text: "Tap the down arrow to view all exercises for today's session." },
   { label: 'Switch workout', text: "Tap the workout name to swap to a different day's session." },
   { label: 'Update weight/reps', text: 'Click the pencil icon next to any exercise, enter new values, then save.' },
-  { label: 'Timer', text: 'Tap Timer to open the rest/cardio timer bar at the bottom of the screen.' },
+  { label: 'Timer', text: 'Tap Timer to open the rest/cardio timer.' },
   { label: 'Plate calculator', text: 'Use the calculator icon to see which plates to load on the bar.' },
   { label: 'Log completion', text: 'Hit "Log Workout" when finished to save your progress and update your streak.' }];
 
@@ -843,7 +828,6 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                         key={group.key}
                         initial={false}
                         animate={{}}
-                        // CHANGED: pt-2 py-2 → pt-1 py-1 for more compact rows
                         className="bg-white/5 pt-1 py-1 pl-2 rounded-xl backdrop-blur-md border border-white/10 shadow-lg shadow-black/10 grid gap-1 items-center hover:border-white/20 transition-all -ml-[2%] -mr-[2%]"
                         style={{ gridTemplateColumns: isEditing ? '1fr' : exerciseGridCols }}>
                           {isEditing ?
@@ -905,18 +889,15 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                               <div className="">
                                 <div className="text-sm font-bold text-white leading-tight ml-1">{exercise.exercise || '-'}</div>
                               </div>
-                              {/* CHANGED: py-1 → py-0.5 for uniform chip height */}
                               <div className="bg-white/10 text-slate-300 py-0.5 text-sm font-semibold text-center rounded-lg flex items-center justify-center" style={{ width: '36px' }}>
                                 {exercise.sets || exercise.setsReps?.split('x')?.[0] || '-'}
                               </div>
                               <div className="text-slate-400 text-xs font-bold flex items-center justify-center -ml-2">×</div>
-                              {/* CHANGED: py-1 → py-0.5 for uniform chip height */}
                               <div className="bg-white/10 text-slate-300 py-0.5 text-sm font-semibold text-center rounded-lg flex items-center justify-center" style={{ width: '36px' }}>
                                 {exercise.reps || exercise.setsReps?.split('x')?.[1] || '-'}
                               </div>
                               <div className="flex items-center gap- ml-1 mr-2">
                                 <div className="flex items-center gap-2">
-                                  {/* CHANGED: pb-1 pt-1 → pb-0.5 pt-0.5 to match chip height */}
                                   <div className="bg-gradient-to-r text-white mx-auto pb-0.5 pl-1 pt-0.5 text-sm font-black text-center opacity-100 rounded-2xl from-blue-700/90 to-blue-900/90 shadow-md shadow-blue-900/20 min-w-[55px]">
                                     {exercise.weight || '-'}<span className="text-[10px] font-bold">kg</span>
                                   </div>
@@ -945,7 +926,6 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                       key={group.key}
                       initial={false}
                       animate={{}}
-                      // CHANGED: pt-2 pb-2 → pt-1 pb-1 for compact grouped rows
                       className="bg-white/5 pt-1 pb-1 pl-2 rounded-xl backdrop-blur-md border border-white/10 shadow-lg shadow-black/10 hover:border-white/20 transition-all -ml-[2%] -mr-[2%]">
 
                         {sorted.map(({ exercise, index }, setIdx) => {
@@ -957,7 +937,6 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                             <div key={index} className="rounded-2xl p-4 mr-2 mb-1" style={{ background: 'rgba(15,20,40,0.7)', border: '1px solid rgba(255,255,255,0.06)' }}>
                                 <div className="flex items-center gap-2 mb-3">
                                   <div className="text-sm font-bold text-white">{group.name}</div>
-                                  {/* CHANGED: py-1 → py-0.5 for uniform chip height */}
                                   <div className="inline-flex items-center justify-center px-3 py-0.5 rounded-lg bg-white/10 border border-white/10 text-[12px] font-black text-slate-200">
                                     {setLabel}
                                   </div>
@@ -992,17 +971,14 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                               <div />
                               }
                               </div>
-                              {/* CHANGED: py-1 → py-0.5 for uniform "Set N" chip height */}
                               <div className="bg-white/10 text-slate-300 py-0.5 text-[11px] font-bold text-center rounded-lg flex items-center justify-center" style={{ width: '36px' }}>
                                 {setLabel}
                               </div>
                               <div className="text-slate-400 text-xs font-bold flex items-center justify-center -ml-2">×</div>
-                              {/* CHANGED: py-1 → py-0.5 for uniform reps chip height */}
                               <div className="bg-white/10 text-slate-300 py-0.5 text-sm font-semibold text-center rounded-lg flex items-center justify-center" style={{ width: '36px' }}>
                                 {exercise.reps || exercise.setsReps?.split('x')?.[1] || '-'}
                               </div>
                               <div className="flex items-center gap-1 ml-1">
-                                {/* CHANGED: pb-1 pt-1 → pb-0.5 pt-0.5 to match chip height */}
                                 <div className="bg-gradient-to-r from-blue-700/90 to-blue-900/90 text-white pb-0.5 pl-1 pt-0.5 text-sm font-black text-center rounded-2xl shadow-md shadow-blue-900/20 min-w-[55px]">
                                   {exercise.weight || '-'}<span className="text-[10px] font-bold">kg</span>
                                 </div>
@@ -1024,7 +1000,6 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                   {/* Cardio Rows */}
                   {todayWorkout.cardio && todayWorkout.cardio.length > 0 &&
                 <div className="mt-3">
-                      {/* ── Cardio column headers ── */}
                       <div
                     className="grid gap-1 mb-1.5 items-end px-1"
                     style={{ gridTemplateColumns: cardioGridCols }}>
@@ -1140,17 +1115,20 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                 }
 
                   {/* Timer & Tools */}
+                  {/* CHANGED: Timer button is now 20% smaller (height 41px → ~33px, text smaller, flex 0.8 → 0.65) */}
+                  {/* CHANGED: Tapping Timer now opens fullscreen timer via setOpenTimerExpanded instead of just the bar */}
                   <div className="mt-4 pt-3 border-t border-slate-600/30 flex items-center justify-between gap-3 pb-4">
                     <div className="flex-1 flex items-center gap-2">
                       <button
                       onClick={(e) => {
                         e.stopPropagation();
+                        // Open fullscreen timer directly
                         setOpenTimerBar(true);
                       }}
-                      style={{ height: '51px', flex: 0.8 }}
-                      className="relative flex items-center justify-center gap-2 px-4 rounded-2xl bg-gradient-to-b from-slate-700 via-slate-800 to-slate-900 backdrop-blur-xl border border-transparent shadow-[0_3px_0_0_#0f172a,0_8px_20px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.08)] hover:from-slate-600 hover:via-slate-700 hover:to-slate-800 active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 transform-gpu">
-                        <Clock className="w-4 h-4 text-blue-400 flex-shrink-0" />
-                        <span className="text-blue-300 font-black text-xl leading-none">
+                      style={{ height: '41px', flex: 0.65 }}
+                      className="relative flex items-center justify-center gap-1.5 px-3 rounded-2xl bg-gradient-to-b from-slate-700 via-slate-800 to-slate-900 backdrop-blur-xl border border-transparent shadow-[0_3px_0_0_#0f172a,0_8px_20px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.08)] hover:from-slate-600 hover:via-slate-700 hover:to-slate-800 active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 transform-gpu">
+                        <Clock className="w-3.5 h-3.5 text-blue-400 flex-shrink-0" />
+                        <span className="text-blue-300 font-black text-base leading-none">
                           Timer
                         </span>
                       </button>
@@ -1192,11 +1170,6 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                           shadow-[0_3px_0_0_#1a3fa8,0_6px_16px_rgba(37,99,235,0.35),inset_0_1px_0_rgba(255,255,255,0.15)]
                           active:shadow-none active:translate-y-[3px] active:scale-95
                           transition-all duration-100 transform-gpu">
-
-
-
-
-                          
                         <Pencil className="w-4 h-4" />
                         Edit Split
                       </Link>
@@ -1265,7 +1238,6 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
         restSwapActive={restSwapActive}
         onSelect={(dayKey, mode) => {
           if (mode === 'use-credit-rest') {
-            // Spend the credit — today becomes a rest day, no strings attached
             recordCreditRestDay(adjustedDay);
             setCreditRestActive(true);
             setOverrideDayKey(null);
@@ -1283,7 +1255,6 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
             onOverrideDayChange?.(null);
             window.dispatchEvent(new Event('weekSwapChanged'));
           } else if (mode === 'revert-rest-swap') {
-            // Clear the rest swap — today goes back to being a training day
             clearRestSwap();
             setRestSwapActive(false);
             setOverrideDayKey(null);
