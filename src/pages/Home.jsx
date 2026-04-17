@@ -1325,7 +1325,7 @@ export default function Home() {
           {memberGym?.id && <QuoteCarousel />}
 
           {socialFeedPosts.length > 0 && (
-            <div className="space-y-3">
+            <div className="space-y-3 mt-4">
               {socialFeedPosts.map((post) => (
                 <PostCard key={post.id} post={post} fullWidth={true} currentUser={currentUser} isOwnProfile={post.member_id === currentUser?.id} onLike={() => {}} onComment={() => {}} onSave={() => {}} onDelete={() => queryClient.invalidateQueries({ queryKey: ['posts'] })} friends={friends} sentFriendRequests={sentFriendRequests} onAddFriend={(user) => addFriendMutation.mutate(user)} />
               ))}
