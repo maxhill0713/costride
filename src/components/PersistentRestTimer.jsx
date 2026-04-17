@@ -294,6 +294,7 @@ export default function PersistentRestTimer({ isActive, restTimer, initialRestTi
   const todayWorkout = timerWorkout;
   const isLandscape  = useIsLandscape();
 
+  // CHANGED: expanded now starts true when openTimerBar fires (open fullscreen directly)
   const [expanded, setExpanded]             = useState(false);
   const [barVisible, setBarVisible]         = useState(false);
   const [paused, setPaused]                 = useState(false);
@@ -317,9 +318,11 @@ export default function PersistentRestTimer({ isActive, restTimer, initialRestTi
 
   useEffect(() => { injectPulseStyles(); }, []);
 
+  // CHANGED: openTimerBar now opens fullscreen directly (setExpanded(true)) and shows bar
   useEffect(() => {
     if (openTimerBar) {
-      setBarVisible(v => !v);
+      setBarVisible(true);
+      setExpanded(true);
       setOpenTimerBar(false);
     }
   }, [openTimerBar]);
@@ -341,7 +344,6 @@ export default function PersistentRestTimer({ isActive, restTimer, initialRestTi
     return window._timerAudioCtx;
   };
 
-  // Drawn-out diing — longer attack, slower decay ~1.2s for a resonant bell tone
   const playBell = (delay = 0) => {
     try {
       const ctx = getAudioCtx();
@@ -354,15 +356,14 @@ export default function PersistentRestTimer({ isActive, restTimer, initialRestTi
         osc.type = 'sine';
         osc.frequency.value = 880 * harmonic;
         gain.gain.setValueAtTime(0.0, t0);
-        gain.gain.linearRampToValueAtTime(0.13 / (i + 1), t0 + 0.025); // slightly slower attack
-        gain.gain.exponentialRampToValueAtTime(0.001, t0 + 1.4);        // long resonant decay
+        gain.gain.linearRampToValueAtTime(0.13 / (i + 1), t0 + 0.025);
+        gain.gain.exponentialRampToValueAtTime(0.001, t0 + 1.4);
         osc.start(t0);
         osc.stop(t0 + 1.5);
       });
     } catch (e) {}
   };
 
-  // Triple diing — wider spacing so each bell has room to ring out before the next
   const playTripleBell = () => {
     playBell(0);
     playBell(0.55);
@@ -399,12 +400,10 @@ export default function PersistentRestTimer({ isActive, restTimer, initialRestTi
     } catch (e) {}
   };
 
-  // Triple bell when cardio first starts
   useEffect(() => {
     if (isActive && !paused && cardioMode) playTripleBell();
   }, [isActive]);
 
-  // Bell at start of each new segment, clap at 10s warning
   const prevSegIdxRef = useRef(null);
   const prevTRef      = useRef(null);
 
@@ -424,7 +423,6 @@ export default function PersistentRestTimer({ isActive, restTimer, initialRestTi
     if (prev !== null && prev === 1 && t === 0) playBell();
   }, [t, isActive, cardioMode, currentSegIdx]);
 
-  // Detect segment finish / overall finish
   useEffect(() => {
     if (t === 0 && isActive && finishedAtRef.current === null) {
       if (cardioMode && currentSegIdx < cardioSegments.length - 1) {
@@ -471,7 +469,6 @@ export default function PersistentRestTimer({ isActive, restTimer, initialRestTi
     }
   }, [t, isActive]);
 
-  // Smooth arc via RAF
   useEffect(() => {
     if (rafRef.current) cancelAnimationFrame(rafRef.current);
     if (!isActive || t === 0 || paused) {
@@ -494,7 +491,6 @@ export default function PersistentRestTimer({ isActive, restTimer, initialRestTi
   const isFinished    = t === 0 && isActive;
   const isRestSegment = cardioMode && cardioSegments[currentSegIdx]?.type === 'rest';
 
-  // Pulse red↔blue on normal rest timer AND cardio work segments; green pulse only on cardio rest segments
   const isRestWarning = isWarning && isRestSegment;
   const isPulsing     = isWarning && !isRestSegment;
 
@@ -504,10 +500,9 @@ export default function PersistentRestTimer({ isActive, restTimer, initialRestTi
 
   const cardioExercises = todayWorkout?.cardio || [];
   const currentSeg      = cardioMode && cardioSegments[currentSegIdx];
-  const displayTitle    = cardioMode ? cardioTitle : 'Timer';
+  const displayTitle    = cardioMode ? cardioTitle : 'Rest Timer';
   const timerActive     = isActive || paused;
 
-  // Fullscreen background
   const staticBg = (() => {
     if (isRestWarning || isPulsing) return undefined;
     if (isRestSegment) return 'linear-gradient(to bottom, #14532d, #166534, #052e16)';
@@ -543,7 +538,6 @@ export default function PersistentRestTimer({ isActive, restTimer, initialRestTi
     cardioDurationRef.current = calcCardioDuration(c);
   };
 
-  // Cancel cardio selection — go back to normal rest timer
   const handleCancelCardio = () => {
     setCardioMode(false);
     setCardioSegments([]);
@@ -563,6 +557,7 @@ export default function PersistentRestTimer({ isActive, restTimer, initialRestTi
     onTimerStateChange(true);
   };
 
+  // CHANGED: handleCloseAll hides both fullscreen and bar
   const handleCloseAll = () => {
     onTimerStateChange(false);
     onTimerValueChange('');
@@ -611,16 +606,64 @@ export default function PersistentRestTimer({ isActive, restTimer, initialRestTi
 
   if (!barVisible && !isActive && !showFinished && !showCompletion) return null;
 
-  const barAdjBtnStyle = {
-    position: 'relative', zIndex: 1,
-    width: 36, height: 36, borderRadius: 10,
-    border: 'none', cursor: 'pointer',
-    fontSize: 20, fontWeight: 700, color: '#fff',
-    background: 'linear-gradient(to bottom, #3b82f6, #2563eb)',
-    display: 'flex', alignItems: 'center', justifyContent: 'center',
-    boxShadow: '0 3px 0 0 #1a3fa8, inset 0 1px 0 rgba(255,255,255,0.15)',
-    transition: 'transform 0.08s, box-shadow 0.08s',
-  };
+  // ── Rest timer controls (time display + −/+ adjusters) used in fullscreen ──
+  // CHANGED: moved out of bar into fullscreen, sat between Go button and cardio list
+  const RestTimerControls = () => (
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, marginTop: 16 }}>
+      {/* Minus */}
+      <div style={{ position: 'relative' }}>
+        <div style={{ position: 'absolute', inset: 0, borderRadius: 10, background: '#1a3fa8', transform: 'translateY(3px)' }} />
+        <button
+          onClick={() => onTimerValueChange(Math.max(10, (parseInt(restTimer) || 90) - 10))}
+          style={{
+            position: 'relative', zIndex: 1,
+            width: 44, height: 44, borderRadius: 10,
+            border: 'none', cursor: 'pointer',
+            fontSize: 22, fontWeight: 700, color: '#fff',
+            background: 'linear-gradient(to bottom, #3b82f6, #2563eb)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            boxShadow: '0 3px 0 0 #1a3fa8, inset 0 1px 0 rgba(255,255,255,0.15)',
+            transition: 'transform 0.08s, box-shadow 0.08s',
+          }}
+          onPointerDown={e => { e.currentTarget.style.transform = 'translateY(3px)'; e.currentTarget.style.boxShadow = 'none'; }}
+          onPointerUp={e => { e.currentTarget.style.transform = ''; e.currentTarget.style.boxShadow = '0 3px 0 0 #1a3fa8, inset 0 1px 0 rgba(255,255,255,0.15)'; }}
+          onPointerLeave={e => { e.currentTarget.style.transform = ''; e.currentTarget.style.boxShadow = '0 3px 0 0 #1a3fa8, inset 0 1px 0 rgba(255,255,255,0.15)'; }}>
+          −
+        </button>
+      </div>
+
+      {/* Time display */}
+      <span style={{
+        fontWeight: 900, fontSize: 32, color: '#e2e8f0',
+        minWidth: 72, textAlign: 'center', fontVariantNumeric: 'tabular-nums',
+        letterSpacing: '-0.02em',
+      }}>
+        {fmt(parseInt(restTimer) || 90)}
+      </span>
+
+      {/* Plus */}
+      <div style={{ position: 'relative' }}>
+        <div style={{ position: 'absolute', inset: 0, borderRadius: 10, background: '#1a3fa8', transform: 'translateY(3px)' }} />
+        <button
+          onClick={() => onTimerValueChange((parseInt(restTimer) || 90) + 10)}
+          style={{
+            position: 'relative', zIndex: 1,
+            width: 44, height: 44, borderRadius: 10,
+            border: 'none', cursor: 'pointer',
+            fontSize: 22, fontWeight: 700, color: '#fff',
+            background: 'linear-gradient(to bottom, #3b82f6, #2563eb)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            boxShadow: '0 3px 0 0 #1a3fa8, inset 0 1px 0 rgba(255,255,255,0.15)',
+            transition: 'transform 0.08s, box-shadow 0.08s',
+          }}
+          onPointerDown={e => { e.currentTarget.style.transform = 'translateY(3px)'; e.currentTarget.style.boxShadow = 'none'; }}
+          onPointerUp={e => { e.currentTarget.style.transform = ''; e.currentTarget.style.boxShadow = '0 3px 0 0 #1a3fa8, inset 0 1px 0 rgba(255,255,255,0.15)'; }}
+          onPointerLeave={e => { e.currentTarget.style.transform = ''; e.currentTarget.style.boxShadow = '0 3px 0 0 #1a3fa8, inset 0 1px 0 rgba(255,255,255,0.15)'; }}>
+          +
+        </button>
+      </div>
+    </div>
+  );
 
   // Cardio routines list (reused in both portrait + landscape)
   const CardioRouteList = ({ compact = false }) =>
@@ -675,7 +718,7 @@ export default function PersistentRestTimer({ isActive, restTimer, initialRestTi
               overflow: 'hidden',
             }}>
 
-            {/* ── Top-left X: close fullscreen AND bar — no box ── */}
+            {/* CHANGED: Top-left × — closes everything (fullscreen + bar) */}
             <button
               onClick={handleCloseAll}
               style={{
@@ -689,7 +732,7 @@ export default function PersistentRestTimer({ isActive, restTimer, initialRestTi
               <X style={{ width: 22, height: 22 }} />
             </button>
 
-            {/* ── Top-right chevron: collapse to bar only ── */}
+            {/* CHANGED: Top-right chevron — collapse to bar only (not close entirely) */}
             <button onClick={() => setExpanded(false)}
               style={{
                 position: 'absolute', top: 16, right: 16, zIndex: 10,
@@ -712,7 +755,7 @@ export default function PersistentRestTimer({ isActive, restTimer, initialRestTi
                     {roundLabel}
                   </p>
                 )}
-                {/* Circle — same size for both rest and cardio mode */}
+                {/* Circle */}
                 <div style={{ position: 'relative', width: 248, height: 248, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'visible' }}>
                   {cardioMode && cardioSegments.length > 1
                     ? <SegmentedArc segments={cardioSegments} currentSegIdx={currentSegIdx} smoothProgress={smoothProgress} radius={96} />
@@ -723,13 +766,12 @@ export default function PersistentRestTimer({ isActive, restTimer, initialRestTi
                 </div>
 
                 {/* Buttons — portrait */}
-                <div style={{ marginTop: 32, marginBottom: 32, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10, width: 154 }}>
+                <div style={{ marginTop: 32, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10, width: 154 }}>
                   {!timerActive ? (
                     <>
                       <PressBtn onClick={handleGo} bg="linear-gradient(to bottom, #22c55e, #16a34a, #15803d)" shadow="#14532d" style={{ width: '100%', height: 56 }}>
                         Go
                       </PressBtn>
-                      {/* Cancel button — only shown when cardio routine has been selected */}
                       {cardioMode && (
                         <PressBtn
                           onClick={handleCancelCardio}
@@ -754,9 +796,15 @@ export default function PersistentRestTimer({ isActive, restTimer, initialRestTi
                     </>
                   )}
                 </div>
-                {/* Cardio routines — portrait bottom-left */}
+
+                {/* CHANGED: Rest timer time-adjust controls shown between Go button area and cardio list, only when not active and not cardio mode */}
+                {!timerActive && !cardioMode && (
+                  <RestTimerControls />
+                )}
+
+                {/* CHANGED: Cardio routines list below rest timer controls (or below Go if cardio selected) */}
                 {!cardioMode && (
-                  <div style={{ position: 'absolute', bottom: 44, left: 24, maxWidth: '44%' }}>
+                  <div style={{ marginTop: 24, width: '80%', maxWidth: 280 }}>
                     <CardioRouteList />
                   </div>
                 )}
@@ -767,7 +815,6 @@ export default function PersistentRestTimer({ isActive, restTimer, initialRestTi
             {isLandscape && (
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flex: 1, position: 'relative' }}>
 
-                {/* Title + round label — above the circle, shifted slightly up */}
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, marginBottom: 8, marginTop: -16 }}>
                   <p style={{ fontSize: cardioMode ? 22 : 18, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', margin: 0, color: staticText, animation: textAnimation }}>
                     {isFinished ? 'Done!' : displayTitle}
@@ -779,7 +826,7 @@ export default function PersistentRestTimer({ isActive, restTimer, initialRestTi
                   )}
                 </div>
 
-                {/* Circle — centred, same large size as portrait */}
+                {/* Circle */}
                 <div style={{ position: 'relative', width: 248, height: 248, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'visible' }}>
                   {cardioMode && cardioSegments.length > 1
                     ? <SegmentedArc segments={cardioSegments} currentSegIdx={currentSegIdx} smoothProgress={smoothProgress} radius={96} />
@@ -789,7 +836,14 @@ export default function PersistentRestTimer({ isActive, restTimer, initialRestTi
                   </span>
                 </div>
 
-                {/* Buttons — bottom-right corner, stacked, not touching edges */}
+                {/* CHANGED: Rest controls shown in landscape between circle and bottom-right buttons area when not active */}
+                {!timerActive && !cardioMode && (
+                  <div style={{ marginTop: 12 }}>
+                    <RestTimerControls />
+                  </div>
+                )}
+
+                {/* Buttons — bottom-right corner */}
                 <div style={{
                   position: 'absolute',
                   bottom: 20,
@@ -838,90 +892,75 @@ export default function PersistentRestTimer({ isActive, restTimer, initialRestTi
       </AnimatePresence>
 
       {/* ── Persistent bar ── */}
+      {/* CHANGED: simplified bar — left: ×, centre: "Rest Timer" + countdown, right: ↑ chevron */}
       {!expanded && !showCompletion && (
         <div
-          onClick={() => { if (!isFinished) setExpanded(true); }}
           style={{
             position: 'fixed', left: 0, right: 0,
             bottom: 'calc(79px + env(safe-area-inset-bottom))',
             zIndex: 400, padding: '0 14px',
-            height: 72,
+            height: 56,
             display: 'flex', alignItems: 'center',
             background: staticBarBg,
             animation: isPulsing ? `timer-bar-bg-pulse ${PULSE_DURATION}` : 'none',
             borderTop: '1px solid rgba(37,99,235,0.5)',
             boxShadow: '0 -4px 24px rgba(0,0,0,0.35)',
             backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
-            cursor: isFinished ? 'default' : 'pointer',
-            paddingBottom: 8,
+            paddingBottom: 4,
           }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12, width: '100%' }}>
 
-            <button onClick={(e) => { e.stopPropagation(); setExpanded(true); }}
-              style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4, flexShrink: 0, display: 'flex', alignItems: 'center' }}>
-              <ChevronUp style={{ width: 20, height: 20, color: staticText }} />
-            </button>
+          {/* CHANGED: Left side — × closes everything */}
+          <button
+            onClick={handleCloseAll}
+            style={{
+              background: 'none', border: 'none', cursor: 'pointer',
+              padding: 4, flexShrink: 0,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              color: 'rgba(255,255,255,0.6)',
+              width: 36, height: 36,
+            }}>
+            <X style={{ width: 18, height: 18 }} />
+          </button>
 
-            <span style={{ fontSize: 13, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: staticText, animation: isPulsing ? `timer-text-pulse ${PULSE_DURATION}` : 'none', flexShrink: 0 }}>
-              {isFinished ? 'Done!' : 'Timer'}
+          {/* CHANGED: Centre — title + live countdown (tapping expands to fullscreen) */}
+          <button
+            onClick={() => setExpanded(true)}
+            style={{
+              flex: 1, display: 'flex', flexDirection: 'column',
+              alignItems: 'center', justifyContent: 'center',
+              background: 'none', border: 'none', cursor: isFinished ? 'default' : 'pointer',
+              gap: 1,
+            }}>
+            <span style={{
+              fontSize: 10, fontWeight: 800, textTransform: 'uppercase',
+              letterSpacing: '0.1em', color: staticText,
+              animation: isPulsing ? `timer-text-pulse ${PULSE_DURATION}` : 'none',
+              lineHeight: 1,
+            }}>
+              {isFinished ? 'Done!' : displayTitle}
             </span>
+            <span style={{
+              fontWeight: 900, fontSize: 22, fontVariantNumeric: 'tabular-nums',
+              color: isActive ? staticAccent : '#e2e8f0',
+              lineHeight: 1,
+              animation: isPulsing ? `timer-text-pulse ${PULSE_DURATION}` : 'none',
+            }}>
+              {isActive ? fmt(t) : fmt(parseInt(restTimer) || 90)}
+            </span>
+          </button>
 
-            <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }} onClick={e => e.stopPropagation()}>
-              {isActive ? (
-                <span style={{ fontWeight: 900, fontSize: 26, fontVariantNumeric: 'tabular-nums', color: staticAccent, lineHeight: '36px', animation: isPulsing ? `timer-text-pulse ${PULSE_DURATION}` : 'none' }}>
-                  {fmt(t)}
-                </span>
-              ) : (
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <div style={{ position: 'relative' }}>
-                    <div style={{ position: 'absolute', inset: 0, borderRadius: 10, background: '#1a3fa8', transform: 'translateY(3px)' }} />
-                    <button
-                      onClick={() => onTimerValueChange(Math.max(10, (parseInt(restTimer) || 90) - 10))}
-                      style={{ ...barAdjBtnStyle }}
-                      onPointerDown={e => { e.currentTarget.style.transform = 'translateY(3px)'; e.currentTarget.style.boxShadow = 'none'; }}
-                      onPointerUp={e => { e.currentTarget.style.transform = ''; e.currentTarget.style.boxShadow = '0 3px 0 0 #1a3fa8, inset 0 1px 0 rgba(255,255,255,0.15)'; }}
-                      onPointerLeave={e => { e.currentTarget.style.transform = ''; e.currentTarget.style.boxShadow = '0 3px 0 0 #1a3fa8, inset 0 1px 0 rgba(255,255,255,0.15)'; }}>
-                      −
-                    </button>
-                  </div>
-                  <span style={{ fontWeight: 900, fontSize: 26, color: '#e2e8f0', minWidth: 52, textAlign: 'center', fontVariantNumeric: 'tabular-nums' }}>
-                    {fmt(parseInt(restTimer) || 90)}
-                  </span>
-                  <div style={{ position: 'relative' }}>
-                    <div style={{ position: 'absolute', inset: 0, borderRadius: 10, background: '#1a3fa8', transform: 'translateY(3px)' }} />
-                    <button
-                      onClick={() => onTimerValueChange((parseInt(restTimer) || 90) + 10)}
-                      style={{ ...barAdjBtnStyle }}
-                      onPointerDown={e => { e.currentTarget.style.transform = 'translateY(3px)'; e.currentTarget.style.boxShadow = 'none'; }}
-                      onPointerUp={e => { e.currentTarget.style.transform = ''; e.currentTarget.style.boxShadow = '0 3px 0 0 #1a3fa8, inset 0 1px 0 rgba(255,255,255,0.15)'; }}
-                      onPointerLeave={e => { e.currentTarget.style.transform = ''; e.currentTarget.style.boxShadow = '0 3px 0 0 #1a3fa8, inset 0 1px 0 rgba(255,255,255,0.15)'; }}>
-                      +
-                    </button>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            <button
-              onClick={(e) => { e.stopPropagation(); isActive ? handleStop() : handleGo(); }}
-              style={{
-                height: 38, padding: '0 18px', borderRadius: 10,
-                color: '#fff', fontWeight: 700, fontSize: 13,
-                border: 'none', cursor: 'pointer',
-                background: isActive
-                  ? 'linear-gradient(to bottom, rgba(239,68,68,0.9), rgba(185,28,28,0.9))'
-                  : 'linear-gradient(to bottom, #22c55e, #16a34a)',
-                boxShadow: isActive ? '0 3px 0 0 #7f1d1d' : '0 3px 0 0 #14532d',
-                animation: isPulsing ? `timer-stop-pulse ${PULSE_DURATION}` : 'none',
-                flexShrink: 0,
-                transition: 'transform 0.08s ease, box-shadow 0.08s ease',
-              }}
-              onPointerDown={e => { e.currentTarget.style.transform = 'translateY(3px)'; e.currentTarget.style.boxShadow = 'none'; }}
-              onPointerUp={e => { e.currentTarget.style.transform = ''; }}
-              onPointerLeave={e => { e.currentTarget.style.transform = ''; }}>
-              {isActive ? 'Stop' : 'Go'}
-            </button>
-          </div>
+          {/* CHANGED: Right side — ↑ chevron expands to fullscreen */}
+          <button
+            onClick={() => setExpanded(true)}
+            style={{
+              background: 'none', border: 'none', cursor: 'pointer',
+              padding: 4, flexShrink: 0,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              color: 'rgba(255,255,255,0.6)',
+              width: 36, height: 36,
+            }}>
+            <ChevronUp style={{ width: 20, height: 20 }} />
+          </button>
         </div>
       )}
     </>
