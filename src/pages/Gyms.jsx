@@ -73,6 +73,7 @@ export default function Gyms() {
   const [confirmLeaveGym, setConfirmLeaveGym] = useState(null);
   const [showConfirmJoin, setShowConfirmJoin] = useState(false);
   const [pendingGymData, setPendingGymData] = useState(null);
+  const [showGymLimitModal, setShowGymLimitModal] = useState(false);
   const queryClient = useQueryClient();
 
   const prefetchGymData = (gymId) => {
@@ -205,7 +206,7 @@ export default function Gyms() {
 
   const handleCreateGym = async () => {
     if (!selectedPlaceGym) return;
-    if (gymMemberships.length >= 3 && !isOwner) { alert('You can only be a member of up to 3 gyms.'); return; }
+    if (gymMemberships.length >= 3 && !isOwner) { setShowAddGymModal(false); setShowGymLimitModal(true); return; }
     if (!isOwner) {
       const ghost = gyms.filter(g => g.created_by === currentUser?.email && !g.admin_id && !g.owner_email);
       if (ghost.length >= 3) { alert('You have reached the limit of 3 ghost gyms.'); return; }
@@ -349,7 +350,9 @@ export default function Gyms() {
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
                 <Input placeholder="Search gyms or add new..." value={searchQuery} onChange={e => setSearchQuery(sanitiseGymSearch(e.target.value))} maxLength={60} autoComplete="off" autoCorrect="off" spellCheck="false" style={{ fontSize: '16px' }} className="h-9 pl-10 pr-10 bg-white/10 border border-white/20 hover:border-white/40 focus-visible:outline-none focus-visible:border-blue-400 focus-visible:bg-white/15 text-white placeholder:text-slate-300 rounded-xl transition-all duration-200 w-full" />
-                {searchingPlaces && <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-blue-400 animate-spin" />}
+                {searchingPlaces && (
+                  <div className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 border-2 border-blue-400/30 border-t-blue-400 rounded-full" style={{ animation: 'spin 0.7s linear infinite' }} />
+                )}
               </div>
               <button onClick={() => setShowFilterModal(true)} className="relative flex-shrink-0 w-11 h-9 rounded-xl flex items-center justify-center border transition-all bg-white/10 border-white/20 hover:border-white/40 text-slate-400">
                 <Filter className="w-5 h-5" />
@@ -552,6 +555,19 @@ export default function Gyms() {
                 <div className="flex flex-wrap gap-2">{[['all','All'],['Power Racks','Power Racks'],['Barbells','Barbells'],['Dumbbells','Dumbbells'],['Cable Machines','Cables'],['Cardio Equipment','Cardio'],['Olympic Platforms','Olympic']].map(([val,label]) => <button key={val} onClick={() => setSelectedEquipment(val)} className={`px-3 py-1.5 rounded-xl text-sm font-semibold transition-all ${selectedEquipment===val?'bg-blue-600 text-white':'bg-slate-700/60 text-slate-300 hover:bg-slate-700'}`}>{label}</button>)}</div>
               </div>
             </div>
+          </div>
+        </>
+      )}
+
+      {showGymLimitModal && (
+        <>
+          <div className="fixed inset-0 z-[10003] bg-slate-950/60 backdrop-blur-sm" onClick={() => setShowGymLimitModal(false)} />
+          <div className="fixed left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2 w-[calc(100%-2rem)] max-w-[360px] z-[10004] bg-slate-900/80 backdrop-blur-md border border-slate-700/30 rounded-3xl shadow-2xl shadow-black/40 text-white p-6">
+            <h3 className="text-xl font-black text-white mb-2">Gym Limit Reached</h3>
+            <p className="text-slate-300 text-sm mb-6">You can only be a member of up to 3 gyms at once. Please leave one of your current gyms before joining a new one.</p>
+            <button onClick={() => setShowGymLimitModal(false)} className="w-full py-2.5 rounded-xl font-bold text-sm text-slate-200 bg-gradient-to-b from-slate-600 via-slate-700 to-slate-800 border border-slate-500/40 shadow-[0_3px_0_0_#1e293b,0_6px_16px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.08)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 transform-gpu">
+              Got it
+            </button>
           </div>
         </>
       )}
