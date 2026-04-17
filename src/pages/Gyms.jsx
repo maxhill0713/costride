@@ -71,6 +71,7 @@ export default function Gyms() {
   const [showPrimaryGymModal, setShowPrimaryGymModal] = useState(false);
   const [selectedPrimaryGym, setSelectedPrimaryGym] = useState(null);
   const [confirmLeaveGym, setConfirmLeaveGym] = useState(null);
+  const [showGymLimitModal, setShowGymLimitModal] = useState(false);
   const [showConfirmJoin, setShowConfirmJoin] = useState(false);
   const [pendingGymData, setPendingGymData] = useState(null);
   const queryClient = useQueryClient();
@@ -205,10 +206,10 @@ export default function Gyms() {
 
   const handleCreateGym = async () => {
     if (!selectedPlaceGym) return;
-    if (gymMemberships.length >= 3 && !isOwner) { alert('You can only be a member of up to 3 gyms.'); return; }
+    if (gymMemberships.length >= 3 && !isOwner) { setShowAddGymModal(false); setShowGymLimitModal(true); return; }
     if (!isOwner) {
       const ghost = gyms.filter(g => g.created_by === currentUser?.email && !g.admin_id && !g.owner_email);
-      if (ghost.length >= 3) { alert('You have reached the limit of 3 ghost gyms.'); return; }
+      if (ghost.length >= 3) { setShowAddGymModal(false); setShowGymLimitModal(true); return; }
     }
     const parts = selectedPlaceGym.address.split(',');
     const city = parts.length >= 2 ? parts[parts.length - 2].trim() : selectedPlaceGym.address;
@@ -530,6 +531,25 @@ export default function Gyms() {
         </>
       )}
 
+      {showGymLimitModal && (
+        <>
+          <div className="fixed inset-0 z-[10003] bg-slate-950/60 backdrop-blur-sm" onClick={() => setShowGymLimitModal(false)} />
+          <div className="fixed left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2 w-[calc(100%-2rem)] max-w-[360px] z-[10004] bg-slate-900/90 backdrop-blur-md border border-slate-700/30 rounded-3xl shadow-2xl shadow-black/40 text-white overflow-hidden">
+            <div className="h-1.5 w-full bg-gradient-to-r from-amber-400 via-orange-400 to-amber-500" />
+            <div className="p-6">
+              <div className="w-12 h-12 rounded-2xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center mb-4 mx-auto">
+                <Users className="w-6 h-6 text-amber-400" />
+              </div>
+              <h3 className="text-xl font-black text-white text-center mb-2">Gym Limit Reached</h3>
+              <p className="text-slate-300 text-sm text-center mb-6 leading-relaxed">You can only be a member of up to <span className="font-bold text-white">3 gyms</span>. Leave a gym first before joining a new one.</p>
+              <button onClick={() => setShowGymLimitModal(false)} className="w-full py-3 rounded-xl font-bold text-sm text-white bg-gradient-to-b from-slate-600 via-slate-700 to-slate-800 border border-slate-500/40 shadow-[0_3px_0_0_#1e293b,inset_0_1px_0_rgba(255,255,255,0.08)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 transform-gpu">
+                Got it
+              </button>
+            </div>
+          </div>
+        </>
+      )}
+
       {showFilterModal && (
         <>
           <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm" onClick={() => setShowFilterModal(false)} />
@@ -557,49 +577,63 @@ export default function Gyms() {
       )}
 
       <Dialog open={showAddGymModal} onOpenChange={() => { setShowAddGymModal(false); setSelectedPlaceGym(null); setIsOwner(false); setGymType('general'); }}>
-        <DialogContent className="fixed left-[50%] top-[50%] z-50 grid w-full translate-x-[-50%] translate-y-[-50%] gap-4 p-6 max-w-lg max-h-[80vh] overflow-y-auto [&>button]:hidden bg-slate-800/30 backdrop-blur-md border border-slate-700/20 rounded-3xl shadow-2xl shadow-black/20 text-white">
-          <DialogHeader><DialogTitle className="text-xl font-bold">Add Gym to CoStride</DialogTitle></DialogHeader>
-          {selectedPlaceGym && (
-            <div className="space-y-4">
-              <div className="bg-slate-800/60 border border-slate-700/40 rounded-xl overflow-hidden">
-                {selectedPlaceGym.photo_url && (
-                  <img src={selectedPlaceGym.photo_url} alt={selectedPlaceGym.name} className="w-full h-40 object-cover" />
-                )}
-                <div className="flex items-start gap-3 p-4">
-                  <div className="flex-1">
-                    <h3 className="font-bold text-white text-lg mb-1">{selectedPlaceGym.name}</h3>
-                    <div className="flex items-start gap-2 text-slate-300 text-sm mb-2"><MapPin className="w-4 h-4 flex-shrink-0 mt-0.5" /><span>{selectedPlaceGym.address}</span></div>
-                    {selectedPlaceGym.rating && <div className="flex items-center gap-1"><Star className="w-4 h-4 fill-yellow-400 text-yellow-400" /><span className="text-slate-300 text-sm">{selectedPlaceGym.rating} rating</span></div>}
-                  </div>
-                </div>
+        <DialogContent className="fixed left-[50%] top-[50%] z-50 flex flex-col w-full translate-x-[-50%] translate-y-[-50%] p-0 max-w-lg max-h-[85vh] overflow-hidden [&>button]:hidden bg-slate-900/95 backdrop-blur-md border border-slate-700/20 rounded-3xl shadow-2xl shadow-black/40 text-white">
+          {/* Hero image */}
+          {selectedPlaceGym?.photo_url && (
+            <div className="relative w-full h-44 flex-shrink-0 overflow-hidden rounded-t-3xl">
+              <img src={selectedPlaceGym.photo_url} alt={selectedPlaceGym?.name} className="w-full h-full object-cover" />
+              <div className="absolute inset-0 bg-gradient-to-t from-slate-900/90 via-slate-900/20 to-transparent" />
+              <div className="absolute bottom-3 left-4 right-4">
+                <h3 className="font-black text-white text-xl leading-tight">{selectedPlaceGym?.name}</h3>
               </div>
-              <div>
-                <label className="text-slate-300 text-sm font-semibold mb-2 block">Gym Type</label>
-                <Select value={gymType} onValueChange={setGymType}>
-                  <SelectTrigger className="bg-slate-800/60 border-slate-600/40 text-white"><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="general">General Fitness</SelectItem><SelectItem value="powerlifting">Powerlifting</SelectItem><SelectItem value="bodybuilding">Bodybuilding</SelectItem><SelectItem value="crossfit">CrossFit</SelectItem><SelectItem value="boxing">Boxing</SelectItem><SelectItem value="mma">MMA</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              {currentUser?.account_type === 'gym_owner' && (
-                <div className="bg-gradient-to-r from-purple-500/20 to-pink-500/20 border-2 border-purple-400/40 rounded-xl p-3">
-                  <label className="flex items-start gap-3 cursor-pointer">
-                    <input type="checkbox" checked={isOwner} onChange={e => setIsOwner(e.target.checked)} className="mt-1 w-5 h-5 rounded border-purple-400 text-purple-600 focus:ring-purple-500" />
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-1"><span className="text-white font-semibold text-sm">I am the owner/manager of this gym</span><Crown className="w-4 h-4 text-purple-400" /></div>
-                      <p className="text-slate-300 text-xs">Check this if you own or manage this gym.</p>
-                    </div>
-                  </label>
-                </div>
-              )}
-              <Button onClick={handleCreateGym} disabled={createGymMutation.isPending} className="w-full bg-gradient-to-b from-green-400 via-green-500 to-green-600 text-white rounded-xl font-bold py-6 text-base shadow-[0_4px_0_0_#065f46,inset_0_1px_0_rgba(255,255,255,0.2)] active:shadow-none active:translate-y-[3px] active:scale-[0.98] transform-gpu">
-                {createGymMutation.isPending ? <Loader2 className="w-5 h-5 animate-spin mr-2" /> : <CheckCircle className="w-5 h-5 mr-2" />}
-                {isOwner ? 'Claim & Add Gym' : 'Add Gym'}
-              </Button>
-              {isOwner && <div className="bg-blue-500/10 border border-blue-400/30 rounded-xl p-3"><p className="text-blue-300 text-xs text-center">✓ Your gym will be marked as verified and you'll become the admin</p></div>}
             </div>
           )}
+          <div className="flex-1 overflow-y-auto p-5 space-y-4">
+            {!selectedPlaceGym?.photo_url && (
+              <DialogHeader><DialogTitle className="text-xl font-bold">{selectedPlaceGym?.name || 'Add Gym to CoStride'}</DialogTitle></DialogHeader>
+            )}
+            {selectedPlaceGym && (
+              <>
+                <div className="flex items-start gap-2 text-slate-300 text-sm">
+                  <MapPin className="w-4 h-4 flex-shrink-0 mt-0.5 text-slate-400" />
+                  <span>{selectedPlaceGym.address}</span>
+                </div>
+                {selectedPlaceGym.rating && (
+                  <div className="flex items-center gap-1">
+                    <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                    <span className="text-slate-300 text-sm font-semibold">{selectedPlaceGym.rating} rating</span>
+                  </div>
+                )}
+                <div>
+                  <label className="text-slate-400 text-xs font-bold uppercase tracking-widest mb-2 block">Gym Type</label>
+                  <Select value={gymType} onValueChange={setGymType}>
+                    <SelectTrigger className="bg-slate-800/60 border-slate-600/40 text-white"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="general">General Fitness</SelectItem><SelectItem value="powerlifting">Powerlifting</SelectItem><SelectItem value="bodybuilding">Bodybuilding</SelectItem><SelectItem value="crossfit">CrossFit</SelectItem><SelectItem value="boxing">Boxing</SelectItem><SelectItem value="mma">MMA</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                {currentUser?.account_type === 'gym_owner' && (
+                  <div className="bg-gradient-to-r from-purple-500/20 to-pink-500/20 border-2 border-purple-400/40 rounded-xl p-3">
+                    <label className="flex items-start gap-3 cursor-pointer">
+                      <input type="checkbox" checked={isOwner} onChange={e => setIsOwner(e.target.checked)} className="mt-1 w-5 h-5 rounded border-purple-400 text-purple-600 focus:ring-purple-500" />
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-1"><span className="text-white font-semibold text-sm">I am the owner/manager of this gym</span><Crown className="w-4 h-4 text-purple-400" /></div>
+                        <p className="text-slate-300 text-xs">Check this if you own or manage this gym.</p>
+                      </div>
+                    </label>
+                  </div>
+                )}
+                {isOwner && <div className="bg-blue-500/10 border border-blue-400/30 rounded-xl p-3"><p className="text-blue-300 text-xs text-center">✓ Your gym will be marked as verified and you'll become the admin</p></div>}
+              </>
+            )}
+          </div>
+          {/* Sticky footer button */}
+          <div className="flex-shrink-0 p-4 border-t border-slate-700/30">
+            <Button onClick={handleCreateGym} disabled={createGymMutation.isPending} className="w-full bg-gradient-to-b from-green-400 via-green-500 to-green-600 text-white rounded-xl font-bold h-12 text-base shadow-[0_4px_0_0_#065f46,inset_0_1px_0_rgba(255,255,255,0.2)] active:shadow-none active:translate-y-[3px] active:scale-[0.98] transform-gpu">
+              {createGymMutation.isPending ? <><Loader2 className="w-5 h-5 animate-spin mr-2" />Adding...</> : <><CheckCircle className="w-5 h-5 mr-2" />{isOwner ? 'Claim & Add Gym' : 'Add Gym'}</>}
+            </Button>
+          </div>
         </DialogContent>
       </Dialog>
     </div>
