@@ -87,21 +87,17 @@ function WorkoutSwitcherModal({ open, onClose, currentUser, activeDayKey, adjust
 
           {/* Revert rest swap — show when today was swapped to rest */}
           {restSwapActive && (
-            <>
-              <button
-                onClick={() => { onSelect(adjustedDay, 'revert-rest-swap'); onClose(); }}
-                className="w-full text-left rounded-2xl border border-blue-500/40 bg-blue-500/10 hover:bg-blue-500/20 transition-all duration-200 px-4 py-3 flex items-center gap-3">
-                <ArrowLeftRight className="w-4 h-4 text-blue-400 flex-shrink-0" />
-                <p className="text-base font-black text-blue-300">Switch back to workout today</p>
-              </button>
-              <div className="border-t border-slate-700/40 pt-1" />
-            </>
+            <button
+              onClick={() => { onSelect(adjustedDay, 'revert-rest-swap'); onClose(); }}
+              className="w-full text-left rounded-2xl border border-blue-500/40 bg-blue-500/10 hover:bg-blue-500/20 transition-all duration-200 px-4 py-3 flex items-center gap-3">
+              <ArrowLeftRight className="w-4 h-4 text-blue-400 flex-shrink-0" />
+              <p className="text-base font-black text-blue-300">Switch today back to a workout</p>
+            </button>
           )}
 
-          {/* Move workout to future rest day — only if today is actually a training day */}
-          {futureRestDaysForSwap.length > 0 && (
+          {/* Move workout to future rest day — only if today is actually a training day (not in rest-swap mode) */}
+          {!restSwapActive && futureRestDaysForSwap.length > 0 && (
             <>
-              <p className="text-xs text-slate-400 font-semibold px-1 pt-1 pb-0.5">Rest today, train later</p>
               {futureRestDaysForSwap.map((d) => (
                 <button
                   key={`swap-rest-${d}`}
@@ -116,7 +112,7 @@ function WorkoutSwitcherModal({ open, onClose, currentUser, activeDayKey, adjust
           )}
 
           {/* Train on rest day (existing credit system) */}
-          {futureFreeRestDays.length > 0 && (
+          {!restSwapActive && futureFreeRestDays.length > 0 && (
             <>
               <p className="text-xs text-slate-400 font-semibold px-1 pt-1 pb-0.5">Make a rest day a training day</p>
               {futureFreeRestDays.map((d) => (
@@ -131,10 +127,10 @@ function WorkoutSwitcherModal({ open, onClose, currentUser, activeDayKey, adjust
             </>
           )}
 
-          {workoutDays.length === 0 && (
+          {!restSwapActive && workoutDays.length === 0 && (
             <p className="text-slate-400 text-sm text-center py-4">No workouts configured yet.</p>
           )}
-          {workoutDays.map((wd) => {
+          {!restSwapActive && workoutDays.map((wd) => {
             const isActive = wd.dayKey === activeDayKey;
             return (
               <button
