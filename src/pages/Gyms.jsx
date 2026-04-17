@@ -369,7 +369,7 @@ export default function Gyms() {
             {!searchingPlaces && searchQuery.length >= 2 && placesResults.length > 0 &&
               <div className="rounded-xl p-3 space-y-2 bg-slate-900/95 border border-slate-800/60 shadow-xl mb-4">
                 <p className="text-xs font-semibold flex items-center gap-2"><Plus className="w-3 h-3 text-green-400" /><span className="text-green-400">Found {placesResults.length} gyms on Google Places</span></p>
-                <div className="space-y-2">
+                <div className="space-y-2 max-h-72 overflow-y-auto">
                   {placesResults.slice(0, 5).map(place => (
                     <button key={place.place_id} onClick={() => handleSelectPlace(place)} className="w-full text-left rounded-xl bg-slate-700/50 border border-slate-600/40 hover:border-green-500/50 hover:bg-slate-700/80 transition-all overflow-hidden">
                       <div className="flex items-stretch">
