@@ -1666,9 +1666,6 @@ export default function GymCommunity() {
                 <div style={{ ...CARD_STYLE, borderRadius: 18, overflow: 'hidden' }}>
                     <div style={{ padding: '13px 14px 11px', borderBottom: '1px solid rgba(255,255,255,0.055)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                        <div style={{ width: 28, height: 28, borderRadius: 9, background: 'rgba(96,165,250,0.15)', border: '1px solid rgba(96,165,250,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                          <GraduationCap style={{ width: 13, height: 13, color: '#60a5fa' }} />
-                        </div>
                         <span style={{ fontSize: 14, fontWeight: 900, color: '#fff', letterSpacing: '-0.01em' }}>Featured Coaches</span>
                       </div>
                       {showOwnerControls &&
