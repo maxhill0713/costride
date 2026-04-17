@@ -37,14 +37,12 @@ function playCircleLevelUp() {
   } catch (_) {}
 }
 
-// Subtle "zuu" anticipation sound — a soft rising sweep just before the streak number pops
 function playStreakAnticipationSound() {
   try {
     const ctx = new (window.AudioContext || window.webkitAudioContext)();
     const now = ctx.currentTime;
     const dur = 0.28;
 
-    // Soft noise whoosh component
     const bufLen = Math.ceil(ctx.sampleRate * dur);
     const buf = ctx.createBuffer(1, bufLen, ctx.sampleRate);
     const data = buf.getChannelData(0);
@@ -68,7 +66,6 @@ function playStreakAnticipationSound() {
     bp.connect(nGain);
     nGain.connect(ctx.destination);
 
-    // Rising tone sweep — soft sine "zuuu"
     const osc = ctx.createOscillator();
     osc.type = 'sine';
     osc.frequency.setValueAtTime(180, now);
@@ -92,13 +89,55 @@ function playStreakAnticipationSound() {
   } catch (_) {}
 }
 
-// Swoosh/whoosh sound as icon expands and fades — no musical tones, just air movement
-function playStreakExplosionSound() {
+// ── NEW: Duolingo-style layered "unlock" ascending aahhhh ──────────────────
+// Three harmonically-related sine voices rise together with a shimmer layer,
+// creating that satisfying "you've unlocked the next level" feeling.
+// Kept subtle — total gain well below clipping.
+function playStreakUnlockSound() {
   try {
     const ctx = new (window.AudioContext || window.webkitAudioContext)();
     const now = ctx.currentTime;
-    const dur = 0.55;
+    const dur = 0.72;
 
+    // ── Master compressor to keep everything tidy ──
+    const comp = ctx.createDynamicsCompressor();
+    comp.threshold.setValueAtTime(-18, now);
+    comp.knee.setValueAtTime(6, now);
+    comp.ratio.setValueAtTime(4, now);
+    comp.attack.setValueAtTime(0.003, now);
+    comp.release.setValueAtTime(0.15, now);
+    comp.connect(ctx.destination);
+
+    const voice = (startFreq, endFreq, startT, voiceDur, gain, type = 'sine') => {
+      const osc = ctx.createOscillator();
+      osc.type = type;
+      osc.frequency.setValueAtTime(startFreq, now + startT);
+      osc.frequency.exponentialRampToValueAtTime(endFreq, now + startT + voiceDur * 0.85);
+
+      const g = ctx.createGain();
+      g.gain.setValueAtTime(0, now + startT);
+      g.gain.linearRampToValueAtTime(gain, now + startT + 0.03);
+      g.gain.setValueAtTime(gain, now + startT + voiceDur * 0.55);
+      g.gain.exponentialRampToValueAtTime(0.001, now + startT + voiceDur);
+
+      osc.connect(g);
+      g.connect(comp);
+      osc.start(now + startT);
+      osc.stop(now + startT + voiceDur + 0.06);
+    };
+
+    // Layer 1 — root voice, rises from mid to high (the main "aah")
+    voice(480,  1520, 0,    dur,        0.22, 'sine');
+    // Layer 2 — fifth above root, slight delay, same sweep (warmth)
+    voice(720,  2280, 0.03, dur - 0.03, 0.14, 'sine');
+    // Layer 3 — octave above root, slightly later (shimmer)
+    voice(960,  3040, 0.07, dur - 0.07, 0.09, 'sine');
+    // Layer 4 — sub-octave triangle for body (barely audible, just warmth)
+    voice(240,  760,  0,    dur,        0.07, 'triangle');
+    // Layer 5 — bright triangle shimmer at top end
+    voice(1440, 4200, 0.10, dur - 0.10, 0.05, 'triangle');
+
+    // Airy noise whoosh — gives the "woooosh" quality behind the tones
     const bufLen = Math.ceil(ctx.sampleRate * dur);
     const buf = ctx.createBuffer(1, bufLen, ctx.sampleRate);
     const data = buf.getChannelData(0);
@@ -109,34 +148,33 @@ function playStreakExplosionSound() {
 
     const bp = ctx.createBiquadFilter();
     bp.type = 'bandpass';
-    bp.frequency.setValueAtTime(600, now);
-    bp.frequency.exponentialRampToValueAtTime(2800, now + dur * 0.5);
-    bp.Q.setValueAtTime(0.8, now);
+    bp.frequency.setValueAtTime(800, now);
+    bp.frequency.exponentialRampToValueAtTime(3600, now + dur * 0.8);
+    bp.Q.setValueAtTime(0.9, now);
 
     const hs = ctx.createBiquadFilter();
     hs.type = 'highshelf';
-    hs.frequency.setValueAtTime(3000, now);
-    hs.gain.setValueAtTime(6, now);
+    hs.frequency.setValueAtTime(4000, now);
+    hs.gain.setValueAtTime(5, now);
 
-    const gainNode = ctx.createGain();
-    gainNode.gain.setValueAtTime(0, now);
-    gainNode.gain.linearRampToValueAtTime(0.45, now + 0.04);
-    gainNode.gain.exponentialRampToValueAtTime(0.001, now + dur);
+    const nGain = ctx.createGain();
+    nGain.gain.setValueAtTime(0, now);
+    nGain.gain.linearRampToValueAtTime(0.08, now + 0.04);
+    nGain.gain.exponentialRampToValueAtTime(0.001, now + dur);
 
     noise.connect(bp);
     bp.connect(hs);
-    hs.connect(gainNode);
-    gainNode.connect(ctx.destination);
+    hs.connect(nGain);
+    nGain.connect(comp);
 
     noise.start(now);
     noise.stop(now + dur + 0.05);
 
     if (navigator.vibrate) navigator.vibrate([15, 10, 40]);
-    setTimeout(() => ctx.close(), 800);
+    setTimeout(() => ctx.close(), 1000);
   } catch (_) {}
 }
 
-// Light swoosh for the icon sliding down — subtle, airy, brief
 function playIconSlideDownSound() {
   try {
     const ctx = new (window.AudioContext || window.webkitAudioContext)();
@@ -151,7 +189,6 @@ function playIconSlideDownSound() {
     const noise = ctx.createBufferSource();
     noise.buffer = buf;
 
-    // Descending bandpass — reflects downward motion
     const bp = ctx.createBiquadFilter();
     bp.type = 'bandpass';
     bp.frequency.setValueAtTime(2200, now);
@@ -175,7 +212,6 @@ function playIconSlideDownSound() {
   } catch (_) {}
 }
 
-// Challenge fill sound — slightly more subtle version of the original
 function playChallengeProgressSound(idx = 0) {
   try {
     const ctx = new (window.AudioContext || window.webkitAudioContext)();
@@ -196,10 +232,9 @@ function playChallengeProgressSound(idx = 0) {
     nbp.frequency.exponentialRampToValueAtTime(2200 + idx * 200, now + dur * 0.85);
     nbp.Q.setValueAtTime(1.2, now);
 
-    // Reduced gain — more subtle
     const nGain = ctx.createGain();
     nGain.gain.setValueAtTime(0, now);
-    nGain.gain.linearRampToValueAtTime(0.10, now + 0.05);  // was 0.18
+    nGain.gain.linearRampToValueAtTime(0.10, now + 0.05);
     nGain.gain.exponentialRampToValueAtTime(0.001, now + dur);
 
     noise.connect(nbp);
@@ -213,10 +248,9 @@ function playChallengeProgressSound(idx = 0) {
     osc.frequency.setValueAtTime(startFreq, now);
     osc.frequency.exponentialRampToValueAtTime(endFreq, now + dur * 0.9);
 
-    // Reduced gain — more subtle
     const oGain = ctx.createGain();
     oGain.gain.setValueAtTime(0, now);
-    oGain.gain.linearRampToValueAtTime(0.13, now + 0.06);  // was 0.22
+    oGain.gain.linearRampToValueAtTime(0.13, now + 0.06);
     oGain.gain.setValueAtTime(0.13, now + dur * 0.75);
     oGain.gain.exponentialRampToValueAtTime(0.001, now + dur);
 
@@ -228,10 +262,9 @@ function playChallengeProgressSound(idx = 0) {
     osc2.frequency.setValueAtTime(startFreq * 1.5, now);
     osc2.frequency.exponentialRampToValueAtTime(endFreq * 1.5, now + dur * 0.9);
 
-    // Reduced gain — more subtle
     const oGain2 = ctx.createGain();
     oGain2.gain.setValueAtTime(0, now);
-    oGain2.gain.linearRampToValueAtTime(0.055, now + 0.08);  // was 0.10
+    oGain2.gain.linearRampToValueAtTime(0.055, now + 0.08);
     oGain2.gain.exponentialRampToValueAtTime(0.001, now + dur * 0.92);
 
     osc2.connect(oGain2);
@@ -244,12 +277,10 @@ function playChallengeProgressSound(idx = 0) {
     osc2.start(now);
     osc2.stop(now + dur + 0.05);
 
-    // No vibrate for challenge bars — keep it subtle
     setTimeout(() => ctx.close(), 1500);
   } catch (_) {}
 }
 
-// Small subtle ding when today's circle fills in blue with a tick
 function playTodayCircleFillSound() {
   try {
     const ctx = new (window.AudioContext || window.webkitAudioContext)();
@@ -265,7 +296,6 @@ function playTodayCircleFillSound() {
       g.gain.exponentialRampToValueAtTime(0.001, start + dur);
       osc.start(start); osc.stop(start + dur + 0.05);
     };
-    // Soft two-note chime — gentle, not attention-grabbing
     t(660,  now,        0.22, 0.12);
     t(990,  now + 0.10, 0.30, 0.14);
     t(98,   now,        0.10, 0.06, 'triangle');
@@ -460,7 +490,6 @@ function EmbeddedDayCircles({ currentUser, weeklyWorkoutLogs, todayDow, startAni
       setTodayColoured(true);
       setTodayColourPop(true);
       setPastCirclePop(true);
-      // Play the subtle circle fill sound + the main ding together
       playTodayCircleFillSound();
       setTimeout(() => playDayCircleDing(), 80);
       setTimeout(() => { setTodayColourPop(false); setPastCirclePop(false); }, 650);
@@ -485,7 +514,6 @@ function EmbeddedDayCircles({ currentUser, weeklyWorkoutLogs, todayDow, startAni
     const isPast     = day < todayDowAdjusted;
     const isMissed   = !isRestDay && !doneBase && isPast;
     const isPastRest = isRestDay && isPast;
-    // 10% bigger: today 49→54, others 40→44
     const size       = isToday ? 54 : 44;
     const isVisible  = i <= animatedIdx;
     const isColouringNow = isToday ? todayColourPop : false;
@@ -811,29 +839,38 @@ function StreakCelebration({
   const [continueButtonOpacity, setContinueButtonOpacity] = useState(0);
 
   // Exit animation state
-  const [exitPhase, setExitPhase]         = useState('idle'); // 'idle' | 'fading' | 'shifting' | 'exploding' | 'done'
-  const [iconExploding, setIconExploding] = useState(false);
-  // Number fades with the rest of the page (not with icon)
-  const [numberFaded, setNumberFaded]     = useState(false);
-  const [everythingFaded, setEverythingFaded] = useState(false);
+  // 'idle' → 'fading' (number+circles+button fade) → 'shifting' (icon slides down alone)
+  // → 'exploding' (icon expands out) → 'done'
+  const [exitPhase, setExitPhase]             = useState('idle');
+  const [iconExploding, setIconExploding]     = useState(false);
+  const [numberFaded, setNumberFaded]         = useState(false);    // number fades with rest of page
+  const [everythingFaded, setEverythingFaded] = useState(false);    // circles + button fade
 
-  // Persistent shared background
+  // ── FIX: persistent backdrop that NEVER disappears mid-transition ──────────
+  // We keep the backdrop mounted for the entire streak → challenges → share flow.
+  // It only hides after showShareWorkout has fully closed.
   const [showSharedBackground, setShowSharedBackground] = useState(false);
-  const [suppressBackdrop, setSuppressBackdrop]         = useState(false);
+  // suppressBackdrop makes it visually transparent (for final dismiss), but
+  // we do NOT suppress it during the streak→challenges transition.
+  const [suppressBackdrop, setSuppressBackdrop] = useState(false);
 
   useEffect(() => { injectDayStyles(); }, []);
 
+  // Control backdrop lifetime
   useEffect(() => {
     if (showStreakCelebration || showChallengesCelebration || showShareWorkout) {
+      // Any stage active → ensure backdrop is up and opaque
       setShowSharedBackground(true);
       setSuppressBackdrop(false);
     } else if (!showStreakCelebration && !showChallengesCelebration && !showShareWorkout) {
+      // All stages done → fade backdrop then unmount
       setSuppressBackdrop(true);
       const t = setTimeout(() => setShowSharedBackground(false), 600);
       return () => clearTimeout(t);
     }
   }, [showStreakCelebration, showChallengesCelebration, showShareWorkout]);
 
+  // Reset internal state whenever streak stage opens
   useEffect(() => {
     if (showStreakCelebration) {
       setStreakPhase('animating');
@@ -848,6 +885,7 @@ function StreakCelebration({
     }
   }, [showStreakCelebration]);
 
+  // Main streak entrance animation
   useEffect(() => {
     if (!showStreakCelebration) return;
 
@@ -880,10 +918,9 @@ function StreakCelebration({
         numEl.style.transform  = 'scale(1)';
       }, 1050);
 
-      // Fire anticipation sound just before the number increments
       const t2b = setTimeout(() => {
         playStreakAnticipationSound();
-      }, 1320); // ~130ms before the number pop at 1450
+      }, 1320);
 
       const t3 = setTimeout(() => {
         if (p1) p1.style.display = 'none';
@@ -932,29 +969,30 @@ function StreakCelebration({
     setTimeout(() => setContinueButtonEnabled(true), 300);
   };
 
-  // ── Continue pressed → number + page fades, icon slides down alone then explodes ──
+  // ── Continue pressed: number fades first, then icon slides alone, then explodes ──
   const handleContinuePress = () => {
     if (exitPhase !== 'idle') return;
 
-    // 1. Fade everything including number, circles, button
+    // Step 1 — fade number, circles, and button simultaneously
     setExitPhase('fading');
-    setNumberFaded(true);
-    setEverythingFaded(true);
+    setNumberFaded(true);      // streak number fades out with circles/button
+    setEverythingFaded(true);  // circles + button fade out
 
-    // 2. After fade, shift icon down with a light swoosh sound
+    // Step 2 — after fade completes, slide the icon down (alone, number already gone)
     setTimeout(() => {
       setExitPhase('shifting');
       playIconSlideDownSound();
     }, 320);
 
-    // 3. After icon settles, expand/explode
+    // Step 3 — icon expands/explodes; play the new layered unlock sound
     setTimeout(() => {
       setExitPhase('exploding');
       setIconExploding(true);
-      playStreakExplosionSound();
+      playStreakUnlockSound();  // ← replaced with new Duolingo-style ascending aahhhh
     }, 320 + 700 + 500);
 
-    // 4. Transition to next stage
+    // Step 4 — signal transition to challenges stage
+    // The backdrop stays fully opaque throughout — no flash possible
     setTimeout(() => {
       setExitPhase('done');
       document.dispatchEvent(new CustomEvent('streakCelebrationContinue'));
@@ -973,8 +1011,8 @@ function StreakCelebration({
   const CIRCLES_SLOT_HEIGHT = 110;
   const CIRCLES_MARGIN_TOP = 24;
 
-  // Icon-only shift: the icon shifts down after number has already faded
-  const iconShiftY = exitPhase === 'shifting' || exitPhase === 'exploding' || exitPhase === 'done'
+  // ── Icon-only translate during exit (number is already invisible by this point) ──
+  const iconShiftY = (exitPhase === 'shifting' || exitPhase === 'exploding' || exitPhase === 'done')
     ? '120px'
     : '0px';
 
@@ -982,8 +1020,9 @@ function StreakCelebration({
     ? { animation: 'streakIconExpand 0.5s ease forwards' }
     : {};
 
-  // The icon+number group moves to FINAL_Y when circles appear,
-  // then during exit the icon continues alone (number is already opacity:0)
+  // The group moves to FINAL_Y when circles appear.
+  // During exit the icon continues downward; the number wrapper also moves
+  // but is already opacity:0, so only the icon is visible.
   const groupTranslateY = (() => {
     if (exitPhase === 'shifting' || exitPhase === 'exploding' || exitPhase === 'done') {
       return iconShiftY;
@@ -1003,7 +1042,7 @@ function StreakCelebration({
 
   return (
     <>
-      {/* Persistent backdrop */}
+      {/* ── Persistent backdrop — stays opaque through ALL stage transitions ── */}
       {showSharedBackground && (
         <div
           style={{
@@ -1012,27 +1051,31 @@ function StreakCelebration({
             backdropFilter: suppressBackdrop ? 'none' : 'blur(4px)',
             WebkitBackdropFilter: suppressBackdrop ? 'none' : 'blur(4px)',
             transition: 'background 0.45s ease, backdrop-filter 0.45s ease',
+            // Pointer events off so taps pass through to stage layers
+            pointerEvents: 'none',
           }}
         />
       )}
 
-      {/* STAGE 1 — Streak number + Day Circles */}
+      {/* ── STAGE 1 — Streak number + Day Circles ── */}
       <AnimatePresence>
         {showStreakCelebration && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
+            // ← KEY FIX: do NOT fade out on exit — the backdrop keeps the dark overlay.
+            // Fading this out would cause a brief flash of the home page underneath.
+            exit={{ opacity: 1 }}
             transition={{ duration: 0.15 }}
             className="fixed inset-0 z-[100] flex flex-col items-center justify-center overflow-hidden"
           >
-            {/* Outer wrapper — moves to FINAL_Y when circles appear, then icon slides further on exit */}
+            {/* Icon + number group */}
             <div style={{
               display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16,
               transform: `translateY(${groupTranslateY})`,
               transition: groupTransition,
             }}>
-              {/* Streak icon — 10% bigger: 180→198 */}
+              {/* Streak icon — expands on explosion, but has its own opacity via animation */}
               <div
                 id="streak-anim-stage"
                 style={{
@@ -1047,16 +1090,17 @@ function StreakCelebration({
                   style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'contain', display: 'none' }} />
               </div>
 
-              {/* Streak number — fades with rest of page, NOT with the icon slide */}
+              {/* Streak number — fades with circles/button, NOT with the icon slide */}
               <div
                 id="streak-anim-num"
                 style={{
                   fontSize: 96, fontWeight: 900, color: '#fff',
                   textShadow: '0 4px 12px rgba(0,0,0,0.8)',
                   letterSpacing: '-0.04em', lineHeight: 1,
-                  opacity: numberFaded ? 0 : 0,
+                  opacity: numberFaded ? 0 : 0,   // starts at 0; JS animation sets it to 1, then numberFaded returns it to 0
                   transform: 'scale(0.5)',
                   transition: numberFaded ? 'opacity 0.25s ease' : 'none',
+                  pointerEvents: 'none',
                 }}
               >
                 {celebrationStreakNum - 1}
@@ -1092,7 +1136,9 @@ function StreakCelebration({
                 width: BUTTON_WIDTH,
                 opacity: everythingFaded ? 0 : continueButtonOpacity,
                 transform: (everythingFaded || continueButtonOpacity === 0) ? 'translateY(16px)' : 'translateY(0)',
-                transition: everythingFaded ? 'opacity 0.25s ease, transform 0.25s ease' : 'opacity 0.9s ease, transform 0.9s ease',
+                transition: everythingFaded
+                  ? 'opacity 0.25s ease, transform 0.25s ease'
+                  : 'opacity 0.9s ease, transform 0.9s ease',
                 pointerEvents: everythingFaded ? 'none' : 'auto',
               }}>
                 <ContinueButton
@@ -1105,7 +1151,7 @@ function StreakCelebration({
         )}
       </AnimatePresence>
 
-      {/* STAGE 2 — Challenges */}
+      {/* ── STAGE 2 — Challenges ── */}
       <AnimatePresence>
         {showChallengesCelebration && celebrationChallenges.length > 0 && (
           <ChallengesStage
@@ -1118,7 +1164,7 @@ function StreakCelebration({
         )}
       </AnimatePresence>
 
-      {/* STAGE 3 — Share Workout */}
+      {/* ── STAGE 3 — Share Workout ── */}
       <AnimatePresence>
         {showShareWorkout && (
           <motion.div
