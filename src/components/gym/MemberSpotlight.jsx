@@ -98,9 +98,9 @@ export default function MemberSpotlight({ checkIns, memberAvatarMap }) {
         onClick={() => setCollapsed((v) => !v)}
         style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 2px', background: 'none', border: 'none', cursor: 'pointer', WebkitTapHighlightColor: 'transparent' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <div style={{ width: 28, height: 28, borderRadius: 9, background: 'linear-gradient(135deg, rgba(250,204,21,0.2), rgba(251,146,60,0.1))', border: '1px solid rgba(250,204,21,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }} className=" hidden hidden">
-            <Award style={{ width: 13, height: 13, color: '#fbbf24' }} />
-          </div>
+          
+
+          
           <span style={{ fontSize: 14, fontWeight: 900, color: '#fff', letterSpacing: '-0.01em' }}>Member Spotlight</span>
         </div>
         <span style={{ fontSize: 11, fontWeight: 600, color: 'rgba(255,255,255,0.28)' }}>{collapsed ? 'show' : 'hide'}</span>
