@@ -152,6 +152,7 @@ export default function Gyms() {
     mutationFn: async gymData => {
       const res = await base44.functions.invoke('addGym', { gymData });
       if (res.data?.error === 'GYM_CREATION_LIMIT') throw new Error('GYM_CREATION_LIMIT');
+      if (res.data?.error === 'GYM_MEMBERSHIP_LIMIT') throw new Error('GYM_MEMBERSHIP_LIMIT');
       const gym = res.data?.gym;
       if (!gym) throw new Error('Failed to create gym');
       return gym;
@@ -167,6 +168,9 @@ export default function Gyms() {
       if (err.message === 'GYM_CREATION_LIMIT') {
         setShowAddGymModal(false);
         setShowCreationLimitModal(true);
+      } else if (err.message === 'GYM_MEMBERSHIP_LIMIT') {
+        setShowAddGymModal(false);
+        setShowGymLimitModal(true);
       }
     },
   });

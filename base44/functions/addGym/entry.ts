@@ -1,6 +1,7 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
 const GYM_CREATION_LIMIT = 5; // max gyms a single user can add to the platform
+const GYM_MEMBERSHIP_LIMIT = 3; // max gyms a user can be a member of at once
 
 Deno.serve(async (req) => {
   try {
@@ -15,6 +16,14 @@ Deno.serve(async (req) => {
 
     if (!gymData?.name || !gymData?.city) {
       return Response.json({ error: 'Missing required gym fields (name, city)' }, { status: 400 });
+    }
+
+    // Check membership limit before doing anything
+    if (!skipMembership) {
+      const currentMemberships = await base44.asServiceRole.entities.GymMembership.filter({ user_id: user.id, status: 'active' });
+      if (currentMemberships.length >= GYM_MEMBERSHIP_LIMIT) {
+        return Response.json({ error: 'GYM_MEMBERSHIP_LIMIT', limit: GYM_MEMBERSHIP_LIMIT }, { status: 403 });
+      }
     }
 
     // Check if gym already exists by google_place_id to avoid duplicates
