@@ -1633,12 +1633,14 @@ export default function GymCommunity() {
               </div>
             </div>
             <div className="relative z-10 pt-2" style={{ borderBottom: '1px solid rgba(255,255,255,0.07)', overflowX: 'auto', scrollbarWidth: 'none', WebkitOverflowScrolling: 'touch' }}>
-               <TabsList className="flex justify-between bg-transparent px-3 py-2 h-auto gap-1.5" style={{ minWidth: '100%' }}>
+               <TabsList className="flex bg-transparent py-2 h-auto gap-1.5" style={{ minWidth: '100%', paddingLeft: '12px', paddingRight: '12px' }}>
+                 <div className="flex gap-1.5">
                 <TabsTrigger value="home" className={tabTriggerClass}><Home className="w-3.5 h-3.5" /><span>Home</span></TabsTrigger>
                 <TabsTrigger value="activity" className={tabTriggerClass}><Activity className="w-3.5 h-3.5" /><span>Activity</span></TabsTrigger>
                 <TabsTrigger value="challenges" className={tabTriggerClass}><Trophy className="w-3.5 h-3.5" /><span>Challenges</span></TabsTrigger>
                 <TabsTrigger value="classes" className={tabTriggerClass}><Dumbbell className="w-3.5 h-3.5" /><span>Classes</span></TabsTrigger>
-              </TabsList>
+                </div>
+                </TabsList>
             </div>
           </div>
 
