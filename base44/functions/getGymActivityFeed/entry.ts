@@ -93,11 +93,12 @@ Deno.serve(async (req) => {
     workoutLogs = workoutLogsResult;
 
     // Build avatar + name maps keyed by user ID — only expose public profile fields
+    // Prefer display_name > username > full_name (full_name is often the email prefix)
     const memberNames = {};
     memberUsersResult.forEach(u => {
       const avatar = u.avatar_url || null;
       if (avatar) memberAvatars[u.id] = avatar;
-      const name = u.full_name || null;
+      const name = u.display_name || u.username || u.full_name || null;
       if (name) memberNames[u.id] = name;
     });
 
