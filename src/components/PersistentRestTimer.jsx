@@ -313,6 +313,9 @@ export default function PersistentRestTimer({ isActive, restTimer, initialRestTi
   const rafRef             = useRef(null);
   const lastTickRef        = useRef(null);
   const finishedAtRef      = useRef(null);
+  // FIX: stores the actual timer value captured at the moment Go is pressed,
+  // so the arc always drains relative to the chosen duration, not the default 90s.
+  const sessionTotalRef    = useRef(90);
 
   useEffect(() => { injectPulseStyles(); }, []);
 
@@ -462,10 +465,11 @@ export default function PersistentRestTimer({ isActive, restTimer, initialRestTi
   }, [t, isActive]);
 
   // ─────────────────────────────────────────────────────────────────────────
-  // FIX 1 — smoothProgress
+  // FIX — smoothProgress
   //   • Not running (pre-start or paused) → always 1 (full ring).
-  //     Adjusting the rest time with +/- will NOT drain the circle.
-  //   • Running → animate the drawdown in real-time via rAF.
+  //   • Running → use sessionTotalRef.current as the denominator so the arc
+  //     always drains relative to the value chosen when Go was pressed,
+  //     not the default 90s prop.
   // ─────────────────────────────────────────────────────────────────────────
   useEffect(() => {
     if (rafRef.current) cancelAnimationFrame(rafRef.current);
@@ -475,9 +479,11 @@ export default function PersistentRestTimer({ isActive, restTimer, initialRestTi
       return;
     }
 
+    // For cardio segments use the segment's own duration; for rest timer use
+    // the value that was active when the user pressed Go (sessionTotalRef).
     const segTotal = cardioMode && cardioSegments[currentSegIdx]
       ? cardioSegments[currentSegIdx].secs
-      : total;
+      : sessionTotalRef.current;
 
     if (t === 0 || segTotal === 0) {
       setSmoothProgress(0);
@@ -492,7 +498,7 @@ export default function PersistentRestTimer({ isActive, restTimer, initialRestTi
     };
     rafRef.current = requestAnimationFrame(animate);
     return () => { if (rafRef.current) cancelAnimationFrame(rafRef.current); };
-  }, [t, isActive, paused, cardioMode, currentSegIdx, cardioSegments, total]);
+  }, [t, isActive, paused, cardioMode, currentSegIdx, cardioSegments]);
 
   const isWarning     = t > 0 && t <= 10 && isActive;
   const isFinished    = t === 0 && isActive;
@@ -555,9 +561,14 @@ export default function PersistentRestTimer({ isActive, restTimer, initialRestTi
     cardioStartTimeRef.current = null;
   };
 
+  // FIX: capture the current timer value into sessionTotalRef before starting,
+  // so smoothProgress uses the right denominator for the arc.
   const handleGo = () => {
     const currentVal = typeof restTimer === 'number' ? restTimer : parseInt(restTimer) || 90;
-    if (!cardioMode && currentVal !== restTimer) onTimerValueChange(currentVal);
+    if (!cardioMode) {
+      sessionTotalRef.current = currentVal;
+      if (currentVal !== restTimer) onTimerValueChange(currentVal);
+    }
     if (cardioMode && !cardioStartTimeRef.current) cardioStartTimeRef.current = Date.now();
     setPaused(false);
     onTimerStateChange(true);
@@ -611,10 +622,6 @@ export default function PersistentRestTimer({ isActive, restTimer, initialRestTi
 
   if (!barVisible && !isActive && !showFinished && !showCompletion) return null;
 
-  // ─────────────────────────────────────────────────────────────────────────
-  // FIX 2 — RestTimerControls: marginTop increased (36px) so it's not crowded
-  //         below the Go button.
-  // ─────────────────────────────────────────────────────────────────────────
   const RestTimerControls = () => (
     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, marginTop: 36 }}>
       <div style={{ position: 'relative' }}>
@@ -801,7 +808,6 @@ export default function PersistentRestTimer({ isActive, restTimer, initialRestTi
                   )}
                 </div>
 
-                {/* FIX 2: +/- controls sit comfortably below Go (marginTop 36px) */}
                 {!timerActive && !cardioMode && (
                   <RestTimerControls />
                 )}
@@ -881,8 +887,6 @@ export default function PersistentRestTimer({ isActive, restTimer, initialRestTi
       </AnimatePresence>
 
       {/* ── Persistent bar ── */}
-      {/* FIX 3: bottom = calc(62px + safe-area) — sits flush on top of the 62px nav bar  */}
-      {/* FIX 4: label is inline-left of the time, both bigger                             */}
       {!expanded && !showCompletion && (
         <div
           style={{
@@ -923,7 +927,6 @@ export default function PersistentRestTimer({ isActive, restTimer, initialRestTi
               cursor: isFinished ? 'default' : 'pointer',
               gap: 10,
             }}>
-            {/* Label */}
             <span style={{
               fontSize: 15,
               fontWeight: 800,
@@ -937,7 +940,6 @@ export default function PersistentRestTimer({ isActive, restTimer, initialRestTi
               {isFinished ? 'Done!' : displayTitle}
             </span>
 
-            {/* Time */}
             <span style={{
               fontWeight: 900,
               fontSize: 28,
