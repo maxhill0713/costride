@@ -244,17 +244,23 @@ function ExerciseRow({ ex, idx }) {
 // ── Smart date formatter ──────────────────────────────────────────────────────
 function formatPostDate(dateStr) {
   const now = new Date();
-  const date = new Date(dateStr);
+  // Ensure the date is parsed as local time if no timezone offset is present
+  let date = new Date(dateStr);
+  // If the string has no timezone info (no Z or +/-), treat it as UTC and convert
+  // by re-parsing — browsers inconsistently parse naive ISO strings
+  if (dateStr && !dateStr.endsWith('Z') && !dateStr.match(/[+-]\d{2}:\d{2}$/)) {
+    date = new Date(dateStr + 'Z');
+  }
   const diffMs = now - date;
 
-  // Handles future timestamps (e.g. timezone offset making post appear ahead of now)
+  // Handles future timestamps (e.g. clock skew)
   if (diffMs < 0) return 'Just now';
 
   const diffMins = diffMs / (1000 * 60);
   const diffHours = diffMs / (1000 * 60 * 60);
   const diffDays = diffMs / (1000 * 60 * 60 * 24);
 
-  if (diffMins < 5) return 'Just now';
+  if (diffMins < 2) return 'Just now';
 
   if (diffMins < 60) {
     const m = Math.floor(diffMins);
@@ -862,11 +868,11 @@ function PostCard({ post, onLike, onComment, onSave, onDelete, fullWidth = false
                 {post.member_avatar ? <img src={post.member_avatar} alt={resolvedMemberName} className="w-full h-full object-cover" decoding="async" /> : <span className="text-sm font-bold text-white">{resolvedMemberName?.charAt(0)?.toUpperCase() || '?'}</span>}
               </div>
               <div>
-                <p className="text-sm font-bold text-white leading-tight">{resolvedMemberName}</p>
-                <PostMeta post={post} gymName={gymName} />
-              </div>
-            </Link>
-            {isOwner ? renderMenu(standardOwnerExtras) : renderMenu(null)}
+                  <p className="text-sm font-bold text-white leading-tight">{resolvedMemberName}</p>
+                  <PostMeta post={post} gymName={null} />
+                </div>
+              </Link>
+              {isOwner ? renderMenu(standardOwnerExtras) : renderMenu(null)}
           </div>
           {post.content && <ExpandableCaption text={post.content} />}
           {post.weight && <span className="block mt-1 text-blue-400 font-semibold text-sm">💪 {post.weight} lbs</span>}
