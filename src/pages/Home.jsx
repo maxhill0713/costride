@@ -222,12 +222,14 @@ export default function Home() {
 
   useEffect(() => {
   const handler = () => {
-    setShowStreakCelebration(false);
+    // Turn on the next stage BEFORE turning off the current one
+    // so the backdrop in StreakCelebration never sees all three as false simultaneously
     if (celebrationChallenges.length > 0) {
-      setTimeout(() => setShowChallengesCelebration(true), 200);
+      setShowChallengesCelebration(true);
     } else {
-      setTimeout(() => setShowShareWorkout(true), 200);
+      setShowShareWorkout(true);
     }
+    setShowStreakCelebration(false);
   };
   document.addEventListener('streakCelebrationContinue', handler);
   return () => document.removeEventListener('streakCelebrationContinue', handler);
