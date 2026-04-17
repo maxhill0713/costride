@@ -998,7 +998,7 @@ export default function Home() {
           )}
 
           {memberGym?.id && (
-            <div className="active:scale-[0.97] active:translate-y-0.5 transition-transform duration-100" style={{ WebkitTapHighlightColor: 'transparent' }}>
+            <div className="mt-4 active:scale-[0.97] active:translate-y-0.5 transition-transform duration-100" style={{ WebkitTapHighlightColor: 'transparent' }}>
               <Link to={createPageUrl('GymCommunity') + `?id=${memberGym.id}`} className="block">
                 <Card className="rounded-xl text-card-foreground cursor-pointer relative h-40 overflow-hidden group" style={{ background: 'linear-gradient(135deg, rgba(30,35,60,0.82) 0%, rgba(8,10,20,0.96) 100%)', border: '1px solid rgba(255,255,255,0.07)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)' }}>
                   {memberGym?.image_url ? (
