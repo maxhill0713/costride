@@ -721,7 +721,7 @@ export default function PersistentRestTimer({ isActive, restTimer, initialRestTi
               flexDirection: isLandscape ? 'row' : 'column',
               alignItems: isLandscape ? 'stretch' : 'center',
               justifyContent: isLandscape ? 'center' : 'flex-start',
-              paddingTop: isLandscape ? 0 : '8vh',
+              paddingTop: isLandscape ? 0 : 'calc(env(safe-area-inset-top) + 8vh)',
               background: staticBg,
               transition: (isRestWarning || isPulsing) ? 'none' : 'background 0.6s ease',
               animation: bgAnimation,
