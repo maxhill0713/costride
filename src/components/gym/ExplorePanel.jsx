@@ -6,20 +6,7 @@ export default function ExplorePanel({ recentlyViewedGyms, nearbyGyms, GymCardIn
   const touchStartY = useRef(null);
   const containerRef = useRef(null);
 
-  // Prevent overscroll (rubber-band) above the top of the page
-  useEffect(() => {
-    const preventOverscroll = (e) => {
-      if (window.scrollY <= 0 && e.touches[0].clientY > 0) {
-        // If at the top and pulling down, prevent it
-        const touch = e.touches[0];
-        if (touch.clientY > (touchStartY.current || 0)) {
-          e.preventDefault();
-        }
-      }
-    };
-    document.addEventListener('touchmove', preventOverscroll, { passive: false });
-    return () => document.removeEventListener('touchmove', preventOverscroll);
-  }, []);
+
 
   const handleTouchStart = (e) => {
     touchStartX.current = e.touches[0].clientX;
