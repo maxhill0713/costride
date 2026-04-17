@@ -45,7 +45,7 @@ function StyledButton({ enabled = true, onClick, label, variant = 'orange', load
 
   return (
     <div style={{ position: 'relative', width: '100%' }}>
-      {/* 3D bottom shadow — moves up when pressed */}
+      {/* 3D bottom shadow */}
       <div style={{
         position: 'absolute', inset: 0, borderRadius: 16,
         background: isActive ? shadowEnabled : '#111827',
@@ -228,7 +228,6 @@ export default function ShareWorkoutScreen({ workoutName, exercises, previousExe
   const [sharing, setSharing] = useState(false);
   const [exercisesExpanded, setExercisesExpanded] = useState(false);
   const [shareWithCommunity, setShareWithCommunity] = useState(false);
-  // Fade-out overlay — prevents abrupt exit
   const [fadingOut, setFadingOut] = useState(false);
   const fileInputRef = useRef(null);
   const queryClient = useQueryClient();
@@ -295,7 +294,6 @@ export default function ShareWorkoutScreen({ workoutName, exercises, previousExe
       toast.success('Workout shared with your friends! 🔥');
       queryClient.invalidateQueries({ queryKey: ['friendPosts'] });
       queryClient.invalidateQueries({ queryKey: ['userPosts'] });
-      // Gentle fade-out before calling complete
       triggerFadeOut(() => (onShareComplete || onContinue)());
     } catch (err) {
       console.error('[ShareWorkout] failed:', err);
@@ -324,7 +322,9 @@ export default function ShareWorkoutScreen({ workoutName, exercises, previousExe
       animate={{ opacity: fadingOut ? 0 : 1 }}
       exit={{ opacity: 0 }}
       transition={{ duration: fadingOut ? 0.55 : 0.4, ease: 'easeOut' }}
-      className="fixed inset-0 z-[100] bg-black/85 backdrop-blur-md flex flex-col items-center justify-center px-6"
+      // No background here — the persistent backdrop in StreakCelebration handles it,
+      // keeping the visual consistent across the full celebration sequence.
+      className="fixed inset-0 z-[100] flex flex-col items-center justify-center px-6"
       style={{ paddingTop: 'env(safe-area-inset-top)', paddingBottom: 'env(safe-area-inset-bottom)' }}>
 
       <div className="w-full flex flex-col items-center overflow-y-auto max-h-[85vh] pb-2">
@@ -336,7 +336,7 @@ export default function ShareWorkoutScreen({ workoutName, exercises, previousExe
           transition={{ delay: 0.1, type: 'spring', stiffness: 260, damping: 22 }}
           className="w-full max-w-sm mb-4 overflow-hidden shadow-2xl shadow-black/40 rounded-xl relative"
           style={{
-            background: 'linear-gradient(135deg, rgba(30,35,60,0.82) 0%, rgba(8,10,20,0.96) 100%)',
+            background: 'linear-gradient(135deg, rgba(16,19,40,0.96) 0%, rgba(6,8,18,0.99) 100%)',
             border: '1px solid rgba(255,255,255,0.07)',
             backdropFilter: 'blur(20px)',
             WebkitBackdropFilter: 'blur(20px)',
@@ -401,18 +401,21 @@ export default function ShareWorkoutScreen({ workoutName, exercises, previousExe
             </div>
           </div>
 
-          {/* Swipeable panels */}
-          <SwipeablePanels
-            photoUrl={photoUrl}
-            uploading={uploading}
-            onPhotoClick={() => fileInputRef.current?.click()}
-            onRemovePhoto={() => setPhotoUrl(null)}
-            exercises={exercises}
-            PANEL_HEIGHT={PANEL_HEIGHT}
-            PREVIEW_COUNT_POST={PREVIEW_COUNT_POST}
-            exercisesExpanded={exercisesExpanded}
-            setExercisesExpanded={setExercisesExpanded}
-          />
+          {/* Swipeable panels — wrapped with bottom padding so the photo box
+              doesn't sit flush against the card's bottom edge */}
+          <div style={{ paddingBottom: 16 }}>
+            <SwipeablePanels
+              photoUrl={photoUrl}
+              uploading={uploading}
+              onPhotoClick={() => fileInputRef.current?.click()}
+              onRemovePhoto={() => setPhotoUrl(null)}
+              exercises={exercises}
+              PANEL_HEIGHT={PANEL_HEIGHT}
+              PREVIEW_COUNT_POST={PREVIEW_COUNT_POST}
+              exercisesExpanded={exercisesExpanded}
+              setExercisesExpanded={setExercisesExpanded}
+            />
+          </div>
         </motion.div>
 
         <input ref={fileInputRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={handlePhotoUpload} />
