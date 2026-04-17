@@ -1603,12 +1603,6 @@ export default function GymCommunity() {
                   </div>
                   <div className="flex items-center gap-3">
                     <p className="text-white/60 text-[11px] flex items-center gap-1"><MapPin className="w-3 h-3" />{gym?.city}</p>
-                    {gym && !isGhostGym &&
-                    <div className="flex items-center gap-1 px-2 py-0.5 rounded-full" style={{ background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.15)' }}>
-                        <Users className="w-3 h-3 text-white/70" />
-                        <span className="text-[11px] font-bold text-white">{gym?.members_count || 0} members</span>
-                      </div>
-                    }
                   </div>
                 </div>
                 <div className="flex flex-col gap-1.5 flex-shrink-0">
