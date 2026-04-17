@@ -629,7 +629,7 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
   { label: 'Expand', text: "Tap the down arrow to view all exercises for today's session." },
   { label: 'Switch workout', text: "Tap the workout name to swap to a different day's session." },
   { label: 'Update weight/reps', text: 'Click the pencil icon next to any exercise, enter new values, then save.' },
-  { label: 'Timer', text: 'Tap Timer to open the rest/cardio timer.' },
+  { label: 'Timer', text: 'Tap Workout Timer to open the rest/cardio timer.' },
   { label: 'Plate calculator', text: 'Use the calculator icon to see which plates to load on the bar.' },
   { label: 'Log completion', text: 'Hit "Log Workout" when finished to save your progress and update your streak.' }];
 
@@ -1115,21 +1115,19 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
                 }
 
                   {/* Timer & Tools */}
-                  {/* CHANGED: Timer button is now 20% smaller (height 41px → ~33px, text smaller, flex 0.8 → 0.65) */}
-                  {/* CHANGED: Tapping Timer now opens fullscreen timer via setOpenTimerExpanded instead of just the bar */}
                   <div className="mt-4 pt-3 border-t border-slate-600/30 flex items-center justify-between gap-3 pb-4">
                     <div className="flex-1 flex items-center gap-2">
+                      {/* CHANGED: Label updated to "Workout Timer", flex increased slightly to 0.78 */}
                       <button
                       onClick={(e) => {
                         e.stopPropagation();
-                        // Open fullscreen timer directly
                         setOpenTimerBar(true);
                       }}
-                      style={{ height: '41px', flex: 0.65 }}
+                      style={{ height: '41px', flex: 0.78 }}
                       className="relative flex items-center justify-center gap-1.5 px-3 rounded-2xl bg-gradient-to-b from-slate-700 via-slate-800 to-slate-900 backdrop-blur-xl border border-transparent shadow-[0_3px_0_0_#0f172a,0_8px_20px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.08)] hover:from-slate-600 hover:via-slate-700 hover:to-slate-800 active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 transform-gpu">
                         <Clock className="w-3.5 h-3.5 text-blue-400 flex-shrink-0" />
-                        <span className="text-blue-300 font-black text-base leading-none">
-                          Timer
+                        <span className="text-blue-300 font-black text-[13px] leading-none tracking-tight">
+                          Workout Timer
                         </span>
                       </button>
                     </div>
