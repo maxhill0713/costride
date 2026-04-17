@@ -998,8 +998,15 @@ function StreakCelebration({
 
     // Step 1 — fade number, circles, and button simultaneously
     setExitPhase('fading');
-    setNumberFaded(true);      // streak number fades out with circles/button
     setEverythingFaded(true);  // circles + button fade out
+
+    // Directly fade the number via JS (it was set imperatively, so React style won't override it)
+    const numEl = document.getElementById('streak-anim-num');
+    if (numEl) {
+      numEl.style.transition = 'opacity 0.25s ease';
+      numEl.style.opacity = '0';
+    }
+    setNumberFaded(true);
 
     // Step 2 — after fade completes, slide the icon down (alone, number already gone)
     setTimeout(() => {
