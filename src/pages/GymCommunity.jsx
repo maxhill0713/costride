@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { MapPin, Star, Users, Trophy, TrendingUp, MessageCircle, Heart, BadgeCheck, Gift, ChevronLeft, ChevronRight, Calendar, Plus, Edit, GraduationCap, Clock, Target, Award, Crown, Dumbbell, Flame, CheckCircle, Trash2, Home, Mail, Copy, Zap, Activity, Timer, ChevronDown, ChevronUp } from 'lucide-react';
+import { MapPin, Star, Users, Trophy, TrendingUp, MessageCircle, Heart, BadgeCheck, Gift, ChevronLeft, ChevronRight, Calendar, Plus, Edit, GraduationCap, Clock, Target, Award, Crown, Dumbbell, Flame, CheckCircle, Trash2, Home, Mail, Copy, Zap, Activity, Timer, ChevronDown, ChevronUp, UserPlus } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Progress } from '@/components/ui/progress';
 import { Card } from '@/components/ui/card';
@@ -1344,10 +1344,7 @@ function SuggestedFriendsCard({ checkIns, currentUser, memberAvatarMap }) {
 
   return (
     <div style={{ ...CARD_STYLE, borderRadius: 18, overflow: 'hidden' }}>
-      <div style={{ padding: '13px 14px 11px', borderBottom: '1px solid rgba(255,255,255,0.055)', display: 'flex', alignItems: 'center', gap: 8 }}>
-        <div style={{ width: 28, height: 28, borderRadius: 9, background: 'rgba(167,139,250,0.15)', border: '1px solid rgba(167,139,250,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-          <Users style={{ width: 13, height: 13, color: '#a78bfa' }} />
-        </div>
+      <div style={{ padding: '13px 14px 11px', borderBottom: '1px solid rgba(255,255,255,0.055)' }}>
         <span style={{ fontSize: 14, fontWeight: 900, color: '#fff', letterSpacing: '-0.01em' }}>People You May Know</span>
       </div>
       <div style={{ display: 'flex', flexDirection: 'column' }}>
@@ -1356,30 +1353,40 @@ function SuggestedFriendsCard({ checkIns, currentUser, memberAvatarMap }) {
           const avatar = memberAvatarMap[c.user_id];
           const sent = sentIds.has(c.user_id);
           return (
-            <div key={c.user_id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '11px 14px', borderBottom: i < suggestions.length - 1 ? '1px solid rgba(255,255,255,0.045)' : 'none' }}>
-              <div style={{ width: 40, height: 40, borderRadius: '50%', overflow: 'hidden', background: col.bg, border: '2px solid rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 800, color: col.color, flexShrink: 0 }}>
+            <div key={c.user_id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 12px', borderBottom: i < suggestions.length - 1 ? '1px solid rgba(255,255,255,0.045)' : 'none' }}>
+              {/* Avatar — same size as friends popup (32px) */}
+              <div style={{ width: 32, height: 32, borderRadius: '50%', overflow: 'hidden', background: col.bg, border: '1.5px solid rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 800, color: col.color, flexShrink: 0 }}>
                 {avatar ? <img src={avatar} alt={c.user_name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : ini(c.user_name)}
               </div>
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <p style={{ fontSize: 13, fontWeight: 700, color: '#fff', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.user_name}</p>
-                <p style={{ fontSize: 11, color: 'rgba(148,163,184,0.55)', margin: '2px 0 0', fontWeight: 500 }}>Also trains at this gym</p>
-              </div>
-              <button
-                onClick={() => !sent && addFriendMutation.mutate(c.user_id)}
-                disabled={sent || addFriendMutation.isPending}
-                style={{
-                  flexShrink: 0, padding: '6px 14px', borderRadius: 99, fontSize: 11.5, fontWeight: 800,
-                  cursor: sent ? 'default' : 'pointer', border: 'none',
-                  background: sent ? 'rgba(52,211,153,0.15)' : 'linear-gradient(to bottom, #6d6af8, #5b58e8, #4947d0)',
-                  color: sent ? '#34d399' : '#fff',
-                  borderBottom: sent ? '2px solid rgba(52,211,153,0.3)' : '2px solid #2f2db0',
-                  boxShadow: sent ? 'none' : '0 2px 0 rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.2)',
-                  transition: 'all 0.15s'
-                }}>
-                {sent ? '✓ Sent' : '+ Add'}
-              </button>
+              {/* Name — same font size as friends popup */}
+              <p style={{ flex: 1, fontSize: 12, fontWeight: 600, color: '#fff', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.user_name}</p>
+              {/* Add button — matches the blue 3D button in the friends popup / reactions modal */}
+              {sent ? (
+                <span style={{ fontSize: 10, fontWeight: 700, padding: '4px 10px', borderRadius: 8, flexShrink: 0, background: 'linear-gradient(to bottom, #1a1f35, #0f1220)', border: '1px solid rgba(99,102,241,0.3)', color: 'rgba(165,180,252,0.85)', letterSpacing: '0.04em' }}>
+                  Pending
+                </span>
+              ) : (
+                <button
+                  onClick={() => addFriendMutation.mutate(c.user_id)}
+                  disabled={addFriendMutation.isPending}
+                  style={{
+                    flexShrink: 0, width: '2.1rem', height: '1.75rem',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    borderRadius: 8, border: '1px solid rgba(147,197,253,0.4)', cursor: 'pointer',
+                    background: 'linear-gradient(to bottom, #60a5fa 0%, #3b82f6 40%, #2563eb 100%)',
+                    boxShadow: '0 3px 0 0 #1a3fa8, 0 5px 12px rgba(0,0,100,0.3), inset 0 1px 0 rgba(255,255,255,0.2)',
+                    transition: 'transform 0.1s ease, box-shadow 0.1s ease',
+                  }}
+                  onMouseDown={e => { e.currentTarget.style.transform = 'translateY(3px)'; e.currentTarget.style.boxShadow = 'none'; }}
+                  onMouseUp={e => { e.currentTarget.style.transform = ''; e.currentTarget.style.boxShadow = '0 3px 0 0 #1a3fa8, 0 5px 12px rgba(0,0,100,0.3), inset 0 1px 0 rgba(255,255,255,0.2)'; }}
+                  onMouseLeave={e => { e.currentTarget.style.transform = ''; e.currentTarget.style.boxShadow = '0 3px 0 0 #1a3fa8, 0 5px 12px rgba(0,0,100,0.3), inset 0 1px 0 rgba(255,255,255,0.2)'; }}
+                  onTouchStart={e => { e.currentTarget.style.transform = 'translateY(3px)'; e.currentTarget.style.boxShadow = 'none'; }}
+                  onTouchEnd={e => { e.currentTarget.style.transform = ''; e.currentTarget.style.boxShadow = '0 3px 0 0 #1a3fa8, 0 5px 12px rgba(0,0,100,0.3), inset 0 1px 0 rgba(255,255,255,0.2)'; }}
+                >
+                  <UserPlus style={{ width: 13, height: 13, color: '#fff' }} />
+                </button>
+              )}
             </div>);
-
         })}
       </div>
     </div>);
