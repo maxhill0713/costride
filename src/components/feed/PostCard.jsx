@@ -30,6 +30,63 @@ function ReactionsModal({ open, onClose, reactions, reactedUsers, currentUserId,
     return name.toLowerCase().includes(sanitised.toLowerCase());
   });
 
+  const friendReactors = filtered.filter(u => friendIds.has(u.id));
+  const communityReactors = filtered.filter(u => !friendIds.has(u.id));
+
+  const renderUser = (user) => {
+    const variant = reactions[user.id];
+    const displayName = user.display_name || user.full_name || user.username || 'Unknown';
+    const isSelf = user.id === currentUserId;
+    const isFriend = friendIds.has(user.id);
+    const isPending = sentIds.has(user.id) || localPendingIds.has(user.id);
+    return (
+      <div key={user.id} className="flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-slate-800/50 transition-colors">
+        <div className="relative flex-shrink-0 flex items-center justify-center" style={{ width: 32, height: 32, marginLeft: -2 }}>
+          {variant === 'sunglasses'
+            ? <div className="relative w-full h-full flex items-center justify-center">
+                <img src={STREAK_ICON_URL} alt="streak" className="w-full h-full" style={{ objectFit: 'contain' }} />
+                <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 64 64">
+                  <circle cx="20" cy="24" r="6" fill="none" stroke="black" strokeWidth="1.5" />
+                  <circle cx="44" cy="24" r="6" fill="none" stroke="black" strokeWidth="1.5" />
+                  <line x1="26" y1="24" x2="38" y2="24" stroke="black" strokeWidth="1.5" />
+                </svg>
+              </div>
+            : <img src={STREAK_ICON_URL} alt="streak" className="w-full h-full" style={{ objectFit: 'contain' }} />}
+        </div>
+        <span className="text-sm text-slate-200 font-semibold flex-1 min-w-0 truncate">{displayName}</span>
+        {!isSelf && !isFriend && (
+          isPending ? (
+            <span className="text-[10px] font-bold px-2 py-1 rounded-lg flex-shrink-0" style={{ background: 'linear-gradient(to bottom, #1a1f35, #0f1220)', border: '1px solid rgba(99,102,241,0.3)', color: 'rgba(165,180,252,0.85)', letterSpacing: '0.04em' }}>
+              Pending
+            </span>
+          ) : (
+            <button
+              onClick={() => {
+                if (onAddFriend) onAddFriend(user);
+                setLocalPendingIds(prev => new Set([...prev, user.id]));
+              }}
+              className="flex-shrink-0 h-7 w-7 flex items-center justify-center rounded-lg active:translate-y-[2px] active:shadow-none transition-all duration-100"
+              style={{
+                background: 'linear-gradient(to bottom, #60a5fa 0%, #3b82f6 40%, #2563eb 100%)',
+                border: '1px solid rgba(147,197,253,0.4)',
+                boxShadow: '0 3px 0 0 #1a3fa8, 0 5px 12px rgba(0,0,100,0.3), inset 0 1px 0 rgba(255,255,255,0.2)'
+              }}>
+              <UserPlus className="w-3.5 h-3.5 text-white" />
+            </button>
+          )
+        )}
+      </div>
+    );
+  };
+
+  const SectionHeader = ({ label }) => (
+    <p className="text-[11px] font-bold text-slate-500 uppercase tracking-widest px-2 pt-2 pb-1">
+      {label}
+    </p>
+  );
+
+  const showSections = !sanitised; // only split into sections when not searching
+
   return (
     <>
       <div
@@ -51,7 +108,7 @@ function ReactionsModal({ open, onClose, reactions, reactedUsers, currentUserId,
           <h3 className="text-lg font-semibold leading-none tracking-tight text-white text-center">{Object.keys(reactions).length} Reactions</h3>
         </div>
         <div className="px-3 pb-2">
-          <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-white/10 border border-white/20">
+          <div className="flex items-center gap-2 px-3 rounded-xl bg-white/10 border border-white/20" style={{ paddingTop: '7px', paddingBottom: '7px' }}>
             <svg className="w-3.5 h-3.5 text-slate-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
             <input
               value={search}
@@ -67,58 +124,27 @@ function ReactionsModal({ open, onClose, reactions, reactedUsers, currentUserId,
           </div>
         </div>
         <div className="overflow-y-auto max-h-80 px-3 pb-4">
-          {filtered.length === 0
-            ? <p className="text-center text-slate-400 text-sm py-6">No reactions found</p>
-            : filtered.map((user) => {
-              const variant = reactions[user.id];
-              const displayName = user.display_name || user.full_name || user.username || 'Unknown';
-              const isSelf = user.id === currentUserId;
-              const isFriend = friendIds.has(user.id);
-              const isPending = sentIds.has(user.id) || localPendingIds.has(user.id);
-              return (
-                <div key={user.id} className="flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-slate-800/50 transition-colors">
-                  <div className="relative flex-shrink-0 flex items-center justify-center" style={{ width: 32, height: 32, marginLeft: -2 }}>
-                    {variant === 'sunglasses'
-                      ? <div className="relative w-full h-full flex items-center justify-center">
-                          <img src={STREAK_ICON_URL} alt="streak" className="w-full h-full" style={{ objectFit: 'contain' }} />
-                          <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 64 64">
-                            <circle cx="20" cy="24" r="6" fill="none" stroke="black" strokeWidth="1.5" />
-                            <circle cx="44" cy="24" r="6" fill="none" stroke="black" strokeWidth="1.5" />
-                            <line x1="26" y1="24" x2="38" y2="24" stroke="black" strokeWidth="1.5" />
-                          </svg>
-                        </div>
-                      : <img src={STREAK_ICON_URL} alt="streak" className="w-full h-full" style={{ objectFit: 'contain' }} />}
-                  </div>
-                  <span className="text-sm text-slate-200 font-semibold flex-1 min-w-0 truncate">{displayName}</span>
-                  {!isSelf && (
-                    isFriend ? (
-                      <span className="text-[10px] font-bold px-2 py-1 rounded-lg flex-shrink-0" style={{ background: 'linear-gradient(to bottom, #1a1f35, #0f1220)', border: '1px solid rgba(99,102,241,0.3)', color: 'rgba(165,180,252,0.85)', letterSpacing: '0.04em' }}>
-                        Friends
-                      </span>
-                    ) : isPending ? (
-                      <span className="text-[10px] font-bold px-2 py-1 rounded-lg flex-shrink-0" style={{ background: 'linear-gradient(to bottom, #1a1f35, #0f1220)', border: '1px solid rgba(99,102,241,0.3)', color: 'rgba(165,180,252,0.85)', letterSpacing: '0.04em' }}>
-                        Pending
-                      </span>
-                    ) : (
-                      <button
-                        onClick={() => {
-                          if (onAddFriend) onAddFriend(user);
-                          setLocalPendingIds(prev => new Set([...prev, user.id]));
-                        }}
-                        className="flex-shrink-0 h-7 w-7 flex items-center justify-center rounded-lg active:translate-y-[2px] active:shadow-none transition-all duration-100"
-                        style={{
-                          background: 'linear-gradient(to bottom, #60a5fa 0%, #3b82f6 40%, #2563eb 100%)',
-                          border: '1px solid rgba(147,197,253,0.4)',
-                          boxShadow: '0 3px 0 0 #1a3fa8, 0 5px 12px rgba(0,0,100,0.3), inset 0 1px 0 rgba(255,255,255,0.2)'
-                        }}>
-                        <UserPlus className="w-3.5 h-3.5 text-white" />
-                      </button>
-                    )
-                  )}
-                </div>
-              );
-            })
-          }
+          {filtered.length === 0 ? (
+            <p className="text-center text-slate-400 text-sm py-6">No reactions found</p>
+          ) : showSections ? (
+            <>
+              {friendReactors.length > 0 && (
+                <>
+                  <SectionHeader label="Friends" />
+                  {friendReactors.map(renderUser)}
+                  {communityReactors.length > 0 && <div className="mx-2 my-2 border-t border-white/[0.07]" />}
+                </>
+              )}
+              {communityReactors.length > 0 && (
+                <>
+                  <SectionHeader label="Community" />
+                  {communityReactors.map(renderUser)}
+                </>
+              )}
+            </>
+          ) : (
+            filtered.map(renderUser)
+          )}
         </div>
       </div>
     </>
