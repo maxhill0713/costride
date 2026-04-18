@@ -39,22 +39,35 @@ function ReactionsModal({ open, onClose, reactions, reactedUsers, currentUserId,
     const isFriend = friendIds.has(user.id);
     const isPending = sentIds.has(user.id) || localPendingIds.has(user.id);
     const displayName = isSelf ? 'You' : (user.display_name || user.full_name || user.username || 'Unknown');
+    const avatarUrl = user.avatar_url;
+    const initials = (displayName || '?').split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
+
+    const StreakIcon = () => variant === 'sunglasses'
+      ? <div className="relative w-8 h-8 flex items-center justify-center flex-shrink-0">
+          <img src={STREAK_ICON_URL} alt="streak" className="w-8 h-8" style={{ objectFit: 'contain' }} />
+          <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 64 64">
+            <circle cx="20" cy="24" r="6" fill="none" stroke="black" strokeWidth="1.5" />
+            <circle cx="44" cy="24" r="6" fill="none" stroke="black" strokeWidth="1.5" />
+            <line x1="26" y1="24" x2="38" y2="24" stroke="black" strokeWidth="1.5" />
+          </svg>
+        </div>
+      : <img src={STREAK_ICON_URL} alt="streak" className="w-8 h-8 flex-shrink-0" style={{ objectFit: 'contain' }} />;
 
     return (
-      <div key={user.id} className="flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-slate-800/50 transition-colors">
-        <div className="relative flex-shrink-0 flex items-center justify-center" style={{ width: 32, height: 32, marginLeft: -2 }}>
-          {variant === 'sunglasses'
-            ? <div className="relative w-full h-full flex items-center justify-center">
-                <img src={STREAK_ICON_URL} alt="streak" className="w-full h-full" style={{ objectFit: 'contain' }} />
-                <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 64 64">
-                  <circle cx="20" cy="24" r="6" fill="none" stroke="black" strokeWidth="1.5" />
-                  <circle cx="44" cy="24" r="6" fill="none" stroke="black" strokeWidth="1.5" />
-                  <line x1="26" y1="24" x2="38" y2="24" stroke="black" strokeWidth="1.5" />
-                </svg>
-              </div>
-            : <img src={STREAK_ICON_URL} alt="streak" className="w-full h-full" style={{ objectFit: 'contain' }} />}
+      <div key={user.id} className="flex items-center gap-2.5 px-2 py-1.5 rounded-lg hover:bg-slate-800/50 transition-colors">
+        {/* Profile pic */}
+        <div className="flex-shrink-0 w-8 h-8 rounded-full overflow-hidden bg-slate-700 flex items-center justify-center text-xs font-bold text-slate-300">
+          {avatarUrl
+            ? <img src={avatarUrl} alt={displayName} className="w-full h-full object-cover" />
+            : initials}
         </div>
+        {/* Name */}
         <span className="text-sm text-slate-200 font-semibold flex-1 min-w-0 truncate">{displayName}</span>
+        {/* Streak icon — fixed-width column */}
+        <div className="flex-shrink-0 w-8 flex items-center justify-center">
+          <StreakIcon />
+        </div>
+        {/* Add friend button */}
         {!isSelf && !isFriend && (
           isPending ? (
             <span className="text-[10px] font-bold px-2 py-1 rounded-lg flex-shrink-0" style={{ background: 'linear-gradient(to bottom, #1a1f35, #0f1220)', border: '1px solid rgba(99,102,241,0.3)', color: 'rgba(165,180,252,0.85)', letterSpacing: '0.04em' }}>
@@ -66,8 +79,9 @@ function ReactionsModal({ open, onClose, reactions, reactedUsers, currentUserId,
                 if (onAddFriend) onAddFriend(user);
                 setLocalPendingIds(prev => new Set([...prev, user.id]));
               }}
-              className="flex-shrink-0 h-7 w-7 flex items-center justify-center rounded-lg active:translate-y-[2px] active:shadow-none transition-all duration-100"
+              className="flex-shrink-0 h-7 flex items-center justify-center rounded-lg active:translate-y-[2px] active:shadow-none transition-all duration-100"
               style={{
+                width: '2.1rem',
                 background: 'linear-gradient(to bottom, #60a5fa 0%, #3b82f6 40%, #2563eb 100%)',
                 border: '1px solid rgba(147,197,253,0.4)',
                 boxShadow: '0 3px 0 0 #1a3fa8, 0 5px 12px rgba(0,0,100,0.3), inset 0 1px 0 rgba(255,255,255,0.2)'
