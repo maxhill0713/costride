@@ -63,33 +63,34 @@ function ReactionsModal({ open, onClose, reactions, reactedUsers, currentUserId,
         </div>
         {/* Name */}
         <span className="text-sm text-slate-200 font-semibold flex-1 min-w-0 truncate">{displayName}</span>
-        {/* Streak icon — fixed-width column */}
-        <div className="flex-shrink-0 w-8 flex items-center justify-center">
-          <StreakIcon />
+        {/* Streak icon + optional add friend button — always same total width */}
+        <div className="flex-shrink-0 flex items-center gap-1.5" style={{ width: '4.4rem' }}>
+          <div className="w-8 flex items-center justify-center">
+            <StreakIcon />
+          </div>
+          {!isSelf && !isFriend && (
+            isPending ? (
+              <span className="text-[10px] font-bold px-2 py-1 rounded-lg flex-shrink-0" style={{ background: 'linear-gradient(to bottom, #1a1f35, #0f1220)', border: '1px solid rgba(99,102,241,0.3)', color: 'rgba(165,180,252,0.85)', letterSpacing: '0.04em' }}>
+                Pending
+              </span>
+            ) : (
+              <button
+                onClick={() => {
+                  if (onAddFriend) onAddFriend(user);
+                  setLocalPendingIds(prev => new Set([...prev, user.id]));
+                }}
+                className="flex-shrink-0 h-7 flex items-center justify-center rounded-lg active:translate-y-[2px] active:shadow-none transition-all duration-100"
+                style={{
+                  width: '2.1rem',
+                  background: 'linear-gradient(to bottom, #60a5fa 0%, #3b82f6 40%, #2563eb 100%)',
+                  border: '1px solid rgba(147,197,253,0.4)',
+                  boxShadow: '0 3px 0 0 #1a3fa8, 0 5px 12px rgba(0,0,100,0.3), inset 0 1px 0 rgba(255,255,255,0.2)'
+                }}>
+                <UserPlus className="w-3.5 h-3.5 text-white" />
+              </button>
+            )
+          )}
         </div>
-        {/* Add friend button */}
-        {!isSelf && !isFriend && (
-          isPending ? (
-            <span className="text-[10px] font-bold px-2 py-1 rounded-lg flex-shrink-0" style={{ background: 'linear-gradient(to bottom, #1a1f35, #0f1220)', border: '1px solid rgba(99,102,241,0.3)', color: 'rgba(165,180,252,0.85)', letterSpacing: '0.04em' }}>
-              Pending
-            </span>
-          ) : (
-            <button
-              onClick={() => {
-                if (onAddFriend) onAddFriend(user);
-                setLocalPendingIds(prev => new Set([...prev, user.id]));
-              }}
-              className="flex-shrink-0 h-7 flex items-center justify-center rounded-lg active:translate-y-[2px] active:shadow-none transition-all duration-100"
-              style={{
-                width: '2.1rem',
-                background: 'linear-gradient(to bottom, #60a5fa 0%, #3b82f6 40%, #2563eb 100%)',
-                border: '1px solid rgba(147,197,253,0.4)',
-                boxShadow: '0 3px 0 0 #1a3fa8, 0 5px 12px rgba(0,0,100,0.3), inset 0 1px 0 rgba(255,255,255,0.2)'
-              }}>
-              <UserPlus className="w-3.5 h-3.5 text-white" />
-            </button>
-          )
-        )}
       </div>
     );
   };
