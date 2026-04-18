@@ -43,15 +43,15 @@ function ReactionsModal({ open, onClose, reactions, reactedUsers, currentUserId,
     const initials = (displayName || '?').split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
 
     const StreakIcon = () => variant === 'sunglasses'
-      ? <div className="relative w-8 h-8 flex items-center justify-center flex-shrink-0">
-          <img src={STREAK_ICON_URL} alt="streak" className="w-8 h-8" style={{ objectFit: 'contain' }} />
+      ? <div className="relative flex-shrink-0" style={{ width: '2.2rem', height: '2.2rem' }}>
+          <img src={STREAK_ICON_URL} alt="streak" className="w-full h-full" style={{ objectFit: 'contain' }} />
           <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 64 64">
             <circle cx="20" cy="24" r="6" fill="none" stroke="black" strokeWidth="1.5" />
             <circle cx="44" cy="24" r="6" fill="none" stroke="black" strokeWidth="1.5" />
             <line x1="26" y1="24" x2="38" y2="24" stroke="black" strokeWidth="1.5" />
           </svg>
         </div>
-      : <img src={STREAK_ICON_URL} alt="streak" className="w-8 h-8 flex-shrink-0" style={{ objectFit: 'contain' }} />;
+      : <img src={STREAK_ICON_URL} alt="streak" className="flex-shrink-0" style={{ width: '2.2rem', height: '2.2rem', objectFit: 'contain' }} />;
 
     return (
       <div key={user.id} className="flex items-center gap-2.5 px-2 py-1.5 rounded-lg hover:bg-slate-800/50 transition-colors">
