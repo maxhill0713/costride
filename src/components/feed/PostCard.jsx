@@ -64,7 +64,7 @@ function ReactionsModal({ open, onClose, reactions, reactedUsers, currentUserId,
         {/* Name */}
         <span className="text-sm text-slate-200 font-semibold flex-1 min-w-0 truncate">{displayName}</span>
         {/* Streak icon + optional add friend button — always same total width */}
-        <div className="flex-shrink-0 flex items-center gap-1.5" style={{ width: '4.4rem' }}>
+        <div className="flex-shrink-0 flex items-center gap-1.5" style={{ width: '5.8rem', marginRight: '-1.4rem' }}>
           <div className="w-8 flex items-center justify-center">
             <StreakIcon />
           </div>
