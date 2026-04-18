@@ -16,29 +16,16 @@ import { createPageUrl } from '@/utils';
 const STREAK_ICON_URL = 'https://media.base44.com/images/public/694b637358644e1c22c8ec6b/5688f98be_Pose1_V2.png';
 
 // ── Reactions Modal ───────────────────────────────────────────────────────────
-function ReactionsModal({ open, onClose, reactions, reactedUsers, currentUserId, friends, sentFriendRequests, onAddFriend }) {
-  const [search, setSearch] = useState('');
-  const [localPendingIds, setLocalPendingIds] = useState(new Set());
-  if (!open) return null;
-
-  const friendIds = new Set((friends || []).map(f => f.friend_id));
-  const sentIds = new Set((sentFriendRequests || []).map(r => r.friend_id));
-
-  const sanitised = search.replace(/[^a-zA-Z0-9_.\ ]/g, '').slice(0, 30);
-  const filtered = reactedUsers.filter(user => {
-    const name = user.display_name || user.full_name || user.username || '';
-    return name.toLowerCase().includes(sanitised.toLowerCase());
-  });
-
-  const friendReactors = filtered.filter(u => friendIds.has(u.id));
-  const communityReactors = filtered.filter(u => !friendIds.has(u.id));
+const friendReactors = filtered.filter(u => friendIds.has(u.id) || u.id === currentUserId);
+  const communityReactors = filtered.filter(u => !friendIds.has(u.id) && u.id !== currentUserId);
 
   const renderUser = (user) => {
     const variant = reactions[user.id];
-    const displayName = user.display_name || user.full_name || user.username || 'Unknown';
     const isSelf = user.id === currentUserId;
     const isFriend = friendIds.has(user.id);
     const isPending = sentIds.has(user.id) || localPendingIds.has(user.id);
+    const displayName = isSelf ? 'You' : (user.display_name || user.full_name || user.username || 'Unknown');
+
     return (
       <div key={user.id} className="flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-slate-800/50 transition-colors">
         <div className="relative flex-shrink-0 flex items-center justify-center" style={{ width: 32, height: 32, marginLeft: -2 }}>
@@ -78,194 +65,6 @@ function ReactionsModal({ open, onClose, reactions, reactedUsers, currentUserId,
       </div>
     );
   };
-
-  const SectionHeader = ({ label }) => (
-    <p className="text-[11px] font-bold text-slate-500 uppercase tracking-widest px-2 pt-2 pb-1">
-      {label}
-    </p>
-  );
-
-  const showSections = !sanitised; // only split into sections when not searching
-
-  return (
-    <>
-      <div
-        onClick={onClose}
-        style={{
-          position: 'fixed',
-          top: '-100px',
-          left: 0,
-          right: 0,
-          bottom: 0,
-          zIndex: 10005,
-          background: 'rgba(2,6,23,0.6)',
-          backdropFilter: 'blur(6px)',
-          WebkitBackdropFilter: 'blur(6px)',
-        }}
-      />
-      <div className="fixed left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2 w-11/12 max-w-sm z-[10006] bg-slate-900/60 backdrop-blur-md border border-slate-700/20 rounded-3xl shadow-2xl shadow-black/20 text-white overflow-hidden">
-        <div className="px-5 pt-5 pb-3">
-          <h3 className="text-lg font-semibold leading-none tracking-tight text-white text-center">{Object.keys(reactions).length} Reactions</h3>
-        </div>
-        <div className="px-3 pb-2">
-          <div className="flex items-center gap-2 px-3 rounded-xl bg-white/10 border border-white/20" style={{ paddingTop: '7px', paddingBottom: '7px' }}>
-            <svg className="w-3.5 h-3.5 text-slate-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-            <input
-              value={search}
-              onChange={e => setSearch(e.target.value.replace(/[^a-zA-Z0-9_.\ ]/g, '').slice(0, 30))}
-              placeholder="Search by name..."
-              maxLength={30}
-              autoComplete="off"
-              autoCorrect="off"
-              spellCheck="false"
-              style={{ fontSize: '16px' }}
-              className="flex-1 bg-transparent border-none outline-none text-white placeholder:text-slate-300 text-sm"
-            />
-          </div>
-        </div>
-        <div className="overflow-y-auto max-h-80 px-3 pb-4">
-          {filtered.length === 0 ? (
-            <p className="text-center text-slate-400 text-sm py-6">No reactions found</p>
-          ) : showSections ? (
-            <>
-              {friendReactors.length > 0 && (
-                <>
-                  <SectionHeader label="Friends" />
-                  {friendReactors.map(renderUser)}
-                  {communityReactors.length > 0 && <div className="mx-2 my-2 border-t border-white/[0.07]" />}
-                </>
-              )}
-              {communityReactors.length > 0 && (
-                <>
-                  <SectionHeader label="Community" />
-                  {communityReactors.map(renderUser)}
-                </>
-              )}
-            </>
-          ) : (
-            filtered.map(renderUser)
-          )}
-        </div>
-      </div>
-    </>
-  );
-}
-
-// ── Confirm dialog ────────────────────────────────────────────────────────────
-function ConfirmDialog({ open, onClose, title, description, confirmLabel, confirmClass, onConfirm, isPending }) {
-  if (!open) return null;
-  return (
-    <>
-      <div className="fixed inset-0 z-[10003] bg-slate-950/60 backdrop-blur-sm" onClick={onClose} />
-      <div className="fixed left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2 w-11/12 max-w-sm z-[10004] bg-slate-900/80 backdrop-blur-md border border-slate-700/30 rounded-3xl shadow-2xl shadow-black/40 text-white p-6">
-        <h3 className="text-xl font-black text-white mb-2">{title}</h3>
-        <p className="text-slate-300 text-sm mb-6">{description}</p>
-        <div className="flex gap-3">
-          <button
-            onClick={onClose}
-            className="flex-1 py-2.5 rounded-xl font-bold text-sm text-slate-200 bg-gradient-to-b from-slate-600 via-slate-700 to-slate-800 border border-slate-500/40 shadow-[0_3px_0_0_#1e293b,0_6px_16px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.08)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 transform-gpu">
-            Cancel
-          </button>
-          <button
-            onClick={onConfirm}
-            disabled={isPending}
-            className={`flex-1 py-2.5 rounded-xl font-bold text-sm text-white active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 transform-gpu disabled:opacity-50 ${confirmClass}`}>
-            {isPending ? <Loader2 className="w-4 h-4 animate-spin mx-auto" /> : confirmLabel}
-          </button>
-        </div>
-      </div>
-    </>
-  );
-}
-
-// ── Report categories ─────────────────────────────────────────────────────────
-const REPORT_CATEGORIES = [
-  { id: 'dislike', label: "I just don't like it", definition: "This post isn't for you — it might be annoying, uninteresting, or just not your thing. You won't see more like it." },
-  { id: 'violence', label: 'Violence or abuse', definition: "Content that depicts, promotes, or glorifies physical violence, self-harm, abuse, or threatening behaviour toward people or animals." },
-  { id: 'hate', label: 'Hate and harassment', definition: "Content that targets someone based on race, ethnicity, religion, gender, sexual orientation, disability, or similar characteristics, or that is intended to bully or harass an individual." },
-  { id: 'sexual', label: 'Sexual content', definition: "Explicit or suggestive sexual content, nudity, or content that sexualises individuals without consent." },
-  { id: 'false_info', label: 'False information', definition: "Content that spreads demonstrably false or misleading information that could deceive others or cause real-world harm." },
-  { id: 'other', label: 'Other', definition: "Something else not covered above. Please submit and our team will review the post." },
-];
-
-function ReportModal({ open, onClose, postId }) {
-  const [selected, setSelected] = useState(null);
-  const [expanded, setExpanded] = useState(null);
-
-  const handleClose = () => { setSelected(null); setExpanded(null); onClose(); };
-  const handleSubmit = () => { handleClose(); toast.success('Report submitted. Thank you.'); };
-
-  if (!open) return null;
-
-  return (
-    <>
-      <div className="fixed inset-0 z-[10005] bg-slate-950/70 backdrop-blur-sm" onClick={handleClose} />
-      <div className="fixed left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2 w-11/12 max-w-sm z-[10006] bg-slate-900/90 backdrop-blur-xl border border-slate-700/40 rounded-3xl shadow-2xl shadow-black/60 text-white overflow-hidden">
-        <div className="px-5 pt-5 pb-3">
-          <h3 className="text-xl font-black text-white tracking-tight text-center">Report</h3>
-          <p className="text-slate-400 text-xs mt-1 font-medium text-center">Your report is anonymous</p>
-        </div>
-        <div className="px-3 pb-2 space-y-1.5 max-h-[60vh] overflow-y-auto">
-          {REPORT_CATEGORIES.map((cat) => {
-            const isSelected = selected === cat.id;
-            const isExpanded = expanded === cat.id;
-            const handleRowPress = () => { setSelected(isSelected ? null : cat.id); setExpanded(isExpanded ? null : cat.id); };
-            return (
-              <div key={cat.id} className={`rounded-2xl border transition-all duration-200 overflow-hidden ${isSelected ? 'border-blue-500/60 bg-blue-500/10' : 'border-slate-700/40 bg-slate-800/50'}`}>
-                <div className="flex items-center gap-3 px-3 py-2.5">
-                  <span className={`flex-1 text-sm font-semibold ${isSelected ? 'text-white' : 'text-slate-200'}`}>{cat.label}</span>
-                  <button onClick={handleRowPress} className={`w-6 h-6 rounded-md flex-shrink-0 flex items-center justify-center border-2 transition-all duration-150 ${isSelected ? 'bg-blue-500 border-blue-500 shadow-sm shadow-blue-500/40' : 'border-slate-600 bg-slate-700/50 hover:border-slate-400'}`}>
-                    {isSelected && <Check className="w-3.5 h-3.5 text-white" strokeWidth={3} />}
-                  </button>
-                </div>
-                <AnimatePresence initial={false}>
-                  {isExpanded && (
-                    <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.2, ease: 'easeInOut' }} className="overflow-hidden">
-                      <div className="px-4 pb-3 pt-0"><p className="text-xs text-slate-400 leading-relaxed">{cat.definition}</p></div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
-            );
-          })}
-        </div>
-        <div className="px-4 py-3">
-          <AnimatePresence>
-            {selected && (
-              <motion.button key="submit" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 8 }} transition={{ duration: 0.18 }} onClick={handleSubmit}
-                className="w-full py-3 rounded-2xl font-black text-sm text-white bg-gradient-to-b from-blue-500 via-blue-600 to-blue-700 shadow-[0_3px_0_0_#1d4ed8,0_6px_20px_rgba(59,130,246,0.35),inset_0_1px_0_rgba(255,255,255,0.2)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 transform-gpu">
-                Submit Report
-              </motion.button>
-            )}
-          </AnimatePresence>
-          {!selected && <button onClick={handleClose} className="w-full py-2.5 rounded-2xl font-bold text-sm text-slate-400 hover:text-slate-200 transition-colors">Cancel</button>}
-        </div>
-      </div>
-    </>
-  );
-}
-
-// ── Exercise row ──────────────────────────────────────────────────────────────
-function ExerciseRow({ ex, idx }) {
-  const exName = ex.name || ex.exercise_name || ex.exercise || ex.title || ex.label || ex.movement || '';
-  const displayName = exName ? exName.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()) : `Exercise ${idx + 1}`;
-  const sets = ex.sets || ex.set_count || ex.setsReps?.split('x')?.[0] || '-';
-  const reps = ex.reps || ex.rep_count || ex.setsReps?.split('x')?.[1] || '-';
-  const weight = ex.weight ?? ex.weight_kg ?? ex.weight_lbs ?? '-';
-  return (
-    <div className="bg-white/5 py-1 pl-1.5 rounded-lg border border-white/10 grid gap-0.5 items-center" style={{ gridTemplateColumns: '1fr 28px 10px 28px auto' }}>
-      <div className="text-[11px] font-bold text-white leading-tight ml-0.5 truncate">{displayName}</div>
-      <div className="bg-white/10 text-slate-300 text-[11px] font-semibold text-center rounded-md flex items-center justify-center ml-0.5 py-0.5" style={{ width: 28 }}>{sets}</div>
-      <div className="text-slate-400 text-[10px] font-bold flex items-center justify-center">×</div>
-      <div className="bg-white/10 text-slate-300 text-[11px] font-semibold text-center rounded-md flex items-center justify-center py-0.5" style={{ width: 28 }}>{reps}</div>
-      <div className="ml-1.5 pr-2">
-        <div className="bg-gradient-to-r from-blue-700/90 to-blue-900/90 text-white py-0.5 px-1 text-[11px] font-black text-center rounded-xl shadow-sm shadow-blue-900/20 min-w-[42px]">
-          {weight}<span className="text-[9px] font-bold">kg</span>
-        </div>
-      </div>
-    </div>
-  );
-}
 
 // ── Smart date formatter ──────────────────────────────────────────────────────
 function formatPostDate(dateStr) {
