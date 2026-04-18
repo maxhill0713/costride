@@ -87,6 +87,13 @@ export default function BusyTimesChart({ checkIns, gymId }) {
   const nowStatus = getBusynessLabel(nowData?.percentage ?? 0, avg, nowData?.isClosed);
   const isToday = selectedDay === bestTimeDayInt;
 
+  const formatHour = (h) => {
+    if (h === 0) return '12am';
+    if (h < 12) return `${h}am`;
+    if (h === 12) return '12pm';
+    return `${h - 12}pm`;
+  };
+
   // Derive opening hours from BestTime data (hours where isClosed is false)
   const getOpeningHours = () => {
     if (!useBestTime) return null;
@@ -102,13 +109,6 @@ export default function BusyTimesChart({ checkIns, gymId }) {
     return `${formatHour(first)} – ${formatHour(last + 1)}`;
   };
   const openingHours = getOpeningHours();
-
-  const formatHour = (h) => {
-    if (h === 0) return '12am';
-    if (h < 12) return `${h}am`;
-    if (h === 12) return '12pm';
-    return `${h - 12}pm`;
-  };
 
   return (
     <div style={{
