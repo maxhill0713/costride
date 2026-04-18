@@ -658,7 +658,7 @@ export default function Profile() {
                     <div className="flex items-center justify-between pt-1">
                       <div className="flex items-center gap-2">
                         <Users className="w-4 h-4 text-slate-500" />
-                        <span className="text-[11px] text-slate-400 font-medium">Share with yo</span>
+                        <span className="text-[11px] text-slate-400 font-medium">Share with your home community</span>
                       </div>
                       <button
                       onClick={() => setShareWithCommunity(!shareWithCommunity)}
