@@ -105,7 +105,7 @@ export default function Gyms() {
 
   const memberGymIds = gymMemberships.map(m => m.gym_id);
   const { data: userGymsData = [] } = useQuery({
-    queryKey: ['memberGyms', currentUser?.id],
+    queryKey: ['memberGyms', memberGymIds.join(',')],
     queryFn: () => memberGymIds.length === 0 ? [] : base44.entities.Gym.filter({ id: { $in: memberGymIds } }),
     enabled: !!currentUser && gymMemberships.length > 0, staleTime: 10 * 60 * 1000, gcTime: 30 * 60 * 1000, placeholderData: p => p,
   });
@@ -157,10 +157,17 @@ export default function Gyms() {
       if (!gym) throw new Error('Failed to create gym');
       return gym;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['gyms'] });
-      queryClient.invalidateQueries({ queryKey: ['gymMemberships'] });
-      queryClient.invalidateQueries({ queryKey: ['memberGyms', currentUser?.id] });
+    onSuccess: (newGym) => {
+      // Immediately add the new membership + gym to the cache so UI updates without refresh
+      queryClient.setQueryData(['gymMemberships', currentUser?.id], (old = []) => [
+        ...old,
+        { gym_id: newGym.id, gym_name: newGym.name, user_id: currentUser?.id, status: 'active' }
+      ]);
+      queryClient.setQueryData(['gyms'], (old = []) => {
+        if (old.find(g => g.id === newGym.id)) return old;
+        return [...old, newGym];
+      });
+      queryClient.invalidateQueries({ queryKey: ['gymMemberships', currentUser?.id] });
       queryClient.invalidateQueries({ queryKey: ['currentUser'] });
       setShowAddGymModal(false); setShowConfirmJoin(false); setSelectedPlaceGym(null); setPendingGymData(null); setPlacesResults([]); setSearchQuery('');
     },

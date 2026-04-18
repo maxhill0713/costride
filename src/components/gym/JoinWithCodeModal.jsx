@@ -193,7 +193,12 @@ export default function JoinWithCodeModal({ open, onClose, currentUser, gymCount
       await queryClient.cancelQueries({ queryKey: ['gymMemberships', currentUser?.id] });
     },
     onSuccess: (gym) => {
-      queryClient.invalidateQueries({ queryKey: ['gymMemberships'] });
+      // Optimistically update memberships so My Gyms page refreshes immediately
+      queryClient.setQueryData(['gymMemberships', currentUser?.id], (old = []) => [
+        ...old,
+        { gym_id: gym.id, gym_name: gym.name, user_id: currentUser?.id, status: 'active' }
+      ]);
+      queryClient.invalidateQueries({ queryKey: ['gymMemberships', currentUser?.id] });
       queryClient.invalidateQueries({ queryKey: ['currentUser'] });
       toast.success(`Joined ${gym.name}! 🎉`);
       handleClose();
