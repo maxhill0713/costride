@@ -54,7 +54,7 @@ function ReactionsModal({ open, onClose, reactions, reactedUsers, currentUserId,
       : <img src={STREAK_ICON_URL} alt="streak" className="flex-shrink-0" style={{ width: '2.2rem', height: '2.2rem', objectFit: 'contain' }} />;
 
     return (
-      <div key={user.id} className="flex items-center gap-2.5 px-2 py-1.5 rounded-lg hover:bg-slate-800/50 transition-colors">
+      <div key={user.id} className="flex items-center gap-2.5 px-2 py-1 rounded-lg hover:bg-slate-800/50 transition-colors">
         {/* Profile pic */}
         <div className="flex-shrink-0 w-8 h-8 rounded-full overflow-hidden bg-slate-700 flex items-center justify-center text-xs font-bold text-slate-300">
           {avatarUrl
