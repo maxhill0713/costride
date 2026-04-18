@@ -23,11 +23,11 @@ Deno.serve(async (req) => {
       id: { $in: safeIds }
     });
 
-    // Only return public profile fields
+    // Only return public profile fields — prefer display_name (username) over full_name
     const avatars = {};
     users.forEach(user => {
       avatars[user.id] = {
-        full_name: user.full_name || 'Unknown',
+        full_name: user.display_name || user.username || user.full_name || 'Unknown',
         avatar_url: user.avatar_url || null
       };
     });
