@@ -57,14 +57,19 @@ Deno.serve(async (req) => {
 
     console.log(JSON.stringify({ event: 'AUDIT', action: 'post_created', user_id: user.id, user_email: user.email, resource_type: 'post', status: 'success', timestamp: new Date().toISOString() }));
 
-    // Resolve gym_id if not provided — look up user's primary gym membership
+    // Resolve gym_id if not provided — prefer user's primary_gym_id, fall back to first membership
     let resolvedGymId = gym_id || null;
     let resolvedGymName = gym_name || null;
     if (!resolvedGymId) {
       const memberships = await base44.asServiceRole.entities.GymMembership.filter({ user_id: user.id, status: 'active' });
       if (memberships.length > 0) {
-        resolvedGymId = memberships[0].gym_id;
-        resolvedGymName = memberships[0].gym_name || null;
+        // Prefer the user's primary gym so community posts appear in the right feed
+        const primaryMembership = user.primary_gym_id
+          ? memberships.find(m => m.gym_id === user.primary_gym_id)
+          : null;
+        const chosen = primaryMembership || memberships[0];
+        resolvedGymId = chosen.gym_id;
+        resolvedGymName = chosen.gym_name || null;
       }
     }
 
