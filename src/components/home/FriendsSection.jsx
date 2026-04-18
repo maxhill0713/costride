@@ -165,7 +165,7 @@ function FriendsSection({
                       const sentDays = Math.floor(sentMs / (1000 * 60 * 60 * 24));
                       const timeAgo = sentMins < 2 ? 'Just now' : sentMins < 60 ? `${sentMins}m ago` : sentDays >= 1 ? `${sentDays}d ago` : `${sentHours}h ago`;
                       return (
-                        <div key={`sent-${request.id}`} className="px-2.5 py-2 rounded-lg flex items-center gap-2 relative bg-slate-700/40">
+                        <div key={`sent-${request.id}`} className="px-2.5 py-1 rounded-lg flex items-center gap-2 relative bg-slate-700/40">
                           <Link to={createPageUrl('UserProfile') + `?id=${request.friend_id}`} onClick={closeAll} className="flex items-center gap-2 min-w-0" style={{ flex: '0 1 auto' }}>
                             <div className="w-7 h-7 rounded-full bg-gradient-to-br from-slate-600 to-slate-700 flex items-center justify-center flex-shrink-0 overflow-hidden">
                               {avatarUrl
@@ -218,7 +218,7 @@ function FriendsSection({
                       const name = request.user_name || 'User';
                       const avatarUrl = userAvatarMap[request.user_id] || request.user_avatar;
                       return (
-                        <div key={request.id} className="px-2.5 py-2 rounded-lg bg-slate-700/40 flex items-center gap-2 relative">
+                        <div key={request.id} className="px-2.5 py-1 rounded-lg bg-slate-700/40 flex items-center gap-2 relative">
                           <Link to={createPageUrl('UserProfile') + `?id=${request.user_id}`} onClick={closeAll} className="flex items-center gap-2 min-w-0 flex-1">
                             <div className="w-7 h-7 rounded-full bg-gradient-to-br from-slate-600 to-slate-700 flex items-center justify-center flex-shrink-0 overflow-hidden">
                               {avatarUrl
@@ -268,7 +268,7 @@ function FriendsSection({
                           const name = friend.friend_name;
                           const avatarUrl = userAvatarMap[friend.friend_id] || friend.friend_avatar;
                           return (
-                            <div key={friend.id} className="p-2 rounded-lg bg-slate-700/40 flex items-center justify-between gap-2 relative">
+                            <div key={friend.id} className="px-2 py-1 rounded-lg bg-slate-700/40 flex items-center justify-between gap-2 relative">
                               <Link to={createPageUrl('UserProfile') + `?id=${friend.friend_id}`} className="flex items-center gap-2 flex-1 min-w-0" onClick={closeAll}>
                                 <div className="w-8 h-8 rounded-full bg-gradient-to-br from-slate-600 to-slate-700 flex items-center justify-center flex-shrink-0 overflow-hidden">
                                   {avatarUrl
