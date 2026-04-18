@@ -32,7 +32,7 @@ Deno.serve(async (req) => {
         '-created_date',
         100
       ),
-      // Only show workout posts where the user explicitly shared with the community
+      // Only show posts where the user explicitly shared with the community
       base44.asServiceRole.entities.Post.filter(
         { gym_id: gymId, is_hidden: false, share_with_community: true },
         '-created_date',

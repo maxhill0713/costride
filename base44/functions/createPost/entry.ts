@@ -94,7 +94,7 @@ Deno.serve(async (req) => {
       workout_exercises: safeWorkoutExercises,
       workout_duration: workout_duration ? sanitise(String(workout_duration), 20) : null,
       workout_volume:   workout_volume ? sanitise(String(workout_volume), 30) : null,
-      share_with_community: !!(workout_name && share_with_community === true),
+      share_with_community: share_with_community === true,
     });
 
     // Track "Witness My Gains" challenge — only if it's a workout summary shared with community
