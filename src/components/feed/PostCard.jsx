@@ -64,7 +64,10 @@ function ReactionsModal({ open, onClose, reactions, reactedUsers, currentUserId,
         {/* Name */}
         <span className="text-sm text-slate-200 font-semibold flex-1 min-w-0 truncate">{displayName}</span>
         {/* Streak icon + optional add friend button */}
-        <div className="flex-shrink-0 flex items-center justify-end gap-1.5" style={{ width: '5rem' }}>
+        <div className="flex-shrink-0 flex items-center justify-end gap-1.5">
+          <div className="flex items-center justify-center">
+            <StreakIcon />
+          </div>
           {!isSelf && !isFriend && (
             isPending ? (
               <span className="text-[10px] font-bold px-2 py-1 rounded-lg flex-shrink-0" style={{ background: 'linear-gradient(to bottom, #1a1f35, #0f1220)', border: '1px solid rgba(99,102,241,0.3)', color: 'rgba(165,180,252,0.85)', letterSpacing: '0.04em' }}>
@@ -87,9 +90,6 @@ function ReactionsModal({ open, onClose, reactions, reactedUsers, currentUserId,
               </button>
             )
           )}
-          <div className="flex items-center justify-center">
-            <StreakIcon />
-          </div>
         </div>
       </div>
     );
