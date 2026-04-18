@@ -24,6 +24,25 @@ const overlayVariants = {
 };
 
 export default function Progress() {
+  useEffect(() => {
+    const touchStartY = { current: null };
+    const preventOverscroll = (e) => {
+      if (window.scrollY <= 0 && touchStartY.current !== null) {
+        if (e.touches[0].clientY > touchStartY.current) e.preventDefault();
+      }
+    };
+    const onTouchStart = (e) => { touchStartY.current = e.touches[0].clientY; };
+    const onTouchEnd = () => { touchStartY.current = null; };
+    document.addEventListener('touchstart', onTouchStart, { passive: true });
+    document.addEventListener('touchmove', preventOverscroll, { passive: false });
+    document.addEventListener('touchend', onTouchEnd, { passive: true });
+    return () => {
+      document.removeEventListener('touchstart', onTouchStart);
+      document.removeEventListener('touchmove', preventOverscroll);
+      document.removeEventListener('touchend', onTouchEnd);
+    };
+  }, []);
+
   const { data: currentUser } = useQuery({
     queryKey: ['currentUser'],
     queryFn: () => base44.auth.me(),

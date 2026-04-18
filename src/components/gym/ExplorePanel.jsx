@@ -5,6 +5,25 @@ export default function ExplorePanel({ recentlyViewedGyms, nearbyGyms, GymCardIn
   const touchStartX = useRef(null);
   const touchStartY = useRef(null);
   const containerRef = useRef(null);
+  const touchStartYScroll = useRef(null);
+
+  useEffect(() => {
+    const preventOverscroll = (e) => {
+      if (window.scrollY <= 0 && touchStartYScroll.current !== null) {
+        if (e.touches[0].clientY > touchStartYScroll.current) e.preventDefault();
+      }
+    };
+    const onTouchStart = (e) => { touchStartYScroll.current = e.touches[0].clientY; };
+    const onTouchEnd = () => { touchStartYScroll.current = null; };
+    document.addEventListener('touchstart', onTouchStart, { passive: true });
+    document.addEventListener('touchmove', preventOverscroll, { passive: false });
+    document.addEventListener('touchend', onTouchEnd, { passive: true });
+    return () => {
+      document.removeEventListener('touchstart', onTouchStart);
+      document.removeEventListener('touchmove', preventOverscroll);
+      document.removeEventListener('touchend', onTouchEnd);
+    };
+  }, []);
 
 
 
