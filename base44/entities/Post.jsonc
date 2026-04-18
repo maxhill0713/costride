@@ -116,6 +116,11 @@
       "type": "boolean",
       "default": false,
       "description": "Whether this post is hidden from the feed"
+    },
+    "share_with_community": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether this workout post should appear in the gym community activity feed"
     }
   },
   "required": [

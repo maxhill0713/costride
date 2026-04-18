@@ -32,9 +32,9 @@ Deno.serve(async (req) => {
         '-created_date',
         100
       ),
-      // No date filter on posts — new users should see ALL historic posts
+      // Only show workout posts where the user explicitly shared with the community
       base44.asServiceRole.entities.Post.filter(
-        { gym_id: gymId, is_hidden: false },
+        { gym_id: gymId, is_hidden: false, share_with_community: true },
         '-created_date',
         100
       ),
