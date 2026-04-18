@@ -279,6 +279,7 @@ export default function Home() {
       queryClient.invalidateQueries({ queryKey: ['currentUser'] }),
       queryClient.invalidateQueries({ queryKey: ['checkIns'] }),
       queryClient.invalidateQueries({ queryKey: ['friendPosts'] }),
+      queryClient.invalidateQueries({ queryKey: ['posts'] }),
       queryClient.invalidateQueries({ queryKey: ['notifications'] }),
       queryClient.invalidateQueries({ queryKey: ['friends'] }),
       queryClient.invalidateQueries({ queryKey: ['weeklyWorkoutLogs'] }),
@@ -408,10 +409,11 @@ export default function Home() {
   const friendIdList = useMemo(() => friends.map((f) => f.friend_id), [friends]);
 
   const { data: allPosts = [] } = useQuery({
-    queryKey: ['friendPosts', currentUser?.id, friendIdList.join(',')],
+    queryKey: ['friendPosts', currentUser?.id, friendIdList.join(','), primaryGymIdForQuery],
     queryFn: () =>
-      base44.functions.invoke('getFriendPosts', {
+      base44.functions.invoke('getSocialFeedPosts', {
         friendIds: friendIdList,
+        primaryGymId: primaryGymIdForQuery || null,
         limit: 200,
       }).then(res => res.data?.posts || []),
     enabled: !!currentUser,
@@ -671,12 +673,11 @@ export default function Home() {
   const socialFeedPosts = useMemo(() => {
     const threeDaysAgo = new Date(Date.now() - 3 * 24 * 60 * 60 * 1000);
     return allPosts.filter(post =>
-      (friendIdList.includes(post.member_id) || post.member_id === currentUser?.id) &&
       (post.content || post.image_url || post.video_url || post.workout_name) &&
       !post.gym_join &&
       new Date(post.created_date) >= threeDaysAgo
     );
-  }, [allPosts, friendIdList, currentUser?.id]);
+  }, [allPosts, currentUser?.id]);
 
   const activityFeed = useMemo(() => {
     const activities = [];
@@ -1339,7 +1340,7 @@ export default function Home() {
           {socialFeedPosts.length > 0 && (
             <div className="space-y-3 mt-4">
               {socialFeedPosts.map((post) => (
-                <PostCard key={post.id} post={post} fullWidth={true} currentUser={currentUser} isOwnProfile={post.member_id === currentUser?.id} onLike={() => {}} onComment={() => {}} onSave={() => {}} onDelete={() => queryClient.invalidateQueries({ queryKey: ['posts'] })} friends={friends} sentFriendRequests={sentFriendRequests} onAddFriend={(user) => addFriendMutation.mutate(user)} />
+                <PostCard key={post.id} post={post} fullWidth={true} currentUser={currentUser} isOwnProfile={post.member_id === currentUser?.id} onLike={() => {}} onComment={() => {}} onSave={() => {}} onDelete={() => queryClient.invalidateQueries({ queryKey: ['posts'] })} friends={friends} sentFriendRequests={sentFriendRequests} onAddFriend={(user) => addFriendMutation.mutate(user)} friendIdList={friendIdList} />
               ))}
             </div>
           )}

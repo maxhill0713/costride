@@ -400,7 +400,7 @@ function ExpandableCaption({ text, className = '' }) {
   );
 }
 
-function PostCard({ post, onLike, onComment, onSave, onDelete, fullWidth = false, isOwnProfile = false, currentUser: currentUserProp, friends = [], sentFriendRequests = [], onAddFriend }) {
+function PostCard({ post, onLike, onComment, onSave, onDelete, fullWidth = false, isOwnProfile = false, currentUser: currentUserProp, friends = [], sentFriendRequests = [], onAddFriend, friendIdList = [] }) {
   const [reacted, setReacted] = useState(false);
   const [saved, setSaved] = useState(false);
   const [showComments, setShowComments] = useState(false);
@@ -549,6 +549,7 @@ function PostCard({ post, onLike, onComment, onSave, onDelete, fullWidth = false
   const resolvedMemberName = postAuthor?.display_name || postAuthor?.full_name || post.member_name;
 
   const isOwner = currentUser?.id === post.member_id;
+  const isCommunityMember = !isOwner && !friendIdList.includes(post.member_id);
   const isNudgePost = post.exercise === 'workout_completion_nudge';
   const isGymJoinPost = post.gym_join === true;
   const isWorkoutPost = !!post.workout_name;
@@ -755,7 +756,10 @@ function PostCard({ post, onLike, onComment, onSave, onDelete, fullWidth = false
                   {post.member_avatar ? <img src={post.member_avatar} alt={resolvedMemberName} className="w-full h-full object-cover" decoding="async" /> : <span className="text-sm font-bold text-white">{resolvedMemberName?.charAt(0)?.toUpperCase() || '?'}</span>}
                 </div>
                 <div>
-                  <p className="text-sm font-bold text-white leading-tight">{resolvedMemberName}</p>
+                  <div className="flex items-center gap-1.5 leading-tight">
+                    <p className="text-sm font-bold text-white">{resolvedMemberName}</p>
+                    {isCommunityMember && <span className="text-[11px] font-medium text-slate-400">— Community Member</span>}
+                  </div>
                   <PostMeta post={post} gymName={gymName} />
                 </div>
               </Link>
@@ -894,7 +898,10 @@ function PostCard({ post, onLike, onComment, onSave, onDelete, fullWidth = false
                 {post.member_avatar ? <img src={post.member_avatar} alt={resolvedMemberName} className="w-full h-full object-cover" decoding="async" /> : <span className="text-sm font-bold text-white">{resolvedMemberName?.charAt(0)?.toUpperCase() || '?'}</span>}
               </div>
               <div>
-                <p className="text-sm font-bold text-white leading-tight">{resolvedMemberName}</p>
+                <div className="flex items-center gap-1.5 leading-tight">
+                  <p className="text-sm font-bold text-white">{resolvedMemberName}</p>
+                  {isCommunityMember && <span className="text-[11px] font-medium text-slate-400">— Community Member</span>}
+                </div>
                 <PostMeta post={post} gymName={null} />
               </div>
             </Link>
