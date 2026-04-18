@@ -87,6 +87,22 @@ export default function BusyTimesChart({ checkIns, gymId }) {
   const nowStatus = getBusynessLabel(nowData?.percentage ?? 0, avg, nowData?.isClosed);
   const isToday = selectedDay === bestTimeDayInt;
 
+  // Derive opening hours from BestTime data (hours where isClosed is false)
+  const getOpeningHours = () => {
+    if (!useBestTime) return null;
+    const dayData = bestTimeData.weekData.find((d) => d.day_int === selectedDay);
+    if (!dayData) return null;
+    const openHoursList = dayData.hours
+      .filter((h) => h.percentage !== -1 && h.percentage !== null)
+      .map((h) => h.hour)
+      .sort((a, b) => a - b);
+    if (openHoursList.length === 0) return 'Closed';
+    const first = openHoursList[0];
+    const last = openHoursList[openHoursList.length - 1];
+    return `${formatHour(first)} – ${formatHour(last + 1)}`;
+  };
+  const openingHours = getOpeningHours();
+
   const formatHour = (h) => {
     if (h === 0) return '12am';
     if (h < 12) return `${h}am`;
@@ -258,6 +274,25 @@ export default function BusyTimesChart({ checkIns, gymId }) {
 
       {/* Divider */}
       <div style={{ height: 1, background: 'rgba(255,255,255,0.055)', margin: '11px 0' }} />
+
+      {/* Opening hours */}
+      {openingHours && (
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+            <Clock style={{ width: 11, height: 11, color: 'rgba(130,160,255,0.7)', flexShrink: 0 }} />
+            <span style={{ fontSize: 11, fontWeight: 600, color: 'rgba(160,180,220,0.7)' }}>Opening Hours</span>
+          </div>
+          <span style={{
+            fontSize: 11, fontWeight: 700,
+            color: openingHours === 'Closed' ? 'rgba(248,113,113,0.85)' : 'rgba(200,220,255,0.9)',
+            background: openingHours === 'Closed' ? 'rgba(239,68,68,0.1)' : 'rgba(100,130,255,0.12)',
+            border: `1px solid ${openingHours === 'Closed' ? 'rgba(239,68,68,0.2)' : 'rgba(100,130,255,0.2)'}`,
+            borderRadius: 20, padding: '3px 10px',
+          }}>
+            {openingHours}
+          </span>
+        </div>
+      )}
 
       {/* Legend */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, flexWrap: 'wrap' }}>
