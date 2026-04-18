@@ -73,7 +73,7 @@ function SpotlightCard({ member, rank, memberAvatarMap }) {
 
 }
 
-export default function MemberSpotlight({ checkIns, memberAvatarMap }) {
+export default function MemberSpotlight({ checkIns, memberAvatarMap, memberNameMap = {} }) {
   const [collapsed, setCollapsed] = useState(false);
 
   const topMembers = useMemo(() => {
@@ -85,10 +85,15 @@ export default function MemberSpotlight({ checkIns, memberAvatarMap }) {
       if (c.user_name) names[c.user_id] = c.user_name;
     });
     return Object.entries(counts).
-    map(([userId, checkInCount]) => ({ userId, userName: names[userId] || 'Member', checkInCount })).
+    map(([userId, checkInCount]) => ({
+      userId,
+      // Prefer memberNameMap (display_name/username) over check-in stored name
+      userName: memberNameMap[userId] || names[userId] || 'Member',
+      checkInCount
+    })).
     sort((a, b) => b.checkInCount - a.checkInCount).
     slice(0, 3);
-  }, [checkIns]);
+  }, [checkIns, memberNameMap]);
 
   if (topMembers.length === 0) return null;
 

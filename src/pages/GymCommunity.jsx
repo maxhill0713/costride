@@ -1668,7 +1668,7 @@ export default function GymCommunity() {
                   </div>
                 }
 
-                <MemberSpotlight checkIns={checkIns} memberAvatarMap={memberAvatarMap} />
+                <MemberSpotlight checkIns={checkIns} memberAvatarMap={memberAvatarMap} memberNameMap={memberNameMap} />
 
                 {coaches.length > 0 &&
                 <div style={{ ...CARD_STYLE, borderRadius: 18, overflow: 'hidden' }}>
