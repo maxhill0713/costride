@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Link } from 'react-router-dom';
@@ -29,6 +29,10 @@ export default function UserProfile() {
   const userId = urlParams.get('id');
   const [selectedPost, setSelectedPost] = useState(null);
   const [showAvatarModal, setShowAvatarModal] = useState(false);
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [userId]);
 
   const { data: currentUser } = useQuery({
     queryKey: ['currentUser'],
