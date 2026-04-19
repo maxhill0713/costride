@@ -156,76 +156,23 @@ function AlreadyLoggedModal({ open, onClose, onEdit }) {
   if (!open) return null;
 
   return ReactDOM.createPortal(
-    <div
-      onClick={onClose}
-      style={{
-        position: 'fixed', inset: 0, zIndex: 10005,
-        background: 'rgba(2,6,23,0.7)', backdropFilter: 'blur(6px)',
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-      }}
-    >
-      <div
-        onClick={e => e.stopPropagation()}
-        style={{
-          width: 'min(88vw, 320px)',
-          background: 'linear-gradient(135deg, rgba(15,20,45,0.98) 0%, rgba(8,12,30,0.99) 100%)',
-          border: '1px solid rgba(255,255,255,0.1)',
-          borderRadius: 24,
-          boxShadow: '0 24px 80px rgba(0,0,0,0.7)',
-          overflow: 'hidden',
-        }}
-      >
-        <div style={{ height: 2, background: 'linear-gradient(90deg, transparent, rgba(52,211,153,0.5), transparent)' }} />
-        <div style={{ padding: '24px 24px 20px' }}>
-          <p style={{ fontSize: 17, fontWeight: 800, color: '#e2e8f0', margin: '0 0 8px', letterSpacing: '-0.02em' }}>
-            Already logged today
-          </p>
-          <p style={{ fontSize: 13, color: '#64748b', margin: 0, lineHeight: 1.55, fontWeight: 500 }}>
-            You have already logged your weight today. You can edit the weight you logged if you need to.
-          </p>
-        </div>
-        <div style={{ padding: '0 24px 24px', display: 'flex', gap: 10 }}>
-          <button
-            onClick={onClose}
-            onMouseDown={() => setOkPressed(true)}
-            onMouseUp={() => setOkPressed(false)}
-            onMouseLeave={() => setOkPressed(false)}
-            style={{
-              flex: 1, padding: '12px 0', borderRadius: 12,
-              fontSize: 13, fontWeight: 700, cursor: 'pointer',
-              background: 'linear-gradient(to bottom, #4b5563, #374151, #1f2937)',
-              border: '1px solid rgba(255,255,255,0.1)', color: '#cbd5e1',
-              boxShadow: okPressed ? 'none' : '0 3px 0 #111827, inset 0 1px 0 rgba(255,255,255,0.08)',
-              transform: okPressed ? 'translateY(3px)' : 'translateY(0)',
-              transition: 'transform 0.08s ease, box-shadow 0.08s ease',
-            }}
-          >
+    <>
+      <div className="fixed inset-0 z-[10003] bg-slate-950/60 backdrop-blur-sm" onClick={onClose} />
+      <div className="fixed left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2 w-11/12 max-w-sm z-[10004] bg-slate-900/80 backdrop-blur-md border border-slate-700/30 rounded-3xl shadow-2xl shadow-black/40 text-white p-6">
+        <h3 className="text-xl font-black text-white mb-2">Already logged today</h3>
+        <p className="text-slate-300 text-sm mb-6">
+          You've already logged your weight today. You can edit it if you need to update it.
+        </p>
+        <div className="flex gap-3">
+          <button onClick={onClose} className="flex-1 py-2.5 rounded-xl font-bold text-sm text-slate-200 bg-gradient-to-b from-slate-600 via-slate-700 to-slate-800 border border-slate-500/40 shadow-[0_3px_0_0_#1e293b,0_6px_16px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.08)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 transform-gpu">
             Okay
           </button>
-          <div style={{ flex: 1, position: 'relative' }}>
-            <div style={{ position: 'absolute', inset: 0, borderRadius: 12, background: '#1a3fa8', transform: 'translateY(3px)' }} />
-            <button
-              onClick={onEdit}
-              onMouseDown={() => setEditPressed(true)}
-              onMouseUp={() => setEditPressed(false)}
-              onMouseLeave={() => setEditPressed(false)}
-              style={{
-                position: 'relative', zIndex: 1, width: '100%',
-                padding: '12px 0', borderRadius: 12,
-                fontSize: 13, fontWeight: 700, cursor: 'pointer',
-                background: 'linear-gradient(to bottom, #60a5fa, #3b82f6, #2563eb)',
-                border: '1px solid rgba(147,197,253,0.3)', color: '#fff',
-                boxShadow: editPressed ? 'none' : '0 3px 0 #1a3fa8',
-                transform: editPressed ? 'translateY(3px)' : 'translateY(0)',
-                transition: 'transform 0.08s ease, box-shadow 0.08s ease',
-              }}
-            >
-              Edit
-            </button>
-          </div>
+          <button onClick={onEdit} className="flex-1 py-2.5 rounded-xl font-bold text-sm text-white bg-gradient-to-b from-blue-500 via-blue-600 to-blue-700 shadow-[0_3px_0_0_#1d4ed8,0_6px_16px_rgba(59,130,246,0.3),inset_0_1px_0_rgba(255,255,255,0.15)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 transform-gpu">
+            Edit
+          </button>
         </div>
       </div>
-    </div>,
+    </>,
     document.body
   );
 }
@@ -243,79 +190,25 @@ function LogWeightModal({ open, onClose, onSave, currentWeight }) {
   if (!open) return null;
 
   return ReactDOM.createPortal(
-    <div
-      onClick={onClose}
-      style={{
-        position: 'fixed', inset: 0, zIndex: 10005,
-        background: 'rgba(2,6,23,0.7)', backdropFilter: 'blur(6px)',
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-      }}
-    >
-      <div
-        onClick={e => e.stopPropagation()}
-        style={{
-          width: 'min(88vw, 320px)',
-          background: 'linear-gradient(135deg, rgba(15,20,45,0.98) 0%, rgba(8,12,30,0.99) 100%)',
-          border: '1px solid rgba(255,255,255,0.1)',
-          borderRadius: 24,
-          boxShadow: '0 24px 80px rgba(0,0,0,0.7)',
-          overflow: 'hidden',
-        }}
-      >
-        <div style={{ height: 2, background: 'linear-gradient(90deg, transparent, rgba(96,165,250,0.4), transparent)' }} />
-        <div style={{ padding: '20px 24px 0' }}>
-          <p style={{ fontSize: 17, fontWeight: 800, color: '#e2e8f0', margin: 0, letterSpacing: '-0.02em' }}>
-            Update your weight
-          </p>
-          <p style={{ fontSize: 11, color: '#475569', margin: '4px 0 20px', fontWeight: 500 }}>
-            Scroll to select your current weight
-          </p>
-        </div>
-        <div style={{ padding: '0 24px' }}>
+    <>
+      <div className="fixed inset-0 z-[10003] bg-slate-950/60 backdrop-blur-sm" onClick={onClose} />
+      <div className="fixed left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2 w-11/12 max-w-sm z-[10004] bg-slate-900/80 backdrop-blur-md border border-slate-700/30 rounded-3xl shadow-2xl shadow-black/40 text-white overflow-hidden">
+        <div style={{ height: 2, background: 'linear-gradient(90deg, transparent, rgba(96,165,250,0.35), transparent)' }} />
+        <div className="p-6 pb-0">
+          <h3 className="text-xl font-black text-white mb-1">Update your weight</h3>
+          <p className="text-slate-400 text-sm mb-4">Scroll to select your current weight</p>
           <WeightPicker value={weight} onChange={setWeight} />
         </div>
-        <div style={{ padding: '16px 24px 24px', display: 'flex', gap: 10 }}>
-          <button
-            onClick={onClose}
-            onMouseDown={() => setCancelPressed(true)}
-            onMouseUp={() => setCancelPressed(false)}
-            onMouseLeave={() => setCancelPressed(false)}
-            style={{
-              flex: 1, padding: '12px 0', borderRadius: 12,
-              fontSize: 13, fontWeight: 700, cursor: 'pointer',
-              background: 'linear-gradient(to bottom, #4b5563, #374151, #1f2937)',
-              border: '1px solid rgba(255,255,255,0.1)', color: '#cbd5e1',
-              boxShadow: cancelPressed ? 'none' : '0 3px 0 #111827, inset 0 1px 0 rgba(255,255,255,0.08)',
-              transform: cancelPressed ? 'translateY(3px)' : 'translateY(0)',
-              transition: 'transform 0.08s ease, box-shadow 0.08s ease',
-            }}
-          >
+        <div className="flex gap-3 p-6 pt-4">
+          <button onClick={onClose} className="flex-1 py-2.5 rounded-xl font-bold text-sm text-slate-200 bg-gradient-to-b from-slate-600 via-slate-700 to-slate-800 border border-slate-500/40 shadow-[0_3px_0_0_#1e293b,0_6px_16px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.08)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 transform-gpu">
             Cancel
           </button>
-          <div style={{ flex: 1, position: 'relative' }}>
-            <div style={{ position: 'absolute', inset: 0, borderRadius: 12, background: '#1a3fa8', transform: 'translateY(3px)' }} />
-            <button
-              onClick={() => { onSave(weight); onClose(); }}
-              onMouseDown={() => setSavePressed(true)}
-              onMouseUp={() => setSavePressed(false)}
-              onMouseLeave={() => setSavePressed(false)}
-              style={{
-                position: 'relative', zIndex: 1, width: '100%',
-                padding: '12px 0', borderRadius: 12,
-                fontSize: 13, fontWeight: 700, cursor: 'pointer',
-                background: 'linear-gradient(to bottom, #60a5fa, #3b82f6, #2563eb)',
-                border: '1px solid rgba(147,197,253,0.3)', color: '#fff',
-                boxShadow: savePressed ? 'none' : '0 3px 0 #1a3fa8',
-                transform: savePressed ? 'translateY(3px)' : 'translateY(0)',
-                transition: 'transform 0.08s ease, box-shadow 0.08s ease',
-              }}
-            >
-              Save
-            </button>
-          </div>
+          <button onClick={() => { onSave(weight); onClose(); }} className="flex-1 py-2.5 rounded-xl font-bold text-sm text-white bg-gradient-to-b from-blue-500 via-blue-600 to-blue-700 shadow-[0_3px_0_0_#1d4ed8,0_6px_16px_rgba(59,130,246,0.3),inset_0_1px_0_rgba(255,255,255,0.15)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 transform-gpu">
+            Save
+          </button>
         </div>
       </div>
-    </div>,
+    </>,
     document.body
   );
 }
