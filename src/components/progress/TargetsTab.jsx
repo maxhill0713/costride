@@ -522,7 +522,12 @@ export default function TargetsTab({ currentUser }) {
   return (
     <div className="space-y-8">
       <div>
-        <h2 style={sectionTitle}>Personal Goals</h2>
+        <div className="flex items-center justify-between mb-4">
+          <h2 style={sectionTitle}>Personal Goals</h2>
+          <button onClick={() => setShowAddGoal(true)} className={btnNewGoal}>
+            <Plus className="w-3.5 h-3.5" />New Goal
+          </button>
+        </div>
         <GoalsList currentUser={currentUser} showAddGoal={showAddGoal} setShowAddGoal={setShowAddGoal} />
       </div>
     </div>
