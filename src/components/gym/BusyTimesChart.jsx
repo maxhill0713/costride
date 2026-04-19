@@ -94,7 +94,6 @@ export default function BusyTimesChart({ checkIns, gymId }) {
     return `${h - 12}pm`;
   };
 
-  // Derive opening hours from BestTime data (hours where isClosed is false)
   const getOpeningHours = () => {
     if (!useBestTime) return null;
     const dayData = bestTimeData.weekData.find((d) => d.day_int === selectedDay);
@@ -112,24 +111,15 @@ export default function BusyTimesChart({ checkIns, gymId }) {
 
   return (
     <div style={{
-      background: 'linear-gradient(135deg, rgba(15,20,45,0.95) 0%, rgba(8,12,30,0.98) 100%)',
-      border: '1px solid rgba(99,130,255,0.18)',
+      background: 'linear-gradient(135deg, rgba(30,35,60,0.82) 0%, rgba(8,10,20,0.96) 100%)',
+      border: '1px solid rgba(255,255,255,0.07)',
+      backdropFilter: 'blur(20px)',
+      WebkitBackdropFilter: 'blur(20px)',
       borderRadius: 20,
       padding: 16,
       position: 'relative',
       overflow: 'hidden',
     }}>
-
-      {/* Background glow */}
-      <div style={{
-        position: 'absolute', inset: 0, pointerEvents: 'none', borderRadius: 20,
-        background: 'radial-gradient(ellipse at 20% 0%, rgba(80,100,255,0.07) 0%, transparent 60%), radial-gradient(ellipse at 80% 100%, rgba(160,60,220,0.05) 0%, transparent 60%)',
-      }} />
-      {/* Top shimmer line */}
-      <div style={{
-        position: 'absolute', top: 0, left: '10%', right: '10%', height: 1, pointerEvents: 'none',
-        background: 'linear-gradient(90deg, transparent, rgba(120,150,255,0.25), transparent)',
-      }} />
 
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12, position: 'relative' }}>
@@ -304,7 +294,7 @@ export default function BusyTimesChart({ checkIns, gymId }) {
         ))}
       </div>
 
-      {/* Keyframes injected once */}
+      {/* Keyframes */}
       <style>{`
         @keyframes cosBusyPulse {
           0%,100% { opacity:1; transform:scale(1); }
