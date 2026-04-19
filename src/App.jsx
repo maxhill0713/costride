@@ -2,11 +2,10 @@ import { Toaster } from "@/components/ui/toaster"
 import { QueryClientProvider } from '@tanstack/react-query'
 import { queryClientInstance } from '@/lib/query-client'
 import NavigationTracker from '@/lib/NavigationTracker'
-import { BrowserRouter as Router, Route, Routes, Navigate, useNavigate } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
-import { useEffect } from 'react';
 
 import Layout from './Layout';
 
@@ -52,13 +51,6 @@ const LayoutWrapper = ({ children, currentPageName }) => (
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin, user } = useAuth();
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    if (!isLoadingAuth && !isLoadingPublicSettings && !authError && user && !user.onboarding_completed) {
-      navigate('/Onboarding', { replace: true });
-    }
-  }, [isLoadingAuth, isLoadingPublicSettings, authError, user]);
 
   if (isLoadingPublicSettings || isLoadingAuth) {
     return (
@@ -80,6 +72,17 @@ const AuthenticatedApp = () => {
       navigateToLogin();
       return null;
     }
+  }
+
+  // If user is loaded and hasn't completed onboarding, redirect to Onboarding for all routes
+  if (user && !user.onboarding_completed) {
+    return (
+      <Routes>
+        <Route path="/Onboarding" element={<LayoutWrapper currentPageName="Onboarding"><Onboarding /></LayoutWrapper>} />
+        <Route path="/GymSignup" element={<LayoutWrapper currentPageName="GymSignup"><GymSignup /></LayoutWrapper>} />
+        <Route path="*" element={<Navigate to="/Onboarding" replace />} />
+      </Routes>
+    );
   }
 
   return (
