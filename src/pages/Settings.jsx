@@ -172,7 +172,7 @@ function LogoutDialog({ open, onClose, onConfirm }) {
           <button onClick={onClose} className="flex-1 py-2.5 rounded-xl font-bold text-sm text-slate-200 bg-gradient-to-b from-slate-600 via-slate-700 to-slate-800 border border-slate-500/40 shadow-[0_3px_0_0_#1e293b,0_6px_16px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.08)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 transform-gpu">
             Cancel
           </button>
-          <button onClick={onConfirm} className="flex-1 py-2.5 rounded-xl font-bold text-sm text-white bg-gradient-to-b from-orange-500 via-orange-600 to-orange-700 shadow-[0_3px_0_0_#92400e,0_6px_16px_rgba(200,100,0,0.3),inset_0_1px_0_rgba(255,255,255,0.15)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 transform-gpu">
+          <button onClick={onConfirm} className="flex-1 py-2.5 rounded-xl font-bold text-sm text-white bg-gradient-to-b from-orange-500 via-orange-600 to-orange-700 shadow-[0_3px_0_0_#92400e,inset_0_1px_0_rgba(255,255,255,0.15)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 transform-gpu">
             Log Out
           </button>
         </div>

@@ -167,7 +167,7 @@ function AlreadyLoggedModal({ open, onClose, onEdit }) {
           <button onClick={onClose} className="flex-1 py-2.5 rounded-xl font-bold text-sm text-slate-200 bg-gradient-to-b from-slate-600 via-slate-700 to-slate-800 border border-slate-500/40 shadow-[0_3px_0_0_#1e293b,0_6px_16px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.08)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 transform-gpu">
             Okay
           </button>
-          <button onClick={onEdit} className="flex-1 py-2.5 rounded-xl font-bold text-sm text-white bg-gradient-to-b from-blue-500 via-blue-600 to-blue-700 shadow-[0_3px_0_0_#1d4ed8,0_6px_16px_rgba(59,130,246,0.3),inset_0_1px_0_rgba(255,255,255,0.15)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 transform-gpu">
+          <button onClick={onEdit} className="flex-1 py-2.5 rounded-xl font-bold text-sm text-white bg-gradient-to-b from-blue-500 via-blue-600 to-blue-700 shadow-[0_3px_0_0_#1d4ed8,inset_0_1px_0_rgba(255,255,255,0.15)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 transform-gpu">
             Edit
           </button>
         </div>
@@ -203,7 +203,7 @@ function LogWeightModal({ open, onClose, onSave, currentWeight }) {
           <button onClick={onClose} className="flex-1 py-2.5 rounded-xl font-bold text-sm text-slate-200 bg-gradient-to-b from-slate-600 via-slate-700 to-slate-800 border border-slate-500/40 shadow-[0_3px_0_0_#1e293b,0_6px_16px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.08)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 transform-gpu">
             Cancel
           </button>
-          <button onClick={() => { onSave(weight); onClose(); }} className="flex-1 py-2.5 rounded-xl font-bold text-sm text-white bg-gradient-to-b from-blue-500 via-blue-600 to-blue-700 shadow-[0_3px_0_0_#1d4ed8,0_6px_16px_rgba(59,130,246,0.3),inset_0_1px_0_rgba(255,255,255,0.15)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 transform-gpu">
+          <button onClick={() => { onSave(weight); onClose(); }} className="flex-1 py-2.5 rounded-xl font-bold text-sm text-white bg-gradient-to-b from-blue-500 via-blue-600 to-blue-700 shadow-[0_3px_0_0_#1d4ed8,inset_0_1px_0_rgba(255,255,255,0.15)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 transform-gpu">
             Save
           </button>
         </div>
@@ -396,8 +396,8 @@ export default function WeightTracker({ currentUser }) {
                 ref={pillRef}
                 style={{
                   position: 'absolute', top: 2, height: 'calc(100% - 4px)',
-                  background: 'linear-gradient(to bottom, rgba(96,165,250,0.7), rgba(59,130,246,0.8))',
-                  borderRadius: 6, boxShadow: '0 1px 0 #1a3fa8',
+                  background: 'linear-gradient(to bottom, #3b82f6, #2563eb, #1d4ed8)',
+                  borderRadius: 6, boxShadow: '0 2px 0 #1a3fa8',
                   transition: 'left 0.22s cubic-bezier(0.34,1.2,0.64,1), width 0.22s cubic-bezier(0.34,1.2,0.64,1)',
                   pointerEvents: 'none', zIndex: 1,
                 }}
