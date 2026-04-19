@@ -150,6 +150,9 @@ export default function InlineLeaderboard({ view, setView, checkInLeaderboard, s
       WebkitBackdropFilter: 'blur(20px)',
       borderRadius: 18,
       overflow: 'hidden',
+      display: 'flex',
+      flexDirection: 'column',
+      minHeight: 'auto',
     }}>
       <div style={{ padding: '12px 14px 10px', borderBottom: '1px solid rgba(255,255,255,0.055)' }}>
 
@@ -220,6 +223,7 @@ export default function InlineLeaderboard({ view, setView, checkInLeaderboard, s
               return (
                 <div
                   key={pcIdx}
+                  onClick={() => navigate(createPageUrl('UserProfile') + '?id=' + data.userId)}
                   style={{
                     flex: isFirst ? '0 0 116px' : '0 0 100px',
                     borderRadius: 16,
@@ -227,6 +231,14 @@ export default function InlineLeaderboard({ view, setView, checkInLeaderboard, s
                     background: 'rgba(18,20,36,0.92)',
                     border: `1px solid ${pc.border}`,
                     marginBottom: lift,
+                    cursor: 'pointer',
+                    transition: 'transform 0.2s',
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.transform = 'scale(1.05)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.transform = '';
                   }}
                 >
                   <div style={{ height: 3, background: `linear-gradient(90deg, transparent, ${pc.color}, transparent)`, opacity: 0.6 }} />
@@ -262,7 +274,7 @@ export default function InlineLeaderboard({ view, setView, checkInLeaderboard, s
 
           {/* Rows below podium / search results */}
           {restList.length > 0 && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 3, padding: '4px 10px 12px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 3, padding: q ? '4px 10px 12px' : '4px 10px 12px', flex: q ? 1 : 'initial' }}>
               {restList.map((m, i) => {
                 const opacity = Math.max(0.45, 1 - i * 0.12);
                 const isHighlighted = q && (m.userName || '').toLowerCase().includes(q);
@@ -273,7 +285,7 @@ export default function InlineLeaderboard({ view, setView, checkInLeaderboard, s
                     style={{
                       ...CARD_STYLE, borderRadius: 12, padding: '8px 10px',
                       display: 'flex', alignItems: 'center', gap: 8,
-                      border: isHighlighted ? `1px solid rgba(${currentTab.accentRgb},0.4)` : '1px solid transparent',
+                      border: '1px solid transparent',
                       cursor: 'pointer', transition: 'all 0.2s',
                     }}
                     onMouseEnter={(e) => {
