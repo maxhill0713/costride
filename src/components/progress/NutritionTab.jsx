@@ -43,7 +43,7 @@ function injectCSS() {
   }
 }
 
-// ─── Design tokens (matching ClassDetailModal) ────────────────────────────────
+// ─── Design tokens ────────────────────────────────────────────────────────────
 const CARD_BG     = 'linear-gradient(135deg, rgba(30,35,60,0.82) 0%, rgba(8,10,20,0.96) 100%)';
 const CARD_BORDER = '1px solid rgba(255,255,255,0.07)';
 const SHEET_BG    = 'linear-gradient(160deg, #0c1128 0%, #060810 100%)';
@@ -437,9 +437,8 @@ function FoodDetailSheet({ food, section, onConfirm, onClose }) {
   );
 }
 
-// ─── Big CTA button (matching ClassDetailModal) ───────────────────────────────
-function BigCTA({ label, onClick, disabled, variant = 'primary' }) {
-  const isBooked = variant === 'booked';
+// ─── Big CTA button ───────────────────────────────────────────────────────────
+function BigCTA({ label, onClick, disabled }) {
   return (
     <button onClick={onClick} disabled={disabled}
       style={{ width:'100%', padding:'16px', borderRadius:18,
@@ -685,7 +684,6 @@ function BarcodeModal({ onAdd, onClose }) {
         marginBottom:20, height:160, background:'rgba(0,0,0,0.5)',
         border:`1px solid rgba(56,189,248,0.2)`,
         display:'flex', alignItems:'center', justifyContent:'center' }}>
-        {/* Corner markers */}
         {[0,1,2,3].map(i => {
           const t=i<2, l=i%2===0;
           return <div key={i} style={{
@@ -873,7 +871,6 @@ export default function NutritionTab() {
   const [toast, setToast]           = useState({ msg:'', visible:false });
   const toastTimer                  = useRef(null);
 
-  // Demo week dots: Mon-Thu logged, Fri=today=partial, Sat-Sun=false
   const weekDays = [true, true, true, true, false, false, false];
   const streak   = 4;
 
@@ -906,8 +903,6 @@ export default function NutritionTab() {
       ? `💪 You need ${proteinGap}g more protein to hit your daily target.`
       : `${calorieLeft} kcal remaining — keep it up!`;
 
-  const pct = Math.round((consumed.cal / TARGETS.calories) * 100);
-
   return (
     <div style={{ display:'flex', flexDirection:'column', paddingBottom:100,
       color:'#fff',
@@ -936,7 +931,6 @@ export default function NutritionTab() {
           </div>
         </div>
 
-        {/* Insight banner */}
         {insight && (
           <div style={{ background:C.blue.bg, border:`1px solid ${C.blue.border}`,
             borderRadius:12, padding:'11px 14px',
@@ -951,7 +945,6 @@ export default function NutritionTab() {
           </div>
         )}
 
-        {/* Stat grid */}
         <div style={{ display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:10, marginBottom:18 }}>
           <StatCard icon={Target}   label="Goal"      value={`${TARGETS.calories.toLocaleString()}`} c={C.blue}  />
           <StatCard icon={BarChart2} label="Consumed" value={consumed.cal.toLocaleString()}          c={C.green} />
@@ -1081,12 +1074,58 @@ export default function NutritionTab() {
         </div>
       </div>
 
-      {/* ── FIXED BOTTOM CTA ── */}
-      <div style={{ position:'fixed', bottom:0, left:0, right:0, zIndex:100,
-        padding:'12px 18px 34px',
-        background:'linear-gradient(to top, rgba(4,6,16,0.98) 55%, transparent)',
-        borderTop:'1px solid rgba(255,255,255,0.05)' }}>
-        <BigCTA label="Log Food" onClick={()=>setAddingTo('Snacks')} />
+      {/* ── LOG FOOD BUTTON — compact, right-aligned, above nav bar ── */}
+      <div style={{
+        position: 'fixed',
+        bottom: 96,           // sits above the ~83px bottom nav bar with breathing room
+        right: 18,
+        zIndex: 100,
+      }}>
+        <button
+          onClick={() => setAddingTo('Snacks')}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 7,
+            padding: '11px 18px',
+            borderRadius: 16,
+            fontSize: 14,
+            fontWeight: 900,
+            letterSpacing: '-0.01em',
+            cursor: 'pointer',
+            border: 'none',
+            fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif',
+            position: 'relative',
+            overflow: 'hidden',
+            // 3D layered gradient — bright face → dark base
+            background: 'linear-gradient(180deg, #3b6ef5 0%, #1a3ec7 55%, #1530a0 100%)',
+            color: '#fff',
+            // hard bottom edge = 3D depth; outer glow = blue halo
+            boxShadow: '0 3px 0 #0c1d7a, 0 6px 22px rgba(37,99,235,0.5), inset 0 1px 0 rgba(255,255,255,0.22)',
+            transition: 'transform 0.1s ease, box-shadow 0.1s ease',
+          }}
+          onPointerDown={e => {
+            e.currentTarget.style.transform = 'translateY(2px)';
+            e.currentTarget.style.boxShadow = '0 1px 0 #0c1d7a, 0 3px 12px rgba(37,99,235,0.4), inset 0 1px 0 rgba(255,255,255,0.15)';
+          }}
+          onPointerUp={e => {
+            e.currentTarget.style.transform = 'translateY(0)';
+            e.currentTarget.style.boxShadow = '0 3px 0 #0c1d7a, 0 6px 22px rgba(37,99,235,0.5), inset 0 1px 0 rgba(255,255,255,0.22)';
+          }}
+          onPointerLeave={e => {
+            e.currentTarget.style.transform = 'translateY(0)';
+            e.currentTarget.style.boxShadow = '0 3px 0 #0c1d7a, 0 6px 22px rgba(37,99,235,0.5), inset 0 1px 0 rgba(255,255,255,0.22)';
+          }}
+        >
+          {/* shimmer sweep */}
+          <div style={{ position:'absolute', inset:0, overflow:'hidden', borderRadius:'inherit', pointerEvents:'none' }}>
+            <div style={{ position:'absolute', top:0, bottom:0, width:'40%',
+              background:'linear-gradient(90deg,transparent,rgba(255,255,255,0.1),transparent)',
+              animation:'nt-shimmer 4s cubic-bezier(0.4,0,0.6,1) infinite 1.5s' }} />
+          </div>
+          <Plus style={{ width:14, height:14, position:'relative', zIndex:1, flexShrink:0 }} />
+          <span style={{ position:'relative', zIndex:1 }}>Log Food</span>
+        </button>
       </div>
 
       {/* ── Modals ── */}
