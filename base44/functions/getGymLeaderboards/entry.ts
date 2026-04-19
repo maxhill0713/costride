@@ -34,10 +34,41 @@ Deno.serve(async (req) => {
       }
     }
 
-    const [checkIns, lifts] = await Promise.all([
+    const [checkIns, lifts, members] = await Promise.all([
       base44.asServiceRole.entities.CheckIn.filter({ gym_id: gymId }, '-check_in_date', 500),
       base44.asServiceRole.entities.Lift.filter({ gym_id: gymId }, '-lift_date', 300),
+      base44.asServiceRole.entities.GymMembership.filter({ gym_id: gymId, status: 'active' }, 'user_name', 200),
     ]);
+
+    // Build a userId -> display name map, resolving usernames over raw stored names
+    // Pull User records for all unique user IDs so we can use full_name
+    const uniqueUserIds = [...new Set([
+      ...checkIns.map(c => c.user_id),
+      ...lifts.map(l => l.member_id),
+    ])].filter(Boolean);
+
+    let userDisplayNames = {};
+    try {
+      // Fetch users in batches if needed — base44 supports filter by array
+      const users = await base44.asServiceRole.entities.User.list('-created_date', 500);
+      users.forEach(u => {
+        if (u.id) userDisplayNames[u.id] = u.full_name || u.display_name || null;
+      });
+    } catch (_) { /* fallback to stored names */ }
+
+    // Also use membership records as a fallback name source
+    members.forEach(m => {
+      if (m.user_id && !userDisplayNames[m.user_id]) {
+        userDisplayNames[m.user_id] = m.user_name || null;
+      }
+    });
+
+    const resolveName = (userId, fallback) => {
+      const name = userDisplayNames[userId] || fallback || '';
+      // If the name looks like an email (contains @), strip to just the part before @
+      if (name.includes('@')) return name.split('@')[0].replace(/[._]/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+      return name;
+    };
 
     const now     = new Date();
     const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
@@ -45,14 +76,14 @@ Deno.serve(async (req) => {
 
     const checkInLeaderboard = Object.values(
       weeklyCheckIns.reduce((acc, c) => {
-        if (!acc[c.user_id]) acc[c.user_id] = { userId: c.user_id, userName: c.user_name, count: 0 };
+        if (!acc[c.user_id]) acc[c.user_id] = { userId: c.user_id, userName: resolveName(c.user_id, c.user_name), count: 0 };
         acc[c.user_id].count++;
         return acc;
       }, {})
-    ).sort((a, b) => b.count - a.count).slice(0, 10);
+    ).sort((a, b) => b.count - a.count).slice(0, 20);
 
     const userCheckInMap = checkIns.reduce((acc, c) => {
-      if (!acc[c.user_id]) acc[c.user_id] = { userId: c.user_id, userName: c.user_name, dates: [] };
+      if (!acc[c.user_id]) acc[c.user_id] = { userId: c.user_id, userName: resolveName(c.user_id, c.user_name), dates: [] };
       acc[c.user_id].dates.push(new Date(c.check_in_date));
       return acc;
     }, {});
@@ -71,14 +102,14 @@ Deno.serve(async (req) => {
 
     const streakLeaderboard = Object.values(userCheckInMap)
       .map(item => ({ userId: item.userId, userName: item.userName, streak: calcStreak(item.dates) }))
-      .sort((a, b) => b.streak - a.streak).slice(0, 10);
+      .sort((a, b) => b.streak - a.streak).slice(0, 20);
 
     const buildProgressLeaderboard = (cutoffMs) => {
       const cutoff = cutoffMs ? new Date(now.getTime() - cutoffMs) : new Date(0);
       const userMaxWeights = {};
       lifts.filter(l => new Date(l.lift_date) >= cutoff).forEach(l => {
         const key = `${l.member_id}-${l.exercise}`;
-        if (!userMaxWeights[key]) userMaxWeights[key] = { userId: l.member_id, userName: l.member_name, exercise: l.exercise, maxWeight: l.weight_lbs, prevMax: 0 };
+        if (!userMaxWeights[key]) userMaxWeights[key] = { userId: l.member_id, userName: resolveName(l.member_id, l.member_name), exercise: l.exercise, maxWeight: l.weight_lbs, prevMax: 0 };
         if (l.weight_lbs > userMaxWeights[key].maxWeight) {
           userMaxWeights[key].prevMax = userMaxWeights[key].maxWeight;
           userMaxWeights[key].maxWeight = l.weight_lbs;
@@ -92,7 +123,7 @@ Deno.serve(async (req) => {
           if (ex) ex.increase += item.increase; else acc.push(item);
           return acc;
         }, [])
-        .sort((a, b) => b.increase - a.increase).slice(0, 10);
+        .sort((a, b) => b.increase - a.increase).slice(0, 20);
     };
 
     return Response.json({

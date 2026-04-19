@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Trophy, CheckCircle, Dumbbell, TrendingUp } from 'lucide-react';
+import { Trophy, CheckCircle, Dumbbell, TrendingUp, Search, X } from 'lucide-react';
 
 const CARD_BG = 'linear-gradient(135deg, rgba(30,35,60,0.82) 0%, rgba(8,10,20,0.96) 100%)';
 const CARD_STYLE = { background: CARD_BG, backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)' };
@@ -113,6 +113,7 @@ const PODIUM_COLORS = [
 
 export default function InlineLeaderboard({ view, setView, checkInLeaderboard, streakLeaderboard, progressLeaderboardWeek, progressLeaderboardMonth, progressLeaderboardAllTime }) {
   const [timeframe, setTimeframe] = useState('week');
+  const [search, setSearch] = useState('');
 
   const currentTab = TABS.find((t) => t.id === view) || TABS[0];
 
@@ -125,8 +126,18 @@ export default function InlineLeaderboard({ view, setView, checkInLeaderboard, s
   const list = getList();
   const { getVal, fmt, unit } = currentTab;
   const initials = (n) => (n || '?').split(' ').map((w) => w[0]).join('').toUpperCase().slice(0, 2);
-  const podium   = list.slice(0, 3);
-  const restList = list.slice(3, 10);
+
+  // Full ranked list (with position preserved)
+  const rankedList = list.map((m, i) => ({ ...m, rank: i + 1 }));
+
+  const podium = rankedList.slice(0, 3);
+
+  // If searching, find matching entries anywhere in the full list
+  // Otherwise show top 3 below podium
+  const q = search.trim().toLowerCase();
+  const restList = q
+    ? rankedList.filter(m => (m.userName || '').toLowerCase().includes(q))
+    : rankedList.slice(3, 6);
 
   return (
     <div style={{
@@ -148,17 +159,41 @@ export default function InlineLeaderboard({ view, setView, checkInLeaderboard, s
         </div>
 
         {/* Category tabs */}
-        <div className="grid grid-cols-3 gap-2">
+        <div className="grid grid-cols-3 gap-2 mb-3">
           {TABS.map(({ id, label, icon: Icon, activeClass, inactiveClass }) => (
             <button
               key={id}
-              onClick={() => setView(id)}
+              onClick={() => { setView(id); setSearch(''); }}
               className={`px-2 py-2.5 rounded-2xl font-bold text-xs transition-all duration-100 flex flex-col items-center gap-1 backdrop-blur-md border active:shadow-none active:translate-y-[5px] active:scale-95 transform-gpu ${view === id ? activeClass : inactiveClass}`}
             >
               <Icon className="w-3.5 h-3.5" />
               {label}
             </button>
           ))}
+        </div>
+
+        {/* Search bar */}
+        <div style={{ position: 'relative' }}>
+          <Search style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', width: 13, height: 13, color: 'rgba(148,163,184,0.5)', pointerEvents: 'none' }} />
+          <input
+            type="text"
+            placeholder="Search members..."
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            style={{
+              width: '100%', padding: '7px 32px 7px 30px',
+              background: 'rgba(255,255,255,0.05)',
+              border: '1px solid rgba(255,255,255,0.09)',
+              borderRadius: 10, color: '#e2e8f0',
+              fontSize: 12, fontWeight: 500, outline: 'none',
+              boxSizing: 'border-box',
+            }}
+          />
+          {search && (
+            <button onClick={() => setSearch('')} style={{ position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', padding: 2 }}>
+              <X style={{ width: 12, height: 12, color: 'rgba(148,163,184,0.6)' }} />
+            </button>
+          )}
         </div>
       </div>
 
@@ -222,15 +257,19 @@ export default function InlineLeaderboard({ view, setView, checkInLeaderboard, s
             })}
           </div>
 
-          {/* Rows 4–10 */}
+          {/* Rows below podium / search results */}
           {restList.length > 0 && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 3, padding: '4px 10px 12px' }}>
               {restList.map((m, i) => {
-                const globalRank = i + 4;
-                const opacity = Math.max(0.35, 1 - i * 0.1);
+                const opacity = Math.max(0.45, 1 - i * 0.12);
+                const isHighlighted = q && (m.userName || '').toLowerCase().includes(q);
                 return (
-                  <div key={m.userId || i} style={{ ...CARD_STYLE, borderRadius: 12, padding: '8px 10px', display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <div style={{ width: 24, flexShrink: 0, textAlign: 'center', fontSize: 12, fontWeight: 900, color: `rgba(255,255,255,${opacity * 0.55})`, fontVariantNumeric: 'tabular-nums' }}>{globalRank}</div>
+                  <div key={m.userId || i} style={{
+                    ...CARD_STYLE, borderRadius: 12, padding: '8px 10px',
+                    display: 'flex', alignItems: 'center', gap: 8,
+                    border: isHighlighted ? `1px solid rgba(${currentTab.accentRgb},0.4)` : '1px solid transparent',
+                  }}>
+                    <div style={{ width: 24, flexShrink: 0, textAlign: 'center', fontSize: 12, fontWeight: 900, color: `rgba(255,255,255,${opacity * 0.55})`, fontVariantNumeric: 'tabular-nums' }}>#{m.rank}</div>
                     <div style={{ width: 30, height: 30, borderRadius: '50%', flexShrink: 0, overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 900, background: 'rgba(255,255,255,0.06)', border: `1px solid rgba(255,255,255,${opacity * 0.1})`, color: `rgba(255,255,255,${opacity * 0.6})` }}>
                       {m.userAvatar ? <img src={m.userAvatar} alt={m.userName} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : initials(m.userName)}
                     </div>
@@ -243,6 +282,9 @@ export default function InlineLeaderboard({ view, setView, checkInLeaderboard, s
                   </div>
                 );
               })}
+              {q && restList.length === 0 && (
+                <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.25)', textAlign: 'center', padding: '12px 0', margin: 0 }}>No members found</p>
+              )}
             </div>
           )}
         </>
