@@ -249,6 +249,19 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
       };
     }
 
+    // If today is the "toDay" of a rest swap, show the workout from "fromDay"
+    const restSwapData = getRestSwap();
+    if (restSwapData && restSwapData.toDay === adjustedDay) {
+      const workout = currentUser.custom_workout_types[restSwapData.fromDay];
+      if (workout) {
+        return {
+          name: workout.name || 'Training Day',
+          exercises: workout.exercises || [],
+          cardio: workout.cardio || []
+        };
+      }
+    }
+
     const trainingDays = currentUser?.training_days || [];
     if (!trainingDays.includes(adjustedDay)) {
       return { name: 'Rest Day', exercises: [], cardio: [] };
@@ -1150,7 +1163,9 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
               <div className="px-2">
               {(() => {
                   const trainingDays = currentUser?.training_days || [];
-                  const isTrainingDay = overrideDayKey !== null || trainingDays.includes(adjustedDay);
+                  const restSwapForCard = getRestSwap();
+                  const isSwapTargetDay = restSwapForCard && restSwapForCard.toDay === adjustedDay;
+                  const isTrainingDay = overrideDayKey !== null || trainingDays.includes(adjustedDay) || isSwapTargetDay;
                   const hasNoExercises = (!todayWorkout.exercises || todayWorkout.exercises.length === 0) && (!todayWorkout.cardio || todayWorkout.cardio.length === 0);
                   const isEmptySplit = isTrainingDay && hasNoExercises && todayWorkout.name !== 'Rest Day';
 
