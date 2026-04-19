@@ -41,6 +41,7 @@ import PullToRefresh from '../components/PullToRefresh';
 import PollCard from '../components/polls/PollCard';
 import BusyTimesChart from '../components/gym/BusyTimesChart';
 import GymCommunitySkeleton from '../components/gym/GymCommunitySkeleton';
+import InlineLeaderboard from '../components/gym/InlineLeaderboard';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const pageSlideVariants = {
@@ -1724,7 +1725,7 @@ export default function GymCommunity() {
                   )}
                   </div>
                 }
-                <MemberSpotlight checkIns={checkIns} memberAvatarMap={memberAvatarMap} memberNameMap={memberNameMap} />
+                <InlineLeaderboard view={leaderboardView} setView={setLeaderboardView} checkInLeaderboard={checkInLeaderboard} streakLeaderboard={streakLeaderboard} progressLeaderboardWeek={progressLeaderboardWeek} progressLeaderboardMonth={progressLeaderboardMonth} progressLeaderboardAllTime={progressLeaderboardAllTime} />
                 {coaches.length > 0 &&
                 <div style={{ ...CARD_STYLE, borderRadius: 18, overflow: 'hidden' }}>
                     <div style={{ padding: '13px 14px 11px', borderBottom: '1px solid rgba(255,255,255,0.055)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -1866,7 +1867,6 @@ export default function GymCommunity() {
                     </Button>
                   </div>
                 }
-                <LeaderboardSection view={leaderboardView} setView={setLeaderboardView} checkInLeaderboard={checkInLeaderboard} streakLeaderboard={streakLeaderboard} progressLeaderboardWeek={progressLeaderboardWeek} progressLeaderboardMonth={progressLeaderboardMonth} progressLeaderboardAllTime={progressLeaderboardAllTime} />
                 <SuggestedFriendsCard checkIns={checkIns} currentUser={currentUser} memberAvatarMap={memberAvatarMap} />
               </motion.div>
             </TabsContent>
