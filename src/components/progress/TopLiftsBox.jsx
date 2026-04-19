@@ -25,7 +25,6 @@ function SBDModal({ open, onClose, onSave, initialValues }) {
         onClick={onClose}
       />
       <div className="fixed left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2 w-11/12 max-w-sm z-[10004] bg-slate-900/80 backdrop-blur-md border border-slate-700/30 rounded-3xl shadow-2xl shadow-black/40 text-white overflow-hidden">
-        {/* top accent line */}
         <div style={{ height: 2, background: 'linear-gradient(90deg, transparent, rgba(129,140,248,0.45), transparent)' }} />
 
         <div className="p-6 pb-4">
@@ -55,11 +54,14 @@ function SBDModal({ open, onClose, onSave, initialValues }) {
                 </span>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                   <input
-                    type="number"
+                    type="text"
                     inputMode="decimal"
                     placeholder="0"
                     value={values[key]}
-                    onChange={e => setValues(v => ({ ...v, [key]: e.target.value }))}
+                    onChange={e => {
+                      const val = e.target.value.replace(/[^0-9.]/g, '');
+                      setValues(v => ({ ...v, [key]: val }));
+                    }}
                     style={{
                       width: 72,
                       background: 'rgba(255,255,255,0.06)',
@@ -71,6 +73,7 @@ function SBDModal({ open, onClose, onSave, initialValues }) {
                       color: '#e2e8f0',
                       textAlign: 'right',
                       outline: 'none',
+                      appearance: 'none',
                       WebkitAppearance: 'none',
                       MozAppearance: 'textfield',
                     }}
@@ -138,28 +141,30 @@ export default function TopLiftsBox({ sbdPRs, onSave }) {
               flex: 1,
               display: 'flex',
               flexDirection: 'column',
-              justifyContent: 'flex-start',
+              alignItems: 'center',
+              justifyContent: 'center',
               paddingTop: i === 0 ? 0 : 8,
               borderTop: i !== 0 ? '1px solid rgba(255,255,255,0.05)' : 'none',
             }}
           >
             <h2 style={{
-              fontSize: 12,
+              fontSize: 13.8,
               fontWeight: 700,
               color: '#e2e8f0',
               letterSpacing: '-0.01em',
               margin: 0,
               lineHeight: 1.2,
               whiteSpace: 'nowrap',
+              textAlign: 'center',
             }}>
               {label}
             </h2>
             {prs[key] ? (
-              <p style={{ fontSize: 11, color: '#818cf8', fontWeight: 700, margin: '2px 0 0' }}>
+              <p style={{ fontSize: 12.65, color: '#818cf8', fontWeight: 700, margin: '2px 0 0', textAlign: 'center' }}>
                 {prs[key]} kg
               </p>
             ) : (
-              <p style={{ fontSize: 10, color: '#334155', fontWeight: 500, margin: '2px 0 0' }}>
+              <p style={{ fontSize: 11.5, color: '#334155', fontWeight: 500, margin: '2px 0 0', textAlign: 'center' }}>
                 Tap to set
               </p>
             )}
