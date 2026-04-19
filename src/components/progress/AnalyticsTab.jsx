@@ -1,4 +1,6 @@
 import React from 'react';
+import { useQueryClient } from '@tanstack/react-query';
+import { base44 } from '@/api/base44Client';
 import ExerciseInsights from '../profile/ExerciseInsights';
 import WorkoutSplitHeatmap from '../profile/WorkoutSplitHeatmap';
 import ProgressiveOverloadTracker from '../profile/ProgressiveOverloadTracker';
@@ -14,6 +16,13 @@ const CARD = {
 };
 
 export default function AnalyticsTab({ currentUser, workoutLogs, checkIns, animateCharts }) {
+  const queryClient = useQueryClient();
+
+  const handleSaveSBD = async (values) => {
+    await base44.auth.updateMe({ sbd_prs: values });
+    queryClient.setQueryData(['currentUser'], (old) => old ? { ...old, sbd_prs: values } : old);
+  };
+
   return (
     <div className="space-y-3">
       <div style={{ display: 'flex', gap: 12 }}>
@@ -21,7 +30,7 @@ export default function AnalyticsTab({ currentUser, workoutLogs, checkIns, anima
         <div style={{ ...CARD, borderRadius: 16, padding: '12px 12px', flex: '0 0 42%' }}>
           <WeeklyVolumeChart currentUser={currentUser} animate={animateCharts} compact />
         </div>
-        <TopLiftsBox />
+        <TopLiftsBox sbdPRs={currentUser?.sbd_prs} onSave={handleSaveSBD} />
       </div>
       <div style={{ ...CARD, borderRadius: 16, padding: '16px 16px' }}>
         <ProgressiveOverloadTracker currentUser={currentUser} animate={animateCharts} />
