@@ -3,6 +3,7 @@ import ExerciseInsights from '../profile/ExerciseInsights';
 import WorkoutSplitHeatmap from '../profile/WorkoutSplitHeatmap';
 import ProgressiveOverloadTracker from '../profile/ProgressiveOverloadTracker';
 import WeeklyVolumeChart from '../profile/WeeklyVolumeChart';
+import WeightTracker from '../profile/WeightTracker';
 
 const CARD = {
   background: 'linear-gradient(135deg, rgba(30,35,60,0.72) 0%, rgba(8,10,20,0.88) 100%)',
@@ -14,6 +15,9 @@ const CARD = {
 export default function AnalyticsTab({ currentUser, workoutLogs, checkIns, animateCharts }) {
   return (
     <div className="space-y-6">
+      <div style={{ ...CARD, borderRadius: 16, padding: '16px 16px' }}>
+        <WeightTracker currentUser={currentUser} />
+      </div>
       <div style={{ ...CARD, borderRadius: 16, padding: '16px 16px' }}>
         <ProgressiveOverloadTracker currentUser={currentUser} animate={animateCharts} />
       </div>
