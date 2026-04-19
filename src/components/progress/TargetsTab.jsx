@@ -531,7 +531,6 @@ export default function TargetsTab({ currentUser }) {
         </div>
         <GoalsList currentUser={currentUser} showAddGoal={showAddGoal} setShowAddGoal={setShowAddGoal} />
       </div>
-      <CommunityLiftCard currentUser={currentUser} />
     </div>
   );
 }
