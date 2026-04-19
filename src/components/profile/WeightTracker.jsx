@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { Plus } from 'lucide-react';
+import { Plus, Check } from 'lucide-react';
 import { format, subMonths, eachDayOfInterval, startOfDay } from 'date-fns';
 
 const TIMEFRAMES = [
@@ -12,12 +12,11 @@ const TIMEFRAMES = [
   { key: 'all', label: 'All', months: null },
 ];
 
-// ── Weight Scroll Picker (0.1kg steps, momentum scroll) ──────────────────────
+const TODAY_KEY = format(new Date(), 'yyyy-MM-dd');
+
+// ── Weight Scroll Picker ──────────────────────────────────────────────────────
 function WeightPicker({ value, onChange }) {
   const ITEM_H = 44;
-  const VISIBLE = 5;
-
-  // 0.1kg steps from 30 to 200 = 1701 items
   const weights = useMemo(() =>
     Array.from({ length: 1701 }, (_, i) => Math.round((30 + i * 0.1) * 10) / 10),
   []);
@@ -30,7 +29,6 @@ function WeightPicker({ value, onChange }) {
   const isPointerDownRef = useRef(false);
   const isMomentumRef = useRef(false);
 
-  // Find initial index
   const initialIdx = useMemo(() => {
     const rounded = Math.round(value * 10) / 10;
     const idx = weights.findIndex(w => Math.abs(w - rounded) < 0.001);
@@ -38,32 +36,24 @@ function WeightPicker({ value, onChange }) {
   }, []);
 
   useEffect(() => {
-    if (listRef.current) {
-      listRef.current.scrollTop = initialIdx * ITEM_H;
-    }
+    if (listRef.current) listRef.current.scrollTop = initialIdx * ITEM_H;
   }, []);
 
-  // Snap to nearest item
   const snapToNearest = useCallback(() => {
     if (!listRef.current) return;
-    const raw = listRef.current.scrollTop;
-    const idx = Math.round(raw / ITEM_H);
+    const idx = Math.round(listRef.current.scrollTop / ITEM_H);
     const clamped = Math.max(0, Math.min(weights.length - 1, idx));
     listRef.current.scrollTo({ top: clamped * ITEM_H, behavior: 'smooth' });
     onChange(weights[clamped]);
   }, [weights, onChange]);
 
-  // Momentum animation
   const runMomentum = useCallback(() => {
-    if (!listRef.current) return;
     const FRICTION = 0.92;
     const MIN_VEL = 0.3;
-
     const step = () => {
       if (!listRef.current || !isMomentumRef.current) return;
       velocityRef.current *= FRICTION;
       listRef.current.scrollTop += velocityRef.current;
-
       if (Math.abs(velocityRef.current) > MIN_VEL) {
         rafRef.current = requestAnimationFrame(step);
       } else {
@@ -74,7 +64,6 @@ function WeightPicker({ value, onChange }) {
     rafRef.current = requestAnimationFrame(step);
   }, [snapToNearest]);
 
-  // Pointer events for cross-device drag + momentum
   const onPointerDown = useCallback((e) => {
     if (rafRef.current) cancelAnimationFrame(rafRef.current);
     isMomentumRef.current = false;
@@ -91,7 +80,7 @@ function WeightPicker({ value, onChange }) {
     const now = performance.now();
     const dy = lastYRef.current - e.clientY;
     const dt = Math.max(now - lastTimeRef.current, 1);
-    velocityRef.current = dy / dt * 16; // scale to ~60fps frame
+    velocityRef.current = dy / dt * 16;
     listRef.current.scrollTop += dy;
     lastYRef.current = e.clientY;
     lastTimeRef.current = now;
@@ -109,7 +98,6 @@ function WeightPicker({ value, onChange }) {
     }
   }, [runMomentum, snapToNearest]);
 
-  // Update highlighted item on scroll
   const handleScroll = useCallback(() => {
     if (!listRef.current || isPointerDownRef.current || isMomentumRef.current) return;
     const idx = Math.round(listRef.current.scrollTop / ITEM_H);
@@ -119,22 +107,17 @@ function WeightPicker({ value, onChange }) {
 
   return (
     <div
-      style={{
-        position: 'relative', height: ITEM_H * VISIBLE,
-        overflow: 'hidden', userSelect: 'none', touchAction: 'none',
-      }}
+      style={{ position: 'relative', height: ITEM_H * 5, overflow: 'hidden', userSelect: 'none', touchAction: 'none' }}
       onPointerDown={onPointerDown}
       onPointerMove={onPointerMove}
       onPointerUp={onPointerUp}
       onPointerCancel={onPointerUp}
     >
-      {/* Selection highlight */}
       <div style={{
         position: 'absolute', left: 0, right: 0, top: ITEM_H * 2, height: ITEM_H,
         background: 'rgba(96,165,250,0.12)', border: '1px solid rgba(96,165,250,0.25)',
         borderRadius: 8, pointerEvents: 'none', zIndex: 1,
       }} />
-      {/* Fade top/bottom */}
       <div style={{
         position: 'absolute', inset: 0,
         background: 'linear-gradient(to bottom, rgba(8,12,28,0.85) 0%, transparent 30%, transparent 70%, rgba(8,12,28,0.85) 100%)',
@@ -144,27 +127,20 @@ function WeightPicker({ value, onChange }) {
         ref={listRef}
         onScroll={handleScroll}
         style={{
-          height: '100%',
-          overflowY: 'scroll',
-          scrollbarWidth: 'none',
-          paddingTop: ITEM_H * 2,
-          paddingBottom: ITEM_H * 2,
-          // Disable native scroll — we drive it manually
+          height: '100%', overflowY: 'scroll', scrollbarWidth: 'none',
+          paddingTop: ITEM_H * 2, paddingBottom: ITEM_H * 2,
           pointerEvents: 'none',
         }}
       >
         {weights.map((w) => (
           <div key={w} style={{
-            height: ITEM_H,
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            height: ITEM_H, display: 'flex', alignItems: 'center', justifyContent: 'center',
             fontSize: 22, fontWeight: 700,
             color: Math.abs(w - value) < 0.001 ? '#e2e8f0' : 'rgba(148,163,184,0.45)',
             transition: 'color 0.08s',
           }}>
             {w.toFixed(1)}
-            <span style={{ fontSize: 13, fontWeight: 500, marginLeft: 3, color: 'rgba(148,163,184,0.5)' }}>
-              kg
-            </span>
+            <span style={{ fontSize: 13, fontWeight: 500, marginLeft: 3, color: 'rgba(148,163,184,0.5)' }}>kg</span>
           </div>
         ))}
       </div>
@@ -172,11 +148,108 @@ function WeightPicker({ value, onChange }) {
   );
 }
 
-// ── Update Weight Modal ───────────────────────────────────────────────────────
-function UpdateWeightModal({ open, onClose, onSave, currentWeight }) {
+// ── Already Logged Modal ──────────────────────────────────────────────────────
+function AlreadyLoggedModal({ open, onClose, onEdit }) {
+  const [okPressed, setOkPressed] = useState(false);
+  const [editPressed, setEditPressed] = useState(false);
+
+  if (!open) return null;
+
+  return ReactDOM.createPortal(
+    <div
+      onClick={onClose}
+      style={{
+        position: 'fixed', inset: 0, zIndex: 10005,
+        background: 'rgba(2,6,23,0.7)', backdropFilter: 'blur(6px)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+      }}
+    >
+      <div
+        onClick={e => e.stopPropagation()}
+        style={{
+          width: 'min(88vw, 320px)',
+          background: 'linear-gradient(135deg, rgba(15,20,45,0.98) 0%, rgba(8,12,30,0.99) 100%)',
+          border: '1px solid rgba(255,255,255,0.1)',
+          borderRadius: 24,
+          boxShadow: '0 24px 80px rgba(0,0,0,0.7)',
+          overflow: 'hidden',
+        }}
+      >
+        <div style={{ height: 2, background: 'linear-gradient(90deg, transparent, rgba(52,211,153,0.5), transparent)' }} />
+
+        <div style={{ padding: '24px 24px 20px' }}>
+          <p style={{ fontSize: 17, fontWeight: 800, color: '#e2e8f0', margin: '0 0 8px', letterSpacing: '-0.02em' }}>
+            Already logged today
+          </p>
+          <p style={{ fontSize: 13, color: '#64748b', margin: 0, lineHeight: 1.55, fontWeight: 500 }}>
+            You have already logged your weight today. You can edit the weight you logged if you need to.
+          </p>
+        </div>
+
+        <div style={{ padding: '0 24px 24px', display: 'flex', gap: 10 }}>
+          {/* Okay */}
+          <button
+            onClick={onClose}
+            onMouseDown={() => setOkPressed(true)}
+            onMouseUp={() => setOkPressed(false)}
+            onMouseLeave={() => setOkPressed(false)}
+            style={{
+              flex: 1, padding: '12px 0', borderRadius: 12,
+              fontSize: 13, fontWeight: 700, cursor: 'pointer',
+              background: 'linear-gradient(to bottom, #4b5563, #374151, #1f2937)',
+              border: '1px solid rgba(255,255,255,0.1)',
+              color: '#cbd5e1',
+              boxShadow: okPressed ? 'none' : '0 3px 0 #111827, inset 0 1px 0 rgba(255,255,255,0.08)',
+              transform: okPressed ? 'translateY(3px)' : 'translateY(0)',
+              transition: 'transform 0.08s ease, box-shadow 0.08s ease',
+            }}
+          >
+            Okay
+          </button>
+
+          {/* Edit */}
+          <div style={{ flex: 1, position: 'relative' }}>
+            <div style={{
+              position: 'absolute', inset: 0, borderRadius: 12,
+              background: '#1a3fa8', transform: 'translateY(3px)',
+            }} />
+            <button
+              onClick={onEdit}
+              onMouseDown={() => setEditPressed(true)}
+              onMouseUp={() => setEditPressed(false)}
+              onMouseLeave={() => setEditPressed(false)}
+              style={{
+                position: 'relative', zIndex: 1, width: '100%',
+                padding: '12px 0', borderRadius: 12,
+                fontSize: 13, fontWeight: 700, cursor: 'pointer',
+                background: 'linear-gradient(to bottom, #60a5fa, #3b82f6, #2563eb)',
+                border: '1px solid rgba(147,197,253,0.3)',
+                color: '#fff',
+                boxShadow: editPressed ? 'none' : '0 3px 0 #1a3fa8',
+                transform: editPressed ? 'translateY(3px)' : 'translateY(0)',
+                transition: 'transform 0.08s ease, box-shadow 0.08s ease',
+              }}
+            >
+              Edit
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>,
+    document.body
+  );
+}
+
+// ── Log / Edit Weight Modal ───────────────────────────────────────────────────
+function LogWeightModal({ open, onClose, onSave, currentWeight }) {
   const [weight, setWeight] = useState(currentWeight || 70);
-  const [donePressed, setDonePressed] = useState(false);
+  const [savePressed, setSavePressed] = useState(false);
   const [cancelPressed, setCancelPressed] = useState(false);
+
+  // Re-sync picker if modal opens with a different seed weight
+  useEffect(() => {
+    if (open) setWeight(currentWeight || 70);
+  }, [open, currentWeight]);
 
   if (!open) return null;
 
@@ -242,9 +315,9 @@ function UpdateWeightModal({ open, onClose, onSave, currentWeight }) {
             }} />
             <button
               onClick={() => { onSave(weight); onClose(); }}
-              onMouseDown={() => setDonePressed(true)}
-              onMouseUp={() => setDonePressed(false)}
-              onMouseLeave={() => setDonePressed(false)}
+              onMouseDown={() => setSavePressed(true)}
+              onMouseUp={() => setSavePressed(false)}
+              onMouseLeave={() => setSavePressed(false)}
               style={{
                 position: 'relative', zIndex: 1, width: '100%',
                 padding: '12px 0', borderRadius: 12,
@@ -252,12 +325,12 @@ function UpdateWeightModal({ open, onClose, onSave, currentWeight }) {
                 background: 'linear-gradient(to bottom, #60a5fa, #3b82f6, #2563eb)',
                 border: '1px solid rgba(147,197,253,0.3)',
                 color: '#fff',
-                boxShadow: donePressed ? 'none' : '0 3px 0 #1a3fa8',
-                transform: donePressed ? 'translateY(3px)' : 'translateY(0)',
+                boxShadow: savePressed ? 'none' : '0 3px 0 #1a3fa8',
+                transform: savePressed ? 'translateY(3px)' : 'translateY(0)',
                 transition: 'transform 0.08s ease, box-shadow 0.08s ease',
               }}
             >
-              Done
+              Save
             </button>
           </div>
         </div>
@@ -284,63 +357,82 @@ function WeightTooltip({ active, payload, label }) {
   );
 }
 
-// ── Build a full date-spine so the x-axis is always a fixed window ────────────
+// ── Custom dot — only render on days with actual data ────────────────────────
+function WeightDot(props) {
+  const { cx, cy, payload } = props;
+  if (payload.weight == null) return null;
+  return (
+    <circle
+      cx={cx} cy={cy} r={3}
+      fill="#60a5fa"
+      stroke="#0a0e1e"
+      strokeWidth={1.5}
+    />
+  );
+}
+
+// ── Build chart data with fixed window spine ──────────────────────────────────
 function buildChartData(weightLogs, timeframe) {
   const now = startOfDay(new Date());
 
-  // For 'all': span from first log date to today (or show placeholder if no data)
+  const logMap = Object.fromEntries(
+    weightLogs.map(e => [format(new Date(e.date), 'yyyy-MM-dd'), e.weight])
+  );
+
   if (timeframe === 'all') {
     if (!weightLogs.length) {
-      // Return a 2-month skeleton so the axes still render
       const start = subMonths(now, 2);
-      return eachDayOfInterval({ start, end: now })
-        .filter((_, i, arr) => i === 0 || i === arr.length - 1 || i % 7 === 0)
-        .map(d => ({ date: format(d, 'MMM d'), weight: null }));
+      const days = eachDayOfInterval({ start, end: now });
+      const step = Math.max(1, Math.floor(days.length / 60));
+      return days
+        .filter((_, i) => i % step === 0 || i === days.length - 1)
+        .map(d => ({ date: format(d, 'MMM d'), weight: null, rawDate: d.toISOString() }));
     }
     const firstDate = startOfDay(new Date(weightLogs[0].date));
     const start = firstDate < now ? firstDate : now;
     const days = eachDayOfInterval({ start, end: now });
-    const logMap = Object.fromEntries(
-      weightLogs.map(e => [format(new Date(e.date), 'yyyy-MM-dd'), e.weight])
-    );
-    // Sample to keep recharts fast — max ~120 ticks; for longer spans thin out
     const step = Math.max(1, Math.floor(days.length / 120));
     return days
       .filter((_, i) => i % step === 0 || i === days.length - 1)
       .map(d => ({
         date: format(d, 'MMM d'),
         weight: logMap[format(d, 'yyyy-MM-dd')] ?? null,
+        rawDate: d.toISOString(),
       }));
   }
 
-  // For '2m' / '6m': fixed window — always start exactly N months ago, end today
   const months = timeframe === '2m' ? 2 : 6;
   const windowStart = startOfDay(subMonths(now, months));
-
   const days = eachDayOfInterval({ start: windowStart, end: now });
-  const logMap = Object.fromEntries(
-    weightLogs
-      .filter(e => {
-        const d = startOfDay(new Date(e.date));
-        return d >= windowStart && d <= now;
-      })
-      .map(e => [format(new Date(e.date), 'yyyy-MM-dd'), e.weight])
-  );
-
-  // Thin out for 6m to keep it snappy (~1 point per 1–2 days is fine)
+  // For 6m thin to every 2 days to keep recharts fast, but always include today
   const step = timeframe === '6m' ? 2 : 1;
   return days
     .filter((_, i) => i % step === 0 || i === days.length - 1)
     .map(d => ({
       date: format(d, 'MMM d'),
       weight: logMap[format(d, 'yyyy-MM-dd')] ?? null,
+      rawDate: d.toISOString(),
     }));
+}
+
+// ── X-axis tick selector — always exactly 4 evenly spread labels ─────────────
+function buildXTicks(data) {
+  if (data.length < 2) return data.map(d => d.date);
+  const indices = [
+    0,
+    Math.round((data.length - 1) / 3),
+    Math.round(2 * (data.length - 1) / 3),
+    data.length - 1,
+  ];
+  // Deduplicate in case array is very short
+  return [...new Set(indices)].map(i => data[i].date);
 }
 
 // ── Main Component ─────────────────────────────────────────────────────────────
 export default function WeightTracker({ currentUser }) {
   const [timeframe, setTimeframe] = useState('2m');
-  const [showModal, setShowModal] = useState(false);
+  const [showAlreadyLogged, setShowAlreadyLogged] = useState(false);
+  const [showLogModal, setShowLogModal] = useState(false);
   const [addPressed, setAddPressed] = useState(false);
   const toggleRef = useRef(null);
   const pillRef = useRef(null);
@@ -350,24 +442,33 @@ export default function WeightTracker({ currentUser }) {
     (currentUser?.weight_log || []).sort((a, b) => new Date(a.date) - new Date(b.date)),
   [currentUser?.weight_log]);
 
-  const currentWeight = weightLogs.length > 0
-    ? weightLogs[weightLogs.length - 1].weight
-    : 70;
+  // Has the user already logged today?
+  const loggedToday = useMemo(() =>
+    weightLogs.find(e => format(new Date(e.date), 'yyyy-MM-dd') === TODAY_KEY),
+  [weightLogs]);
+
+  const todayWeight = loggedToday?.weight ?? null;
+
+  // Default picker seed: today's log if it exists, else last log, else 70
+  const seedWeight = todayWeight
+    ?? (weightLogs.length > 0 ? weightLogs[weightLogs.length - 1].weight : 70);
 
   const chartData = useMemo(
     () => buildChartData(weightLogs, timeframe),
     [weightLogs, timeframe]
   );
 
+  const xTicks = useMemo(() => buildXTicks(chartData), [chartData]);
+
+  // y-axis: 10kg pad above highest, 10kg below lowest across ALL logs (not just window)
   const { minW, maxW } = useMemo(() => {
-    const vals = chartData.map(d => d.weight).filter(v => v != null);
-    if (!vals.length) return { minW: 65, maxW: 95 };
-    const pad = 2;
+    const allVals = weightLogs.map(e => e.weight).filter(v => v != null);
+    if (!allVals.length) return { minW: 60, maxW: 100 };
     return {
-      minW: Math.floor(Math.min(...vals) - pad),
-      maxW: Math.ceil(Math.max(...vals) + pad),
+      minW: Math.floor(Math.min(...allVals)) - 10,
+      maxW: Math.ceil(Math.max(...allVals)) + 10,
     };
-  }, [chartData]);
+  }, [weightLogs]);
 
   const weightDelta = useMemo(() => {
     const vals = chartData.filter(d => d.weight != null);
@@ -375,7 +476,7 @@ export default function WeightTracker({ currentUser }) {
     return +(vals[vals.length - 1].weight - vals[0].weight).toFixed(1);
   }, [chartData]);
 
-  // ── Sliding pill ──
+  // Sliding pill
   useEffect(() => {
     const toggle = toggleRef.current;
     const pill = pillRef.current;
@@ -391,9 +492,8 @@ export default function WeightTracker({ currentUser }) {
   const saveWeightMutation = useMutation({
     mutationFn: async (weight) => {
       const existing = currentUser?.weight_log || [];
-      const today = format(new Date(), 'yyyy-MM-dd');
-      const updated = existing.filter(e => e.date !== today);
-      updated.push({ date: today, weight });
+      const updated = existing.filter(e => format(new Date(e.date), 'yyyy-MM-dd') !== TODAY_KEY);
+      updated.push({ date: TODAY_KEY, weight });
       updated.sort((a, b) => new Date(a.date) - new Date(b.date));
       await base44.auth.updateMe({ weight_log: updated });
     },
@@ -402,8 +502,18 @@ export default function WeightTracker({ currentUser }) {
     },
   });
 
-  // x-axis tick formatter — fewer labels for 6m/all
-  const xTickInterval = timeframe === '2m' ? 'preserveStartEnd' : 'preserveStartEnd';
+  const handleButtonPress = () => {
+    if (loggedToday) {
+      setShowAlreadyLogged(true);
+    } else {
+      setShowLogModal(true);
+    }
+  };
+
+  const handleEdit = () => {
+    setShowAlreadyLogged(false);
+    setShowLogModal(true);
+  };
 
   return (
     <>
@@ -471,42 +581,78 @@ export default function WeightTracker({ currentUser }) {
               ))}
             </div>
 
-            {/* 3D grey add button */}
+            {/* Plus or green tick button */}
             <div style={{ position: 'relative', width: 30, height: 30, flexShrink: 0 }}>
-              <div style={{
-                position: 'absolute', inset: 0, borderRadius: 8,
-                background: '#0a0f1a', transform: 'translateY(3px)',
-              }} />
-              <button
-                onClick={() => setShowModal(true)}
-                onMouseDown={() => setAddPressed(true)}
-                onMouseUp={() => setAddPressed(false)}
-                onMouseLeave={() => setAddPressed(false)}
-                onTouchStart={() => setAddPressed(true)}
-                onTouchEnd={() => { setAddPressed(false); setShowModal(true); }}
-                style={{
-                  position: 'relative', zIndex: 1,
-                  width: 30, height: 30, borderRadius: 8,
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  background: 'linear-gradient(to bottom, #2d3748 0%, #1e2635 50%, #161e2e 100%)',
-                  border: '1px solid rgba(255,255,255,0.1)',
-                  color: 'rgba(148,163,184,0.8)',
-                  cursor: 'pointer',
-                  boxShadow: addPressed ? 'none' : '0 3px 0 #0a0f1a, inset 0 1px 0 rgba(255,255,255,0.07)',
-                  transform: addPressed ? 'translateY(3px)' : 'translateY(0)',
-                  transition: 'transform 0.08s ease, box-shadow 0.08s ease',
-                  WebkitTapHighlightColor: 'transparent',
-                }}
-              >
-                <Plus size={14} />
-              </button>
+              {loggedToday ? (
+                // Green tick — logged today
+                <>
+                  <div style={{
+                    position: 'absolute', inset: 0, borderRadius: 8,
+                    background: '#064e3b', transform: 'translateY(3px)',
+                  }} />
+                  <button
+                    onClick={handleButtonPress}
+                    onMouseDown={() => setAddPressed(true)}
+                    onMouseUp={() => setAddPressed(false)}
+                    onMouseLeave={() => setAddPressed(false)}
+                    onTouchStart={() => setAddPressed(true)}
+                    onTouchEnd={() => { setAddPressed(false); handleButtonPress(); }}
+                    style={{
+                      position: 'relative', zIndex: 1,
+                      width: 30, height: 30, borderRadius: 8,
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      background: 'linear-gradient(to bottom, #34d399, #10b981, #059669)',
+                      border: '1px solid rgba(52,211,153,0.4)',
+                      color: '#fff',
+                      cursor: 'pointer',
+                      boxShadow: addPressed ? 'none' : '0 3px 0 #064e3b, inset 0 1px 0 rgba(255,255,255,0.15)',
+                      transform: addPressed ? 'translateY(3px)' : 'translateY(0)',
+                      transition: 'transform 0.08s ease, box-shadow 0.08s ease',
+                      WebkitTapHighlightColor: 'transparent',
+                    }}
+                  >
+                    <Check size={14} strokeWidth={2.5} />
+                  </button>
+                </>
+              ) : (
+                // Grey plus — not yet logged
+                <>
+                  <div style={{
+                    position: 'absolute', inset: 0, borderRadius: 8,
+                    background: '#0a0f1a', transform: 'translateY(3px)',
+                  }} />
+                  <button
+                    onClick={handleButtonPress}
+                    onMouseDown={() => setAddPressed(true)}
+                    onMouseUp={() => setAddPressed(false)}
+                    onMouseLeave={() => setAddPressed(false)}
+                    onTouchStart={() => setAddPressed(true)}
+                    onTouchEnd={() => { setAddPressed(false); handleButtonPress(); }}
+                    style={{
+                      position: 'relative', zIndex: 1,
+                      width: 30, height: 30, borderRadius: 8,
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      background: 'linear-gradient(to bottom, #2d3748 0%, #1e2635 50%, #161e2e 100%)',
+                      border: '1px solid rgba(255,255,255,0.1)',
+                      color: 'rgba(148,163,184,0.8)',
+                      cursor: 'pointer',
+                      boxShadow: addPressed ? 'none' : '0 3px 0 #0a0f1a, inset 0 1px 0 rgba(255,255,255,0.07)',
+                      transform: addPressed ? 'translateY(3px)' : 'translateY(0)',
+                      transition: 'transform 0.08s ease, box-shadow 0.08s ease',
+                      WebkitTapHighlightColor: 'transparent',
+                    }}
+                  >
+                    <Plus size={14} />
+                  </button>
+                </>
+              )}
             </div>
           </div>
         </div>
 
-        {/* Chart — always rendered, data sits right, empty left when new user */}
+        {/* Chart */}
         <ResponsiveContainer width="100%" height={130}>
-          <AreaChart data={chartData} margin={{ top: 8, right: 8, left: -16, bottom: 0 }}>
+          <AreaChart data={chartData} margin={{ top: 8, right: 8, left: 8, bottom: 0 }}>
             <defs>
               <linearGradient id="weightGrad" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="0%" stopColor="#60a5fa" stopOpacity={0.25} />
@@ -519,14 +665,14 @@ export default function WeightTracker({ currentUser }) {
               tick={{ fill: '#475569', fontSize: 9, fontWeight: 500 }}
               tickLine={false}
               axisLine={false}
-              interval={xTickInterval}
+              ticks={xTicks}
             />
             <YAxis
               domain={[minW, maxW]}
               tick={{ fill: '#475569', fontSize: 9 }}
               tickLine={false}
               axisLine={false}
-              width={36}
+              width={42}
               tickFormatter={v => `${v}kg`}
             />
             <Tooltip
@@ -539,7 +685,7 @@ export default function WeightTracker({ currentUser }) {
               stroke="#60a5fa"
               strokeWidth={2}
               fill="url(#weightGrad)"
-              dot={false}
+              dot={<WeightDot />}
               activeDot={{ r: 4, fill: '#60a5fa', stroke: '#0a0e1e', strokeWidth: 1.5 }}
               connectNulls={false}
             />
@@ -547,11 +693,19 @@ export default function WeightTracker({ currentUser }) {
         </ResponsiveContainer>
       </div>
 
-      <UpdateWeightModal
-        open={showModal}
-        onClose={() => setShowModal(false)}
+      {/* Already logged modal */}
+      <AlreadyLoggedModal
+        open={showAlreadyLogged}
+        onClose={() => setShowAlreadyLogged(false)}
+        onEdit={handleEdit}
+      />
+
+      {/* Log / edit weight modal */}
+      <LogWeightModal
+        open={showLogModal}
+        onClose={() => setShowLogModal(false)}
         onSave={(w) => saveWeightMutation.mutate(w)}
-        currentWeight={currentWeight}
+        currentWeight={seedWeight}
       />
     </>
   );
