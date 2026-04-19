@@ -289,7 +289,7 @@ function ChatPage({ thread, currentUser, onBack }) {
           onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); } }}
           placeholder={`Message ${thread?.name ?? 'Coach'}…`}
           rows={1}
-          style={{ flex: 1, background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 22, padding: '10px 16px', color: '#e2e8f0', fontSize: 14, resize: 'none', outline: 'none', fontFamily: 'inherit', lineHeight: 1.5, maxHeight: 96, overflowY: 'auto' }}
+          style={{ flex: 1, background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 22, padding: '10px 16px', color: '#e2e8f0', fontSize: 16, resize: 'none', outline: 'none', fontFamily: 'inherit', lineHeight: 1.5, maxHeight: 96, overflowY: 'auto' }}
           onFocus={e => e.target.style.borderColor = 'rgba(99,102,241,0.5)'}
           onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.1)'}
         />

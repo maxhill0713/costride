@@ -195,7 +195,7 @@ export default function InlineLeaderboard({ view, setView, checkInLeaderboardWee
               background: 'rgba(255,255,255,0.05)',
               border: '1px solid rgba(255,255,255,0.09)',
               borderRadius: 10, color: '#e2e8f0',
-              fontSize: 12, fontWeight: 500, outline: 'none',
+              fontSize: 16, fontWeight: 500, outline: 'none',
               boxSizing: 'border-box',
             }}
           />
