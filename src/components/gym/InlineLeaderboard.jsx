@@ -5,9 +5,9 @@ const CARD_BG = 'linear-gradient(135deg, rgba(30,35,60,0.82) 0%, rgba(8,10,20,0.
 const CARD_STYLE = { background: CARD_BG, backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)' };
 
 const TIMEFRAMES = [
-  { key: 'week',  label: '1 Week' },
-  { key: 'month', label: '1 Month' },
-  { key: 'all',   label: 'All Time' },
+  { key: 'week',  label: '1W' },
+  { key: 'month', label: '1M' },
+  { key: 'all',   label: 'All' },
 ];
 
 function TimeframeSlider({ value, onChange }) {
@@ -34,8 +34,6 @@ function TimeframeSlider({ value, onChange }) {
         background: 'rgba(255,255,255,0.05)',
         border: '1px solid rgba(255,255,255,0.08)',
         borderRadius: 7, padding: 2,
-        width: '57.5%',
-        alignSelf: 'flex-end',
       }}
     >
       <div
@@ -55,15 +53,13 @@ function TimeframeSlider({ value, onChange }) {
           onClick={() => onChange(tf.key)}
           style={{
             position: 'relative', zIndex: 2,
-            flex: 1,
-            padding: '5px 0', borderRadius: 5,
+            padding: '5px 9px', borderRadius: 5,
             fontSize: 8.5, fontWeight: 700, cursor: 'pointer', border: 'none',
             background: 'transparent',
             color: value === tf.key ? '#fff' : '#475569',
             transition: 'color 0.12s',
             WebkitTapHighlightColor: 'transparent',
             whiteSpace: 'nowrap',
-            textAlign: 'center',
           }}
         >
           {tf.label}
@@ -134,27 +130,20 @@ export default function InlineLeaderboard({ view, setView, checkInLeaderboard, s
 
   return (
     <div style={{
-      background: 'linear-gradient(135deg, rgba(16,19,40,0.96) 0%, rgba(6,8,18,0.99) 100%)',
+      background: 'linear-gradient(135deg, rgba(30,35,60,0.82) 0%, rgba(8,10,20,0.96) 100%)',
       border: '1px solid rgba(255,255,255,0.07)',
       backdropFilter: 'blur(20px)',
       WebkitBackdropFilter: 'blur(20px)',
-      boxShadow: '0 2px 12px rgba(0,0,0,0.35)',
       borderRadius: 18,
       overflow: 'hidden',
     }}>
       <div style={{ padding: '12px 14px 10px', borderBottom: '1px solid rgba(255,255,255,0.055)' }}>
 
-        {/* Title — centred */}
-        <p style={{
-          fontSize: 14, fontWeight: 900, color: '#fff',
-          letterSpacing: '-0.01em', textAlign: 'center',
-          margin: '0 0 8px 0',
-        }}>
-          Community Leaderboard
-        </p>
-
-        {/* Slider — pushed to the right */}
-        <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 10 }}>
+        {/* Header: big title left + compact slider right */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+          <span style={{ fontSize: 18, fontWeight: 900, color: '#fff', letterSpacing: '-0.02em', lineHeight: 1 }}>
+            Community Leaderboard
+          </span>
           <TimeframeSlider value={timeframe} onChange={setTimeframe} />
         </div>
 
