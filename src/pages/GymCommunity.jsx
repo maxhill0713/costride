@@ -43,37 +43,12 @@ import BusyTimesChart from '../components/gym/BusyTimesChart';
 import GymCommunitySkeleton from '../components/gym/GymCommunitySkeleton';
 import { motion, AnimatePresence } from 'framer-motion';
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Page slide animation — matches CreateSplitModal exactly
-// ─────────────────────────────────────────────────────────────────────────────
 const pageSlideVariants = {
-  hidden: {
-    x: '100%',
-    opacity: 1
-  },
-  visible: {
-    x: 0,
-    opacity: 1,
-    transition: {
-      type: 'spring',
-      stiffness: 380,
-      damping: 36,
-      mass: 1
-    }
-  },
-  exit: {
-    x: '100%',
-    opacity: 1,
-    transition: {
-      type: 'spring',
-      stiffness: 420,
-      damping: 40,
-      mass: 0.9
-    }
-  }
+  hidden: { x: '100%', opacity: 1 },
+  visible: { x: 0, opacity: 1, transition: { type: 'spring', stiffness: 380, damping: 36, mass: 1 } },
+  exit: { x: '100%', opacity: 1, transition: { type: 'spring', stiffness: 420, damping: 40, mass: 0.9 } }
 };
 
-// ── Card style — matches TodayWorkout home page cards exactly ─────────────────
 const CARD_BG = 'linear-gradient(135deg, rgba(30,35,60,0.82) 0%, rgba(8,10,20,0.96) 100%)';
 const CARD_BORDER = '1px solid rgba(255,255,255,0.07)';
 
@@ -111,7 +86,6 @@ const DIALOG_ANIM = `
   }
 `;
 
-// ── lb-slide-up now slides from the RIGHT (translateX) instead of from below ──
 const LBOARD_ANIM = `
 @keyframes lb-slide-up {
   from { opacity:0; transform:translateX(100%); }
@@ -171,7 +145,6 @@ const MEDALS = [
 { rank: 2, color: '#C8D8EC', colorRgb: '200,216,236', cardBorder: 'rgba(180,205,230,0.48)', cardBorderDim: 'rgba(180,205,230,0.12)', glow: 'rgba(180,205,230,0.2)', glowStrong: 'rgba(180,205,230,0.45)', bg: 'linear-gradient(160deg,rgba(16,28,52,0.95) 0%,rgba(6,12,28,0.98) 100%)', avatarRing: 'conic-gradient(#C8D8EC,#8AACCF,#C8D8EC,#E8F0FA,#C8D8EC)', badgeBg: 'linear-gradient(145deg,#D4E4F4,#6A96BC)', badgeText: 'rgba(10,30,60,0.85)', pulse: 'lb-silver-pulse', shine: 'rgba(200,220,240,0.14)', insetGlow: 'rgba(180,205,230,0.09)', label: '🥈', tierLabel: 'ELITE', tierColor: '#C8D8EC', heightExtra: 6 },
 { rank: 3, color: '#E8904A', colorRgb: '232,144,74', cardBorder: 'rgba(215,128,58,0.5)', cardBorderDim: 'rgba(215,128,58,0.14)', glow: 'rgba(215,128,58,0.22)', glowStrong: 'rgba(215,128,58,0.45)', bg: 'linear-gradient(160deg,rgba(48,22,6,0.95) 0%,rgba(20,8,2,0.98) 100%)', avatarRing: 'conic-gradient(#E8904A,#A05820,#E8904A,#F4C090,#E8904A)', badgeBg: 'linear-gradient(145deg,#E8904A,#8C4818)', badgeText: 'rgba(50,15,0,0.85)', pulse: 'lb-bronze-pulse', shine: 'rgba(218,140,72,0.15)', insetGlow: 'rgba(215,128,58,0.1)', label: '🥉', tierLabel: 'PRO', tierColor: '#E8904A', heightExtra: 0 }];
 
-
 const NAV_ROW = [
 { rankOpacity: 1, nameOpacity: 0.92, barOpacity: 0.55, pillOpacity: 0.9 },
 { rankOpacity: 0.88, nameOpacity: 0.82, barOpacity: 0.48, pillOpacity: 0.8 },
@@ -181,8 +154,6 @@ const NAV_ROW = [
 { rankOpacity: 0.46, nameOpacity: 0.44, barOpacity: 0.22, pillOpacity: 0.44 },
 { rankOpacity: 0.38, nameOpacity: 0.36, barOpacity: 0.18, pillOpacity: 0.38 }];
 
-
-// ── Class helpers ─────────────────────────────────────────────────────────────
 const CLASS_TYPE_CONFIG = {
   hiit: { label: 'HIIT', emoji: '⚡', color: '#f87171', bg: 'rgba(239,68,68,0.12)', border: 'rgba(239,68,68,0.25)' },
   yoga: { label: 'Yoga', emoji: '🧘', color: '#34d399', bg: 'rgba(16,185,129,0.12)', border: 'rgba(16,185,129,0.25)' },
@@ -219,7 +190,6 @@ function getScheduleDays(c) {
   return [];
 }
 
-// ── Active Now Strip ──────────────────────────────────────────────────────────
 const AV_COLORS = [
 { bg: '#1a2a4a', color: '#93c5fd' },
 { bg: '#2a1a3a', color: '#c4b5fd' },
@@ -233,8 +203,6 @@ const AV_COLORS = [
 const colorForUser = (userId) =>
 AV_COLORS[(userId || '').split('').reduce((a, c) => a + c.charCodeAt(0), 0) % AV_COLORS.length];
 
-
-// ── Active Now Strip ──────────────────────────────────────────────────────────
 function ActiveNowStrip({ checkIns, memberAvatarMap }) {
   const getTimestamp = (c) => {
     const candidates = [c.created_date, c.created_at, c.timestamp, c.check_in_time, c.checkin_time, c.date_created, c.check_in_date];
@@ -281,7 +249,6 @@ function ActiveNowStrip({ checkIns, memberAvatarMap }) {
               <img src={avatar} alt={c.user_name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> :
               ini(c.user_name)}
             </div>);
-
         })}
         {recent.length > 8 &&
         <div style={{ width: 32, height: 32, borderRadius: '50%', flexShrink: 0,
@@ -294,10 +261,8 @@ function ActiveNowStrip({ checkIns, memberAvatarMap }) {
         }
       </div>
     </div>);
-
 }
 
-// ── Activity feed CSS ─────────────────────────────────────────────────────────
 const ACTIVITY_CSS = `
 @keyframes an-ping   { 0%,100%{transform:scale(1);opacity:0.7} 50%{transform:scale(1.8);opacity:0} }
 @keyframes af-in     { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
@@ -311,7 +276,6 @@ function injectActivityCSS() {
   }
 }
 
-// ── Feed item types ───────────────────────────────────────────────────────────
 const FEED_TYPES = {
   checkin: { icon: MapPin, iconColor: '#60a5fa', iconBg: 'rgba(37,99,235,0.14)', iconBorder: 'rgba(37,99,235,0.22)', verb: 'checked in' },
   lift_pr: { icon: Trophy, iconColor: '#eab308', iconBg: 'rgba(234,179,8,0.14)', iconBorder: 'rgba(234,179,8,0.25)', verb: 'hit a new PR 🔥' },
@@ -354,7 +318,6 @@ function FeedCard({ item, memberAvatarMap, liked, onLike, index }) {
   return (
     <div style={{ borderBottom: '1px solid rgba(255,255,255,0.045)', animation: `af-in 0.3s ease ${index * 0.04}s both` }}>
       <div style={{ display: 'flex', gap: 12, padding: '13px 14px' }}>
-        {/* Avatar */}
         <div style={{ position: 'relative', flexShrink: 0 }}>
           <div style={{ width: 40, height: 40, borderRadius: '50%', overflow: 'hidden',
             background: col.bg, border: `2px solid ${isPR ? 'rgba(234,179,8,0.5)' : 'rgba(255,255,255,0.08)'}`,
@@ -365,16 +328,7 @@ function FeedCard({ item, memberAvatarMap, liked, onLike, index }) {
             <img src={avatar} alt={item.userName} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> :
             ini(item.userName)}
           </div>
-          
-
-
-
-
-
-          
         </div>
-
-        {/* Content */}
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ fontSize: 13.5, color: 'rgba(226,232,240,0.9)', lineHeight: 1.4, marginBottom: 3 }}>
             <span style={{ fontWeight: 800, color: '#fff' }}>{item.userName}</span>
@@ -384,8 +338,6 @@ function FeedCard({ item, memberAvatarMap, liked, onLike, index }) {
               {type.verb}
             </span>
           </div>
-
-          {/* Sub info */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
             {item.type === 'checkin' &&
             <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.35)', fontWeight: 600 }}>At the gym</span>
@@ -435,8 +387,6 @@ function FeedCard({ item, memberAvatarMap, liked, onLike, index }) {
             }
           </div>
         </div>
-
-        {/* Right side: time + reacts */}
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end',
           justifyContent: 'space-between', flexShrink: 0, minWidth: 40, gap: 4 }}>
           <span style={{ fontSize: 10.5, color: 'rgba(148,163,184,0.45)', fontWeight: 600 }}>
@@ -449,8 +399,6 @@ function FeedCard({ item, memberAvatarMap, liked, onLike, index }) {
           )}
         </div>
       </div>
-
-      {/* Expanded post content */}
       {item.type === 'post' && postExpanded &&
       <div style={{ margin: '0 14px 12px', padding: '10px 12px',
         background: 'rgba(16,185,129,0.06)', border: '1px solid rgba(52,211,153,0.15)',
@@ -469,13 +417,10 @@ function FeedCard({ item, memberAvatarMap, liked, onLike, index }) {
         </div>
       }
     </div>);
-
 }
 
-// ── Stats summary row ─────────────────────────────────────────────────────────
 function ActivityStats() {return null;}
 
-// ── Main Activity Feed — check-ins + workouts + challenges + milestones + posts ──
 function GymActivityFeed({ checkIns, memberAvatarMap, memberNameMap = {}, workoutLogs = [], challengeParticipants = [], challenges = [], achievements = [], posts = [] }) {
   const [likedIds, setLikedIds] = React.useState(new Set());
 
@@ -485,9 +430,7 @@ function GymActivityFeed({ checkIns, memberAvatarMap, memberNameMap = {}, workou
 
   const items = React.useMemo(() => {
     const all = [];
-
     const resolveName = (userId, fallback) => memberNameMap[userId] || fallback || 'Member';
-
     const seenCI = new Set();
     checkIns.forEach((c) => {
       const key = `${c.user_id}-${(c.check_in_date || '').slice(0, 10)}`;
@@ -495,26 +438,21 @@ function GymActivityFeed({ checkIns, memberAvatarMap, memberNameMap = {}, workou
       seenCI.add(key);
       all.push({ type: 'checkin', id: `ci-${c.id}`, userId: c.user_id, userName: resolveName(c.user_id, c.user_name), date: c.check_in_date, data: c });
     });
-
     workoutLogs.forEach((w) => {
       all.push({ type: 'lift', id: `wl-${w.id}`, userId: w.user_id, userName: resolveName(w.user_id, w.user_name), date: w.created_date || w.completed_date, data: w });
     });
-
     const challengeMap = {};
     challenges.forEach((c) => {challengeMap[c.id] = c;});
     challengeParticipants.forEach((p) => {
       const ch = challengeMap[p.challenge_id];
       all.push({ type: 'challenge', id: `cp-${p.id}`, userId: p.user_id, userName: resolveName(p.user_id, p.user_name), date: p.joined_date || p.created_date, data: ch || { title: p.challenge_title || 'a challenge' } });
     });
-
     achievements.forEach((a) => {
       all.push({ type: 'milestone', id: `ach-${a.id}`, userId: a.user_id, userName: resolveName(a.user_id, a.user_name), date: a.created_date, data: a });
     });
-
     posts.filter((p) => !p.is_hidden).forEach((p) => {
       all.push({ type: 'post', id: `post-${p.id}`, userId: p.member_id, userName: resolveName(p.member_id, p.member_name), date: p.created_date, data: p });
     });
-
     return all.
     filter((item) => item.date).
     sort((a, b) => new Date(b.date) - new Date(a.date)).
@@ -527,9 +465,6 @@ function GymActivityFeed({ checkIns, memberAvatarMap, memberNameMap = {}, workou
     <div style={{ ...CARD_STYLE, borderRadius: 18, overflow: 'hidden' }}>
       <div style={{ padding: '13px 14px 11px', borderBottom: '1px solid rgba(255,255,255,0.055)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          
-
-          
           <span style={{ fontSize: 14, fontWeight: 900, color: '#fff', letterSpacing: '-0.01em' }}>Gym Activity Feed</span>
         </div>
         <span style={{ fontSize: 11, fontWeight: 600, color: 'rgba(255,255,255,0.28)' }}>{items.length} activities</span>
@@ -540,15 +475,11 @@ function GymActivityFeed({ checkIns, memberAvatarMap, memberNameMap = {}, workou
         )}
       </div>
     </div>);
-
 }
 
-// ── Unused legacy components (kept for compatibility) ─────────────────────────
 function ClassCard({ gymClass, isOwner, onDelete, onBook, booked }) {return null;}
 function TodayStrip({ classes, bookedIds, onBook }) {return null;}
 
-
-// ── Class images ──────────────────────────────────────────────────────────────
 const CLASS_IMAGES = {
   hiit: 'https://images.unsplash.com/photo-1517963879433-6ad2171073a4?w=800&q=80',
   yoga: 'https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=800&q=80',
@@ -665,7 +596,6 @@ function ClassDateHeader({ activeDay, setActiveDay, activeSlot, setActiveSlot })
               <span style={{ width: 4, height: 4, borderRadius: '50%', background: '#60a5fa', boxShadow: '0 0 5px rgba(96,165,250,0.8)' }} />
               }
             </button>);
-
         })}
       </div>
 
@@ -697,11 +627,9 @@ function ClassDateHeader({ activeDay, setActiveDay, activeSlot, setActiveSlot })
             <button key={slot} onClick={() => setActiveSlot(active ? null : slot)} {...b}>
               {slot}
             </button>);
-
         })}
       </div>
     </div>);
-
 }
 
 function PremiumClassCard({ gymClass, isOwner, onDelete, onBook, booked, onClick, timeStr, index }) {
@@ -906,7 +834,6 @@ function PremiumClassCard({ gymClass, isOwner, onDelete, onBook, booked, onClick
       }
       {isOwner && <div style={{ height: 12 }} />}
     </div>);
-
 }
 
 function ClassesTabContent({ classes, showOwnerControls, onManage, onDelete }) {
@@ -948,7 +875,6 @@ function ClassesTabContent({ classes, showOwnerControls, onManage, onDelete }) {
   ...Array.from(new Set(classes.map(getClassType))).
   map((t) => ({ id: t, label: CLASS_TYPE_CONFIG[t]?.label || t, emoji: CLASS_TYPE_CONFIG[t]?.emoji || '🎯' }))];
 
-
   const activeDate = new Date(monday);
   activeDate.setDate(monday.getDate() + activeDay);
 
@@ -965,7 +891,6 @@ function ClassesTabContent({ classes, showOwnerControls, onManage, onDelete }) {
         }
       </div>
     </motion.div>);
-
 
   return (
     <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.25 }}
@@ -1004,7 +929,6 @@ function ClassesTabContent({ classes, showOwnerControls, onManage, onDelete }) {
       <ClassDateHeader
         activeDay={activeDay} setActiveDay={setActiveDay}
         activeSlot={activeSlot} setActiveSlot={setActiveSlot} />
-      
 
       {typeOptions.length > 2 &&
       <div style={{ display: 'flex', gap: 6, overflowX: 'auto', scrollbarWidth: 'none' }}>
@@ -1028,7 +952,6 @@ function ClassesTabContent({ classes, showOwnerControls, onManage, onDelete }) {
               transition: 'transform 0.08s ease,box-shadow 0.08s ease,border-bottom 0.08s ease' }}>
                 <span style={{ fontSize: 12 }}>{f.emoji}</span>{f.label}
               </button>);
-
         })}
         </div>
       }
@@ -1052,10 +975,8 @@ function ClassesTabContent({ classes, showOwnerControls, onManage, onDelete }) {
           onDelete={showOwnerControls ? (id) => {if (window.confirm('Delete?')) onDelete(id);} : null}
           timeStr={gymClass._time}
           index={i} />
-
         )}
         </div> :
-
       <div style={{ borderRadius: 18, padding: '36px 20px', textAlign: 'center',
         background: CARD_BG, border: `1px dashed ${CARD_BORDER}`, backdropFilter: 'blur(20px)' }}>
           <div style={{ fontSize: 28, marginBottom: 10 }}>📭</div>
@@ -1086,9 +1007,7 @@ function ClassesTabContent({ classes, showOwnerControls, onManage, onDelete }) {
         booked={selectedClass ? bookedIds.has(selectedClass.id) : false}
         onBook={handleBook}
         isOwner={showOwnerControls} />
-      
     </motion.div>);
-
 }
 
 
@@ -1117,42 +1036,64 @@ function LeaderboardSection({ view, setView, checkInLeaderboard, streakLeaderboa
   const podium   = list.slice(0, 3);
   const restList = list.slice(3, 10);
 
-  /* ── 3D button helper (matches the rest of the app) ── */
-  const tabBtn = (active, accentRgb, accent) => ({
-    flex: 1,
-    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5,
-    padding: '8px 4px', borderRadius: 12, fontSize: 11, fontWeight: 800, cursor: 'pointer',
-    background:    active ? `rgba(${accentRgb},0.2)`              : 'rgba(20,28,60,0.75)',
-    border:        `1px solid ${active ? `rgba(${accentRgb},0.5)` : 'rgba(255,255,255,0.09)'}`,
-    borderBottom:  active ? `3px solid rgba(${accentRgb},0.55)`   : '3px solid rgba(0,0,0,0.5)',
-    color:         active ? accent                                 : 'rgba(255,255,255,0.3)',
-    boxShadow:     active
-      ? `0 2px 0 rgba(0,0,0,0.4),inset 0 1px 0 rgba(255,255,255,0.18)`
-      : '0 2px 0 rgba(0,0,0,0.35),inset 0 1px 0 rgba(255,255,255,0.06)',
-    transition: 'transform 0.08s ease,box-shadow 0.08s ease,border-bottom 0.08s ease',
-  });
+  // ── Timeframe button — matches challenges page 3D pill style ──
+  const tfBtn = (active, colorClass) => {
+    const configs = {
+      week:  { from: '#a78bfa', via: '#8b5cf6', to: '#7c3aed', shadow: '#5b21b6', glow: 'rgba(120,40,220,0.4)' },
+      month: { from: '#60a5fa', via: '#3b82f6', to: '#2563eb', shadow: '#1a3fa8', glow: 'rgba(0,0,100,0.5)' },
+      all:   { from: '#fbbf24', via: '#f59e0b', to: '#d97706', shadow: '#b45309', glow: 'rgba(180,83,9,0.4)' },
+    };
+    const cfg = configs[colorClass] || configs.week;
+    return {
+      padding: '10px 14px', borderRadius: 14, fontSize: 11, fontWeight: 800, cursor: 'pointer',
+      flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2,
+      background: active
+        ? `linear-gradient(to bottom, ${cfg.from}, ${cfg.via}, ${cfg.to})`
+        : 'rgba(15,20,40,0.8)',
+      border: active ? '1px solid transparent' : '1px solid rgba(80,100,160,0.5)',
+      borderBottom: active ? `5px solid ${cfg.shadow}` : '5px solid rgba(5,8,20,0.8)',
+      color: active ? '#fff' : 'rgba(148,163,184,0.7)',
+      boxShadow: active
+        ? `0 5px 0 rgba(0,0,0,0.4),0 8px 20px ${cfg.glow},inset 0 1px 0 rgba(255,255,255,0.2),inset 0 0 20px rgba(255,255,255,0.05)`
+        : '0 5px 0 rgba(5,8,20,0.8),0 8px 20px rgba(0,0,0,0.8),inset 0 1px 0 rgba(255,255,255,0.12)',
+      transition: 'transform 0.1s ease,box-shadow 0.1s ease,border-bottom 0.1s ease',
+      transform: 'translateY(0)',
+    };
+  };
 
-  const tfBtn = (active) => ({
-    padding: '5px 14px', borderRadius: 99, fontSize: 11, fontWeight: 800, cursor: 'pointer',
-    background:   active ? `rgba(${current.accentRgb},0.18)`              : 'rgba(20,28,60,0.8)',
-    border:       `1px solid ${active ? `rgba(${current.accentRgb},0.5)` : 'rgba(255,255,255,0.1)'}`,
-    borderBottom: active ? `3px solid rgba(${current.accentRgb},0.6)`     : '3px solid rgba(0,0,0,0.5)',
-    color:        active ? current.accent                                   : 'rgba(255,255,255,0.35)',
-    boxShadow:    active
-      ? '0 2px 0 rgba(0,0,0,0.4),inset 0 1px 0 rgba(255,255,255,0.15)'
-      : '0 2px 0 rgba(0,0,0,0.35),inset 0 1px 0 rgba(255,255,255,0.08)',
-    transition: 'transform 0.08s ease,box-shadow 0.08s ease,border-bottom 0.08s ease',
-  });
+  // ── Category tab button — matches challenges page 3D pill style ──
+  const tabBtn = (active, accentRgb, accent) => {
+    const colorMap = {
+      '16,185,129':  { from: '#34d399', via: '#10b981', to: '#059669', shadow: '#065f46', glow: 'rgba(16,185,129,0.4)' },
+      '249,115,22':  { from: '#fb923c', via: '#f97316', to: '#ea580c', shadow: '#9a3412', glow: 'rgba(249,115,22,0.4)' },
+      '129,140,248': { from: '#a5b4fc', via: '#818cf8', to: '#6366f1', shadow: '#3730a3', glow: 'rgba(99,102,241,0.4)' },
+    };
+    const cfg = colorMap[accentRgb] || { from: accent, via: accent, to: accent, shadow: 'rgba(0,0,0,0.5)', glow: `rgba(${accentRgb},0.3)` };
+    return {
+      flex: 1,
+      display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 3,
+      padding: '10px 4px', borderRadius: 14, fontSize: 11, fontWeight: 800, cursor: 'pointer',
+      background: active
+        ? `linear-gradient(to bottom, ${cfg.from}, ${cfg.via}, ${cfg.to})`
+        : 'rgba(15,20,40,0.8)',
+      border: active ? '1px solid transparent' : '1px solid rgba(80,100,160,0.5)',
+      borderBottom: active ? `5px solid ${cfg.shadow}` : '5px solid rgba(5,8,20,0.8)',
+      color: active ? '#fff' : 'rgba(148,163,184,0.7)',
+      boxShadow: active
+        ? `0 5px 0 rgba(0,0,0,0.4),0 8px 20px ${cfg.glow},inset 0 1px 0 rgba(255,255,255,0.2),inset 0 0 20px rgba(255,255,255,0.05)`
+        : '0 5px 0 rgba(5,8,20,0.8),0 8px 20px rgba(0,0,0,0.8),inset 0 1px 0 rgba(255,255,255,0.12)',
+      transition: 'transform 0.1s ease,box-shadow 0.1s ease,border-bottom 0.1s ease',
+    };
+  };
 
   const press3d = {
-    onMouseDown:  (e) => { e.currentTarget.style.transform = 'translateY(3px)'; e.currentTarget.style.boxShadow = 'none'; e.currentTarget.style.borderBottom = '1px solid rgba(0,0,0,0.4)'; },
+    onMouseDown:  (e) => { e.currentTarget.style.transform = 'translateY(5px)'; e.currentTarget.style.boxShadow = 'none'; e.currentTarget.style.borderBottom = '1px solid rgba(0,0,0,0.4)'; },
     onMouseUp:    (e) => { e.currentTarget.style.transform = ''; e.currentTarget.style.boxShadow = ''; e.currentTarget.style.borderBottom = ''; },
     onMouseLeave: (e) => { e.currentTarget.style.transform = ''; e.currentTarget.style.boxShadow = ''; e.currentTarget.style.borderBottom = ''; },
-    onTouchStart: (e) => { e.currentTarget.style.transform = 'translateY(3px)'; e.currentTarget.style.boxShadow = 'none'; e.currentTarget.style.borderBottom = '1px solid rgba(0,0,0,0.4)'; },
+    onTouchStart: (e) => { e.currentTarget.style.transform = 'translateY(5px)'; e.currentTarget.style.boxShadow = 'none'; e.currentTarget.style.borderBottom = '1px solid rgba(0,0,0,0.4)'; },
     onTouchEnd:   (e) => { e.currentTarget.style.transform = ''; e.currentTarget.style.boxShadow = ''; e.currentTarget.style.borderBottom = ''; },
   };
 
-  /* ── MEDAL config reused from elsewhere in the file ── */
   const PODIUM_COLORS = [
     { rank: 1, color: '#FFD700', bg: 'rgba(255,215,0,0.08)',  border: 'rgba(255,215,0,0.3)',  ring: 'rgba(255,215,0,0.6)',  label: '👑', shadow: 'rgba(255,215,0,0.2)'  },
     { rank: 2, color: '#C8D8EC', bg: 'rgba(200,216,236,0.06)', border: 'rgba(200,216,236,0.25)', ring: 'rgba(200,216,236,0.5)', label: '🥈', shadow: 'rgba(200,216,236,0.15)' },
@@ -1219,7 +1160,7 @@ function LeaderboardSection({ view, setView, checkInLeaderboard, streakLeaderboa
     </button>
   );
 
-  /* ── EXPANDED full-screen panel — matches CreateSplitModal slide-in ── */
+  /* ── EXPANDED full-screen panel ── */
   return (
     <div style={{
       position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
@@ -1236,7 +1177,7 @@ function LeaderboardSection({ view, setView, checkInLeaderboard, streakLeaderboa
         borderBottom: '1px solid rgba(255,255,255,0.06)',
         position: 'relative',
       }}>
-        {/* Back button — matches app header style */}
+        {/* Back button */}
         <button
           onClick={() => setOpen(false)}
           {...press3d}
@@ -1254,30 +1195,29 @@ function LeaderboardSection({ view, setView, checkInLeaderboard, streakLeaderboa
           <ChevronLeft style={{ width: 17, height: 17, color: 'rgba(255,255,255,0.7)' }} />
         </button>
 
+        {/* ── CHANGED: removed "Community Rankings" subtitle, title is now "Community Leaderboard" ── */}
         <div style={{ textAlign: 'center', paddingBottom: 12 }}>
-          <p style={{ fontSize: 10, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.2em', color: `rgba(${current.accentRgb},0.65)`, margin: '0 0 2px' }}>
-            Community Rankings
-          </p>
           <h2 style={{ fontSize: 22, fontWeight: 900, color: '#fff', margin: 0, letterSpacing: '-0.04em' }}>
-            Leaderboard
+            Community Leaderboard
           </h2>
         </div>
 
-        {/* Timeframe pills */}
-        <div style={{ display: 'flex', justifyContent: 'center', gap: 6, marginBottom: 10 }}>
+        {/* ── CHANGED: Timeframe pills — now match challenges page 3D style ── */}
+        <div style={{ display: 'flex', gap: 8, marginBottom: 10 }}>
           {[['week','This Week'],['month','Month'],['all','All Time']].map(([tf, label]) => (
-            <button key={tf} onClick={() => setTimeframe(tf)} style={tfBtn(timeframe === tf)} {...press3d}>
+            <button key={tf} onClick={() => setTimeframe(tf)} style={tfBtn(timeframe === tf, tf)} {...press3d}>
               {label}
             </button>
           ))}
         </div>
 
-        {/* Category tabs */}
-        <div style={{ display: 'flex', gap: 6, paddingBottom: 12 }}>
+        {/* ── CHANGED: Category tabs — now match challenges page 3D style ── */}
+        <div style={{ display: 'flex', gap: 8, paddingBottom: 12 }}>
           {tabs.map(({ id, label, icon: Icon, accent, accentRgb }) => (
             <button key={id} onClick={() => setView(id)}
               style={tabBtn(view === id, accentRgb, accent)} {...press3d}>
-              <Icon style={{ width: 12, height: 12 }} />{label}
+              <Icon style={{ width: 14, height: 14 }} />
+              {label}
             </button>
           ))}
         </div>
@@ -1315,9 +1255,7 @@ function LeaderboardSection({ view, setView, checkInLeaderboard, streakLeaderboa
                     marginBottom: heightBoost,
                     animation: `lb-card-in 0.45s cubic-bezier(0.34,1.3,0.64,1) ${order * 0.07}s both`,
                   }}>
-                    {/* accent bar */}
                     <div style={{ height: 3, background: `linear-gradient(90deg, transparent, ${pc.color}, transparent)` }} />
-                    {/* rank badge */}
                     <div style={{ display: 'flex', justifyContent: 'center', paddingTop: isFirst ? 14 : 10, paddingBottom: 2 }}>
                       <span style={{
                         fontSize: 8, fontWeight: 900, letterSpacing: '0.15em', textTransform: 'uppercase',
@@ -1327,7 +1265,6 @@ function LeaderboardSection({ view, setView, checkInLeaderboard, streakLeaderboa
                         #{pcIdx + 1}
                       </span>
                     </div>
-                    {/* avatar */}
                     <div style={{ display: 'flex', justifyContent: 'center', padding: '6px 0 4px' }}>
                       <div style={{
                         width: avatarSz + 4, height: avatarSz + 4, borderRadius: '50%',
@@ -1342,7 +1279,6 @@ function LeaderboardSection({ view, setView, checkInLeaderboard, streakLeaderboa
                           : initials(data.userName)}
                       </div>
                     </div>
-                    {/* name */}
                     <p style={{
                       color: '#fff', fontWeight: 900, textAlign: 'center',
                       fontSize: isFirst ? 11 : 9.5, lineHeight: 1.2,
@@ -1351,7 +1287,6 @@ function LeaderboardSection({ view, setView, checkInLeaderboard, streakLeaderboa
                     }}>
                       {data.userName || '—'}
                     </p>
-                    {/* score */}
                     <div style={{ textAlign: 'center', padding: `2px 8px ${isFirst ? 14 : 10}px` }}>
                       <p style={{ fontSize: isFirst ? 22 : 16, fontWeight: 900, color: pc.color, lineHeight: 1, letterSpacing: '-0.03em', margin: 0 }}>
                         {fmt(getVal(data))}
@@ -1370,7 +1305,6 @@ function LeaderboardSection({ view, setView, checkInLeaderboard, streakLeaderboa
               <div style={{ display: 'flex', flexDirection: 'column', gap: 4, padding: '4px 12px 20px' }}>
                 {restList.map((m, i) => {
                   const globalRank = i + 4;
-                  const pct = Math.max(4, Math.round(getVal(m) / maxVal * 100));
                   const opacity = Math.max(0.35, 1 - i * 0.1);
                   return (
                     <div key={m.userId || i} style={{
@@ -1379,12 +1313,12 @@ function LeaderboardSection({ view, setView, checkInLeaderboard, streakLeaderboa
                       display: 'flex', alignItems: 'center', gap: 10,
                       animation: `lb-row-in 0.26s ease ${(i + 3) * 0.04}s both`,
                     }}>
-                      {/* rank */}
+                      {/* ── CHANGED: rank number — no box, just plain text ── */}
                       <div style={{
-                        width: 28, height: 28, borderRadius: 9, flexShrink: 0,
-                        background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)',
+                        width: 28, flexShrink: 0,
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        fontSize: 12, fontWeight: 900, color: `rgba(255,255,255,${opacity * 0.7})`,
+                        fontSize: 13, fontWeight: 900, color: `rgba(255,255,255,${opacity * 0.6})`,
+                        fontVariantNumeric: 'tabular-nums',
                       }}>
                         {globalRank}
                       </div>
@@ -1401,21 +1335,14 @@ function LeaderboardSection({ view, setView, checkInLeaderboard, streakLeaderboa
                           ? <img src={m.userAvatar} alt={m.userName} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                           : initials(m.userName)}
                       </div>
-                      {/* name + bar */}
+                      {/* ── CHANGED: name only — progress bar removed ── */}
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <p style={{
                           fontSize: 13, fontWeight: 700, color: `rgba(255,255,255,${opacity * 0.92})`,
-                          margin: '0 0 5px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                          margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
                         }}>
                           {m.userName || '—'}
                         </p>
-                        <div style={{ height: 3, borderRadius: 99, background: 'rgba(255,255,255,0.06)', overflow: 'hidden' }}>
-                          <div style={{
-                            height: '100%', borderRadius: 99, width: `${pct}%`,
-                            background: `rgba(${current.accentRgb},${opacity * 0.55})`,
-                            transition: 'width 0.6s ease',
-                          }} />
-                        </div>
                       </div>
                       {/* score pill */}
                       <div style={{
@@ -1449,7 +1376,6 @@ function SlidePanel({ open, children }) {
         </div>
       </div>
     </div>);
-
 }
 
 function SuggestedFriendsCard({ checkIns, currentUser, memberAvatarMap }) {
@@ -1496,13 +1422,10 @@ function SuggestedFriendsCard({ checkIns, currentUser, memberAvatarMap }) {
           const sent = sentIds.has(c.user_id);
           return (
             <div key={c.user_id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 12px', borderBottom: i < suggestions.length - 1 ? '1px solid rgba(255,255,255,0.045)' : 'none' }}>
-              {/* Avatar — same size as friends popup (32px) */}
               <div style={{ width: 32, height: 32, borderRadius: '50%', overflow: 'hidden', background: col.bg, border: '1.5px solid rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 800, color: col.color, flexShrink: 0 }}>
                 {avatar ? <img src={avatar} alt={c.user_name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : ini(c.user_name)}
               </div>
-              {/* Name — same font size as friends popup */}
               <p style={{ flex: 1, fontSize: 12, fontWeight: 600, color: '#fff', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.user_name}</p>
-              {/* Add button — matches the blue 3D button in the friends popup / reactions modal */}
               {sent ? (
                 <span style={{ fontSize: 10, fontWeight: 700, padding: '4px 10px', borderRadius: 8, flexShrink: 0, background: 'linear-gradient(to bottom, #1a1f35, #0f1220)', border: '1px solid rgba(99,102,241,0.3)', color: 'rgba(165,180,252,0.85)', letterSpacing: '0.04em' }}>
                   Pending
@@ -1532,7 +1455,6 @@ function SuggestedFriendsCard({ checkIns, currentUser, memberAvatarMap }) {
         })}
       </div>
     </div>);
-
 }
 
 function RippleButton({ onClick, children, className, style }) {
@@ -1553,7 +1475,6 @@ function RippleButton({ onClick, children, className, style }) {
       {children}
       <style>{`@keyframes costride-ripple { to { transform: translate(-50%,-50%) scale(60); opacity: 0; } }`}</style>
     </button>);
-
 }
 
 export default function GymCommunity() {
@@ -1643,13 +1564,11 @@ export default function GymCommunity() {
 
   const memberAvatarMap = React.useMemo(() => {
     const map = { ...backendMemberAvatars };
-    // Also merge from GymMember records as a fallback
     members.forEach((m) => {
       if (!m.user_id) return;
       const avatar = m.avatar_url || m.user_avatar || m.profile_picture || null;
       if (avatar && !map[m.user_id]) map[m.user_id] = avatar;
     });
-    // Always use the current user's own avatar (most accurate)
     if (currentUser?.id) {
       const myAvatar = currentUser.avatar_url || currentUser.profile_picture || currentUser.photo_url || null;
       if (myAvatar) map[currentUser.id] = myAvatar;
@@ -1665,9 +1584,6 @@ export default function GymCommunity() {
     return map;
   }, [backendMemberNames, currentUser]);
 
-  // ── FIX: User-scoped recently viewed gyms ────────────────────────────────────
-  // This effect runs only after currentUser is loaded, and scopes the
-  // localStorage key to the user's ID so different accounts don't share history.
   useEffect(() => {
     if (!gymId || !currentUser?.id) return;
     try {
@@ -1677,7 +1593,6 @@ export default function GymCommunity() {
       localStorage.setItem(key, JSON.stringify(updated));
     } catch {}
   }, [gymId, currentUser?.id]);
-  // ─────────────────────────────────────────────────────────────────────────────
 
   const createEventMutation = useMutation({ mutationFn: (eventData) => base44.entities.Event.create({ ...eventData, gym_id: gymId, gym_name: gym?.name, attendees: 0 }), onMutate: async (eventData) => {await queryClient.cancelQueries({ queryKey: ['events', gymId] });const previous = queryClient.getQueryData(['events', gymId]);queryClient.setQueryData(['events', gymId], (old = []) => [{ ...eventData, id: `temp-${Date.now()}`, gym_id: gymId, gym_name: gym?.name, attendees: 0 }, ...old]);return { previous };}, onError: (err, vars, context) => {queryClient.setQueryData(['events', gymId], context.previous);}, onSuccess: () => {queryClient.invalidateQueries({ queryKey: ['events', gymId] });setShowCreateEvent(false);} });
   const rsvpMutation = useMutation({ mutationFn: ({ eventId, currentAttendees }) => base44.entities.Event.update(eventId, { attendees: currentAttendees + 1 }), onMutate: async ({ eventId, currentAttendees }) => {await queryClient.cancelQueries({ queryKey: ['events', gymId] });const previous = queryClient.getQueryData(['events', gymId]);queryClient.setQueryData(['events', gymId], (old = []) => old.map((e) => e.id === eventId ? { ...e, attendees: currentAttendees + 1 } : e));return { previous };}, onError: (err, vars, context) => {queryClient.setQueryData(['events', gymId], context.previous);}, onSuccess: () => {queryClient.invalidateQueries({ queryKey: ['events', gymId] });} });
@@ -1703,7 +1618,6 @@ export default function GymCommunity() {
       const currentMemberships = await base44.entities.GymMembership.filter({ user_id: currentUser.id, status: 'active' });
       if (currentMemberships.length >= 3) throw new Error('You can only be a member of up to 3 gyms. Please leave a gym before joining a new one.');
       await base44.entities.GymMembership.create({ user_id: currentUser.id, user_name: currentUser.full_name, user_email: currentUser.email, gym_id: gym.id, gym_name: gym.name, status: 'active', join_date: new Date().toISOString().split('T')[0], membership_type: 'lifetime' });if (!currentUser.primary_gym_id) {await base44.auth.updateMe({ primary_gym_id: gym.id });}}, onSuccess: () => {
-      // Optimistically update memberships cache so My Gyms page updates immediately
       queryClient.setQueryData(['gymMemberships', currentUser?.id], (old = []) => [
         ...(old || []),
         { gym_id: gym.id, gym_name: gym.name, user_id: currentUser?.id, status: 'active' }
@@ -1727,12 +1641,10 @@ export default function GymCommunity() {
 
   if (gymLoading && !gym) return null;
 
-
   if (!gymLoading && !gym) return (
     <div className="min-h-screen bg-[linear-gradient(to_bottom_right,#02040a,#0d2360,#02040a)] flex items-center justify-center p-4">
       <div className="p-8 text-center rounded-2xl" style={CARD_STYLE}><p className="text-slate-400 mb-4">Gym not found</p><Link to={createPageUrl('Gyms')} className="text-blue-400 font-bold">Back to Gyms</Link></div>
     </div>);
-
 
   const tabTriggerClass = "whitespace-nowrap ring-offset-background focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50 bg-slate-900/80 backdrop-blur-md text-slate-400 font-bold rounded-full px-2.5 py-1 flex items-center gap-1 justify-center border border-slate-600/40 shadow-[0_3px_0_0_#0d1220,inset_0_1px_0_rgba(255,255,255,0.08)] data-[state=active]:bg-gradient-to-b data-[state=active]:from-blue-500 data-[state=active]:via-blue-600 data-[state=active]:to-blue-700 data-[state=active]:text-white data-[state=active]:border-transparent data-[state=active]:shadow-[0_3px_0_0_#1a3fa8,0_6px_20px_rgba(59,130,246,0.35),inset_0_1px_0_rgba(255,255,255,0.2)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 text-[11.5px] transform-gpu";
 
@@ -1804,11 +1716,7 @@ export default function GymCommunity() {
             {/* ── HOME ── */}
             <TabsContent value="home" className="space-y-3 mt-0 w-full" asChild>
               <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.25 }} className="space-y-3">
-
-
-
                 <BusyTimesChart checkIns={checkIns} gymId={gymId} />
-
                 {polls.length > 0 &&
                 <div className="space-y-3">
                     {polls.map((poll) =>
@@ -1816,9 +1724,7 @@ export default function GymCommunity() {
                   )}
                   </div>
                 }
-
                 <MemberSpotlight checkIns={checkIns} memberAvatarMap={memberAvatarMap} memberNameMap={memberNameMap} />
-
                 {coaches.length > 0 &&
                 <div style={{ ...CARD_STYLE, borderRadius: 18, overflow: 'hidden' }}>
                     <div style={{ padding: '13px 14px 11px', borderBottom: '1px solid rgba(255,255,255,0.055)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -1849,12 +1755,10 @@ export default function GymCommunity() {
                               </div>
                           }
                           </div>);
-
                     })}
                     </div>
                   </div>
                 }
-
               </motion.div>
             </TabsContent>
 
@@ -1894,8 +1798,6 @@ export default function GymCommunity() {
                     memberAvatarMap={memberAvatarMap}
                     memberNameMap={memberNameMap} />;
 
-
-
                   return (
                     <>
                       {activeChallenges.length > 0 &&
@@ -1921,7 +1823,6 @@ export default function GymCommunity() {
                         </div>
                       }
                     </>);
-
                 })()}
               </motion.div>
             </TabsContent>
@@ -1955,14 +1856,12 @@ export default function GymCommunity() {
                   challenges={challenges}
                   achievements={gymAchievements}
                   posts={gymPosts} />
-                
                 {hasMorePosts &&
                 <div style={{ display: 'flex', justifyContent: 'center', marginTop: 16 }}>
                     <Button
                     variant="outline"
                     onClick={() => setPostsPage((p) => p + 1)}
                     style={{ borderRadius: 24, padding: '8px 28px', color: '#a0aec0', borderColor: 'rgba(255,255,255,0.12)', background: 'rgba(255,255,255,0.04)' }}>
-                    
                       Load more posts
                     </Button>
                   </div>
@@ -1990,5 +1889,4 @@ export default function GymCommunity() {
         <CoachProfileModal coach={selectedCoach} open={!!selectedCoach} onClose={() => setSelectedCoach(null)} gymClasses={classes} />
       </div>
     </PullToRefresh>);
-
 }
