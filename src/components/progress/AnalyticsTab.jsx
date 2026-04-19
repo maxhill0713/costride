@@ -21,8 +21,13 @@ export default function AnalyticsTab({ currentUser, workoutLogs, checkIns, anima
       <div style={{ ...CARD, borderRadius: 16, padding: '16px 16px' }}>
         <ProgressiveOverloadTracker currentUser={currentUser} animate={animateCharts} />
       </div>
-      <div style={{ ...CARD, borderRadius: 16, padding: '16px 16px' }}>
-        <WeeklyVolumeChart currentUser={currentUser} animate={animateCharts} />
+      <div style={{ display: 'flex', gap: 12 }}>
+        {/* ── Empty placeholder box ── */}
+        <div style={{ ...CARD, borderRadius: 16, padding: '12px 12px', flex: 1, minHeight: 180 }} />
+        {/* ── Weekly Rep Volume (compressed) ── */}
+        <div style={{ ...CARD, borderRadius: 16, padding: '12px 12px', flex: 1 }}>
+          <WeeklyVolumeChart currentUser={currentUser} animate={animateCharts} compact />
+        </div>
       </div>
       {currentUser?.workout_split && (
         <WorkoutSplitHeatmap

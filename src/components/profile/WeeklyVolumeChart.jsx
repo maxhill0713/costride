@@ -119,7 +119,7 @@ function CompoundToggle({ checked, onChange, onToggle = () => {} }) {
 }
 
 // ─── Main Component ───────────────────────────────────────────────────────────
-export default function WeeklyVolumeChart({ currentUser, animate = 0 }) {
+export default function WeeklyVolumeChart({ currentUser, animate = 0, compact = false }) {
   const [compoundOnly, setCompoundOnly] = useState(false);
   const [showInfo, setShowInfo] = useState(false);
   // animationKey changes when compound toggled OR when parent triggers first-load animation
@@ -174,12 +174,13 @@ export default function WeeklyVolumeChart({ currentUser, animate = 0 }) {
   return (
     <div>
       {/* ── Header ── */}
-      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8, marginBottom: showInfo ? 10 : 16 }}>
-        <div style={{ flexShrink: 0 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 6, marginBottom: showInfo ? 6 : (compact ? 6 : 16) }}>
+        <div style={{ flexShrink: 0, minWidth: 0 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
             <h2 style={{
-              fontSize: 16, fontWeight: 700, color: '#e2e8f0',
+              fontSize: compact ? 12 : 16, fontWeight: 700, color: '#e2e8f0',
               letterSpacing: '-0.01em', margin: 0, lineHeight: 1.2,
+              whiteSpace: compact ? 'nowrap' : 'normal',
             }}>
               Weekly Rep Volume
             </h2>
@@ -197,7 +198,7 @@ export default function WeeklyVolumeChart({ currentUser, animate = 0 }) {
               <Info size={13} />
             </motion.button>
           </div>
-          <p style={{ fontSize: 11, color: '#475569', margin: '3px 0 0', fontWeight: 500 }}>
+          <p style={{ fontSize: compact ? 9 : 11, color: '#475569', margin: '2px 0 0', fontWeight: 500 }}>
             Planned reps · current split
           </p>
         </div>
@@ -240,36 +241,37 @@ export default function WeeklyVolumeChart({ currentUser, animate = 0 }) {
 
       {!hasAnyData ? (
         <div style={{
-          height: 198, display: 'flex', flexDirection: 'column',
-          alignItems: 'center', justifyContent: 'center', gap: 8,
+          height: compact ? 120 : 198, display: 'flex', flexDirection: 'column',
+          alignItems: 'center', justifyContent: 'center', gap: 6,
         }}>
-          <p style={{ color: '#475569', fontSize: 13, fontWeight: 600, margin: 0 }}>
-            {compoundOnly ? 'No compound lifts configured' : 'No workout split configured'}
+          <p style={{ color: '#475569', fontSize: compact ? 11 : 13, fontWeight: 600, margin: 0, textAlign: 'center' }}>
+            {compoundOnly ? 'No compound lifts' : 'No split configured'}
           </p>
-          <p style={{ color: '#334155', fontSize: 11, margin: 0, textAlign: 'center', maxWidth: 200 }}>
-            {compoundOnly ? 'Add weighted compound exercises to your split' : 'Set up your split to see weekly rep volume'}
+          <p style={{ color: '#334155', fontSize: 10, margin: 0, textAlign: 'center', maxWidth: 160 }}>
+            {compoundOnly ? 'Add compound exercises to your split' : 'Set up your split to see volume'}
           </p>
         </div>
       ) : (
-        <ResponsiveContainer width="100%" height={198}>
-          <LineChart data={chartData} margin={{ top: 10, right: 8, left: 4, bottom: 0 }}>
+        <ResponsiveContainer width="100%" height={compact ? 120 : 198}>
+          <LineChart data={chartData} margin={{ top: compact ? 4 : 10, right: 4, left: compact ? -8 : 4, bottom: 0 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" vertical={false} />
             <ReferenceLine y={0} stroke="rgba(255,255,255,0.10)" strokeWidth={1} />
             <XAxis
               dataKey="day"
               stroke="rgba(255,255,255,0.04)"
-              tick={{ fill: '#475569', fontSize: 10, fontWeight: 500 }}
+              tick={{ fill: '#475569', fontSize: compact ? 8 : 10, fontWeight: 500 }}
               tickLine={false}
               axisLine={false}
+              height={compact ? 12 : 20}
             />
             <YAxis
               stroke="rgba(255,255,255,0.04)"
-              tick={{ fill: '#475569', fontSize: 9, fontWeight: 500 }}
+              tick={{ fill: '#475569', fontSize: 8, fontWeight: 500 }}
               tickLine={false}
               axisLine={false}
-              width={32}
+              width={compact ? 24 : 32}
               domain={yDomain}
-              ticks={yTicks}
+              ticks={compact ? yTicks.filter((_, i) => i % 2 === 0) : yTicks}
               tickFormatter={v => `${v}r`}
             />
             <Tooltip
