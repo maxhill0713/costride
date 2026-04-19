@@ -65,9 +65,18 @@ Deno.serve(async (req) => {
 
     const resolveName = (userId, fallback) => {
       const name = userDisplayNames[userId] || fallback || '';
-      // If the name looks like an email (contains @), strip to just the part before @
-      if (name.includes('@')) return name.split('@')[0].replace(/[._]/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-      return name;
+      // Clean up email-based or username-based formats
+      // e.g. "mottershead.matthew" → "Matthew Mottershead"
+      // e.g. "john.smith@example.com" → "John Smith"
+      let cleaned = name;
+      if (cleaned.includes('@')) cleaned = cleaned.split('@')[0];
+      if (cleaned.includes('.')) {
+        // Split on dots, reverse and title case: "mottershead.matthew" → ["mottershead", "matthew"] → "Matthew Mottershead"
+        const parts = cleaned.split('.').map(p => p.charAt(0).toUpperCase() + p.slice(1).toLowerCase());
+        return parts.reverse().join(' ');
+      }
+      // Already a normal name, just title case it
+      return cleaned.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
     };
 
     const now     = new Date();

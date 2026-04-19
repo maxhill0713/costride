@@ -1,5 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Trophy, CheckCircle, Dumbbell, TrendingUp, Search, X } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { createPageUrl } from '../../utils';
 
 const CARD_BG = 'linear-gradient(135deg, rgba(30,35,60,0.82) 0%, rgba(8,10,20,0.96) 100%)';
 const CARD_STYLE = { background: CARD_BG, backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)' };
@@ -114,6 +116,7 @@ const PODIUM_COLORS = [
 export default function InlineLeaderboard({ view, setView, checkInLeaderboard, streakLeaderboard, progressLeaderboardWeek, progressLeaderboardMonth, progressLeaderboardAllTime }) {
   const [timeframe, setTimeframe] = useState('week');
   const [search, setSearch] = useState('');
+  const navigate = useNavigate();
 
   const currentTab = TABS.find((t) => t.id === view) || TABS[0];
 
@@ -204,8 +207,8 @@ export default function InlineLeaderboard({ view, setView, checkInLeaderboard, s
         </div>
       ) : (
         <>
-          {/* Podium */}
-          <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'center', gap: 10, padding: '20px 14px 14px' }}>
+          {/* Podium — hide during search */}
+          {!q && <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'center', gap: 10, padding: '20px 14px 14px' }}>
             {[
               { data: podium[1], pcIdx: 1, lift: 0  },
               { data: podium[0], pcIdx: 0, lift: 18 },
@@ -255,7 +258,7 @@ export default function InlineLeaderboard({ view, setView, checkInLeaderboard, s
                 </div>
               );
             })}
-          </div>
+          </div>}
 
           {/* Rows below podium / search results */}
           {restList.length > 0 && (
@@ -264,11 +267,24 @@ export default function InlineLeaderboard({ view, setView, checkInLeaderboard, s
                 const opacity = Math.max(0.45, 1 - i * 0.12);
                 const isHighlighted = q && (m.userName || '').toLowerCase().includes(q);
                 return (
-                  <div key={m.userId || i} style={{
-                    ...CARD_STYLE, borderRadius: 12, padding: '8px 10px',
-                    display: 'flex', alignItems: 'center', gap: 8,
-                    border: isHighlighted ? `1px solid rgba(${currentTab.accentRgb},0.4)` : '1px solid transparent',
-                  }}>
+                  <div 
+                    key={m.userId || i} 
+                    onClick={() => navigate(createPageUrl('UserProfile') + '?id=' + m.userId)}
+                    style={{
+                      ...CARD_STYLE, borderRadius: 12, padding: '8px 10px',
+                      display: 'flex', alignItems: 'center', gap: 8,
+                      border: isHighlighted ? `1px solid rgba(${currentTab.accentRgb},0.4)` : '1px solid transparent',
+                      cursor: 'pointer', transition: 'all 0.2s',
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.03)';
+                      e.currentTarget.style.transform = 'scale(1.01)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = '';
+                      e.currentTarget.style.transform = '';
+                    }}
+                  >
                     <div style={{ width: 24, flexShrink: 0, textAlign: 'center', fontSize: 12, fontWeight: 900, color: `rgba(255,255,255,${opacity * 0.55})`, fontVariantNumeric: 'tabular-nums' }}>#{m.rank}</div>
                     <div style={{ width: 30, height: 30, borderRadius: '50%', flexShrink: 0, overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 900, background: 'rgba(255,255,255,0.06)', border: `1px solid rgba(255,255,255,${opacity * 0.1})`, color: `rgba(255,255,255,${opacity * 0.6})` }}>
                       {m.userAvatar ? <img src={m.userAvatar} alt={m.userName} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : initials(m.userName)}
