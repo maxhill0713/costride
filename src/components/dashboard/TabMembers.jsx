@@ -40,14 +40,14 @@ const FONT = "'DM Sans','Segoe UI',sans-serif";
 
 /* ─── DATA ───────────────────────────────────────────────────── */
 const MEMBERS = [
-  { id:"1", name:"Marcus Webb",    initials:"MW", ci:0, plan:"Premium", mv:120, ds:22,  appDays:18, v30:0,  pv30:8,  vt:47,  streak:0,  churn:84, rc:38, action:"Send 'We miss you'",   status:"At risk",      seg:"atRisk"  },
-  { id:"2", name:"Priya Sharma",   initials:"PS", ci:1, plan:"Monthly", mv:60,  ds:16,  appDays:14, v30:1,  pv30:4,  vt:31,  streak:0,  churn:71, rc:44, action:"Friendly check-in",    status:"Dropping off", seg:"atRisk"  },
-  { id:"3", name:"Tyler Rhodes",   initials:"TR", ci:2, plan:"Monthly", mv:60,  ds:9,   appDays:7,  v30:1,  pv30:5,  vt:12,  streak:0,  churn:55, rc:52, action:"Habit-building nudge", status:"New",          seg:"new"     },
-  { id:"4", name:"Chloe Nakamura", initials:"CN", ci:3, plan:"Annual",  mv:90,  ds:1,   appDays:0,  v30:14, pv30:11, vt:203, streak:18, churn:4,  rc:96, action:"Challenge invite",     status:"Consistent",   seg:"active"  },
-  { id:"5", name:"Devon Osei",     initials:"DO", ci:4, plan:"Monthly", mv:60,  ds:19,  appDays:15, v30:0,  pv30:3,  vt:8,   streak:0,  churn:78, rc:35, action:"Personal outreach",    status:"At risk",      seg:"atRisk"  },
-  { id:"6", name:"Anya Petrov",    initials:"AP", ci:5, plan:"Premium", mv:120, ds:0,   appDays:0,  v30:9,  pv30:7,  vt:88,  streak:7,  churn:6,  rc:94, action:"Referral ask",         status:"Engaged",      seg:"active"  },
-  { id:"7", name:"Jamie Collins",  initials:"JC", ci:6, plan:"Monthly", mv:60,  ds:5,   appDays:3,  v30:2,  pv30:4,  vt:19,  streak:0,  churn:42, rc:58, action:"Motivate",             status:"Dropping off", seg:"inactive"},
-  { id:"8", name:"Sam Rivera",     initials:"SR", ci:7, plan:"Monthly", mv:60,  ds:999, appDays:5,  v30:0,  pv30:0,  vt:1,   streak:0,  churn:91, rc:30, action:"Week-1 welcome",       status:"New",          seg:"new"     },
+  { id:"1", name:"Marcus Webb",    initials:"MW", ci:0, avatar:"https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=80&h=80&fit=crop&crop=face", plan:"Premium", mv:120, ds:22,  appDays:18, v30:0,  pv30:8,  vt:47,  streak:0,  churn:84, rc:38, action:"Send 'We miss you'",   status:"At risk",      seg:"atRisk"  },
+  { id:"2", name:"Priya Sharma",   initials:"PS", ci:1, avatar:"https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=80&h=80&fit=crop&crop=face", plan:"Monthly", mv:60,  ds:16,  appDays:14, v30:1,  pv30:4,  vt:31,  streak:0,  churn:71, rc:44, action:"Friendly check-in",    status:"Dropping off", seg:"atRisk"  },
+  { id:"3", name:"Tyler Rhodes",   initials:"TR", ci:2, avatar:"https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=80&h=80&fit=crop&crop=face", plan:"Monthly", mv:60,  ds:9,   appDays:7,  v30:1,  pv30:5,  vt:12,  streak:0,  churn:55, rc:52, action:"Habit-building nudge", status:"New",          seg:"new"     },
+  { id:"4", name:"Chloe Nakamura", initials:"CN", ci:3, avatar:"https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=80&h=80&fit=crop&crop=face", plan:"Annual",  mv:90,  ds:1,   appDays:0,  v30:14, pv30:11, vt:203, streak:18, churn:4,  rc:96, action:"Challenge invite",     status:"Consistent",   seg:"active"  },
+  { id:"5", name:"Devon Osei",     initials:"DO", ci:4, avatar:"https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=80&h=80&fit=crop&crop=face", plan:"Monthly", mv:60,  ds:19,  appDays:15, v30:0,  pv30:3,  vt:8,   streak:0,  churn:78, rc:35, action:"Personal outreach",    status:"At risk",      seg:"atRisk"  },
+  { id:"6", name:"Anya Petrov",    initials:"AP", ci:5, avatar:"https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=80&h=80&fit=crop&crop=face", plan:"Premium", mv:120, ds:0,   appDays:0,  v30:9,  pv30:7,  vt:88,  streak:7,  churn:6,  rc:94, action:"Referral ask",         status:"Engaged",      seg:"active"  },
+  { id:"7", name:"Jamie Collins",  initials:"JC", ci:6, avatar:"https://images.unsplash.com/photo-1527980965255-d3b416303d12?w=80&h=80&fit=crop&crop=face", plan:"Monthly", mv:60,  ds:5,   appDays:3,  v30:2,  pv30:4,  vt:19,  streak:0,  churn:42, rc:58, action:"Motivate",             status:"Dropping off", seg:"inactive"},
+  { id:"8", name:"Sam Rivera",     initials:"SR", ci:7, avatar:"https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=80&h=80&fit=crop&crop=face", plan:"Monthly", mv:60,  ds:999, appDays:5,  v30:0,  pv30:0,  vt:1,   streak:0,  churn:91, rc:30, action:"Week-1 welcome",       status:"New",          seg:"new"     },
 ];
 
 const CHURN_TREND = [
@@ -103,6 +103,18 @@ function useIsMobile() {
 /* ─── AVATAR ─────────────────────────────────────────────────── */
 function Av({ m, size = 30 }) {
   const col = AV_COLORS[m.ci % AV_COLORS.length];
+  if (m.avatar) {
+    return (
+      <img
+        src={m.avatar}
+        alt={m.name}
+        style={{
+          width: size, height: size, borderRadius: "50%", flexShrink: 0,
+          objectFit: "cover", border: `1.5px solid ${col}55`,
+        }}
+      />
+    );
+  }
   return (
     <div style={{
       width: size, height: size, borderRadius: "50%", flexShrink: 0,
