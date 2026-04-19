@@ -17,7 +17,6 @@ const LINE_COLORS = [
 const CUTOFF_MONTHS = 2;
 const TICK_COUNT = 9;
 
-// Day-of-week index: 0=Sun,1=Mon,...,6=Sat
 const DAY_NAMES = ['sunday','monday','tuesday','wednesday','thursday','friday','saturday'];
 
 function epley(weight, reps) {
@@ -132,10 +131,9 @@ function WorkoutSelector({ options, selected, onSelect }) {
 export default function ProgressiveOverloadTracker({ currentUser, animate = 0 }) {
   const [showInfo, setShowInfo] = useState(false);
   const [localKey, setLocalKey] = useState(0);
-  const [userSelectedKey, setUserSelectedKey] = useState(null); // null = auto-select mode
+  const [userSelectedKey, setUserSelectedKey] = useState(null);
   const animationKey = localKey + animate;
 
-  // Primary: derive workout options from named splits if the user set them up
   const splitWorkoutOptions = useMemo(() => {
     const types = currentUser?.custom_workout_types;
     if (!types || typeof types !== 'object') return [];
@@ -151,7 +149,6 @@ export default function ProgressiveOverloadTracker({ currentUser, animate = 0 })
         key: dayKey,
         label: w.name,
         exercises: (w.exercises || []).map(ex => ex.exercise || ex.name).filter(Boolean),
-        // Store which days of week this workout is scheduled on (dayKey may be a day name or index)
         dayKey,
       }));
 
@@ -173,7 +170,6 @@ export default function ProgressiveOverloadTracker({ currentUser, animate = 0 })
     placeholderData: prev => prev,
   });
 
-  // Fallback: if user has no splits set up, derive workout options from their log history
   const logDerivedOptions = useMemo(() => {
     if (splitWorkoutOptions.length > 0) return [];
     if (!workoutLogs.length) return [];
@@ -193,20 +189,15 @@ export default function ProgressiveOverloadTracker({ currentUser, animate = 0 })
 
   const workoutOptions = splitWorkoutOptions.length > 0 ? splitWorkoutOptions : logDerivedOptions;
 
-  // ── Determine the best default workout key ─────────────────────────────────
-  // Priority: 1) today's scheduled workout, 2) most recently logged workout type, 3) first option
   const autoSelectedKey = useMemo(() => {
     if (!workoutOptions.length) return null;
 
-    const todayDayName = DAY_NAMES[new Date().getDay()]; // e.g. 'monday'
-    const todayDayIndex = new Date().getDay(); // 0-6
+    const todayDayName = DAY_NAMES[new Date().getDay()];
+    const todayDayIndex = new Date().getDay();
 
-    // Try to find a split workout scheduled for today
-    // custom_workout_types keys can be day names ('monday') or day indices ('1') or arbitrary IDs
     if (splitWorkoutOptions.length > 0) {
       const types = currentUser?.custom_workout_types || {};
 
-      // Check if any workout key matches today by day name or numeric index
       const todayMatch = splitWorkoutOptions.find(opt => {
         const k = String(opt.dayKey).toLowerCase();
         return k === todayDayName || k === String(todayDayIndex);
@@ -214,10 +205,7 @@ export default function ProgressiveOverloadTracker({ currentUser, animate = 0 })
 
       if (todayMatch) return todayMatch.key;
 
-      // No workout today (rest day) — find the most recently logged workout type
-      // by matching log workout_type/workout_name to a split option label
       if (workoutLogs.length > 0) {
-        // workoutLogs is sorted by -completed_date, so first is most recent
         for (const log of workoutLogs) {
           const logType = log.workout_type || log.workout_name;
           if (!logType) continue;
@@ -229,7 +217,6 @@ export default function ProgressiveOverloadTracker({ currentUser, animate = 0 })
       }
     }
 
-    // For log-derived options, find the most recently logged type
     if (logDerivedOptions.length > 0 && workoutLogs.length > 0) {
       for (const log of workoutLogs) {
         const logType = log.workout_type || log.workout_name || 'All Workouts';
@@ -241,10 +228,8 @@ export default function ProgressiveOverloadTracker({ currentUser, animate = 0 })
     return workoutOptions[0]?.key ?? null;
   }, [workoutOptions, splitWorkoutOptions, logDerivedOptions, workoutLogs, currentUser]);
 
-  // The effective selected key: user's manual choice takes priority, else auto
   const selectedWorkoutKey = userSelectedKey ?? autoSelectedKey;
 
-  // Once options load for users with no splits, also clear any stale userSelectedKey
   useEffect(() => {
     if (workoutOptions.length > 0 && userSelectedKey &&
         !workoutOptions.find(o => o.key === userSelectedKey)) {
@@ -291,7 +276,6 @@ export default function ProgressiveOverloadTracker({ currentUser, animate = 0 })
     const now = new Date();
     const twoMonthsAgo = subMonths(now, CUTOFF_MONTHS);
 
-    // Find the absolute earliest data point across all exercises
     let absoluteEarliestDate = null;
     allExerciseNames.forEach(name => {
       const series = exerciseSeriesMap[name];
@@ -303,21 +287,15 @@ export default function ProgressiveOverloadTracker({ currentUser, animate = 0 })
 
     if (!absoluteEarliestDate) return { chartData: [], exerciseMeta: [] };
 
-    // If user has >= 2 months of data, lock to a fixed rolling 2-month window.
-    // Otherwise show from the very first data point up to now.
     const hasEnoughHistory = absoluteEarliestDate <= twoMonthsAgo;
     const windowStart = hasEnoughHistory ? twoMonthsAgo : absoluteEarliestDate;
     const windowEnd = now;
 
-    // Baselines: for the fixed 2-month window, use the last known e1RM *before*
-    // windowStart (or the first data point inside the window if nothing precedes it).
-    // For the growing window, use the very first data point per exercise.
     const baselines = {};
     allExerciseNames.forEach(name => {
       const series = exerciseSeriesMap[name];
       if (!series?.length) return;
       if (hasEnoughHistory) {
-        // Find last point at or before windowStart to use as baseline
         const before = [...series].filter(pt => pt.rawDate <= windowStart);
         const inside = series.filter(pt => pt.rawDate > windowStart);
         if (before.length > 0) {
@@ -340,11 +318,8 @@ export default function ProgressiveOverloadTracker({ currentUser, animate = 0 })
       const row = { date: format(tickDate, 'MMM d') };
       allExerciseNames.forEach(name => {
         const series = exerciseSeriesMap[name] || [];
-        // Only consider data points within the window (and up to this tick)
         const candidates = series.filter(pt => pt.rawDate >= windowStart && pt.rawDate <= tickDate);
         if (candidates.length === 0) {
-          // Check if there's any data at all after window start — if not, show null
-          // If baseline exists (data before window), show 0 diff at start
           if (baselines[name] !== undefined && tickDate <= windowStart) {
             row[name] = 0;
           } else {
@@ -386,7 +361,7 @@ export default function ProgressiveOverloadTracker({ currentUser, animate = 0 })
   return (
     <div>
       {/* ── Title left, selector right ── */}
-      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8, marginBottom: showInfo ? 10 : 16 }}>
+      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8, marginBottom: showInfo ? 8 : 10 }}>
         <div style={{ flexShrink: 0 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
             <h2 style={{
@@ -430,7 +405,7 @@ export default function ProgressiveOverloadTracker({ currentUser, animate = 0 })
         {showInfo && (
           <motion.div
             initial={{ opacity: 0, height: 0, marginBottom: 0 }}
-            animate={{ opacity: 1, height: 'auto', marginBottom: 14 }}
+            animate={{ opacity: 1, height: 'auto', marginBottom: 10 }}
             exit={{ opacity: 0, height: 0, marginBottom: 0 }}
             transition={{ duration: 0.22, ease: [0.25, 0.46, 0.45, 0.94] }}
             style={{ overflow: 'hidden' }}
@@ -482,10 +457,10 @@ export default function ProgressiveOverloadTracker({ currentUser, animate = 0 })
         </div>
       ) : (
         <div style={{ display: 'flex', alignItems: 'center' }}>
-          {/* Chart — 80% width */}
-          <div style={{ width: '80%', flexShrink: 0 }}>
+          {/* Chart — 72% width */}
+          <div style={{ width: '72%', flexShrink: 0 }}>
             <ResponsiveContainer width="100%" height={210}>
-              <LineChart key={animationKey} data={chartData} margin={{ top: 10, right: 4, left: -4, bottom: 0 }}>
+              <LineChart key={animationKey} data={chartData} margin={{ top: 4, right: 4, left: -4, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" vertical={false} />
                 <ReferenceLine y={0} stroke="rgba(255,255,255,0.15)" strokeWidth={1} />
                 <XAxis
@@ -522,16 +497,16 @@ export default function ProgressiveOverloadTracker({ currentUser, animate = 0 })
             </ResponsiveContainer>
           </div>
 
-          {/* Legend — 20% width */}
+          {/* Legend — 28% width */}
           <div style={{
-            width: '20%',
-            paddingLeft: 8,
+            width: '28%',
+            paddingLeft: 4,
             display: 'flex',
             flexDirection: 'column',
-            gap: 9,
+            gap: 6,
           }}>
             {exerciseMeta.map(({ name, color }) => (
-              <div key={name} style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+              <div key={name} style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
                 <div style={{
                   width: 6, height: 6, borderRadius: '50%',
                   background: color, flexShrink: 0,
