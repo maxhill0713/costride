@@ -6,6 +6,8 @@ import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-d
 import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
+import { useEffect, useState } from 'react';
+import { base44 } from '@/api/base44Client';
 
 import Layout from './Layout';
 
@@ -51,8 +53,15 @@ const LayoutWrapper = ({ children, currentPageName }) => (
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin, user } = useAuth();
+  const [currentUser, setCurrentUser] = useState(undefined); // undefined = loading, null = not authed
 
-  if (isLoadingPublicSettings || isLoadingAuth) {
+  useEffect(() => {
+    base44.auth.me()
+      .then(u => setCurrentUser(u))
+      .catch(() => setCurrentUser(null));
+  }, []);
+
+  if (isLoadingPublicSettings || isLoadingAuth || currentUser === undefined) {
     return (
       <div style={{ position: 'fixed', inset: 0, background: 'linear-gradient(to bottom right, #02040a, #0d2360, #02040a)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'space-between', paddingBottom: 72 }}>
         <div style={{ flex: 1 }} />
@@ -75,7 +84,7 @@ const AuthenticatedApp = () => {
   }
 
   // If user is loaded and hasn't completed onboarding, redirect to Onboarding for all routes
-  if (user && !user.onboarding_completed) {
+  if (currentUser && !currentUser.onboarding_completed) {
     return (
       <Routes>
         <Route path="/Onboarding" element={<LayoutWrapper currentPageName="Onboarding"><Onboarding /></LayoutWrapper>} />
