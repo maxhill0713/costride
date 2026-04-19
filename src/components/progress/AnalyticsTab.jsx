@@ -14,7 +14,7 @@ const CARD = {
 
 export default function AnalyticsTab({ currentUser, workoutLogs, checkIns, animateCharts }) {
   return (
-    <div className="space-y-6">
+    <div className="space-y-3">
       <div style={{ ...CARD, borderRadius: 16, padding: '16px 16px' }}>
         <WeightTracker currentUser={currentUser} />
       </div>
