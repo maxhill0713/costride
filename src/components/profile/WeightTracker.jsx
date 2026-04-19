@@ -357,10 +357,10 @@ export default function WeightTracker({ currentUser }) {
   return (
     <>
       <div>
-        {/* ── Header — tightened bottom margin ── */}
+        {/* ── Header ── */}
         <div style={{
           display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between',
-          gap: 8, marginBottom: 6,          // was 14
+          gap: 8, marginBottom: 6,
         }}>
           <div>
             <h2 style={{ fontSize: 16, fontWeight: 700, color: '#e2e8f0', letterSpacing: '-0.01em', margin: 0 }}>
@@ -421,69 +421,40 @@ export default function WeightTracker({ currentUser }) {
               ))}
             </div>
 
-            {/* Plus / tick button */}
+            {/* Plus / tick button — same style regardless of logged state */}
             <div style={{ position: 'relative', width: 30, height: 30, flexShrink: 0 }}>
-              {loggedToday ? (
-                <>
-                  <div style={{ position: 'absolute', inset: 0, borderRadius: 8, background: '#064e3b', transform: 'translateY(3px)' }} />
-                  <button
-                    onClick={handleButtonPress}
-                    onMouseDown={() => setAddPressed(true)}
-                    onMouseUp={() => setAddPressed(false)}
-                    onMouseLeave={() => setAddPressed(false)}
-                    onTouchStart={() => setAddPressed(true)}
-                    onTouchEnd={() => { setAddPressed(false); handleButtonPress(); }}
-                    style={{
-                      position: 'relative', zIndex: 1,
-                      width: 30, height: 30, borderRadius: 8,
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      background: 'linear-gradient(to bottom, #34d399, #10b981, #059669)',
-                      border: '1px solid rgba(52,211,153,0.4)', color: '#fff', cursor: 'pointer',
-                      boxShadow: addPressed ? 'none' : '0 3px 0 #064e3b, inset 0 1px 0 rgba(255,255,255,0.15)',
-                      transform: addPressed ? 'translateY(3px)' : 'translateY(0)',
-                      transition: 'transform 0.08s ease, box-shadow 0.08s ease',
-                      WebkitTapHighlightColor: 'transparent',
-                    }}
-                  >
-                    <Check size={14} strokeWidth={2.5} />
-                  </button>
-                </>
-              ) : (
-                <>
-                  <div style={{ position: 'absolute', inset: 0, borderRadius: 8, background: '#0a0f1a', transform: 'translateY(3px)' }} />
-                  <button
-                    onClick={handleButtonPress}
-                    onMouseDown={() => setAddPressed(true)}
-                    onMouseUp={() => setAddPressed(false)}
-                    onMouseLeave={() => setAddPressed(false)}
-                    onTouchStart={() => setAddPressed(true)}
-                    onTouchEnd={() => { setAddPressed(false); handleButtonPress(); }}
-                    style={{
-                      position: 'relative', zIndex: 1,
-                      width: 30, height: 30, borderRadius: 8,
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      background: 'linear-gradient(to bottom, #2d3748 0%, #1e2635 50%, #161e2e 100%)',
-                      border: '1px solid rgba(255,255,255,0.1)',
-                      color: 'rgba(148,163,184,0.8)', cursor: 'pointer',
-                      boxShadow: addPressed ? 'none' : '0 3px 0 #0a0f1a, inset 0 1px 0 rgba(255,255,255,0.07)',
-                      transform: addPressed ? 'translateY(3px)' : 'translateY(0)',
-                      transition: 'transform 0.08s ease, box-shadow 0.08s ease',
-                      WebkitTapHighlightColor: 'transparent',
-                    }}
-                  >
-                    <Plus size={14} />
-                  </button>
-                </>
-              )}
+              <div style={{ position: 'absolute', inset: 0, borderRadius: 8, background: '#0a0f1a', transform: 'translateY(3px)' }} />
+              <button
+                onClick={handleButtonPress}
+                onMouseDown={() => setAddPressed(true)}
+                onMouseUp={() => setAddPressed(false)}
+                onMouseLeave={() => setAddPressed(false)}
+                onTouchStart={() => setAddPressed(true)}
+                onTouchEnd={() => { setAddPressed(false); handleButtonPress(); }}
+                style={{
+                  position: 'relative', zIndex: 1,
+                  width: 30, height: 30, borderRadius: 8,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  background: 'linear-gradient(to bottom, #2d3748 0%, #1e2635 50%, #161e2e 100%)',
+                  border: '1px solid rgba(255,255,255,0.1)',
+                  color: 'rgba(148,163,184,0.8)', cursor: 'pointer',
+                  boxShadow: addPressed ? 'none' : '0 3px 0 #0a0f1a, inset 0 1px 0 rgba(255,255,255,0.07)',
+                  transform: addPressed ? 'translateY(3px)' : 'translateY(0)',
+                  transition: 'transform 0.08s ease, box-shadow 0.08s ease',
+                  WebkitTapHighlightColor: 'transparent',
+                }}
+              >
+                {loggedToday ? <Check size={14} strokeWidth={2.5} /> : <Plus size={14} />}
+              </button>
             </div>
           </div>
         </div>
 
-        {/* ── Chart — reduced height, left-shifted, tight margins ── */}
-        <ResponsiveContainer width="100%" height={104}>  {/* was ~130 */}
+        {/* ── Chart ── */}
+        <ResponsiveContainer width="100%" height={104}>
           <AreaChart
             data={chartData}
-            margin={{ top: 4, right: 4, left: 0, bottom: 0 }}  // left:0 so axis sits at edge
+            margin={{ top: 4, right: 4, left: 0, bottom: 0 }}
           >
             <defs>
               <linearGradient id="weightGrad" x1="0" y1="0" x2="0" y2="1">
@@ -498,16 +469,16 @@ export default function WeightTracker({ currentUser }) {
               tickLine={false}
               axisLine={false}
               ticks={xTicks}
-              height={14}               // trim dead space below x-axis labels
+              height={14}
             />
             <YAxis
               domain={[minW, maxW]}
               tick={{ fill: '#475569', fontSize: 9 }}
               tickLine={false}
               axisLine={false}
-              width={36}                // enough for "99kg" without clipping
+              width={36}
               tickFormatter={v => `${v}kg`}
-              tickCount={4}             // fewer ticks so labels don't crowd at reduced height
+              tickCount={4}
             />
             <Tooltip
               content={<WeightTooltip />}
