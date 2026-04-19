@@ -1,8 +1,72 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Trophy, CheckCircle, Flame, TrendingUp } from 'lucide-react';
 
 const CARD_BG = 'linear-gradient(135deg, rgba(30,35,60,0.82) 0%, rgba(8,10,20,0.96) 100%)';
 const CARD_STYLE = { background: CARD_BG, backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)' };
+
+const TIMEFRAMES = [
+  { key: 'week',  label: '1W' },
+  { key: 'month', label: '1M' },
+  { key: 'all',   label: 'All' },
+];
+
+function TimeframeSlider({ value, onChange }) {
+  const toggleRef = useRef(null);
+  const pillRef = useRef(null);
+
+  useEffect(() => {
+    const toggle = toggleRef.current;
+    const pill = pillRef.current;
+    if (!toggle || !pill) return;
+    const activeBtn = toggle.querySelector(`[data-tf="${value}"]`);
+    if (!activeBtn) return;
+    const toggleRect = toggle.getBoundingClientRect();
+    const btnRect = activeBtn.getBoundingClientRect();
+    pill.style.left = `${btnRect.left - toggleRect.left + 2}px`;
+    pill.style.width = `${btnRect.width - 4}px`;
+  }, [value]);
+
+  return (
+    <div
+      ref={toggleRef}
+      style={{
+        position: 'relative', display: 'flex', flexShrink: 0,
+        background: 'rgba(255,255,255,0.05)',
+        border: '1px solid rgba(255,255,255,0.08)',
+        borderRadius: 8, padding: 2,
+      }}
+    >
+      <div
+        ref={pillRef}
+        style={{
+          position: 'absolute', top: 2, height: 'calc(100% - 4px)',
+          background: 'linear-gradient(to bottom, #3b82f6, #2563eb, #1d4ed8)',
+          borderRadius: 6, boxShadow: '0 2px 0 #1a3fa8',
+          transition: 'left 0.22s cubic-bezier(0.34,1.2,0.64,1), width 0.22s cubic-bezier(0.34,1.2,0.64,1)',
+          pointerEvents: 'none', zIndex: 1,
+        }}
+      />
+      {TIMEFRAMES.map(tf => (
+        <button
+          key={tf.key}
+          data-tf={tf.key}
+          onClick={() => onChange(tf.key)}
+          style={{
+            position: 'relative', zIndex: 2,
+            padding: '3px 8px', borderRadius: 6,
+            fontSize: 10, fontWeight: 700, cursor: 'pointer', border: 'none',
+            background: 'transparent',
+            color: value === tf.key ? '#fff' : '#475569',
+            transition: 'color 0.12s',
+            WebkitTapHighlightColor: 'transparent',
+          }}
+        >
+          {tf.label}
+        </button>
+      ))}
+    </div>
+  );
+}
 
 export default function InlineLeaderboard({ view, setView, checkInLeaderboard, streakLeaderboard, progressLeaderboardWeek, progressLeaderboardMonth, progressLeaderboardAllTime }) {
   const [timeframe, setTimeframe] = useState('week');
@@ -16,8 +80,13 @@ export default function InlineLeaderboard({ view, setView, checkInLeaderboard, s
   const current = tabs.find((t) => t.id === view) || tabs[0];
 
   const getData = () => {
-    if (view === 'checkins') return { list: checkInLeaderboard,  getVal: (m) => m.count,    fmt: (v) => `${v}`,    unit: 'check-ins'  };
-    if (view === 'streaks')  return { list: streakLeaderboard,   getVal: (m) => m.streak,   fmt: (v) => `${v}d`,   unit: 'day streak' };
+    if (view === 'checkins') {
+      const map = { week: checkInLeaderboard, month: checkInLeaderboard, all: checkInLeaderboard };
+      return { list: map[timeframe] || checkInLeaderboard || [], getVal: (m) => m.count,    fmt: (v) => `${v}`,    unit: 'check-ins'  };
+    }
+    if (view === 'streaks') {
+      return { list: streakLeaderboard || [], getVal: (m) => m.streak, fmt: (v) => `${v}d`, unit: 'day streak' };
+    }
     const pl = timeframe === 'week' ? progressLeaderboardWeek : timeframe === 'month' ? progressLeaderboardMonth : progressLeaderboardAllTime;
     return { list: pl || [], getVal: (m) => m.increase, fmt: (v) => `+${v}kg`, unit: 'kg gained' };
   };
@@ -47,12 +116,13 @@ export default function InlineLeaderboard({ view, setView, checkInLeaderboard, s
       <div style={{ height: 2, background: `linear-gradient(90deg,transparent,rgba(${current.accentRgb},0.7),transparent)` }} />
 
       <div style={{ padding: '12px 14px 10px', borderBottom: '1px solid rgba(255,255,255,0.055)' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
-          <Trophy style={{ width: 15, height: 15, color: current.accent }} />
-          <span style={{ fontSize: 14, fontWeight: 900, color: '#fff', letterSpacing: '-0.01em' }}>Community Leaderboard</span>
-          {list.length > 0 && (
-            <span style={{ fontSize: 9, fontWeight: 900, letterSpacing: '0.1em', color: 'rgba(255,215,0,0.7)', background: 'rgba(255,215,0,0.1)', border: '1px solid rgba(255,215,0,0.2)', padding: '2px 6px', borderRadius: 4, textTransform: 'uppercase' }}>LIVE</span>
-          )}
+        {/* Header row: title + timeframe slider */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <Trophy style={{ width: 15, height: 15, color: current.accent }} />
+            <span style={{ fontSize: 14, fontWeight: 900, color: '#fff', letterSpacing: '-0.01em' }}>Community Leaderboard</span>
+          </div>
+          <TimeframeSlider value={timeframe} onChange={setTimeframe} />
         </div>
 
         {/* Category tabs */}
@@ -72,22 +142,6 @@ export default function InlineLeaderboard({ view, setView, checkInLeaderboard, s
             </button>
           ))}
         </div>
-
-        {/* Timeframe pills — only for progress */}
-        {view === 'progress' && (
-          <div style={{ display: 'flex', gap: 6, marginTop: 8 }}>
-            {[['week','This Week'],['month','Month'],['all','All Time']].map(([tf, label]) => (
-              <button key={tf} onClick={() => setTimeframe(tf)} style={{
-                padding: '4px 12px', borderRadius: 99, fontSize: 10, fontWeight: 800, cursor: 'pointer', border: 'none',
-                background: timeframe === tf ? `rgba(${current.accentRgb},0.18)` : 'rgba(20,28,60,0.8)',
-                outline: `1px solid ${timeframe === tf ? `rgba(${current.accentRgb},0.5)` : 'rgba(255,255,255,0.1)'}`,
-                color: timeframe === tf ? '#fff' : 'rgba(148,163,184,0.6)',
-              }}>
-                {label}
-              </button>
-            ))}
-          </div>
-        )}
       </div>
 
       {list.length === 0 ? (
