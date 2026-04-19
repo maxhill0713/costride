@@ -81,21 +81,7 @@ Deno.serve(async (req) => {
 
     const now     = new Date();
     const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-    const weeklyCheckIns = checkIns.filter(c => new Date(c.check_in_date) >= weekAgo);
-
-    const checkInLeaderboard = Object.values(
-      weeklyCheckIns.reduce((acc, c) => {
-        if (!acc[c.user_id]) acc[c.user_id] = { userId: c.user_id, userName: resolveName(c.user_id, c.user_name), count: 0 };
-        acc[c.user_id].count++;
-        return acc;
-      }, {})
-    ).sort((a, b) => b.count - a.count).slice(0, 20);
-
-    const userCheckInMap = checkIns.reduce((acc, c) => {
-      if (!acc[c.user_id]) acc[c.user_id] = { userId: c.user_id, userName: resolveName(c.user_id, c.user_name), dates: [] };
-      acc[c.user_id].dates.push(new Date(c.check_in_date));
-      return acc;
-    }, {});
+    const monthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
 
     const calcStreak = (dates) => {
       if (!dates.length) return 0;
@@ -109,9 +95,36 @@ Deno.serve(async (req) => {
       return streak;
     };
 
-    const streakLeaderboard = Object.values(userCheckInMap)
-      .map(item => ({ userId: item.userId, userName: item.userName, streak: calcStreak(item.dates) }))
-      .sort((a, b) => b.streak - a.streak).slice(0, 20);
+    const buildCheckInLeaderboard = (cutoffDate) => {
+      const filtered = checkIns.filter(c => new Date(c.check_in_date) >= cutoffDate);
+      return Object.values(
+        filtered.reduce((acc, c) => {
+          if (!acc[c.user_id]) acc[c.user_id] = { userId: c.user_id, userName: resolveName(c.user_id, c.user_name), count: 0 };
+          acc[c.user_id].count++;
+          return acc;
+        }, {})
+      ).sort((a, b) => b.count - a.count).slice(0, 20);
+    };
+
+    const buildStreakLeaderboard = (cutoffDate) => {
+      const filtered = checkIns.filter(c => new Date(c.check_in_date) >= cutoffDate);
+      const userMap = {};
+      filtered.forEach(c => {
+        if (!userMap[c.user_id]) userMap[c.user_id] = { userId: c.user_id, userName: resolveName(c.user_id, c.user_name), dates: [] };
+        userMap[c.user_id].dates.push(new Date(c.check_in_date));
+      });
+      return Object.values(userMap)
+        .map(item => ({ userId: item.userId, userName: item.userName, streak: calcStreak(item.dates) }))
+        .sort((a, b) => b.streak - a.streak).slice(0, 20);
+    };
+
+    const checkInLeaderboardWeek = buildCheckInLeaderboard(weekAgo);
+    const checkInLeaderboardMonth = buildCheckInLeaderboard(monthAgo);
+    const checkInLeaderboardAllTime = buildCheckInLeaderboard(new Date(0));
+
+    const streakLeaderboardWeek = buildStreakLeaderboard(weekAgo);
+    const streakLeaderboardMonth = buildStreakLeaderboard(monthAgo);
+    const streakLeaderboardAllTime = buildStreakLeaderboard(new Date(0));
 
     const buildProgressLeaderboard = (cutoffMs) => {
       const cutoff = cutoffMs ? new Date(now.getTime() - cutoffMs) : new Date(0);
@@ -136,8 +149,12 @@ Deno.serve(async (req) => {
     };
 
     return Response.json({
-      checkInLeaderboard,
-      streakLeaderboard,
+      checkInLeaderboardWeek,
+      checkInLeaderboardMonth,
+      checkInLeaderboardAllTime,
+      streakLeaderboardWeek,
+      streakLeaderboardMonth,
+      streakLeaderboardAllTime,
       progressLeaderboardWeek:    buildProgressLeaderboard(7 * 86400000),
       progressLeaderboardMonth:   buildProgressLeaderboard(30 * 86400000),
       progressLeaderboardAllTime: buildProgressLeaderboard(null),

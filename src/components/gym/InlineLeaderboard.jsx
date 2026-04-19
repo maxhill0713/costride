@@ -113,7 +113,7 @@ const PODIUM_COLORS = [
   { color: 'rgba(180,120,60,0.85)',  border: 'rgba(180,120,60,0.18)',  ring: 'rgba(180,120,60,0.3)',  bg: 'rgba(180,120,60,0.06)'  },
 ];
 
-export default function InlineLeaderboard({ view, setView, checkInLeaderboard, streakLeaderboard, progressLeaderboardWeek, progressLeaderboardMonth, progressLeaderboardAllTime }) {
+export default function InlineLeaderboard({ view, setView, checkInLeaderboardWeek, checkInLeaderboardMonth, checkInLeaderboardAllTime, streakLeaderboardWeek, streakLeaderboardMonth, streakLeaderboardAllTime, progressLeaderboardWeek, progressLeaderboardMonth, progressLeaderboardAllTime }) {
   const [timeframe, setTimeframe] = useState('week');
   const [search, setSearch] = useState('');
   const navigate = useNavigate();
@@ -121,8 +121,12 @@ export default function InlineLeaderboard({ view, setView, checkInLeaderboard, s
   const currentTab = TABS.find((t) => t.id === view) || TABS[0];
 
   const getList = () => {
-    if (view === 'checkins') return checkInLeaderboard || [];
-    if (view === 'lifts')    return streakLeaderboard || [];
+    if (view === 'checkins') {
+      return (timeframe === 'week' ? checkInLeaderboardWeek : timeframe === 'month' ? checkInLeaderboardMonth : checkInLeaderboardAllTime) || [];
+    }
+    if (view === 'lifts') {
+      return (timeframe === 'week' ? streakLeaderboardWeek : timeframe === 'month' ? streakLeaderboardMonth : streakLeaderboardAllTime) || [];
+    }
     return (timeframe === 'week' ? progressLeaderboardWeek : timeframe === 'month' ? progressLeaderboardMonth : progressLeaderboardAllTime) || [];
   };
 

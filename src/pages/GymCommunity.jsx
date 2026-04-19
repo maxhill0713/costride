@@ -1635,8 +1635,12 @@ export default function GymCommunity() {
   const isMember = !!gymMembership || isGymOwner;
 
   const enrichWithAvatars = (list) => list.map((m) => ({ ...m, userAvatar: memberAvatarMap[m.userId] || null }));
-  const checkInLeaderboard = enrichWithAvatars(leaderboards.checkInLeaderboard || []);
-  const streakLeaderboard = enrichWithAvatars(leaderboards.streakLeaderboard || []);
+  const checkInLeaderboardWeek = enrichWithAvatars(leaderboards.checkInLeaderboardWeek || []);
+  const checkInLeaderboardMonth = enrichWithAvatars(leaderboards.checkInLeaderboardMonth || []);
+  const checkInLeaderboardAllTime = enrichWithAvatars(leaderboards.checkInLeaderboardAllTime || []);
+  const streakLeaderboardWeek = enrichWithAvatars(leaderboards.streakLeaderboardWeek || []);
+  const streakLeaderboardMonth = enrichWithAvatars(leaderboards.streakLeaderboardMonth || []);
+  const streakLeaderboardAllTime = enrichWithAvatars(leaderboards.streakLeaderboardAllTime || []);
   const progressLeaderboardWeek = enrichWithAvatars(leaderboards.progressLeaderboardWeek || []);
   const progressLeaderboardMonth = enrichWithAvatars(leaderboards.progressLeaderboardMonth || []);
   const progressLeaderboardAllTime = enrichWithAvatars(leaderboards.progressLeaderboardAllTime || []);
@@ -1726,7 +1730,7 @@ export default function GymCommunity() {
                   )}
                   </div>
                 }
-                <InlineLeaderboard view={leaderboardView} setView={setLeaderboardView} checkInLeaderboard={checkInLeaderboard} streakLeaderboard={streakLeaderboard} progressLeaderboardWeek={progressLeaderboardWeek} progressLeaderboardMonth={progressLeaderboardMonth} progressLeaderboardAllTime={progressLeaderboardAllTime} />
+                <InlineLeaderboard view={leaderboardView} setView={setLeaderboardView} checkInLeaderboardWeek={checkInLeaderboardWeek} checkInLeaderboardMonth={checkInLeaderboardMonth} checkInLeaderboardAllTime={checkInLeaderboardAllTime} streakLeaderboardWeek={streakLeaderboardWeek} streakLeaderboardMonth={streakLeaderboardMonth} streakLeaderboardAllTime={streakLeaderboardAllTime} progressLeaderboardWeek={progressLeaderboardWeek} progressLeaderboardMonth={progressLeaderboardMonth} progressLeaderboardAllTime={progressLeaderboardAllTime} />
                 {coaches.length > 0 &&
                 <div style={{ ...CARD_STYLE, borderRadius: 18, overflow: 'hidden' }}>
                     <div style={{ padding: '13px 14px 11px', borderBottom: '1px solid rgba(255,255,255,0.055)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
