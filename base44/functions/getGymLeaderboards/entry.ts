@@ -41,7 +41,7 @@ Deno.serve(async (req) => {
     ]);
 
     // Build a userId -> display name map, resolving usernames over raw stored names
-    // Pull User records for all unique user IDs so we can use full_name
+    // Pull User records for all unique user IDs so we can use display_name or full_name
     const uniqueUserIds = [...new Set([
       ...checkIns.map(c => c.user_id),
       ...lifts.map(l => l.member_id),
@@ -52,7 +52,7 @@ Deno.serve(async (req) => {
       // Fetch users in batches if needed — base44 supports filter by array
       const users = await base44.asServiceRole.entities.User.list('-created_date', 500);
       users.forEach(u => {
-        if (u.id) userDisplayNames[u.id] = u.full_name || u.display_name || null;
+        if (u.id) userDisplayNames[u.id] = u.display_name || u.full_name || null;
       });
     } catch (_) { /* fallback to stored names */ }
 

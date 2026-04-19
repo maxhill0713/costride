@@ -245,7 +245,7 @@ export default function InlineLeaderboard({ view, setView, checkInLeaderboard, s
                         : initials(data.userName)
                       }
                     </div>
-                    <p style={{ color: isFirst ? '#fff' : '#cbd5e1', fontWeight: isFirst ? 900 : 800, fontSize: isFirst ? 12 : 11, margin: 0, textAlign: 'center', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: isFirst ? 100 : 88 }}>
+                    <p style={{ color: isFirst ? '#fff' : '#cbd5e1', fontWeight: isFirst ? 900 : 800, fontSize: isFirst ? 12 : 11, margin: 0, textAlign: 'center', maxWidth: isFirst ? 100 : 88, wordWrap: 'break-word', whiteSpace: 'normal', lineHeight: 1.2 }}>
                       {data.userName || '—'}
                     </p>
                     <p style={{ fontSize: isFirst ? 26 : 20, fontWeight: 900, color: pc.color, lineHeight: 1, letterSpacing: '-0.03em', margin: 0 }}>
