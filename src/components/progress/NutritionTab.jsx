@@ -515,12 +515,9 @@ function AddFoodSheet({ section, onAdd, onClose }) {
   return (
     <BottomSheet onClose={onClose}>
       <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:18 }}>
-        <div style={{ display:'flex', alignItems:'center', gap:8 }}>
-          <span style={{ fontSize:18 }}>{MEAL_ICONS[section]}</span>
-          <span style={{ fontSize:18, fontWeight:900, color:'#fff', letterSpacing:'-0.02em' }}>
-            Add to {section}
-          </span>
-        </div>
+        <span style={{ fontSize:18, fontWeight:900, color:'#fff', letterSpacing:'-0.02em' }}>
+          Add to {section}
+        </span>
         <button onClick={()=>setQuickMode(m=>!m)} style={{
           background: quickMode ? C.blue.bg : 'rgba(255,255,255,0.05)',
           border: quickMode ? `1px solid ${C.blue.border}` : '1px solid rgba(255,255,255,0.1)',
@@ -1025,24 +1022,6 @@ export default function NutritionTab() {
         <WeekDots days={weekDays} />
       </div>
 
-      {/* ── WATER + STREAK GRID ── */}
-      <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:10, marginBottom:12 }}>
-        <div style={{ background:CARD_BG, border:CARD_BORDER, borderRadius:20, padding:'16px' }}>
-          <WaterTracker glasses={water} target={TARGETS.water}
-            onAdd={()=>{ setWater(w=>Math.min(w+1,TARGETS.water)); showToast('💧 Water logged'); }} />
-        </div>
-        <div style={{ background:CARD_BG, border:CARD_BORDER, borderRadius:20, padding:'16px' }}>
-          <SectionHead>Streak</SectionHead>
-          <div style={{ display:'flex', alignItems:'flex-end', gap:8, marginBottom:4 }}>
-            <Flame style={{ width:22, height:22, color:C.amber.color,
-              filter:`drop-shadow(0 0 8px ${C.amber.color}88)` }} />
-            <span style={{ fontSize:38, fontWeight:900, color:'#fff', lineHeight:1,
-              letterSpacing:'-0.04em' }}>{streak}</span>
-          </div>
-          <p style={{ fontSize:12, color:'rgba(255,255,255,0.3)', margin:0 }}>days on track</p>
-        </div>
-      </div>
-
       {/* ── CURRENT GOAL CARD ── */}
       <div style={{ background:CARD_BG, border:CARD_BORDER, borderRadius:20,
         padding:'18px 18px', marginBottom:12 }}>
@@ -1100,21 +1079,21 @@ export default function NutritionTab() {
             // 3D layered gradient — bright face → dark base
             background: 'linear-gradient(180deg, #3b6ef5 0%, #1a3ec7 55%, #1530a0 100%)',
             color: '#fff',
-            // hard bottom edge = 3D depth; outer glow = blue halo
-            boxShadow: '0 3px 0 #0c1d7a, 0 6px 22px rgba(37,99,235,0.5), inset 0 1px 0 rgba(255,255,255,0.22)',
+            // hard bottom edge = 3D depth
+            boxShadow: '0 3px 0 #0c1d7a, inset 0 1px 0 rgba(255,255,255,0.22)',
             transition: 'transform 0.1s ease, box-shadow 0.1s ease',
           }}
           onPointerDown={e => {
             e.currentTarget.style.transform = 'translateY(2px)';
-            e.currentTarget.style.boxShadow = '0 1px 0 #0c1d7a, 0 3px 12px rgba(37,99,235,0.4), inset 0 1px 0 rgba(255,255,255,0.15)';
+            e.currentTarget.style.boxShadow = '0 1px 0 #0c1d7a, inset 0 1px 0 rgba(255,255,255,0.15)';
           }}
           onPointerUp={e => {
             e.currentTarget.style.transform = 'translateY(0)';
-            e.currentTarget.style.boxShadow = '0 3px 0 #0c1d7a, 0 6px 22px rgba(37,99,235,0.5), inset 0 1px 0 rgba(255,255,255,0.22)';
+            e.currentTarget.style.boxShadow = '0 3px 0 #0c1d7a, inset 0 1px 0 rgba(255,255,255,0.22)';
           }}
           onPointerLeave={e => {
             e.currentTarget.style.transform = 'translateY(0)';
-            e.currentTarget.style.boxShadow = '0 3px 0 #0c1d7a, 0 6px 22px rgba(37,99,235,0.5), inset 0 1px 0 rgba(255,255,255,0.22)';
+            e.currentTarget.style.boxShadow = '0 3px 0 #0c1d7a, inset 0 1px 0 rgba(255,255,255,0.22)';
           }}
         >
           {/* shimmer sweep */}
