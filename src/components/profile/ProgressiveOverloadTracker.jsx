@@ -457,8 +457,8 @@ export default function ProgressiveOverloadTracker({ currentUser, animate = 0 })
         </div>
       ) : (
         <div style={{ display: 'flex', alignItems: 'center' }}>
-          {/* Chart — 72% width */}
-          <div style={{ width: '72%', flexShrink: 0 }}>
+          {/* Chart — 79% width */}
+          <div style={{ width: '79%', flexShrink: 0 }}>
             <ResponsiveContainer width="100%" height={210}>
               <LineChart key={animationKey} data={chartData} margin={{ top: 4, right: 4, left: -4, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" vertical={false} />
@@ -497,9 +497,9 @@ export default function ProgressiveOverloadTracker({ currentUser, animate = 0 })
             </ResponsiveContainer>
           </div>
 
-          {/* Legend — 28% width */}
+          {/* Legend — 21% width */}
           <div style={{
-            width: '28%',
+            width: '21%',
             paddingLeft: 4,
             display: 'flex',
             flexDirection: 'column',
