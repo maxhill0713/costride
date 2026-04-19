@@ -1095,207 +1095,349 @@ function ClassesTabContent({ classes, showOwnerControls, onManage, onDelete }) {
 function LeaderboardSection({ view, setView, checkInLeaderboard, streakLeaderboard, progressLeaderboardWeek, progressLeaderboardMonth, progressLeaderboardAllTime }) {
   const [open, setOpen] = React.useState(false);
   const [timeframe, setTimeframe] = React.useState('week');
+
   const tabs = [
-  { id: 'checkins', label: 'Check-ins', icon: CheckCircle, accent: '#10b981', accentRgb: '16,185,129', unit: 'check-ins' },
-  { id: 'streaks', label: 'Streaks', icon: Flame, accent: '#f97316', accentRgb: '249,115,22', unit: 'day streak' },
-  { id: 'progress', label: 'Progress', icon: TrendingUp, accent: '#818cf8', accentRgb: '129,140,248', unit: 'kg gained' }];
+    { id: 'checkins', label: 'Check-ins', icon: CheckCircle, accent: '#10b981', accentRgb: '16,185,129', unit: 'check-ins' },
+    { id: 'streaks',  label: 'Streaks',   icon: Flame,       accent: '#f97316', accentRgb: '249,115,22', unit: 'day streak' },
+    { id: 'progress', label: 'Progress',  icon: TrendingUp,  accent: '#818cf8', accentRgb: '129,140,248', unit: 'kg gained'  },
+  ];
 
   const current = tabs.find((t) => t.id === view);
+
   const getData = () => {
-    if (view === 'checkins') return { list: checkInLeaderboard, getVal: (m) => m.count, fmt: (v) => `${v}`, unit: 'check-ins' };
-    if (view === 'streaks') return { list: streakLeaderboard, getVal: (m) => m.streak, fmt: (v) => `${v}d`, unit: 'day streak' };
-    const progressList = timeframe === 'week' ? progressLeaderboardWeek : timeframe === 'month' ? progressLeaderboardMonth : progressLeaderboardAllTime;
-    return { list: progressList, getVal: (m) => m.increase, fmt: (v) => `+${v}kg`, unit: 'kg gained' };
+    if (view === 'checkins') return { list: checkInLeaderboard,  getVal: (m) => m.count,    fmt: (v) => `${v}`,    unit: 'check-ins'  };
+    if (view === 'streaks')  return { list: streakLeaderboard,   getVal: (m) => m.streak,   fmt: (v) => `${v}d`,   unit: 'day streak' };
+    const pl = timeframe === 'week' ? progressLeaderboardWeek : timeframe === 'month' ? progressLeaderboardMonth : progressLeaderboardAllTime;
+    return { list: pl, getVal: (m) => m.increase, fmt: (v) => `+${v}kg`, unit: 'kg gained' };
   };
+
   const { list, getVal, fmt, unit } = getData();
-  const maxVal = list.length > 0 ? Math.max(...list.map(getVal), 1) : 1;
+  const maxVal   = list.length > 0 ? Math.max(...list.map(getVal), 1) : 1;
   const initials = (n) => (n || '?').split(' ').map((w) => w[0]).join('').toUpperCase().slice(0, 2);
-  const podium = list.slice(0, 3);
+  const podium   = list.slice(0, 3);
   const restList = list.slice(3, 10);
 
+  /* ── 3D button helper (matches the rest of the app) ── */
+  const tabBtn = (active, accentRgb, accent) => ({
+    flex: 1,
+    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5,
+    padding: '8px 4px', borderRadius: 12, fontSize: 11, fontWeight: 800, cursor: 'pointer',
+    background:    active ? `rgba(${accentRgb},0.2)`              : 'rgba(20,28,60,0.75)',
+    border:        `1px solid ${active ? `rgba(${accentRgb},0.5)` : 'rgba(255,255,255,0.09)'}`,
+    borderBottom:  active ? `3px solid rgba(${accentRgb},0.55)`   : '3px solid rgba(0,0,0,0.5)',
+    color:         active ? accent                                 : 'rgba(255,255,255,0.3)',
+    boxShadow:     active
+      ? `0 2px 0 rgba(0,0,0,0.4),inset 0 1px 0 rgba(255,255,255,0.18)`
+      : '0 2px 0 rgba(0,0,0,0.35),inset 0 1px 0 rgba(255,255,255,0.06)',
+    transition: 'transform 0.08s ease,box-shadow 0.08s ease,border-bottom 0.08s ease',
+  });
+
+  const tfBtn = (active) => ({
+    padding: '5px 14px', borderRadius: 99, fontSize: 11, fontWeight: 800, cursor: 'pointer',
+    background:   active ? `rgba(${current.accentRgb},0.18)`              : 'rgba(20,28,60,0.8)',
+    border:       `1px solid ${active ? `rgba(${current.accentRgb},0.5)` : 'rgba(255,255,255,0.1)'}`,
+    borderBottom: active ? `3px solid rgba(${current.accentRgb},0.6)`     : '3px solid rgba(0,0,0,0.5)',
+    color:        active ? current.accent                                   : 'rgba(255,255,255,0.35)',
+    boxShadow:    active
+      ? '0 2px 0 rgba(0,0,0,0.4),inset 0 1px 0 rgba(255,255,255,0.15)'
+      : '0 2px 0 rgba(0,0,0,0.35),inset 0 1px 0 rgba(255,255,255,0.08)',
+    transition: 'transform 0.08s ease,box-shadow 0.08s ease,border-bottom 0.08s ease',
+  });
+
+  const press3d = {
+    onMouseDown:  (e) => { e.currentTarget.style.transform = 'translateY(3px)'; e.currentTarget.style.boxShadow = 'none'; e.currentTarget.style.borderBottom = '1px solid rgba(0,0,0,0.4)'; },
+    onMouseUp:    (e) => { e.currentTarget.style.transform = ''; e.currentTarget.style.boxShadow = ''; e.currentTarget.style.borderBottom = ''; },
+    onMouseLeave: (e) => { e.currentTarget.style.transform = ''; e.currentTarget.style.boxShadow = ''; e.currentTarget.style.borderBottom = ''; },
+    onTouchStart: (e) => { e.currentTarget.style.transform = 'translateY(3px)'; e.currentTarget.style.boxShadow = 'none'; e.currentTarget.style.borderBottom = '1px solid rgba(0,0,0,0.4)'; },
+    onTouchEnd:   (e) => { e.currentTarget.style.transform = ''; e.currentTarget.style.boxShadow = ''; e.currentTarget.style.borderBottom = ''; },
+  };
+
+  /* ── MEDAL config reused from elsewhere in the file ── */
+  const PODIUM_COLORS = [
+    { rank: 1, color: '#FFD700', bg: 'rgba(255,215,0,0.08)',  border: 'rgba(255,215,0,0.3)',  ring: 'rgba(255,215,0,0.6)',  label: '👑', shadow: 'rgba(255,215,0,0.2)'  },
+    { rank: 2, color: '#C8D8EC', bg: 'rgba(200,216,236,0.06)', border: 'rgba(200,216,236,0.25)', ring: 'rgba(200,216,236,0.5)', label: '🥈', shadow: 'rgba(200,216,236,0.15)' },
+    { rank: 3, color: '#E8904A', bg: 'rgba(232,144,74,0.07)', border: 'rgba(232,144,74,0.28)',  ring: 'rgba(232,144,74,0.55)', label: '🥉', shadow: 'rgba(232,144,74,0.15)' },
+  ];
+
+  /* ── COLLAPSED card ── */
   if (!open) return (
-    <>
-      <style>{LBOARD_ANIM}</style>
-      <button onClick={() => setOpen(true)} className="w-full text-left relative overflow-hidden rounded-2xl active:scale-[0.982] transition-all duration-150"
-      style={{ background: CARD_BG, backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', border: `1px solid rgba(255,215,0,0.18)`, boxShadow: '0 8px 32px rgba(0,0,0,0.5),0 0 0 1px rgba(255,215,0,0.06),inset 0 1px 0 rgba(255,255,255,0.06)' }}>
-        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, overflow: 'hidden', pointerEvents: 'none', borderRadius: 'inherit' }}>
-          <div style={{ position: 'absolute', top: 0, bottom: 0, width: '30%', background: 'linear-gradient(90deg,transparent,rgba(255,215,0,0.04),transparent)', animation: 'lb-shimmer 3.5s ease-in-out infinite' }} />
+    <button
+      onClick={() => setOpen(true)}
+      style={{
+        ...CARD_STYLE,
+        width: '100%', textAlign: 'left', borderRadius: 18,
+        border: '1px solid rgba(255,255,255,0.07)',
+        boxShadow: '0 4px 24px rgba(0,0,0,0.4)',
+        cursor: 'pointer', overflow: 'hidden',
+      }}
+    >
+      <div style={{ height: 2, background: `linear-gradient(90deg,transparent,rgba(${current.accentRgb},0.7),transparent)` }} />
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '13px 14px' }}>
+        <div style={{
+          width: 40, height: 40, borderRadius: 12, flexShrink: 0,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          background: `rgba(${current.accentRgb},0.12)`,
+          border: `1px solid rgba(${current.accentRgb},0.25)`,
+        }}>
+          <Trophy style={{ width: 18, height: 18, color: current.accent }} />
         </div>
-        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 1, background: 'linear-gradient(90deg, transparent 10%, rgba(255,255,255,0.08) 50%, transparent 90%)', borderRadius: 'inherit' }} />
-        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 2, background: 'linear-gradient(90deg,transparent 0%,rgba(255,215,0,0.6) 30%,rgba(255,215,0,0.9) 50%,rgba(255,215,0,0.6) 70%,transparent 100%)', borderRadius: 'inherit' }} />
-        <div className="flex items-center gap-3 px-4 py-3.5">
-          <div style={{ width: 44, height: 44, borderRadius: 14, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, background: 'linear-gradient(135deg,rgba(255,215,0,0.15),rgba(255,180,0,0.08))', border: '1px solid rgba(255,215,0,0.25)', boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.1)' }}>
-            <Trophy style={{ width: 20, height: 20, color: '#FFD700', filter: 'drop-shadow(0 0 6px rgba(255,215,0,0.5))' }} />
-          </div>
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2">
-              <p style={{ fontSize: 15, fontWeight: 900, color: '#fff', letterSpacing: '-0.02em', lineHeight: 1 }}>Community Leaderboard</p>
-              {list.length > 0 && <span style={{ fontSize: 9, fontWeight: 900, letterSpacing: '0.1em', color: 'rgba(255,215,0,0.7)', background: 'rgba(255,215,0,0.1)', border: '1px solid rgba(255,215,0,0.2)', padding: '2px 6px', borderRadius: 4, textTransform: 'uppercase' }}>LIVE</span>}
-            </div>
-            <p style={{ fontSize: 11, marginTop: 3, fontWeight: 600, color: 'rgba(255,255,255,0.35)' }}>
-              {list.length > 0 ? `${list.length} athletes ranked this week` : 'No activity this week'}
-            </p>
-          </div>
-          {podium.length > 0 &&
-          <div style={{ display: 'flex', alignItems: 'center', marginRight: 4 }}>
-              {podium.map((m, i) =>
-            <div key={i} style={{ width: 32, height: 32, borderRadius: '50%', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 900, background: MEDALS[i].bg, border: `2px solid ${MEDALS[i].color}`, color: MEDALS[i].color, marginLeft: i === 0 ? 0 : -10, zIndex: 3 - i, boxShadow: `0 0 12px ${MEDALS[i].glow},0 2px 8px rgba(0,0,0,0.4)`, flexShrink: 0 }}>
-                  {m.userAvatar ? <img src={m.userAvatar} alt={m.userName} style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={(e) => {e.currentTarget.style.display = 'none';e.currentTarget.nextSibling.style.display = 'flex';}} /> : null}
-                  <span style={{ display: m.userAvatar ? 'none' : 'flex', width: '100%', height: '100%', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 900 }}>{initials(m.userName)}</span>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <p style={{ fontSize: 14, fontWeight: 900, color: '#fff', margin: 0, letterSpacing: '-0.02em' }}>Community Leaderboard</p>
+          <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.35)', fontWeight: 600, margin: '2px 0 0' }}>
+            {list.length > 0 ? `${list.length} athletes ranked` : 'No activity yet'}
+          </p>
+        </div>
+        {podium.length > 0 &&
+          <div style={{ display: 'flex', alignItems: 'center', marginRight: 2 }}>
+            {podium.map((m, i) => {
+              const pc = PODIUM_COLORS[i];
+              return (
+                <div key={i} style={{
+                  width: 30, height: 30, borderRadius: '50%', overflow: 'hidden',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  fontSize: 10, fontWeight: 900,
+                  background: CARD_BG, border: `2px solid ${pc.ring}`,
+                  color: pc.color, marginLeft: i === 0 ? 0 : -8, zIndex: 3 - i, flexShrink: 0,
+                  boxShadow: `0 0 8px ${pc.shadow}`,
+                }}>
+                  {m.userAvatar
+                    ? <img src={m.userAvatar} alt={m.userName} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    : initials(m.userName)}
                 </div>
-            )}
-            </div>
-          }
-          <div style={{ width: 30, height: 30, borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', flexShrink: 0 }}>
-            <ChevronRight style={{ width: 15, height: 15, color: 'rgba(255,255,255,0.4)' }} />
-          </div>
-        </div>
-      </button>
-    </>);
-
-
-  return (
-    <>
-      <style>{LBOARD_ANIM}</style>
-      <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 9999, display: 'flex', flexDirection: 'column', background: 'linear-gradient(135deg,#02040a 0%,#0d2360 50%,#02040a 100%)', animation: 'lb-slide-up 0.42s cubic-bezier(0.16,1,0.3,1) both', overflow: 'hidden', paddingTop: 'env(safe-area-inset-top)' }}>
-        <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', backgroundImage: 'radial-gradient(rgba(255,255,255,0.015) 1px,transparent 1px)', backgroundSize: '24px 24px', opacity: 0.8 }} />
-        <div style={{ position: 'absolute', top: '8%', left: '15%', width: 280, height: 280, borderRadius: '50%', background: 'radial-gradient(circle,rgba(255,215,0,0.07) 0%,transparent 70%)', pointerEvents: 'none', animation: 'lb-orb-drift 12s ease-in-out infinite' }} />
-        <div style={{ position: 'absolute', top: '40%', right: '5%', width: 200, height: 200, borderRadius: '50%', background: `radial-gradient(circle,rgba(${current.accentRgb},0.06) 0%,transparent 70%)`, pointerEvents: 'none', animation: 'lb-orb-drift 9s ease-in-out infinite 3s' }} />
-        <div style={{ position: 'absolute', left: 0, right: 0, height: 2, background: `linear-gradient(90deg,transparent,rgba(${current.accentRgb},0.15),transparent)`, pointerEvents: 'none', animation: 'lb-scan-line 8s linear infinite', zIndex: 1 }} />
-        <div style={{ flexShrink: 0, paddingTop: 18, paddingLeft: 16, paddingRight: 16, paddingBottom: 12, borderBottom: '1px solid rgba(255,255,255,0.05)', position: 'relative', zIndex: 2 }}>
-          <button onClick={() => setOpen(false)}
-          onMouseDown={(e) => {const b = e.currentTarget;b.style.transform = 'translateY(3px)';b.style.boxShadow = 'none';b.style.borderBottom = '1px solid rgba(0,0,0,0.4)';}}
-          onMouseUp={(e) => {const b = e.currentTarget;b.style.transform = '';b.style.boxShadow = '';b.style.borderBottom = '';}}
-          onMouseLeave={(e) => {const b = e.currentTarget;b.style.transform = '';b.style.boxShadow = '';b.style.borderBottom = '';}}
-          onTouchStart={(e) => {const b = e.currentTarget;b.style.transform = 'translateY(3px)';b.style.boxShadow = 'none';b.style.borderBottom = '1px solid rgba(0,0,0,0.4)';}}
-          onTouchEnd={(e) => {const b = e.currentTarget;b.style.transform = '';b.style.boxShadow = '';b.style.borderBottom = '';}}
-          style={{ position: 'absolute', top: 14, left: 16, width: 36, height: 36, borderRadius: 11, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(30,40,80,0.9)', border: '1px solid rgba(255,255,255,0.15)', borderBottom: '3px solid rgba(0,0,0,0.55)', boxShadow: '0 2px 0 rgba(0,0,0,0.4),inset 0 1px 0 rgba(255,255,255,0.12)', transition: 'transform 0.08s ease,box-shadow 0.08s ease,border-bottom 0.08s ease' }}>
-            <ChevronRight style={{ width: 17, height: 17, color: 'rgba(255,255,255,0.7)', transform: 'rotate(180deg)' }} />
-          </button>
-          <div style={{ textAlign: 'center', marginBottom: 10 }}>
-            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, marginBottom: 3 }}>
-              <Trophy style={{ width: 14, height: 14, color: '#FFD700', filter: 'drop-shadow(0 0 8px rgba(255,215,0,0.7))' }} />
-              <span style={{ fontSize: 10, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.28em', color: 'rgba(255,215,0,0.65)' }}>Community Rankings</span>
-            </div>
-            <h2 style={{ fontSize: 26, fontWeight: 900, color: '#fff', margin: 0, letterSpacing: '-0.04em', lineHeight: 1 }}>Leaderboard</h2>
-          </div>
-          <div style={{ display: 'flex', justifyContent: 'center', gap: 6, marginBottom: 10 }}>
-            {[['week', 'This Week'], ['month', 'Month'], ['all', 'All Time']].map(([tf, label]) => {
-              const active = timeframe === tf;
-              return (
-                <button key={tf} onClick={() => setTimeframe(tf)}
-                onMouseDown={(e) => {const b = e.currentTarget;b.style.transform = 'translateY(3px)';b.style.boxShadow = 'none';b.style.borderBottom = `1px solid rgba(0,0,0,0.4)`;}}
-                onMouseUp={(e) => {const b = e.currentTarget;b.style.transform = '';b.style.boxShadow = '';b.style.borderBottom = '';}}
-                onMouseLeave={(e) => {const b = e.currentTarget;b.style.transform = '';b.style.boxShadow = '';b.style.borderBottom = '';}}
-                onTouchStart={(e) => {const b = e.currentTarget;b.style.transform = 'translateY(3px)';b.style.boxShadow = 'none';b.style.borderBottom = `1px solid rgba(0,0,0,0.4)`;}}
-                onTouchEnd={(e) => {const b = e.currentTarget;b.style.transform = '';b.style.boxShadow = '';b.style.borderBottom = '';}}
-                style={{ padding: '5px 14px', borderRadius: 99, fontSize: 11, fontWeight: 800, background: active ? `rgba(${current.accentRgb},0.18)` : 'rgba(20,28,60,0.8)', border: `1px solid ${active ? `rgba(${current.accentRgb},0.5)` : 'rgba(255,255,255,0.1)'}`, borderBottom: active ? `3px solid rgba(${current.accentRgb},0.6)` : '3px solid rgba(0,0,0,0.5)', color: active ? current.accent : 'rgba(255,255,255,0.35)', boxShadow: active ? `0 2px 0 rgba(0,0,0,0.4),inset 0 1px 0 rgba(255,255,255,0.15),0 0 12px rgba(${current.accentRgb},0.2)` : '0 2px 0 rgba(0,0,0,0.35),inset 0 1px 0 rgba(255,255,255,0.08)', transition: 'transform 0.08s ease,box-shadow 0.08s ease,border-bottom 0.08s ease' }}>{label}</button>);
-
+              );
             })}
           </div>
-          <div style={{ display: 'flex', gap: 6, padding: 4 }}>
-            {tabs.map(({ id, label, icon: Icon, accent, accentRgb }) => {
-              const active = view === id;
-              return (
-                <button key={id} onClick={() => setView(id)}
-                onMouseDown={(e) => {const b = e.currentTarget;b.style.transform = 'translateY(3px)';b.style.boxShadow = 'none';b.style.borderBottom = '1px solid rgba(0,0,0,0.4)';}}
-                onMouseUp={(e) => {const b = e.currentTarget;b.style.transform = '';b.style.boxShadow = '';b.style.borderBottom = '';}}
-                onMouseLeave={(e) => {const b = e.currentTarget;b.style.transform = '';b.style.boxShadow = '';b.style.borderBottom = '';}}
-                onTouchStart={(e) => {const b = e.currentTarget;b.style.transform = 'translateY(3px)';b.style.boxShadow = 'none';b.style.borderBottom = '1px solid rgba(0,0,0,0.4)';}}
-                onTouchEnd={(e) => {const b = e.currentTarget;b.style.transform = '';b.style.boxShadow = '';b.style.borderBottom = '';}}
-                style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5, padding: '8px 4px', borderRadius: 12, fontSize: 11, fontWeight: 800, background: active ? `rgba(${accentRgb},0.2)` : 'rgba(20,28,60,0.75)', border: `1px solid ${active ? `rgba(${accentRgb},0.5)` : 'rgba(255,255,255,0.09)'}`, borderBottom: active ? `3px solid rgba(${accentRgb},0.55)` : '3px solid rgba(0,0,0,0.5)', color: active ? accent : 'rgba(255,255,255,0.3)', boxShadow: active ? `0 2px 0 rgba(0,0,0,0.4),inset 0 1px 0 rgba(255,255,255,0.18),0 0 14px rgba(${accentRgb},0.18)` : '0 2px 0 rgba(0,0,0,0.35),inset 0 1px 0 rgba(255,255,255,0.06)', transition: 'transform 0.08s ease,box-shadow 0.08s ease,border-bottom 0.08s ease' }}>
-                  <Icon style={{ width: 12, height: 12 }} />{label}
-                </button>);
-
-            })}
-          </div>
-        </div>
-        <div style={{ flex: 1, overflowY: 'auto', WebkitOverflowScrolling: 'touch', position: 'relative', zIndex: 2 }}>
-          {list.length === 0 ?
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: 280, gap: 16 }}>
-              <div style={{ width: 60, height: 60, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
-                <Trophy style={{ width: 26, height: 26, color: 'rgba(255,255,255,0.1)' }} />
-              </div>
-              <div style={{ textAlign: 'center' }}>
-                <p style={{ fontSize: 15, fontWeight: 800, color: 'rgba(255,255,255,0.25)', margin: '0 0 4px' }}>No Rankings Yet</p>
-                <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.12)', margin: 0 }}>Start tracking to appear here</p>
-              </div>
-            </div> :
-          <>
-            <div style={{ padding: '8px 16px 10px', display: 'flex', alignItems: 'flex-end', justifyContent: 'center', gap: 6, perspective: 800 }}>
-              {[{ data: podium[1], mIdx: 1 }, { data: podium[0], mIdx: 0 }, { data: podium[2], mIdx: 2 }].
-              filter((p) => p.data).
-              map(({ data, mIdx }, colIdx) => {
-                const M = MEDALS[mIdx];
-                const isFirst = mIdx === 0;
-                const cardW = isFirst ? 116 : 94;
-                const avatarSz = isFirst ? 50 : 38;
-                return (
-                  <div key={mIdx} style={{ width: cardW, borderRadius: 18, overflow: 'hidden', position: 'relative', background: M.bg, border: `1.5px solid ${M.cardBorder}`, backdropFilter: 'blur(40px)', WebkitBackdropFilter: 'blur(40px)', boxShadow: `0 16px 48px rgba(0,0,0,0.7),0 0 0 1px ${M.cardBorderDim},inset 0 1px 0 ${M.shine}`, animation: `lb-card-in 0.5s cubic-bezier(0.34,1.3,0.64,1) ${colIdx * 0.08}s both`, marginBottom: M.heightExtra, transformOrigin: 'bottom center' }}>
-                      <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 2, background: `linear-gradient(90deg,transparent 0%,${M.color} 40%,${M.glowStrong} 50%,${M.color} 60%,transparent 100%)`, zIndex: 3 }} />
-                      <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', background: `radial-gradient(ellipse at 50% 0%,${M.insetGlow} 0%,transparent 55%)` }} />
-                      <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', pointerEvents: 'none' }}>
-                        <div style={{ position: 'absolute', top: 0, bottom: 0, width: '25%', background: `linear-gradient(90deg,transparent,${M.shine},transparent)`, animation: 'lb-shimmer 4s ease-in-out infinite', animationDelay: `${mIdx * 0.8}s` }} />
-                      </div>
-                      <div style={{ position: 'absolute', top: 0, left: 0, width: 22, height: 22, display: 'flex', alignItems: 'center', justifyContent: 'center', background: M.badgeBg, borderRadius: '0 0 9px 0', zIndex: 4, boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.3)' }}>
-                        <span style={{ fontSize: 10, fontWeight: 900, color: M.badgeText }}>{mIdx + 1}</span>
-                      </div>
-                      {isFirst && <div style={{ position: 'absolute', top: 5, right: 7, fontSize: 14, animation: 'lb-flame 1.6s ease-in-out infinite', pointerEvents: 'none', zIndex: 4, filter: 'drop-shadow(0 0 6px rgba(255,150,0,0.7))' }}>🔥</div>}
-                      <div style={{ display: 'flex', justifyContent: 'center', paddingTop: isFirst ? 16 : 13, paddingBottom: 3, position: 'relative', zIndex: 2 }}>
-                        <span style={{ fontSize: 6, fontWeight: 900, letterSpacing: '0.2em', color: M.tierColor, opacity: 0.7, textTransform: 'uppercase', background: `rgba(${M.colorRgb},0.1)`, border: `1px solid rgba(${M.colorRgb},0.2)`, padding: '1px 6px', borderRadius: 99 }}>{M.tierLabel}</span>
-                      </div>
-                      <div style={{ display: 'flex', justifyContent: 'center', paddingBottom: 4, position: 'relative', zIndex: 2 }}>
-                        <div style={{ position: 'relative' }}>
-                          <div style={{ width: avatarSz + 6, height: avatarSz + 6, borderRadius: '50%', background: M.avatarRing, animation: `${M.pulse} 2.5s ease-in-out infinite`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                            <div style={{ width: avatarSz, height: avatarSz, borderRadius: '50%', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, color: M.color, background: M.bg, border: '2px solid rgba(0,0,0,0.3)' }}>
-                              {data.userAvatar ? <img src={data.userAvatar} alt={data.userName} style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={(e) => {e.currentTarget.style.display = 'none';e.currentTarget.nextSibling.style.display = 'flex';}} /> : null}
-                              <span style={{ display: data.userAvatar ? 'none' : 'flex', width: '100%', height: '100%', alignItems: 'center', justifyContent: 'center', fontWeight: 900, fontSize: isFirst ? 17 : 12, color: M.color }}>{initials(data.userName)}</span>
-                            </div>
-                          </div>
-                          <div style={{ position: 'absolute', bottom: -2, right: -2, width: 17, height: 17, borderRadius: '50%', background: 'rgba(6,10,24,0.9)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, boxShadow: `0 0 0 2px ${M.color}`, animation: 'lb-badge-pop 0.4s cubic-bezier(0.34,1.56,0.64,1) 0.3s both', zIndex: 5 }}>{M.label}</div>
-                        </div>
-                      </div>
-                      <p style={{ color: '#fff', fontWeight: 900, textAlign: 'center', fontSize: isFirst ? 11 : 9, lineHeight: 1.2, padding: '0 6px 2px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', textShadow: `0 0 16px ${M.glow}`, position: 'relative', zIndex: 2 }}>{data.userName || '—'}</p>
-                      <div style={{ textAlign: 'center', padding: `2px 8px ${isFirst ? 13 : 9}px`, position: 'relative', zIndex: 2 }}>
-                        <p style={{ fontSize: isFirst ? 20 : 15, fontWeight: 900, color: M.color, lineHeight: 1, textShadow: `0 0 24px ${M.glowStrong}`, letterSpacing: '-0.03em', animation: 'lb-count-up 0.5s ease 0.2s both' }}>{fmt(getVal(data))}</p>
-                        <p style={{ fontSize: 6, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.16em', color: `rgba(${M.colorRgb},0.45)`, marginTop: 1 }}>{unit}</p>
-                      </div>
-                    </div>);
-
-              })}
-            </div>
-            {restList.length > 0 &&
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 4, padding: '4px 12px 20px' }}>
-                {restList.map((m, i) => {
-                const globalRank = i + 4;
-                const pct = Math.max(4, Math.round(getVal(m) / maxVal * 100));
-                const R = NAV_ROW[i] || NAV_ROW[NAV_ROW.length - 1];
-                return (
-                  <div key={m.userId || i} style={{ borderRadius: 14, padding: '10px 12px', display: 'flex', alignItems: 'center', gap: 10, animation: `lb-row-in 0.28s ease ${(i + 3) * 0.04}s both`, position: 'relative', overflow: 'hidden', background: CARD_BG, border: CARD_BORDER, borderTop: '1px solid rgba(255,255,255,0.09)', boxShadow: '0 2px 12px rgba(0,0,0,0.35)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)' }}>
-                      <div style={{ position: 'absolute', left: 0, top: '18%', bottom: '18%', width: 2, borderRadius: 99, background: `rgba(${current.accentRgb},${R.rankOpacity * 0.35})`, pointerEvents: 'none' }} />
-                      <div style={{ width: 28, height: 28, borderRadius: 9, flexShrink: 0, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 900, color: `rgba(255,255,255,${R.rankOpacity * 0.7})`, letterSpacing: '-0.02em' }}>{globalRank}</div>
-                      <div style={{ width: 36, height: 36, borderRadius: '50%', flexShrink: 0, overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 900, background: 'rgba(255,255,255,0.06)', border: `1px solid rgba(255,255,255,${R.rankOpacity * 0.12})` }}>
-                        {m.userAvatar ? <img src={m.userAvatar} alt={m.userName} style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={(e) => {e.currentTarget.style.display = 'none';e.currentTarget.nextSibling.style.display = 'flex';}} /> : null}
-                        <span style={{ display: m.userAvatar ? 'none' : 'flex', width: '100%', height: '100%', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 900, color: `rgba(255,255,255,${R.rankOpacity * 0.6})` }}>{initials(m.userName)}</span>
-                      </div>
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <p style={{ fontSize: 13, fontWeight: 700, color: `rgba(255,255,255,${R.nameOpacity})`, margin: '0 0 5px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', letterSpacing: '-0.01em' }}>{m.userName || '—'}</p>
-                        <div style={{ height: 2, borderRadius: 99, background: 'rgba(255,255,255,0.06)', overflow: 'hidden' }}>
-                          <div style={{ height: '100%', borderRadius: 99, width: `${pct}%`, background: `rgba(${current.accentRgb},${R.barOpacity})`, transition: 'width 0.6s ease' }} />
-                        </div>
-                      </div>
-                      <div style={{ flexShrink: 0, padding: '4px 10px', borderRadius: 8, background: 'rgba(255,255,255,0.05)', border: `1px solid rgba(255,255,255,${R.pillOpacity * 0.1})`, fontSize: 13, fontWeight: 800, color: `rgba(255,255,255,${R.pillOpacity * 0.9})`, letterSpacing: '-0.02em' }}>{fmt(getVal(m))}</div>
-                    </div>);
-
-              })}
-              </div>
-            }
-            <p style={{ textAlign: 'center', fontSize: 9, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.18em', color: 'rgba(255,255,255,0.08)', paddingBottom: 10 }}>Ranked by {unit} · Updates in real-time</p>
-          </>}
+        }
+        <div style={{
+          width: 28, height: 28, borderRadius: 9, flexShrink: 0,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)',
+        }}>
+          <ChevronRight style={{ width: 14, height: 14, color: 'rgba(255,255,255,0.4)' }} />
         </div>
       </div>
-    </>);
+    </button>
+  );
 
+  /* ── EXPANDED full-screen panel — matches CreateSplitModal slide-in ── */
+  return (
+    <div style={{
+      position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+      zIndex: 9999, display: 'flex', flexDirection: 'column',
+      background: 'linear-gradient(to bottom right, #02040a, #0d2360, #02040a)',
+      animation: 'lb-slide-up 0.38s cubic-bezier(0.16,1,0.3,1) both',
+      overflow: 'hidden', paddingTop: 'env(safe-area-inset-top)',
+    }}>
+      <style>{LBOARD_ANIM}</style>
+
+      {/* ── Header ── */}
+      <div style={{
+        flexShrink: 0, padding: '14px 16px 0',
+        borderBottom: '1px solid rgba(255,255,255,0.06)',
+        position: 'relative',
+      }}>
+        {/* Back button — matches app header style */}
+        <button
+          onClick={() => setOpen(false)}
+          {...press3d}
+          style={{
+            position: 'absolute', top: 12, left: 14,
+            width: 36, height: 36, borderRadius: 11,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            background: 'rgba(30,40,80,0.9)',
+            border: '1px solid rgba(255,255,255,0.12)',
+            borderBottom: '3px solid rgba(0,0,0,0.55)',
+            boxShadow: '0 2px 0 rgba(0,0,0,0.4),inset 0 1px 0 rgba(255,255,255,0.1)',
+            transition: 'transform 0.08s ease,box-shadow 0.08s ease,border-bottom 0.08s ease',
+          }}
+        >
+          <ChevronLeft style={{ width: 17, height: 17, color: 'rgba(255,255,255,0.7)' }} />
+        </button>
+
+        <div style={{ textAlign: 'center', paddingBottom: 12 }}>
+          <p style={{ fontSize: 10, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.2em', color: `rgba(${current.accentRgb},0.65)`, margin: '0 0 2px' }}>
+            Community Rankings
+          </p>
+          <h2 style={{ fontSize: 22, fontWeight: 900, color: '#fff', margin: 0, letterSpacing: '-0.04em' }}>
+            Leaderboard
+          </h2>
+        </div>
+
+        {/* Timeframe pills */}
+        <div style={{ display: 'flex', justifyContent: 'center', gap: 6, marginBottom: 10 }}>
+          {[['week','This Week'],['month','Month'],['all','All Time']].map(([tf, label]) => (
+            <button key={tf} onClick={() => setTimeframe(tf)} style={tfBtn(timeframe === tf)} {...press3d}>
+              {label}
+            </button>
+          ))}
+        </div>
+
+        {/* Category tabs */}
+        <div style={{ display: 'flex', gap: 6, paddingBottom: 12 }}>
+          {tabs.map(({ id, label, icon: Icon, accent, accentRgb }) => (
+            <button key={id} onClick={() => setView(id)}
+              style={tabBtn(view === id, accentRgb, accent)} {...press3d}>
+              <Icon style={{ width: 12, height: 12 }} />{label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* ── Scrollable body ── */}
+      <div style={{ flex: 1, overflowY: 'auto', WebkitOverflowScrolling: 'touch' }}>
+        {list.length === 0 ? (
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: 260, gap: 14 }}>
+            <div style={{ width: 56, height: 56, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', ...CARD_STYLE, border: '1px solid rgba(255,255,255,0.07)' }}>
+              <Trophy style={{ width: 24, height: 24, color: 'rgba(255,255,255,0.12)' }} />
+            </div>
+            <p style={{ fontSize: 14, fontWeight: 800, color: 'rgba(255,255,255,0.25)', margin: 0 }}>No Rankings Yet</p>
+            <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.12)', margin: 0 }}>Start tracking to appear here</p>
+          </div>
+        ) : (
+          <>
+            {/* ── Podium ── */}
+            <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'center', gap: 8, padding: '20px 16px 8px' }}>
+              {[
+                { data: podium[1], pcIdx: 1, order: 0, heightBoost: 0  },
+                { data: podium[0], pcIdx: 0, order: 1, heightBoost: 24 },
+                { data: podium[2], pcIdx: 2, order: 2, heightBoost: 0  },
+              ].filter(p => p.data).map(({ data, pcIdx, order, heightBoost }) => {
+                const pc   = PODIUM_COLORS[pcIdx];
+                const isFirst = pcIdx === 0;
+                const avatarSz = isFirst ? 52 : 40;
+                return (
+                  <div key={pcIdx} style={{
+                    flex: isFirst ? '0 0 120px' : '0 0 96px',
+                    borderRadius: 18, overflow: 'hidden',
+                    ...CARD_STYLE,
+                    border: `1px solid ${pc.border}`,
+                    boxShadow: `0 0 0 1px ${pc.border}, 0 8px 32px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.06)`,
+                    marginBottom: heightBoost,
+                    animation: `lb-card-in 0.45s cubic-bezier(0.34,1.3,0.64,1) ${order * 0.07}s both`,
+                  }}>
+                    {/* accent bar */}
+                    <div style={{ height: 3, background: `linear-gradient(90deg, transparent, ${pc.color}, transparent)` }} />
+                    {/* rank badge */}
+                    <div style={{ display: 'flex', justifyContent: 'center', paddingTop: isFirst ? 14 : 10, paddingBottom: 2 }}>
+                      <span style={{
+                        fontSize: 8, fontWeight: 900, letterSpacing: '0.15em', textTransform: 'uppercase',
+                        color: pc.color, background: `rgba(${pc.color === '#FFD700' ? '255,215,0' : pc.color === '#C8D8EC' ? '200,216,236' : '232,144,74'},0.12)`,
+                        border: `1px solid ${pc.border}`, borderRadius: 99, padding: '2px 7px',
+                      }}>
+                        #{pcIdx + 1}
+                      </span>
+                    </div>
+                    {/* avatar */}
+                    <div style={{ display: 'flex', justifyContent: 'center', padding: '6px 0 4px' }}>
+                      <div style={{
+                        width: avatarSz + 4, height: avatarSz + 4, borderRadius: '50%',
+                        border: `2px solid ${pc.ring}`,
+                        boxShadow: `0 0 12px ${pc.shadow}`,
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        overflow: 'hidden', background: CARD_BG,
+                        fontSize: isFirst ? 16 : 13, fontWeight: 900, color: pc.color,
+                      }}>
+                        {data.userAvatar
+                          ? <img src={data.userAvatar} alt={data.userName} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                          : initials(data.userName)}
+                      </div>
+                    </div>
+                    {/* name */}
+                    <p style={{
+                      color: '#fff', fontWeight: 900, textAlign: 'center',
+                      fontSize: isFirst ? 11 : 9.5, lineHeight: 1.2,
+                      padding: '0 8px 2px', overflow: 'hidden',
+                      textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                    }}>
+                      {data.userName || '—'}
+                    </p>
+                    {/* score */}
+                    <div style={{ textAlign: 'center', padding: `2px 8px ${isFirst ? 14 : 10}px` }}>
+                      <p style={{ fontSize: isFirst ? 22 : 16, fontWeight: 900, color: pc.color, lineHeight: 1, letterSpacing: '-0.03em', margin: 0 }}>
+                        {fmt(getVal(data))}
+                      </p>
+                      <p style={{ fontSize: 7, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.14em', color: 'rgba(255,255,255,0.28)', marginTop: 2 }}>
+                        {unit}
+                      </p>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* ── Rows 4–10 ── */}
+            {restList.length > 0 &&
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 4, padding: '4px 12px 20px' }}>
+                {restList.map((m, i) => {
+                  const globalRank = i + 4;
+                  const pct = Math.max(4, Math.round(getVal(m) / maxVal * 100));
+                  const opacity = Math.max(0.35, 1 - i * 0.1);
+                  return (
+                    <div key={m.userId || i} style={{
+                      ...CARD_STYLE,
+                      borderRadius: 14, padding: '10px 12px',
+                      display: 'flex', alignItems: 'center', gap: 10,
+                      animation: `lb-row-in 0.26s ease ${(i + 3) * 0.04}s both`,
+                    }}>
+                      {/* rank */}
+                      <div style={{
+                        width: 28, height: 28, borderRadius: 9, flexShrink: 0,
+                        background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        fontSize: 12, fontWeight: 900, color: `rgba(255,255,255,${opacity * 0.7})`,
+                      }}>
+                        {globalRank}
+                      </div>
+                      {/* avatar */}
+                      <div style={{
+                        width: 36, height: 36, borderRadius: '50%', flexShrink: 0,
+                        overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        fontSize: 12, fontWeight: 900,
+                        background: 'rgba(255,255,255,0.06)',
+                        border: `1px solid rgba(255,255,255,${opacity * 0.1})`,
+                        color: `rgba(255,255,255,${opacity * 0.6})`,
+                      }}>
+                        {m.userAvatar
+                          ? <img src={m.userAvatar} alt={m.userName} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                          : initials(m.userName)}
+                      </div>
+                      {/* name + bar */}
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <p style={{
+                          fontSize: 13, fontWeight: 700, color: `rgba(255,255,255,${opacity * 0.92})`,
+                          margin: '0 0 5px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                        }}>
+                          {m.userName || '—'}
+                        </p>
+                        <div style={{ height: 3, borderRadius: 99, background: 'rgba(255,255,255,0.06)', overflow: 'hidden' }}>
+                          <div style={{
+                            height: '100%', borderRadius: 99, width: `${pct}%`,
+                            background: `rgba(${current.accentRgb},${opacity * 0.55})`,
+                            transition: 'width 0.6s ease',
+                          }} />
+                        </div>
+                      </div>
+                      {/* score pill */}
+                      <div style={{
+                        flexShrink: 0, padding: '4px 10px', borderRadius: 8,
+                        background: `rgba(${current.accentRgb},0.1)`,
+                        border: `1px solid rgba(${current.accentRgb},0.2)`,
+                        fontSize: 13, fontWeight: 800,
+                        color: `rgba(255,255,255,${opacity * 0.85})`,
+                        letterSpacing: '-0.02em',
+                      }}>
+                        {fmt(getVal(m))}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            }
+          </>
+        )}
+      </div>
+    </div>
+  );
 }
 
 function SlidePanel({ open, children }) {
