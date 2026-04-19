@@ -164,10 +164,10 @@ function AlreadyLoggedModal({ open, onClose, onEdit }) {
           You've already logged your weight today. You can edit it if you need to update it.
         </p>
         <div className="flex gap-3">
-          <button onClick={onClose} className="flex-1 py-2.5 rounded-xl font-bold text-sm text-slate-200 bg-gradient-to-b from-slate-600 via-slate-700 to-slate-800 border border-slate-500/40 shadow-[0_3px_0_0_#1e293b,0_6px_16px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.08)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 transform-gpu">
+          <button onClick={onClose} className="flex-1 py-2.5 rounded-xl font-bold text-sm text-slate-200 bg-gradient-to-b from-slate-600 via-slate-700 to-slate-800 border border-slate-500/40 shadow-[0_4px_0_0_#0f172a,inset_0_1px_0_rgba(255,255,255,0.08)] active:shadow-[0_1px_0_0_#0f172a] active:translate-y-[3px] transition-all duration-75 transform-gpu">
             Okay
           </button>
-          <button onClick={onEdit} className="flex-1 py-2.5 rounded-xl font-bold text-sm text-white bg-gradient-to-b from-blue-500 via-blue-600 to-blue-700 shadow-[0_3px_0_0_#1d4ed8,inset_0_1px_0_rgba(255,255,255,0.15)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 transform-gpu">
+          <button onClick={onEdit} className="flex-1 py-2.5 rounded-xl font-bold text-sm text-white bg-gradient-to-b from-blue-400 via-blue-600 to-blue-800 shadow-[0_4px_0_0_#1e3a8a,inset_0_1px_0_rgba(255,255,255,0.2)] active:shadow-[0_1px_0_0_#1e3a8a] active:translate-y-[3px] transition-all duration-75 transform-gpu">
             Edit
           </button>
         </div>
@@ -200,10 +200,10 @@ function LogWeightModal({ open, onClose, onSave, currentWeight }) {
           <WeightPicker value={weight} onChange={setWeight} />
         </div>
         <div className="flex gap-3 p-6 pt-4">
-          <button onClick={onClose} className="flex-1 py-2.5 rounded-xl font-bold text-sm text-slate-200 bg-gradient-to-b from-slate-600 via-slate-700 to-slate-800 border border-slate-500/40 shadow-[0_3px_0_0_#1e293b,0_6px_16px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.08)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 transform-gpu">
+          <button onClick={onClose} className="flex-1 py-2.5 rounded-xl font-bold text-sm text-slate-200 bg-gradient-to-b from-slate-600 via-slate-700 to-slate-800 border border-slate-500/40 shadow-[0_4px_0_0_#0f172a,inset_0_1px_0_rgba(255,255,255,0.08)] active:shadow-[0_1px_0_0_#0f172a] active:translate-y-[3px] transition-all duration-75 transform-gpu">
             Cancel
           </button>
-          <button onClick={() => { onSave(weight); onClose(); }} className="flex-1 py-2.5 rounded-xl font-bold text-sm text-white bg-gradient-to-b from-blue-500 via-blue-600 to-blue-700 shadow-[0_3px_0_0_#1d4ed8,inset_0_1px_0_rgba(255,255,255,0.15)] active:shadow-none active:translate-y-[3px] active:scale-95 transition-all duration-100 transform-gpu">
+          <button onClick={() => { onSave(weight); onClose(); }} className="flex-1 py-2.5 rounded-xl font-bold text-sm text-white bg-gradient-to-b from-blue-400 via-blue-600 to-blue-800 shadow-[0_4px_0_0_#1e3a8a,inset_0_1px_0_rgba(255,255,255,0.2)] active:shadow-[0_1px_0_0_#1e3a8a] active:translate-y-[3px] transition-all duration-75 transform-gpu">
             Save
           </button>
         </div>
