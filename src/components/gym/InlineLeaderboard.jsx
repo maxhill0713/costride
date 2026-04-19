@@ -33,15 +33,17 @@ function TimeframeSlider({ value, onChange }) {
         position: 'relative', display: 'flex', flexShrink: 0,
         background: 'rgba(255,255,255,0.05)',
         border: '1px solid rgba(255,255,255,0.08)',
-        borderRadius: 6, padding: 1.5,
+        borderRadius: 7, padding: 2,
+        width: '57.5%',
+        alignSelf: 'flex-end',
       }}
     >
       <div
         ref={pillRef}
         style={{
-          position: 'absolute', top: 1.5, height: 'calc(100% - 3px)',
+          position: 'absolute', top: 2, height: 'calc(100% - 4px)',
           background: 'linear-gradient(to bottom, #3b82f6, #2563eb, #1d4ed8)',
-          borderRadius: 4, boxShadow: '0 2px 0 #1a3fa8',
+          borderRadius: 5, boxShadow: '0 2px 0 #1a3fa8',
           transition: 'left 0.22s cubic-bezier(0.34,1.2,0.64,1), width 0.22s cubic-bezier(0.34,1.2,0.64,1)',
           pointerEvents: 'none', zIndex: 1,
         }}
@@ -53,13 +55,15 @@ function TimeframeSlider({ value, onChange }) {
           onClick={() => onChange(tf.key)}
           style={{
             position: 'relative', zIndex: 2,
-            padding: '2px 7px', borderRadius: 4,
+            flex: 1,
+            padding: '5px 0', borderRadius: 5,
             fontSize: 8.5, fontWeight: 700, cursor: 'pointer', border: 'none',
             background: 'transparent',
             color: value === tf.key ? '#fff' : '#475569',
             transition: 'color 0.12s',
             WebkitTapHighlightColor: 'transparent',
             whiteSpace: 'nowrap',
+            textAlign: 'center',
           }}
         >
           {tf.label}
@@ -105,7 +109,6 @@ const TABS = [
   },
 ];
 
-// Gold / Silver / Bronze — muted and premium
 const PODIUM_COLORS = [
   { color: 'rgba(255,215,0,0.9)',    border: 'rgba(255,215,0,0.22)',    ring: 'rgba(255,215,0,0.4)',    bg: 'rgba(255,215,0,0.07)'   },
   { color: 'rgba(200,170,100,0.85)', border: 'rgba(200,170,100,0.18)', ring: 'rgba(200,170,100,0.3)', bg: 'rgba(200,170,100,0.06)' },
@@ -140,11 +143,18 @@ export default function InlineLeaderboard({ view, setView, checkInLeaderboard, s
       overflow: 'hidden',
     }}>
       <div style={{ padding: '12px 14px 10px', borderBottom: '1px solid rgba(255,255,255,0.055)' }}>
-        {/* Header */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
-          <span style={{ fontSize: 14, fontWeight: 900, color: '#fff', letterSpacing: '-0.01em', whiteSpace: 'nowrap' }}>
-            Community Leaderboard
-          </span>
+
+        {/* Title — centred */}
+        <p style={{
+          fontSize: 14, fontWeight: 900, color: '#fff',
+          letterSpacing: '-0.01em', textAlign: 'center',
+          margin: '0 0 8px 0',
+        }}>
+          Community Leaderboard
+        </p>
+
+        {/* Slider — pushed to the right */}
+        <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 10 }}>
           <TimeframeSlider value={timeframe} onChange={setTimeframe} />
         </div>
 
@@ -173,9 +183,9 @@ export default function InlineLeaderboard({ view, setView, checkInLeaderboard, s
           {/* Podium */}
           <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'center', gap: 10, padding: '20px 14px 14px' }}>
             {[
-              { data: podium[1], pcIdx: 1, lift: 0   },
-              { data: podium[0], pcIdx: 0, lift: 18  },
-              { data: podium[2], pcIdx: 2, lift: 0   },
+              { data: podium[1], pcIdx: 1, lift: 0  },
+              { data: podium[0], pcIdx: 0, lift: 18 },
+              { data: podium[2], pcIdx: 2, lift: 0  },
             ].filter(p => p.data).map(({ data, pcIdx, lift }) => {
               const pc = PODIUM_COLORS[pcIdx];
               const isFirst = pcIdx === 0;
@@ -192,59 +202,29 @@ export default function InlineLeaderboard({ view, setView, checkInLeaderboard, s
                     marginBottom: lift,
                   }}
                 >
-                  {/* Thin metallic top line */}
                   <div style={{ height: 3, background: `linear-gradient(90deg, transparent, ${pc.color}, transparent)`, opacity: 0.6 }} />
-
                   <div style={{ padding: isFirst ? '16px 10px 16px' : '14px 10px 14px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: isFirst ? 7 : 6 }}>
-                    {/* Rank badge */}
-                    <span style={{
-                      fontSize: 9, fontWeight: 800, letterSpacing: '0.12em',
-                      textTransform: 'uppercase', color: pc.color, opacity: 0.7,
-                    }}>
+                    <span style={{ fontSize: 9, fontWeight: 800, letterSpacing: '0.12em', textTransform: 'uppercase', color: pc.color, opacity: 0.7 }}>
                       #{pcIdx + 1}
                     </span>
-
-                    {/* Avatar */}
                     <div style={{
                       width: avatarSz, height: avatarSz, borderRadius: '50%',
-                      background: pc.bg,
-                      border: `${isFirst ? 2 : 1.5}px solid ${pc.ring}`,
+                      background: pc.bg, border: `${isFirst ? 2 : 1.5}px solid ${pc.ring}`,
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      overflow: 'hidden',
-                      fontSize: isFirst ? 15 : 13, fontWeight: 900, color: pc.color,
+                      overflow: 'hidden', fontSize: isFirst ? 15 : 13, fontWeight: 900, color: pc.color,
                     }}>
                       {data.userAvatar
                         ? <img src={data.userAvatar} alt={data.userName} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                         : initials(data.userName)
                       }
                     </div>
-
-                    {/* Name */}
-                    <p style={{
-                      color: isFirst ? '#fff' : '#cbd5e1',
-                      fontWeight: isFirst ? 900 : 800,
-                      fontSize: isFirst ? 12 : 11,
-                      margin: 0, textAlign: 'center',
-                      overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-                      maxWidth: isFirst ? 100 : 88,
-                    }}>
+                    <p style={{ color: isFirst ? '#fff' : '#cbd5e1', fontWeight: isFirst ? 900 : 800, fontSize: isFirst ? 12 : 11, margin: 0, textAlign: 'center', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: isFirst ? 100 : 88 }}>
                       {data.userName || '—'}
                     </p>
-
-                    {/* Score */}
-                    <p style={{
-                      fontSize: isFirst ? 26 : 20, fontWeight: 900,
-                      color: pc.color, lineHeight: 1,
-                      letterSpacing: '-0.03em', margin: 0,
-                    }}>
+                    <p style={{ fontSize: isFirst ? 26 : 20, fontWeight: 900, color: pc.color, lineHeight: 1, letterSpacing: '-0.03em', margin: 0 }}>
                       {fmt(getVal(data))}
                     </p>
-
-                    {/* Unit */}
-                    <p style={{
-                      fontSize: 8.5, fontWeight: 700, textTransform: 'uppercase',
-                      letterSpacing: '0.1em', color: 'rgba(255,255,255,0.2)', margin: 0,
-                    }}>
+                    <p style={{ fontSize: 8.5, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'rgba(255,255,255,0.2)', margin: 0 }}>
                       {unit}
                     </p>
                   </div>
