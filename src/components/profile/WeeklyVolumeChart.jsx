@@ -99,7 +99,7 @@ function CompoundToggle({ checked, onChange, onToggle = () => {} }) {
         background: checked ? LINE_COLOR : 'rgba(255,255,255,0.08)',
         border: checked ? `1px solid ${LINE_COLOR}` : '1px solid rgba(255,255,255,0.2)',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
-        transition: 'background 0.15s, border-color 0.15s',
+        transition: 'background 0.15s, border-color-color 0.15s',
       }}>
         {checked && (
           <svg width="8" height="8" viewBox="0 0 8 8" fill="none">
@@ -252,8 +252,8 @@ export default function WeeklyVolumeChart({ currentUser, animate = 0, compact = 
           </p>
         </div>
       ) : (
-        <ResponsiveContainer width="100%" height={compact ? 120 : 198}>
-          <LineChart data={chartData} margin={{ top: compact ? 4 : 10, right: 4, left: compact ? -8 : 4, bottom: 0 }}>
+        <ResponsiveContainer width="100%" height={compact ? 120 : 198} style={{ overflow: 'visible' }}>
+          <LineChart data={chartData} margin={{ top: compact ? 4 : 10, right: 4, left: compact ? 4 : 8, bottom: compact ? 6 : 10 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" vertical={false} />
             <ReferenceLine y={0} stroke="rgba(255,255,255,0.10)" strokeWidth={1} />
             <XAxis
@@ -262,7 +262,7 @@ export default function WeeklyVolumeChart({ currentUser, animate = 0, compact = 
               tick={{ fill: '#475569', fontSize: compact ? 8 : 10, fontWeight: 500 }}
               tickLine={false}
               axisLine={false}
-              height={compact ? 12 : 20}
+              height={compact ? 18 : 24}
             />
             <YAxis
               stroke="rgba(255,255,255,0.04)"
