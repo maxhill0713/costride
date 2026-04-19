@@ -200,19 +200,7 @@ export default function UserProfile() {
           </div>
         )}
 
-        {!isBlocked && profileUser.equipped_badges?.length > 0 && (
-          <div className="flex items-center gap-1.5">
-            {profileUser.equipped_badges.map((badgeId) => {
-              const badge = badgeDefs.find((b) => b.id === badgeId || `${b.days}_day_streak` === badgeId);
-              if (!badge) return null;
-              return (
-                <div key={badgeId} className={`w-7 h-7 rounded-lg bg-gradient-to-br ${badge.color} flex items-center justify-center shadow ring-1 ring-black/30`}>
-                  <span className="text-xs">{badge.icon}</span>
-                </div>
-              );
-            })}
-          </div>
-        )}
+
       </div>
 
       {/* ── POSTS ── */}
