@@ -22,8 +22,8 @@ function TimeframeSlider({ value, onChange }) {
     if (!activeBtn) return;
     const toggleRect = toggle.getBoundingClientRect();
     const btnRect = activeBtn.getBoundingClientRect();
-    pill.style.left = `${btnRect.left - toggleRect.left + 2}px`;
-    pill.style.width = `${btnRect.width - 4}px`;
+    pill.style.left = `${btnRect.left - toggleRect.left + 1.5}px`;
+    pill.style.width = `${btnRect.width - 3}px`;
   }, [value]);
 
   return (
@@ -33,15 +33,15 @@ function TimeframeSlider({ value, onChange }) {
         position: 'relative', display: 'flex', flexShrink: 0,
         background: 'rgba(255,255,255,0.05)',
         border: '1px solid rgba(255,255,255,0.08)',
-        borderRadius: 10, padding: 2,
+        borderRadius: 7, padding: 1.5,
       }}
     >
       <div
         ref={pillRef}
         style={{
-          position: 'absolute', top: 2, height: 'calc(100% - 4px)',
+          position: 'absolute', top: 1.5, height: 'calc(100% - 3px)',
           background: 'linear-gradient(to bottom, #3b82f6, #2563eb, #1d4ed8)',
-          borderRadius: 8, boxShadow: '0 2px 0 #1a3fa8',
+          borderRadius: 5, boxShadow: '0 2px 0 #1a3fa8',
           transition: 'left 0.22s cubic-bezier(0.34,1.2,0.64,1), width 0.22s cubic-bezier(0.34,1.2,0.64,1)',
           pointerEvents: 'none', zIndex: 1,
         }}
@@ -53,8 +53,8 @@ function TimeframeSlider({ value, onChange }) {
           onClick={() => onChange(tf.key)}
           style={{
             position: 'relative', zIndex: 2,
-            padding: '4px 11px', borderRadius: 8,
-            fontSize: 10, fontWeight: 700, cursor: 'pointer', border: 'none',
+            padding: '3px 8px', borderRadius: 5,
+            fontSize: 9, fontWeight: 700, cursor: 'pointer', border: 'none',
             background: 'transparent',
             color: value === tf.key ? '#fff' : '#475569',
             transition: 'color 0.12s',
@@ -75,8 +75,8 @@ const TABS = [
     label: 'Check-ins',
     icon: CheckCircle,
     accentRgb: '16,185,129',
-    activeClass: 'bg-gradient-to-b from-green-400 via-green-500 to-green-600 text-white border-transparent shadow-[0_5px_0_0_#166534,0_8px_20px_rgba(16,185,129,0.35),inset_0_1px_0_rgba(255,255,255,0.2)]',
-    inactiveClass: 'bg-slate-900/80 text-slate-400 border-slate-500/50 shadow-[0_5px_0_0_#172033,0_8px_20px_rgba(0,0,0,0.8),inset_0_1px_0_rgba(255,255,255,0.12)]',
+    activeClass: 'bg-gradient-to-b from-green-400 via-green-500 to-green-600 text-white border-transparent shadow-[0_5px_0_0_#166534,inset_0_1px_0_rgba(255,255,255,0.2)]',
+    inactiveClass: 'bg-slate-900/80 text-slate-400 border-slate-500/50 shadow-[0_5px_0_0_#172033,inset_0_1px_0_rgba(255,255,255,0.12)]',
     unit: 'check-ins',
     getVal: (m) => m.count,
     fmt: (v) => `${v}`,
@@ -86,8 +86,8 @@ const TABS = [
     label: 'Lifts',
     icon: Dumbbell,
     accentRgb: '249,115,22',
-    activeClass: 'bg-gradient-to-b from-orange-400 via-orange-500 to-orange-600 text-white border-transparent shadow-[0_5px_0_0_#9a3412,0_8px_20px_rgba(249,115,22,0.35),inset_0_1px_0_rgba(255,255,255,0.2)]',
-    inactiveClass: 'bg-slate-900/80 text-slate-400 border-slate-500/50 shadow-[0_5px_0_0_#172033,0_8px_20px_rgba(0,0,0,0.8),inset_0_1px_0_rgba(255,255,255,0.12)]',
+    activeClass: 'bg-gradient-to-b from-orange-400 via-orange-500 to-orange-600 text-white border-transparent shadow-[0_5px_0_0_#9a3412,inset_0_1px_0_rgba(255,255,255,0.2)]',
+    inactiveClass: 'bg-slate-900/80 text-slate-400 border-slate-500/50 shadow-[0_5px_0_0_#172033,inset_0_1px_0_rgba(255,255,255,0.12)]',
     unit: 'lbs lifted',
     getVal: (m) => m.streak ?? m.count ?? 0,
     fmt: (v) => `${v}`,
@@ -97,8 +97,8 @@ const TABS = [
     label: 'Progress',
     icon: TrendingUp,
     accentRgb: '129,140,248',
-    activeClass: 'bg-gradient-to-b from-violet-400 via-violet-500 to-violet-600 text-white border-transparent shadow-[0_5px_0_0_#3730a3,0_8px_20px_rgba(129,140,248,0.35),inset_0_1px_0_rgba(255,255,255,0.2)]',
-    inactiveClass: 'bg-slate-900/80 text-slate-400 border-slate-500/50 shadow-[0_5px_0_0_#172033,0_8px_20px_rgba(0,0,0,0.8),inset_0_1px_0_rgba(255,255,255,0.12)]',
+    activeClass: 'bg-gradient-to-b from-violet-400 via-violet-500 to-violet-600 text-white border-transparent shadow-[0_5px_0_0_#3730a3,inset_0_1px_0_rgba(255,255,255,0.2)]',
+    inactiveClass: 'bg-slate-900/80 text-slate-400 border-slate-500/50 shadow-[0_5px_0_0_#172033,inset_0_1px_0_rgba(255,255,255,0.12)]',
     unit: 'kg gained',
     getVal: (m) => m.increase ?? 0,
     fmt: (v) => `+${v}kg`,
@@ -129,21 +129,35 @@ export default function InlineLeaderboard({ view, setView, checkInLeaderboard, s
   ];
 
   return (
-    <div style={{ ...CARD_STYLE, borderRadius: 18, overflow: 'hidden' }}>
+    <div style={{
+      background: 'linear-gradient(135deg, rgba(16,19,40,0.96) 0%, rgba(6,8,18,0.99) 100%)',
+      border: '1px solid rgba(255,255,255,0.07)',
+      backdropFilter: 'blur(20px)',
+      WebkitBackdropFilter: 'blur(20px)',
+      boxShadow: '0 2px 12px rgba(0,0,0,0.35)',
+      borderRadius: 18,
+      overflow: 'hidden',
+      position: 'relative',
+    }}>
+      {/* Top shine — matching challenge cards */}
+      <div style={{
+        position: 'absolute', left: 0, right: 0, top: 0, height: 1, pointerEvents: 'none',
+        background: 'linear-gradient(90deg, transparent 10%, rgba(255,255,255,0.08) 50%, transparent 90%)',
+      }} />
+
       {/* accent line */}
       <div style={{ height: 2, background: `linear-gradient(90deg,transparent,rgba(${currentTab.accentRgb},0.7),transparent)` }} />
 
       <div style={{ padding: '12px 14px 10px', borderBottom: '1px solid rgba(255,255,255,0.055)' }}>
         {/* Header: title + slider */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <Trophy style={{ width: 15, height: 15, color: `rgb(${currentTab.accentRgb})` }} />
-            <span style={{ fontSize: 14, fontWeight: 900, color: '#fff', letterSpacing: '-0.01em' }}>Community Leaderboard</span>
-          </div>
+          <span style={{ fontSize: 14, fontWeight: 900, color: '#fff', letterSpacing: '-0.01em', whiteSpace: 'nowrap' }}>
+            Community Leaderboard
+          </span>
           <TimeframeSlider value={timeframe} onChange={setTimeframe} />
         </div>
 
-        {/* Category tabs — matching challenges page style */}
+        {/* Category tabs */}
         <div className="grid grid-cols-3 gap-2">
           {TABS.map(({ id, label, icon: Icon, activeClass, inactiveClass }) => (
             <button
