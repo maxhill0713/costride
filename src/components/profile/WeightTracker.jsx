@@ -176,7 +176,6 @@ function AlreadyLoggedModal({ open, onClose, onEdit }) {
         }}
       >
         <div style={{ height: 2, background: 'linear-gradient(90deg, transparent, rgba(52,211,153,0.5), transparent)' }} />
-
         <div style={{ padding: '24px 24px 20px' }}>
           <p style={{ fontSize: 17, fontWeight: 800, color: '#e2e8f0', margin: '0 0 8px', letterSpacing: '-0.02em' }}>
             Already logged today
@@ -185,9 +184,7 @@ function AlreadyLoggedModal({ open, onClose, onEdit }) {
             You have already logged your weight today. You can edit the weight you logged if you need to.
           </p>
         </div>
-
         <div style={{ padding: '0 24px 24px', display: 'flex', gap: 10 }}>
-          {/* Okay */}
           <button
             onClick={onClose}
             onMouseDown={() => setOkPressed(true)}
@@ -197,8 +194,7 @@ function AlreadyLoggedModal({ open, onClose, onEdit }) {
               flex: 1, padding: '12px 0', borderRadius: 12,
               fontSize: 13, fontWeight: 700, cursor: 'pointer',
               background: 'linear-gradient(to bottom, #4b5563, #374151, #1f2937)',
-              border: '1px solid rgba(255,255,255,0.1)',
-              color: '#cbd5e1',
+              border: '1px solid rgba(255,255,255,0.1)', color: '#cbd5e1',
               boxShadow: okPressed ? 'none' : '0 3px 0 #111827, inset 0 1px 0 rgba(255,255,255,0.08)',
               transform: okPressed ? 'translateY(3px)' : 'translateY(0)',
               transition: 'transform 0.08s ease, box-shadow 0.08s ease',
@@ -206,13 +202,8 @@ function AlreadyLoggedModal({ open, onClose, onEdit }) {
           >
             Okay
           </button>
-
-          {/* Edit */}
           <div style={{ flex: 1, position: 'relative' }}>
-            <div style={{
-              position: 'absolute', inset: 0, borderRadius: 12,
-              background: '#1a3fa8', transform: 'translateY(3px)',
-            }} />
+            <div style={{ position: 'absolute', inset: 0, borderRadius: 12, background: '#1a3fa8', transform: 'translateY(3px)' }} />
             <button
               onClick={onEdit}
               onMouseDown={() => setEditPressed(true)}
@@ -223,8 +214,7 @@ function AlreadyLoggedModal({ open, onClose, onEdit }) {
                 padding: '12px 0', borderRadius: 12,
                 fontSize: 13, fontWeight: 700, cursor: 'pointer',
                 background: 'linear-gradient(to bottom, #60a5fa, #3b82f6, #2563eb)',
-                border: '1px solid rgba(147,197,253,0.3)',
-                color: '#fff',
+                border: '1px solid rgba(147,197,253,0.3)', color: '#fff',
                 boxShadow: editPressed ? 'none' : '0 3px 0 #1a3fa8',
                 transform: editPressed ? 'translateY(3px)' : 'translateY(0)',
                 transition: 'transform 0.08s ease, box-shadow 0.08s ease',
@@ -246,7 +236,6 @@ function LogWeightModal({ open, onClose, onSave, currentWeight }) {
   const [savePressed, setSavePressed] = useState(false);
   const [cancelPressed, setCancelPressed] = useState(false);
 
-  // Re-sync picker if modal opens with a different seed weight
   useEffect(() => {
     if (open) setWeight(currentWeight || 70);
   }, [open, currentWeight]);
@@ -274,7 +263,6 @@ function LogWeightModal({ open, onClose, onSave, currentWeight }) {
         }}
       >
         <div style={{ height: 2, background: 'linear-gradient(90deg, transparent, rgba(96,165,250,0.4), transparent)' }} />
-
         <div style={{ padding: '20px 24px 0' }}>
           <p style={{ fontSize: 17, fontWeight: 800, color: '#e2e8f0', margin: 0, letterSpacing: '-0.02em' }}>
             Update your weight
@@ -283,11 +271,9 @@ function LogWeightModal({ open, onClose, onSave, currentWeight }) {
             Scroll to select your current weight
           </p>
         </div>
-
         <div style={{ padding: '0 24px' }}>
           <WeightPicker value={weight} onChange={setWeight} />
         </div>
-
         <div style={{ padding: '16px 24px 24px', display: 'flex', gap: 10 }}>
           <button
             onClick={onClose}
@@ -298,8 +284,7 @@ function LogWeightModal({ open, onClose, onSave, currentWeight }) {
               flex: 1, padding: '12px 0', borderRadius: 12,
               fontSize: 13, fontWeight: 700, cursor: 'pointer',
               background: 'linear-gradient(to bottom, #4b5563, #374151, #1f2937)',
-              border: '1px solid rgba(255,255,255,0.1)',
-              color: '#cbd5e1',
+              border: '1px solid rgba(255,255,255,0.1)', color: '#cbd5e1',
               boxShadow: cancelPressed ? 'none' : '0 3px 0 #111827, inset 0 1px 0 rgba(255,255,255,0.08)',
               transform: cancelPressed ? 'translateY(3px)' : 'translateY(0)',
               transition: 'transform 0.08s ease, box-shadow 0.08s ease',
@@ -307,12 +292,8 @@ function LogWeightModal({ open, onClose, onSave, currentWeight }) {
           >
             Cancel
           </button>
-
           <div style={{ flex: 1, position: 'relative' }}>
-            <div style={{
-              position: 'absolute', inset: 0, borderRadius: 12,
-              background: '#1a3fa8', transform: 'translateY(3px)',
-            }} />
+            <div style={{ position: 'absolute', inset: 0, borderRadius: 12, background: '#1a3fa8', transform: 'translateY(3px)' }} />
             <button
               onClick={() => { onSave(weight); onClose(); }}
               onMouseDown={() => setSavePressed(true)}
@@ -323,8 +304,7 @@ function LogWeightModal({ open, onClose, onSave, currentWeight }) {
                 padding: '12px 0', borderRadius: 12,
                 fontSize: 13, fontWeight: 700, cursor: 'pointer',
                 background: 'linear-gradient(to bottom, #60a5fa, #3b82f6, #2563eb)',
-                border: '1px solid rgba(147,197,253,0.3)',
-                color: '#fff',
+                border: '1px solid rgba(147,197,253,0.3)', color: '#fff',
                 boxShadow: savePressed ? 'none' : '0 3px 0 #1a3fa8',
                 transform: savePressed ? 'translateY(3px)' : 'translateY(0)',
                 transition: 'transform 0.08s ease, box-shadow 0.08s ease',
@@ -350,31 +330,21 @@ function WeightTooltip({ active, payload, label }) {
       backdropFilter: 'blur(12px)', boxShadow: '0 8px 32px rgba(0,0,0,0.6)',
     }}>
       <p style={{ color: '#64748b', fontSize: 10, fontWeight: 600, margin: '0 0 4px' }}>{label}</p>
-      <p style={{ fontSize: 13, fontWeight: 700, color: '#60a5fa', margin: 0 }}>
-        {payload[0].value} kg
-      </p>
+      <p style={{ fontSize: 13, fontWeight: 700, color: '#60a5fa', margin: 0 }}>{payload[0].value} kg</p>
     </div>
   );
 }
 
-// ── Custom dot — only render on days with actual data ────────────────────────
+// ── Custom dot — only on logged days ─────────────────────────────────────────
 function WeightDot(props) {
   const { cx, cy, payload } = props;
   if (payload.weight == null) return null;
-  return (
-    <circle
-      cx={cx} cy={cy} r={3}
-      fill="#60a5fa"
-      stroke="#0a0e1e"
-      strokeWidth={1.5}
-    />
-  );
+  return <circle cx={cx} cy={cy} r={3} fill="#60a5fa" stroke="#0a0e1e" strokeWidth={1.5} />;
 }
 
-// ── Build chart data with fixed window spine ──────────────────────────────────
+// ── Build fixed-window chart spine ───────────────────────────────────────────
 function buildChartData(weightLogs, timeframe) {
   const now = startOfDay(new Date());
-
   const logMap = Object.fromEntries(
     weightLogs.map(e => [format(new Date(e.date), 'yyyy-MM-dd'), e.weight])
   );
@@ -386,7 +356,7 @@ function buildChartData(weightLogs, timeframe) {
       const step = Math.max(1, Math.floor(days.length / 60));
       return days
         .filter((_, i) => i % step === 0 || i === days.length - 1)
-        .map(d => ({ date: format(d, 'MMM d'), weight: null, rawDate: d.toISOString() }));
+        .map(d => ({ date: format(d, 'MMM d'), weight: null }));
     }
     const firstDate = startOfDay(new Date(weightLogs[0].date));
     const start = firstDate < now ? firstDate : now;
@@ -394,28 +364,19 @@ function buildChartData(weightLogs, timeframe) {
     const step = Math.max(1, Math.floor(days.length / 120));
     return days
       .filter((_, i) => i % step === 0 || i === days.length - 1)
-      .map(d => ({
-        date: format(d, 'MMM d'),
-        weight: logMap[format(d, 'yyyy-MM-dd')] ?? null,
-        rawDate: d.toISOString(),
-      }));
+      .map(d => ({ date: format(d, 'MMM d'), weight: logMap[format(d, 'yyyy-MM-dd')] ?? null }));
   }
 
   const months = timeframe === '2m' ? 2 : 6;
   const windowStart = startOfDay(subMonths(now, months));
   const days = eachDayOfInterval({ start: windowStart, end: now });
-  // For 6m thin to every 2 days to keep recharts fast, but always include today
   const step = timeframe === '6m' ? 2 : 1;
   return days
     .filter((_, i) => i % step === 0 || i === days.length - 1)
-    .map(d => ({
-      date: format(d, 'MMM d'),
-      weight: logMap[format(d, 'yyyy-MM-dd')] ?? null,
-      rawDate: d.toISOString(),
-    }));
+    .map(d => ({ date: format(d, 'MMM d'), weight: logMap[format(d, 'yyyy-MM-dd')] ?? null }));
 }
 
-// ── X-axis tick selector — always exactly 4 evenly spread labels ─────────────
+// ── 4 evenly spread x-axis ticks ─────────────────────────────────────────────
 function buildXTicks(data) {
   if (data.length < 2) return data.map(d => d.date);
   const indices = [
@@ -424,7 +385,6 @@ function buildXTicks(data) {
     Math.round(2 * (data.length - 1) / 3),
     data.length - 1,
   ];
-  // Deduplicate in case array is very short
   return [...new Set(indices)].map(i => data[i].date);
 }
 
@@ -442,25 +402,16 @@ export default function WeightTracker({ currentUser }) {
     (currentUser?.weight_log || []).sort((a, b) => new Date(a.date) - new Date(b.date)),
   [currentUser?.weight_log]);
 
-  // Has the user already logged today?
   const loggedToday = useMemo(() =>
     weightLogs.find(e => format(new Date(e.date), 'yyyy-MM-dd') === TODAY_KEY),
   [weightLogs]);
 
-  const todayWeight = loggedToday?.weight ?? null;
-
-  // Default picker seed: today's log if it exists, else last log, else 70
-  const seedWeight = todayWeight
+  const seedWeight = loggedToday?.weight
     ?? (weightLogs.length > 0 ? weightLogs[weightLogs.length - 1].weight : 70);
 
-  const chartData = useMemo(
-    () => buildChartData(weightLogs, timeframe),
-    [weightLogs, timeframe]
-  );
-
+  const chartData = useMemo(() => buildChartData(weightLogs, timeframe), [weightLogs, timeframe]);
   const xTicks = useMemo(() => buildXTicks(chartData), [chartData]);
 
-  // y-axis: 10kg pad above highest, 10kg below lowest across ALL logs (not just window)
   const { minW, maxW } = useMemo(() => {
     const allVals = weightLogs.map(e => e.weight).filter(v => v != null);
     if (!allVals.length) return { minW: 60, maxW: 100 };
@@ -497,17 +448,12 @@ export default function WeightTracker({ currentUser }) {
       updated.sort((a, b) => new Date(a.date) - new Date(b.date));
       await base44.auth.updateMe({ weight_log: updated });
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['currentUser'] });
-    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['currentUser'] }),
   });
 
   const handleButtonPress = () => {
-    if (loggedToday) {
-      setShowAlreadyLogged(true);
-    } else {
-      setShowLogModal(true);
-    }
+    if (loggedToday) setShowAlreadyLogged(true);
+    else setShowLogModal(true);
   };
 
   const handleEdit = () => {
@@ -518,13 +464,16 @@ export default function WeightTracker({ currentUser }) {
   return (
     <>
       <div>
-        {/* Header */}
-        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8, marginBottom: 14 }}>
+        {/* ── Header — tightened bottom margin ── */}
+        <div style={{
+          display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between',
+          gap: 8, marginBottom: 6,          // was 14
+        }}>
           <div>
             <h2 style={{ fontSize: 16, fontWeight: 700, color: '#e2e8f0', letterSpacing: '-0.01em', margin: 0 }}>
               Weight Tracker
             </h2>
-            <p style={{ fontSize: 11, color: '#475569', margin: '3px 0 0', fontWeight: 500 }}>
+            <p style={{ fontSize: 11, color: '#475569', margin: '2px 0 0', fontWeight: 500 }}>
               {weightDelta !== null ? (
                 <>
                   <span>Change: </span>
@@ -555,11 +504,9 @@ export default function WeightTracker({ currentUser }) {
                 style={{
                   position: 'absolute', top: 2, height: 'calc(100% - 4px)',
                   background: 'linear-gradient(to bottom, rgba(96,165,250,0.7), rgba(59,130,246,0.8))',
-                  borderRadius: 6,
-                  boxShadow: '0 1px 0 #1a3fa8',
+                  borderRadius: 6, boxShadow: '0 1px 0 #1a3fa8',
                   transition: 'left 0.22s cubic-bezier(0.34,1.2,0.64,1), width 0.22s cubic-bezier(0.34,1.2,0.64,1)',
-                  pointerEvents: 'none',
-                  zIndex: 1,
+                  pointerEvents: 'none', zIndex: 1,
                 }}
               />
               {TIMEFRAMES.map(tf => (
@@ -581,15 +528,11 @@ export default function WeightTracker({ currentUser }) {
               ))}
             </div>
 
-            {/* Plus or green tick button */}
+            {/* Plus / tick button */}
             <div style={{ position: 'relative', width: 30, height: 30, flexShrink: 0 }}>
               {loggedToday ? (
-                // Green tick — logged today
                 <>
-                  <div style={{
-                    position: 'absolute', inset: 0, borderRadius: 8,
-                    background: '#064e3b', transform: 'translateY(3px)',
-                  }} />
+                  <div style={{ position: 'absolute', inset: 0, borderRadius: 8, background: '#064e3b', transform: 'translateY(3px)' }} />
                   <button
                     onClick={handleButtonPress}
                     onMouseDown={() => setAddPressed(true)}
@@ -602,9 +545,7 @@ export default function WeightTracker({ currentUser }) {
                       width: 30, height: 30, borderRadius: 8,
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
                       background: 'linear-gradient(to bottom, #34d399, #10b981, #059669)',
-                      border: '1px solid rgba(52,211,153,0.4)',
-                      color: '#fff',
-                      cursor: 'pointer',
+                      border: '1px solid rgba(52,211,153,0.4)', color: '#fff', cursor: 'pointer',
                       boxShadow: addPressed ? 'none' : '0 3px 0 #064e3b, inset 0 1px 0 rgba(255,255,255,0.15)',
                       transform: addPressed ? 'translateY(3px)' : 'translateY(0)',
                       transition: 'transform 0.08s ease, box-shadow 0.08s ease',
@@ -615,12 +556,8 @@ export default function WeightTracker({ currentUser }) {
                   </button>
                 </>
               ) : (
-                // Grey plus — not yet logged
                 <>
-                  <div style={{
-                    position: 'absolute', inset: 0, borderRadius: 8,
-                    background: '#0a0f1a', transform: 'translateY(3px)',
-                  }} />
+                  <div style={{ position: 'absolute', inset: 0, borderRadius: 8, background: '#0a0f1a', transform: 'translateY(3px)' }} />
                   <button
                     onClick={handleButtonPress}
                     onMouseDown={() => setAddPressed(true)}
@@ -634,8 +571,7 @@ export default function WeightTracker({ currentUser }) {
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
                       background: 'linear-gradient(to bottom, #2d3748 0%, #1e2635 50%, #161e2e 100%)',
                       border: '1px solid rgba(255,255,255,0.1)',
-                      color: 'rgba(148,163,184,0.8)',
-                      cursor: 'pointer',
+                      color: 'rgba(148,163,184,0.8)', cursor: 'pointer',
                       boxShadow: addPressed ? 'none' : '0 3px 0 #0a0f1a, inset 0 1px 0 rgba(255,255,255,0.07)',
                       transform: addPressed ? 'translateY(3px)' : 'translateY(0)',
                       transition: 'transform 0.08s ease, box-shadow 0.08s ease',
@@ -650,9 +586,12 @@ export default function WeightTracker({ currentUser }) {
           </div>
         </div>
 
-        {/* Chart */}
-        <ResponsiveContainer width="100%" height={130}>
-          <AreaChart data={chartData} margin={{ top: 8, right: 8, left: 8, bottom: 0 }}>
+        {/* ── Chart — reduced height, left-shifted, tight margins ── */}
+        <ResponsiveContainer width="100%" height={104}>  {/* was ~130 */}
+          <AreaChart
+            data={chartData}
+            margin={{ top: 4, right: 4, left: 0, bottom: 0 }}  // left:0 so axis sits at edge
+          >
             <defs>
               <linearGradient id="weightGrad" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="0%" stopColor="#60a5fa" stopOpacity={0.25} />
@@ -666,14 +605,16 @@ export default function WeightTracker({ currentUser }) {
               tickLine={false}
               axisLine={false}
               ticks={xTicks}
+              height={14}               // trim dead space below x-axis labels
             />
             <YAxis
               domain={[minW, maxW]}
               tick={{ fill: '#475569', fontSize: 9 }}
               tickLine={false}
               axisLine={false}
-              width={42}
+              width={36}                // enough for "99kg" without clipping
               tickFormatter={v => `${v}kg`}
+              tickCount={4}             // fewer ticks so labels don't crowd at reduced height
             />
             <Tooltip
               content={<WeightTooltip />}
@@ -693,14 +634,11 @@ export default function WeightTracker({ currentUser }) {
         </ResponsiveContainer>
       </div>
 
-      {/* Already logged modal */}
       <AlreadyLoggedModal
         open={showAlreadyLogged}
         onClose={() => setShowAlreadyLogged(false)}
         onEdit={handleEdit}
       />
-
-      {/* Log / edit weight modal */}
       <LogWeightModal
         open={showLogModal}
         onClose={() => setShowLogModal(false)}
