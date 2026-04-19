@@ -499,7 +499,6 @@ function GoalsList({ currentUser, showAddGoal, setShowAddGoal }) {
           <div className="w-16 h-16 rounded-full border-2 border-slate-700/60 flex items-center justify-center mb-4"><Target className="w-7 h-7 text-slate-600" /></div>
           <p className="text-base font-bold text-white mb-1">No Goals Yet</p>
           <p className="text-sm text-slate-500 mb-5">Set your first fitness goal and start tracking.</p>
-          <button onClick={() => setShowAddGoal(true)} className={btnNewGoal}><Plus className="w-3.5 h-3.5" />Create a Goal</button>
         </div>
       ) : (
         <div className="space-y-3">
@@ -523,12 +522,7 @@ export default function TargetsTab({ currentUser }) {
   return (
     <div className="space-y-8">
       <div>
-        <div className="flex items-center justify-between mb-4">
-          <h2 style={sectionTitle}>Personal Goals</h2>
-          <button onClick={() => setShowAddGoal(true)} className={btnNewGoal}>
-            <Plus className="w-3.5 h-3.5" />New Goal
-          </button>
-        </div>
+        <h2 style={sectionTitle}>Personal Goals</h2>
         <GoalsList currentUser={currentUser} showAddGoal={showAddGoal} setShowAddGoal={setShowAddGoal} />
       </div>
     </div>
