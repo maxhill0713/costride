@@ -2,10 +2,11 @@ import { Toaster } from "@/components/ui/toaster"
 import { QueryClientProvider } from '@tanstack/react-query'
 import { queryClientInstance } from '@/lib/query-client'
 import NavigationTracker from '@/lib/NavigationTracker'
-import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes, Navigate, useNavigate } from 'react-router-dom';
 import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
+import { useEffect } from 'react';
 
 import Layout from './Layout';
 
@@ -50,7 +51,14 @@ const LayoutWrapper = ({ children, currentPageName }) => (
 );
 
 const AuthenticatedApp = () => {
-  const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
+  const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin, user } = useAuth();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!isLoadingAuth && !isLoadingPublicSettings && !authError && user && !user.onboarding_completed) {
+      navigate('/Onboarding', { replace: true });
+    }
+  }, [isLoadingAuth, isLoadingPublicSettings, authError, user]);
 
   if (isLoadingPublicSettings || isLoadingAuth) {
     return (
@@ -62,6 +70,8 @@ const AuthenticatedApp = () => {
       </div>
     );
   }
+
+
 
   if (authError) {
     if (authError.type === 'user_not_registered') {
