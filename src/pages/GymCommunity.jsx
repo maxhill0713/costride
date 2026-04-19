@@ -432,6 +432,7 @@ function GymActivityFeed({ checkIns, memberAvatarMap, memberNameMap = {}, workou
   const items = React.useMemo(() => {
     const all = [];
     const resolveName = (userId, fallback) => memberNameMap[userId] || fallback || 'Member';
+    const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
     const seenCI = new Set();
     checkIns.forEach((c) => {
       const key = `${c.user_id}-${(c.check_in_date || '').slice(0, 10)}`;
@@ -455,7 +456,7 @@ function GymActivityFeed({ checkIns, memberAvatarMap, memberNameMap = {}, workou
       all.push({ type: 'post', id: `post-${p.id}`, userId: p.member_id, userName: resolveName(p.member_id, p.member_name), date: p.created_date, data: p });
     });
     return all.
-    filter((item) => item.date).
+    filter((item) => item.date && new Date(item.date) >= sevenDaysAgo).
     sort((a, b) => new Date(b.date) - new Date(a.date)).
     slice(0, 60);
   }, [checkIns, workoutLogs, challengeParticipants, challenges, achievements, posts]);
@@ -468,7 +469,7 @@ function GymActivityFeed({ checkIns, memberAvatarMap, memberNameMap = {}, workou
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           <span style={{ fontSize: 14, fontWeight: 900, color: '#fff', letterSpacing: '-0.01em' }}>Gym Activity Feed</span>
         </div>
-        <span style={{ fontSize: 11, fontWeight: 600, color: 'rgba(255,255,255,0.28)' }}>{items.length} activities</span>
+        <span style={{ fontSize: 11, fontWeight: 600, color: 'rgba(255,255,255,0.28)' }}>{items.length} activities in the last week</span>
       </div>
       <div style={{ maxHeight: 400, overflowY: 'auto', WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none' }}>
         {items.map((item, index) =>
