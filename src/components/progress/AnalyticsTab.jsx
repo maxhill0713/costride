@@ -15,19 +15,19 @@ const CARD = {
 export default function AnalyticsTab({ currentUser, workoutLogs, checkIns, animateCharts }) {
   return (
     <div className="space-y-3">
-      <div style={{ ...CARD, borderRadius: 16, padding: '16px 16px' }}>
-        <WeightTracker currentUser={currentUser} />
-      </div>
-      <div style={{ ...CARD, borderRadius: 16, padding: '16px 16px' }}>
-        <ProgressiveOverloadTracker currentUser={currentUser} animate={animateCharts} />
-      </div>
       <div style={{ display: 'flex', gap: 12 }}>
-        {/* ── Empty placeholder box ── */}
-        <div style={{ ...CARD, borderRadius: 16, padding: '12px 12px', flex: 1, minHeight: 180 }} />
         {/* ── Weekly Rep Volume (compressed) ── */}
         <div style={{ ...CARD, borderRadius: 16, padding: '12px 12px', flex: 1 }}>
           <WeeklyVolumeChart currentUser={currentUser} animate={animateCharts} compact />
         </div>
+        {/* ── Empty placeholder box ── */}
+        <div style={{ ...CARD, borderRadius: 16, padding: '12px 12px', flex: 1, minHeight: 180 }} />
+      </div>
+      <div style={{ ...CARD, borderRadius: 16, padding: '16px 16px' }}>
+        <ProgressiveOverloadTracker currentUser={currentUser} animate={animateCharts} />
+      </div>
+      <div style={{ ...CARD, borderRadius: 16, padding: '16px 16px' }}>
+        <WeightTracker currentUser={currentUser} />
       </div>
       {currentUser?.workout_split && (
         <WorkoutSplitHeatmap
