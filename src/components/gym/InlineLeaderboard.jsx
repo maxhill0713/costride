@@ -33,7 +33,7 @@ function TimeframeSlider({ value, onChange }) {
         position: 'relative', display: 'flex', flexShrink: 0,
         background: 'rgba(255,255,255,0.05)',
         border: '1px solid rgba(255,255,255,0.08)',
-        borderRadius: 7, padding: 1.5,
+        borderRadius: 6, padding: 1.5,
       }}
     >
       <div
@@ -41,7 +41,7 @@ function TimeframeSlider({ value, onChange }) {
         style={{
           position: 'absolute', top: 1.5, height: 'calc(100% - 3px)',
           background: 'linear-gradient(to bottom, #3b82f6, #2563eb, #1d4ed8)',
-          borderRadius: 5, boxShadow: '0 2px 0 #1a3fa8',
+          borderRadius: 4, boxShadow: '0 2px 0 #1a3fa8',
           transition: 'left 0.22s cubic-bezier(0.34,1.2,0.64,1), width 0.22s cubic-bezier(0.34,1.2,0.64,1)',
           pointerEvents: 'none', zIndex: 1,
         }}
@@ -53,8 +53,8 @@ function TimeframeSlider({ value, onChange }) {
           onClick={() => onChange(tf.key)}
           style={{
             position: 'relative', zIndex: 2,
-            padding: '3px 8px', borderRadius: 5,
-            fontSize: 9, fontWeight: 700, cursor: 'pointer', border: 'none',
+            padding: '2px 7px', borderRadius: 4,
+            fontSize: 8.5, fontWeight: 700, cursor: 'pointer', border: 'none',
             background: 'transparent',
             color: value === tf.key ? '#fff' : '#475569',
             transition: 'color 0.12s',
@@ -105,6 +105,13 @@ const TABS = [
   },
 ];
 
+// Gold / Silver / Bronze — muted and premium
+const PODIUM_COLORS = [
+  { color: 'rgba(255,215,0,0.9)',    border: 'rgba(255,215,0,0.22)',    ring: 'rgba(255,215,0,0.4)',    bg: 'rgba(255,215,0,0.07)'   },
+  { color: 'rgba(200,170,100,0.85)', border: 'rgba(200,170,100,0.18)', ring: 'rgba(200,170,100,0.3)', bg: 'rgba(200,170,100,0.06)' },
+  { color: 'rgba(180,120,60,0.85)',  border: 'rgba(180,120,60,0.18)',  ring: 'rgba(180,120,60,0.3)',  bg: 'rgba(180,120,60,0.06)'  },
+];
+
 export default function InlineLeaderboard({ view, setView, checkInLeaderboard, streakLeaderboard, progressLeaderboardWeek, progressLeaderboardMonth, progressLeaderboardAllTime }) {
   const [timeframe, setTimeframe] = useState('week');
 
@@ -122,12 +129,6 @@ export default function InlineLeaderboard({ view, setView, checkInLeaderboard, s
   const podium   = list.slice(0, 3);
   const restList = list.slice(3, 10);
 
-  const PODIUM_COLORS = [
-    { color: '#FFD700', bg: 'rgba(255,215,0,0.08)',   border: 'rgba(255,215,0,0.3)',   ring: 'rgba(255,215,0,0.6)',   shadow: 'rgba(255,215,0,0.2)'   },
-    { color: '#C8D8EC', bg: 'rgba(200,216,236,0.06)', border: 'rgba(200,216,236,0.25)', ring: 'rgba(200,216,236,0.5)', shadow: 'rgba(200,216,236,0.15)' },
-    { color: '#E8904A', bg: 'rgba(232,144,74,0.07)',  border: 'rgba(232,144,74,0.28)', ring: 'rgba(232,144,74,0.55)', shadow: 'rgba(232,144,74,0.15)'  },
-  ];
-
   return (
     <div style={{
       background: 'linear-gradient(135deg, rgba(16,19,40,0.96) 0%, rgba(6,8,18,0.99) 100%)',
@@ -137,19 +138,9 @@ export default function InlineLeaderboard({ view, setView, checkInLeaderboard, s
       boxShadow: '0 2px 12px rgba(0,0,0,0.35)',
       borderRadius: 18,
       overflow: 'hidden',
-      position: 'relative',
     }}>
-      {/* Top shine — matching challenge cards */}
-      <div style={{
-        position: 'absolute', left: 0, right: 0, top: 0, height: 1, pointerEvents: 'none',
-        background: 'linear-gradient(90deg, transparent 10%, rgba(255,255,255,0.08) 50%, transparent 90%)',
-      }} />
-
-      {/* accent line */}
-      <div style={{ height: 2, background: `linear-gradient(90deg,transparent,rgba(${currentTab.accentRgb},0.7),transparent)` }} />
-
       <div style={{ padding: '12px 14px 10px', borderBottom: '1px solid rgba(255,255,255,0.055)' }}>
-        {/* Header: title + slider */}
+        {/* Header */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
           <span style={{ fontSize: 14, fontWeight: 900, color: '#fff', letterSpacing: '-0.01em', whiteSpace: 'nowrap' }}>
             Community Leaderboard
@@ -180,30 +171,82 @@ export default function InlineLeaderboard({ view, setView, checkInLeaderboard, s
       ) : (
         <>
           {/* Podium */}
-          <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'center', gap: 8, padding: '16px 14px 8px' }}>
+          <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'center', gap: 10, padding: '20px 14px 14px' }}>
             {[
-              { data: podium[1], pcIdx: 1, heightBoost: 0  },
-              { data: podium[0], pcIdx: 0, heightBoost: 20 },
-              { data: podium[2], pcIdx: 2, heightBoost: 0  },
-            ].filter(p => p.data).map(({ data, pcIdx, heightBoost }) => {
+              { data: podium[1], pcIdx: 1, lift: 0   },
+              { data: podium[0], pcIdx: 0, lift: 18  },
+              { data: podium[2], pcIdx: 2, lift: 0   },
+            ].filter(p => p.data).map(({ data, pcIdx, lift }) => {
               const pc = PODIUM_COLORS[pcIdx];
               const isFirst = pcIdx === 0;
-              const avatarSz = isFirst ? 44 : 34;
+              const avatarSz = isFirst ? 48 : 40;
               return (
-                <div key={pcIdx} style={{ flex: isFirst ? '0 0 100px' : '0 0 82px', borderRadius: 14, overflow: 'hidden', ...CARD_STYLE, border: `1px solid ${pc.border}`, boxShadow: `0 0 0 1px ${pc.border}, 0 4px 16px rgba(0,0,0,0.5)`, marginBottom: heightBoost }}>
-                  <div style={{ height: 2, background: `linear-gradient(90deg, transparent, ${pc.color}, transparent)` }} />
-                  <div style={{ display: 'flex', justifyContent: 'center', paddingTop: isFirst ? 10 : 8, paddingBottom: 2 }}>
-                    <span style={{ fontSize: 7, fontWeight: 900, letterSpacing: '0.15em', textTransform: 'uppercase', color: pc.color, background: pc.bg, border: `1px solid ${pc.border}`, borderRadius: 99, padding: '1px 6px' }}>#{pcIdx + 1}</span>
-                  </div>
-                  <div style={{ display: 'flex', justifyContent: 'center', padding: '4px 0 2px' }}>
-                    <div style={{ width: avatarSz + 4, height: avatarSz + 4, borderRadius: '50%', border: `2px solid ${pc.ring}`, boxShadow: `0 0 8px ${pc.shadow}`, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', background: CARD_BG, fontSize: isFirst ? 14 : 11, fontWeight: 900, color: pc.color }}>
-                      {data.userAvatar ? <img src={data.userAvatar} alt={data.userName} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : initials(data.userName)}
+                <div
+                  key={pcIdx}
+                  style={{
+                    flex: isFirst ? '0 0 116px' : '0 0 100px',
+                    borderRadius: 16,
+                    overflow: 'hidden',
+                    background: 'rgba(18,20,36,0.92)',
+                    border: `1px solid ${pc.border}`,
+                    marginBottom: lift,
+                  }}
+                >
+                  {/* Thin metallic top line */}
+                  <div style={{ height: 3, background: `linear-gradient(90deg, transparent, ${pc.color}, transparent)`, opacity: 0.6 }} />
+
+                  <div style={{ padding: isFirst ? '16px 10px 16px' : '14px 10px 14px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: isFirst ? 7 : 6 }}>
+                    {/* Rank badge */}
+                    <span style={{
+                      fontSize: 9, fontWeight: 800, letterSpacing: '0.12em',
+                      textTransform: 'uppercase', color: pc.color, opacity: 0.7,
+                    }}>
+                      #{pcIdx + 1}
+                    </span>
+
+                    {/* Avatar */}
+                    <div style={{
+                      width: avatarSz, height: avatarSz, borderRadius: '50%',
+                      background: pc.bg,
+                      border: `${isFirst ? 2 : 1.5}px solid ${pc.ring}`,
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      overflow: 'hidden',
+                      fontSize: isFirst ? 15 : 13, fontWeight: 900, color: pc.color,
+                    }}>
+                      {data.userAvatar
+                        ? <img src={data.userAvatar} alt={data.userName} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        : initials(data.userName)
+                      }
                     </div>
-                  </div>
-                  <p style={{ color: '#fff', fontWeight: 900, textAlign: 'center', fontSize: isFirst ? 10 : 8.5, lineHeight: 1.2, padding: '0 6px 2px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', margin: 0 }}>{data.userName || '—'}</p>
-                  <div style={{ textAlign: 'center', padding: `2px 6px ${isFirst ? 10 : 8}px` }}>
-                    <p style={{ fontSize: isFirst ? 18 : 14, fontWeight: 900, color: pc.color, lineHeight: 1, letterSpacing: '-0.03em', margin: 0 }}>{fmt(getVal(data))}</p>
-                    <p style={{ fontSize: 6, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.12em', color: 'rgba(255,255,255,0.25)', marginTop: 1 }}>{unit}</p>
+
+                    {/* Name */}
+                    <p style={{
+                      color: isFirst ? '#fff' : '#cbd5e1',
+                      fontWeight: isFirst ? 900 : 800,
+                      fontSize: isFirst ? 12 : 11,
+                      margin: 0, textAlign: 'center',
+                      overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                      maxWidth: isFirst ? 100 : 88,
+                    }}>
+                      {data.userName || '—'}
+                    </p>
+
+                    {/* Score */}
+                    <p style={{
+                      fontSize: isFirst ? 26 : 20, fontWeight: 900,
+                      color: pc.color, lineHeight: 1,
+                      letterSpacing: '-0.03em', margin: 0,
+                    }}>
+                      {fmt(getVal(data))}
+                    </p>
+
+                    {/* Unit */}
+                    <p style={{
+                      fontSize: 8.5, fontWeight: 700, textTransform: 'uppercase',
+                      letterSpacing: '0.1em', color: 'rgba(255,255,255,0.2)', margin: 0,
+                    }}>
+                      {unit}
+                    </p>
                   </div>
                 </div>
               );
