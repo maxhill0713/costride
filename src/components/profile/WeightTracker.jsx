@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react';
+import ReactDOM from 'react-dom';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Area, AreaChart } from 'recharts';
@@ -94,7 +95,7 @@ function UpdateWeightModal({ open, onClose, onSave, currentWeight }) {
 
   if (!open) return null;
 
-  return (
+  return ReactDOM.createPortal(
     <>
       {/* Full-page overlay — above everything */}
       <div
@@ -184,7 +185,8 @@ function UpdateWeightModal({ open, onClose, onSave, currentWeight }) {
           </div>
         </div>
       </div>
-    </>
+    </>,
+    document.body
   );
 }
 
