@@ -1177,13 +1177,16 @@ export default function Home() {
                                   day, workoutLog: workoutLog || null, done, isRestDay, isMissed,
                                   isPastOrTodayRestDay, isTodayCircle, showViewWorkout, hasBubbleBtn,
                                   popupLabel: (() => {
-                                    if (isRestDay) return 'Rest Day';
-                                    if (isMissed) return 'No Workout';
-                                    if (done && workoutLog) return workoutLog.workout_name || workoutLog.title || workoutLog.workout_type || workoutLog.name || workoutLog.split_name || 'Workout';
-                                    if (done) return 'Workout';
-                                    const customTypes = currentUser?.custom_workout_types;
-                                    const splitDay = customTypes ? Array.isArray(customTypes) ? customTypes.find((s) => s.day === day || s.day_of_week === day) : customTypes[day] : null;
-                                    return splitDay?.name || splitDay?.title || splitDay?.workout_type || 'Training Day';
+                                  if (isRestDay) return 'Rest Day';
+                                  if (isMissed) return 'No Workout';
+                                  if (done && workoutLog) return workoutLog.workout_name || workoutLog.title || workoutLog.workout_type || workoutLog.name || workoutLog.split_name || 'Workout';
+                                  if (done) return 'Workout';
+                                  const customTypes = currentUser?.custom_workout_types;
+                                  // If this day is the "toDay" of a rest swap, show the workout from "fromDay"
+                                  const restSwapForLabel = restSwap;
+                                  const lookupDay = (restSwapForLabel && restSwapForLabel.toDay === day) ? restSwapForLabel.fromDay : day;
+                                  const splitDay = customTypes ? Array.isArray(customTypes) ? customTypes.find((s) => s.day === lookupDay || s.day_of_week === lookupDay) : customTypes[lookupDay] : null;
+                                  return splitDay?.name || splitDay?.title || splitDay?.workout_type || 'Training Day';
                                   })(),
                                   dateLabel: done && workoutLog?.completed_date
                                     ? new Date(workoutLog.completed_date).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'short' })
