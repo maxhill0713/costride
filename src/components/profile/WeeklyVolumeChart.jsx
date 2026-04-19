@@ -77,43 +77,22 @@ function CustomActiveDot(props) {
   return <circle cx={cx} cy={cy} r={5} fill={LINE_COLOR} stroke="#0a0e1e" strokeWidth={2} />;
 }
 
-// ─── Compound toggle checkbox ─────────────────────────────────────────────────
+// ─── Compound toggle pill ─────────────────────────────────────────────────────
 function CompoundToggle({ checked, onChange, onToggle = () => {} }) {
   return (
     <button
-      onClick={() => {
-        onChange(!checked);
-        onToggle();
-      }}
+      onClick={() => { onChange(!checked); onToggle(); }}
       style={{
-        display: 'flex', alignItems: 'center', gap: 5,
-        padding: '5px 9px', borderRadius: 8, flexShrink: 0,
+        padding: '4px 9px', borderRadius: 8, flexShrink: 0,
         background: checked ? 'rgba(129,140,248,0.15)' : 'rgba(255,255,255,0.05)',
         border: checked ? '1px solid rgba(129,140,248,0.4)' : '1px solid rgba(255,255,255,0.10)',
         cursor: 'pointer', WebkitTapHighlightColor: 'transparent',
         transition: 'background 0.15s, border-color 0.15s',
-      }}
-    >
-      <div style={{
-        width: 14, height: 14, borderRadius: 3, flexShrink: 0,
-        background: checked ? LINE_COLOR : 'rgba(255,255,255,0.08)',
-        border: checked ? `1px solid ${LINE_COLOR}` : '1px solid rgba(255,255,255,0.2)',
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        transition: 'background 0.15s, border-color-color 0.15s',
-      }}>
-        {checked && (
-          <svg width="8" height="8" viewBox="0 0 8 8" fill="none">
-            <path d="M1 4l2 2 4-4" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
-        )}
-      </div>
-      <span style={{
         fontSize: 10, fontWeight: 600, whiteSpace: 'nowrap',
         color: checked ? '#a5b4fc' : '#64748b',
-        transition: 'color 0.15s',
-      }}>
-        Compound
-      </span>
+      }}
+    >
+      Compound
     </button>
   );
 }

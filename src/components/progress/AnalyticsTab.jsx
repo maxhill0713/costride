@@ -17,7 +17,7 @@ export default function AnalyticsTab({ currentUser, workoutLogs, checkIns, anima
     <div className="space-y-3">
       <div style={{ display: 'flex', gap: 12 }}>
         {/* ── Weekly Rep Volume (compressed) ── */}
-        <div style={{ ...CARD, borderRadius: 16, padding: '12px 12px', flex: 1 }}>
+        <div style={{ ...CARD, borderRadius: 16, padding: '12px 12px', flex: '0 0 42%' }}>
           <WeeklyVolumeChart currentUser={currentUser} animate={animateCharts} compact />
         </div>
         {/* ── Empty placeholder box ── */}
