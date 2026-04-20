@@ -1469,19 +1469,33 @@ export default function Home() {
 
       {/* Post removed notification popup */}
       {postRemovedNotif && (
-        <div className="fixed inset-0 z-[600] flex items-center justify-center p-4" style={{ background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(4px)' }}>
-          <div className="w-full max-w-xs rounded-2xl p-6 text-center" style={{ background: '#141416', border: '1px solid rgba(255,77,109,0.25)', boxShadow: '0 24px 80px rgba(0,0,0,0.8)' }}>
-            <div className="w-12 h-12 rounded-full mx-auto mb-4 flex items-center justify-center" style={{ background: 'rgba(255,77,109,0.12)', border: '1px solid rgba(255,77,109,0.25)' }}>
-              <span style={{ fontSize: 22 }}>⚠️</span>
+        <div className="fixed inset-0 z-[600] flex items-center justify-center p-4"
+          style={{ background: 'rgba(2,4,10,0.85)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)' }}>
+          <div className="w-full max-w-xs rounded-3xl overflow-hidden"
+            style={{ background: 'linear-gradient(135deg, rgba(16,19,40,0.98) 0%, rgba(6,8,18,1) 100%)', border: '1px solid rgba(255,255,255,0.07)', boxShadow: '0 32px 80px rgba(0,0,0,0.8)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)' }}>
+            <div className="absolute inset-x-0 top-0 h-px" style={{ background: 'linear-gradient(90deg, transparent 10%, rgba(255,255,255,0.1) 50%, transparent 90%)' }} />
+            <div className="p-6 text-center">
+              <div className="w-14 h-14 rounded-2xl mx-auto mb-4 flex items-center justify-center"
+                style={{ background: 'rgba(255,77,109,0.12)', border: '1px solid rgba(255,77,109,0.25)' }}>
+                <span style={{ fontSize: 26 }}>🚫</span>
+              </div>
+              <h3 className="text-white font-black text-lg mb-1" style={{ letterSpacing: '-0.02em' }}>Post Removed</h3>
+              <p className="text-sm leading-relaxed mt-2 mb-6" style={{ color: 'rgba(138,138,148,0.9)' }}>
+                {postRemovedNotif.message}
+              </p>
+              <button
+                onClick={dismissPostRemovedNotif}
+                className="w-full py-3.5 rounded-2xl font-black text-white text-sm active:scale-95 active:translate-y-[2px] transition-all duration-100"
+                style={{
+                  background: 'linear-gradient(to bottom, #ff6b85 0%, #ff4d6d 40%, #e03055 100%)',
+                  border: 'none',
+                  borderBottom: '3px solid #9b1f3a',
+                  boxShadow: '0 3px 0 #9b1f3a, 0 6px 20px rgba(255,77,109,0.35), inset 0 1px 0 rgba(255,255,255,0.2)',
+                  letterSpacing: '-0.01em',
+                }}>
+                Okay
+              </button>
             </div>
-            <h3 className="text-white font-bold text-base mb-2">Post Removed</h3>
-            <p className="text-sm leading-relaxed mb-5" style={{ color: '#8a8a94' }}>{postRemovedNotif.message}</p>
-            <button
-              onClick={dismissPostRemovedNotif}
-              className="w-full py-3 rounded-xl font-bold text-white text-sm"
-              style={{ background: '#4d7fff' }}>
-              Got it
-            </button>
           </div>
         </div>
       )}

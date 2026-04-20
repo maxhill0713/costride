@@ -146,9 +146,11 @@ function MessageMemberModal({ resolvedName, memberId, onClose }) {
 /* ─── REMOVE POST MODAL ──────────────────────────────────────── */
 function RemovePostModal({ post, resolvedName, onConfirm, onClose }) {
   const [removing, setRemoving] = useState(false);
+  const [reason, setReason] = useState("");
   const handleConfirm = async () => {
+    if (!reason.trim()) return;
     setRemoving(true);
-    try { await onConfirm(post.id); } finally { setRemoving(false); }
+    try { await onConfirm(post.id, reason.trim()); } finally { setRemoving(false); }
   };
   return (
     <div style={{ position: "fixed", inset: 0, zIndex: 500, background: "rgba(0,0,0,0.72)", display: "flex", alignItems: "center", justifyContent: "center" }}
@@ -163,18 +165,28 @@ function RemovePostModal({ post, resolvedName, onConfirm, onClose }) {
             <div style={{ fontSize: 12, color: C.t2, marginTop: 2 }}>Posted by <span style={{ color: C.t1, fontWeight: 600 }}>{resolvedName}</span></div>
           </div>
         </div>
+        <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+          <label style={{ fontSize: 11.5, fontWeight: 700, color: C.t2, textTransform: "uppercase", letterSpacing: "0.06em" }}>Reason for removal <span style={{ color: C.red }}>*</span></label>
+          <textarea
+            value={reason}
+            onChange={e => setReason(e.target.value)}
+            placeholder="e.g. This post violates our community guidelines…"
+            rows={3}
+            style={{ width: "100%", background: C.card2, border: `1px solid ${reason.trim() ? C.brd : "rgba(255,77,109,0.3)"}`, borderRadius: 8, padding: "10px 12px", color: C.t1, fontSize: 13, fontFamily: FONT, resize: "vertical", outline: "none", boxSizing: "border-box", lineHeight: 1.55 }}
+            onFocus={e => e.target.style.borderColor = C.cyanBrd}
+            onBlur={e => e.target.style.borderColor = reason.trim() ? C.brd : "rgba(255,77,109,0.3)"}
+          />
+          <p style={{ fontSize: 11, color: C.t3, margin: 0 }}>This reason will be shown to the member in their app.</p>
+        </div>
         {post.content && (
           <div style={{ background: C.card2, border: `1px solid ${C.brd}`, borderRadius: 8, padding: "10px 12px", fontSize: 12.5, color: C.t2, lineHeight: 1.5, maxHeight: 80, overflow: "hidden", textOverflow: "ellipsis" }}>
             {post.content}
           </div>
         )}
-        <div style={{ fontSize: 12.5, color: C.t2, lineHeight: 1.55 }}>
-          This will permanently remove the post from the community feed. <span style={{ color: C.red, fontWeight: 600 }}>This cannot be undone.</span>
-        </div>
         <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
           <button onClick={onClose} style={{ padding: "8px 16px", borderRadius: 8, background: "transparent", border: `1px solid ${C.brd}`, color: C.t2, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: FONT }}>Cancel</button>
-          <button onClick={handleConfirm} disabled={removing}
-            style={{ padding: "8px 18px", borderRadius: 8, background: C.red, border: "none", color: "#fff", fontSize: 12, fontWeight: 700, cursor: removing ? "not-allowed" : "pointer", opacity: removing ? 0.7 : 1, fontFamily: FONT }}>
+          <button onClick={handleConfirm} disabled={removing || !reason.trim()}
+            style={{ padding: "8px 18px", borderRadius: 8, background: C.red, border: "none", color: "#fff", fontSize: 12, fontWeight: 700, cursor: (removing || !reason.trim()) ? "not-allowed" : "pointer", opacity: (removing || !reason.trim()) ? 0.5 : 1, fontFamily: FONT }}>
             {removing ? "Removing…" : "Remove Post"}
           </button>
         </div>
@@ -258,7 +270,7 @@ function QuickActions({ post, resolvedName, memberId, gym, currentUser, onDelete
         <RemovePostModal
           post={post}
           resolvedName={resolvedName}
-          onConfirm={async (id) => { await onDeletePost?.(id); setModal(null); }}
+          onConfirm={async (id, reason) => { await onDeletePost?.(id, reason); setModal(null); }}
           onClose={() => setModal(null)}
         />
       )}

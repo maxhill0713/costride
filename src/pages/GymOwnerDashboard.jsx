@@ -430,7 +430,25 @@ export default function GymOwnerDashboard() {
   const deleteGymM = useMutation({ mutationFn: () => base44.functions.invoke('deleteGym', { gymId: selectedGym.id }), onSuccess: () => { invGyms(); closeModal(); window.location.href = createPageUrl('Gyms'); }, onError: onErr });
   const deleteAccountM = useMutation({ mutationFn: () => base44.functions.invoke('deleteUserAccount'), onSuccess: () => { closeModal(); base44.auth.logout(); }, onError: onErr });
   const createPollM = useMutation({ mutationFn: (d) => base44.entities.Poll.create({ ...d, gym_id: selectedGym.id, gym_name: selectedGym.name, created_by: currentUser.id, voters: [] }), onSuccess: () => { inv('polls'); closeModal(); }, onError: onErr });
-  const deletePostM = useMutation({ mutationFn: (id) => base44.entities.Post.delete(id), onSuccess: () => inv('posts'), onError: onErr });
+  const deletePostM = useMutation({
+    mutationFn: async ({ id, reason }) => {
+      // Fetch post first to get member_id for notification
+      const posts = await base44.entities.Post.filter({ id });
+      const post = posts[0];
+      await base44.entities.Post.delete(id);
+      if (post?.member_id && reason) {
+        await base44.entities.Notification.create({
+          user_id: post.member_id,
+          type: 'post_removed',
+          title: 'Post Removed',
+          message: `Your post was removed by your gym. Reason: ${reason}`,
+          read: false,
+        });
+      }
+    },
+    onSuccess: () => inv('posts'),
+    onError: onErr,
+  });
   const deleteEventM = useMutation({ mutationFn: (id) => base44.entities.Event.delete(id), onSuccess: () => inv('events'), onError: onErr });
   const deleteChallengeM = useMutation({ mutationFn: (id) => base44.entities.Challenge.delete(id), onSuccess: () => inv('challenges'), onError: onErr });
   const deletePollM = useMutation({ mutationFn: (id) => base44.entities.Poll.delete(id), onSuccess: () => inv('polls'), onError: onErr });
@@ -516,7 +534,7 @@ export default function GymOwnerDashboard() {
     } else if (item.id === 'content') {
       content = isCoach ?
         <TabCoachContent bookings={coachBookings} assignedWorkouts={coachAssignedWorkouts} events={coachEvents} challenges={coachChallenges} polls={coachPolls} posts={coachPosts} classes={myClasses} checkIns={coachCheckIns} ci30={coachCi30} avatarMap={avatarMapFull} allMemberships={coachMemberships} openModal={openModal} now={now} onDeletePost={(id) => deletePostM.mutate(id)} onDeleteEvent={(id) => deleteEventM.mutate(id)} onDeleteChallenge={(id) => deleteChallengeM.mutate(id)} onDeleteClass={(id) => deleteClassM.mutate(id)} onDeletePoll={(id) => deletePollM.mutate(id)} /> :
-        <TabContentComponent events={events} challenges={challenges} polls={polls} posts={posts} classes={classes} checkIns={checkIns} ci30={ci30} avatarMap={avatarMapFull} nameMap={memberNameMap} currentUser={currentUser} gym={selectedGym} leaderboardView={leaderboardView} setLeaderboardView={setLeaderboardView} openModal={openModal} now={now} onDeletePost={(id) => deletePostM.mutate(id)} onDeleteEvent={(id) => deleteEventM.mutate(id)} onDeleteChallenge={(id) => deleteChallengeM.mutate(id)} onDeleteClass={(id) => deleteClassM.mutate(id)} onDeletePoll={(id) => deletePollM.mutate(id)} />;
+        <TabContentComponent events={events} challenges={challenges} polls={polls} posts={posts} classes={classes} checkIns={checkIns} ci30={ci30} avatarMap={avatarMapFull} nameMap={memberNameMap} currentUser={currentUser} gym={selectedGym} leaderboardView={leaderboardView} setLeaderboardView={setLeaderboardView} openModal={openModal} now={now} onDeletePost={(id, reason) => deletePostM.mutate({ id, reason })} onDeleteEvent={(id) => deleteEventM.mutate(id)} onDeleteChallenge={(id) => deleteChallengeM.mutate(id)} onDeleteClass={(id) => deleteClassM.mutate(id)} onDeletePoll={(id) => deletePollM.mutate(id)} />;
     } else if (item.id === 'analytics') {
       content = isCoach ?
         <TabCoachAnalytics ci30Count={allMemberships.reduce((s, m) => s + (m.ci30Count || 0), 0)} totalMembers={coachMemberships.length} myClasses={myClasses} monthChangePct={monthChangePct} retentionRate={retentionRate} activeThisMonth={activeThisMonth} atRisk={atRisk} gymId={selectedGym?.id} ci7Count={ci7Count} ci7pCount={ci7pCount} weeklyTrendCoach={weeklyTrendCoach} monthlyTrendCoach={monthlyTrendCoach} returningCount={returningCount} newMembersThis30={newMembersThis30} weeklyChart={weeklyChart} monthlyChart={monthlyChart} engagementSegmentsCoach={engagementSegmentsCoach} weekSpark={weekSpark} peakHours={peakHours} busiestDays={busiestDays} memberships={coachMemberships} checkIns={coachCheckIns} now={now} /> :
