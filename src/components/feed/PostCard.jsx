@@ -29,9 +29,11 @@ function ReactionsModal({ open, onClose, reactions, reactedUsers, currentUserId,
     const name = user.display_name || user.full_name || user.username || '';
     return name.toLowerCase().includes(sanitised.toLowerCase());
   });
+  // Gym reactors always appear at top in Community section
 
-  const friendReactors = filtered.filter(u => friendIds.has(u.id) || u.id === currentUserId);
-  const communityReactors = filtered.filter(u => !friendIds.has(u.id) && u.id !== currentUserId);
+  const gymReactors = filtered.filter(u => u.isGym);
+  const friendReactors = filtered.filter(u => !u.isGym && (friendIds.has(u.id) || u.id === currentUserId));
+  const communityReactors = filtered.filter(u => !u.isGym && !friendIds.has(u.id) && u.id !== currentUserId);
 
   const renderUser = (user) => {
     const variant = reactions[user.id];
@@ -102,6 +104,25 @@ function ReactionsModal({ open, onClose, reactions, reactedUsers, currentUserId,
     );
   };
 
+  const renderGymReactor = (user) => {
+    const variant = reactions[user.id];
+    return (
+      <div key={user.id} className="flex items-center gap-2.5 px-2 py-1 rounded-lg">
+        <div className="flex-shrink-0 w-8 h-8 rounded-full overflow-hidden bg-slate-700 flex items-center justify-center text-xs font-bold text-slate-300 border border-yellow-400/40"
+          style={{ boxShadow: '0 0 0 1.5px rgba(251,191,36,0.3)' }}>
+          {user.avatar_url
+            ? <img src={user.avatar_url} alt={user.display_name} className="w-full h-full object-cover" />
+            : (user.display_name || '?').charAt(0).toUpperCase()}
+        </div>
+        <div className="flex-1 min-w-0">
+          <span className="text-sm text-slate-200 font-semibold truncate block">{user.display_name}</span>
+          <span className="text-[10px] text-yellow-400/80 font-bold uppercase tracking-wide">Your Gym</span>
+        </div>
+        <img src={STREAK_ICON_URL} alt="react" className="flex-shrink-0 w-8 h-8" style={{ objectFit: 'contain' }} />
+      </div>
+    );
+  };
+
   const SectionHeader = ({ label }) => (
     <p className="text-[11px] font-bold text-slate-500 uppercase tracking-widest px-2 pt-2 pb-1">
       {label}
@@ -159,9 +180,19 @@ function ReactionsModal({ open, onClose, reactions, reactedUsers, currentUserId,
             <p className="text-center text-slate-400 text-sm py-6">No reactions found</p>
           ) : showSections ? (
             <>
+              {gymReactors.length > 0 && (
+                <>
+                  <SectionHeader label="Community" />
+                  {gymReactors.map(renderGymReactor)}
+                  {(friendReactors.length > 0 || communityReactors.length > 0) && (
+                    <div className="mx-2 my-2 border-t border-white/[0.07]" />
+                  )}
+                </>
+              )}
               {friendReactors.length > 0 && (
                 <>
-                  <SectionHeader label="Friends" />
+                  {gymReactors.length === 0 && <SectionHeader label="Friends" />}
+                  {gymReactors.length > 0 && <SectionHeader label="Friends" />}
                   {friendReactors.map(renderUser)}
                   {communityReactors.length > 0 && (
                     <div className="mx-2 my-2 border-t border-white/[0.07]" />
@@ -170,13 +201,13 @@ function ReactionsModal({ open, onClose, reactions, reactedUsers, currentUserId,
               )}
               {communityReactors.length > 0 && (
                 <>
-                  <SectionHeader label="Community" />
+                  {gymReactors.length === 0 && <SectionHeader label="Community" />}
                   {communityReactors.map(renderUser)}
                 </>
               )}
             </>
           ) : (
-            filtered.map(renderUser)
+            filtered.map(u => u.isGym ? renderGymReactor(u) : renderUser(u))
           )}
         </div>
       </div>
@@ -512,20 +543,44 @@ function PostCard({ post, onLike, onComment, onSave, onDelete, fullWidth = false
 
   const gymName = postGym?.name || fallbackGym?.name || null;
 
-  const reactedUserIds = useMemo(() => Object.keys(post.reactions || {}), [post.reactions]);
+  const reactedUserIds = useMemo(() => Object.keys(post.reactions || {}).filter(k => !k.startsWith('gym_')), [post.reactions]);
+  const gymReactionKeys = useMemo(() => Object.keys(post.reactions || {}).filter(k => k.startsWith('gym_')), [post.reactions]);
+
   const { data: reactedUsers = [] } = useQuery({
-    queryKey: ['reactedUsers', reactedUserIds.join(',')],
+    queryKey: ['reactedUsers', reactedUserIds.join(','), gymReactionKeys.join(',')],
     queryFn: async () => {
-      if (reactedUserIds.length === 0) return [];
-      const res = await base44.functions.invoke('getUserAvatars', { userIds: reactedUserIds });
-      return reactedUserIds.map(id => ({
-        id,
-        display_name: res.data.avatars[id]?.full_name || 'Unknown',
-        full_name: res.data.avatars[id]?.full_name || 'Unknown',
-        avatar_url: res.data.avatars[id]?.avatar_url
-      }));
+      const results = [];
+      // Resolve regular user reactors
+      if (reactedUserIds.length > 0) {
+        const res = await base44.functions.invoke('getUserAvatars', { userIds: reactedUserIds });
+        reactedUserIds.forEach(id => results.push({
+          id,
+          display_name: res.data.avatars[id]?.full_name || 'Unknown',
+          full_name: res.data.avatars[id]?.full_name || 'Unknown',
+          avatar_url: res.data.avatars[id]?.avatar_url,
+          isGym: false,
+        }));
+      }
+      // Resolve gym reactors
+      for (const key of gymReactionKeys) {
+        const gymId = key.replace('gym_', '');
+        try {
+          const gyms = await base44.entities.Gym.filter({ id: gymId });
+          const gym = gyms[0];
+          if (gym) {
+            results.push({
+              id: key,
+              display_name: gym.name,
+              full_name: gym.name,
+              avatar_url: gym.logo_url || gym.image_url || null,
+              isGym: true,
+            });
+          }
+        } catch {}
+      }
+      return results;
     },
-    enabled: showReactionsModal && reactedUserIds.length > 0,
+    enabled: showReactionsModal && (reactedUserIds.length > 0 || gymReactionKeys.length > 0),
     staleTime: 10 * 60 * 1000,
     gcTime: 30 * 60 * 1000
   });

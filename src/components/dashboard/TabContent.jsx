@@ -1,8 +1,10 @@
 import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   ChevronDown, Plus, Flame, Facebook, Instagram,
   ChevronRight, Check, X, MoreHorizontal, Calendar, Trophy, BarChart2, FileText, Pencil,
 } from "lucide-react";
+import { base44 } from "@/api/base44Client";
 import PostActionsPanel from "./PostActionsPanel";
 
 /* ─── MOBILE HOOK ────────────────────────────────────────────── */
@@ -204,8 +206,69 @@ function FAB({ onClick }) {
   );
 }
 
+/* ─── GYM REACT BUTTON ───────────────────────────────────────── */
+const STREAK_ICON_URL = 'https://media.base44.com/images/public/694b637358644e1c22c8ec6b/5688f98be_Pose1_V2.png';
+
+function GymReactButton({ post, gym, currentUser }) {
+  // Use a special key: "gym_<gym_id>" to identify gym owner reactions
+  const gymReactionKey = gym?.id ? `gym_${gym.id}` : null;
+  const [localReacted, setLocalReacted] = useState(() => !!(gymReactionKey && post.reactions?.[gymReactionKey]));
+  const [loading, setLoading] = useState(false);
+
+  if (!gym?.id || !currentUser) return null;
+
+  const handleReact = async (e) => {
+    e.stopPropagation();
+    if (loading) return;
+    setLoading(true);
+    const isReacting = !localReacted;
+    setLocalReacted(isReacting);
+    try {
+      const updatedReactions = { ...(post.reactions || {}) };
+      if (isReacting) {
+        updatedReactions[gymReactionKey] = 'gym';
+      } else {
+        delete updatedReactions[gymReactionKey];
+      }
+      await base44.entities.Post.update(post.id, { reactions: updatedReactions });
+    } catch {
+      setLocalReacted(!isReacting);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <button
+      onClick={handleReact}
+      disabled={loading}
+      title={localReacted ? "Remove reaction" : "React to this post"}
+      style={{
+        display: "flex", alignItems: "center", gap: 5, padding: "4px 10px",
+        borderRadius: 20, border: `1px solid ${localReacted ? C.cyanBrd : C.brd}`,
+        background: localReacted ? C.cyanDim : "rgba(255,255,255,0.03)",
+        cursor: loading ? "default" : "pointer",
+        transition: "all 0.15s", flexShrink: 0,
+        opacity: loading ? 0.6 : 1,
+      }}>
+      {gym?.logo_url || gym?.image_url ? (
+        <img
+          src={gym.logo_url || gym.image_url}
+          alt={gym.name}
+          style={{ width: 16, height: 16, borderRadius: "50%", objectFit: "cover", flexShrink: 0 }}
+        />
+      ) : (
+        <img src={STREAK_ICON_URL} alt="react" style={{ width: 16, height: 16, objectFit: "contain", opacity: localReacted ? 1 : 0.45, flexShrink: 0 }} />
+      )}
+      <span style={{ fontSize: 10, fontWeight: 700, color: localReacted ? C.cyan : C.t3 }}>
+        {localReacted ? "Reacted" : "React"}
+      </span>
+    </button>
+  );
+}
+
 /* ─── ROOT ───────────────────────────────────────────────────── */
-export default function ContentPage({ events = [], challenges = [], polls = [], posts = [], openModal, onDeleteEvent, onDeleteChallenge, onDeletePost, avatarMap = {}, nameMap = {}, currentUser = null }) {
+export default function ContentPage({ events = [], challenges = [], polls = [], posts = [], openModal, onDeleteEvent, onDeleteChallenge, onDeletePost, avatarMap = {}, nameMap = {}, currentUser = null, gym = null }) {
   const isMobile = useIsMobile();
   const [tab, setTab] = useState("Community Feed");
   const [showMenu, setShowMenu] = useState(false);
@@ -333,8 +396,9 @@ export default function ContentPage({ events = [], challenges = [], polls = [], 
                         )}
 
                         {/* Footer */}
-                        <div style={{ marginTop: "auto", display: "flex", alignItems: "center" }}>
+                        <div style={{ marginTop: "auto", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                           <span style={{ fontSize: 11, color: C.t3 }}>{reactionCount > 0 ? `${reactionCount} reaction${reactionCount !== 1 ? "s" : ""}` : ""}</span>
+                          <GymReactButton post={p} gym={gym} currentUser={currentUser} />
                         </div>
                       </div>
                     </div>
