@@ -16,7 +16,7 @@ import { createPageUrl } from '@/utils';
 const STREAK_ICON_URL = 'https://media.base44.com/images/public/694b637358644e1c22c8ec6b/5688f98be_Pose1_V2.png';
 
 // ── Reactions Modal ───────────────────────────────────────────────────────────
-function ReactionsModal({ open, onClose, reactions, reactedUsers, currentUserId, friends, sentFriendRequests, onAddFriend }) {
+function ReactionsModal({ open, onClose, reactions, reactedUsers, isLoadingReactedUsers, currentUserId, friends, sentFriendRequests, onAddFriend }) {
   const [search, setSearch] = useState('');
   const [localPendingIds, setLocalPendingIds] = useState(new Set());
   if (!open) return null;
@@ -176,7 +176,9 @@ function ReactionsModal({ open, onClose, reactions, reactedUsers, currentUserId,
           </div>
         </div>
         <div className="overflow-y-auto max-h-80 px-3 pb-4">
-          {filtered.length === 0 ? (
+          {isLoadingReactedUsers ? (
+            <p className="text-center text-slate-400 text-sm py-6">Loading...</p>
+          ) : filtered.length === 0 ? (
             <p className="text-center text-slate-400 text-sm py-6">No reactions found</p>
           ) : showSections ? (
             <>
@@ -546,7 +548,7 @@ function PostCard({ post, onLike, onComment, onSave, onDelete, fullWidth = false
   const reactedUserIds = useMemo(() => Object.keys(post.reactions || {}).filter(k => !k.startsWith('gym_')), [post.reactions]);
   const gymReactionKeys = useMemo(() => Object.keys(post.reactions || {}).filter(k => k.startsWith('gym_')), [post.reactions]);
 
-  const { data: reactedUsers = [] } = useQuery({
+  const { data: reactedUsers = [], isFetching: isLoadingReactedUsers } = useQuery({
     queryKey: ['reactedUsers', reactedUserIds.join(','), gymReactionKeys.join(',')],
     queryFn: async () => {
       const results = [];
@@ -929,7 +931,7 @@ function PostCard({ post, onLike, onComment, onSave, onDelete, fullWidth = false
           </div>
         </motion.div>
 
-        <ReactionsModal open={showReactionsModal} onClose={() => setShowReactionsModal(false)} reactions={post.reactions || {}} reactedUsers={reactedUsers} currentUserId={currentUser?.id} friends={friends} sentFriendRequests={sentFriendRequests} onAddFriend={onAddFriend} />
+        <ReactionsModal open={showReactionsModal} onClose={() => setShowReactionsModal(false)} reactions={post.reactions || {}} reactedUsers={reactedUsers} isLoadingReactedUsers={isLoadingReactedUsers} currentUserId={currentUser?.id} friends={friends} sentFriendRequests={sentFriendRequests} onAddFriend={onAddFriend} />
         <ConfirmDialog open={showDeleteConfirm} onClose={() => setShowDeleteConfirm(false)} title="Delete Post?" description="This action cannot be undone." confirmLabel="Delete"
           confirmClass="bg-gradient-to-b from-red-500 via-red-600 to-red-700 shadow-[0_3px_0_0_#7f1d1d,0_6px_16px_rgba(200,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.15)]"
           onConfirm={() => { deleteMutation.mutate(); setShowDeleteConfirm(false); }} isPending={deleteMutation.isPending} />
@@ -1048,7 +1050,7 @@ function PostCard({ post, onLike, onComment, onSave, onDelete, fullWidth = false
         )}
       </motion.div>
 
-      <ReactionsModal open={showReactionsModal} onClose={() => setShowReactionsModal(false)} reactions={post.reactions || {}} reactedUsers={reactedUsers} currentUserId={currentUser?.id} friends={friends} sentFriendRequests={sentFriendRequests} onAddFriend={onAddFriend} />
+      <ReactionsModal open={showReactionsModal} onClose={() => setShowReactionsModal(false)} reactions={post.reactions || {}} reactedUsers={reactedUsers} isLoadingReactedUsers={isLoadingReactedUsers} currentUserId={currentUser?.id} friends={friends} sentFriendRequests={sentFriendRequests} onAddFriend={onAddFriend} />
       <ConfirmDialog open={showDeleteConfirm} onClose={() => setShowDeleteConfirm(false)} title="Delete Post?" description="Are you sure you want to delete your post? This action cannot be undone." confirmLabel="Delete"
         confirmClass="bg-gradient-to-b from-red-500 via-red-600 to-red-700 shadow-[0_3px_0_0_#7f1d1d,0_6px_16px_rgba(200,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.15)]"
         onConfirm={() => { deleteMutation.mutate(); setShowDeleteConfirm(false); }} isPending={deleteMutation.isPending} />
