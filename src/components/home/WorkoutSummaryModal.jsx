@@ -38,22 +38,17 @@ function buildGroups(exercises) {
   return groups;
 }
 
-export default function WorkoutSummaryModal({ summaryLog, onClose }) {
+export default function WorkoutSummaryModal({ summaryLog, onClose, currentStreak }) {
   if (!summaryLog) return null;
 
   const exercises = summaryLog.exercises || [];
   const cardio = summaryLog.cardio || [];
 
-  const duration = summaryLog.duration_minutes ? `${summaryLog.duration_minutes}m` : '—';
+  const duration = summaryLog.duration_minutes
+    ? `${summaryLog.duration_minutes}m`
+    : summaryLog.workout_duration || '—';
 
-  const volume = (() => {
-    if (summaryLog.total_volume) return `${Math.round(summaryLog.total_volume).toLocaleString()}kg`;
-    const v = exercises.reduce((sum, ex) => {
-      const { sets, reps, weight } = parseEx(ex);
-      return sum + (parseFloat(sets) || 0) * (parseFloat(reps) || 0) * (parseFloat(weight) || 0);
-    }, 0);
-    return v > 0 ? `${Math.round(v).toLocaleString()}kg` : '—';
-  })();
+  const streak = currentStreak != null ? `${currentStreak}` : '—';
 
   const exerciseCount = (() => {
     const names = new Set(exercises.map(e => (e.exercise || '').trim().toLowerCase()).filter(Boolean));
@@ -110,7 +105,7 @@ export default function WorkoutSummaryModal({ summaryLog, onClose }) {
             {[
               { label: 'Exercises', value: exerciseCount },
               { label: 'Duration', value: duration },
-              { label: 'Volume', value: volume },
+              { label: 'Streak', value: streak },
             ].map((stat) => (
               <div key={stat.label} className="bg-white/5 border border-white/10 rounded-lg p-2 text-center">
                 <p className="text-sm font-black text-blue-300">{stat.value}</p>

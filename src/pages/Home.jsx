@@ -1465,7 +1465,7 @@ export default function Home() {
         addFriendMutation={addFriendMutation}
       />
 
-      <WorkoutSummaryModal summaryLog={summaryLog} onClose={() => setSummaryLog(null)} />
+      <WorkoutSummaryModal summaryLog={summaryLog} onClose={() => setSummaryLog(null)} currentStreak={currentUser?.current_streak} />
 
       {/* Post removed notification popup */}
       {postRemovedNotif && (
