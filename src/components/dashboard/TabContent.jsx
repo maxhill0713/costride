@@ -1,10 +1,9 @@
 import { useState, useEffect, useRef } from "react";
 import {
-  ChevronDown, Plus, Flame, Facebook, Instagram,
-  ChevronRight, Check, X, MoreHorizontal, Calendar, Trophy, BarChart2, FileText, Pencil,
+  Plus, Flame, Check, Calendar, Trophy, BarChart2, FileText,
+  MessageCircle, Trash2, Zap,
 } from "lucide-react";
 import { base44 } from "@/api/base44Client";
-import PostActionsPanel from "./PostActionsPanel";
 
 /* ─── MOBILE HOOK ────────────────────────────────────────────── */
 function useIsMobile(breakpoint = 768) {
@@ -36,6 +35,8 @@ const C = {
   redDim:   "rgba(255,77,109,0.15)",
   green:    "#22c55e",
   greenDim: "rgba(34,197,94,0.12)",
+  amber:    "#f59e0b",
+  amberDim: "rgba(245,158,11,0.13)",
 };
 const FONT = "'DM Sans', 'Segoe UI', system-ui, sans-serif";
 
@@ -56,9 +57,9 @@ function timeAgo(dateStr) {
     d = new Date(dateStr + "Z");
   }
   const s = (Date.now() - d.getTime()) / 1000;
-  if (s < 60)    return "just now";
-  if (s < 3600)  return `${Math.floor(s / 60)}m ago`;
-  if (s < 86400) return `${Math.floor(s / 3600)}h ago`;
+  if (s < 60)        return "just now";
+  if (s < 3600)      return `${Math.floor(s / 60)}m ago`;
+  if (s < 86400)     return `${Math.floor(s / 3600)}h ago`;
   if (s < 86400 * 7) return `${Math.floor(s / 86400)}d ago`;
   return d.toLocaleDateString("en-GB", { day: "numeric", month: "short" });
 }
@@ -84,17 +85,184 @@ function DeleteBtn({ onClick }) {
   );
 }
 
-/* Pencil edit button — top-right placeholder */
-function EditBtn({ onClick }) {
+/* ─── MESSAGE MEMBER MODAL ───────────────────────────────────── */
+function MessageMemberModal({ resolvedName, memberId, onClose }) {
+  const [msg, setMsg] = useState("");
+  const [sent, setSent] = useState(false);
+  const [sending, setSending] = useState(false);
+
+  const handleSend = async () => {
+    if (!msg.trim()) return;
+    setSending(true);
+    try {
+      // Placeholder — wire to your messaging API
+      await new Promise(r => setTimeout(r, 600));
+      setSent(true);
+    } finally {
+      setSending(false);
+    }
+  };
+
   return (
-    <button
-      onClick={onClick}
-      title="Edit post"
-      style={{ width: 28, height: 28, borderRadius: 7, background: "rgba(255,255,255,0.05)", border: `1px solid ${C.brd}`, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", flexShrink: 0, transition: "border-color 0.15s, background 0.15s" }}
-      onMouseEnter={e => { e.currentTarget.style.borderColor = C.cyanBrd; e.currentTarget.style.background = C.cyanDim; }}
-      onMouseLeave={e => { e.currentTarget.style.borderColor = C.brd; e.currentTarget.style.background = "rgba(255,255,255,0.05)"; }}>
-      <Pencil size={13} color={C.t2} />
-    </button>
+    <div style={{ position: "fixed", inset: 0, zIndex: 500, background: "rgba(0,0,0,0.72)", display: "flex", alignItems: "center", justifyContent: "center" }}
+      onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
+      <div style={{ background: C.card, border: `1px solid ${C.brd}`, borderRadius: 14, padding: "24px 24px 20px", width: 400, maxWidth: "90vw", display: "flex", flexDirection: "column", gap: 14 }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <div>
+            <div style={{ fontSize: 15, fontWeight: 800, color: C.t1, letterSpacing: "-0.02em" }}>Message Member</div>
+            <div style={{ fontSize: 12, color: C.t2, marginTop: 2 }}>Sending to <span style={{ color: C.t1, fontWeight: 600 }}>{resolvedName}</span></div>
+          </div>
+          <button onClick={onClose} style={{ background: "none", border: "none", color: C.t3, cursor: "pointer", fontSize: 18, lineHeight: 1 }}>×</button>
+        </div>
+        {sent ? (
+          <div style={{ textAlign: "center", padding: "20px 0", color: C.green, fontSize: 13, fontWeight: 600 }}>
+            ✓ Message sent to {resolvedName}
+          </div>
+        ) : (
+          <>
+            <textarea
+              value={msg}
+              onChange={e => setMsg(e.target.value)}
+              placeholder={`Write a message to ${resolvedName}…`}
+              rows={4}
+              style={{ width: "100%", background: C.card2, border: `1px solid ${C.brd}`, borderRadius: 8, padding: "10px 12px", color: C.t1, fontSize: 13, fontFamily: FONT, resize: "vertical", outline: "none", boxSizing: "border-box" }}
+              onFocus={e => e.target.style.borderColor = C.cyanBrd}
+              onBlur={e => e.target.style.borderColor = C.brd}
+            />
+            <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
+              <button onClick={onClose} style={{ padding: "8px 16px", borderRadius: 8, background: "transparent", border: `1px solid ${C.brd}`, color: C.t2, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: FONT }}>Cancel</button>
+              <button onClick={handleSend} disabled={!msg.trim() || sending}
+                style={{ padding: "8px 18px", borderRadius: 8, background: C.cyan, border: "none", color: "#fff", fontSize: 12, fontWeight: 700, cursor: msg.trim() && !sending ? "pointer" : "not-allowed", opacity: msg.trim() && !sending ? 1 : 0.55, fontFamily: FONT }}>
+                {sending ? "Sending…" : "Send Message"}
+              </button>
+            </div>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
+/* ─── REMOVE POST MODAL ──────────────────────────────────────── */
+function RemovePostModal({ post, resolvedName, onConfirm, onClose }) {
+  const [removing, setRemoving] = useState(false);
+  const handleConfirm = async () => {
+    setRemoving(true);
+    try { await onConfirm(post.id); } finally { setRemoving(false); }
+  };
+  return (
+    <div style={{ position: "fixed", inset: 0, zIndex: 500, background: "rgba(0,0,0,0.72)", display: "flex", alignItems: "center", justifyContent: "center" }}
+      onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
+      <div style={{ background: C.card, border: `1px solid rgba(255,77,109,0.25)`, borderRadius: 14, padding: "24px 24px 20px", width: 380, maxWidth: "90vw", display: "flex", flexDirection: "column", gap: 16 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <div style={{ width: 36, height: 36, borderRadius: 10, background: C.redDim, border: `1px solid rgba(255,77,109,0.3)`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+            <Trash2 size={16} color={C.red} />
+          </div>
+          <div>
+            <div style={{ fontSize: 15, fontWeight: 800, color: C.t1 }}>Remove Post</div>
+            <div style={{ fontSize: 12, color: C.t2, marginTop: 2 }}>Posted by <span style={{ color: C.t1, fontWeight: 600 }}>{resolvedName}</span></div>
+          </div>
+        </div>
+        {post.content && (
+          <div style={{ background: C.card2, border: `1px solid ${C.brd}`, borderRadius: 8, padding: "10px 12px", fontSize: 12.5, color: C.t2, lineHeight: 1.5, maxHeight: 80, overflow: "hidden", textOverflow: "ellipsis" }}>
+            {post.content}
+          </div>
+        )}
+        <div style={{ fontSize: 12.5, color: C.t2, lineHeight: 1.55 }}>
+          This will permanently remove the post from the community feed. <span style={{ color: C.red, fontWeight: 600 }}>This cannot be undone.</span>
+        </div>
+        <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
+          <button onClick={onClose} style={{ padding: "8px 16px", borderRadius: 8, background: "transparent", border: `1px solid ${C.brd}`, color: C.t2, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: FONT }}>Cancel</button>
+          <button onClick={handleConfirm} disabled={removing}
+            style={{ padding: "8px 18px", borderRadius: 8, background: C.red, border: "none", color: "#fff", fontSize: 12, fontWeight: 700, cursor: removing ? "not-allowed" : "pointer", opacity: removing ? 0.7 : 1, fontFamily: FONT }}>
+            {removing ? "Removing…" : "Remove Post"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ─── QUICK ACTIONS COLUMN ───────────────────────────────────── */
+function QuickActions({ post, resolvedName, memberId, gym, currentUser, onDeletePost }) {
+  const [modal, setModal] = useState(null); // "message" | "remove"
+  const gymReactionKey = gym?.id ? `gym_${gym.id}` : null;
+  const [reacted, setReacted] = useState(() => !!(gymReactionKey && post.reactions?.[gymReactionKey]));
+  const [reacting, setReacting] = useState(false);
+
+  const handleReact = async (e) => {
+    e.stopPropagation();
+    if (reacting || !gymReactionKey) return;
+    setReacting(true);
+    const next = !reacted;
+    setReacted(next);
+    try {
+      const updated = { ...(post.reactions || {}) };
+      if (next) updated[gymReactionKey] = "gym";
+      else delete updated[gymReactionKey];
+      await base44.entities.Post.update(post.id, { reactions: updated });
+    } catch {
+      setReacted(!next);
+    } finally {
+      setReacting(false);
+    }
+  };
+
+  return (
+    <>
+      {/* Vertical divider + actions column */}
+      <div style={{ width: "30%", flexShrink: 0, borderLeft: `1px solid ${C.brd}`, padding: "12px 14px", display: "flex", flexDirection: "column", gap: 8, justifyContent: "flex-start" }}>
+        <div style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.10em", color: C.t3, marginBottom: 2 }}>Quick Actions</div>
+
+        {/* Message Member */}
+        <button
+          onClick={() => setModal("message")}
+          style={{ display: "flex", alignItems: "center", gap: 8, width: "100%", padding: "7px 10px", borderRadius: 8, background: "rgba(255,255,255,0.03)", border: `1px solid ${C.brd}`, color: C.t2, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: FONT, textAlign: "left", transition: "all 0.15s" }}
+          onMouseEnter={e => { e.currentTarget.style.borderColor = C.cyanBrd; e.currentTarget.style.color = C.t1; e.currentTarget.style.background = C.cyanDim; }}
+          onMouseLeave={e => { e.currentTarget.style.borderColor = C.brd; e.currentTarget.style.color = C.t2; e.currentTarget.style.background = "rgba(255,255,255,0.03)"; }}>
+          <MessageCircle size={13} color="currentColor" style={{ flexShrink: 0 }} />
+          <span>Message Member</span>
+        </button>
+
+        {/* Remove Post */}
+        <button
+          onClick={() => setModal("remove")}
+          style={{ display: "flex", alignItems: "center", gap: 8, width: "100%", padding: "7px 10px", borderRadius: 8, background: "rgba(255,255,255,0.03)", border: `1px solid ${C.brd}`, color: C.t2, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: FONT, textAlign: "left", transition: "all 0.15s" }}
+          onMouseEnter={e => { e.currentTarget.style.borderColor = "rgba(255,77,109,0.35)"; e.currentTarget.style.color = C.red; e.currentTarget.style.background = C.redDim; }}
+          onMouseLeave={e => { e.currentTarget.style.borderColor = C.brd; e.currentTarget.style.color = C.t2; e.currentTarget.style.background = "rgba(255,255,255,0.03)"; }}>
+          <Trash2 size={13} color="currentColor" style={{ flexShrink: 0 }} />
+          <span>Remove Post</span>
+        </button>
+
+        {/* Send a Reaction */}
+        <button
+          onClick={handleReact}
+          disabled={reacting}
+          style={{ display: "flex", alignItems: "center", gap: 8, width: "100%", padding: "7px 10px", borderRadius: 8, background: reacted ? C.cyanDim : "rgba(255,255,255,0.03)", border: `1px solid ${reacted ? C.cyanBrd : C.brd}`, color: reacted ? C.cyan : C.t2, fontSize: 12, fontWeight: 600, cursor: reacting ? "default" : "pointer", fontFamily: FONT, textAlign: "left", transition: "all 0.15s", opacity: reacting ? 0.65 : 1 }}
+          onMouseEnter={e => { if (!reacted) { e.currentTarget.style.borderColor = C.cyanBrd; e.currentTarget.style.color = C.cyan; e.currentTarget.style.background = C.cyanDim; } }}
+          onMouseLeave={e => { if (!reacted) { e.currentTarget.style.borderColor = C.brd; e.currentTarget.style.color = C.t2; e.currentTarget.style.background = "rgba(255,255,255,0.03)"; } }}>
+          <Zap size={13} color="currentColor" style={{ flexShrink: 0 }} />
+          <span>{reacted ? "Reacted ✓" : "Send a Reaction"}</span>
+        </button>
+      </div>
+
+      {/* Modals */}
+      {modal === "message" && (
+        <MessageMemberModal
+          resolvedName={resolvedName}
+          memberId={memberId}
+          onClose={() => setModal(null)}
+        />
+      )}
+      {modal === "remove" && (
+        <RemovePostModal
+          post={post}
+          resolvedName={resolvedName}
+          onConfirm={async (id) => { await onDeletePost?.(id); setModal(null); }}
+          onClose={() => setModal(null)}
+        />
+      )}
+    </>
   );
 }
 
@@ -205,73 +373,11 @@ function FAB({ onClick }) {
   );
 }
 
-/* ─── GYM REACT BUTTON ───────────────────────────────────────── */
-const STREAK_ICON_URL = 'https://media.base44.com/images/public/694b637358644e1c22c8ec6b/5688f98be_Pose1_V2.png';
-
-function GymReactButton({ post, gym, currentUser }) {
-  // Use a special key: "gym_<gym_id>" to identify gym owner reactions
-  const gymReactionKey = gym?.id ? `gym_${gym.id}` : null;
-  const [localReacted, setLocalReacted] = useState(() => !!(gymReactionKey && post.reactions?.[gymReactionKey]));
-  const [loading, setLoading] = useState(false);
-
-  if (!gym?.id || !currentUser) return null;
-
-  const handleReact = async (e) => {
-    e.stopPropagation();
-    if (loading) return;
-    setLoading(true);
-    const isReacting = !localReacted;
-    setLocalReacted(isReacting);
-    try {
-      const updatedReactions = { ...(post.reactions || {}) };
-      if (isReacting) {
-        updatedReactions[gymReactionKey] = 'gym';
-      } else {
-        delete updatedReactions[gymReactionKey];
-      }
-      await base44.entities.Post.update(post.id, { reactions: updatedReactions });
-    } catch {
-      setLocalReacted(!isReacting);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  return (
-    <button
-      onClick={handleReact}
-      disabled={loading}
-      title={localReacted ? "Remove reaction" : "React to this post"}
-      style={{
-        display: "flex", alignItems: "center", gap: 5, padding: "4px 10px",
-        borderRadius: 20, border: `1px solid ${localReacted ? C.cyanBrd : C.brd}`,
-        background: localReacted ? C.cyanDim : "rgba(255,255,255,0.03)",
-        cursor: loading ? "default" : "pointer",
-        transition: "all 0.15s", flexShrink: 0,
-        opacity: loading ? 0.6 : 1,
-      }}>
-      {gym?.logo_url || gym?.image_url ? (
-        <img
-          src={gym.logo_url || gym.image_url}
-          alt={gym.name}
-          style={{ width: 16, height: 16, borderRadius: "50%", objectFit: "cover", flexShrink: 0 }}
-        />
-      ) : (
-        <img src={STREAK_ICON_URL} alt="react" style={{ width: 16, height: 16, objectFit: "contain", opacity: localReacted ? 1 : 0.45, flexShrink: 0 }} />
-      )}
-      <span style={{ fontSize: 10, fontWeight: 700, color: localReacted ? C.cyan : C.t3 }}>
-        {localReacted ? "Reacted" : "React"}
-      </span>
-    </button>
-  );
-}
-
 /* ─── ROOT ───────────────────────────────────────────────────── */
 export default function ContentPage({ events = [], challenges = [], polls = [], posts = [], openModal, onDeleteEvent, onDeleteChallenge, onDeletePost, avatarMap = {}, nameMap = {}, currentUser = null, gym = null }) {
   const isMobile = useIsMobile();
   const [tab, setTab] = useState("Community Feed");
   const [showMenu, setShowMenu] = useState(false);
-  const [activePanel, setActivePanel] = useState(null); // { post, resolvedName }
 
   const createItems = [
     { label: "📝 New Post",      action: () => { openModal?.("post");      setShowMenu(false); setTab("Community Feed"); } },
@@ -283,7 +389,6 @@ export default function ContentPage({ events = [], challenges = [], polls = [], 
   const tabAction = TAB_ACTION[tab];
   const recent7 = recentPostCount(posts, 7);
 
-  // Only show posts from the last 7 days in the community feed
   const sevenDaysCutoff = Date.now() - 7 * 24 * 60 * 60 * 1000;
   const feedPosts = posts.filter(p => {
     const d = p.created_date || p.created_at || p.date;
@@ -333,9 +438,12 @@ export default function ContentPage({ events = [], challenges = [], polls = [], 
               {feedPosts.length === 0
                 ? <EmptyState label="posts" onAdd={() => openModal?.("post")} />
                 : feedPosts.map(p => {
-                  const resolvedName = (p.member_id && nameMap[p.member_id])
-                    || (p.member_name && !p.member_name.includes("@") ? p.member_name : null)
-                    || (p.member_name && p.member_name.includes("@") ? p.member_name.split("@")[0].replace(/[._]/g, " ").replace(/\b\w/g, c => c.toUpperCase()) : "Member");
+                  const resolvedName =
+                    (p.member_id && nameMap[p.member_id]) ||
+                    (p.member_name && !p.member_name.includes("@") ? p.member_name : null) ||
+                    (p.member_name && p.member_name.includes("@")
+                      ? p.member_name.split("@")[0].replace(/[._]/g, " ").replace(/\b\w/g, c => c.toUpperCase())
+                      : "Member");
                   const avatar = (p.member_id && avatarMap[p.member_id]) || p.member_avatar || null;
                   const palette = ["#6366f1","#8b5cf6","#ec4899","#14b8a6","#f59e0b","#4d7fff","#10b981"];
                   const avatarBg = palette[(resolvedName.charCodeAt(0) || 0) % palette.length];
@@ -345,49 +453,34 @@ export default function ContentPage({ events = [], challenges = [], polls = [], 
 
                   return (
                     <div key={p.id}
-                      style={{
-                        background: C.card,
-                        border: `1px solid ${C.brd}`,
-                        borderRadius: 12,
-                        marginBottom: 10,
-                        minHeight: 176,
-                        display: "flex",
-                        overflow: "hidden",
-                        position: "relative",
-                      }}
+                      style={{ background: C.card, border: `1px solid ${C.brd}`, borderRadius: 12, marginBottom: 10, minHeight: 140, display: "flex", overflow: "hidden", position: "relative" }}
                       onMouseEnter={e => { e.currentTarget.style.borderColor = C.cyanBrd; e.currentTarget.style.boxShadow = `0 0 8px rgba(77,127,255,0.07)`; }}
                       onMouseLeave={e => { e.currentTarget.style.borderColor = C.brd; e.currentTarget.style.boxShadow = "none"; }}>
 
-                      {/* Left: post image — fixed 160×160 square, consistent across all posts */}
+                      {/* Left: image with gap */}
                       {p.image_url ? (
-                        <div style={{ width: 160, height: 160, flexShrink: 0, alignSelf: "center", margin: 8 }}>
+                        <div style={{ padding: 6, flexShrink: 0 }}>
                           <img src={p.image_url} alt=""
-                            style={{ width: "100%", height: "100%", borderRadius: 10, objectFit: "cover", display: "block" }} />
+                            style={{ width: 118, height: "calc(100% - 0px)", minHeight: 110, borderRadius: 8, objectFit: "cover", display: "block" }} />
                         </div>
                       ) : (
                         <div style={{ width: 6, flexShrink: 0, background: C.cyanDim, borderRadius: "12px 0 0 12px" }} />
                       )}
 
-                      {/* Right: content */}
+                      {/* Centre: post content (~70% of remaining space) */}
                       <div style={{ flex: 1, minWidth: 0, padding: "11px 14px 11px 10px", display: "flex", flexDirection: "column", gap: 6 }}>
-
-                        {/* Author row + edit button */}
-                        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 8 }}>
-                          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                            <div style={{ width: 30, height: 30, borderRadius: "50%", flexShrink: 0, background: avatarBg, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 800, color: "#fff", overflow: "hidden" }}>
-                              {avatar ? <img src={avatar} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : initials}
-                            </div>
-                            <div>
-                              <div style={{ fontSize: 13, fontWeight: 700, color: C.t1, lineHeight: 1.2 }}>{resolvedName}</div>
-                              {postedAt && <div style={{ fontSize: 11, color: C.t3, marginTop: 1 }}>{postedAt}</div>}
-                            </div>
+                        {/* Author */}
+                        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                          <div style={{ width: 30, height: 30, borderRadius: "50%", flexShrink: 0, background: avatarBg, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 800, color: "#fff", overflow: "hidden" }}>
+                            {avatar ? <img src={avatar} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : initials}
                           </div>
-
-                          {/* Pencil edit button — top right */}
-                          <EditBtn onClick={() => setActivePanel({ post: p, resolvedName })} />
+                          <div>
+                            <div style={{ fontSize: 13, fontWeight: 700, color: C.t1, lineHeight: 1.2 }}>{resolvedName}</div>
+                            {postedAt && <div style={{ fontSize: 11, color: C.t3, marginTop: 1 }}>{postedAt}</div>}
+                          </div>
                         </div>
 
-                        {/* Post content */}
+                        {/* Content */}
                         {p.content && (
                           <div style={{ fontSize: 12.5, color: C.t2, lineHeight: 1.5, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
                             {p.content}
@@ -395,11 +488,22 @@ export default function ContentPage({ events = [], challenges = [], polls = [], 
                         )}
 
                         {/* Footer */}
-                        <div style={{ marginTop: "auto", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                          <span style={{ fontSize: 11, color: C.t3 }}>{reactionCount > 0 ? `${reactionCount} reaction${reactionCount !== 1 ? "s" : ""}` : ""}</span>
-                          <GymReactButton post={p} gym={gym} currentUser={currentUser} />
+                        <div style={{ marginTop: "auto" }}>
+                          <span style={{ fontSize: 11, color: C.t3 }}>
+                            {reactionCount > 0 ? `${reactionCount} reaction${reactionCount !== 1 ? "s" : ""}` : ""}
+                          </span>
                         </div>
                       </div>
+
+                      {/* Right: Quick Actions (~30%) */}
+                      <QuickActions
+                        post={p}
+                        resolvedName={resolvedName}
+                        memberId={p.member_id}
+                        gym={gym}
+                        currentUser={currentUser}
+                        onDeletePost={onDeletePost}
+                      />
                     </div>
                   );
                 })
@@ -506,17 +610,6 @@ export default function ContentPage({ events = [], challenges = [], polls = [], 
       {/* RIGHT SIDEBAR — desktop only */}
       {!isMobile && (
         <RightSidebar events={events} challenges={challenges} polls={polls} posts={posts} openModal={openModal} />
-      )}
-
-      {/* POST ACTIONS PANEL */}
-      {activePanel && (
-        <PostActionsPanel
-          post={activePanel.post}
-          resolvedName={activePanel.resolvedName}
-          currentUser={currentUser}
-          onClose={() => setActivePanel(null)}
-          onDeletePost={(id) => { onDeletePost?.(id); setActivePanel(null); }}
-        />
       )}
 
       {/* MOBILE FAB + MENU */}
