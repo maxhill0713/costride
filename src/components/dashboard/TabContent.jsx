@@ -226,9 +226,9 @@ export default function ContentPage({ events = [], challenges = [], polls = [], 
       <div style={{ flex: 1, overflowY: "auto", minWidth: 0, ...(isMobile ? { paddingBottom: 80 } : {}) }}>
 
         {/* HEADER */}
-        <div style={{ padding: isMobile ? "10px 12px 0" : "12px 16px 0" }}>
+        <div style={{ padding: isMobile ? "10px 12px 0" : "4px 8px 0" }}>
           {!isMobile && (
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
               <h1 style={{ fontSize: 22, fontWeight: 800, color: C.t1, margin: 0, letterSpacing: "-0.03em", lineHeight: 1.2 }}>
                 Content <span style={{ color: C.cyan }}>Hub</span>
               </h1>
@@ -279,8 +279,7 @@ export default function ContentPage({ events = [], challenges = [], polls = [], 
                         border: `1px solid ${C.brd}`,
                         borderRadius: 12,
                         marginBottom: 10,
-                        /* 10% less tall: padding tightened, minHeight reduced from 156 → 140 */
-                        minHeight: 140,
+                        minHeight: 176,
                         display: "flex",
                         overflow: "hidden",
                         position: "relative",
@@ -288,14 +287,14 @@ export default function ContentPage({ events = [], challenges = [], polls = [], 
                       onMouseEnter={e => { e.currentTarget.style.borderColor = C.cyanBrd; e.currentTarget.style.boxShadow = `0 0 8px rgba(77,127,255,0.07)`; }}
                       onMouseLeave={e => { e.currentTarget.style.borderColor = C.brd; e.currentTarget.style.boxShadow = "none"; }}>
 
-                      {/* Left: post image with small gap around it */}
+                      {/* Left: post image — fixed 160×160 square, consistent across all posts */}
                       {p.image_url ? (
-                        <div style={{ padding: 6, flexShrink: 0 }}>
+                        <div style={{ width: 160, height: 160, flexShrink: 0, alignSelf: "center", margin: 8 }}>
                           <img src={p.image_url} alt=""
-                            style={{ width: 118, height: "100%", minHeight: 110, borderRadius: 8, objectFit: "cover", display: "block" }} />
+                            style={{ width: "100%", height: "100%", borderRadius: 10, objectFit: "cover", display: "block" }} />
                         </div>
                       ) : (
-                        <div style={{ width: 8, flexShrink: 0, background: C.cyanDim }} />
+                        <div style={{ width: 6, flexShrink: 0, background: C.cyanDim, borderRadius: "12px 0 0 12px" }} />
                       )}
 
                       {/* Right: content */}
