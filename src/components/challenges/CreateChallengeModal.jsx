@@ -1,16 +1,6 @@
 /**
  * CreateChallengeModal — Content Hub design system
- * Desktop: unchanged (centered floating modal, side-by-side form + preview)
- * Mobile:  full-screen form, category tabs scroll, preview via tap-to-open sheet,
- *          sticky header + footer, all touch targets ≥ 44px, no horizontal overflow
- *
- * Mobile-only additions:
- *  useIsMobile()              — resize-aware hook
- *  MobileCreateChallengeModal — full-screen shell
- *  MobilePreviewSheet         — slide-up preview bottom sheet
- *  MobileCategoryTabs         — overflowX scrollable pill row
- *  MobileTypePicker           — full-width tap cards
- *  MobileField / MobileToggle — larger label + touch spacing
+ * Blue #60a5fa · DM Sans · #0d0d11 / #17171c / #1f1f26
  */
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -34,13 +24,10 @@ const C = {
   t1:        '#ffffff',
   t2:        '#9898a6',
   t3:        '#525260',
-  cyan:      '#00e5c8',
-  cyanDim:   'rgba(0,229,200,0.07)',
-  cyanBrd:   'rgba(0,229,200,0.18)',
+  blue:      '#60a5fa', blueDim:   'rgba(96,165,250,0.07)',  blueBrd:   'rgba(96,165,250,0.18)',
   red:    '#ff4d6d', redDim:    'rgba(255,77,109,0.08)',  redBrd:    'rgba(255,77,109,0.20)',
   amber:  '#f59e0b', amberDim:  'rgba(245,158,11,0.08)', amberBrd:  'rgba(245,158,11,0.20)',
   green:  '#22c55e', greenDim:  'rgba(34,197,94,0.08)',  greenBrd:  'rgba(34,197,94,0.20)',
-  blue:   '#60a5fa', blueDim:   'rgba(96,165,250,0.08)', blueBrd:   'rgba(96,165,250,0.20)',
   purple: '#a78bfa', purpleDim: 'rgba(167,139,250,0.08)',purpleBrd: 'rgba(167,139,250,0.20)',
 };
 const FONT = "'DM Sans','Inter',system-ui,sans-serif";
@@ -124,7 +111,7 @@ function Field({ label, required, hint, children }) {
   );
 }
 
-function Inp({ value, onChange, placeholder, type = 'text', Icon, accentColor = C.cyan, min }) {
+function Inp({ value, onChange, placeholder, type = 'text', Icon, accentColor = C.blue, min }) {
   const [focus, setFocus] = useState(false);
   return (
     <div style={{ position: 'relative' }}>
@@ -143,7 +130,7 @@ function Inp({ value, onChange, placeholder, type = 'text', Icon, accentColor = 
   );
 }
 
-function Textarea({ value, onChange, placeholder, rows = 3, accentColor = C.cyan }) {
+function Textarea({ value, onChange, placeholder, rows = 3, accentColor = C.blue }) {
   return (
     <textarea
       value={value} onChange={onChange} placeholder={placeholder} rows={rows}
@@ -154,7 +141,7 @@ function Textarea({ value, onChange, placeholder, rows = 3, accentColor = C.cyan
   );
 }
 
-function Sel({ value, onChange, children, accentColor = C.cyan }) {
+function Sel({ value, onChange, children, accentColor = C.blue }) {
   return (
     <div style={{ position: 'relative' }}>
       <select
@@ -214,14 +201,14 @@ function TypePicker({ value, onChange }) {
             type="button"
             style={{
               padding: '10px 12px', borderRadius: 9, cursor: 'pointer',
-              border: `1px solid ${active ? C.cyanBrd : C.brd}`,
-              background: active ? C.cyanDim : C.card,
+              border: `1px solid ${active ? C.blueBrd : C.brd}`,
+              background: active ? C.blueDim : C.card,
               display: 'flex', alignItems: 'center', gap: 9,
               transition: 'all 0.15s', fontFamily: FONT, textAlign: 'left',
             }}
           >
-            <div style={{ width: 26, height: 26, borderRadius: 7, background: active ? 'rgba(0,229,200,0.12)' : 'rgba(255,255,255,0.05)', border: `1px solid ${active ? C.cyanBrd : C.brd}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-              <t.Icon size={11} color={active ? C.cyan : C.t3} style={{ transition: 'color 0.15s' }} />
+            <div style={{ width: 26, height: 26, borderRadius: 7, background: active ? 'rgba(96,165,250,0.12)' : 'rgba(255,255,255,0.05)', border: `1px solid ${active ? C.blueBrd : C.brd}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+              <t.Icon size={11} color={active ? C.blue : C.t3} style={{ transition: 'color 0.15s' }} />
             </div>
             <div>
               <div style={{ fontSize: 12, fontWeight: active ? 700 : 500, color: active ? C.t1 : C.t2 }}>{t.label}</div>
@@ -235,7 +222,7 @@ function TypePicker({ value, onChange }) {
 }
 
 /* ─── SHARED: TOGGLE ─────────────────────────────────────────── */
-function Toggle({ checked, onChange, label, sub, color = C.cyan }) {
+function Toggle({ checked, onChange, label, sub, color = C.blue }) {
   return (
     <div
       onClick={() => onChange(!checked)}
@@ -329,7 +316,7 @@ function ChallengePreview({ form, gyms }) {
               </div>
             )}
             <div style={{ padding: '0 0 14px' }}>
-              <div style={{ width: '100%', padding: '10px', borderRadius: 8, background: C.cyan, color: '#000', fontWeight: 700, fontSize: 13, textAlign: 'center', boxShadow: `0 4px 16px ${C.cyan}35` }}>
+              <div style={{ width: '100%', padding: '10px', borderRadius: 8, background: C.blue, color: '#fff', fontWeight: 700, fontSize: 13, textAlign: 'center', boxShadow: `0 4px 16px ${C.blue}35` }}>
                 Join Challenge
               </div>
             </div>
@@ -341,67 +328,17 @@ function ChallengePreview({ form, gyms }) {
 }
 
 /* ══════════════════════════════════════════════════════════════
-   MOBILE-ONLY: CATEGORY CHIPS (scrollable row)
+   MOBILE-ONLY COMPONENTS
 ══════════════════════════════════════════════════════════════ */
-function MobileCategoryChips({ value, onChange }) {
-  return (
-    <div style={{
-      display: 'flex', gap: 8, overflowX: 'auto',
-      padding: '12px 16px', scrollbarWidth: 'none', msOverflowStyle: 'none',
-      WebkitOverflowScrolling: 'touch', flexShrink: 0,
-      borderBottom: `1px solid ${C.brd}`, background: C.surface,
-    }}>
-      {CATEGORIES.map(cat => {
-        const active = value === cat.value;
-        return (
-          <button
-            key={cat.value}
-            onClick={() => onChange(cat.value)}
-            type="button"
-            style={{
-              flexShrink: 0, padding: '8px 16px', borderRadius: 24,
-              background: active ? cat.dim : C.card,
-              border: `1.5px solid ${active ? cat.border : C.brd}`,
-              color: active ? cat.color : C.t2,
-              fontSize: 13, fontWeight: active ? 700 : 500,
-              cursor: 'pointer', fontFamily: FONT, whiteSpace: 'nowrap',
-              transition: 'all 0.15s',
-            }}
-          >
-            {cat.label}
-          </button>
-        );
-      })}
-    </div>
-  );
-}
-
-/* ── MOBILE: TYPE PICKER (2-col, larger) ─────────────────────── */
 function MobileTypePicker({ value, onChange, accentColor }) {
   return (
     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
       {TYPES.map(t => {
         const active = value === t.value;
         return (
-          <button
-            key={t.value}
-            onClick={() => onChange(t.value)}
-            type="button"
-            style={{
-              padding: '14px 12px', borderRadius: 12, cursor: 'pointer',
-              border: `1.5px solid ${active ? accentColor + '40' : C.brd}`,
-              background: active ? `${accentColor}09` : C.card,
-              display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 8,
-              transition: 'all 0.15s', fontFamily: FONT, textAlign: 'left',
-              minHeight: 80,
-            }}
-          >
-            <div style={{
-              width: 34, height: 34, borderRadius: 9,
-              background: active ? `${accentColor}18` : 'rgba(255,255,255,0.05)',
-              border: `1px solid ${active ? accentColor + '38' : C.brd}`,
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-            }}>
+          <button key={t.value} onClick={() => onChange(t.value)} type="button"
+            style={{ padding: '14px 12px', borderRadius: 12, cursor: 'pointer', border: `1.5px solid ${active ? accentColor + '40' : C.brd}`, background: active ? `${accentColor}09` : C.card, display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 8, transition: 'all 0.15s', fontFamily: FONT, textAlign: 'left', minHeight: 80 }}>
+            <div style={{ width: 34, height: 34, borderRadius: 9, background: active ? `${accentColor}18` : 'rgba(255,255,255,0.05)', border: `1px solid ${active ? accentColor + '38' : C.brd}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <t.Icon size={14} color={active ? accentColor : C.t3} />
             </div>
             <div>
@@ -415,7 +352,6 @@ function MobileTypePicker({ value, onChange, accentColor }) {
   );
 }
 
-/* ── MOBILE: FIELD LABEL (larger) ────────────────────────────── */
 function MobileField({ label, required, hint, children }) {
   return (
     <div>
@@ -432,8 +368,7 @@ function MobileField({ label, required, hint, children }) {
   );
 }
 
-/* ── MOBILE: TOUCH INPUT (larger height) ─────────────────────── */
-function MobileInp({ value, onChange, placeholder, type = 'text', Icon, accentColor = C.cyan, min }) {
+function MobileInp({ value, onChange, placeholder, type = 'text', Icon, accentColor = C.blue, min }) {
   const [focus, setFocus] = useState(false);
   return (
     <div style={{ position: 'relative' }}>
@@ -442,42 +377,30 @@ function MobileInp({ value, onChange, placeholder, type = 'text', Icon, accentCo
           <Icon size={15} color={focus ? accentColor : C.t3} />
         </div>
       )}
-      <input
-        type={type} value={value} onChange={onChange} placeholder={placeholder} min={min}
+      <input type={type} value={value} onChange={onChange} placeholder={placeholder} min={min}
         onFocus={e => { setFocus(true); e.target.style.borderColor = `${accentColor}40`; e.target.style.background = C.inset; }}
         onBlur={e =>  { setFocus(false); e.target.style.borderColor = C.brd; e.target.style.background = C.card; }}
-        style={{
-          ...baseInp,
-          paddingLeft: Icon ? 40 : 14, paddingTop: 13, paddingBottom: 13,
-          fontSize: 14, borderRadius: 12, colorScheme: 'dark',
-        }}
-      />
+        style={{ ...baseInp, paddingLeft: Icon ? 40 : 14, paddingTop: 13, paddingBottom: 13, fontSize: 14, borderRadius: 12, colorScheme: 'dark' }} />
     </div>
   );
 }
 
-/* ── MOBILE: TEXTAREA (larger) ───────────────────────────────── */
-function MobileTextarea({ value, onChange, placeholder, rows = 3, accentColor = C.cyan }) {
+function MobileTextarea({ value, onChange, placeholder, rows = 3, accentColor = C.blue }) {
   return (
-    <textarea
-      value={value} onChange={onChange} placeholder={placeholder} rows={rows}
+    <textarea value={value} onChange={onChange} placeholder={placeholder} rows={rows}
       onFocus={e => { e.target.style.borderColor = `${accentColor}40`; e.target.style.background = C.inset; }}
       onBlur={e =>  { e.target.style.borderColor = C.brd; e.target.style.background = C.card; }}
-      style={{ ...baseInp, resize: 'none', lineHeight: 1.7, padding: '13px 14px', fontSize: 14, borderRadius: 12 }}
-    />
+      style={{ ...baseInp, resize: 'none', lineHeight: 1.7, padding: '13px 14px', fontSize: 14, borderRadius: 12 }} />
   );
 }
 
-/* ── MOBILE: SELECT (larger) ─────────────────────────────────── */
-function MobileSel({ value, onChange, children, accentColor = C.cyan }) {
+function MobileSel({ value, onChange, children, accentColor = C.blue }) {
   return (
     <div style={{ position: 'relative' }}>
-      <select
-        value={value} onChange={onChange}
+      <select value={value} onChange={onChange}
         onFocus={e => { e.target.style.borderColor = `${accentColor}40`; e.target.style.background = C.inset; }}
         onBlur={e =>  { e.target.style.borderColor = C.brd; e.target.style.background = C.card; }}
-        style={{ ...baseInp, appearance: 'none', paddingRight: 40, paddingTop: 13, paddingBottom: 13, fontSize: 14, borderRadius: 12, cursor: 'pointer' }}
-      >
+        style={{ ...baseInp, appearance: 'none', paddingRight: 40, paddingTop: 13, paddingBottom: 13, fontSize: 14, borderRadius: 12, cursor: 'pointer' }}>
         {children}
       </select>
       <ChevronDown size={14} color={C.t3} style={{ position: 'absolute', right: 13, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }} />
@@ -485,33 +408,15 @@ function MobileSel({ value, onChange, children, accentColor = C.cyan }) {
   );
 }
 
-/* ── MOBILE: TOGGLE (larger tap target) ──────────────────────── */
-function MobileToggle({ checked, onChange, label, sub, color = C.cyan }) {
+function MobileToggle({ checked, onChange, label, sub, color = C.blue }) {
   return (
-    <div
-      onClick={() => onChange(!checked)}
-      style={{
-        display: 'flex', alignItems: 'center', gap: 12,
-        padding: '14px 14px', borderRadius: 12, cursor: 'pointer',
-        background: checked ? `${color}09` : C.card,
-        border: `1.5px solid ${checked ? color + '30' : C.brd}`,
-        transition: 'all 0.18s',
-      }}
-    >
+    <div onClick={() => onChange(!checked)} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 14px', borderRadius: 12, cursor: 'pointer', background: checked ? `${color}09` : C.card, border: `1.5px solid ${checked ? color + '30' : C.brd}`, transition: 'all 0.18s' }}>
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ fontSize: 14, fontWeight: 600, color: checked ? C.t1 : C.t2 }}>{label}</div>
         {sub && <div style={{ fontSize: 11.5, color: C.t3, marginTop: 3 }}>{sub}</div>}
       </div>
-      <div style={{
-        flexShrink: 0, width: 46, height: 26, borderRadius: 99,
-        background: checked ? color : C.brd2, transition: 'background 0.2s', position: 'relative',
-      }}>
-        <div style={{
-          position: 'absolute', top: 3, left: checked ? 23 : 3,
-          width: 20, height: 20, borderRadius: '50%',
-          background: '#fff', transition: 'left 0.2s',
-          boxShadow: '0 1px 4px rgba(0,0,0,0.6)',
-        }} />
+      <div style={{ flexShrink: 0, width: 46, height: 26, borderRadius: 99, background: checked ? color : C.brd2, transition: 'background 0.2s', position: 'relative' }}>
+        <div style={{ position: 'absolute', top: 3, left: checked ? 23 : 3, width: 20, height: 20, borderRadius: '50%', background: '#fff', transition: 'left 0.2s', boxShadow: '0 1px 4px rgba(0,0,0,0.6)' }} />
       </div>
     </div>
   );
@@ -525,31 +430,15 @@ function MobilePreviewSheet({ open, onClose, form, gyms }) {
     if (open) {
       const id = requestAnimationFrame(() => requestAnimationFrame(() => setVisible(true)));
       return () => cancelAnimationFrame(id);
-    } else {
-      setVisible(false);
-    }
+    } else { setVisible(false); }
   }, [open]);
 
   if (!open) return null;
 
   return (
     <div style={{ position: 'fixed', inset: 0, zIndex: 700, fontFamily: FONT }}>
-      <div
-        onClick={onClose}
-        style={{
-          position: 'absolute', inset: 0,
-          background: 'rgba(0,0,0,0.72)', backdropFilter: 'blur(6px)',
-          opacity: visible ? 1 : 0, transition: 'opacity 0.28s ease',
-        }}
-      />
-      <div style={{
-        position: 'absolute', bottom: 0, left: 0, right: 0,
-        background: C.surface, borderRadius: '22px 22px 0 0',
-        border: `1px solid ${C.brd}`, borderBottom: 'none',
-        maxHeight: '88vh', display: 'flex', flexDirection: 'column',
-        transform: `translateY(${visible ? '0' : '100%'})`,
-        transition: 'transform 0.38s cubic-bezier(0.32, 0.72, 0, 1)',
-      }}>
+      <div onClick={onClose} style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.72)', backdropFilter: 'blur(6px)', opacity: visible ? 1 : 0, transition: 'opacity 0.28s ease' }} />
+      <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, background: C.surface, borderRadius: '22px 22px 0 0', border: `1px solid ${C.brd}`, borderBottom: 'none', maxHeight: '88vh', display: 'flex', flexDirection: 'column', transform: `translateY(${visible ? '0' : '100%'})`, transition: 'transform 0.38s cubic-bezier(0.32, 0.72, 0, 1)' }}>
         <div style={{ padding: '14px 0 6px', display: 'flex', justifyContent: 'center', flexShrink: 0 }}>
           <div style={{ width: 40, height: 4, borderRadius: 2, background: C.brd2 }} />
         </div>
@@ -568,7 +457,7 @@ function MobilePreviewSheet({ open, onClose, form, gyms }) {
 }
 
 /* ══════════════════════════════════════════════════════════════
-   MOBILE MODAL — full-screen form experience
+   MOBILE MODAL
 ══════════════════════════════════════════════════════════════ */
 function MobileCreateChallengeModal({ open, onClose, gyms = [], onSave, isLoading }) {
   const [form, setForm] = useState(DEFAULT_FORM);
@@ -595,7 +484,6 @@ function MobileCreateChallengeModal({ open, onClose, gyms = [], onSave, isLoadin
 
   const handleClose = () => { setForm(DEFAULT_FORM); onClose(); };
 
-  // Animate in/out
   const [visible, setVisible] = useState(false);
   useEffect(() => {
     if (open) {
@@ -614,80 +502,31 @@ function MobileCreateChallengeModal({ open, onClose, gyms = [], onSave, isLoadin
         .ch-cats-scroll::-webkit-scrollbar { display: none }
       `}</style>
 
-      {/* Full-screen container */}
-      <div style={{
-        position: 'fixed', inset: 0, zIndex: 9999,
-        background: C.bg, fontFamily: FONT,
-        display: 'flex', flexDirection: 'column',
-        transform: `translateY(${visible ? '0' : '100%'})`,
-        transition: 'transform 0.38s cubic-bezier(0.32, 0.72, 0, 1)',
-      }}>
+      <div style={{ position: 'fixed', inset: 0, zIndex: 9999, background: C.bg, fontFamily: FONT, display: 'flex', flexDirection: 'column', transform: `translateY(${visible ? '0' : '100%'})`, transition: 'transform 0.38s cubic-bezier(0.32, 0.72, 0, 1)' }}>
 
         {/* ── HEADER ── */}
-        <div style={{
-          flexShrink: 0, background: C.surface,
-          borderBottom: `1px solid ${C.brd}`,
-        }}>
-          {/* Top row */}
-          <div style={{
-            display: 'flex', alignItems: 'center', gap: 12,
-            padding: '14px 16px 12px',
-          }}>
-            <button
-              onClick={handleClose}
-              style={{
-                width: 38, height: 38, borderRadius: 10,
-                background: C.card, border: `1px solid ${C.brd}`,
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                cursor: 'pointer', flexShrink: 0,
-              }}
-            >
+        <div style={{ flexShrink: 0, background: C.surface, borderBottom: `1px solid ${C.brd}` }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 16px 12px' }}>
+            <button onClick={handleClose} style={{ width: 38, height: 38, borderRadius: 10, background: C.card, border: `1px solid ${C.brd}`, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0 }}>
               <ChevronLeft size={18} color={C.t2} />
             </button>
             <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontSize: 15, fontWeight: 700, color: C.t1, letterSpacing: '-0.02em' }}>
+              <div style={{ fontSize: 17, fontWeight: 700, color: C.t1, letterSpacing: '-0.02em' }}>
                 Create <span style={{ color: cat.color }}>Challenge</span>
               </div>
-              <div style={{ fontSize: 11, color: C.t3, marginTop: 2 }}>Set up a competition for your members</div>
             </div>
-            {/* Preview toggle */}
-            <button
-              onClick={() => setPreviewOpen(true)}
-              style={{
-                display: 'flex', alignItems: 'center', gap: 6,
-                padding: '8px 12px', borderRadius: 9,
-                background: C.cyanDim, border: `1px solid ${C.cyanBrd}`,
-                color: C.cyan, fontSize: 12.5, fontWeight: 700,
-                cursor: 'pointer', fontFamily: FONT, flexShrink: 0,
-              }}
-            >
+            <button onClick={() => setPreviewOpen(true)} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 12px', borderRadius: 9, background: C.blueDim, border: `1px solid ${C.blueBrd}`, color: C.blue, fontSize: 12.5, fontWeight: 700, cursor: 'pointer', fontFamily: FONT, flexShrink: 0 }}>
               <Eye size={13} /> Preview
             </button>
           </div>
 
-          {/* Category chips (scrollable) */}
-          <div className="ch-cats-scroll" style={{
-            display: 'flex', gap: 8, overflowX: 'auto',
-            padding: '0 16px 14px',
-            scrollbarWidth: 'none', WebkitOverflowScrolling: 'touch',
-          }}>
+          {/* Category chips */}
+          <div className="ch-cats-scroll" style={{ display: 'flex', gap: 8, overflowX: 'auto', padding: '0 16px 14px', scrollbarWidth: 'none', WebkitOverflowScrolling: 'touch' }}>
             {CATEGORIES.map(c => {
               const active = form.category === c.value;
               return (
-                <button
-                  key={c.value}
-                  onClick={() => handleCategoryChange(c.value)}
-                  type="button"
-                  style={{
-                    flexShrink: 0, padding: '8px 16px', borderRadius: 24,
-                    background: active ? c.dim : C.card,
-                    border: `1.5px solid ${active ? c.border : C.brd}`,
-                    color: active ? c.color : C.t2,
-                    fontSize: 13, fontWeight: active ? 700 : 500,
-                    cursor: 'pointer', fontFamily: FONT,
-                    whiteSpace: 'nowrap', transition: 'all 0.15s',
-                  }}
-                >
+                <button key={c.value} onClick={() => handleCategoryChange(c.value)} type="button"
+                  style={{ flexShrink: 0, padding: '8px 16px', borderRadius: 24, background: active ? c.dim : C.card, border: `1.5px solid ${active ? c.border : C.brd}`, color: active ? c.color : C.t2, fontSize: 13, fontWeight: active ? 700 : 500, cursor: 'pointer', fontFamily: FONT, whiteSpace: 'nowrap', transition: 'all 0.15s' }}>
                   {c.label}
                 </button>
               );
@@ -696,39 +535,20 @@ function MobileCreateChallengeModal({ open, onClose, gyms = [], onSave, isLoadin
         </div>
 
         {/* ── SCROLLABLE FORM ── */}
-        <div
-          className="ch-mobile-scroll"
-          style={{ flex: 1, overflowY: 'auto', padding: '20px 16px', display: 'flex', flexDirection: 'column', gap: 22 }}
-        >
+        <div className="ch-mobile-scroll" style={{ flex: 1, overflowY: 'auto', padding: '20px 16px', display: 'flex', flexDirection: 'column', gap: 22 }}>
 
-          {/* Title */}
           <MobileField label="Challenge Title" required>
-            <MobileInp
-              value={form.title}
-              onChange={e => set('title', e.target.value)}
-              placeholder="e.g. Summer Squat Showdown"
-              Icon={Trophy}
-              accentColor={cat.color}
-            />
+            <MobileInp value={form.title} onChange={e => set('title', e.target.value)} placeholder="e.g. Summer Squat Showdown" Icon={Trophy} accentColor={cat.color} />
           </MobileField>
 
-          {/* Description */}
           <MobileField label="Description">
-            <MobileTextarea
-              value={form.description}
-              onChange={e => set('description', e.target.value)}
-              placeholder="Describe the rules, what counts, and who can enter…"
-              rows={3}
-              accentColor={cat.color}
-            />
+            <MobileTextarea value={form.description} onChange={e => set('description', e.target.value)} placeholder="Describe the rules, what counts, and who can enter…" rows={3} accentColor={cat.color} />
           </MobileField>
 
-          {/* Competition type */}
           <MobileField label="Competition Type">
             <MobileTypePicker value={form.type} onChange={v => set('type', v)} accentColor={cat.color} />
           </MobileField>
 
-          {/* Gym vs Gym selectors */}
           {form.type === 'gym_vs_gym' && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
               <MobileField label="Home Gym" required>
@@ -746,7 +566,6 @@ function MobileCreateChallengeModal({ open, onClose, gyms = [], onSave, isLoadin
             </div>
           )}
 
-          {/* Lifting-specific */}
           {form.category === 'lifting' && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
               <MobileField label="Exercise">
@@ -762,25 +581,12 @@ function MobileCreateChallengeModal({ open, onClose, gyms = [], onSave, isLoadin
             </div>
           )}
 
-          {/* Attendance / streak target */}
           {(form.category === 'attendance' || form.category === 'streak') && (
-            <MobileField
-              label={form.category === 'streak' ? 'Streak Target (days)' : 'Check-in Target'}
-              hint={form.category === 'streak' ? 'Members aim to hit this consecutive streak' : 'Number of check-ins to win or qualify'}
-            >
-              <MobileInp
-                type="number"
-                value={form.target_value}
-                onChange={e => set('target_value', parseInt(e.target.value) || 0)}
-                placeholder={form.category === 'streak' ? '30' : '20'}
-                Icon={Target}
-                accentColor={cat.color}
-                min="1"
-              />
+            <MobileField label={form.category === 'streak' ? 'Streak Target (days)' : 'Check-in Target'} hint={form.category === 'streak' ? 'Members aim to hit this consecutive streak' : 'Number of check-ins to win or qualify'}>
+              <MobileInp type="number" value={form.target_value} onChange={e => set('target_value', parseInt(e.target.value) || 0)} placeholder={form.category === 'streak' ? '30' : '20'} Icon={Target} accentColor={cat.color} min="1" />
             </MobileField>
           )}
 
-          {/* Date range */}
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
             <MobileField label="Start Date" required>
               <MobileInp type="date" value={form.start_date} onChange={e => set('start_date', e.target.value)} Icon={Calendar} accentColor={cat.color} />
@@ -790,35 +596,20 @@ function MobileCreateChallengeModal({ open, onClose, gyms = [], onSave, isLoadin
             </MobileField>
           </div>
 
-          {/* Reward */}
           <MobileField label="Reward" hint="Optional — shown to members as the prize for winning">
-            <MobileInp
-              value={form.reward}
-              onChange={e => set('reward', e.target.value)}
-              placeholder="e.g. Free protein shake, £10 gift card"
-              Icon={Gift}
-              accentColor={cat.color}
-            />
+            <MobileInp value={form.reward} onChange={e => set('reward', e.target.value)} placeholder="e.g. Free protein shake, £10 gift card" Icon={Gift} accentColor={cat.color} />
           </MobileField>
 
-          {/* Toggles */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
             <MobileToggle checked={form.auto_start}     onChange={v => set('auto_start', v)}     color={cat.color} label="Auto-start"     sub="Begins on start date automatically" />
             <MobileToggle checked={form.send_reminders} onChange={v => set('send_reminders', v)} color={cat.color} label="Send reminders" sub="Notify participants weekly" />
           </div>
 
-          {/* Bottom padding for safe area */}
           <div style={{ height: 8 }} />
         </div>
 
         {/* ── STICKY FOOTER ── */}
-        <div style={{
-          flexShrink: 0, padding: '14px 16px',
-          paddingBottom: 'calc(14px + env(safe-area-inset-bottom, 0px))',
-          borderTop: `1px solid ${C.brd}`, background: C.surface,
-          display: 'flex', flexDirection: 'column', gap: 10,
-        }}>
-          {/* Status hint */}
+        <div style={{ flexShrink: 0, padding: '14px 16px', paddingBottom: 'calc(14px + env(safe-area-inset-bottom, 0px))', borderTop: `1px solid ${C.brd}`, background: C.surface, display: 'flex', flexDirection: 'column', gap: 10 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
             {canSave ? (
               <>
@@ -833,38 +624,15 @@ function MobileCreateChallengeModal({ open, onClose, gyms = [], onSave, isLoadin
               </span>
             )}
           </div>
-
-          {/* CTA */}
-          <button
-            onClick={handleSubmit}
-            disabled={!canSave}
-            style={{
-              width: '100%', padding: '15px',
-              borderRadius: 14, border: 'none',
-              fontFamily: FONT, fontSize: 15, fontWeight: 800,
-              background: canSave ? cat.color === C.cyan ? C.cyan : `linear-gradient(135deg,${cat.color},${cat.color}cc)` : C.brd2,
-              color: canSave ? '#000' : C.t3,
-              cursor: canSave ? 'pointer' : 'default',
-              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-              boxShadow: canSave ? `0 0 28px ${cat.color}40` : 'none',
-              opacity: canSave ? 1 : 0.45,
-              transition: 'all 0.2s',
-            }}
-          >
+          <button onClick={handleSubmit} disabled={!canSave} style={{ width: '100%', padding: '15px', borderRadius: 14, border: 'none', fontFamily: FONT, fontSize: 15, fontWeight: 800, background: canSave ? C.blue : C.brd2, color: canSave ? '#fff' : C.t3, cursor: canSave ? 'pointer' : 'default', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, boxShadow: canSave ? `0 0 28px ${C.blue}40` : 'none', opacity: canSave ? 1 : 0.45, transition: 'all 0.2s' }}>
             {isLoading
-              ? <><div style={{ width: 14, height: 14, border: '2.5px solid rgba(0,0,0,0.25)', borderTop: '2.5px solid #000', borderRadius: '50%', animation: 'ch-spin 0.7s linear infinite' }} /> Creating…</>
+              ? <><div style={{ width: 14, height: 14, border: '2.5px solid rgba(255,255,255,0.25)', borderTop: '2.5px solid #fff', borderRadius: '50%', animation: 'ch-spin 0.7s linear infinite' }} /> Creating…</>
               : <><Zap size={16} /> Create Challenge</>}
           </button>
         </div>
       </div>
 
-      {/* Preview sheet overlay */}
-      <MobilePreviewSheet
-        open={previewOpen}
-        onClose={() => setPreviewOpen(false)}
-        form={form}
-        gyms={gyms}
-      />
+      <MobilePreviewSheet open={previewOpen} onClose={() => setPreviewOpen(false)} form={form} gyms={gyms} />
     </>
   );
 }
@@ -926,32 +694,31 @@ function DesktopCreateChallengeModal({ open, onClose, gyms = [], onSave, isLoadi
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 16, scale: 0.975 }}
               transition={{ type: 'spring', stiffness: 380, damping: 36, mass: 1 }}
-              style={{ width: '100%', maxWidth: 920, maxHeight: '92vh', display: 'flex', flexDirection: 'column', background: C.bg, border: `1px solid ${C.brd}`, borderRadius: 14, overflow: 'hidden', boxShadow: `0 40px 100px rgba(0,0,0,0.85), 0 0 0 1px rgba(0,229,200,0.04)`, WebkitFontSmoothing: 'antialiased' }}
+              style={{ width: '100%', maxWidth: 920, maxHeight: '92vh', display: 'flex', flexDirection: 'column', background: C.bg, border: `1px solid ${C.brd}`, borderRadius: 14, overflow: 'hidden', boxShadow: `0 40px 100px rgba(0,0,0,0.85), 0 0 0 1px rgba(96,165,250,0.04)`, WebkitFontSmoothing: 'antialiased' }}
             >
+              {/* HEADER */}
               <div style={{ flexShrink: 0, padding: '0 20px', background: C.surface, borderBottom: `1px solid ${C.brd}`, position: 'relative', overflow: 'hidden' }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: 14 }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: 18 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 11 }}>
                     <div style={{ width: 32, height: 32, borderRadius: 9, background: cat.dim, border: `1px solid ${cat.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'all 0.2s' }}>
                       <Trophy size={14} color={cat.color} />
                     </div>
-                    <div>
-                      <div style={{ fontSize: 15, fontWeight: 700, color: C.t1, letterSpacing: '-0.02em', lineHeight: 1.2 }}>
-                        Content Center <span style={{ color: C.cyan }}>/</span> <span style={{ color: C.cyan }}>Create Challenge</span>
-                      </div>
-                      <div style={{ fontSize: 10.5, color: C.t3, marginTop: 2 }}>Set up a competition for your members</div>
+                    <div style={{ fontSize: 18, fontWeight: 700, color: C.t1, letterSpacing: '-0.02em', lineHeight: 1.2 }}>
+                      Create Challenge
                     </div>
                   </div>
-                  <button onClick={handleClose} style={{ width: 30, height: 30, borderRadius: 7, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'transparent', border: `1px solid ${C.brd}`, cursor: 'pointer', color: C.t3, transition: 'all 0.15s', flexShrink: 0 }}
-                    onMouseEnter={e => { e.currentTarget.style.background = C.card; e.currentTarget.style.color = C.t1; }}
-                    onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = C.t3; }}>
-                    <X size={13} />
+                  <button onClick={handleClose} style={{ width: 30, height: 30, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'transparent', border: 'none', cursor: 'pointer', color: C.t3, transition: 'color 0.15s', flexShrink: 0 }}
+                    onMouseEnter={e => { e.currentTarget.style.color = C.t1; }}
+                    onMouseLeave={e => { e.currentTarget.style.color = C.t3; }}>
+                    <X size={16} />
                   </button>
                 </div>
-                <div style={{ marginTop: 4, marginLeft: -2 }}>
+                <div style={{ marginTop: 8, marginLeft: -2 }}>
                   <CategoryTabs value={form.category} onChange={handleCategoryChange} />
                 </div>
               </div>
 
+              {/* BODY */}
               <form onSubmit={handleSubmit} style={{ flex: 1, display: 'grid', gridTemplateColumns: '1fr 300px', minHeight: 0, overflow: 'hidden' }}>
                 <div className="ch-scroll" style={{ padding: '18px 20px', borderRight: `1px solid ${C.brd}`, display: 'flex', flexDirection: 'column', gap: 18, overflowY: 'auto', background: C.bg }}>
                   <Field label="Challenge Title" required>
@@ -1019,6 +786,7 @@ function DesktopCreateChallengeModal({ open, onClose, gyms = [], onSave, isLoadi
                 </div>
               </form>
 
+              {/* FOOTER */}
               <div style={{ flexShrink: 0, padding: '12px 20px', borderTop: `1px solid ${C.brd}`, display: 'flex', alignItems: 'center', gap: 10, background: C.surface }}>
                 <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 6 }}>
                   {canSave ? (
@@ -1036,12 +804,12 @@ function DesktopCreateChallengeModal({ open, onClose, gyms = [], onSave, isLoadi
                 </div>
                 <button className="ch-cancel" onClick={handleClose} type="button">Cancel</button>
                 <button type="submit" onClick={handleSubmit} disabled={!canSave}
-                  style={{ padding: '9px 22px', borderRadius: 8, border: 'none', fontFamily: FONT, fontSize: 13, fontWeight: 700, letterSpacing: '-0.01em', background: canSave ? C.cyan : C.brd2, color: canSave ? '#000' : C.t3, cursor: canSave ? 'pointer' : 'default', display: 'inline-flex', alignItems: 'center', gap: 7, transition: 'opacity 0.15s, box-shadow 0.15s', boxShadow: canSave ? `0 0 24px ${C.cyan}40` : 'none', opacity: canSave ? 1 : 0.4, minWidth: 165, justifyContent: 'center' }}
+                  style={{ padding: '9px 22px', borderRadius: 8, border: 'none', fontFamily: FONT, fontSize: 13, fontWeight: 700, letterSpacing: '-0.01em', background: canSave ? C.blue : C.brd2, color: canSave ? '#fff' : C.t3, cursor: canSave ? 'pointer' : 'default', display: 'inline-flex', alignItems: 'center', gap: 7, transition: 'opacity 0.15s, box-shadow 0.15s', boxShadow: canSave ? `0 0 24px ${C.blue}40` : 'none', opacity: canSave ? 1 : 0.4, minWidth: 165, justifyContent: 'center' }}
                   onMouseEnter={e => { if (canSave) e.currentTarget.style.opacity = '0.88'; }}
                   onMouseLeave={e => { if (canSave) e.currentTarget.style.opacity = '1'; }}
                 >
                   {isLoading
-                    ? <><div style={{ width: 12, height: 12, border: '2px solid rgba(0,0,0,0.2)', borderTop: '2px solid #000', borderRadius: '50%', animation: 'ch-spin 0.7s linear infinite' }} /> Creating…</>
+                    ? <><div style={{ width: 12, height: 12, border: '2px solid rgba(255,255,255,0.2)', borderTop: '2px solid #fff', borderRadius: '50%', animation: 'ch-spin 0.7s linear infinite' }} /> Creating…</>
                     : <><Zap size={13} /> Create Challenge</>}
                 </button>
               </div>
