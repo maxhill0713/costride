@@ -374,7 +374,38 @@ function FAB({ onClick }) {
 }
 
 /* ─── ROOT ───────────────────────────────────────────────────── */
-export default function ContentPage({ events = [], challenges = [], polls = [], posts = [], openModal, onDeleteEvent, onDeleteChallenge, onDeletePost, avatarMap = {}, nameMap = {}, currentUser = null, gym = null }) {
+/* ─── MEMBER STATUS BADGE ────────────────────────────────────── */
+function MemberStatusBadge({ memberId, checkIns = [] }) {
+  if (!memberId) return null;
+  const memberCheckIns = checkIns.filter(c => c.user_id === memberId);
+  const total = memberCheckIns.length;
+  const now = Date.now();
+  const lastCI = memberCheckIns[0]?.check_in_date ? new Date(memberCheckIns[0].check_in_date).getTime() : null;
+  const daysSinceLast = lastCI ? Math.floor((now - lastCI) / (1000 * 60 * 60 * 24)) : null;
+  const last30 = memberCheckIns.filter(c => {
+    const d = c.check_in_date ? new Date(c.check_in_date).getTime() : 0;
+    return d >= now - 30 * 24 * 60 * 60 * 1000;
+  }).length;
+
+  let label, bg, color, border;
+  if (total <= 3 || daysSinceLast === null) {
+    label = "New"; bg = "rgba(99,102,241,0.14)"; color = "#a5b4fc"; border = "rgba(99,102,241,0.3)";
+  } else if (daysSinceLast > 21) {
+    label = "Dropping Off"; bg = "rgba(255,77,109,0.13)"; color = "#ff6b85"; border = "rgba(255,77,109,0.3)";
+  } else if (last30 >= 10) {
+    label = "Engaged"; bg = "rgba(34,197,94,0.12)"; color = "#4ade80"; border = "rgba(34,197,94,0.28)";
+  } else {
+    label = "Consistent"; bg = "rgba(77,127,255,0.13)"; color = "#93c5fd"; border = "rgba(77,127,255,0.3)";
+  }
+
+  return (
+    <span style={{ padding: "1px 7px", borderRadius: 4, fontSize: 10, fontWeight: 700, background: bg, color, border: `1px solid ${border}`, whiteSpace: "nowrap", flexShrink: 0 }}>
+      {label}
+    </span>
+  );
+}
+
+export default function ContentPage({ events = [], challenges = [], polls = [], posts = [], checkIns = [], openModal, onDeleteEvent, onDeleteChallenge, onDeletePost, avatarMap = {}, nameMap = {}, currentUser = null, gym = null }) {
   const isMobile = useIsMobile();
   const [tab, setTab] = useState("Community Feed");
   const [showMenu, setShowMenu] = useState(false);
@@ -457,11 +488,11 @@ export default function ContentPage({ events = [], challenges = [], polls = [], 
                       onMouseEnter={e => { e.currentTarget.style.borderColor = C.cyanBrd; e.currentTarget.style.boxShadow = `0 0 8px rgba(77,127,255,0.07)`; }}
                       onMouseLeave={e => { e.currentTarget.style.borderColor = C.brd; e.currentTarget.style.boxShadow = "none"; }}>
 
-                      {/* Left: image — fixed square */}
+                      {/* Left: image — higher resolution */}
                       {p.image_url ? (
-                        <div style={{ width: 130, height: 130, flexShrink: 0, alignSelf: "center", margin: 8, borderRadius: 10, overflow: "hidden" }}>
+                        <div style={{ width: 160, height: 160, flexShrink: 0, alignSelf: "center", margin: 8, borderRadius: 10, overflow: "hidden" }}>
                           <img src={p.image_url} alt=""
-                            style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+                            style={{ width: "100%", height: "100%", objectFit: "cover", display: "block", imageRendering: "high-quality" }} />
                         </div>
                       ) : (
                         <div style={{ width: 6, flexShrink: 0, background: C.cyanDim, borderRadius: "12px 0 0 12px" }} />
@@ -469,13 +500,16 @@ export default function ContentPage({ events = [], challenges = [], polls = [], 
 
                       {/* Centre: post content (~70% of remaining space) */}
                       <div style={{ flex: 1, minWidth: 0, padding: "11px 14px 11px 10px", display: "flex", flexDirection: "column", gap: 6 }}>
-                        {/* Author */}
+                        {/* Author + Status */}
                         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                           <div style={{ width: 30, height: 30, borderRadius: "50%", flexShrink: 0, background: avatarBg, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 800, color: "#fff", overflow: "hidden" }}>
                             {avatar ? <img src={avatar} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : initials}
                           </div>
-                          <div>
-                            <div style={{ fontSize: 13, fontWeight: 700, color: C.t1, lineHeight: 1.2 }}>{resolvedName}</div>
+                          <div style={{ flex: 1 }}>
+                            <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
+                              <div style={{ fontSize: 13, fontWeight: 700, color: C.t1, lineHeight: 1.2 }}>{resolvedName}</div>
+                              <MemberStatusBadge memberId={p.member_id} checkIns={checkIns} />
+                            </div>
                             {postedAt && <div style={{ fontSize: 11, color: C.t3, marginTop: 1 }}>{postedAt}</div>}
                           </div>
                         </div>
