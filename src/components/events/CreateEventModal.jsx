@@ -1,7 +1,7 @@
 /**
  * CreateEventModal — Content Hub design system
  * Mobile-first responsive: adapts on ≤768px, desktop layout unchanged.
- * Cyan #00e5c8 · DM Sans · #0d0d11 / #17171c / #1f1f26
+ * Blue #60a5fa · DM Sans · #0d0d11 / #17171c / #1f1f26
  */
 import React, { useState, useRef, useCallback, useEffect } from 'react';
 import {
@@ -17,7 +17,7 @@ const C = {
   bg:       '#0d0d11', surface:  '#17171c', card:     '#1f1f26', inset:    '#13131a',
   brd:      '#252530', brd2:     '#2e2e3a', brdHover: '#3a3a48',
   t1:       '#ffffff', t2:       '#9898a6', t3:       '#525260',
-  cyan:     '#00e5c8', cyanDim:  'rgba(0,229,200,0.07)', cyanBrd:  'rgba(0,229,200,0.18)',
+  blue:     '#60a5fa', blueDim:  'rgba(96,165,250,0.07)',  blueBrd:  'rgba(96,165,250,0.18)',
   red:    '#ff4d6d', redDim:    'rgba(255,77,109,0.08)',  redBrd:    'rgba(255,77,109,0.20)',
   green:  '#22c55e', greenDim:  'rgba(34,197,94,0.08)',  greenBrd:  'rgba(34,197,94,0.20)',
 };
@@ -52,7 +52,7 @@ function Field({ label, required, hint, children }) {
   );
 }
 
-function Inp({ value, onChange, placeholder, type = 'text', disabled, Icon, accentColor = C.cyan }) {
+function Inp({ value, onChange, placeholder, type = 'text', disabled, Icon, accentColor = C.blue }) {
   const [focus, setFocus] = useState(false);
   return (
     <div style={{ position: 'relative' }}>
@@ -67,7 +67,7 @@ function Inp({ value, onChange, placeholder, type = 'text', disabled, Icon, acce
         onBlur={e  => { setFocus(false); e.target.style.borderColor = C.brd; e.target.style.background = C.card; }}
         style={{
           ...baseInp,
-          fontSize: 16, /* prevents iOS zoom — inherits from baseInp override */
+          fontSize: 16,
           paddingLeft: Icon ? 32 : 12,
           opacity: disabled ? 0.45 : 1,
           cursor: disabled ? 'not-allowed' : 'text',
@@ -77,7 +77,7 @@ function Inp({ value, onChange, placeholder, type = 'text', disabled, Icon, acce
   );
 }
 
-function Textarea({ value, onChange, placeholder, rows = 4, accentColor = C.cyan }) {
+function Textarea({ value, onChange, placeholder, rows = 4, accentColor = C.blue }) {
   return (
     <textarea
       value={value} onChange={onChange} placeholder={placeholder} rows={rows}
@@ -116,9 +116,9 @@ function EventPreview({ form, gym }) {
           ) : (
             <>
               {form.event_date && (
-                <div style={{ display: 'inline-flex', alignItems: 'center', gap: 5, padding: '2px 8px', borderRadius: 5, background: C.greenDim, border: `1px solid ${C.greenBrd}`, marginBottom: 8 }}>
-                  <Calendar size={9} color={C.green} />
-                  <span style={{ fontSize: 9.5, fontWeight: 700, color: C.green }}>
+                <div style={{ display: 'inline-flex', alignItems: 'center', gap: 5, padding: '2px 8px', borderRadius: 5, background: C.blueDim, border: `1px solid ${C.blueBrd}`, marginBottom: 8 }}>
+                  <Calendar size={9} color={C.blue} />
+                  <span style={{ fontSize: 9.5, fontWeight: 700, color: C.blue }}>
                     {format(new Date(form.event_date), "EEE, MMM d 'at' h:mma")}
                   </span>
                 </div>
@@ -144,10 +144,10 @@ function EventPreview({ form, gym }) {
       </div>
       {hasContent && (
         <div style={{ marginTop: 10, display: 'flex', alignItems: 'center', gap: 7 }}>
-          <div style={{ width: 22, height: 22, borderRadius: 6, background: C.greenDim, border: `1px solid ${C.greenBrd}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+          <div style={{ width: 22, height: 22, borderRadius: 6, background: C.blueDim, border: `1px solid ${C.blueBrd}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
             {gym?.logo_url
               ? <img src={gym.logo_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 5 }} />
-              : <Calendar size={10} color={C.green} />}
+              : <Calendar size={10} color={C.blue} />}
           </div>
           <span style={{ fontSize: 11, color: C.t3, fontWeight: 500 }}>{gym?.name}</span>
           <span style={{ fontSize: 10, color: C.t3 }}>· Just now</span>
@@ -164,7 +164,7 @@ export default function CreateEventModal({ open, onClose, onSave, gym, isLoading
   const [form, setForm] = useState({ title: '', description: '', event_date: '', image_url: '' });
   const [uploading, setUploading] = useState(false);
   const [dragOver,  setDragOver]  = useState(false);
-  const [showPreview, setShowPreview] = useState(false); // mobile only
+  const [showPreview, setShowPreview] = useState(false);
   const fileRef = useRef();
 
   /* ── Mobile detection ──────────────────────────────────────── */
@@ -250,7 +250,7 @@ export default function CreateEventModal({ open, onClose, onSave, gym, isLoading
           border: isMobile ? 'none' : `1px solid ${C.brd}`,
           borderRadius: isMobile ? '20px 20px 0 0' : 14,
           overflow: 'hidden',
-          boxShadow: `0 40px 100px rgba(0,0,0,0.85), 0 0 0 1px rgba(0,229,200,0.04)`,
+          boxShadow: `0 40px 100px rgba(0,0,0,0.85), 0 0 0 1px rgba(96,165,250,0.04)`,
           animation: isMobile ? 'ev-up 0.3s cubic-bezier(0.32,0.72,0,1)' : 'ev-in 0.24s cubic-bezier(0.16,1,0.3,1)',
           WebkitFontSmoothing: 'antialiased',
         }}>
@@ -258,7 +258,7 @@ export default function CreateEventModal({ open, onClose, onSave, gym, isLoading
           {/* ── HEADER ──────────────────────────────────────── */}
           <div style={{
             flexShrink: 0,
-            padding: isMobile ? '0 16px' : '14px 20px',
+            padding: isMobile ? '0 16px' : '16px 20px',
             background: C.surface, borderBottom: `1px solid ${C.brd}`,
             display: 'flex', alignItems: 'center', justifyContent: 'space-between',
           }}>
@@ -268,55 +268,47 @@ export default function CreateEventModal({ open, onClose, onSave, gym, isLoading
             )}
 
             {isMobile ? (
-              /* Mobile header: full row with handle space */
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', paddingTop: 22 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
-                  <div style={{ width: 28, height: 28, borderRadius: 9, background: C.greenDim, border: `1px solid ${C.greenBrd}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                    <Calendar size={13} color={C.green} />
+                  <div style={{ width: 28, height: 28, borderRadius: 9, background: C.blueDim, border: `1px solid ${C.blueBrd}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                    <Calendar size={13} color={C.blue} />
                   </div>
-                  <div style={{ fontSize: 15, fontWeight: 700, color: C.t1, letterSpacing: '-0.02em' }}>Create Event</div>
+                  <div style={{ fontSize: 17, fontWeight: 700, color: C.t1, letterSpacing: '-0.02em' }}>Create Event</div>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                   <button
                     onClick={() => setShowPreview(v => !v)}
                     style={{
                       height: 30, padding: '0 10px', borderRadius: 7, display: 'flex', alignItems: 'center', gap: 5,
-                      background: showPreview ? C.greenDim : 'transparent',
-                      border: `1px solid ${showPreview ? C.greenBrd : C.brd}`,
-                      cursor: 'pointer', color: showPreview ? C.green : C.t3, fontSize: 11, fontWeight: 600, fontFamily: FONT,
+                      background: showPreview ? C.blueDim : 'transparent',
+                      border: `1px solid ${showPreview ? C.blueBrd : C.brd}`,
+                      cursor: 'pointer', color: showPreview ? C.blue : C.t3, fontSize: 11, fontWeight: 600, fontFamily: FONT,
                     }}
                   >
                     <Eye size={11} /> {showPreview ? 'Edit' : 'Preview'}
                   </button>
-                  <button
-                    onClick={handleClose}
-                    style={{ width: 30, height: 30, borderRadius: 7, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'transparent', border: `1px solid ${C.brd}`, cursor: 'pointer', color: C.t3 }}
-                  >
-                    <X size={13} />
+                  <button onClick={handleClose} style={{ width: 30, height: 30, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'transparent', border: 'none', cursor: 'pointer', color: C.t3 }}>
+                    <X size={16} />
                   </button>
                 </div>
               </div>
             ) : (
-              /* Desktop header: original */
               <>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 11 }}>
-                  <div style={{ width: 32, height: 32, borderRadius: 9, background: C.greenDim, border: `1px solid ${C.greenBrd}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                    <Calendar size={14} color={C.green} />
+                  <div style={{ width: 32, height: 32, borderRadius: 9, background: C.blueDim, border: `1px solid ${C.blueBrd}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                    <Calendar size={14} color={C.blue} />
                   </div>
-                  <div>
-                    <div style={{ fontSize: 15, fontWeight: 700, color: C.t1, letterSpacing: '-0.02em', lineHeight: 1.2 }}>
-                      Content Center <span style={{ color: C.cyan }}>/</span> <span style={{ color: C.cyan }}>Create Event</span>
-                    </div>
-                    <div style={{ fontSize: 10.5, color: C.t3, marginTop: 2 }}>{gym?.name || 'Your Gym'}</div>
+                  <div style={{ fontSize: 18, fontWeight: 700, color: C.t1, letterSpacing: '-0.02em', lineHeight: 1.2 }}>
+                    Create Event
                   </div>
                 </div>
                 <button
                   onClick={handleClose}
-                  style={{ width: 30, height: 30, borderRadius: 7, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'transparent', border: `1px solid ${C.brd}`, cursor: 'pointer', color: C.t3, flexShrink: 0, transition: 'all 0.15s' }}
-                  onMouseEnter={e => { e.currentTarget.style.background = C.card; e.currentTarget.style.color = C.t1; }}
-                  onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = C.t3; }}
+                  style={{ width: 30, height: 30, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'transparent', border: 'none', cursor: 'pointer', color: C.t3, flexShrink: 0, transition: 'color 0.15s' }}
+                  onMouseEnter={e => { e.currentTarget.style.color = C.t1; }}
+                  onMouseLeave={e => { e.currentTarget.style.color = C.t3; }}
                 >
-                  <X size={13} />
+                  <X size={16} />
                 </button>
               </>
             )}
@@ -334,7 +326,6 @@ export default function CreateEventModal({ open, onClose, onSave, gym, isLoading
             }}
           >
 
-            {/* ── FORM (hidden on mobile when preview shown) ── */}
             {(!isMobile || !showPreview) && (
               <div className="ev-scroll" style={{
                 padding: isMobile ? '16px 16px' : '18px 20px',
@@ -346,27 +337,27 @@ export default function CreateEventModal({ open, onClose, onSave, gym, isLoading
 
                 {/* Title */}
                 <Field label="Event Title" required>
-                  <Inp value={form.title} onChange={e => set('title', e.target.value)} placeholder="e.g. Summer Fitness Challenge" Icon={Zap} accentColor={C.green} />
+                  <Inp value={form.title} onChange={e => set('title', e.target.value)} placeholder="e.g. Summer Fitness Challenge" Icon={Zap} accentColor={C.blue} />
                 </Field>
 
                 {/* Description */}
                 <Field label="Description">
-                  <Textarea value={form.description} onChange={e => set('description', e.target.value)} placeholder="Tell members what to expect, what to bring, and who it's for…" rows={isMobile ? 3 : 4} accentColor={C.green} />
+                  <Textarea value={form.description} onChange={e => set('description', e.target.value)} placeholder="Tell members what to expect, what to bring, and who it's for…" rows={isMobile ? 3 : 4} accentColor={C.blue} />
                 </Field>
 
-                {/* Date + Location — stack vertically on mobile */}
+                {/* Date + Location */}
                 <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: isMobile ? 14 : 12 }}>
                   <Field label="Date & Time" required>
-                    <Inp type="datetime-local" value={form.event_date} onChange={e => set('event_date', e.target.value)} Icon={Calendar} accentColor={C.green} />
+                    <Inp type="datetime-local" value={form.event_date} onChange={e => set('event_date', e.target.value)} Icon={Calendar} accentColor={C.blue} />
                     {form.event_date && (
-                      <div style={{ fontSize: 10, color: C.green, fontWeight: 600, marginTop: 6, display: 'flex', alignItems: 'center', gap: 4 }}>
-                        <Clock size={9} color={C.green} />
+                      <div style={{ fontSize: 10, color: C.blue, fontWeight: 600, marginTop: 6, display: 'flex', alignItems: 'center', gap: 4 }}>
+                        <Clock size={9} color={C.blue} />
                         {format(new Date(form.event_date), "EEE, MMM d 'at' h:mma")}
                       </div>
                     )}
                   </Field>
                   <Field label="Location" hint="Set to your gym by default">
-                    <Inp value={gym?.name || ''} disabled Icon={MapPin} accentColor={C.green} />
+                    <Inp value={gym?.name || ''} disabled Icon={MapPin} accentColor={C.blue} />
                   </Field>
                 </div>
 
@@ -376,11 +367,7 @@ export default function CreateEventModal({ open, onClose, onSave, gym, isLoading
                     <div style={{ position: 'relative', borderRadius: 9, overflow: 'hidden' }}>
                       <img src={form.image_url} alt="Banner" style={{ width: '100%', height: 140, objectFit: 'cover', display: 'block', borderRadius: 9, border: `1px solid ${C.brd}` }} onError={e => e.target.style.display = 'none'} />
                       <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top,rgba(0,0,0,0.55) 0%,transparent 55%)', borderRadius: 9, pointerEvents: 'none' }} />
-                      <button
-                        type="button"
-                        onClick={() => set('image_url', '')}
-                        style={{ position: 'absolute', top: 8, right: 8, width: 26, height: 26, borderRadius: 7, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(13,13,17,0.82)', border: `1px solid ${C.brd}`, cursor: 'pointer' }}
-                      >
+                      <button type="button" onClick={() => set('image_url', '')} style={{ position: 'absolute', top: 8, right: 8, width: 26, height: 26, borderRadius: 7, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(13,13,17,0.82)', border: `1px solid ${C.brd}`, cursor: 'pointer' }}>
                         <X size={10} color={C.t1} />
                       </button>
                       <div style={{ position: 'absolute', bottom: 8, left: 11, fontSize: 10, fontWeight: 700, color: 'rgba(255,255,255,0.7)' }}>Banner attached ✓</div>
@@ -391,12 +378,12 @@ export default function CreateEventModal({ open, onClose, onSave, gym, isLoading
                       onDragLeave={() => setDragOver(false)}
                       onDrop={handleDrop}
                       onClick={() => fileRef.current?.click()}
-                      style={{ padding: '20px 14px', borderRadius: 9, border: `1.5px dashed ${dragOver ? C.green + '60' : C.brd2}`, background: dragOver ? C.greenDim : C.card, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 9, cursor: 'pointer', transition: 'all 0.18s' }}
+                      style={{ padding: '20px 14px', borderRadius: 9, border: `1.5px dashed ${dragOver ? C.blue + '60' : C.brd2}`, background: dragOver ? C.blueDim : C.card, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 9, cursor: 'pointer', transition: 'all 0.18s' }}
                     >
-                      <div style={{ width: 36, height: 36, borderRadius: 9, background: C.greenDim, border: `1px solid ${C.greenBrd}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <div style={{ width: 36, height: 36, borderRadius: 9, background: C.blueDim, border: `1px solid ${C.blueBrd}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                         {uploading
-                          ? <div style={{ width: 14, height: 14, border: `2px solid ${C.green}25`, borderTop: `2px solid ${C.green}`, borderRadius: '50%', animation: 'ev-spin 0.8s linear infinite' }} />
-                          : <Upload size={14} color={C.green} />}
+                          ? <div style={{ width: 14, height: 14, border: `2px solid ${C.blue}25`, borderTop: `2px solid ${C.blue}`, borderRadius: '50%', animation: 'ev-spin 0.8s linear infinite' }} />
+                          : <Upload size={14} color={C.blue} />}
                       </div>
                       <div style={{ textAlign: 'center' }}>
                         <div style={{ fontSize: 12, fontWeight: 600, color: C.t2 }}>{uploading ? 'Uploading…' : 'Drop image or click to browse'}</div>
@@ -456,7 +443,6 @@ export default function CreateEventModal({ open, onClose, onSave, gym, isLoading
               </div>
             )}
 
-            {/* Mobile status line */}
             {isMobile && canSubmit && (
               <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
                 <CheckCircle size={11} color={C.green} />
@@ -475,29 +461,24 @@ export default function CreateEventModal({ open, onClose, onSave, gym, isLoading
                   style={{
                     width: '100%', height: 50, borderRadius: 12, border: 'none',
                     fontFamily: FONT, fontSize: 15, fontWeight: 700, letterSpacing: '-0.01em',
-                    background: canSubmit ? C.cyan : C.brd2,
-                    color: canSubmit ? '#000' : C.t3,
+                    background: canSubmit ? C.blue : C.brd2,
+                    color: canSubmit ? '#fff' : C.t3,
                     cursor: canSubmit ? 'pointer' : 'default',
                     display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-                    boxShadow: canSubmit ? `0 0 24px ${C.cyan}40` : 'none',
+                    boxShadow: canSubmit ? `0 0 24px ${C.blue}40` : 'none',
                     opacity: canSubmit ? 1 : 0.4,
                     WebkitTapHighlightColor: 'transparent',
                   }}
                 >
                   {isLoading
-                    ? <><div style={{ width: 14, height: 14, border: '2px solid rgba(0,0,0,0.2)', borderTop: '2px solid #000', borderRadius: '50%', animation: 'ev-spin 0.7s linear infinite' }} /> Creating…</>
+                    ? <><div style={{ width: 14, height: 14, border: '2px solid rgba(255,255,255,0.2)', borderTop: '2px solid #fff', borderRadius: '50%', animation: 'ev-spin 0.7s linear infinite' }} /> Creating…</>
                     : <><Calendar size={15} /> Create Event</>}
                 </button>
-                <button
-                  type="button"
-                  onClick={handleClose}
-                  style={{ background: 'none', border: 'none', color: C.t3, fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: FONT, padding: '6px 0', textAlign: 'center' }}
-                >
+                <button type="button" onClick={handleClose} style={{ background: 'none', border: 'none', color: C.t3, fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: FONT, padding: '6px 0', textAlign: 'center' }}>
                   Cancel
                 </button>
               </>
             ) : (
-              /* Desktop footer: original layout */
               <>
                 <button type="button" className="ev-cancel" onClick={handleClose}>Cancel</button>
                 <button
@@ -507,11 +488,11 @@ export default function CreateEventModal({ open, onClose, onSave, gym, isLoading
                   style={{
                     padding: '9px 22px', borderRadius: 8, border: 'none',
                     fontFamily: FONT, fontSize: 13, fontWeight: 700, letterSpacing: '-0.01em',
-                    background: canSubmit ? C.cyan : C.brd2,
-                    color: canSubmit ? '#000' : C.t3,
+                    background: canSubmit ? C.blue : C.brd2,
+                    color: canSubmit ? '#fff' : C.t3,
                     cursor: canSubmit ? 'pointer' : 'default',
                     display: 'inline-flex', alignItems: 'center', gap: 7,
-                    boxShadow: canSubmit ? `0 0 24px ${C.cyan}40` : 'none',
+                    boxShadow: canSubmit ? `0 0 24px ${C.blue}40` : 'none',
                     opacity: canSubmit ? 1 : 0.4,
                     minWidth: 155, justifyContent: 'center',
                     transition: 'opacity 0.15s, box-shadow 0.15s',
@@ -520,7 +501,7 @@ export default function CreateEventModal({ open, onClose, onSave, gym, isLoading
                   onMouseLeave={e => { if (canSubmit) e.currentTarget.style.opacity = '1'; }}
                 >
                   {isLoading
-                    ? <><div style={{ width: 12, height: 12, border: '2px solid rgba(0,0,0,0.2)', borderTop: '2px solid #000', borderRadius: '50%', animation: 'ev-spin 0.7s linear infinite' }} /> Creating…</>
+                    ? <><div style={{ width: 12, height: 12, border: '2px solid rgba(255,255,255,0.2)', borderTop: '2px solid #fff', borderRadius: '50%', animation: 'ev-spin 0.7s linear infinite' }} /> Creating…</>
                     : <><Calendar size={13} /> Create Event</>}
                 </button>
               </>
