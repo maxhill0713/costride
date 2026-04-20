@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import {
   ChevronDown, Plus, Flame, Facebook, Instagram,
-  ChevronRight, Check, X, MoreHorizontal, Calendar, Trophy, BarChart2, FileText,
+  ChevronRight, Check, X, MoreHorizontal, Calendar, Trophy, BarChart2, FileText, Pencil,
 } from "lucide-react";
 
 /* ─── MOBILE HOOK ────────────────────────────────────────────── */
@@ -38,7 +38,7 @@ const C = {
 const FONT = "'DM Sans', 'Segoe UI', system-ui, sans-serif";
 
 /* ─── HELPERS ────────────────────────────────────────────────── */
-function recentPostCount(posts, days = 3) {
+function recentPostCount(posts, days = 7) {
   const cutoff = Date.now() - days * 24 * 60 * 60 * 1000;
   return posts.filter(p => {
     const d = p.created_date || p.created_at || p.date;
@@ -46,43 +46,52 @@ function recentPostCount(posts, days = 3) {
   }).length;
 }
 
+function timeAgo(dateStr) {
+  if (!dateStr) return "";
+  let d = new Date(dateStr);
+  if (isNaN(d.getTime())) return "";
+  if (typeof dateStr === "string" && !dateStr.endsWith("Z") && !dateStr.match(/[+-]\d{2}:\d{2}$/)) {
+    d = new Date(dateStr + "Z");
+  }
+  const s = (Date.now() - d.getTime()) / 1000;
+  if (s < 60)    return "just now";
+  if (s < 3600)  return `${Math.floor(s / 60)}m ago`;
+  if (s < 86400) return `${Math.floor(s / 3600)}h ago`;
+  if (s < 86400 * 7) return `${Math.floor(s / 86400)}d ago`;
+  return d.toLocaleDateString("en-GB", { day: "numeric", month: "short" });
+}
+
 /* ─── TAB CONFIG ─────────────────────────────────────────────── */
 const VISIBLE_TABS = ["Community Feed", "Events", "Challenges", "Polls", "Drafts", "Scheduled"];
 
-// Each tab's header button; null = no button shown for that tab
 const TAB_ACTION = {
-  "Community Feed": { label: "New Post",     modal: "post"      },
-  "Events":         { label: "Add Event",    modal: "event"     },
-  "Challenges":     { label: "New Challenge",modal: "challenge" },
-  "Polls":          { label: "New Poll",     modal: "poll"      },
+  "Community Feed": { label: "New Post",      modal: "post"      },
+  "Events":         { label: "Add Event",     modal: "event"     },
+  "Challenges":     { label: "New Challenge", modal: "challenge" },
+  "Polls":          { label: "New Poll",      modal: "poll"      },
   "Drafts":         null,
   "Scheduled":      null,
 };
 
 /* ─── PRIMITIVES ─────────────────────────────────────────────── */
-function Avatar({ name = "", size = 28 }) {
-  const palette = ["#6366f1","#8b5cf6","#ec4899","#14b8a6","#f59e0b","#ef4444","#4d7fff","#10b981"];
-  const bg = palette[(name.charCodeAt(0) || 0) % palette.length];
-  const letters = name.split(" ").map(w => w[0]).join("").toUpperCase().slice(0, 2) || "?";
-  return (
-    <div style={{ width: size, height: size, borderRadius: "50%", flexShrink: 0, background: bg, border: `1.5px solid ${C.card}`, color: "#fff", fontSize: size * 0.36, fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center" }}>
-      {letters}
-    </div>
-  );
-}
-
-function Checkbox({ checked, onChange }) {
-  return (
-    <div onClick={onChange} style={{ width: 14, height: 14, borderRadius: 3, cursor: "pointer", flexShrink: 0, background: checked ? C.cyan : "transparent", border: `1.5px solid ${checked ? C.cyan : C.t3}`, display: "flex", alignItems: "center", justifyContent: "center", boxShadow: checked ? `0 0 4px rgba(77,127,255,0.2)` : "none" }}>
-      {checked && <Check size={8} color="#fff" strokeWidth={3} />}
-    </div>
-  );
-}
-
 function DeleteBtn({ onClick }) {
   return (
     <button onClick={onClick} style={{ background: C.redDim, border: `1px solid rgba(255,77,109,0.3)`, borderRadius: 6, padding: "4px 10px", color: C.red, fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: FONT, flexShrink: 0, minHeight: 36 }}>
       Delete
+    </button>
+  );
+}
+
+/* Pencil edit button — top-right placeholder */
+function EditBtn({ onClick }) {
+  return (
+    <button
+      onClick={onClick}
+      title="Edit post"
+      style={{ width: 28, height: 28, borderRadius: 7, background: "rgba(255,255,255,0.05)", border: `1px solid ${C.brd}`, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", flexShrink: 0, transition: "border-color 0.15s, background 0.15s" }}
+      onMouseEnter={e => { e.currentTarget.style.borderColor = C.cyanBrd; e.currentTarget.style.background = C.cyanDim; }}
+      onMouseLeave={e => { e.currentTarget.style.borderColor = C.brd; e.currentTarget.style.background = "rgba(255,255,255,0.05)"; }}>
+      <Pencil size={13} color={C.t2} />
     </button>
   );
 }
@@ -116,7 +125,6 @@ const QUICK_IDEAS = ["Generate AI Motivation Monday", "Post Member Spotlight", "
 function RightSidebar({ events, challenges, polls, posts, openModal }) {
   const totalContent = events.length + challenges.length + polls.length + posts.length;
   return (
-    /* 252 → 302px (+20%); sidebar is on the right edge so it expands leftward */
     <div style={{ width: 302, flexShrink: 0, background: C.sidebar, borderLeft: `1px solid ${C.brd}`, padding: "12px 10px", display: "flex", flexDirection: "column", gap: 12, overflowY: "auto" }}>
       <div>
         <div style={{ fontSize: 12.5, fontWeight: 600, color: C.t1, marginBottom: 2 }}>What to Post Today?</div>
@@ -196,29 +204,11 @@ function FAB({ onClick }) {
 }
 
 /* ─── ROOT ───────────────────────────────────────────────────── */
-/* ─── TIME AGO ───────────────────────────────────────────────── */
-function timeAgo(dateStr) {
-  if (!dateStr) return "";
-  let d = new Date(dateStr);
-  if (isNaN(d.getTime())) return "";
-  // treat bare date strings as UTC
-  if (typeof dateStr === "string" && !dateStr.endsWith("Z") && !dateStr.match(/[+-]\d{2}:\d{2}$/)) {
-    d = new Date(dateStr + "Z");
-  }
-  const s = (Date.now() - d.getTime()) / 1000;
-  if (s < 60)  return "just now";
-  if (s < 3600) return `${Math.floor(s / 60)}m ago`;
-  if (s < 86400) return `${Math.floor(s / 3600)}h ago`;
-  if (s < 86400 * 7) return `${Math.floor(s / 86400)}d ago`;
-  return d.toLocaleDateString("en-GB", { day: "numeric", month: "short" });
-}
-
 export default function ContentPage({ events = [], challenges = [], polls = [], posts = [], openModal, onDeleteEvent, onDeleteChallenge, onDeletePost, avatarMap = {}, nameMap = {} }) {
   const isMobile = useIsMobile();
   const [tab, setTab] = useState("Community Feed");
   const [showMenu, setShowMenu] = useState(false);
 
-  // Mobile FAB menu items
   const createItems = [
     { label: "📝 New Post",      action: () => { openModal?.("post");      setShowMenu(false); setTab("Community Feed"); } },
     { label: "📅 New Event",     action: () => { openModal?.("event");     setShowMenu(false); setTab("Events");         } },
@@ -226,11 +216,8 @@ export default function ContentPage({ events = [], challenges = [], polls = [], 
     { label: "📊 New Poll",      action: () => { openModal?.("poll");      setShowMenu(false); setTab("Polls");          } },
   ];
 
-  // The header-area button for the active tab
   const tabAction = TAB_ACTION[tab];
-
-  // "xx posts in the last 3 days" count
-  const recent3 = recentPostCount(posts, 3);
+  const recent7 = recentPostCount(posts, 7);
 
   return (
     <div style={{ display: "flex", flex: 1, minHeight: 0, background: C.bg, color: C.t1, fontFamily: FONT, fontSize: 13, lineHeight: 1.5, WebkitFontSmoothing: "antialiased" }}>
@@ -245,8 +232,6 @@ export default function ContentPage({ events = [], challenges = [], polls = [], 
               <h1 style={{ fontSize: 22, fontWeight: 800, color: C.t1, margin: 0, letterSpacing: "-0.03em", lineHeight: 1.2 }}>
                 Content <span style={{ color: C.cyan }}>Hub</span>
               </h1>
-
-              {/* Contextual action button — changes with the active tab */}
               {tabAction && (
                 <button
                   onClick={() => openModal?.(tabAction.modal)}
@@ -272,12 +257,11 @@ export default function ContentPage({ events = [], challenges = [], polls = [], 
           {tab === "Community Feed" && (
             <>
               <div style={{ fontSize: 12, fontWeight: 500, color: C.t2, marginBottom: 10 }}>
-                {recent3} post{recent3 !== 1 ? "s" : ""} in the last 3 days
+                {recent7} post{recent7 !== 1 ? "s" : ""} in the last 7 days
               </div>
               {posts.length === 0
                 ? <EmptyState label="posts" onAdd={() => openModal?.("post")} />
                 : posts.map(p => {
-                  // Resolve display name: prefer nameMap lookup, fallback to member_name only if it's not an email
                   const resolvedName = (p.member_id && nameMap[p.member_id])
                     || (p.member_name && !p.member_name.includes("@") ? p.member_name : null)
                     || (p.member_name && p.member_name.includes("@") ? p.member_name.split("@")[0].replace(/[._]/g, " ").replace(/\b\w/g, c => c.toUpperCase()) : "Member");
@@ -290,41 +274,59 @@ export default function ContentPage({ events = [], challenges = [], polls = [], 
 
                   return (
                     <div key={p.id}
-                      style={{ background: C.card, border: `1px solid ${C.brd}`, borderRadius: 12, marginBottom: 10, display: "flex", overflow: "hidden", minHeight: 156 }}
+                      style={{
+                        background: C.card,
+                        border: `1px solid ${C.brd}`,
+                        borderRadius: 12,
+                        marginBottom: 10,
+                        /* 10% less tall: padding tightened, minHeight reduced from 156 → 140 */
+                        minHeight: 140,
+                        display: "flex",
+                        overflow: "hidden",
+                        position: "relative",
+                      }}
                       onMouseEnter={e => { e.currentTarget.style.borderColor = C.cyanBrd; e.currentTarget.style.boxShadow = `0 0 8px rgba(77,127,255,0.07)`; }}
                       onMouseLeave={e => { e.currentTarget.style.borderColor = C.brd; e.currentTarget.style.boxShadow = "none"; }}>
 
-                      {/* Left: post image (full-height) */}
+                      {/* Left: post image with small gap around it */}
                       {p.image_url ? (
-                        <img src={p.image_url} alt="" style={{ width: 140, flexShrink: 0, objectFit: "cover", display: "block" }} />
+                        <div style={{ padding: 6, flexShrink: 0 }}>
+                          <img src={p.image_url} alt=""
+                            style={{ width: 118, height: "100%", minHeight: 110, borderRadius: 8, objectFit: "cover", display: "block" }} />
+                        </div>
                       ) : (
                         <div style={{ width: 8, flexShrink: 0, background: C.cyanDim }} />
                       )}
 
                       {/* Right: content */}
-                      <div style={{ flex: 1, minWidth: 0, padding: "14px 16px", display: "flex", flexDirection: "column", gap: 8 }}>
-                        {/* Author row */}
-                        <div style={{ display: "flex", alignItems: "center", gap: 9 }}>
-                          <div style={{ width: 34, height: 34, borderRadius: "50%", flexShrink: 0, background: avatarBg, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 800, color: "#fff", overflow: "hidden" }}>
-                            {avatar ? <img src={avatar} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : initials}
+                      <div style={{ flex: 1, minWidth: 0, padding: "11px 14px 11px 10px", display: "flex", flexDirection: "column", gap: 6 }}>
+
+                        {/* Author row + edit button */}
+                        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 8 }}>
+                          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                            <div style={{ width: 30, height: 30, borderRadius: "50%", flexShrink: 0, background: avatarBg, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 800, color: "#fff", overflow: "hidden" }}>
+                              {avatar ? <img src={avatar} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : initials}
+                            </div>
+                            <div>
+                              <div style={{ fontSize: 13, fontWeight: 700, color: C.t1, lineHeight: 1.2 }}>{resolvedName}</div>
+                              {postedAt && <div style={{ fontSize: 11, color: C.t3, marginTop: 1 }}>{postedAt}</div>}
+                            </div>
                           </div>
-                          <div>
-                            <div style={{ fontSize: 13, fontWeight: 700, color: C.t1, lineHeight: 1.2 }}>{resolvedName}</div>
-                            {postedAt && <div style={{ fontSize: 11, color: C.t3, marginTop: 2 }}>{postedAt}</div>}
-                          </div>
+
+                          {/* Pencil edit button — top right */}
+                          <EditBtn onClick={() => {/* placeholder */}} />
                         </div>
 
                         {/* Post content */}
                         {p.content && (
-                          <div style={{ fontSize: 12.5, color: C.t2, lineHeight: 1.5, display: "-webkit-box", WebkitLineClamp: 3, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
+                          <div style={{ fontSize: 12.5, color: C.t2, lineHeight: 1.5, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
                             {p.content}
                           </div>
                         )}
 
                         {/* Footer */}
-                        <div style={{ marginTop: "auto", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                        <div style={{ marginTop: "auto", display: "flex", alignItems: "center" }}>
                           <span style={{ fontSize: 11, color: C.t3 }}>{reactionCount > 0 ? `${reactionCount} reaction${reactionCount !== 1 ? "s" : ""}` : ""}</span>
-                          {onDeletePost && <DeleteBtn onClick={() => onDeletePost(p.id)} />}
                         </div>
                       </div>
                     </div>
