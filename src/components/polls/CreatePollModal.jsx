@@ -1,15 +1,6 @@
 /**
  * CreatePollModal — Content Hub design system
- * Desktop: unchanged (centered floating modal, side-by-side form + preview)
- * Mobile:  full-screen form, category chips scroll, preview via tap-to-open sheet,
- *          sticky header + footer, enlarged option inputs with remove buttons,
- *          all touch targets ≥ 44px
- *
- * Mobile-only additions:
- *  useIsMobile()           — resize-aware hook
- *  MobileCreatePollModal   — full-screen shell
- *  MobilePollPreviewSheet  — slide-up preview bottom sheet
- *  MobileCategoryChips     — horizontally scrollable pill row
+ * Blue #60a5fa · DM Sans · #0d0d11 / #17171c / #1f1f26
  */
 import React, { useState, useEffect } from 'react';
 import {
@@ -29,13 +20,10 @@ const C = {
   t1:       '#ffffff',
   t2:       '#9898a6',
   t3:       '#525260',
-  cyan:     '#00e5c8',
-  cyanDim:  'rgba(0,229,200,0.07)',
-  cyanBrd:  'rgba(0,229,200,0.18)',
+  blue:     '#60a5fa', blueDim:   'rgba(96,165,250,0.07)',  blueBrd:   'rgba(96,165,250,0.18)',
   red:    '#ff4d6d', redDim:    'rgba(255,77,109,0.08)',  redBrd:    'rgba(255,77,109,0.20)',
   amber:  '#f59e0b', amberDim:  'rgba(245,158,11,0.08)', amberBrd:  'rgba(245,158,11,0.20)',
   green:  '#22c55e', greenDim:  'rgba(34,197,94,0.08)',  greenBrd:  'rgba(34,197,94,0.20)',
-  blue:   '#60a5fa', blueDim:   'rgba(96,165,250,0.08)', blueBrd:   'rgba(96,165,250,0.20)',
   purple: '#a78bfa', purpleDim: 'rgba(167,139,250,0.08)',purpleBrd: 'rgba(167,139,250,0.20)',
 };
 const FONT = "'DM Sans','Inter',system-ui,sans-serif";
@@ -83,7 +71,7 @@ function SL({ children, required }) {
   );
 }
 
-function Inp({ value, onChange, placeholder, Icon, accentColor = C.cyan }) {
+function Inp({ value, onChange, placeholder, Icon, accentColor = C.blue }) {
   const [focus, setFocus] = useState(false);
   return (
     <div style={{ position: 'relative' }}>
@@ -102,7 +90,7 @@ function Inp({ value, onChange, placeholder, Icon, accentColor = C.cyan }) {
   );
 }
 
-function Textarea({ value, onChange, placeholder, rows = 2, accentColor = C.cyan }) {
+function Textarea({ value, onChange, placeholder, rows = 2, accentColor = C.blue }) {
   return (
     <textarea
       value={value} onChange={onChange} placeholder={placeholder} rows={rows}
@@ -137,7 +125,7 @@ function CategoryTabs({ value, onChange }) {
 /* ─── SHARED: POLL PREVIEW CARD ──────────────────────────────── */
 function PollPreview({ title, description, category, options }) {
   const cat = catFor(category);
-  const accent = cat?.color || C.purple;
+  const accent = cat?.color || C.blue;
   const validOpts = options.filter(o => o.trim());
   const hasContent = title || validOpts.length > 0;
 
@@ -194,7 +182,7 @@ function PollPreview({ title, description, category, options }) {
             )}
             <div style={{ marginTop: 12, paddingTop: 10, paddingBottom: 14, borderTop: `1px solid ${C.brd}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <span style={{ fontSize: 10, color: C.t3 }}>0 votes · Open</span>
-              <div style={{ padding: '5px 14px', borderRadius: 7, background: C.cyan, color: '#000', fontSize: 11, fontWeight: 700 }}>Vote</div>
+              <div style={{ padding: '5px 14px', borderRadius: 7, background: C.blue, color: '#fff', fontSize: 11, fontWeight: 700 }}>Vote</div>
             </div>
           </div>
         )}
@@ -206,41 +194,6 @@ function PollPreview({ title, description, category, options }) {
 /* ══════════════════════════════════════════════════════════════
    MOBILE-ONLY COMPONENTS
 ══════════════════════════════════════════════════════════════ */
-
-/* ── MOBILE: CATEGORY CHIPS ──────────────────────────────────── */
-function MobileCategoryChips({ value, onChange }) {
-  return (
-    <div style={{
-      display: 'flex', gap: 8, overflowX: 'auto',
-      padding: '0 16px 14px',
-      scrollbarWidth: 'none', WebkitOverflowScrolling: 'touch',
-    }}>
-      {CATEGORIES.map(cat => {
-        const active = value === cat.value;
-        return (
-          <button
-            key={cat.value}
-            onClick={() => onChange(cat.value)}
-            type="button"
-            style={{
-              flexShrink: 0, padding: '8px 14px', borderRadius: 24,
-              background: active ? cat.dim : C.card,
-              border: `1.5px solid ${active ? cat.border : C.brd}`,
-              color: active ? cat.color : C.t2,
-              fontSize: 13, fontWeight: active ? 700 : 500,
-              cursor: 'pointer', fontFamily: FONT, whiteSpace: 'nowrap',
-              display: 'flex', alignItems: 'center', gap: 6,
-              transition: 'all 0.15s',
-            }}
-          >
-            <span style={{ fontSize: 14 }}>{cat.emoji}</span>
-            {cat.label}
-          </button>
-        );
-      })}
-    </div>
-  );
-}
 
 /* ── MOBILE: PREVIEW BOTTOM SHEET ────────────────────────────── */
 function MobilePollPreviewSheet({ open, onClose, title, description, category, options }) {
@@ -303,7 +256,7 @@ function MobileCreatePollModal({ open, onClose, onSave, isLoading }) {
   const validOpts = options.filter(o => o.trim());
   const canSave   = title.trim() && category && validOpts.length >= 2 && !isLoading;
   const cat       = catFor(category);
-  const accent    = cat?.color || C.cyan;
+  const accent    = cat?.color || C.blue;
 
   const updateOption = (idx, val) => { const n = [...options]; n[idx] = val; setOptions(n); };
   const removeOption = (idx) => setOptions(options.filter((_, i) => i !== idx));
@@ -323,7 +276,6 @@ function MobileCreatePollModal({ open, onClose, onSave, isLoading }) {
     onClose();
   };
 
-  // Slide-up animation
   const [visible, setVisible] = useState(false);
   useEffect(() => {
     if (open) {
@@ -343,7 +295,6 @@ function MobileCreatePollModal({ open, onClose, onSave, isLoading }) {
         .pl-mobile-opt::placeholder { color: ${C.t3}; }
       `}</style>
 
-      {/* Full-screen container */}
       <div style={{
         position: 'fixed', inset: 0, zIndex: 9999,
         background: C.bg, fontFamily: FONT,
@@ -353,71 +304,26 @@ function MobileCreatePollModal({ open, onClose, onSave, isLoading }) {
       }}>
 
         {/* ── HEADER ── */}
-        <div style={{
-          flexShrink: 0, background: C.surface,
-          borderBottom: `1px solid ${C.brd}`,
-        }}>
-          {/* Top row */}
-          <div style={{
-            display: 'flex', alignItems: 'center', gap: 12,
-            padding: '14px 16px 12px',
-          }}>
-            <button
-              onClick={handleClose}
-              style={{
-                width: 38, height: 38, borderRadius: 10,
-                background: C.card, border: `1px solid ${C.brd}`,
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                cursor: 'pointer', flexShrink: 0,
-              }}
-            >
+        <div style={{ flexShrink: 0, background: C.surface, borderBottom: `1px solid ${C.brd}` }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 16px 12px' }}>
+            <button onClick={handleClose} style={{ width: 38, height: 38, borderRadius: 10, background: C.card, border: `1px solid ${C.brd}`, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0 }}>
               <ChevronLeft size={18} color={C.t2} />
             </button>
             <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontSize: 15, fontWeight: 700, color: C.t1, letterSpacing: '-0.02em' }}>
+              <div style={{ fontSize: 17, fontWeight: 700, color: C.t1, letterSpacing: '-0.02em' }}>
                 Create <span style={{ color: accent }}>Poll</span>
               </div>
-              <div style={{ fontSize: 11, color: C.t3, marginTop: 2 }}>Ask members what they think</div>
             </div>
-            {/* Preview toggle */}
-            <button
-              onClick={() => setPreviewOpen(true)}
-              style={{
-                display: 'flex', alignItems: 'center', gap: 6,
-                padding: '8px 12px', borderRadius: 9,
-                background: C.cyanDim, border: `1px solid ${C.cyanBrd}`,
-                color: C.cyan, fontSize: 12.5, fontWeight: 700,
-                cursor: 'pointer', fontFamily: FONT, flexShrink: 0,
-              }}
-            >
+            <button onClick={() => setPreviewOpen(true)} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 12px', borderRadius: 9, background: C.blueDim, border: `1px solid ${C.blueBrd}`, color: C.blue, fontSize: 12.5, fontWeight: 700, cursor: 'pointer', fontFamily: FONT, flexShrink: 0 }}>
               <Eye size={13} /> Preview
             </button>
           </div>
-
-          {/* Category chips (scrollable) */}
-          <div className="pl-cats-scroll" style={{
-            display: 'flex', gap: 8, overflowX: 'auto',
-            padding: '0 16px 14px',
-            scrollbarWidth: 'none', WebkitOverflowScrolling: 'touch',
-          }}>
+          <div className="pl-cats-scroll" style={{ display: 'flex', gap: 8, overflowX: 'auto', padding: '0 16px 14px', scrollbarWidth: 'none', WebkitOverflowScrolling: 'touch' }}>
             {CATEGORIES.map(c => {
               const active = category === c.value;
               return (
-                <button
-                  key={c.value}
-                  onClick={() => setCategory(c.value)}
-                  type="button"
-                  style={{
-                    flexShrink: 0, padding: '8px 14px', borderRadius: 24,
-                    background: active ? c.dim : C.card,
-                    border: `1.5px solid ${active ? c.border : C.brd}`,
-                    color: active ? c.color : C.t2,
-                    fontSize: 13, fontWeight: active ? 700 : 500,
-                    cursor: 'pointer', fontFamily: FONT, whiteSpace: 'nowrap',
-                    display: 'flex', alignItems: 'center', gap: 6,
-                    transition: 'all 0.15s',
-                  }}
-                >
+                <button key={c.value} onClick={() => setCategory(c.value)} type="button"
+                  style={{ flexShrink: 0, padding: '8px 14px', borderRadius: 24, background: active ? c.dim : C.card, border: `1.5px solid ${active ? c.border : C.brd}`, color: active ? c.color : C.t2, fontSize: 13, fontWeight: active ? 700 : 500, cursor: 'pointer', fontFamily: FONT, whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: 6, transition: 'all 0.15s' }}>
                   <span style={{ fontSize: 14 }}>{c.emoji}</span>
                   {c.label}
                 </button>
@@ -427,12 +333,7 @@ function MobileCreatePollModal({ open, onClose, onSave, isLoading }) {
         </div>
 
         {/* ── SCROLLABLE FORM ── */}
-        <div
-          className="pl-mobile-scroll"
-          style={{ flex: 1, overflowY: 'auto', padding: '20px 16px', display: 'flex', flexDirection: 'column', gap: 24 }}
-        >
-
-          {/* Question */}
+        <div className="pl-mobile-scroll" style={{ flex: 1, overflowY: 'auto', padding: '20px 16px', display: 'flex', flexDirection: 'column', gap: 24 }}>
           <div>
             <div style={{ fontSize: 11, fontWeight: 600, color: C.t3, textTransform: 'uppercase', letterSpacing: '0.09em', marginBottom: 10, display: 'flex', alignItems: 'center', gap: 4 }}>
               Question <span style={{ color: C.red }}>*</span>
@@ -441,133 +342,62 @@ function MobileCreatePollModal({ open, onClose, onSave, isLoading }) {
               <div style={{ position: 'absolute', left: 13, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }}>
                 <MessageSquare size={15} color={C.t3} />
               </div>
-              <input
-                value={title}
-                onChange={e => setTitle(e.target.value)}
-                placeholder="e.g. Which equipment should we replace first?"
+              <input value={title} onChange={e => setTitle(e.target.value)} placeholder="e.g. Which equipment should we replace first?"
                 onFocus={e => { e.target.style.borderColor = `${accent}40`; e.target.style.background = C.inset; }}
                 onBlur={e =>  { e.target.style.borderColor = C.brd; e.target.style.background = C.card; }}
-                style={{ ...baseInp, paddingLeft: 40, paddingTop: 13, paddingBottom: 13, fontSize: 14, borderRadius: 12 }}
-              />
+                style={{ ...baseInp, paddingLeft: 40, paddingTop: 13, paddingBottom: 13, fontSize: 14, borderRadius: 12 }} />
             </div>
           </div>
 
-          {/* Context */}
           <div>
-            <div style={{ fontSize: 11, fontWeight: 600, color: C.t3, textTransform: 'uppercase', letterSpacing: '0.09em', marginBottom: 10 }}>
-              Additional Context
-            </div>
-            <textarea
-              value={description}
-              onChange={e => setDescription(e.target.value)}
-              placeholder="Add any helpful context or background for members…"
-              rows={3}
+            <div style={{ fontSize: 11, fontWeight: 600, color: C.t3, textTransform: 'uppercase', letterSpacing: '0.09em', marginBottom: 10 }}>Additional Context</div>
+            <textarea value={description} onChange={e => setDescription(e.target.value)} placeholder="Add any helpful context or background for members…" rows={3}
               onFocus={e => { e.target.style.borderColor = `${accent}40`; e.target.style.background = C.inset; }}
               onBlur={e =>  { e.target.style.borderColor = C.brd; e.target.style.background = C.card; }}
-              style={{ ...baseInp, resize: 'none', lineHeight: 1.7, padding: '13px 14px', fontSize: 14, borderRadius: 12 }}
-            />
+              style={{ ...baseInp, resize: 'none', lineHeight: 1.7, padding: '13px 14px', fontSize: 14, borderRadius: 12 }} />
           </div>
 
-          {/* Answer Options */}
           <div>
-            {/* Section header */}
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
               <div style={{ fontSize: 11, fontWeight: 600, color: C.t3, textTransform: 'uppercase', letterSpacing: '0.09em', display: 'flex', alignItems: 'center', gap: 4 }}>
                 Answer Options <span style={{ color: C.red }}>*</span>
               </div>
-              <span style={{ fontSize: 11, fontWeight: 700, color: validOpts.length >= 2 ? C.green : C.t3, ...MONO }}>
-                {validOpts.length}/{options.length} filled
-              </span>
+              <span style={{ fontSize: 11, fontWeight: 700, color: validOpts.length >= 2 ? C.green : C.t3, ...MONO }}>{validOpts.length}/{options.length} filled</span>
             </div>
-
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
               {options.map((opt, idx) => (
                 <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                  {/* Number badge */}
-                  <div style={{
-                    width: 36, height: 36, borderRadius: 10, flexShrink: 0,
-                    background: opt.trim() ? `${accent}14` : C.card,
-                    border: `1.5px solid ${opt.trim() ? accent + '30' : C.brd}`,
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    transition: 'all 0.15s',
-                  }}>
+                  <div style={{ width: 36, height: 36, borderRadius: 10, flexShrink: 0, background: opt.trim() ? `${accent}14` : C.card, border: `1.5px solid ${opt.trim() ? accent + '30' : C.brd}`, display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.15s' }}>
                     <span style={{ fontSize: 12, fontWeight: 700, color: opt.trim() ? accent : C.t3, ...MONO }}>{idx + 1}</span>
                   </div>
-
-                  {/* Input */}
-                  <input
-                    className="pl-mobile-opt"
-                    value={opt}
-                    onChange={e => updateOption(idx, e.target.value)}
-                    placeholder={`Option ${idx + 1}`}
+                  <input className="pl-mobile-opt" value={opt} onChange={e => updateOption(idx, e.target.value)} placeholder={`Option ${idx + 1}`}
                     onFocus={e => { e.target.style.borderColor = `${accent}40`; e.target.style.background = C.inset; }}
                     onBlur={e =>  { e.target.style.borderColor = C.brd; e.target.style.background = C.card; }}
-                    style={{
-                      ...baseInp, flex: 1,
-                      paddingTop: 13, paddingBottom: 13,
-                      fontSize: 14, borderRadius: 11,
-                    }}
-                  />
-
-                  {/* Remove */}
+                    style={{ ...baseInp, flex: 1, paddingTop: 13, paddingBottom: 13, fontSize: 14, borderRadius: 11 }} />
                   {options.length > 2 && (
-                    <button
-                      type="button"
-                      onClick={() => removeOption(idx)}
-                      style={{
-                        flexShrink: 0, width: 40, height: 40, borderRadius: 10,
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        background: C.redDim, border: `1.5px solid ${C.redBrd}`,
-                        cursor: 'pointer', transition: 'all 0.12s',
-                      }}
-                    >
+                    <button type="button" onClick={() => removeOption(idx)} style={{ flexShrink: 0, width: 40, height: 40, borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', background: C.redDim, border: `1.5px solid ${C.redBrd}`, cursor: 'pointer', transition: 'all 0.12s' }}>
                       <Trash2 size={15} color={C.red} />
                     </button>
                   )}
                 </div>
               ))}
             </div>
-
-            {/* Add option */}
             {options.length < 8 && (
-              <button
-                type="button"
-                onClick={addOption}
-                style={{
-                  marginTop: 12, width: '100%', padding: '14px',
-                  borderRadius: 12,
-                  background: `${accent}07`, border: `2px dashed ${accent}28`,
-                  color: accent, fontSize: 14, fontWeight: 700,
-                  cursor: 'pointer', fontFamily: FONT,
-                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-                  transition: 'all 0.15s',
-                }}
-              >
+              <button type="button" onClick={addOption} style={{ marginTop: 12, width: '100%', padding: '14px', borderRadius: 12, background: `${accent}07`, border: `2px dashed ${accent}28`, color: accent, fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: FONT, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, transition: 'all 0.15s' }}>
                 <Plus size={15} /> Add option
               </button>
             )}
           </div>
-
-          {/* Bottom safe area padding */}
           <div style={{ height: 8 }} />
         </div>
 
         {/* ── STICKY FOOTER ── */}
-        <div style={{
-          flexShrink: 0, padding: '14px 16px',
-          paddingBottom: 'calc(14px + env(safe-area-inset-bottom, 0px))',
-          borderTop: `1px solid ${C.brd}`, background: C.surface,
-          display: 'flex', flexDirection: 'column', gap: 10,
-        }}>
-          {/* Status hint */}
+        <div style={{ flexShrink: 0, padding: '14px 16px', paddingBottom: 'calc(14px + env(safe-area-inset-bottom, 0px))', borderTop: `1px solid ${C.brd}`, background: C.surface, display: 'flex', flexDirection: 'column', gap: 10 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
             {canSave ? (
               <>
                 <CheckCircle size={13} color={C.green} />
-                <span style={{ fontSize: 12, color: C.t3 }}>
-                  {title} · {validOpts.length} option{validOpts.length !== 1 ? 's' : ''}
-                  {cat ? ` · ${cat.label}` : ''}
-                </span>
+                <span style={{ fontSize: 12, color: C.t3 }}>{title} · {validOpts.length} option{validOpts.length !== 1 ? 's' : ''}{cat ? ` · ${cat.label}` : ''}</span>
               </>
             ) : (
               <span style={{ fontSize: 12, color: C.t3 }}>
@@ -575,40 +405,15 @@ function MobileCreatePollModal({ open, onClose, onSave, isLoading }) {
               </span>
             )}
           </div>
-
-          {/* CTA */}
-          <button
-            onClick={handleSubmit}
-            disabled={!canSave}
-            style={{
-              width: '100%', padding: '15px',
-              borderRadius: 14, border: 'none',
-              fontFamily: FONT, fontSize: 15, fontWeight: 800,
-              background: canSave ? C.cyan : C.brd2,
-              color: canSave ? '#000' : C.t3,
-              cursor: canSave ? 'pointer' : 'default',
-              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-              boxShadow: canSave ? `0 0 28px ${C.cyan}40` : 'none',
-              opacity: canSave ? 1 : 0.45,
-              transition: 'all 0.2s',
-            }}
-          >
+          <button onClick={handleSubmit} disabled={!canSave} style={{ width: '100%', padding: '15px', borderRadius: 14, border: 'none', fontFamily: FONT, fontSize: 15, fontWeight: 800, background: canSave ? C.blue : C.brd2, color: canSave ? '#fff' : C.t3, cursor: canSave ? 'pointer' : 'default', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, boxShadow: canSave ? `0 0 28px ${C.blue}40` : 'none', opacity: canSave ? 1 : 0.45, transition: 'all 0.2s' }}>
             {isLoading
-              ? <><div style={{ width: 14, height: 14, border: '2.5px solid rgba(0,0,0,0.25)', borderTop: '2.5px solid #000', borderRadius: '50%', animation: 'pl-spin 0.7s linear infinite' }} /> Creating…</>
+              ? <><div style={{ width: 14, height: 14, border: '2.5px solid rgba(255,255,255,0.25)', borderTop: '2.5px solid #fff', borderRadius: '50%', animation: 'pl-spin 0.7s linear infinite' }} /> Creating…</>
               : <><Zap size={16} /> Create Poll</>}
           </button>
         </div>
       </div>
 
-      {/* Preview sheet */}
-      <MobilePollPreviewSheet
-        open={previewOpen}
-        onClose={() => setPreviewOpen(false)}
-        title={title}
-        description={description}
-        category={category}
-        options={options}
-      />
+      <MobilePollPreviewSheet open={previewOpen} onClose={() => setPreviewOpen(false)} title={title} description={description} category={category} options={options} />
     </>
   );
 }
@@ -625,7 +430,7 @@ function DesktopCreatePollModal({ open, onClose, onSave, isLoading }) {
   const validOpts = options.filter(o => o.trim());
   const canSave   = title.trim() && category && validOpts.length >= 2 && !isLoading;
   const cat       = catFor(category);
-  const accent    = cat?.color || C.purple;
+  const accent    = cat?.color || C.blue;
 
   const updateOption = (idx, val) => { const n = [...options]; n[idx] = val; setOptions(n); };
   const removeOption = (idx) => setOptions(options.filter((_, i) => i !== idx));
@@ -666,32 +471,31 @@ function DesktopCreatePollModal({ open, onClose, onSave, isLoading }) {
         onClick={e => e.target === e.currentTarget && handleClose()}
         style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.82)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20, animation: 'pl-fade 0.15s ease', fontFamily: FONT }}
       >
-        <div style={{ width: '100%', maxWidth: 920, maxHeight: '92vh', display: 'flex', flexDirection: 'column', background: C.bg, border: `1px solid ${C.brd}`, borderRadius: 14, overflow: 'hidden', boxShadow: `0 40px 100px rgba(0,0,0,0.85), 0 0 0 1px rgba(0,229,200,0.04)`, animation: 'pl-in 0.24s cubic-bezier(0.16,1,0.3,1)', WebkitFontSmoothing: 'antialiased' }}>
+        <div style={{ width: '100%', maxWidth: 920, maxHeight: '92vh', display: 'flex', flexDirection: 'column', background: C.bg, border: `1px solid ${C.brd}`, borderRadius: 14, overflow: 'hidden', boxShadow: `0 40px 100px rgba(0,0,0,0.85), 0 0 0 1px rgba(96,165,250,0.04)`, animation: 'pl-in 0.24s cubic-bezier(0.16,1,0.3,1)', WebkitFontSmoothing: 'antialiased' }}>
 
+          {/* HEADER */}
           <div style={{ flexShrink: 0, padding: '0 20px', background: C.surface, borderBottom: `1px solid ${C.brd}`, position: 'relative', overflow: 'hidden' }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: 14 }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: 18, paddingBottom: 0 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 11 }}>
-                <div style={{ width: 32, height: 32, borderRadius: 9, background: cat?.dim || C.cyanDim, border: `1px solid ${cat?.border || C.cyanBrd}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: cat ? 16 : 'inherit', transition: 'all 0.2s' }}>
-                  {cat ? <span>{cat.emoji}</span> : <BarChart2 size={14} color={C.cyan} />}
+                <div style={{ width: 32, height: 32, borderRadius: 9, background: cat?.dim || C.blueDim, border: `1px solid ${cat?.border || C.blueBrd}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: cat ? 16 : 'inherit', transition: 'all 0.2s' }}>
+                  {cat ? <span>{cat.emoji}</span> : <BarChart2 size={14} color={C.blue} />}
                 </div>
-                <div>
-                  <div style={{ fontSize: 15, fontWeight: 700, color: C.t1, letterSpacing: '-0.02em', lineHeight: 1.2 }}>
-                    Content Center <span style={{ color: C.cyan }}>/</span> <span style={{ color: C.cyan }}>Create Poll</span>
-                  </div>
-                  <div style={{ fontSize: 10.5, color: C.t3, marginTop: 2 }}>Ask members what they think</div>
+                <div style={{ fontSize: 18, fontWeight: 700, color: C.t1, letterSpacing: '-0.02em', lineHeight: 1.2 }}>
+                  Create Poll
                 </div>
               </div>
-              <button onClick={handleClose} style={{ width: 30, height: 30, borderRadius: 7, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'transparent', border: `1px solid ${C.brd}`, cursor: 'pointer', color: C.t3, flexShrink: 0, transition: 'all 0.15s' }}
-                onMouseEnter={e => { e.currentTarget.style.background = C.card; e.currentTarget.style.color = C.t1; }}
-                onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = C.t3; }}>
-                <X size={13} />
+              <button onClick={handleClose} style={{ width: 30, height: 30, borderRadius: 7, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'transparent', border: 'none', cursor: 'pointer', color: C.t3, flexShrink: 0, transition: 'color 0.15s' }}
+                onMouseEnter={e => { e.currentTarget.style.color = C.t1; }}
+                onMouseLeave={e => { e.currentTarget.style.color = C.t3; }}>
+                <X size={16} />
               </button>
             </div>
-            <div style={{ marginTop: 4, marginLeft: -2 }}>
+            <div style={{ marginTop: 8, marginLeft: -2 }}>
               <CategoryTabs value={category} onChange={setCategory} />
             </div>
           </div>
 
+          {/* BODY */}
           <div style={{ flex: 1, display: 'grid', gridTemplateColumns: '1fr 300px', minHeight: 0, overflow: 'hidden' }}>
             <div className="pl-scroll" style={{ padding: '18px 20px', borderRight: `1px solid ${C.brd}`, display: 'flex', flexDirection: 'column', gap: 18, overflowY: 'auto', background: C.bg }}>
               <div>
@@ -743,6 +547,7 @@ function DesktopCreatePollModal({ open, onClose, onSave, isLoading }) {
             </div>
           </div>
 
+          {/* FOOTER */}
           <div style={{ flexShrink: 0, padding: '12px 20px', borderTop: `1px solid ${C.brd}`, display: 'flex', alignItems: 'center', gap: 10, background: C.surface }}>
             <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 6 }}>
               {canSave ? (
@@ -756,11 +561,11 @@ function DesktopCreatePollModal({ open, onClose, onSave, isLoading }) {
             </div>
             <button className="pl-cancel" onClick={handleClose} type="button">Cancel</button>
             <button onClick={handleSubmit} disabled={!canSave} type="button"
-              style={{ padding: '9px 22px', borderRadius: 8, border: 'none', fontFamily: FONT, fontSize: 13, fontWeight: 700, letterSpacing: '-0.01em', background: canSave ? C.cyan : C.brd2, color: canSave ? '#000' : C.t3, cursor: canSave ? 'pointer' : 'default', display: 'inline-flex', alignItems: 'center', gap: 7, boxShadow: canSave ? `0 0 24px ${C.cyan}40` : 'none', opacity: canSave ? 1 : 0.4, minWidth: 150, justifyContent: 'center', transition: 'opacity 0.15s, box-shadow 0.15s' }}
+              style={{ padding: '9px 22px', borderRadius: 8, border: 'none', fontFamily: FONT, fontSize: 13, fontWeight: 700, letterSpacing: '-0.01em', background: canSave ? C.blue : C.brd2, color: canSave ? '#fff' : C.t3, cursor: canSave ? 'pointer' : 'default', display: 'inline-flex', alignItems: 'center', gap: 7, boxShadow: canSave ? `0 0 24px ${C.blue}40` : 'none', opacity: canSave ? 1 : 0.4, minWidth: 150, justifyContent: 'center', transition: 'opacity 0.15s, box-shadow 0.15s' }}
               onMouseEnter={e => { if (canSave) e.currentTarget.style.opacity = '0.88'; }}
               onMouseLeave={e => { if (canSave) e.currentTarget.style.opacity = '1'; }}>
               {isLoading
-                ? <><div style={{ width: 12, height: 12, border: '2px solid rgba(0,0,0,0.2)', borderTop: '2px solid #000', borderRadius: '50%', animation: 'pl-spin 0.7s linear infinite' }} /> Creating…</>
+                ? <><div style={{ width: 12, height: 12, border: '2px solid rgba(255,255,255,0.2)', borderTop: '2px solid #fff', borderRadius: '50%', animation: 'pl-spin 0.7s linear infinite' }} /> Creating…</>
                 : <><Zap size={13} /> Create Poll</>}
             </button>
           </div>
