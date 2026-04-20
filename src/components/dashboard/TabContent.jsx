@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import {
   Plus, Flame, Check, Calendar, Trophy, BarChart2, FileText,
-  MessageCircle, Trash2, Zap,
+  MessageCircle, Trash2, Zap, RefreshCw,
 } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 
@@ -68,12 +68,12 @@ function timeAgo(dateStr) {
 const VISIBLE_TABS = ["Community Feed", "Events", "Challenges", "Polls", "Drafts", "Scheduled"];
 
 const TAB_ACTION = {
-  "Community Feed": { label: "New Post",      modal: "post"      },
-  "Events":         { label: "Add Event",     modal: "event"     },
-  "Challenges":     { label: "New Challenge", modal: "challenge" },
-  "Polls":          { label: "New Poll",      modal: "poll"      },
-  "Drafts":         null,
-  "Scheduled":      null,
+  "Community Feed": { label: "New Post",        modal: "post"      },
+  "Events":         { label: "Add Event",       modal: "event"     },
+  "Challenges":     { label: "New Challenge",   modal: "challenge" },
+  "Polls":          { label: "New Poll",        modal: "poll"      },
+  "Drafts":         { label: "Create Draft",    modal: "post"      },
+  "Scheduled":      { label: "Schedule Post",   modal: "post"      },
 };
 
 /* ─── PRIMITIVES ─────────────────────────────────────────────── */
@@ -197,6 +197,39 @@ function RemovePollModal({ poll, onConfirm, onClose }) {
           <button onClick={handleConfirm} disabled={removing}
             style={{ padding: "8px 18px", borderRadius: 8, background: C.red, border: "none", color: "#fff", fontSize: 12, fontWeight: 700, cursor: removing ? "not-allowed" : "pointer", opacity: removing ? 0.7 : 1, fontFamily: FONT }}>
             {removing ? "Removing…" : "Remove Poll"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ─── REMOVE CHALLENGE MODAL ─────────────────────────────────── */
+function RemoveChallengeModal({ challenge, onConfirm, onClose }) {
+  const [removing, setRemoving] = useState(false);
+  const handleConfirm = async () => {
+    setRemoving(true);
+    try { await onConfirm(challenge.id); } finally { setRemoving(false); }
+  };
+  return (
+    <div style={{ position: "fixed", inset: 0, zIndex: 500, background: "rgba(0,0,0,0.72)", display: "flex", alignItems: "center", justifyContent: "center" }}
+      onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
+      <div style={{ background: C.card, border: `1px solid rgba(255,77,109,0.25)`, borderRadius: 14, padding: "24px 24px 20px", width: 380, maxWidth: "90vw", display: "flex", flexDirection: "column", gap: 16 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <button onClick={onClose} style={{ background: "none", border: "none", color: C.t3, cursor: "pointer", fontSize: 18, lineHeight: 1, padding: 0, flexShrink: 0 }}>×</button>
+          <div>
+            <div style={{ fontSize: 15, fontWeight: 800, color: C.t1 }}>Remove Challenge</div>
+            <div style={{ fontSize: 12, color: C.t2, marginTop: 2 }}>{challenge.title}</div>
+          </div>
+        </div>
+        <div style={{ fontSize: 12.5, color: C.t2, lineHeight: 1.55 }}>
+          This will permanently remove the challenge. <span style={{ color: C.red, fontWeight: 600 }}>This cannot be undone.</span>
+        </div>
+        <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
+          <button onClick={onClose} style={{ padding: "8px 16px", borderRadius: 8, background: "transparent", border: `1px solid ${C.brd}`, color: C.t2, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: FONT }}>Cancel</button>
+          <button onClick={handleConfirm} disabled={removing}
+            style={{ padding: "8px 18px", borderRadius: 8, background: C.red, border: "none", color: "#fff", fontSize: 12, fontWeight: 700, cursor: removing ? "not-allowed" : "pointer", opacity: removing ? 0.7 : 1, fontFamily: FONT }}>
+            {removing ? "Removing…" : "Remove Challenge"}
           </button>
         </div>
       </div>
@@ -426,6 +459,8 @@ export default function ContentPage({ events = [], challenges = [], polls = [], 
   const [tab, setTab] = useState("Community Feed");
   const [showMenu, setShowMenu] = useState(false);
   const [pollToRemove, setPollToRemove] = useState(null);
+  const [challengeToRemove, setChallengeToRemove] = useState(null);
+  const [rerunning, setRerunning] = useState(null);
 
   const createItems = [
     { label: "📝 New Post",      action: () => { openModal?.("post");      setShowMenu(false); setTab("Community Feed"); } },
@@ -587,30 +622,106 @@ export default function ContentPage({ events = [], challenges = [], polls = [], 
           )}
 
           {/* ── CHALLENGES ── */}
-          {tab === "Challenges" && (
-            <>
-              <div style={{ fontSize: 12, fontWeight: 500, color: C.t2, marginBottom: 10 }}>
-                {challenges.length} challenge{challenges.length !== 1 ? "s" : ""}
+          {tab === "Challenges" && (() => {
+            const now = new Date();
+            const liveChallenges = challenges.filter(ch => {
+              if (!ch.end_date) return true;
+              return new Date(ch.end_date) >= now;
+            });
+            const endedChallenges = challenges.filter(ch => {
+              if (!ch.end_date) return false;
+              return new Date(ch.end_date) < now;
+            });
+
+            const actionBtnStyle = (color, dimColor) => ({
+              display: "flex", alignItems: "center", gap: 6, padding: "6px 12px",
+              borderRadius: 8, background: "rgba(255,255,255,0.03)", border: `1px solid ${C.brd}`,
+              color: C.t2, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: FONT,
+              flexShrink: 0, transition: "all 0.15s",
+            });
+            const actionBtnHoverRed = e => { e.currentTarget.style.borderColor = "rgba(255,77,109,0.35)"; e.currentTarget.style.color = C.red; e.currentTarget.style.background = C.redDim; };
+            const actionBtnHoverBlue = e => { e.currentTarget.style.borderColor = C.cyanBrd; e.currentTarget.style.color = C.cyan; e.currentTarget.style.background = C.cyanDim; };
+            const actionBtnLeave = e => { e.currentTarget.style.borderColor = C.brd; e.currentTarget.style.color = C.t2; e.currentTarget.style.background = "rgba(255,255,255,0.03)"; };
+
+            const ChallengeCard = ({ ch, showRerun = false }) => (
+              <div style={{ background: C.card, border: `1px solid ${C.brd}`, borderRadius: 10, padding: isMobile ? "14px 16px" : "13px 16px", marginBottom: 8 }}
+                onMouseEnter={e => { e.currentTarget.style.borderColor = C.cyanBrd; e.currentTarget.style.boxShadow = `0 0 6px rgba(77,127,255,0.06)`; }}
+                onMouseLeave={e => { e.currentTarget.style.borderColor = C.brd; e.currentTarget.style.boxShadow = "none"; }}>
+                <div style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: 13, fontWeight: 600, color: C.t1, marginBottom: 3 }}>{ch.title}</div>
+                    {ch.description && <div style={{ fontSize: 11.5, color: C.t2 }}>{ch.description}</div>}
+                    <div style={{ fontSize: 11, color: C.t3, marginTop: 3 }}>{ch.start_date} → {ch.end_date}</div>
+                    <div style={{ fontSize: 11.5, color: C.t2, marginTop: 4 }}>{(ch.participants || []).length} joined</div>
+                  </div>
+                </div>
+                <div style={{ display: "flex", gap: 8, marginTop: 10, flexWrap: "wrap" }}>
+                  <button
+                    onClick={() => setChallengeToRemove(ch)}
+                    style={actionBtnStyle()}
+                    onMouseEnter={actionBtnHoverRed}
+                    onMouseLeave={actionBtnLeave}>
+                    <Trash2 size={12} color="currentColor" />
+                    <span>Remove Challenge</span>
+                  </button>
+                  {showRerun && (
+                    <button
+                      disabled={rerunning === ch.id}
+                      onClick={async () => {
+                        if (!ch.start_date || !ch.end_date) return;
+                        setRerunning(ch.id);
+                        try {
+                          const start = new Date(ch.start_date);
+                          const end = new Date(ch.end_date);
+                          const spanMs = end.getTime() - start.getTime();
+                          const newStart = new Date();
+                          const newEnd = new Date(newStart.getTime() + spanMs);
+                          const fmt = d => d.toISOString().split("T")[0];
+                          const { id: _id, created_date: _cd, updated_date: _ud, participants, winner_id, winner_name, ...rest } = ch;
+                          await base44.entities.Challenge.create({
+                            ...rest,
+                            start_date: fmt(newStart),
+                            end_date: fmt(newEnd),
+                            status: "active",
+                            participants: [],
+                            winner_id: null,
+                            winner_name: null,
+                          });
+                        } finally {
+                          setRerunning(null);
+                        }
+                      }}
+                      style={actionBtnStyle()}
+                      onMouseEnter={actionBtnHoverBlue}
+                      onMouseLeave={actionBtnLeave}>
+                      <RefreshCw size={12} color="currentColor" />
+                      <span>{rerunning === ch.id ? "Re-running…" : "Re-run Challenge"}</span>
+                    </button>
+                  )}
+                </div>
               </div>
-              {challenges.length === 0
-                ? <EmptyState label="challenges" onAdd={() => openModal?.("challenge")} />
-                : challenges.map(ch => (
-                  <ListCard key={ch.id} isMobile={isMobile}>
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 3 }}>
-                        <div style={{ fontSize: 13, fontWeight: 600, color: C.t1 }}>{ch.title}</div>
-                        <span style={{ padding: "2px 8px", borderRadius: 20, fontSize: 10, fontWeight: 700, textTransform: "uppercase", background: ch.status === "active" ? C.cyanDim : "rgba(255,255,255,0.06)", color: ch.status === "active" ? C.cyan : C.t2, border: `1px solid ${ch.status === "active" ? C.cyanBrd : C.brd}` }}>{ch.status}</span>
-                      </div>
-                      {ch.description && <div style={{ fontSize: 11.5, color: C.t2 }}>{ch.description}</div>}
-                      <div style={{ fontSize: 11, color: C.t3, marginTop: 3 }}>{ch.start_date} → {ch.end_date}</div>
+            );
+
+            return (
+              <>
+                <div style={{ fontSize: 12, fontWeight: 500, color: C.t2, marginBottom: 10 }}>
+                  {liveChallenges.length} live challenge{liveChallenges.length !== 1 ? "s" : ""}
+                </div>
+                {liveChallenges.length === 0
+                  ? <EmptyState label="live challenges" onAdd={() => openModal?.("challenge")} />
+                  : liveChallenges.map(ch => <ChallengeCard key={ch.id} ch={ch} />)
+                }
+                {endedChallenges.length > 0 && (
+                  <>
+                    <div style={{ fontSize: 12, fontWeight: 700, color: C.t2, margin: "20px 0 10px", paddingTop: 12, borderTop: `1px solid ${C.brd}`, textTransform: "uppercase", letterSpacing: "0.08em" }}>
+                      Ended Challenges
                     </div>
-                    <div style={{ fontSize: 11.5, color: C.t2 }}>{(ch.participants || []).length} joined</div>
-                    {onDeleteChallenge && <DeleteBtn onClick={() => onDeleteChallenge(ch.id)} />}
-                  </ListCard>
-                ))
-              }
-            </>
-          )}
+                    {endedChallenges.map(ch => <ChallengeCard key={ch.id} ch={ch} showRerun />)}
+                  </>
+                )}
+              </>
+            );
+          })()}
 
           {/* ── POLLS ── */}
           {tab === "Polls" && (
@@ -663,8 +774,8 @@ export default function ContentPage({ events = [], challenges = [], polls = [], 
             </>
           )}
 
-          {tab === "Drafts"    && <EmptyState label="drafts"          noAction />}
-          {tab === "Scheduled" && <EmptyState label="scheduled posts" noAction />}
+          {tab === "Drafts"    && <EmptyState label="drafts"          onAdd={() => openModal?.("post")} />}
+          {tab === "Scheduled" && <EmptyState label="scheduled posts" onAdd={() => openModal?.("post")} />}
 
         </div>
       </div>
@@ -699,6 +810,15 @@ export default function ContentPage({ events = [], challenges = [], polls = [], 
           poll={pollToRemove}
           onConfirm={async (id) => { await onDeleteChallenge?.(id); setPollToRemove(null); }}
           onClose={() => setPollToRemove(null)}
+        />
+      )}
+
+      {/* REMOVE CHALLENGE MODAL */}
+      {challengeToRemove && (
+        <RemoveChallengeModal
+          challenge={challengeToRemove}
+          onConfirm={async (id) => { await onDeleteChallenge?.(id); setChallengeToRemove(null); }}
+          onClose={() => setChallengeToRemove(null)}
         />
       )}
     </div>
