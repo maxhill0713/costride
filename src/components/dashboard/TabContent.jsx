@@ -196,7 +196,24 @@ function FAB({ onClick }) {
 }
 
 /* ─── ROOT ───────────────────────────────────────────────────── */
-export default function ContentPage({ events = [], challenges = [], polls = [], posts = [], openModal, onDeleteEvent, onDeleteChallenge, onDeletePost }) {
+/* ─── TIME AGO ───────────────────────────────────────────────── */
+function timeAgo(dateStr) {
+  if (!dateStr) return "";
+  let d = new Date(dateStr);
+  if (isNaN(d.getTime())) return "";
+  // treat bare date strings as UTC
+  if (typeof dateStr === "string" && !dateStr.endsWith("Z") && !dateStr.match(/[+-]\d{2}:\d{2}$/)) {
+    d = new Date(dateStr + "Z");
+  }
+  const s = (Date.now() - d.getTime()) / 1000;
+  if (s < 60)  return "just now";
+  if (s < 3600) return `${Math.floor(s / 60)}m ago`;
+  if (s < 86400) return `${Math.floor(s / 3600)}h ago`;
+  if (s < 86400 * 7) return `${Math.floor(s / 86400)}d ago`;
+  return d.toLocaleDateString("en-GB", { day: "numeric", month: "short" });
+}
+
+export default function ContentPage({ events = [], challenges = [], polls = [], posts = [], openModal, onDeleteEvent, onDeleteChallenge, onDeletePost, avatarMap = {}, nameMap = {} }) {
   const isMobile = useIsMobile();
   const [tab, setTab] = useState("Community Feed");
   const [showMenu, setShowMenu] = useState(false);
@@ -259,17 +276,60 @@ export default function ContentPage({ events = [], challenges = [], polls = [], 
               </div>
               {posts.length === 0
                 ? <EmptyState label="posts" onAdd={() => openModal?.("post")} />
-                : posts.map(p => (
-                  <ListCard key={p.id} isMobile={isMobile}>
-                    {p.image_url && <img src={p.image_url} alt="" style={{ width: 52, height: 52, borderRadius: 7, objectFit: "cover", flexShrink: 0 }} />}
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontSize: 12.5, fontWeight: 600, color: C.t1 }}>{p.member_name}</div>
-                      <div style={{ fontSize: 11.5, color: C.t2, marginTop: 2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{p.content}</div>
+                : posts.map(p => {
+                  // Resolve display name: prefer nameMap lookup, fallback to member_name only if it's not an email
+                  const resolvedName = (p.member_id && nameMap[p.member_id])
+                    || (p.member_name && !p.member_name.includes("@") ? p.member_name : null)
+                    || (p.member_name && p.member_name.includes("@") ? p.member_name.split("@")[0].replace(/[._]/g, " ").replace(/\b\w/g, c => c.toUpperCase()) : "Member");
+                  const avatar = (p.member_id && avatarMap[p.member_id]) || p.member_avatar || null;
+                  const palette = ["#6366f1","#8b5cf6","#ec4899","#14b8a6","#f59e0b","#4d7fff","#10b981"];
+                  const avatarBg = palette[(resolvedName.charCodeAt(0) || 0) % palette.length];
+                  const initials = resolvedName.split(" ").map(w => w[0]).join("").toUpperCase().slice(0, 2) || "?";
+                  const postedAt = timeAgo(p.created_date || p.created_at);
+                  const reactionCount = Object.keys(p.reactions || {}).length;
+
+                  return (
+                    <div key={p.id}
+                      style={{ background: C.card, border: `1px solid ${C.brd}`, borderRadius: 12, marginBottom: 10, display: "flex", overflow: "hidden", minHeight: 156 }}
+                      onMouseEnter={e => { e.currentTarget.style.borderColor = C.cyanBrd; e.currentTarget.style.boxShadow = `0 0 8px rgba(77,127,255,0.07)`; }}
+                      onMouseLeave={e => { e.currentTarget.style.borderColor = C.brd; e.currentTarget.style.boxShadow = "none"; }}>
+
+                      {/* Left: post image (full-height) */}
+                      {p.image_url ? (
+                        <img src={p.image_url} alt="" style={{ width: 140, flexShrink: 0, objectFit: "cover", display: "block" }} />
+                      ) : (
+                        <div style={{ width: 8, flexShrink: 0, background: C.cyanDim }} />
+                      )}
+
+                      {/* Right: content */}
+                      <div style={{ flex: 1, minWidth: 0, padding: "14px 16px", display: "flex", flexDirection: "column", gap: 8 }}>
+                        {/* Author row */}
+                        <div style={{ display: "flex", alignItems: "center", gap: 9 }}>
+                          <div style={{ width: 34, height: 34, borderRadius: "50%", flexShrink: 0, background: avatarBg, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 800, color: "#fff", overflow: "hidden" }}>
+                            {avatar ? <img src={avatar} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : initials}
+                          </div>
+                          <div>
+                            <div style={{ fontSize: 13, fontWeight: 700, color: C.t1, lineHeight: 1.2 }}>{resolvedName}</div>
+                            {postedAt && <div style={{ fontSize: 11, color: C.t3, marginTop: 2 }}>{postedAt}</div>}
+                          </div>
+                        </div>
+
+                        {/* Post content */}
+                        {p.content && (
+                          <div style={{ fontSize: 12.5, color: C.t2, lineHeight: 1.5, display: "-webkit-box", WebkitLineClamp: 3, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
+                            {p.content}
+                          </div>
+                        )}
+
+                        {/* Footer */}
+                        <div style={{ marginTop: "auto", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                          <span style={{ fontSize: 11, color: C.t3 }}>{reactionCount > 0 ? `${reactionCount} reaction${reactionCount !== 1 ? "s" : ""}` : ""}</span>
+                          {onDeletePost && <DeleteBtn onClick={() => onDeletePost(p.id)} />}
+                        </div>
+                      </div>
                     </div>
-                    <div style={{ fontSize: 11, color: C.t3 }}>{Object.keys(p.reactions || {}).length} reactions</div>
-                    {onDeletePost && <DeleteBtn onClick={() => onDeletePost(p.id)} />}
-                  </ListCard>
-                ))
+                  );
+                })
               }
             </>
           )}
