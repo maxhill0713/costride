@@ -337,9 +337,6 @@ function Tabs({ active, setActive, isMobile }) {
 }
 
 /* ─── RIGHT SIDEBAR ──────────────────────────────────────────── */
-// CHANGE 1: Fixed-size sidebar card — no longer stretches full height.
-// It sits in the top of the sidebar column, rounded on all sides, matching other cards.
-
 const QUICK_IDEAS = ["Generate AI Motivation Monday", "Post Member Spotlight", "Create Weekend Challenge Poll"];
 
 function RightSidebar({ events, challenges, polls, posts, openModal, feedPostsThisWeek, livePolls, communityInteractionsToday }) {
@@ -364,6 +361,7 @@ function RightSidebar({ events, challenges, polls, posts, openModal, feedPostsTh
         flexDirection: "column",
         gap: 12,
       }}>
+        {/* What to Post Today */}
         <div>
           <div style={{ fontSize: 12.5, fontWeight: 600, color: C.t1, marginBottom: 2 }}>What to Post Today?</div>
           <div style={{ fontSize: 10.5, color: C.t2, marginBottom: 9 }}>Guided ideas for today</div>
@@ -380,15 +378,16 @@ function RightSidebar({ events, challenges, polls, posts, openModal, feedPostsTh
 
         <div style={{ height: 1, background: C.brd }} />
 
+        {/* Content Highlights — renamed, reordered */}
         <div>
-          <div style={{ fontSize: 12.5, fontWeight: 600, color: C.t1, marginBottom: 10 }}>Content Overview</div>
+          <div style={{ fontSize: 12.5, fontWeight: 600, color: C.t1, marginBottom: 10 }}>Content Highlights</div>
           <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
             {[
-              { label: "Events",                    count: events.length,              Icon: Calendar,  color: "#f59e0b" },
-              { label: "Challenges",                count: challenges.length,           Icon: Trophy,    color: "#ec4899" },
-              { label: "Live Polls",                count: livePolls,                   Icon: BarChart2, color: "#8b5cf6" },
-              { label: "Posts this week",           count: feedPostsThisWeek,           Icon: FileText,  color: C.cyan    },
-              { label: "Community Interactions today", count: communityInteractionsToday, Icon: Zap,    color: "#34d399"  },
+              { label: "Community Interactions today", count: communityInteractionsToday, Icon: Zap,      color: "#34d399" },
+              { label: "Posts this week",              count: feedPostsThisWeek,           Icon: FileText, color: C.cyan   },
+              { label: "Live Polls",                   count: livePolls,                   Icon: BarChart2,color: "#8b5cf6"},
+              { label: "Challenges",                   count: challenges.length,           Icon: Trophy,   color: "#ec4899"},
+              { label: "Events",                       count: events.length,               Icon: Calendar, color: "#f59e0b"},
             ].map(({ label, count, Icon, color }) => (
               <div key={label} style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 10px", background: C.card, border: `1px solid ${C.brd}`, borderRadius: 8 }}>
                 <Icon size={13} color={color} />
@@ -495,7 +494,6 @@ export default function ContentPage({ events = [], challenges = [], polls = [], 
   const tabAction = TAB_ACTION[tab];
 
   const sevenDaysCutoff = Date.now() - 7 * 24 * 60 * 60 * 1000;
-  const oneDayCutoff = Date.now() - 24 * 60 * 60 * 1000;
   const gymId = gym?.id;
   const feedPosts = posts.filter(p => {
     if (p.is_hidden) return false;
@@ -520,9 +518,6 @@ export default function ContentPage({ events = [], challenges = [], polls = [], 
   });
   const communityInteractionsToday = communityFeedPosts.reduce((sum, p) => {
     const reactions = p.reactions || {};
-    // Only count reactions added in the last 24h — reactions object maps userId→emoji with no timestamps,
-    // so we count all reactions on posts created or updated in last 24h as a proxy,
-    // or simply sum all reactions on the community feed posts.
     return sum + Object.keys(reactions).length;
   }, 0);
 
@@ -535,8 +530,6 @@ export default function ContentPage({ events = [], challenges = [], polls = [], 
         {/* HEADER */}
         <div style={{ padding: isMobile ? "10px 12px 0" : "4px 8px 0" }}>
           {!isMobile && (
-            // CHANGE 2: Button moved lower (marginTop: 12) and right (marginRight reduced from 48 to 8)
-            // so it sits just below the title and closer to the right edge.
             <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 8 }}>
               <h1 style={{ fontSize: 22, fontWeight: 800, color: C.t1, margin: 0, letterSpacing: "-0.03em", lineHeight: 1.2 }}>
                 Content <span style={{ color: C.cyan }}>Hub</span>
@@ -552,8 +545,8 @@ export default function ContentPage({ events = [], challenges = [], polls = [], 
                     cursor: "pointer", fontFamily: FONT,
                     boxShadow: "0 0 10px rgba(77,127,255,0.22), 0 2px 8px rgba(77,127,255,0.12)",
                     transition: "opacity 0.15s",
-                    marginTop: 12,   // lower
-                    marginRight: 8,  // more to the right
+                    marginTop: 12,
+                    marginRight: 8,
                   }}
                   onMouseEnter={e => e.currentTarget.style.opacity = "0.88"}
                   onMouseLeave={e => e.currentTarget.style.opacity = "1"}>
@@ -696,13 +689,10 @@ export default function ContentPage({ events = [], challenges = [], polls = [], 
             const actionBtnHoverBlue = e => { e.currentTarget.style.borderColor = C.cyanBrd; e.currentTarget.style.color = C.cyan; e.currentTarget.style.background = C.cyanDim; };
             const actionBtnLeave = e => { e.currentTarget.style.borderColor = C.brd; e.currentTarget.style.color = C.t2; e.currentTarget.style.background = "rgba(255,255,255,0.03)"; };
 
-            // CHANGE 3: Remove Challenge button moved to top-right of card header row.
-            // Re-run Challenge button stays in the bottom action row (only shown for ended).
             const ChallengeCard = ({ ch, showRerun = false }) => (
               <div style={{ background: C.card, border: `1px solid ${C.brd}`, borderRadius: 10, padding: isMobile ? "14px 16px" : "13px 16px", marginBottom: 8 }}
                 onMouseEnter={e => { e.currentTarget.style.borderColor = C.cyanBrd; e.currentTarget.style.boxShadow = `0 0 6px rgba(77,127,255,0.06)`; }}
                 onMouseLeave={e => { e.currentTarget.style.borderColor = C.brd; e.currentTarget.style.boxShadow = "none"; }}>
-                {/* Header row: title/meta on left, Remove button on right */}
                 <div style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ fontSize: 13, fontWeight: 600, color: C.t1, marginBottom: 3 }}>{ch.title}</div>
@@ -710,7 +700,6 @@ export default function ContentPage({ events = [], challenges = [], polls = [], 
                     <div style={{ fontSize: 11, color: C.t3, marginTop: 3 }}>{ch.start_date} → {ch.end_date}</div>
                     <div style={{ fontSize: 11.5, color: C.t2, marginTop: 4 }}>{(ch.participants || []).length} joined</div>
                   </div>
-                  {/* Remove Challenge button — top right */}
                   <button
                     onClick={() => setChallengeToRemove(ch)}
                     style={actionBtnStyle()}
@@ -720,7 +709,6 @@ export default function ContentPage({ events = [], challenges = [], polls = [], 
                     <span>Remove</span>
                   </button>
                 </div>
-                {/* Re-run button row — only for ended challenges */}
                 {showRerun && (
                   <div style={{ display: "flex", gap: 8, marginTop: 10, flexWrap: "wrap" }}>
                     <button
@@ -836,7 +824,16 @@ export default function ContentPage({ events = [], challenges = [], polls = [], 
 
       {/* RIGHT SIDEBAR — desktop only */}
       {!isMobile && (
-        <RightSidebar events={events} challenges={challenges} polls={polls} posts={posts} openModal={openModal} feedPostsThisWeek={feedPostsThisWeek} livePolls={livePolls} communityInteractionsToday={communityInteractionsToday} />
+        <RightSidebar
+          events={events}
+          challenges={challenges}
+          polls={polls}
+          posts={posts}
+          openModal={openModal}
+          feedPostsThisWeek={feedPostsThisWeek}
+          livePolls={livePolls}
+          communityInteractionsToday={communityInteractionsToday}
+        />
       )}
 
       {/* MOBILE FAB + MENU */}
