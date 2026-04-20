@@ -106,7 +106,6 @@ function MessageMemberModal({ resolvedName, memberId, onClose }) {
     <div style={{ position: "fixed", inset: 0, zIndex: 500, background: "rgba(0,0,0,0.72)", display: "flex", alignItems: "center", justifyContent: "center" }}
       onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
       <div style={{ background: C.card, border: `1px solid ${C.brd}`, borderRadius: 14, padding: "24px 24px 20px", width: 400, maxWidth: "90vw", display: "flex", flexDirection: "column", gap: 14 }}>
-        {/* Header with X top-left */}
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
           <button onClick={onClose} style={{ background: "none", border: "none", color: C.t3, cursor: "pointer", fontSize: 18, lineHeight: 1, padding: 0, flexShrink: 0 }}>×</button>
           <div style={{ fontSize: 15, fontWeight: 800, color: C.t1, letterSpacing: "-0.02em" }}>Message Member</div>
@@ -151,7 +150,6 @@ function RemovePostModal({ post, resolvedName, onConfirm, onClose }) {
     <div style={{ position: "fixed", inset: 0, zIndex: 500, background: "rgba(0,0,0,0.72)", display: "flex", alignItems: "center", justifyContent: "center" }}
       onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
       <div style={{ background: C.card, border: `1px solid rgba(255,77,109,0.25)`, borderRadius: 14, padding: "24px 24px 20px", width: 380, maxWidth: "90vw", display: "flex", flexDirection: "column", gap: 16 }}>
-        {/* Header: X top-left + title */}
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
           <button onClick={onClose} style={{ background: "none", border: "none", color: C.t3, cursor: "pointer", fontSize: 18, lineHeight: 1, padding: 0, flexShrink: 0 }}>×</button>
           <div>
@@ -339,47 +337,74 @@ function Tabs({ active, setActive, isMobile }) {
 }
 
 /* ─── RIGHT SIDEBAR ──────────────────────────────────────────── */
+// CHANGE 1: Fixed-size sidebar card — no longer stretches full height.
+// It sits in the top of the sidebar column, rounded on all sides, matching other cards.
+
 const QUICK_IDEAS = ["Generate AI Motivation Monday", "Post Member Spotlight", "Create Weekend Challenge Poll"];
 
 function RightSidebar({ events, challenges, polls, posts, openModal }) {
   const totalContent = events.length + challenges.length + polls.length + posts.length;
   return (
-    <div style={{ width: 302, flexShrink: 0, background: C.sidebar, borderLeft: `1px solid ${C.brd}`, padding: "12px 10px", display: "flex", flexDirection: "column", gap: 12, overflowY: "auto" }}>
-      <div>
-        <div style={{ fontSize: 12.5, fontWeight: 600, color: C.t1, marginBottom: 2 }}>What to Post Today?</div>
-        <div style={{ fontSize: 10.5, color: C.t2, marginBottom: 9 }}>Guided ideas for today</div>
-        <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-          {QUICK_IDEAS.map((q, i) => (
-            <button key={i} style={{ width: "100%", padding: "8px 12px", borderRadius: 8, textAlign: "left", background: C.card, border: `1px solid ${C.brd}`, color: C.t2, fontSize: 11.5, fontWeight: 500, cursor: "pointer", fontFamily: FONT }}
-              onMouseEnter={e => { e.currentTarget.style.borderColor = C.cyanBrd; e.currentTarget.style.color = C.t1; }}
-              onMouseLeave={e => { e.currentTarget.style.borderColor = C.brd; e.currentTarget.style.color = C.t2; }}>
-              {q}
-            </button>
-          ))}
-        </div>
-      </div>
-      <div style={{ height: 1, background: C.brd }} />
-      <div>
-        <div style={{ fontSize: 12.5, fontWeight: 600, color: C.t1, marginBottom: 10 }}>Content Overview</div>
-        <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-          {[
-            { label: "Events",     count: events.length,     Icon: Calendar,  color: "#f59e0b" },
-            { label: "Challenges", count: challenges.length, Icon: Trophy,    color: "#ec4899" },
-            { label: "Polls",      count: polls.length,      Icon: BarChart2, color: "#8b5cf6" },
-            { label: "Posts",      count: posts.length,      Icon: FileText,  color: C.cyan    },
-          ].map(({ label, count, Icon, color }) => (
-            <div key={label} style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 10px", background: C.card, border: `1px solid ${C.brd}`, borderRadius: 8 }}>
-              <Icon size={13} color={color} />
-              <span style={{ fontSize: 12, color: C.t2, flex: 1 }}>{label}</span>
-              <span style={{ fontSize: 13, fontWeight: 700, color: C.t1 }}>{count}</span>
-            </div>
-          ))}
-        </div>
-        {totalContent === 0 && (
-          <div style={{ marginTop: 10, fontSize: 11.5, color: C.t3, lineHeight: 1.55 }}>
-            No content yet. Create your first event, challenge, poll or post to get started.
+    // Outer column: takes up its natural width, aligned to the top, no background fill
+    <div style={{
+      width: 302,
+      flexShrink: 0,
+      borderLeft: `1px solid ${C.brd}`,
+      padding: "16px 12px",
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "stretch",
+      // Don't stretch to fill height — let content dictate
+      alignSelf: "flex-start",
+    }}>
+      {/* Single rounded card containing both sections */}
+      <div style={{
+        background: C.sidebar,
+        border: `1px solid ${C.brd}`,
+        borderRadius: 12,
+        padding: "14px 14px",
+        display: "flex",
+        flexDirection: "column",
+        gap: 12,
+      }}>
+        <div>
+          <div style={{ fontSize: 12.5, fontWeight: 600, color: C.t1, marginBottom: 2 }}>What to Post Today?</div>
+          <div style={{ fontSize: 10.5, color: C.t2, marginBottom: 9 }}>Guided ideas for today</div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+            {QUICK_IDEAS.map((q, i) => (
+              <button key={i} style={{ width: "100%", padding: "8px 12px", borderRadius: 8, textAlign: "left", background: C.card, border: `1px solid ${C.brd}`, color: C.t2, fontSize: 11.5, fontWeight: 500, cursor: "pointer", fontFamily: FONT }}
+                onMouseEnter={e => { e.currentTarget.style.borderColor = C.cyanBrd; e.currentTarget.style.color = C.t1; }}
+                onMouseLeave={e => { e.currentTarget.style.borderColor = C.brd; e.currentTarget.style.color = C.t2; }}>
+                {q}
+              </button>
+            ))}
           </div>
-        )}
+        </div>
+
+        <div style={{ height: 1, background: C.brd }} />
+
+        <div>
+          <div style={{ fontSize: 12.5, fontWeight: 600, color: C.t1, marginBottom: 10 }}>Content Overview</div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+            {[
+              { label: "Events",     count: events.length,     Icon: Calendar,  color: "#f59e0b" },
+              { label: "Challenges", count: challenges.length, Icon: Trophy,    color: "#ec4899" },
+              { label: "Polls",      count: polls.length,      Icon: BarChart2, color: "#8b5cf6" },
+              { label: "Posts",      count: posts.length,      Icon: FileText,  color: C.cyan    },
+            ].map(({ label, count, Icon, color }) => (
+              <div key={label} style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 10px", background: C.card, border: `1px solid ${C.brd}`, borderRadius: 8 }}>
+                <Icon size={13} color={color} />
+                <span style={{ fontSize: 12, color: C.t2, flex: 1 }}>{label}</span>
+                <span style={{ fontSize: 13, fontWeight: 700, color: C.t1 }}>{count}</span>
+              </div>
+            ))}
+          </div>
+          {totalContent === 0 && (
+            <div style={{ marginTop: 10, fontSize: 11.5, color: C.t3, lineHeight: 1.55 }}>
+              No content yet. Create your first event, challenge, poll or post to get started.
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
@@ -474,13 +499,9 @@ export default function ContentPage({ events = [], challenges = [], polls = [], 
   const sevenDaysCutoff = Date.now() - 7 * 24 * 60 * 60 * 1000;
   const gymId = gym?.id;
   const feedPosts = posts.filter(p => {
-    // Must not be hidden
     if (p.is_hidden) return false;
-    // Must be shared with community
     if (!p.share_with_community) return false;
-    // Must belong to this gym
     if (gymId && p.gym_id !== gymId) return false;
-    // Date filter (last 7 days)
     const d = p.created_date || p.created_at || p.date;
     return d ? new Date(d).getTime() >= sevenDaysCutoff : true;
   });
@@ -494,14 +515,26 @@ export default function ContentPage({ events = [], challenges = [], polls = [], 
         {/* HEADER */}
         <div style={{ padding: isMobile ? "10px 12px 0" : "4px 8px 0" }}>
           {!isMobile && (
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
+            // CHANGE 2: Button moved lower (marginTop: 12) and right (marginRight reduced from 48 to 8)
+            // so it sits just below the title and closer to the right edge.
+            <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 8 }}>
               <h1 style={{ fontSize: 22, fontWeight: 800, color: C.t1, margin: 0, letterSpacing: "-0.03em", lineHeight: 1.2 }}>
                 Content <span style={{ color: C.cyan }}>Hub</span>
               </h1>
               {tabAction && (
                 <button
                   onClick={() => openModal?.(tabAction.modal)}
-                  style={{ display: "flex", alignItems: "center", gap: 6, padding: "9px 18px", background: C.cyan, border: "none", borderRadius: 9, fontSize: 12.5, fontWeight: 700, color: "#fff", cursor: "pointer", fontFamily: FONT, boxShadow: "0 0 10px rgba(77,127,255,0.22), 0 2px 8px rgba(77,127,255,0.12)", transition: "opacity 0.15s", marginRight: 48 }}
+                  style={{
+                    display: "flex", alignItems: "center", gap: 6,
+                    padding: "9px 18px",
+                    background: C.cyan, border: "none", borderRadius: 9,
+                    fontSize: 12.5, fontWeight: 700, color: "#fff",
+                    cursor: "pointer", fontFamily: FONT,
+                    boxShadow: "0 0 10px rgba(77,127,255,0.22), 0 2px 8px rgba(77,127,255,0.12)",
+                    transition: "opacity 0.15s",
+                    marginTop: 12,   // lower
+                    marginRight: 8,  // more to the right
+                  }}
                   onMouseEnter={e => e.currentTarget.style.opacity = "0.88"}
                   onMouseLeave={e => e.currentTarget.style.opacity = "1"}>
                   <Plus size={12} /> {tabAction.label}
@@ -633,7 +666,7 @@ export default function ContentPage({ events = [], challenges = [], polls = [], 
               return new Date(ch.end_date) < now;
             });
 
-            const actionBtnStyle = (color, dimColor) => ({
+            const actionBtnStyle = () => ({
               display: "flex", alignItems: "center", gap: 6, padding: "6px 12px",
               borderRadius: 8, background: "rgba(255,255,255,0.03)", border: `1px solid ${C.brd}`,
               color: C.t2, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: FONT,
@@ -643,10 +676,13 @@ export default function ContentPage({ events = [], challenges = [], polls = [], 
             const actionBtnHoverBlue = e => { e.currentTarget.style.borderColor = C.cyanBrd; e.currentTarget.style.color = C.cyan; e.currentTarget.style.background = C.cyanDim; };
             const actionBtnLeave = e => { e.currentTarget.style.borderColor = C.brd; e.currentTarget.style.color = C.t2; e.currentTarget.style.background = "rgba(255,255,255,0.03)"; };
 
+            // CHANGE 3: Remove Challenge button moved to top-right of card header row.
+            // Re-run Challenge button stays in the bottom action row (only shown for ended).
             const ChallengeCard = ({ ch, showRerun = false }) => (
               <div style={{ background: C.card, border: `1px solid ${C.brd}`, borderRadius: 10, padding: isMobile ? "14px 16px" : "13px 16px", marginBottom: 8 }}
                 onMouseEnter={e => { e.currentTarget.style.borderColor = C.cyanBrd; e.currentTarget.style.boxShadow = `0 0 6px rgba(77,127,255,0.06)`; }}
                 onMouseLeave={e => { e.currentTarget.style.borderColor = C.brd; e.currentTarget.style.boxShadow = "none"; }}>
+                {/* Header row: title/meta on left, Remove button on right */}
                 <div style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ fontSize: 13, fontWeight: 600, color: C.t1, marginBottom: 3 }}>{ch.title}</div>
@@ -654,17 +690,19 @@ export default function ContentPage({ events = [], challenges = [], polls = [], 
                     <div style={{ fontSize: 11, color: C.t3, marginTop: 3 }}>{ch.start_date} → {ch.end_date}</div>
                     <div style={{ fontSize: 11.5, color: C.t2, marginTop: 4 }}>{(ch.participants || []).length} joined</div>
                   </div>
-                </div>
-                <div style={{ display: "flex", gap: 8, marginTop: 10, flexWrap: "wrap" }}>
+                  {/* Remove Challenge button — top right */}
                   <button
                     onClick={() => setChallengeToRemove(ch)}
                     style={actionBtnStyle()}
                     onMouseEnter={actionBtnHoverRed}
                     onMouseLeave={actionBtnLeave}>
                     <Trash2 size={12} color="currentColor" />
-                    <span>Remove Challenge</span>
+                    <span>Remove</span>
                   </button>
-                  {showRerun && (
+                </div>
+                {/* Re-run button row — only for ended challenges */}
+                {showRerun && (
+                  <div style={{ display: "flex", gap: 8, marginTop: 10, flexWrap: "wrap" }}>
                     <button
                       disabled={rerunning === ch.id}
                       onClick={async () => {
@@ -697,8 +735,8 @@ export default function ContentPage({ events = [], challenges = [], polls = [], 
                       <RefreshCw size={12} color="currentColor" />
                       <span>{rerunning === ch.id ? "Re-running…" : "Re-run Challenge"}</span>
                     </button>
-                  )}
-                </div>
+                  </div>
+                )}
               </div>
             );
 
@@ -735,10 +773,8 @@ export default function ContentPage({ events = [], challenges = [], polls = [], 
                   <div key={poll.id} style={{ background: C.card, border: `1px solid ${C.brd}`, borderRadius: 10, padding: isMobile ? "14px 16px" : "13px 16px", marginBottom: 8 }}
                     onMouseEnter={e => { e.currentTarget.style.borderColor = C.cyanBrd; e.currentTarget.style.boxShadow = `0 0 6px rgba(77,127,255,0.06)`; }}
                     onMouseLeave={e => { e.currentTarget.style.borderColor = C.brd; e.currentTarget.style.boxShadow = "none"; }}>
-                    {/* Poll header */}
                     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
                       <div style={{ fontSize: 13, fontWeight: 600, color: C.t1 }}>{poll.question || poll.title}</div>
-                      {/* Remove Poll button styled like Remove Post */}
                       <button
                         onClick={() => setPollToRemove(poll)}
                         style={{ display: "flex", alignItems: "center", gap: 6, padding: "6px 12px", borderRadius: 8, background: "rgba(255,255,255,0.03)", border: `1px solid ${C.brd}`, color: C.t2, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: FONT, flexShrink: 0, transition: "all 0.15s" }}
@@ -748,13 +784,11 @@ export default function ContentPage({ events = [], challenges = [], polls = [], 
                         <span>Remove Poll</span>
                       </button>
                     </div>
-                    {/* Poll options — bars capped at 80% width */}
                     {(poll.options || []).map((opt, i) => {
                       const optText  = typeof opt === "object" ? (opt.text || opt.label || String(i + 1)) : opt;
                       const optVotes = typeof opt === "object" ? (opt.votes || 0) : ((poll.votes || {})[opt] || 0);
                       const total    = Math.max((poll.voters || []).length, 1);
                       const pct      = Math.round(optVotes / total * 100);
-                      // Cap the rendered bar width to 80% of the box
                       const barWidth = Math.round(pct * 0.8);
                       return (
                         <div key={i} style={{ marginBottom: 6 }}>
