@@ -3,6 +3,7 @@ import {
   ChevronDown, Plus, Flame, Facebook, Instagram,
   ChevronRight, Check, X, MoreHorizontal, Calendar, Trophy, BarChart2, FileText, Pencil,
 } from "lucide-react";
+import PostActionsPanel from "./PostActionsPanel";
 
 /* ─── MOBILE HOOK ────────────────────────────────────────────── */
 function useIsMobile(breakpoint = 768) {
@@ -204,10 +205,11 @@ function FAB({ onClick }) {
 }
 
 /* ─── ROOT ───────────────────────────────────────────────────── */
-export default function ContentPage({ events = [], challenges = [], polls = [], posts = [], openModal, onDeleteEvent, onDeleteChallenge, onDeletePost, avatarMap = {}, nameMap = {} }) {
+export default function ContentPage({ events = [], challenges = [], polls = [], posts = [], openModal, onDeleteEvent, onDeleteChallenge, onDeletePost, avatarMap = {}, nameMap = {}, currentUser = null }) {
   const isMobile = useIsMobile();
   const [tab, setTab] = useState("Community Feed");
   const [showMenu, setShowMenu] = useState(false);
+  const [activePanel, setActivePanel] = useState(null); // { post, resolvedName }
 
   const createItems = [
     { label: "📝 New Post",      action: () => { openModal?.("post");      setShowMenu(false); setTab("Community Feed"); } },
@@ -218,6 +220,13 @@ export default function ContentPage({ events = [], challenges = [], polls = [], 
 
   const tabAction = TAB_ACTION[tab];
   const recent7 = recentPostCount(posts, 7);
+
+  // Only show posts from the last 7 days in the community feed
+  const sevenDaysCutoff = Date.now() - 7 * 24 * 60 * 60 * 1000;
+  const feedPosts = posts.filter(p => {
+    const d = p.created_date || p.created_at || p.date;
+    return d ? new Date(d).getTime() >= sevenDaysCutoff : true;
+  });
 
   return (
     <div style={{ display: "flex", flex: 1, minHeight: 0, background: C.bg, color: C.t1, fontFamily: FONT, fontSize: 13, lineHeight: 1.5, WebkitFontSmoothing: "antialiased" }}>
@@ -259,9 +268,9 @@ export default function ContentPage({ events = [], challenges = [], polls = [], 
               <div style={{ fontSize: 12, fontWeight: 500, color: C.t2, marginBottom: 10 }}>
                 {recent7} post{recent7 !== 1 ? "s" : ""} in the last 7 days
               </div>
-              {posts.length === 0
+              {feedPosts.length === 0
                 ? <EmptyState label="posts" onAdd={() => openModal?.("post")} />
-                : posts.map(p => {
+                : feedPosts.map(p => {
                   const resolvedName = (p.member_id && nameMap[p.member_id])
                     || (p.member_name && !p.member_name.includes("@") ? p.member_name : null)
                     || (p.member_name && p.member_name.includes("@") ? p.member_name.split("@")[0].replace(/[._]/g, " ").replace(/\b\w/g, c => c.toUpperCase()) : "Member");
@@ -313,7 +322,7 @@ export default function ContentPage({ events = [], challenges = [], polls = [], 
                           </div>
 
                           {/* Pencil edit button — top right */}
-                          <EditBtn onClick={() => {/* placeholder */}} />
+                          <EditBtn onClick={() => setActivePanel({ post: p, resolvedName })} />
                         </div>
 
                         {/* Post content */}
@@ -434,6 +443,17 @@ export default function ContentPage({ events = [], challenges = [], polls = [], 
       {/* RIGHT SIDEBAR — desktop only */}
       {!isMobile && (
         <RightSidebar events={events} challenges={challenges} polls={polls} posts={posts} openModal={openModal} />
+      )}
+
+      {/* POST ACTIONS PANEL */}
+      {activePanel && (
+        <PostActionsPanel
+          post={activePanel.post}
+          resolvedName={activePanel.resolvedName}
+          currentUser={currentUser}
+          onClose={() => setActivePanel(null)}
+          onDeletePost={(id) => { onDeletePost?.(id); setActivePanel(null); }}
+        />
       )}
 
       {/* MOBILE FAB + MENU */}

@@ -185,6 +185,11 @@ export default function Home() {
   const [showDaysCelebration, setShowDaysCelebration] = useState(false);
   const [showFreezeAnimation, setShowFreezeAnimation] = useState(false);
   const [freezeAnimationData, setFreezeAnimationData] = useState({ freezesLostCount: 0, finalFreezeCount: 0 });
+  const [postRemovedNotif, setPostRemovedNotif] = useState(null);
+  const [dismissedPostRemovedIds] = useState(() => {
+    try { return new Set(JSON.parse(localStorage.getItem('dismissedPostRemovedNotifs') || '[]')); }
+    catch { return new Set(); }
+  });
   const [showStreakLossAnimation, setShowStreakLossAnimation] = useState(false);
   const [streakLossAnimationData, setStreakLossAnimationData] = useState({ previousStreak: 0 });
   const [celebrationStreakNum, setCelebrationStreakNum] = useState(0);
@@ -396,6 +401,23 @@ export default function Home() {
     refetchIntervalInBackground: false,
     placeholderData: (prev) => prev,
   });
+
+  // Show pop-up for post_removed notifications
+  useEffect(() => {
+    if (!notifications.length) return;
+    const unread = notifications.find(n => n.type === 'post_removed' && !n.read && !dismissedPostRemovedIds.has(n.id));
+    if (unread && !postRemovedNotif) {
+      setPostRemovedNotif(unread);
+    }
+  }, [notifications]);
+
+  const dismissPostRemovedNotif = async () => {
+    if (!postRemovedNotif) return;
+    dismissedPostRemovedIds.add(postRemovedNotif.id);
+    localStorage.setItem('dismissedPostRemovedNotifs', JSON.stringify([...dismissedPostRemovedIds]));
+    try { await base44.entities.Notification.update(postRemovedNotif.id, { read: true }); } catch {}
+    setPostRemovedNotif(null);
+  };
 
   const { data: friends = [] } = useQuery({
     queryKey: ['friends', currentUser?.id],
@@ -1444,6 +1466,25 @@ export default function Home() {
       />
 
       <WorkoutSummaryModal summaryLog={summaryLog} onClose={() => setSummaryLog(null)} />
+
+      {/* Post removed notification popup */}
+      {postRemovedNotif && (
+        <div className="fixed inset-0 z-[600] flex items-center justify-center p-4" style={{ background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(4px)' }}>
+          <div className="w-full max-w-xs rounded-2xl p-6 text-center" style={{ background: '#141416', border: '1px solid rgba(255,77,109,0.25)', boxShadow: '0 24px 80px rgba(0,0,0,0.8)' }}>
+            <div className="w-12 h-12 rounded-full mx-auto mb-4 flex items-center justify-center" style={{ background: 'rgba(255,77,109,0.12)', border: '1px solid rgba(255,77,109,0.25)' }}>
+              <span style={{ fontSize: 22 }}>⚠️</span>
+            </div>
+            <h3 className="text-white font-bold text-base mb-2">Post Removed</h3>
+            <p className="text-sm leading-relaxed mb-5" style={{ color: '#8a8a94' }}>{postRemovedNotif.message}</p>
+            <button
+              onClick={dismissPostRemovedNotif}
+              className="w-full py-3 rounded-xl font-bold text-white text-sm"
+              style={{ background: '#4d7fff' }}>
+              Got it
+            </button>
+          </div>
+        </div>
+      )}
 
       <AnimatePresence>
         {viewWorkoutDay !== null && (() => {
