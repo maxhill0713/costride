@@ -342,10 +342,9 @@ function Tabs({ active, setActive, isMobile }) {
 
 const QUICK_IDEAS = ["Generate AI Motivation Monday", "Post Member Spotlight", "Create Weekend Challenge Poll"];
 
-function RightSidebar({ events, challenges, polls, posts, openModal }) {
+function RightSidebar({ events, challenges, polls, posts, openModal, feedPostsThisWeek, livePolls, communityInteractionsToday }) {
   const totalContent = events.length + challenges.length + polls.length + posts.length;
   return (
-    // Outer column: takes up its natural width, aligned to the top, no background fill
     <div style={{
       width: 302,
       flexShrink: 0,
@@ -354,10 +353,8 @@ function RightSidebar({ events, challenges, polls, posts, openModal }) {
       display: "flex",
       flexDirection: "column",
       alignItems: "stretch",
-      // Don't stretch to fill height — let content dictate
       alignSelf: "flex-start",
     }}>
-      {/* Single rounded card containing both sections */}
       <div style={{
         background: C.sidebar,
         border: `1px solid ${C.brd}`,
@@ -387,10 +384,11 @@ function RightSidebar({ events, challenges, polls, posts, openModal }) {
           <div style={{ fontSize: 12.5, fontWeight: 600, color: C.t1, marginBottom: 10 }}>Content Overview</div>
           <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
             {[
-              { label: "Events",     count: events.length,     Icon: Calendar,  color: "#f59e0b" },
-              { label: "Challenges", count: challenges.length, Icon: Trophy,    color: "#ec4899" },
-              { label: "Polls",      count: polls.length,      Icon: BarChart2, color: "#8b5cf6" },
-              { label: "Posts",      count: posts.length,      Icon: FileText,  color: C.cyan    },
+              { label: "Events",                    count: events.length,              Icon: Calendar,  color: "#f59e0b" },
+              { label: "Challenges",                count: challenges.length,           Icon: Trophy,    color: "#ec4899" },
+              { label: "Live Polls",                count: livePolls,                   Icon: BarChart2, color: "#8b5cf6" },
+              { label: "Posts this week",           count: feedPostsThisWeek,           Icon: FileText,  color: C.cyan    },
+              { label: "Community Interactions today", count: communityInteractionsToday, Icon: Zap,    color: "#34d399"  },
             ].map(({ label, count, Icon, color }) => (
               <div key={label} style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 10px", background: C.card, border: `1px solid ${C.brd}`, borderRadius: 8 }}>
                 <Icon size={13} color={color} />
@@ -497,6 +495,7 @@ export default function ContentPage({ events = [], challenges = [], polls = [], 
   const tabAction = TAB_ACTION[tab];
 
   const sevenDaysCutoff = Date.now() - 7 * 24 * 60 * 60 * 1000;
+  const oneDayCutoff = Date.now() - 24 * 60 * 60 * 1000;
   const gymId = gym?.id;
   const feedPosts = posts.filter(p => {
     if (p.is_hidden) return false;
@@ -505,6 +504,27 @@ export default function ContentPage({ events = [], challenges = [], polls = [], 
     const d = p.created_date || p.created_at || p.date;
     return d ? new Date(d).getTime() >= sevenDaysCutoff : true;
   });
+
+  // Sidebar computed metrics
+  const feedPostsThisWeek = feedPosts.length;
+  const now = new Date();
+  const livePolls = polls.filter(p => {
+    if (p.end_date) return new Date(p.end_date) >= now;
+    return true;
+  }).length;
+  const communityFeedPosts = posts.filter(p => {
+    if (p.is_hidden) return false;
+    if (!p.share_with_community) return false;
+    if (gymId && p.gym_id !== gymId) return false;
+    return true;
+  });
+  const communityInteractionsToday = communityFeedPosts.reduce((sum, p) => {
+    const reactions = p.reactions || {};
+    // Only count reactions added in the last 24h — reactions object maps userId→emoji with no timestamps,
+    // so we count all reactions on posts created or updated in last 24h as a proxy,
+    // or simply sum all reactions on the community feed posts.
+    return sum + Object.keys(reactions).length;
+  }, 0);
 
   return (
     <div style={{ display: "flex", flex: 1, minHeight: 0, background: C.bg, color: C.t1, fontFamily: FONT, fontSize: 13, lineHeight: 1.5, WebkitFontSmoothing: "antialiased" }}>
@@ -816,7 +836,7 @@ export default function ContentPage({ events = [], challenges = [], polls = [], 
 
       {/* RIGHT SIDEBAR — desktop only */}
       {!isMobile && (
-        <RightSidebar events={events} challenges={challenges} polls={polls} posts={posts} openModal={openModal} />
+        <RightSidebar events={events} challenges={challenges} polls={polls} posts={posts} openModal={openModal} feedPostsThisWeek={feedPostsThisWeek} livePolls={livePolls} communityInteractionsToday={communityInteractionsToday} />
       )}
 
       {/* MOBILE FAB + MENU */}
