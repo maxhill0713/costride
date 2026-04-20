@@ -95,7 +95,6 @@ function MessageMemberModal({ resolvedName, memberId, onClose }) {
     if (!msg.trim()) return;
     setSending(true);
     try {
-      // Placeholder — wire to your messaging API
       await new Promise(r => setTimeout(r, 600));
       setSent(true);
     } finally {
@@ -107,12 +106,10 @@ function MessageMemberModal({ resolvedName, memberId, onClose }) {
     <div style={{ position: "fixed", inset: 0, zIndex: 500, background: "rgba(0,0,0,0.72)", display: "flex", alignItems: "center", justifyContent: "center" }}
       onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
       <div style={{ background: C.card, border: `1px solid ${C.brd}`, borderRadius: 14, padding: "24px 24px 20px", width: 400, maxWidth: "90vw", display: "flex", flexDirection: "column", gap: 14 }}>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <div>
-            <div style={{ fontSize: 15, fontWeight: 800, color: C.t1, letterSpacing: "-0.02em" }}>Message Member</div>
-            <div style={{ fontSize: 12, color: C.t2, marginTop: 2 }}>Sending to <span style={{ color: C.t1, fontWeight: 600 }}>{resolvedName}</span></div>
-          </div>
-          <button onClick={onClose} style={{ background: "none", border: "none", color: C.t3, cursor: "pointer", fontSize: 18, lineHeight: 1 }}>×</button>
+        {/* Header with X top-left */}
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <button onClick={onClose} style={{ background: "none", border: "none", color: C.t3, cursor: "pointer", fontSize: 18, lineHeight: 1, padding: 0, flexShrink: 0 }}>×</button>
+          <div style={{ fontSize: 15, fontWeight: 800, color: C.t1, letterSpacing: "-0.02em" }}>Message Member</div>
         </div>
         {sent ? (
           <div style={{ textAlign: "center", padding: "20px 0", color: C.green, fontSize: 13, fontWeight: 600 }}>
@@ -146,48 +143,60 @@ function MessageMemberModal({ resolvedName, memberId, onClose }) {
 /* ─── REMOVE POST MODAL ──────────────────────────────────────── */
 function RemovePostModal({ post, resolvedName, onConfirm, onClose }) {
   const [removing, setRemoving] = useState(false);
-  const [reason, setReason] = useState("");
   const handleConfirm = async () => {
-    if (!reason.trim()) return;
     setRemoving(true);
-    try { await onConfirm(post.id, reason.trim()); } finally { setRemoving(false); }
+    try { await onConfirm(post.id); } finally { setRemoving(false); }
+  };
+  return (
+    <div style={{ position: "fixed", inset: 0, zIndex: 500, background: "rgba(0,0,0,0.72)", display: "flex", alignItems: "center", justifyContent: "center" }}
+      onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
+      <div style={{ background: C.card, border: `1px solid rgba(255,77,109,0.25)`, borderRadius: 14, padding: "24px 24px 20px", width: 380, maxWidth: "90vw", display: "flex", flexDirection: "column", gap: 16 }}>
+        {/* Header: X top-left + title */}
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <button onClick={onClose} style={{ background: "none", border: "none", color: C.t3, cursor: "pointer", fontSize: 18, lineHeight: 1, padding: 0, flexShrink: 0 }}>×</button>
+          <div>
+            <div style={{ fontSize: 15, fontWeight: 800, color: C.t1 }}>Remove Post</div>
+            <div style={{ fontSize: 12, color: C.t2, marginTop: 2 }}>Posted by <span style={{ color: C.t1, fontWeight: 600 }}>{resolvedName}</span></div>
+          </div>
+        </div>
+        <div style={{ fontSize: 12.5, color: C.t2, lineHeight: 1.55 }}>
+          This will permanently remove the post from the community feed. <span style={{ color: C.red, fontWeight: 600 }}>This cannot be undone.</span>
+        </div>
+        <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
+          <button onClick={onClose} style={{ padding: "8px 16px", borderRadius: 8, background: "transparent", border: `1px solid ${C.brd}`, color: C.t2, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: FONT }}>Cancel</button>
+          <button onClick={handleConfirm} disabled={removing}
+            style={{ padding: "8px 18px", borderRadius: 8, background: C.red, border: "none", color: "#fff", fontSize: 12, fontWeight: 700, cursor: removing ? "not-allowed" : "pointer", opacity: removing ? 0.7 : 1, fontFamily: FONT }}>
+            {removing ? "Removing…" : "Remove Post"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ─── REMOVE POLL MODAL ──────────────────────────────────────── */
+function RemovePollModal({ poll, onConfirm, onClose }) {
+  const [removing, setRemoving] = useState(false);
+  const handleConfirm = async () => {
+    setRemoving(true);
+    try { await onConfirm(poll.id); } finally { setRemoving(false); }
   };
   return (
     <div style={{ position: "fixed", inset: 0, zIndex: 500, background: "rgba(0,0,0,0.72)", display: "flex", alignItems: "center", justifyContent: "center" }}
       onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
       <div style={{ background: C.card, border: `1px solid rgba(255,77,109,0.25)`, borderRadius: 14, padding: "24px 24px 20px", width: 380, maxWidth: "90vw", display: "flex", flexDirection: "column", gap: 16 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <div style={{ width: 36, height: 36, borderRadius: 10, background: C.redDim, border: `1px solid rgba(255,77,109,0.3)`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-            <Trash2 size={16} color={C.red} />
-          </div>
-          <div>
-            <div style={{ fontSize: 15, fontWeight: 800, color: C.t1 }}>Remove Post</div>
-            <div style={{ fontSize: 12, color: C.t2, marginTop: 2 }}>Posted by <span style={{ color: C.t1, fontWeight: 600 }}>{resolvedName}</span></div>
-          </div>
+          <button onClick={onClose} style={{ background: "none", border: "none", color: C.t3, cursor: "pointer", fontSize: 18, lineHeight: 1, padding: 0, flexShrink: 0 }}>×</button>
+          <div style={{ fontSize: 15, fontWeight: 800, color: C.t1 }}>Remove Poll</div>
         </div>
-        <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-          <label style={{ fontSize: 11.5, fontWeight: 700, color: C.t2, textTransform: "uppercase", letterSpacing: "0.06em" }}>Reason for removal <span style={{ color: C.red }}>*</span></label>
-          <textarea
-            value={reason}
-            onChange={e => setReason(e.target.value)}
-            placeholder="e.g. This post violates our community guidelines…"
-            rows={3}
-            style={{ width: "100%", background: C.card2, border: `1px solid ${reason.trim() ? C.brd : "rgba(255,77,109,0.3)"}`, borderRadius: 8, padding: "10px 12px", color: C.t1, fontSize: 13, fontFamily: FONT, resize: "vertical", outline: "none", boxSizing: "border-box", lineHeight: 1.55 }}
-            onFocus={e => e.target.style.borderColor = C.cyanBrd}
-            onBlur={e => e.target.style.borderColor = reason.trim() ? C.brd : "rgba(255,77,109,0.3)"}
-          />
-          <p style={{ fontSize: 11, color: C.t3, margin: 0 }}>This reason will be shown to the member in their app.</p>
+        <div style={{ fontSize: 12.5, color: C.t2, lineHeight: 1.55 }}>
+          This will permanently remove the poll. <span style={{ color: C.red, fontWeight: 600 }}>This cannot be undone.</span>
         </div>
-        {post.content && (
-          <div style={{ background: C.card2, border: `1px solid ${C.brd}`, borderRadius: 8, padding: "10px 12px", fontSize: 12.5, color: C.t2, lineHeight: 1.5, maxHeight: 80, overflow: "hidden", textOverflow: "ellipsis" }}>
-            {post.content}
-          </div>
-        )}
         <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
           <button onClick={onClose} style={{ padding: "8px 16px", borderRadius: 8, background: "transparent", border: `1px solid ${C.brd}`, color: C.t2, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: FONT }}>Cancel</button>
-          <button onClick={handleConfirm} disabled={removing || !reason.trim()}
-            style={{ padding: "8px 18px", borderRadius: 8, background: C.red, border: "none", color: "#fff", fontSize: 12, fontWeight: 700, cursor: (removing || !reason.trim()) ? "not-allowed" : "pointer", opacity: (removing || !reason.trim()) ? 0.5 : 1, fontFamily: FONT }}>
-            {removing ? "Removing…" : "Remove Post"}
+          <button onClick={handleConfirm} disabled={removing}
+            style={{ padding: "8px 18px", borderRadius: 8, background: C.red, border: "none", color: "#fff", fontSize: 12, fontWeight: 700, cursor: removing ? "not-allowed" : "pointer", opacity: removing ? 0.7 : 1, fontFamily: FONT }}>
+            {removing ? "Removing…" : "Remove Poll"}
           </button>
         </div>
       </div>
@@ -197,7 +206,7 @@ function RemovePostModal({ post, resolvedName, onConfirm, onClose }) {
 
 /* ─── QUICK ACTIONS COLUMN ───────────────────────────────────── */
 function QuickActions({ post, resolvedName, memberId, gym, currentUser, onDeletePost }) {
-  const [modal, setModal] = useState(null); // "message" | "remove"
+  const [modal, setModal] = useState(null);
   const gymReactionKey = gym?.id ? `gym_${gym.id}` : null;
   const [reacted, setReacted] = useState(() => !!(gymReactionKey && post.reactions?.[gymReactionKey]));
   const [reacting, setReacting] = useState(false);
@@ -222,11 +231,9 @@ function QuickActions({ post, resolvedName, memberId, gym, currentUser, onDelete
 
   return (
     <>
-      {/* Vertical divider + actions column */}
       <div style={{ width: "30%", flexShrink: 0, borderLeft: `1px solid ${C.brd}`, padding: "12px 14px", display: "flex", flexDirection: "column", gap: 8, justifyContent: "flex-start" }}>
         <div style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.10em", color: C.t3, marginBottom: 2 }}>Quick Actions</div>
 
-        {/* Message Member */}
         <button
           onClick={() => setModal("message")}
           style={{ display: "flex", alignItems: "center", gap: 8, width: "100%", padding: "7px 10px", borderRadius: 8, background: "rgba(255,255,255,0.03)", border: `1px solid ${C.brd}`, color: C.t2, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: FONT, textAlign: "left", transition: "all 0.15s" }}
@@ -236,7 +243,6 @@ function QuickActions({ post, resolvedName, memberId, gym, currentUser, onDelete
           <span>Message Member</span>
         </button>
 
-        {/* Remove Post */}
         <button
           onClick={() => setModal("remove")}
           style={{ display: "flex", alignItems: "center", gap: 8, width: "100%", padding: "7px 10px", borderRadius: 8, background: "rgba(255,255,255,0.03)", border: `1px solid ${C.brd}`, color: C.t2, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: FONT, textAlign: "left", transition: "all 0.15s" }}
@@ -246,7 +252,6 @@ function QuickActions({ post, resolvedName, memberId, gym, currentUser, onDelete
           <span>Remove Post</span>
         </button>
 
-        {/* Send a Reaction */}
         <button
           onClick={handleReact}
           disabled={reacting}
@@ -258,7 +263,6 @@ function QuickActions({ post, resolvedName, memberId, gym, currentUser, onDelete
         </button>
       </div>
 
-      {/* Modals */}
       {modal === "message" && (
         <MessageMemberModal
           resolvedName={resolvedName}
@@ -270,7 +274,7 @@ function QuickActions({ post, resolvedName, memberId, gym, currentUser, onDelete
         <RemovePostModal
           post={post}
           resolvedName={resolvedName}
-          onConfirm={async (id, reason) => { await onDeletePost?.(id, reason); setModal(null); }}
+          onConfirm={async (id) => { await onDeletePost?.(id); setModal(null); }}
           onClose={() => setModal(null)}
         />
       )}
@@ -385,7 +389,6 @@ function FAB({ onClick }) {
   );
 }
 
-/* ─── ROOT ───────────────────────────────────────────────────── */
 /* ─── MEMBER STATUS BADGE ────────────────────────────────────── */
 function MemberStatusBadge({ memberId, checkIns = [] }) {
   if (!memberId) return null;
@@ -417,10 +420,12 @@ function MemberStatusBadge({ memberId, checkIns = [] }) {
   );
 }
 
+/* ─── ROOT ───────────────────────────────────────────────────── */
 export default function ContentPage({ events = [], challenges = [], polls = [], posts = [], checkIns = [], openModal, onDeleteEvent, onDeleteChallenge, onDeletePost, avatarMap = {}, nameMap = {}, currentUser = null, gym = null }) {
   const isMobile = useIsMobile();
   const [tab, setTab] = useState("Community Feed");
   const [showMenu, setShowMenu] = useState(false);
+  const [pollToRemove, setPollToRemove] = useState(null);
 
   const createItems = [
     { label: "📝 New Post",      action: () => { openModal?.("post");      setShowMenu(false); setTab("Community Feed"); } },
@@ -454,7 +459,7 @@ export default function ContentPage({ events = [], challenges = [], polls = [], 
               {tabAction && (
                 <button
                   onClick={() => openModal?.(tabAction.modal)}
-                  style={{ display: "flex", alignItems: "center", gap: 6, padding: "9px 18px", background: C.cyan, border: "none", borderRadius: 9, fontSize: 12.5, fontWeight: 700, color: "#fff", cursor: "pointer", fontFamily: FONT, boxShadow: "0 0 10px rgba(77,127,255,0.22), 0 2px 8px rgba(77,127,255,0.12)", transition: "opacity 0.15s" }}
+                  style={{ display: "flex", alignItems: "center", gap: 6, padding: "9px 18px", background: C.cyan, border: "none", borderRadius: 9, fontSize: 12.5, fontWeight: 700, color: "#fff", cursor: "pointer", fontFamily: FONT, boxShadow: "0 0 10px rgba(77,127,255,0.22), 0 2px 8px rgba(77,127,255,0.12)", transition: "opacity 0.15s", marginRight: 48 }}
                   onMouseEnter={e => e.currentTarget.style.opacity = "0.88"}
                   onMouseLeave={e => e.currentTarget.style.opacity = "1"}>
                   <Plus size={12} /> {tabAction.label}
@@ -500,7 +505,6 @@ export default function ContentPage({ events = [], challenges = [], polls = [], 
                       onMouseEnter={e => { e.currentTarget.style.borderColor = C.cyanBrd; e.currentTarget.style.boxShadow = `0 0 8px rgba(77,127,255,0.07)`; }}
                       onMouseLeave={e => { e.currentTarget.style.borderColor = C.brd; e.currentTarget.style.boxShadow = "none"; }}>
 
-                      {/* Left: image — higher resolution */}
                       {p.image_url ? (
                         <div style={{ width: 160, height: 160, flexShrink: 0, alignSelf: "center", margin: 8, borderRadius: 10, overflow: "hidden" }}>
                           <img src={p.image_url} alt=""
@@ -510,9 +514,7 @@ export default function ContentPage({ events = [], challenges = [], polls = [], 
                         <div style={{ width: 6, flexShrink: 0, background: C.cyanDim, borderRadius: "12px 0 0 12px" }} />
                       )}
 
-                      {/* Centre: post content (~70% of remaining space) */}
                       <div style={{ flex: 1, minWidth: 0, padding: "11px 14px 11px 10px", display: "flex", flexDirection: "column", gap: 6 }}>
-                        {/* Author + Status */}
                         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                           <div style={{ width: 30, height: 30, borderRadius: "50%", flexShrink: 0, background: avatarBg, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 800, color: "#fff", overflow: "hidden" }}>
                             {avatar ? <img src={avatar} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : initials}
@@ -526,14 +528,12 @@ export default function ContentPage({ events = [], challenges = [], polls = [], 
                           </div>
                         </div>
 
-                        {/* Content */}
                         {p.content && (
                           <div style={{ fontSize: 12.5, color: C.t2, lineHeight: 1.5, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
                             {p.content}
                           </div>
                         )}
 
-                        {/* Footer */}
                         <div style={{ marginTop: "auto" }}>
                           <span style={{ fontSize: 11, color: C.t3 }}>
                             {reactionCount > 0 ? `${reactionCount} reaction${reactionCount !== 1 ? "s" : ""}` : ""}
@@ -541,7 +541,6 @@ export default function ContentPage({ events = [], challenges = [], polls = [], 
                         </div>
                       </div>
 
-                      {/* Right: Quick Actions (~30%) */}
                       <QuickActions
                         post={p}
                         resolvedName={resolvedName}
@@ -618,25 +617,35 @@ export default function ContentPage({ events = [], challenges = [], polls = [], 
                   <div key={poll.id} style={{ background: C.card, border: `1px solid ${C.brd}`, borderRadius: 10, padding: isMobile ? "14px 16px" : "13px 16px", marginBottom: 8 }}
                     onMouseEnter={e => { e.currentTarget.style.borderColor = C.cyanBrd; e.currentTarget.style.boxShadow = `0 0 6px rgba(77,127,255,0.06)`; }}
                     onMouseLeave={e => { e.currentTarget.style.borderColor = C.brd; e.currentTarget.style.boxShadow = "none"; }}>
+                    {/* Poll header */}
                     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
                       <div style={{ fontSize: 13, fontWeight: 600, color: C.t1 }}>{poll.question || poll.title}</div>
-                      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                        <span style={{ fontSize: 11, color: C.t2 }}>{(poll.voters || []).length} votes</span>
-                        {onDeleteChallenge && <DeleteBtn onClick={() => onDeleteChallenge(poll.id)} />}
-                      </div>
+                      {/* Remove Poll button styled like Remove Post */}
+                      <button
+                        onClick={() => setPollToRemove(poll)}
+                        style={{ display: "flex", alignItems: "center", gap: 6, padding: "6px 12px", borderRadius: 8, background: "rgba(255,255,255,0.03)", border: `1px solid ${C.brd}`, color: C.t2, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: FONT, flexShrink: 0, transition: "all 0.15s" }}
+                        onMouseEnter={e => { e.currentTarget.style.borderColor = "rgba(255,77,109,0.35)"; e.currentTarget.style.color = C.red; e.currentTarget.style.background = C.redDim; }}
+                        onMouseLeave={e => { e.currentTarget.style.borderColor = C.brd; e.currentTarget.style.color = C.t2; e.currentTarget.style.background = "rgba(255,255,255,0.03)"; }}>
+                        <Trash2 size={12} color="currentColor" />
+                        <span>Remove Poll</span>
+                      </button>
                     </div>
+                    {/* Poll options — bars capped at 80% width */}
                     {(poll.options || []).map((opt, i) => {
                       const optText  = typeof opt === "object" ? (opt.text || opt.label || String(i + 1)) : opt;
                       const optVotes = typeof opt === "object" ? (opt.votes || 0) : ((poll.votes || {})[opt] || 0);
                       const total    = Math.max((poll.voters || []).length, 1);
                       const pct      = Math.round(optVotes / total * 100);
+                      // Cap the rendered bar width to 80% of the box
+                      const barWidth = Math.round(pct * 0.8);
                       return (
                         <div key={i} style={{ marginBottom: 6 }}>
                           <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11.5, color: C.t2, marginBottom: 3 }}>
-                            <span>{optText}</span><span style={{ color: C.cyan, textShadow: "none" }}>{pct}%</span>
+                            <span>{optText}</span>
+                            <span style={{ color: C.cyan, textShadow: "none" }}>{pct}%</span>
                           </div>
                           <div style={{ height: 4, background: "rgba(255,255,255,0.06)", borderRadius: 2, overflow: "hidden" }}>
-                            <div style={{ width: `${pct}%`, height: "100%", background: C.cyan, borderRadius: 2 }} />
+                            <div style={{ width: `${barWidth}%`, height: "100%", background: C.cyan, borderRadius: 2 }} />
                           </div>
                         </div>
                       );
@@ -675,6 +684,15 @@ export default function ContentPage({ events = [], challenges = [], polls = [], 
             </>
           )}
         </>
+      )}
+
+      {/* REMOVE POLL MODAL */}
+      {pollToRemove && (
+        <RemovePollModal
+          poll={pollToRemove}
+          onConfirm={async (id) => { await onDeleteChallenge?.(id); setPollToRemove(null); }}
+          onClose={() => setPollToRemove(null)}
+        />
       )}
     </div>
   );
