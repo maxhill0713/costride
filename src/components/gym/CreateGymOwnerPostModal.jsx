@@ -1,7 +1,7 @@
 /**
  * CreateGymOwnerPostModal — Content Hub design system
  * Mobile-first responsive: adapts on ≤768px, desktop layout unchanged.
- * Cyan #00e5c8 · DM Sans · #0d0d11 bg / #17171c surface / #1f1f26 card
+ * Blue #60a5fa · DM Sans · #0d0d11 bg / #17171c surface / #1f1f26 card
  */
 import React, { useState, useRef, useCallback, useEffect } from 'react';
 import {
@@ -18,7 +18,7 @@ const C = {
   bg:        '#0d0d11', surface:   '#17171c', card:      '#1f1f26', inset:     '#13131a',
   brd:       '#252530', brd2:      '#2e2e3a', brdHover:  '#3a3a48',
   t1:        '#ffffff', t2:        '#9898a6', t3:        '#525260',
-  cyan:      '#00e5c8', cyanDim:   'rgba(0,229,200,0.07)',   cyanBrd:   'rgba(0,229,200,0.18)',   cyanSolid: '#00e5c8',
+  cyan:      '#60a5fa', cyanDim:   'rgba(96,165,250,0.07)',   cyanBrd:   'rgba(96,165,250,0.18)',   cyanSolid: '#60a5fa',
   red:       '#ff4d6d', redDim:    'rgba(255,77,109,0.08)',  redBrd:    'rgba(255,77,109,0.20)',
   amber:     '#f59e0b', amberDim:  'rgba(245,158,11,0.08)',  amberBrd:  'rgba(245,158,11,0.20)',
   green:     '#22c55e', greenDim:  'rgba(34,197,94,0.08)',   greenBrd:  'rgba(34,197,94,0.20)',
@@ -30,7 +30,7 @@ const MONO = { fontVariantNumeric: 'tabular-nums', fontFeatureSettings: '"tnum"'
 
 /* ─── POST TYPES ─────────────────────────────────────────────── */
 const POST_TYPES = [
-  { value: 'update',           Icon: Megaphone,  label: 'Announcement',     color: C.cyan,   dim: C.cyanDim,   border: C.cyanBrd,   placeholder: 'Share a gym update, news, or announcement with your members…'  },
+  { value: 'update',           Icon: Megaphone,  label: 'Announcement',     color: C.blue,   dim: C.blueDim,   border: C.blueBrd,   placeholder: 'Share a gym update, news, or announcement with your members…'  },
   { value: 'achievement',      Icon: Trophy,     label: 'Achievement',      color: C.amber,  dim: C.amberDim,  border: C.amberBrd,  placeholder: 'Celebrate a milestone, record, or success story…'              },
   { value: 'event',            Icon: Calendar,   label: 'Event',            color: C.green,  dim: C.greenDim,  border: C.greenBrd,  placeholder: 'Tell members about an upcoming event or class…'                 },
   { value: 'offer',            Icon: Gift,       label: 'Special Offer',    color: C.red,    dim: C.redDim,    border: C.redBrd,    placeholder: 'Share a promotion, discount, or special deal…'                  },
@@ -43,7 +43,7 @@ function CharRing({ count, max = 500 }) {
   const pct = Math.min(100, (count / max) * 100);
   const r = 9, cf = 2 * Math.PI * r;
   const over = count > max;
-  const color = over ? C.red : pct > 80 ? C.amber : C.cyan;
+  const color = over ? C.red : pct > 80 ? C.amber : C.blue;
   if (count === 0) return null;
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
@@ -73,7 +73,7 @@ function SL({ children, required, right }) {
 }
 
 /* ─── TOGGLE ─────────────────────────────────────────────────── */
-function Toggle({ value, onChange, color = C.cyan, label, sub }) {
+function Toggle({ value, onChange, color = C.blue, label, sub }) {
   return (
     <div onClick={() => onChange(!value)} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 13px', borderRadius: 9, cursor: 'pointer', background: value ? `${color}09` : C.card, border: `1px solid ${value ? color + '28' : C.brd}`, transition: 'all 0.18s' }}>
       <div style={{ flex: 1, minWidth: 0 }}>
@@ -176,7 +176,7 @@ export default function CreateGymOwnerPostModal({ open, onClose, gym, onSuccess 
   const [submitting,    setSubmitting]    = useState(false);
   const [uploading,     setUploading]     = useState(false);
   const [dragOver,      setDragOver]      = useState(false);
-  const [showPreview,   setShowPreview]   = useState(false); // mobile only
+  const [showPreview,   setShowPreview]   = useState(false);
   const fileRef = useRef();
 
   /* ── Mobile detection ──────────────────────────────────────── */
@@ -265,7 +265,7 @@ export default function CreateGymOwnerPostModal({ open, onClose, gym, onSuccess 
         .ch-inp:focus { border-color:${C.cyanBrd}; }
         .ch-inp::placeholder { color:${C.t3}; }
 
-        .ch-tab-active { color:${C.t1} !important; font-weight:700 !important; border-bottom:2px solid ${C.cyan} !important; }
+        .ch-tab-active { color:${C.t1} !important; font-weight:700 !important; border-bottom:2px solid ${C.blue} !important; }
         .ch-tab {
           padding:8px 12px; cursor:pointer; font-size:12.5px; color:${C.t2};
           font-weight:500; background:none; border:none; border-bottom:2px solid transparent;
@@ -274,13 +274,13 @@ export default function CreateGymOwnerPostModal({ open, onClose, gym, onSuccess 
         .ch-tab:hover { color:${C.t1}; }
 
         .ch-cta-btn {
-          padding:9px 22px; border-radius:8px; border:none; background:${C.cyan}; color:#000;
+          padding:9px 22px; border-radius:8px; border:none; background:${C.blue}; color:#fff;
           font-size:13px; font-weight:700; cursor:pointer; font-family:${FONT}; letter-spacing:-0.01em;
           display:inline-flex; align-items:center; gap:7px; transition:opacity 0.15s, box-shadow 0.15s;
         }
         .ch-cta-btn:hover { opacity:0.88; }
         .ch-cta-btn:disabled { background:${C.brd2}; color:${C.t3}; cursor:default; box-shadow:none; }
-        .ch-cta-btn.schedule { background:${C.amber}; }
+        .ch-cta-btn.schedule { background:${C.amber}; color:#000; }
 
         .ch-cancel {
           padding:9px 18px; border-radius:8px; background:transparent; border:1px solid ${C.brd};
@@ -292,11 +292,10 @@ export default function CreateGymOwnerPostModal({ open, onClose, gym, onSuccess 
         ::-webkit-scrollbar-track  { background:transparent; }
         ::-webkit-scrollbar-thumb  { background:${C.brd2}; border-radius:2px; }
 
-        /* Mobile-specific overrides */
         @media (max-width: 768px) {
           .ch-tab { padding:8px 9px; font-size:11.5px; }
-          .ch-ta  { font-size:16px; } /* prevents iOS zoom */
-          .ch-inp { font-size:16px; } /* prevents iOS zoom */
+          .ch-ta  { font-size:16px; }
+          .ch-inp { font-size:16px; }
         }
       `}</style>
 
@@ -324,7 +323,7 @@ export default function CreateGymOwnerPostModal({ open, onClose, gym, onSuccess 
           background: C.bg, border: isMobile ? 'none' : `1px solid ${C.brd}`,
           borderRadius: isMobile ? '20px 20px 0 0' : 14,
           overflow: 'hidden',
-          boxShadow: '0 40px 100px rgba(0,0,0,0.85), 0 0 0 1px rgba(0,229,200,0.05)',
+          boxShadow: '0 40px 100px rgba(0,0,0,0.85), 0 0 0 1px rgba(96,165,250,0.05)',
           animation: isMobile ? 'slide-up 0.3s cubic-bezier(0.32,0.72,0,1)' : 'modal-in 0.24s cubic-bezier(0.16,1,0.3,1)',
           WebkitFontSmoothing: 'antialiased',
         }}>
@@ -343,16 +342,13 @@ export default function CreateGymOwnerPostModal({ open, onClose, gym, onSuccess 
             )}
 
             {/* Top row */}
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: isMobile ? 4 : 14, paddingBottom: 0 }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: isMobile ? 4 : 16, paddingBottom: 0 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? 8 : 11 }}>
                 <div style={{ width: isMobile ? 28 : 32, height: isMobile ? 28 : 32, borderRadius: 9, background: activeType.dim, border: `1px solid ${activeType.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'all 0.2s' }}>
                   <activeType.Icon size={isMobile ? 12 : 14} color={activeType.color} />
                 </div>
-                <div>
-                  <div style={{ fontSize: isMobile ? 14 : 15, fontWeight: 700, color: C.t1, letterSpacing: '-0.02em', lineHeight: 1.2 }}>
-                    {isMobile ? 'Create Post' : <>Content Center <span style={{ color: C.cyan }}>/</span> <span style={{ color: C.cyan }}>Create Post</span></>}
-                  </div>
-                  {!isMobile && <div style={{ fontSize: 10.5, color: C.t3, marginTop: 2 }}>Manage posts, events, challenges and polls</div>}
+                <div style={{ fontSize: isMobile ? 16 : 18, fontWeight: 700, color: C.t1, letterSpacing: '-0.02em', lineHeight: 1.2 }}>
+                  New Post
                 </div>
               </div>
 
@@ -365,7 +361,7 @@ export default function CreateGymOwnerPostModal({ open, onClose, gym, onSuccess 
                       height: 30, padding: '0 10px', borderRadius: 7, display: 'flex', alignItems: 'center', gap: 5,
                       background: showPreview ? C.cyanDim : 'transparent',
                       border: `1px solid ${showPreview ? C.cyanBrd : C.brd}`,
-                      cursor: 'pointer', color: showPreview ? C.cyan : C.t3, fontSize: 11, fontWeight: 600, fontFamily: FONT,
+                      cursor: 'pointer', color: showPreview ? C.blue : C.t3, fontSize: 11, fontWeight: 600, fontFamily: FONT,
                     }}
                   >
                     <Eye size={11} /> {showPreview ? 'Edit' : 'Preview'}
@@ -373,17 +369,17 @@ export default function CreateGymOwnerPostModal({ open, onClose, gym, onSuccess 
                 )}
                 <button
                   onClick={handleClose}
-                  style={{ width: 30, height: 30, borderRadius: 7, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'transparent', border: `1px solid ${C.brd}`, cursor: 'pointer', color: C.t3, flexShrink: 0, transition: 'all 0.15s' }}
-                  onMouseEnter={e => { e.currentTarget.style.background = C.card; e.currentTarget.style.color = C.t1; }}
-                  onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = C.t3; }}
+                  style={{ width: 30, height: 30, borderRadius: 7, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'transparent', border: 'none', cursor: 'pointer', color: C.t3, flexShrink: 0, transition: 'all 0.15s' }}
+                  onMouseEnter={e => { e.currentTarget.style.color = C.t1; }}
+                  onMouseLeave={e => { e.currentTarget.style.color = C.t3; }}
                 >
-                  <X size={13} />
+                  <X size={16} />
                 </button>
               </div>
             </div>
 
-            {/* Tab bar — horizontal scroll on mobile */}
-            <div style={{ display: 'flex', marginTop: 4, gap: 0, marginLeft: -2, overflowX: isMobile ? 'auto' : 'visible', WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none' }}>
+            {/* Tab bar */}
+            <div style={{ display: 'flex', marginTop: 8, gap: 0, marginLeft: -2, overflowX: isMobile ? 'auto' : 'visible', WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none' }}>
               {POST_TYPES.map(type => (
                 <button
                   key={type.value}
@@ -406,7 +402,7 @@ export default function CreateGymOwnerPostModal({ open, onClose, gym, onSuccess 
             overflow: 'hidden',
           }}>
 
-            {/* ── FORM (always visible unless preview toggled on mobile) ── */}
+            {/* ── FORM ── */}
             {(!isMobile || !showPreview) && (
               <div style={{
                 padding: isMobile ? '16px 16px' : '18px 20px',
@@ -518,7 +514,7 @@ export default function CreateGymOwnerPostModal({ open, onClose, gym, onSuccess 
                   )}
                 </div>
 
-                {/* Pin + Schedule — stack vertically on mobile */}
+                {/* Pin + Schedule */}
                 <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: isMobile ? 12 : 10 }}>
                   <Toggle value={isPinned} onChange={setIsPinned} color={C.amber} label="📌 Pin to top" sub="Stays at the top of the member feed" />
                   <div>
@@ -536,14 +532,11 @@ export default function CreateGymOwnerPostModal({ open, onClose, gym, onSuccess 
                   </div>
                 </div>
 
-                {/* Extra bottom padding so footer doesn't obscure content */}
                 {isMobile && <div style={{ height: 8 }} />}
               </div>
             )}
 
             {/* ── PREVIEW panel ─────────────────────────────── */}
-            {/* Desktop: always shown as right column */}
-            {/* Mobile: shown instead of form when toggled */}
             {(!isMobile || showPreview) && (
               <div style={{
                 padding: isMobile ? '16px 16px' : '18px 16px',
@@ -587,7 +580,6 @@ export default function CreateGymOwnerPostModal({ open, onClose, gym, onSuccess 
               )}
             </div>
 
-            {/* Mobile: status as small text above buttons */}
             {isMobile && content.trim() && (
               <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
                 <CheckCircle size={11} color={C.green} />
@@ -599,7 +591,6 @@ export default function CreateGymOwnerPostModal({ open, onClose, gym, onSuccess 
             )}
 
             {isMobile ? (
-              /* Mobile: full-width primary CTA + text cancel */
               <>
                 <button
                   onClick={handleSubmit}
@@ -608,12 +599,12 @@ export default function CreateGymOwnerPostModal({ open, onClose, gym, onSuccess 
                   style={{
                     width: '100%', justifyContent: 'center', height: 50, fontSize: 15,
                     opacity: canSubmit ? 1 : 0.38, cursor: canSubmit ? 'pointer' : 'default',
-                    boxShadow: canSubmit ? `0 0 24px ${isScheduled ? C.amber : C.cyan}40` : 'none',
+                    boxShadow: canSubmit ? `0 0 24px ${isScheduled ? C.amber : C.blue}40` : 'none',
                     borderRadius: 12,
                   }}
                 >
                   {submitting
-                    ? <><div style={{ width: 14, height: 14, border: '2px solid rgba(0,0,0,0.2)', borderTop: '2px solid #000', borderRadius: '50%', animation: 'spin 0.7s linear infinite' }} /> Publishing…</>
+                    ? <><div style={{ width: 14, height: 14, border: '2px solid rgba(255,255,255,0.2)', borderTop: '2px solid #fff', borderRadius: '50%', animation: 'spin 0.7s linear infinite' }} /> Publishing…</>
                     : isScheduled
                       ? <><Calendar size={15} /> Schedule Post</>
                       : <><Zap size={15} /> Review & Publish</>}
@@ -623,17 +614,16 @@ export default function CreateGymOwnerPostModal({ open, onClose, gym, onSuccess 
                 </button>
               </>
             ) : (
-              /* Desktop: original layout */
               <>
                 <button onClick={handleClose} className="ch-cancel">Cancel</button>
                 <button
                   onClick={handleSubmit}
                   disabled={!canSubmit}
                   className={`ch-cta-btn${isScheduled ? ' schedule' : ''}`}
-                  style={{ opacity: canSubmit ? 1 : 0.38, cursor: canSubmit ? 'pointer' : 'default', boxShadow: canSubmit ? `0 0 24px ${isScheduled ? C.amber : C.cyan}40` : 'none', minWidth: 160, justifyContent: 'center' }}
+                  style={{ opacity: canSubmit ? 1 : 0.38, cursor: canSubmit ? 'pointer' : 'default', boxShadow: canSubmit ? `0 0 24px ${isScheduled ? C.amber : C.blue}40` : 'none', minWidth: 160, justifyContent: 'center' }}
                 >
                   {submitting
-                    ? <><div style={{ width: 12, height: 12, border: '2px solid rgba(0,0,0,0.2)', borderTop: '2px solid #000', borderRadius: '50%', animation: 'spin 0.7s linear infinite' }} /> Publishing…</>
+                    ? <><div style={{ width: 12, height: 12, border: '2px solid rgba(255,255,255,0.2)', borderTop: '2px solid #fff', borderRadius: '50%', animation: 'spin 0.7s linear infinite' }} /> Publishing…</>
                     : isScheduled
                       ? <><Calendar size={13} /> Schedule Post</>
                       : <><Zap size={13} /> Review & Schedule</>}
