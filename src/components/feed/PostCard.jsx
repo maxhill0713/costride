@@ -34,6 +34,7 @@ function ReactionsModal({ open, onClose, reactions, reactedUsers, isLoadingReact
   const gymReactors = filtered.filter(u => u.isGym);
   const friendReactors = filtered.filter(u => !u.isGym && (friendIds.has(u.id) || u.id === currentUserId));
   const communityReactors = filtered.filter(u => !u.isGym && !friendIds.has(u.id) && u.id !== currentUserId);
+  // Gym reactors always appear at the top of the Community section (after Friends)
 
   const renderUser = (user) => {
     const variant = reactions[user.id];
@@ -105,7 +106,6 @@ function ReactionsModal({ open, onClose, reactions, reactedUsers, isLoadingReact
   };
 
   const renderGymReactor = (user) => {
-    const variant = reactions[user.id];
     return (
       <div key={user.id} className="flex items-center gap-2.5 px-2 py-1 rounded-lg">
         <div className="flex-shrink-0 w-8 h-8 rounded-full overflow-hidden bg-slate-700 flex items-center justify-center text-xs font-bold text-slate-300 border border-yellow-400/40"
@@ -114,10 +114,7 @@ function ReactionsModal({ open, onClose, reactions, reactedUsers, isLoadingReact
             ? <img src={user.avatar_url} alt={user.display_name} className="w-full h-full object-cover" />
             : (user.display_name || '?').charAt(0).toUpperCase()}
         </div>
-        <div className="flex-1 min-w-0">
-          <span className="text-sm text-slate-200 font-semibold truncate block">{user.display_name}</span>
-          <span className="text-[10px] text-yellow-400/80 font-bold uppercase tracking-wide">Your Gym</span>
-        </div>
+        <span className="text-sm text-slate-200 font-semibold flex-1 min-w-0 truncate">{user.display_name}</span>
         <img src={STREAK_ICON_URL} alt="react" className="flex-shrink-0 w-8 h-8" style={{ objectFit: 'contain' }} />
       </div>
     );
@@ -182,28 +179,19 @@ function ReactionsModal({ open, onClose, reactions, reactedUsers, isLoadingReact
             <p className="text-center text-slate-400 text-sm py-6">No reactions found</p>
           ) : showSections ? (
             <>
-              {gymReactors.length > 0 && (
+              {friendReactors.length > 0 && (
+                <>
+                  <SectionHeader label="Friends" />
+                  {friendReactors.map(renderUser)}
+                  {(gymReactors.length > 0 || communityReactors.length > 0) && (
+                    <div className="mx-2 my-2 border-t border-white/[0.07]" />
+                  )}
+                </>
+              )}
+              {(gymReactors.length > 0 || communityReactors.length > 0) && (
                 <>
                   <SectionHeader label="Community" />
                   {gymReactors.map(renderGymReactor)}
-                  {(friendReactors.length > 0 || communityReactors.length > 0) && (
-                    <div className="mx-2 my-2 border-t border-white/[0.07]" />
-                  )}
-                </>
-              )}
-              {friendReactors.length > 0 && (
-                <>
-                  {gymReactors.length === 0 && <SectionHeader label="Friends" />}
-                  {gymReactors.length > 0 && <SectionHeader label="Friends" />}
-                  {friendReactors.map(renderUser)}
-                  {communityReactors.length > 0 && (
-                    <div className="mx-2 my-2 border-t border-white/[0.07]" />
-                  )}
-                </>
-              )}
-              {communityReactors.length > 0 && (
-                <>
-                  {gymReactors.length === 0 && <SectionHeader label="Community" />}
                   {communityReactors.map(renderUser)}
                 </>
               )}
