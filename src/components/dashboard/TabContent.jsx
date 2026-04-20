@@ -435,10 +435,17 @@ export default function ContentPage({ events = [], challenges = [], polls = [], 
   ];
 
   const tabAction = TAB_ACTION[tab];
-  const recent7 = recentPostCount(posts, 7);
 
   const sevenDaysCutoff = Date.now() - 7 * 24 * 60 * 60 * 1000;
+  const gymId = gym?.id;
   const feedPosts = posts.filter(p => {
+    // Must not be hidden
+    if (p.is_hidden) return false;
+    // Must be shared with community
+    if (!p.share_with_community) return false;
+    // Must belong to this gym
+    if (gymId && p.gym_id !== gymId) return false;
+    // Date filter (last 7 days)
     const d = p.created_date || p.created_at || p.date;
     return d ? new Date(d).getTime() >= sevenDaysCutoff : true;
   });
@@ -481,7 +488,7 @@ export default function ContentPage({ events = [], challenges = [], polls = [], 
           {tab === "Community Feed" && (
             <>
               <div style={{ fontSize: 12, fontWeight: 500, color: C.t2, marginBottom: 10 }}>
-                {recent7} post{recent7 !== 1 ? "s" : ""} in the last 7 days
+                {feedPosts.length} post{feedPosts.length !== 1 ? "s" : ""} shared with community in the last 7 days
               </div>
               {feedPosts.length === 0
                 ? <EmptyState label="posts" onAdd={() => openModal?.("post")} />
