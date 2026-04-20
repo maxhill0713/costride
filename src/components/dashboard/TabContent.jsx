@@ -457,11 +457,11 @@ export default function ContentPage({ events = [], challenges = [], polls = [], 
                       onMouseEnter={e => { e.currentTarget.style.borderColor = C.cyanBrd; e.currentTarget.style.boxShadow = `0 0 8px rgba(77,127,255,0.07)`; }}
                       onMouseLeave={e => { e.currentTarget.style.borderColor = C.brd; e.currentTarget.style.boxShadow = "none"; }}>
 
-                      {/* Left: image with gap */}
+                      {/* Left: image — fixed square */}
                       {p.image_url ? (
-                        <div style={{ padding: 6, flexShrink: 0 }}>
+                        <div style={{ width: 130, height: 130, flexShrink: 0, alignSelf: "center", margin: 8, borderRadius: 10, overflow: "hidden" }}>
                           <img src={p.image_url} alt=""
-                            style={{ width: 118, height: "calc(100% - 0px)", minHeight: 110, borderRadius: 8, objectFit: "cover", display: "block" }} />
+                            style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
                         </div>
                       ) : (
                         <div style={{ width: 6, flexShrink: 0, background: C.cyanDim, borderRadius: "12px 0 0 12px" }} />
