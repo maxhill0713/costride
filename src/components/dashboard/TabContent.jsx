@@ -67,7 +67,7 @@ function DeleteBtn({ onClick }) {
 return <button onClick={onClick} style={{ background: C.redDim, border: `1px solid rgba(255,77,109,0.3)`, borderRadius: 6, padding: "4px 10px", color: C.red, fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: FONT, flexShrink: 0, minHeight: 36 }}>Delete</button>;
 }
 /* ─── TABS ───────────────────────────────────────────────────── */
-const VISIBLE_TABS = ["Events", "Challenges", "Polls", "Posts"];
+const VISIBLE_TABS = ["Events", "Challenges", "Polls", "Posts", "Drafts", "Scheduled"];
 function Tabs({ active, setActive, isMobile }) {
 const ref = useRef(null);
   useEffect(() => {
@@ -310,6 +310,12 @@ return (
                 ))
               }
             </>
+          )}
+          {tab === "Drafts" && (
+            <EmptyState label="drafts" onAdd={() => openModal?.("post")} />
+          )}
+          {tab === "Scheduled" && (
+            <EmptyState label="scheduled content" onAdd={() => openModal?.("post")} />
           )}
           {tab === "Posts" && (
             <>
