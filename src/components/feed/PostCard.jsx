@@ -106,8 +106,15 @@ function ReactionsModal({ open, onClose, reactions, reactedUsers, isLoadingReact
   };
 
   const renderGymReactor = (user) => {
+    // user.id is "gym_<gymId>" for gym reactors
+    const gymId = user.id.replace('gym_', '');
     return (
-      <div key={user.id} className="flex items-center gap-2.5 px-2 py-1 rounded-lg">
+      <Link
+        key={user.id}
+        to={createPageUrl('GymCommunity') + `?id=${gymId}`}
+        onClick={onClose}
+        className="flex items-center gap-2.5 px-2 py-1 rounded-lg hover:bg-slate-800/50 transition-colors"
+      >
         <div className="flex-shrink-0 w-8 h-8 rounded-full overflow-hidden bg-slate-700 flex items-center justify-center text-xs font-bold text-slate-300 border border-yellow-400/40"
           style={{ boxShadow: '0 0 0 1.5px rgba(251,191,36,0.3)' }}>
           {user.avatar_url
@@ -116,7 +123,7 @@ function ReactionsModal({ open, onClose, reactions, reactedUsers, isLoadingReact
         </div>
         <span className="text-sm text-slate-200 font-semibold flex-1 min-w-0 truncate">{user.display_name}</span>
         <img src={STREAK_ICON_URL} alt="react" className="flex-shrink-0 w-8 h-8" style={{ objectFit: 'contain' }} />
-      </div>
+      </Link>
     );
   };
 
