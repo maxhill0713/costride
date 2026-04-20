@@ -1,5 +1,4 @@
 import { useState, useEffect, useRef } from "react";
-import { useState, useEffect, useRef } from "react";
 import {
   ChevronDown, Plus, Flame, Facebook, Instagram,
   ChevronRight, Check, X, MoreHorizontal, Calendar, Trophy, BarChart2, FileText, Pencil,
