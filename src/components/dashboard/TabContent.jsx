@@ -67,7 +67,7 @@ function DeleteBtn({ onClick }) {
 return <button onClick={onClick} style={{ background: C.redDim, border: `1px solid rgba(255,77,109,0.3)`, borderRadius: 6, padding: "4px 10px", color: C.red, fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: FONT, flexShrink: 0, minHeight: 36 }}>Delete</button>;
 }
 /* ─── TABS ───────────────────────────────────────────────────── */
-const VISIBLE_TABS = ["Events", "Challenges", "Polls", "Posts", "Drafts", "Scheduled"];
+const VISIBLE_TABS = ["Community Feed", "Events", "Challenges", "Polls", "Drafts", "Scheduled"];
 function Tabs({ active, setActive, isMobile }) {
 const ref = useRef(null);
   useEffect(() => {
@@ -77,7 +77,7 @@ if (el) el.scrollIntoView({ behavior: "smooth", inline: "center", block: "neares
     }
   }, [active, isMobile]);
 return (
-    <div style={{ borderBottom: `1px solid ${C.brd}`, marginBottom: isMobile ? 0 : 14, ...(isMobile ? { position: "sticky", top: 0, zIndex: 90, background: C.bg } : {}) }}>
+    <div style={{ borderBottom: `1px solid ${C.brd}`, marginBottom: isMobile ? 0 : 10, ...(isMobile ? { position: "sticky", top: 0, zIndex: 90, background: C.bg } : {}) }}>
       <div ref={ref} style={{ display: "flex", alignItems: "center", gap: 2, ...(isMobile ? { overflowX: "auto", WebkitOverflowScrolling: "touch", scrollbarWidth: "none" } : {}) }}>
         {VISIBLE_TABS.map(tab => (
           <button key={tab} data-active={active === tab} onClick={() => setActive(tab)} style={{ padding: isMobile ? "10px 16px" : "7px 14px", fontSize: 12.5, background: "transparent", border: "none", borderBottom: `2px solid ${active === tab ? C.cyan : "transparent"}`, color: active === tab ? C.t1 : C.t2, fontWeight: active === tab ? 700 : 400, cursor: "pointer", marginBottom: -1, fontFamily: FONT, transition: "color 0.15s", whiteSpace: "nowrap", flexShrink: 0, minHeight: 44, textShadow: "none" }}>
@@ -93,7 +93,7 @@ const QUICK_IDEAS = ["Generate AI Motivation Monday", "Post Member Spotlight", "
 function RightSidebar({ events, challenges, polls, posts, openModal }) {
 const totalContent = events.length + challenges.length + polls.length + posts.length;
 return (
-    <div style={{ width: 252, flexShrink: 0, background: C.sidebar, borderLeft: `1px solid ${C.brd}`, padding: "14px 12px", display: "flex", flexDirection: "column", gap: 14, overflowY: "auto" }}>
+    <div style={{ width: 252, flexShrink: 0, background: C.sidebar, borderLeft: `1px solid ${C.brd}`, padding: "12px 10px", display: "flex", flexDirection: "column", gap: 12, overflowY: "auto" }}>
       <div>
         <div style={{ fontSize: 12.5, fontWeight: 600, color: C.t1, marginBottom: 2 }}>What to Post Today?</div>
         <div style={{ fontSize: 10.5, color: C.t2, marginBottom: 9 }}>Guided ideas for today</div>
@@ -141,22 +141,24 @@ return (
   );
 }
 /* ─── EMPTY STATE ────────────────────────────────────────────── */
-function EmptyState({ label, onAdd }) {
+function EmptyState({ label, onAdd, noAction }) {
 return (
     <div style={{ display: "flex", flexDirection: "column", alignItems: "center", padding: "56px 0", gap: 12 }}>
       <div style={{ width: 48, height: 48, borderRadius: 12, background: C.cyanDim, border: `1px solid ${C.cyanBrd}`, display: "flex", alignItems: "center", justifyContent: "center" }}>
         <Flame size={20} color={C.cyan} />
       </div>
       <div style={{ fontSize: 13, fontWeight: 500, color: C.t2 }}>No {label} yet</div>
-      <button onClick={onAdd} style={{ padding: "7px 16px", borderRadius: 8, background: C.cyan, color: "#fff", border: "none", fontSize: 12.5, fontWeight: 700, cursor: "pointer", fontFamily: FONT, display: "flex", alignItems: "center", gap: 6, minHeight: 44, boxShadow: "0 0 10px rgba(77,127,255,0.22), 0 2px 6px rgba(77,127,255,0.12)" }}>
-        <Plus size={12} /> Create
-      </button>
+      {!noAction && onAdd && (
+        <button onClick={onAdd} style={{ padding: "7px 16px", borderRadius: 8, background: C.cyan, color: "#fff", border: "none", fontSize: 12.5, fontWeight: 700, cursor: "pointer", fontFamily: FONT, display: "flex", alignItems: "center", gap: 6, minHeight: 44, boxShadow: "0 0 10px rgba(77,127,255,0.22), 0 2px 6px rgba(77,127,255,0.12)" }}>
+          <Plus size={12} /> Create
+        </button>
+      )}
     </div>
   );
 }
 function SectionHeader({ count, label, onAdd, btnLabel, isMobile }) {
 return (
-    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
+    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
       <div style={{ fontSize: 12, fontWeight: 500, color: C.t2 }}>{count} {label}</div>
       {!isMobile && (
         <button onClick={onAdd} style={{ padding: "6px 14px", borderRadius: 7, background: C.cyan, color: "#fff", border: "none", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: FONT, display: "flex", alignItems: "center", gap: 5, minHeight: 44, boxShadow: "0 0 10px rgba(77,127,255,0.22), 0 2px 6px rgba(77,127,255,0.12)" }}>
@@ -186,27 +188,26 @@ return (
 /* ─── ROOT ───────────────────────────────────────────────────── */
 export default function ContentPage({ events = [], challenges = [], polls = [], posts = [], openModal, onDeleteEvent, onDeleteChallenge, onDeletePost }) {
 const isMobile = useIsMobile();
-const [tab, setTab]   = useState("Events");
+const [tab, setTab]   = useState("Community Feed");
 const [showMenu, setShowMenu] = useState(false);
 const createItems = [
-    { label: "📝 New Post",      action: () => { openModal?.("post");      setShowMenu(false); setTab("Posts");      } },
-    { label: "📅 New Event",     action: () => { openModal?.("event");     setShowMenu(false); setTab("Events");     } },
-    { label: "🏆 New Challenge", action: () => { openModal?.("challenge"); setShowMenu(false); setTab("Challenges"); } },
-    { label: "📊 New Poll",      action: () => { openModal?.("poll");      setShowMenu(false); setTab("Polls");      } },
+    { label: "📝 New Post",      action: () => { openModal?.("post");      setShowMenu(false); setTab("Community Feed"); } },
+    { label: "📅 New Event",     action: () => { openModal?.("event");     setShowMenu(false); setTab("Events");         } },
+    { label: "🏆 New Challenge", action: () => { openModal?.("challenge"); setShowMenu(false); setTab("Challenges");     } },
+    { label: "📊 New Poll",      action: () => { openModal?.("poll");      setShowMenu(false); setTab("Polls");          } },
   ];
 return (
     <div style={{ display: "flex", flex: 1, minHeight: 0, background: C.bg, color: C.t1, fontFamily: FONT, fontSize: 13, lineHeight: 1.5, WebkitFontSmoothing: "antialiased" }}>
       {/* ── MAIN SCROLL ── */}
       <div style={{ flex: 1, overflowY: "auto", minWidth: 0, ...(isMobile ? { paddingBottom: 80 } : {}) }}>
         {/* Header section */}
-        <div style={{ padding: isMobile ? "14px 14px 0" : "16px 20px 0" }}>
+        <div style={{ padding: isMobile ? "10px 12px 0" : "12px 16px 0" }}>
           {!isMobile && (
-            <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 12 }}>
+            <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 10 }}>
               <div>
-                <h1 style={{ fontSize: 19, fontWeight: 700, color: C.t1, margin: 0, letterSpacing: "-0.02em", lineHeight: 1.25 }}>
-                  Content Center <span style={{ color: C.t3, fontWeight: 300 }}>/</span> <span style={{ color: C.cyan, textShadow: "none" }}>Hub</span>
+                <h1 style={{ fontSize: 22, fontWeight: 800, color: C.t1, margin: 0, letterSpacing: "-0.03em", lineHeight: 1.2 }}>
+                  Content <span style={{ color: C.cyan }}>Hub</span>
                 </h1>
-                <div style={{ fontSize: 12, color: C.t2, marginTop: 4 }}>Manage posts, events, challenges and polls</div>
               </div>
               <div style={{ position: "relative" }}>
                 <button onClick={() => setShowMenu(o => !o)} style={{ display: "flex", alignItems: "center", gap: 6, padding: "9px 18px", background: C.cyan, border: "none", borderRadius: 9, fontSize: 12.5, fontWeight: 700, color: "#fff", cursor: "pointer", fontFamily: FONT, boxShadow: "0 0 10px rgba(77,127,255,0.22), 0 2px 8px rgba(77,127,255,0.12)" }}>
@@ -231,11 +232,29 @@ return (
           )}
         </div>
         {/* Sticky tabs */}
-        <div style={{ padding: isMobile ? "0 14px" : "0 20px" }}>
+        <div style={{ padding: isMobile ? "0 12px" : "0 16px" }}>
           <Tabs active={tab} setActive={setTab} isMobile={isMobile} />
         </div>
         {/* Tab panels */}
-        <div style={{ padding: isMobile ? "10px 14px 24px" : "0 20px 40px" }}>
+        <div style={{ padding: isMobile ? "8px 12px 24px" : "0 16px 32px" }}>
+          {tab === "Community Feed" && (
+            <>
+              <SectionHeader count={posts.length} label="Posts" onAdd={() => openModal?.("post")} btnLabel="New Post" isMobile={isMobile} />
+              {posts.length === 0 ? <EmptyState label="posts" onAdd={() => openModal?.("post")} /> :
+                posts.map(p => (
+                  <ListCard key={p.id} isMobile={isMobile}>
+                    {p.image_url && <img src={p.image_url} alt="" style={{ width: 52, height: 52, borderRadius: 7, objectFit: "cover", flexShrink: 0 }} />}
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontSize: 12.5, fontWeight: 600, color: C.t1 }}>{p.member_name}</div>
+                      <div style={{ fontSize: 11.5, color: C.t2, marginTop: 2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{p.content}</div>
+                    </div>
+                    <div style={{ fontSize: 11, color: C.t3 }}>{Object.keys(p.reactions || {}).length} reactions</div>
+                    {onDeletePost && <DeleteBtn onClick={() => onDeletePost(p.id)} />}
+                  </ListCard>
+                ))
+              }
+            </>
+          )}
           {tab === "Events" && (
             <>
               <SectionHeader count={events.length} label="Events" onAdd={() => openModal?.("event")} btnLabel="Add Event" isMobile={isMobile} />
@@ -312,28 +331,10 @@ return (
             </>
           )}
           {tab === "Drafts" && (
-            <EmptyState label="drafts" onAdd={() => openModal?.("post")} />
+            <EmptyState label="drafts" noAction />
           )}
           {tab === "Scheduled" && (
-            <EmptyState label="scheduled content" onAdd={() => openModal?.("post")} />
-          )}
-          {tab === "Posts" && (
-            <>
-              <SectionHeader count={posts.length} label="Posts" onAdd={() => openModal?.("post")} btnLabel="New Post" isMobile={isMobile} />
-              {posts.length === 0 ? <EmptyState label="posts" onAdd={() => openModal?.("post")} /> :
-                posts.map(p => (
-                  <ListCard key={p.id} isMobile={isMobile}>
-                    {p.image_url && <img src={p.image_url} alt="" style={{ width: 52, height: 52, borderRadius: 7, objectFit: "cover", flexShrink: 0 }} />}
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontSize: 12.5, fontWeight: 600, color: C.t1 }}>{p.member_name}</div>
-                      <div style={{ fontSize: 11.5, color: C.t2, marginTop: 2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{p.content}</div>
-                    </div>
-                    <div style={{ fontSize: 11, color: C.t3 }}>{Object.keys(p.reactions || {}).length} reactions</div>
-                    {onDeletePost && <DeleteBtn onClick={() => onDeletePost(p.id)} />}
-                  </ListCard>
-                ))
-              }
-            </>
+            <EmptyState label="scheduled posts" noAction />
           )}
         </div>
       </div>
