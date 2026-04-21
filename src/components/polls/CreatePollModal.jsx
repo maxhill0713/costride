@@ -5,7 +5,7 @@
 import React, { useState, useEffect } from 'react';
 import {
   X, BarChart2, Plus, CheckCircle,
-  MessageSquare, Trash2, Eye, Zap, ChevronDown, ChevronLeft,
+  MessageSquare, Trash2, Eye, Zap, ChevronDown, ChevronLeft, Calendar,
 } from 'lucide-react';
 
 /* ─── TOKENS ─────────────────────────────────────────────────── */
@@ -251,10 +251,11 @@ function MobileCreatePollModal({ open, onClose, onSave, isLoading }) {
   const [category,    setCategory]    = useState('');
   const [options,     setOptions]     = useState(['', '']);
   const [description, setDescription] = useState('');
+  const [endDate,     setEndDate]     = useState('');
   const [previewOpen, setPreviewOpen] = useState(false);
 
   const validOpts = options.filter(o => o.trim());
-  const canSave   = title.trim() && category && validOpts.length >= 2 && !isLoading;
+  const canSave   = title.trim() && category && validOpts.length >= 2 && endDate && !isLoading;
   const cat       = catFor(category);
   const accent    = cat?.color || C.blue;
 
@@ -266,13 +267,14 @@ function MobileCreatePollModal({ open, onClose, onSave, isLoading }) {
     if (!canSave) return;
     onSave({
       title: title.trim(), description: description.trim(), category,
+      end_date: endDate,
       options: validOpts.map(text => ({ id: Math.random().toString(36).substr(2, 9), text, votes: 0 })),
     });
-    setTitle(''); setDescription(''); setCategory(''); setOptions(['', '']);
+    setTitle(''); setDescription(''); setCategory(''); setOptions(['', '']); setEndDate('');
   };
 
   const handleClose = () => {
-    setTitle(''); setDescription(''); setCategory(''); setOptions(['', '']);
+    setTitle(''); setDescription(''); setCategory(''); setOptions(['', '']); setEndDate('');
     onClose();
   };
 
@@ -358,6 +360,26 @@ function MobileCreatePollModal({ open, onClose, onSave, isLoading }) {
           </div>
 
           <div>
+            <div style={{ fontSize: 11, fontWeight: 600, color: C.t3, textTransform: 'uppercase', letterSpacing: '0.09em', marginBottom: 10, display: 'flex', alignItems: 'center', gap: 4 }}>
+              Poll End Date <span style={{ color: C.red }}>*</span>
+            </div>
+            <div style={{ position: 'relative' }}>
+              <div style={{ position: 'absolute', left: 13, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }}>
+                <Calendar size={15} color={endDate ? accent : C.t3} />
+              </div>
+              <input
+                type="date"
+                value={endDate}
+                onChange={e => setEndDate(e.target.value)}
+                min={new Date().toISOString().split('T')[0]}
+                onFocus={e => { e.target.style.borderColor = `${accent}40`; e.target.style.background = C.inset; }}
+                onBlur={e =>  { e.target.style.borderColor = C.brd; e.target.style.background = C.card; }}
+                style={{ ...baseInp, paddingLeft: 42, paddingTop: 13, paddingBottom: 13, fontSize: 14, borderRadius: 12, colorScheme: 'dark' }}
+              />
+            </div>
+          </div>
+
+          <div>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
               <div style={{ fontSize: 11, fontWeight: 600, color: C.t3, textTransform: 'uppercase', letterSpacing: '0.09em', display: 'flex', alignItems: 'center', gap: 4 }}>
                 Answer Options <span style={{ color: C.red }}>*</span>
@@ -401,7 +423,7 @@ function MobileCreatePollModal({ open, onClose, onSave, isLoading }) {
               </>
             ) : (
               <span style={{ fontSize: 12, color: C.t3 }}>
-                {!category ? 'Pick a category to continue' : !title.trim() ? 'Add a question to continue' : 'Add at least 2 options'}
+                {!category ? 'Pick a category to continue' : !title.trim() ? 'Add a question to continue' : !endDate ? 'Set an end date to continue' : 'Add at least 2 options'}
               </span>
             )}
           </div>
@@ -426,9 +448,10 @@ function DesktopCreatePollModal({ open, onClose, onSave, isLoading }) {
   const [category,    setCategory]    = useState('');
   const [options,     setOptions]     = useState(['', '']);
   const [description, setDescription] = useState('');
+  const [endDate,     setEndDate]     = useState('');
 
   const validOpts = options.filter(o => o.trim());
-  const canSave   = title.trim() && category && validOpts.length >= 2 && !isLoading;
+  const canSave   = title.trim() && category && validOpts.length >= 2 && endDate && !isLoading;
   const cat       = catFor(category);
   const accent    = cat?.color || C.blue;
 
@@ -440,13 +463,14 @@ function DesktopCreatePollModal({ open, onClose, onSave, isLoading }) {
     if (!canSave) return;
     onSave({
       title: title.trim(), description: description.trim(), category,
+      end_date: endDate,
       options: validOpts.map(text => ({ id: Math.random().toString(36).substr(2, 9), text, votes: 0 })),
     });
-    setTitle(''); setDescription(''); setCategory(''); setOptions(['', '']);
+    setTitle(''); setDescription(''); setCategory(''); setOptions(['', '']); setEndDate('');
   };
 
   const handleClose = () => {
-    setTitle(''); setDescription(''); setCategory(''); setOptions(['', '']);
+    setTitle(''); setDescription(''); setCategory(''); setOptions(['', '']); setEndDate('');
     onClose();
   };
 
@@ -507,6 +531,23 @@ function DesktopCreatePollModal({ open, onClose, onSave, isLoading }) {
                 <Textarea value={description} onChange={e => setDescription(e.target.value)} placeholder="Add any helpful context or background for members…" rows={2} accentColor={accent} />
               </div>
               <div>
+                <SL required>Poll End Date</SL>
+                <div style={{ position: 'relative' }}>
+                  <div style={{ position: 'absolute', left: 11, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }}>
+                    <Calendar size={12} color={endDate ? accent : C.t3} style={{ transition: 'color 0.15s' }} />
+                  </div>
+                  <input
+                    type="date"
+                    value={endDate}
+                    onChange={e => setEndDate(e.target.value)}
+                    min={new Date().toISOString().split('T')[0]}
+                    onFocus={e => { e.target.style.borderColor = `${accent}38`; e.target.style.background = C.inset; }}
+                    onBlur={e =>  { e.target.style.borderColor = C.brd; e.target.style.background = C.card; }}
+                    style={{ ...baseInp, paddingLeft: 32, colorScheme: 'dark' }}
+                  />
+                </div>
+              </div>
+              <div>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
                   <SL required>Answer Options</SL>
                   <span style={{ fontSize: 10, color: validOpts.length >= 2 ? C.green : C.t3, fontWeight: 700, marginTop: -8, ...MONO }}>{validOpts.length} / {options.length} filled</span>
@@ -556,7 +597,7 @@ function DesktopCreatePollModal({ open, onClose, onSave, isLoading }) {
                   <span style={{ fontSize: 10.5, color: C.t3 }}>{title} · {validOpts.length} option{validOpts.length !== 1 ? 's' : ''}{cat ? ` · ${cat.label}` : ''}</span>
                 </>
               ) : (
-                <span style={{ fontSize: 10.5, color: C.t3 }}>{!category ? 'Pick a category to continue' : !title.trim() ? 'Add a question to continue' : 'Add at least 2 options'}</span>
+                <span style={{ fontSize: 10.5, color: C.t3 }}>{!category ? 'Pick a category to continue' : !title.trim() ? 'Add a question to continue' : !endDate ? 'Set an end date to continue' : 'Add at least 2 options'}</span>
               )}
             </div>
             <button className="pl-cancel" onClick={handleClose} type="button">Cancel</button>

@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import {
   Plus, Flame, Check, Calendar, Trophy, BarChart2, FileText,
-  MessageCircle, Trash2, Zap, RefreshCw, Pencil, X, Upload,
+  MessageCircle, Trash2, Zap, RefreshCw, Pencil, X, Upload, Clock, Users,
 } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 
@@ -771,7 +771,7 @@ function MemberStatusBadge({ memberId, checkIns = [] }) {
 }
 
 /* ─── ROOT ───────────────────────────────────────────────────── */
-export default function ContentPage({ events = [], challenges = [], polls = [], posts = [], checkIns = [], openModal, onDeleteEvent, onDeleteChallenge, onDeletePost, onUpdatePost, avatarMap = {}, nameMap = {}, currentUser = null, gym = null }) {
+export default function ContentPage({ events = [], challenges = [], polls = [], posts = [], checkIns = [], openModal, onDeleteEvent, onDeleteChallenge, onDeletePost, onUpdatePost, avatarMap = {}, nameMap = {}, currentUser = null, gym = null, memberCount = 0 }) {
   const isMobile = useIsMobile();
   const [tab, setTab] = useState("Community Feed");
   const [showMenu, setShowMenu] = useState(false);
@@ -1114,28 +1114,58 @@ export default function ContentPage({ events = [], challenges = [], polls = [], 
               </div>
               {polls.length === 0
                 ? <EmptyState label="polls" onAdd={() => openModal?.("poll")} />
-                : polls.map(poll => (
+                : polls.map(poll => {
+                  const responseCount = (poll.voters || []).length;
+                  const communityPct = memberCount > 0 ? Math.round((responseCount / memberCount) * 100) : 0;
+                  const timeRemainingLabel = (() => {
+                    if (!poll.end_date) return null;
+                    const endMs = new Date(poll.end_date).getTime();
+                    const diffMs = endMs - Date.now();
+                    if (diffMs <= 0) return "Ended";
+                    const diffHours = diffMs / (1000 * 60 * 60);
+                    if (diffHours < 24) { const h = Math.round(diffHours); return `${h}h left`; }
+                    return `${Math.round(diffMs / (1000 * 60 * 60 * 24))}d left`;
+                  })();
+                  const isEnded = poll.end_date && new Date(poll.end_date).getTime() < Date.now();
+                  const isUrgent = poll.end_date && !isEnded && (new Date(poll.end_date).getTime() - Date.now()) < 24 * 60 * 60 * 1000;
+                  return (
                   <div key={poll.id} style={{ background: C.card, border: `1px solid ${C.brd}`, borderRadius: 10, padding: isMobile ? "14px 16px" : "13px 16px", marginBottom: 8 }}
                     onMouseEnter={e => { e.currentTarget.style.borderColor = C.cyanBrd; e.currentTarget.style.boxShadow = `0 0 6px rgba(77,127,255,0.06)`; }}
                     onMouseLeave={e => { e.currentTarget.style.borderColor = C.brd; e.currentTarget.style.boxShadow = "none"; }}>
-                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
-                      <div style={{ fontSize: 13, fontWeight: 600, color: C.t1 }}>{poll.question || poll.title}</div>
-                      {/* CHANGED: label changed from "Remove Poll" to "Remove" */}
-                      <button
-                        onClick={() => setPollToRemove(poll)}
-                        style={{ display: "flex", alignItems: "center", gap: 6, padding: "6px 12px", borderRadius: 8, background: "rgba(255,255,255,0.03)", border: `1px solid ${C.brd}`, color: C.t2, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: FONT, flexShrink: 0, transition: "all 0.15s" }}
-                        onMouseEnter={e => { e.currentTarget.style.borderColor = "rgba(255,77,109,0.35)"; e.currentTarget.style.color = C.red; e.currentTarget.style.background = C.redDim; }}
-                        onMouseLeave={e => { e.currentTarget.style.borderColor = C.brd; e.currentTarget.style.color = C.t2; e.currentTarget.style.background = "rgba(255,255,255,0.03)"; }}>
-                        <Trash2 size={12} color="currentColor" />
-                        <span>Remove</span>
-                      </button>
-                    </div>
+                    <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 10, marginBottom: 10 }}>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontSize: 13, fontWeight: 600, color: C.t1, marginBottom: 5 }}>{poll.question || poll.title}</div>
+                        <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
+                          <Users size={11} color={C.cyan} />
+                          <span style={{ fontSize: 11.5, fontWeight: 700, color: C.t1 }}>{responseCount} Response{responseCount !== 1 ? "s" : ""}</span>
+                          {memberCount > 0 && <span style={{ fontSize: 11, color: C.t2 }}>({communityPct}% of the community)</span>}
+                        </div>
+                      </div>
+                      <div style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
+                        {timeRemainingLabel && (
+                          <div style={{ display: "flex", alignItems: "center", gap: 5, padding: "4px 9px", borderRadius: 7,
+                            background: isEnded ? "rgba(255,255,255,0.04)" : isUrgent ? "rgba(255,77,109,0.12)" : "rgba(77,127,255,0.10)",
+                            border: `1px solid ${isEnded ? C.brd : isUrgent ? "rgba(255,77,109,0.3)" : "rgba(77,127,255,0.25)"}`,
+                            color: isEnded ? C.t3 : isUrgent ? "#ff6b85" : C.cyan, fontSize: 11, fontWeight: 700 }}>
+                            <Clock size={11} color="currentColor" />
+                            <span>{timeRemainingLabel}</span>
+                          </div>
+                        )}
+                        <button
+                          onClick={() => setPollToRemove(poll)}
+                          style={{ display: "flex", alignItems: "center", gap: 6, padding: "6px 12px", borderRadius: 8, background: "rgba(255,255,255,0.03)", border: `1px solid ${C.brd}`, color: C.t2, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: FONT, flexShrink: 0, transition: "all 0.15s" }}
+                          onMouseEnter={e => { e.currentTarget.style.borderColor = "rgba(255,77,109,0.35)"; e.currentTarget.style.color = C.red; e.currentTarget.style.background = C.redDim; }}
+                          onMouseLeave={e => { e.currentTarget.style.borderColor = C.brd; e.currentTarget.style.color = C.t2; e.currentTarget.style.background = "rgba(255,255,255,0.03)"; }}>
+                          <Trash2 size={12} color="currentColor" />
+                          <span>Remove</span>
+                        </button>
+                        </div>
+                        </div>
                     {(poll.options || []).map((opt, i) => {
                       const optText  = typeof opt === "object" ? (opt.text || opt.label || String(i + 1)) : opt;
                       const optVotes = typeof opt === "object" ? (opt.votes || 0) : ((poll.votes || {})[opt] || 0);
                       const total    = Math.max((poll.voters || []).length, 1);
                       const pct      = Math.round(optVotes / total * 100);
-                      // CHANGED: bars capped at 70% of row width (was 80%), height increased to 5px (was 4px, ~10% thicker rounded up)
                       const barWidth = Math.round(pct * 0.7);
                       return (
                         <div key={i} style={{ marginBottom: 6 }}>
@@ -1143,7 +1173,6 @@ export default function ContentPage({ events = [], challenges = [], polls = [], 
                             <span>{optText}</span>
                             <span style={{ color: C.cyan, textShadow: "none" }}>{pct}%</span>
                           </div>
-                          {/* CHANGED: height 5px (was 4px) */}
                           <div style={{ height: 5, background: "rgba(255,255,255,0.06)", borderRadius: 2, overflow: "hidden" }}>
                             <div style={{ width: `${barWidth}%`, height: "100%", background: C.cyan, borderRadius: 2 }} />
                           </div>
@@ -1151,7 +1180,8 @@ export default function ContentPage({ events = [], challenges = [], polls = [], 
                       );
                     })}
                   </div>
-                ))
+                  );
+                })
               }
             </>
           )}
