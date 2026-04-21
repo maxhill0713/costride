@@ -66,6 +66,16 @@ function timeAgo(dateStr) {
   return d.toLocaleDateString("en-GB", { day: "numeric", month: "short" });
 }
 
+/* ─── POST TYPE COLORS ───────────────────────────────────────── */
+const POST_TYPE_STYLES = {
+  update:           { label: "Announcement",     color: "#60a5fa", bg: "rgba(96,165,250,0.12)",  border: "rgba(96,165,250,0.28)"  },
+  achievement:      { label: "Achievement",      color: "#f59e0b", bg: "rgba(245,158,11,0.12)",  border: "rgba(245,158,11,0.28)"  },
+  event:            { label: "Event",            color: "#22c55e", bg: "rgba(34,197,94,0.12)",   border: "rgba(34,197,94,0.28)"   },
+  offer:            { label: "Special Offer",    color: "#ff4d6d", bg: "rgba(255,77,109,0.12)",  border: "rgba(255,77,109,0.28)"  },
+  tip:              { label: "Fitness Tip",      color: "#a78bfa", bg: "rgba(167,139,250,0.12)", border: "rgba(167,139,250,0.28)" },
+  member_spotlight: { label: "Member Spotlight", color: "#60a5fa", bg: "rgba(96,165,250,0.12)",  border: "rgba(96,165,250,0.28)"  },
+};
+
 /* ─── TAB CONFIG ─────────────────────────────────────────────── */
 const VISIBLE_TABS = ["Community Feed", "Events", "Challenges", "Polls", "Drafts", "Scheduled"];
 
@@ -786,9 +796,10 @@ export default function ContentPage({ events = [], challenges = [], polls = [], 
                               <>
                                 <div style={{ fontSize: 13, fontWeight: 700, color: C.t1, lineHeight: 1.2 }}>{resolvedName}</div>
                                 <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 3 }}>
-                                  <span style={{ fontSize: 9.5, fontWeight: 700, padding: "1px 7px", borderRadius: 5, background: C.cyanDim, border: `1px solid ${C.cyanBrd}`, color: C.cyan }}>
-                                    {({ update:"Announcement", achievement:"Achievement", event:"Event", offer:"Special Offer", tip:"Fitness Tip", member_spotlight:"Member Spotlight" })[p.post_type] || p.post_type}
-                                  </span>
+                                  {(() => { const pt = POST_TYPE_STYLES[p.post_type] || POST_TYPE_STYLES.update; return (
+                                  <span style={{ fontSize: 9.5, fontWeight: 700, padding: "1px 7px", borderRadius: 5, background: pt.bg, border: `1px solid ${pt.border}`, color: pt.color }}>
+                                    {pt.label}
+                                  </span>); })()}
                                   <span style={{ fontSize: 11, color: C.t3 }}>{postedAt}</span>
                                 </div>
                               </>
