@@ -156,6 +156,112 @@ function MessageMemberModal({ resolvedName, memberId, onClose }) {
   );
 }
 
+/* ─── REACTIONS MODAL ───────────────────────────────────────── */
+function ReactionsModal({ reactions, onClose }) {
+  const [search, setSearch] = useState("");
+  const [resolvedUsers, setResolvedUsers] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  const userIds = Object.keys(reactions || {}).filter(k => !k.startsWith("gym_"));
+  const gymKeys = Object.keys(reactions || {}).filter(k => k.startsWith("gym_"));
+  const total = Object.keys(reactions || {}).length;
+
+  useEffect(() => {
+    if (total === 0) { setLoading(false); return; }
+    (async () => {
+      setLoading(true);
+      const users = [];
+      if (userIds.length > 0) {
+        try {
+          const res = await base44.functions.invoke("getUserAvatars", { userIds });
+          userIds.forEach(id => users.push({
+            id,
+            name: res.data?.avatars?.[id]?.full_name || "Member",
+            avatar: res.data?.avatars?.[id]?.avatar_url || null,
+            variant: reactions[id],
+          }));
+        } catch {}
+      }
+      for (const key of gymKeys) {
+        const gymId = key.replace("gym_", "");
+        try {
+          const gyms = await base44.entities.Gym.filter({ id: gymId });
+          if (gyms[0]) users.push({ id: key, name: gyms[0].name, avatar: gyms[0].logo_url || gyms[0].image_url || null, variant: reactions[key], isGym: true });
+        } catch {}
+      }
+      setResolvedUsers(users);
+      setLoading(false);
+    })();
+  }, []);
+
+  const filtered = resolvedUsers.filter(u =>
+    u.name.toLowerCase().includes(search.toLowerCase())
+  );
+
+  const ini = (n = "") => (n || "?").split(" ").map(w => w[0]).join("").toUpperCase().slice(0, 2);
+
+  return (
+    <div style={{ position: "fixed", inset: 0, zIndex: 500, background: "rgba(0,0,0,0.72)", display: "flex", alignItems: "center", justifyContent: "center" }}
+      onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
+      <div style={{ background: C.card, border: `1px solid ${C.brd}`, borderRadius: 14, padding: "20px 20px 16px", width: 380, maxWidth: "92vw", display: "flex", flexDirection: "column", gap: 14, maxHeight: "75vh" }}>
+
+        {/* Header */}
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexShrink: 0 }}>
+          <div style={{ fontSize: 15, fontWeight: 800, color: C.t1, letterSpacing: "-0.02em" }}>
+            {total} Reaction{total !== 1 ? "s" : ""}
+          </div>
+          <button onClick={onClose} style={{ background: "none", border: "none", color: C.t3, cursor: "pointer", display: "flex", alignItems: "center", padding: 4, borderRadius: 6 }}
+            onMouseEnter={e => e.currentTarget.style.color = C.t1}
+            onMouseLeave={e => e.currentTarget.style.color = C.t3}>
+            <X size={15} />
+          </button>
+        </div>
+
+        {/* Search */}
+        <div style={{ display: "flex", alignItems: "center", gap: 8, background: C.card2, border: `1px solid ${C.brd}`, borderRadius: 8, padding: "7px 11px", flexShrink: 0 }}>
+          <svg width="13" height="13" fill="none" stroke={C.t3} strokeWidth="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+          <input
+            value={search}
+            onChange={e => setSearch(e.target.value.slice(0, 30))}
+            placeholder="Search by name…"
+            style={{ flex: 1, background: "none", border: "none", outline: "none", color: C.t1, fontSize: 13, fontFamily: FONT }}
+          />
+        </div>
+
+        {/* List */}
+        <div style={{ overflowY: "auto", display: "flex", flexDirection: "column", gap: 2 }}>
+          {loading ? (
+            <div style={{ textAlign: "center", padding: "24px 0", color: C.t3, fontSize: 12 }}>Loading…</div>
+          ) : filtered.length === 0 ? (
+            <div style={{ textAlign: "center", padding: "24px 0", color: C.t3, fontSize: 12 }}>No reactions found</div>
+          ) : filtered.map(u => (
+            <div key={u.id} style={{ display: "flex", alignItems: "center", gap: 10, padding: "7px 8px", borderRadius: 8, cursor: "default" }}
+              onMouseEnter={e => e.currentTarget.style.background = C.card2}
+              onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
+              <div style={{ width: 32, height: 32, borderRadius: "50%", flexShrink: 0, overflow: "hidden", background: C.brd, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 800, color: C.t1, border: u.isGym ? "1.5px solid rgba(251,191,36,0.4)" : "none" }}>
+                {u.avatar ? <img src={u.avatar} alt={u.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : ini(u.name)}
+              </div>
+              <span style={{ flex: 1, fontSize: 13, fontWeight: 600, color: C.t1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{u.name}</span>
+              {u.variant === "sunglasses" ? (
+                <div style={{ position: "relative", width: 32, height: 32, flexShrink: 0 }}>
+                  <img src={STREAK_ICON_URL} alt="react" style={{ width: "100%", height: "100%", objectFit: "contain" }} />
+                  <svg style={{ position: "absolute", inset: 0, width: "100%", height: "100%", pointerEvents: "none" }} viewBox="0 0 64 64">
+                    <circle cx="20" cy="24" r="6" fill="none" stroke="black" strokeWidth="1.5"/>
+                    <circle cx="44" cy="24" r="6" fill="none" stroke="black" strokeWidth="1.5"/>
+                    <line x1="26" y1="24" x2="38" y2="24" stroke="black" strokeWidth="1.5"/>
+                  </svg>
+                </div>
+              ) : (
+                <img src={STREAK_ICON_URL} alt="react" style={{ width: 32, height: 32, objectFit: "contain", flexShrink: 0 }} />
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 /* ─── REMOVE POST MODAL ──────────────────────────────────────── */
 function RemovePostModal({ post, resolvedName, onConfirm, onClose }) {
   const [removing, setRemoving] = useState(false);
@@ -664,6 +770,7 @@ export default function ContentPage({ events = [], challenges = [], polls = [], 
   const [pollToRemove, setPollToRemove] = useState(null);
   const [challengeToRemove, setChallengeToRemove] = useState(null);
   const [rerunning, setRerunning] = useState(null);
+  const [reactionsPost, setReactionsPost] = useState(null);
 
   const createItems = [
     { label: "📝 New Post",      action: () => { openModal?.("post");      setShowMenu(false); setTab("Community Feed"); } },
@@ -823,11 +930,29 @@ export default function ContentPage({ events = [], challenges = [], polls = [], 
                           </div>
                         )}
 
-                        <div style={{ marginTop: "auto" }}>
-                          <span style={{ fontSize: 11, color: C.t3 }}>
-                            {reactionCount > 0 ? `${reactionCount} reaction${reactionCount !== 1 ? "s" : ""}` : ""}
-                          </span>
-                        </div>
+                        {reactionCount > 0 && (
+                          <button onClick={() => setReactionsPost(p)} style={{ marginTop: "auto", display: "flex", alignItems: "center", gap: 0, background: "none", border: "none", cursor: "pointer", padding: 0 }}>
+                            {Object.entries(p.reactions || {}).slice(0, 5).map(([uid, variant], i) => (
+                              <div key={uid} style={{ position: "relative", width: 26, height: 26, marginLeft: i === 0 ? 0 : -7, zIndex: 5 - i, flexShrink: 0 }}>
+                                {variant === "sunglasses" ? (
+                                  <div style={{ position: "relative", width: "100%", height: "100%" }}>
+                                    <img src={STREAK_ICON_URL} alt="react" style={{ width: "100%", height: "100%", objectFit: "contain" }} />
+                                    <svg style={{ position: "absolute", inset: 0, width: "100%", height: "100%", pointerEvents: "none" }} viewBox="0 0 64 64">
+                                      <circle cx="20" cy="24" r="6" fill="none" stroke="black" strokeWidth="1.5"/>
+                                      <circle cx="44" cy="24" r="6" fill="none" stroke="black" strokeWidth="1.5"/>
+                                      <line x1="26" y1="24" x2="38" y2="24" stroke="black" strokeWidth="1.5"/>
+                                    </svg>
+                                  </div>
+                                ) : (
+                                  <img src={STREAK_ICON_URL} alt="react" style={{ width: "100%", height: "100%", objectFit: "contain" }} />
+                                )}
+                              </div>
+                            ))}
+                            {reactionCount > 5 && (
+                              <span style={{ fontSize: 11, fontWeight: 700, color: C.t2, marginLeft: 5 }}>+{reactionCount - 5}</span>
+                            )}
+                          </button>
+                        )}
                       </div>
 
                       <QuickActions
@@ -1073,6 +1198,14 @@ export default function ContentPage({ events = [], challenges = [], polls = [], 
           challenge={challengeToRemove}
           onConfirm={async (id) => { await onDeleteChallenge?.(id); setChallengeToRemove(null); }}
           onClose={() => setChallengeToRemove(null)}
+        />
+      )}
+
+      {/* REACTIONS MODAL */}
+      {reactionsPost && (
+        <ReactionsModal
+          reactions={reactionsPost.reactions || {}}
+          onClose={() => setReactionsPost(null)}
         />
       )}
     </div>
