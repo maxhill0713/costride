@@ -36,7 +36,7 @@ export default function StreakVariantPicker({ isOpen, onClose, onSelect, selecte
           <span className="text-white font-bold text-[1.665rem] leading-none">{streakFreezes}</span>
         </div>
 
-        {/* 4-column grid — icons pack left with no empty placeholder cells */}
+        {/* 4-column grid — icons are 50% larger by overflowing their cell via negative margin */}
         <div className="grid grid-cols-4 gap-2 mt-12">
           {availableIcons.map((icon) => (
             <button
@@ -45,12 +45,18 @@ export default function StreakVariantPicker({ isOpen, onClose, onSelect, selecte
               className={`flex flex-col items-center gap-2 p-2 rounded-2xl transition-all ${
                 selectedVariant === icon.id ? `ring-2 ${icon.ring}` : 'hover:opacity-80'
               }`}>
-              <div className="w-full aspect-square flex items-center justify-center">
+              {/* Overflow wrapper: makes the image 50% bigger than the cell while
+                  keeping the grid column width unchanged */}
+              <div className="w-full aspect-square flex items-center justify-center overflow-visible">
                 <img
                   src={icon.src}
                   alt={icon.alt}
-                  className="w-full h-full"
-                  style={{ objectFit: 'contain' }}
+                  style={{
+                    objectFit: 'contain',
+                    width: '150%',
+                    height: '150%',
+                    pointerEvents: 'none',
+                  }}
                 />
               </div>
               {selectedVariant === icon.id && (
