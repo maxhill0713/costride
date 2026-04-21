@@ -53,8 +53,8 @@ export default function StreakVariantPicker({ isOpen, onClose, onSelect, selecte
                   alt={icon.alt}
                   style={{
                     objectFit: 'contain',
-                    width: '150%',
-                    height: '150%',
+                    width: '170%',
+                    height: '170%',
                     pointerEvents: 'none',
                   }}
                 />
