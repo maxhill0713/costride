@@ -255,7 +255,7 @@ function MobileCreatePollModal({ open, onClose, onSave, isLoading }) {
   const [previewOpen, setPreviewOpen] = useState(false);
 
   const validOpts = options.filter(o => o.trim());
-  const canSave   = title.trim() && category && validOpts.length >= 2 && endDate && !isLoading;
+  const canSave   = title.trim() && validOpts.length >= 2 && endDate && !isLoading;
   const cat       = catFor(category);
   const accent    = cat?.color || C.blue;
 
@@ -423,7 +423,7 @@ function MobileCreatePollModal({ open, onClose, onSave, isLoading }) {
               </>
             ) : (
               <span style={{ fontSize: 12, color: C.t3 }}>
-                {!category ? 'Pick a category to continue' : !title.trim() ? 'Add a question to continue' : !endDate ? 'Set an end date to continue' : 'Add at least 2 options'}
+                {!title.trim() ? 'Add a question to continue' : !endDate ? 'Set an end date to continue' : 'Add at least 2 options'}
               </span>
             )}
           </div>
@@ -451,7 +451,7 @@ function DesktopCreatePollModal({ open, onClose, onSave, isLoading }) {
   const [endDate,     setEndDate]     = useState('');
 
   const validOpts = options.filter(o => o.trim());
-  const canSave   = title.trim() && category && validOpts.length >= 2 && endDate && !isLoading;
+  const canSave   = title.trim() && validOpts.length >= 2 && endDate && !isLoading;
   const cat       = catFor(category);
   const accent    = cat?.color || C.blue;
 
