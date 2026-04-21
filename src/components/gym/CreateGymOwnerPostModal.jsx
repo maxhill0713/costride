@@ -195,6 +195,9 @@ export default function CreateGymOwnerPostModal({ open, onClose, gym, onSuccess 
   const canSubmit   = content.trim().length > 0 && !submitting;
   const isScheduled = !!scheduledDate;
 
+  // Button label: "Schedule" if a date is set, otherwise "Post"
+  const submitLabel = isScheduled ? 'Schedule' : 'Post';
+
   const uploadMutation = useMutation({
     mutationFn: async (file) => { const r = await base44.integrations.Core.UploadFile({ file }); return r.file_url; },
     onSuccess: (url) => { setImageUrl(url); setUploading(false); },
@@ -415,12 +418,12 @@ export default function CreateGymOwnerPostModal({ open, onClose, gym, onSuccess 
                 WebkitOverflowScrolling: 'touch',
               }}>
 
-                {/* Content */}
+                {/* Content — rows reduced by ~20%: desktop 6→4, mobile 5→4 */}
                 <div>
                   <SL required right={<CharRing count={content.length} max={500} />}>Content</SL>
                   <textarea
                     className="ch-ta"
-                    rows={isMobile ? 5 : 6}
+                    rows={4}
                     value={content}
                     onChange={e => setContent(e.target.value)}
                     placeholder={activeType.placeholder}
@@ -563,36 +566,10 @@ export default function CreateGymOwnerPostModal({ open, onClose, gym, onSuccess 
             display: 'flex',
             flexDirection: isMobile ? 'column' : 'row',
             alignItems: isMobile ? 'stretch' : 'center',
+            justifyContent: 'flex-end',
             gap: isMobile ? 8 : 10,
             background: C.surface,
           }}>
-            {/* Status */}
-            <div style={{ flex: 1, display: isMobile ? 'none' : 'flex', alignItems: 'center', gap: 6 }}>
-              {content.trim() ? (
-                <>
-                  <CheckCircle size={11} color={C.green} />
-                  <span style={{ fontSize: 10.5, color: C.t3, ...MONO }}>
-                    {content.length} chars · {activeType.label}
-                    {isPinned ? ' · Pinned' : ''}
-                    {tags.length > 0 ? ` · ${tags.length} tag${tags.length !== 1 ? 's' : ''}` : ''}
-                    {isScheduled ? ` · Scheduled` : ''}
-                  </span>
-                </>
-              ) : (
-                <span style={{ fontSize: 10.5, color: C.t3 }}>Add content to publish your post</span>
-              )}
-            </div>
-
-            {isMobile && content.trim() && (
-              <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-                <CheckCircle size={11} color={C.green} />
-                <span style={{ fontSize: 10.5, color: C.t3 }}>
-                  {content.length} chars · {activeType.label}
-                  {isScheduled ? ' · Scheduled' : ''}
-                </span>
-              </div>
-            )}
-
             {isMobile ? (
               <>
                 <button
@@ -608,9 +585,7 @@ export default function CreateGymOwnerPostModal({ open, onClose, gym, onSuccess 
                 >
                   {submitting
                     ? <><div style={{ width: 14, height: 14, border: '2px solid rgba(255,255,255,0.2)', borderTop: '2px solid #fff', borderRadius: '50%', animation: 'spin 0.7s linear infinite' }} /> Publishing…</>
-                    : isScheduled
-                      ? <><Calendar size={15} /> Schedule Post</>
-                      : <><Zap size={15} /> Review & Publish</>}
+                    : submitLabel}
                 </button>
                 <button onClick={handleClose} style={{ background: 'none', border: 'none', color: C.t3, fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: FONT, padding: '6px 0', textAlign: 'center' }}>
                   Cancel
@@ -623,13 +598,11 @@ export default function CreateGymOwnerPostModal({ open, onClose, gym, onSuccess 
                   onClick={handleSubmit}
                   disabled={!canSubmit}
                   className={`ch-cta-btn${isScheduled ? ' schedule' : ''}`}
-                  style={{ opacity: canSubmit ? 1 : 0.38, cursor: canSubmit ? 'pointer' : 'default', boxShadow: canSubmit ? `0 0 24px ${isScheduled ? C.amber : C.blue}40` : 'none', minWidth: 160, justifyContent: 'center' }}
+                  style={{ opacity: canSubmit ? 1 : 0.38, cursor: canSubmit ? 'pointer' : 'default', boxShadow: canSubmit ? `0 0 24px ${isScheduled ? C.amber : C.blue}40` : 'none', minWidth: 120, justifyContent: 'center' }}
                 >
                   {submitting
                     ? <><div style={{ width: 12, height: 12, border: '2px solid rgba(255,255,255,0.2)', borderTop: '2px solid #fff', borderRadius: '50%', animation: 'spin 0.7s linear infinite' }} /> Publishing…</>
-                    : isScheduled
-                      ? <><Calendar size={13} /> Schedule Post</>
-                      : <><Zap size={13} /> Review & Schedule</>}
+                    : submitLabel}
                 </button>
               </>
             )}
