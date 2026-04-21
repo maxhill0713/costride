@@ -63,7 +63,7 @@ function CharRing({ count, max = 500 }) {
 /* ─── SECTION LABEL ──────────────────────────────────────────── */
 function SL({ children, required, right }) {
   return (
-    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 5 }}>
       <div style={{ fontSize: 10, fontWeight: 600, color: C.t3, textTransform: 'uppercase', letterSpacing: '0.1em', display: 'flex', alignItems: 'center', gap: 4 }}>
         {children}{required && <span style={{ color: C.red, fontSize: 9 }}>*</span>}
       </div>
@@ -411,9 +411,9 @@ export default function CreateGymOwnerPostModal({ open, onClose, gym, onSuccess 
             {/* ── FORM ── */}
             {(!isMobile || !showPreview) && (
               <div style={{
-                padding: isMobile ? '16px 16px' : '18px 20px',
+                padding: isMobile ? '12px 16px' : '13px 20px',
                 borderRight: isMobile ? 'none' : `1px solid ${C.brd}`,
-                display: 'flex', flexDirection: 'column', gap: isMobile ? 16 : 18,
+                display: 'flex', flexDirection: 'column', gap: isMobile ? 12 : 13,
                 overflowY: 'auto', background: C.bg,
                 WebkitOverflowScrolling: 'touch',
               }}>
@@ -446,7 +446,7 @@ export default function CreateGymOwnerPostModal({ open, onClose, gym, onSuccess 
                       onDragLeave={() => setDragOver(false)}
                       onDrop={handleDrop}
                       onClick={() => fileRef.current?.click()}
-                      style={{ padding: '20px 14px', borderRadius: 9, border: `1.5px dashed ${dragOver ? activeType.color + '60' : C.brd2}`, background: dragOver ? activeType.dim : C.card, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 9, cursor: 'pointer', transition: 'all 0.18s' }}
+                      style={{ padding: '14px 14px', borderRadius: 9, border: `1.5px dashed ${dragOver ? activeType.color + '60' : C.brd2}`, background: dragOver ? activeType.dim : C.card, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 7, cursor: 'pointer', transition: 'all 0.18s' }}
                     >
                       <div style={{ width: 36, height: 36, borderRadius: 9, background: activeType.dim, border: `1px solid ${activeType.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                         {uploading
@@ -545,7 +545,7 @@ export default function CreateGymOwnerPostModal({ open, onClose, gym, onSuccess 
             {/* ── PREVIEW panel ─────────────────────────────── */}
             {(!isMobile || showPreview) && (
               <div style={{
-                padding: isMobile ? '16px 16px' : '18px 16px',
+                padding: isMobile ? '12px 16px' : '13px 16px',
                 background: C.surface, overflowY: 'auto',
                 borderLeft: isMobile ? 'none' : `1px solid ${C.brd}`,
                 WebkitOverflowScrolling: 'touch',
