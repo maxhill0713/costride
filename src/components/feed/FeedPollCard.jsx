@@ -60,7 +60,7 @@ function VoterAvatars({ voterAvatarData, totalVoters, onClick }) {
 }
 
 // ── Voters list modal ─────────────────────────────────────────────────────────
-function VotersModal({ open, onClose, opts, totalVoters, voterAvatarData }) {
+function VotersModal({ open, onClose, opts, totalVoters, voterAvatarData, isLoading }) {
   const [search, setSearch] = useState('');
 
   const sanitised = search.replace(/[^a-zA-Z0-9_. ]/g, '').slice(0, 30).toLowerCase();
@@ -81,6 +81,12 @@ function VotersModal({ open, onClose, opts, totalVoters, voterAvatarData }) {
     voterAvatarData.forEach(v => { m[v.id] = v; });
     return m;
   }, [voterAvatarData]);
+
+  // Check if any option has per-voter tracking
+  const hasPerOptionVoters = useMemo(() =>
+    opts.some(opt => typeof opt === 'object' && Array.isArray(opt.voters) && opt.voters.length > 0),
+    [opts]
+  );
 
   if (!open) return null;
 
@@ -138,14 +144,16 @@ function VotersModal({ open, onClose, opts, totalVoters, voterAvatarData }) {
         </div>
 
         <div className="overflow-y-auto max-h-80 px-3 pb-4">
-          {sanitised ? (
+          {isLoading ? (
+            <p className="text-center text-slate-400 text-sm py-6">Loading...</p>
+          ) : sanitised ? (
             // Search mode — show all matching voters with their chosen option
             (() => {
               const filtered = voterAvatarData.filter(v => (v.name || '').toLowerCase().includes(sanitised));
               if (filtered.length === 0) return <p className="text-center text-slate-400 text-sm py-6">No members found</p>;
               return filtered.map(v => renderRow(v, true));
             })()
-          ) : (
+          ) : hasPerOptionVoters ? (
             // Grouped by option
             opts.map((opt, i) => {
               const optText = typeof opt === 'object' ? (opt.text || opt.label || `Option ${i + 1}`) : opt;
@@ -160,6 +168,11 @@ function VotersModal({ open, onClose, opts, totalVoters, voterAvatarData }) {
                 </div>
               );
             })
+          ) : (
+            // Fallback: no per-option voter arrays, just list all voters
+            voterAvatarData.length === 0
+              ? <p className="text-center text-slate-400 text-sm py-6">No responses yet</p>
+              : voterAvatarData.map(v => renderRow(v, false))
           )}
         </div>
       </div>
@@ -194,7 +207,7 @@ export default function FeedPollCard({ poll, currentUser }) {
   });
 
   // Fetch avatars for voters — fetch all, but display only first 4 in avatars section
-  const { data: voterAvatarsRaw = {} } = useQuery({
+  const { data: voterAvatarsRaw = {}, isFetching: isLoadingVoterAvatars } = useQuery({
     queryKey: ['pollVoterAvatars', voters.join(',')],
     queryFn: () => base44.functions.invoke('getUserAvatars', { userIds: voters }).then(r => r.data?.avatars || {}),
     enabled: voters.length > 0,
@@ -372,6 +385,7 @@ export default function FeedPollCard({ poll, currentUser }) {
         opts={opts}
         totalVoters={voters.length}
         voterAvatarData={voterAvatarData}
+        isLoading={isLoadingVoterAvatars}
       />
     </>
   );
