@@ -938,10 +938,11 @@ export default function ContentPage({ events = [], challenges = [], polls = [], 
                           </div>
                         )}
 
+                        {/* CHANGED: streak icons 20% bigger (31px) and closer together (-10px overlap) */}
                         {reactionCount > 0 && (
                           <button onClick={() => setReactionsPost(p)} style={{ marginTop: "auto", display: "flex", alignItems: "center", gap: 0, background: "none", border: "none", cursor: "pointer", padding: 0 }}>
                             {Object.entries(p.reactions || {}).slice(0, 5).map(([uid, variant], i) => (
-                              <div key={uid} style={{ position: "relative", width: 26, height: 26, marginLeft: i === 0 ? 0 : -7, zIndex: 5 - i, flexShrink: 0 }}>
+                              <div key={uid} style={{ position: "relative", width: 31, height: 31, marginLeft: i === 0 ? 0 : -10, zIndex: 5 - i, flexShrink: 0 }}>
                                 {variant === "sunglasses" ? (
                                  <div style={{ position: "relative", width: "100%", height: "100%" }}>
                                    <img src={STREAK_ICON_URL} alt="react" style={{ width: "100%", height: "100%", objectFit: "contain" }} />
@@ -1119,13 +1120,14 @@ export default function ContentPage({ events = [], challenges = [], polls = [], 
                     onMouseLeave={e => { e.currentTarget.style.borderColor = C.brd; e.currentTarget.style.boxShadow = "none"; }}>
                     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
                       <div style={{ fontSize: 13, fontWeight: 600, color: C.t1 }}>{poll.question || poll.title}</div>
+                      {/* CHANGED: label changed from "Remove Poll" to "Remove" */}
                       <button
                         onClick={() => setPollToRemove(poll)}
                         style={{ display: "flex", alignItems: "center", gap: 6, padding: "6px 12px", borderRadius: 8, background: "rgba(255,255,255,0.03)", border: `1px solid ${C.brd}`, color: C.t2, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: FONT, flexShrink: 0, transition: "all 0.15s" }}
                         onMouseEnter={e => { e.currentTarget.style.borderColor = "rgba(255,77,109,0.35)"; e.currentTarget.style.color = C.red; e.currentTarget.style.background = C.redDim; }}
                         onMouseLeave={e => { e.currentTarget.style.borderColor = C.brd; e.currentTarget.style.color = C.t2; e.currentTarget.style.background = "rgba(255,255,255,0.03)"; }}>
                         <Trash2 size={12} color="currentColor" />
-                        <span>Remove Poll</span>
+                        <span>Remove</span>
                       </button>
                     </div>
                     {(poll.options || []).map((opt, i) => {
@@ -1133,14 +1135,16 @@ export default function ContentPage({ events = [], challenges = [], polls = [], 
                       const optVotes = typeof opt === "object" ? (opt.votes || 0) : ((poll.votes || {})[opt] || 0);
                       const total    = Math.max((poll.voters || []).length, 1);
                       const pct      = Math.round(optVotes / total * 100);
-                      const barWidth = Math.round(pct * 0.8);
+                      // CHANGED: bars capped at 70% of row width (was 80%), height increased to 5px (was 4px, ~10% thicker rounded up)
+                      const barWidth = Math.round(pct * 0.7);
                       return (
                         <div key={i} style={{ marginBottom: 6 }}>
                           <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11.5, color: C.t2, marginBottom: 3 }}>
                             <span>{optText}</span>
                             <span style={{ color: C.cyan, textShadow: "none" }}>{pct}%</span>
                           </div>
-                          <div style={{ height: 4, background: "rgba(255,255,255,0.06)", borderRadius: 2, overflow: "hidden" }}>
+                          {/* CHANGED: height 5px (was 4px) */}
+                          <div style={{ height: 5, background: "rgba(255,255,255,0.06)", borderRadius: 2, overflow: "hidden" }}>
                             <div style={{ width: `${barWidth}%`, height: "100%", background: C.cyan, borderRadius: 2 }} />
                           </div>
                         </div>
