@@ -771,7 +771,7 @@ function MemberStatusBadge({ memberId, checkIns = [] }) {
 }
 
 /* ─── ROOT ───────────────────────────────────────────────────── */
-export default function ContentPage({ events = [], challenges = [], polls = [], posts = [], checkIns = [], openModal, onDeleteEvent, onDeleteChallenge, onDeletePost, onUpdatePost, avatarMap = {}, nameMap = {}, currentUser = null, gym = null, memberCount = 0 }) {
+export default function ContentPage({ events = [], challenges = [], polls = [], posts = [], checkIns = [], openModal, onDeleteEvent, onDeleteChallenge, onDeletePost, onDeletePoll, onUpdatePost, avatarMap = {}, nameMap = {}, currentUser = null, gym = null, memberCount = 0 }) {
   const isMobile = useIsMobile();
   const [tab, setTab] = useState("Community Feed");
   const [showMenu, setShowMenu] = useState(false);
@@ -1107,84 +1107,98 @@ export default function ContentPage({ events = [], challenges = [], polls = [], 
           })()}
 
           {/* ── POLLS ── */}
-          {tab === "Polls" && (
-            <>
-              <div style={{ fontSize: 12, fontWeight: 500, color: C.t2, marginBottom: 10 }}>
-                {polls.length} poll{polls.length !== 1 ? "s" : ""}
-              </div>
-              {polls.length === 0
-                ? <EmptyState label="polls" onAdd={() => openModal?.("poll")} />
-                : polls.map(poll => {
-                  const responseCount = (poll.voters || []).length;
-                  const communityPct = memberCount > 0 ? Math.round((responseCount / memberCount) * 100) : 0;
-                  const timeRemainingLabel = (() => {
-                    if (!poll.end_date) return null;
-                    const endMs = new Date(poll.end_date).getTime();
-                    const diffMs = endMs - Date.now();
-                    if (diffMs <= 0) return "Ended";
-                    const diffHours = diffMs / (1000 * 60 * 60);
-                    if (diffHours < 24) { const h = Math.round(diffHours); return `${h}h left`; }
-                    return `${Math.round(diffMs / (1000 * 60 * 60 * 24))}d left`;
-                  })();
-                  const isEnded = poll.end_date && new Date(poll.end_date).getTime() < Date.now();
-                  const isUrgent = poll.end_date && !isEnded && (new Date(poll.end_date).getTime() - Date.now()) < 24 * 60 * 60 * 1000;
-                  return (
-                  <div key={poll.id} style={{ background: C.card, border: `1px solid ${C.brd}`, borderRadius: 10, padding: isMobile ? "14px 16px" : "13px 16px", marginBottom: 8 }}
-                    onMouseEnter={e => { e.currentTarget.style.borderColor = C.cyanBrd; e.currentTarget.style.boxShadow = `0 0 6px rgba(77,127,255,0.06)`; }}
-                    onMouseLeave={e => { e.currentTarget.style.borderColor = C.brd; e.currentTarget.style.boxShadow = "none"; }}>
-                    <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 10, marginBottom: 10 }}>
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ fontSize: 13, fontWeight: 600, color: C.t1, marginBottom: 5 }}>{poll.question || poll.title}</div>
-                        <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
-                          <Users size={11} color={C.cyan} />
-                          <span style={{ fontSize: 11.5, fontWeight: 700, color: C.t1 }}>{responseCount} Response{responseCount !== 1 ? "s" : ""}</span>
-                          {memberCount > 0 && <span style={{ fontSize: 11, color: C.t2 }}>({communityPct}% of the community)</span>}
+          {tab === "Polls" && (() => {
+            const nowMs = Date.now();
+            const livePolls2 = polls.filter(p => !p.end_date || new Date(p.end_date).getTime() >= nowMs);
+            const endedPolls = polls.filter(p => p.end_date && new Date(p.end_date).getTime() < nowMs);
+
+            const PollCard = ({ poll, showTimer }) => {
+              const responseCount = (poll.voters || []).length;
+              const communityPct = memberCount > 0 ? Math.round((responseCount / memberCount) * 100) : 0;
+              const timeRemainingLabel = (() => {
+                if (!poll.end_date) return null;
+                const diffMs = new Date(poll.end_date).getTime() - nowMs;
+                if (diffMs <= 0) return null;
+                const diffHours = diffMs / (1000 * 60 * 60);
+                if (diffHours < 24) { const h = Math.round(diffHours); return `${h}h left`; }
+                return `${Math.round(diffMs / (1000 * 60 * 60 * 24))}d left`;
+              })();
+              const isUrgent = timeRemainingLabel && new Date(poll.end_date).getTime() - nowMs < 24 * 60 * 60 * 1000;
+              return (
+                <div style={{ background: C.card, border: `1px solid ${C.brd}`, borderRadius: 10, padding: isMobile ? "14px 16px" : "13px 16px", marginBottom: 8 }}
+                  onMouseEnter={e => { e.currentTarget.style.borderColor = C.cyanBrd; e.currentTarget.style.boxShadow = `0 0 6px rgba(77,127,255,0.06)`; }}
+                  onMouseLeave={e => { e.currentTarget.style.borderColor = C.brd; e.currentTarget.style.boxShadow = "none"; }}>
+                  <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 10, marginBottom: 10 }}>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontSize: 13, fontWeight: 600, color: C.t1, marginBottom: 5 }}>{poll.question || poll.title}</div>
+                      <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
+                        <Users size={11} color={C.cyan} />
+                        <span style={{ fontSize: 11.5, fontWeight: 700, color: C.t1 }}>{responseCount} Response{responseCount !== 1 ? "s" : ""}</span>
+                        {memberCount > 0 && <span style={{ fontSize: 11, color: C.t2 }}>({communityPct}% of the community)</span>}
+                      </div>
+                    </div>
+                    <div style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
+                      {showTimer && timeRemainingLabel && (
+                        <div style={{ display: "flex", alignItems: "center", gap: 5, padding: "4px 9px", borderRadius: 7,
+                          background: isUrgent ? "rgba(255,77,109,0.12)" : "rgba(77,127,255,0.10)",
+                          border: `1px solid ${isUrgent ? "rgba(255,77,109,0.3)" : "rgba(77,127,255,0.25)"}`,
+                          color: isUrgent ? "#ff6b85" : C.cyan, fontSize: 11, fontWeight: 700 }}>
+                          <Clock size={11} color="currentColor" />
+                          <span>{timeRemainingLabel}</span>
+                        </div>
+                      )}
+                      <button
+                        onClick={() => setPollToRemove(poll)}
+                        style={{ display: "flex", alignItems: "center", gap: 6, padding: "6px 12px", borderRadius: 8, background: "rgba(255,255,255,0.03)", border: `1px solid ${C.brd}`, color: C.t2, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: FONT, flexShrink: 0, transition: "all 0.15s" }}
+                        onMouseEnter={e => { e.currentTarget.style.borderColor = "rgba(255,77,109,0.35)"; e.currentTarget.style.color = C.red; e.currentTarget.style.background = C.redDim; }}
+                        onMouseLeave={e => { e.currentTarget.style.borderColor = C.brd; e.currentTarget.style.color = C.t2; e.currentTarget.style.background = "rgba(255,255,255,0.03)"; }}>
+                        <Trash2 size={12} color="currentColor" />
+                        <span>Remove</span>
+                      </button>
+                    </div>
+                  </div>
+                  {(poll.options || []).map((opt, i) => {
+                    const optText  = typeof opt === "object" ? (opt.text || opt.label || String(i + 1)) : opt;
+                    const optVotes = typeof opt === "object" ? (opt.votes || 0) : ((poll.votes || {})[opt] || 0);
+                    const total    = Math.max((poll.voters || []).length, 1);
+                    const pct      = Math.round(optVotes / total * 100);
+                    const barWidth = Math.round(pct * 0.7);
+                    return (
+                      <div key={i} style={{ marginBottom: 6 }}>
+                        <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11.5, color: C.t2, marginBottom: 3 }}>
+                          <span>{optText}</span>
+                          <span style={{ color: C.cyan, textShadow: "none" }}>{pct}%</span>
+                        </div>
+                        <div style={{ height: 5, background: "rgba(255,255,255,0.06)", borderRadius: 2, overflow: "hidden" }}>
+                          <div style={{ width: `${barWidth}%`, height: "100%", background: C.cyan, borderRadius: 2 }} />
                         </div>
                       </div>
-                      <div style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
-                        {timeRemainingLabel && (
-                          <div style={{ display: "flex", alignItems: "center", gap: 5, padding: "4px 9px", borderRadius: 7,
-                            background: isEnded ? "rgba(255,255,255,0.04)" : isUrgent ? "rgba(255,77,109,0.12)" : "rgba(77,127,255,0.10)",
-                            border: `1px solid ${isEnded ? C.brd : isUrgent ? "rgba(255,77,109,0.3)" : "rgba(77,127,255,0.25)"}`,
-                            color: isEnded ? C.t3 : isUrgent ? "#ff6b85" : C.cyan, fontSize: 11, fontWeight: 700 }}>
-                            <Clock size={11} color="currentColor" />
-                            <span>{timeRemainingLabel}</span>
-                          </div>
-                        )}
-                        <button
-                          onClick={() => setPollToRemove(poll)}
-                          style={{ display: "flex", alignItems: "center", gap: 6, padding: "6px 12px", borderRadius: 8, background: "rgba(255,255,255,0.03)", border: `1px solid ${C.brd}`, color: C.t2, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: FONT, flexShrink: 0, transition: "all 0.15s" }}
-                          onMouseEnter={e => { e.currentTarget.style.borderColor = "rgba(255,77,109,0.35)"; e.currentTarget.style.color = C.red; e.currentTarget.style.background = C.redDim; }}
-                          onMouseLeave={e => { e.currentTarget.style.borderColor = C.brd; e.currentTarget.style.color = C.t2; e.currentTarget.style.background = "rgba(255,255,255,0.03)"; }}>
-                          <Trash2 size={12} color="currentColor" />
-                          <span>Remove</span>
-                        </button>
-                        </div>
-                        </div>
-                    {(poll.options || []).map((opt, i) => {
-                      const optText  = typeof opt === "object" ? (opt.text || opt.label || String(i + 1)) : opt;
-                      const optVotes = typeof opt === "object" ? (opt.votes || 0) : ((poll.votes || {})[opt] || 0);
-                      const total    = Math.max((poll.voters || []).length, 1);
-                      const pct      = Math.round(optVotes / total * 100);
-                      const barWidth = Math.round(pct * 0.7);
-                      return (
-                        <div key={i} style={{ marginBottom: 6 }}>
-                          <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11.5, color: C.t2, marginBottom: 3 }}>
-                            <span>{optText}</span>
-                            <span style={{ color: C.cyan, textShadow: "none" }}>{pct}%</span>
-                          </div>
-                          <div style={{ height: 5, background: "rgba(255,255,255,0.06)", borderRadius: 2, overflow: "hidden" }}>
-                            <div style={{ width: `${barWidth}%`, height: "100%", background: C.cyan, borderRadius: 2 }} />
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                  );
-                })
-              }
-            </>
-          )}
+                    );
+                  })}
+                </div>
+              );
+            };
+
+            return (
+              <>
+                <div style={{ fontSize: 12, fontWeight: 500, color: C.t2, marginBottom: 10 }}>
+                  {livePolls2.length} Live Poll{livePolls2.length !== 1 ? "s" : ""}
+                </div>
+                {livePolls2.length === 0
+                  ? <EmptyState label="live polls" onAdd={() => openModal?.("poll")} />
+                  : livePolls2.map(poll => <PollCard key={poll.id} poll={poll} showTimer />)
+                }
+                {endedPolls.length > 0 && (
+                  <>
+                    <div style={{ fontSize: 12, fontWeight: 700, color: C.t2, margin: "20px 0 10px", paddingTop: 12, borderTop: `1px solid ${C.brd}`, textTransform: "uppercase", letterSpacing: "0.08em" }}>
+                      {endedPolls.length} Ended Poll{endedPolls.length !== 1 ? "s" : ""}
+                    </div>
+                    {endedPolls.map(poll => <PollCard key={poll.id} poll={poll} showTimer={false} />)}
+                  </>
+                )}
+              </>
+            );
+          })()}
 
           {tab === "Drafts"    && <EmptyState label="drafts"          onAdd={() => openModal?.("post")} />}
           {tab === "Scheduled" && <EmptyState label="scheduled posts" onAdd={() => openModal?.("post")} />}
@@ -1229,7 +1243,7 @@ export default function ContentPage({ events = [], challenges = [], polls = [], 
       {pollToRemove && (
         <RemovePollModal
           poll={pollToRemove}
-          onConfirm={async (id) => { await onDeleteChallenge?.(id); setPollToRemove(null); }}
+          onConfirm={async (id) => { await onDeletePoll?.(id); setPollToRemove(null); }}
           onClose={() => setPollToRemove(null)}
         />
       )}
