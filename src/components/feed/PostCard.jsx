@@ -63,12 +63,10 @@ function ReactionsModal({ open, onClose, reactions, reactedUsers, isLoadingReact
     const name = user.display_name || user.full_name || user.username || '';
     return name.toLowerCase().includes(sanitised.toLowerCase());
   });
-  // Gym reactors always appear at top in Community section
 
   const gymReactors = filtered.filter(u => u.isGym);
   const friendReactors = filtered.filter(u => !u.isGym && (friendIds.has(u.id) || u.id === currentUserId));
   const communityReactors = filtered.filter(u => !u.isGym && !friendIds.has(u.id) && u.id !== currentUserId);
-  // Gym reactors always appear at the top of the Community section (after Friends)
 
   const renderUser = (user) => {
     const variant = reactions[user.id];
@@ -79,7 +77,12 @@ function ReactionsModal({ open, onClose, reactions, reactedUsers, isLoadingReact
     const avatarUrl = user.avatar_url;
     const initials = (displayName || '?').split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
 
-    const StreakIcon = () => <StreakIconImg variant={variant} className="flex-shrink-0" style={{ width: '2.2rem', height: '2.2rem' }} />;
+    // CHANGED: icon size increased 20% from 2.2rem to 2.64rem, using flex-shrink-0 + overflow:visible to avoid row height increase
+    const StreakIcon = () => (
+      <div className="flex-shrink-0 flex items-center justify-center overflow-visible" style={{ width: '2.2rem', height: '2.2rem' }}>
+        <StreakIconImg variant={variant} style={{ width: '2.64rem', height: '2.64rem', objectFit: 'contain' }} />
+      </div>
+    );
 
     return (
       <Link
@@ -131,7 +134,6 @@ function ReactionsModal({ open, onClose, reactions, reactedUsers, isLoadingReact
   };
 
   const renderGymReactor = (user) => {
-    // user.id is "gym_<gymId>" for gym reactors
     const gymId = user.id.replace('gym_', '');
     return (
       <Link
@@ -147,7 +149,10 @@ function ReactionsModal({ open, onClose, reactions, reactedUsers, isLoadingReact
             : (user.display_name || '?').charAt(0).toUpperCase()}
         </div>
         <span className="text-sm text-slate-200 font-semibold flex-1 min-w-0 truncate">{user.display_name}</span>
-        <StreakIconImg variant="default" className="flex-shrink-0 w-8 h-8" />
+        {/* CHANGED: gym reactor icon also increased 20%, wrapped to avoid row height increase */}
+        <div className="flex-shrink-0 flex items-center justify-center overflow-visible" style={{ width: '2rem', height: '2rem' }}>
+          <StreakIconImg variant="default" style={{ width: '2.4rem', height: '2.4rem', objectFit: 'contain' }} />
+        </div>
       </Link>
     );
   };
@@ -572,7 +577,6 @@ function PostCard({ post, onLike, onComment, onSave, onDelete, fullWidth = false
     queryKey: ['reactedUsers', reactedUserIds.join(','), gymReactionKeys.join(',')],
     queryFn: async () => {
       const results = [];
-      // Resolve regular user reactors
       if (reactedUserIds.length > 0) {
         const res = await base44.functions.invoke('getUserAvatars', { userIds: reactedUserIds });
         reactedUserIds.forEach(id => results.push({
@@ -583,7 +587,6 @@ function PostCard({ post, onLike, onComment, onSave, onDelete, fullWidth = false
           isGym: false,
         }));
       }
-      // Resolve gym reactors
       for (const key of gymReactionKeys) {
         const gymId = key.replace('gym_', '');
         try {
@@ -640,21 +643,17 @@ function PostCard({ post, onLike, onComment, onSave, onDelete, fullWidth = false
 
   const isGymAuthoredPost = !!post.post_type;
 
-  // Fetch gym data directly for gym-authored posts to ensure correct name/avatar
   const { data: gymData } = useQuery({
     queryKey: ['gymForPost', post.gym_id],
     queryFn: () => base44.entities.Gym.filter({ id: post.gym_id }).then(r => r[0] || null),
     enabled: !!post.gym_id && isGymAuthoredPost,
     staleTime: 30 * 60 * 1000,
     gcTime: 60 * 60 * 1000,
-    // Use post-stored gym name/avatar as placeholder so there's no flash while fetching
     placeholderData: post.gym_id && isGymAuthoredPost
       ? { id: post.gym_id, name: post.member_name, logo_url: post.member_avatar, image_url: null }
       : undefined,
   });
 
-  // For gym-authored posts: always use gym data (no user profile lookup)
-  // For member posts: resolve the author's current display name
   const { data: postAuthor } = useQuery({
     queryKey: ['postAuthor', 'member', post.member_id],
     queryFn: () => base44.functions.invoke('getFriendUsers', { userIds: [post.member_id] }).then(r => r.data?.users?.[0] || null),
@@ -663,7 +662,6 @@ function PostCard({ post, onLike, onComment, onSave, onDelete, fullWidth = false
     gcTime: 30 * 60 * 1000,
   });
 
-  // Gym-authored posts: always use gym name/logo, never the owner's personal profile
   const resolvedMemberName = isGymAuthoredPost
     ? (gymData?.name || post.member_name || 'Gym')
     : (postAuthor?.display_name || postAuthor?.full_name || post.member_name);
@@ -956,12 +954,13 @@ function PostCard({ post, onLike, onComment, onSave, onDelete, fullWidth = false
                 </motion.button>
               )}
             </div>
+            {/* CHANGED: reaction cluster icons increased 50% (w-9 h-9), overlap tightened (-10px) */}
             {Object.keys(localReactions).length > 0 && (
               <button onClick={() => setShowReactionsModal(true)} className="flex items-center hover:opacity-80 transition-opacity mr-2">
                 <div className="flex items-center" style={{ gap: 0 }}>
                   {Object.entries(localReactions).slice(0, 3).map(([uid, variant], i) => (
-                    <div key={uid} className="w-6 h-6" style={{ marginLeft: i === 0 ? 0 : '-6px', zIndex: 3 - i }}>
-                      <StreakIconImg variant={variant} className="w-6 h-6" />
+                    <div key={uid} className="w-9 h-9" style={{ marginLeft: i === 0 ? 0 : '-10px', zIndex: 3 - i }}>
+                      <StreakIconImg variant={variant} className="w-9 h-9" />
                     </div>
                   ))}
                   {Object.keys(localReactions).length > 3 && <div className="flex items-center gap-0.5 ml-1"><Plus className="w-3 h-3 text-slate-300" /><span className="text-xs font-bold text-slate-300">{Object.keys(localReactions).length - 3}</span></div>}
@@ -1076,12 +1075,13 @@ function PostCard({ post, onLike, onComment, onSave, onDelete, fullWidth = false
               </motion.button>
             )}
           </div>
+          {/* CHANGED: reaction cluster icons increased 50% (w-9 h-9), overlap tightened (-10px) */}
           {totalReactions > 0 && (
             <button onClick={() => setShowReactionsModal(true)} className="flex items-center hover:opacity-80 transition-opacity mr-2">
               <div className="flex items-center" style={{ gap: 0 }}>
                 {Object.entries(localReactions).slice(0, 3).map(([uid, variant], i) => (
-                  <div key={uid} className="w-6 h-6" style={{ marginLeft: i === 0 ? 0 : '-6px', zIndex: 3 - i }}>
-                    <StreakIconImg variant={variant} className="w-6 h-6" />
+                  <div key={uid} className="w-9 h-9" style={{ marginLeft: i === 0 ? 0 : '-10px', zIndex: 3 - i }}>
+                    <StreakIconImg variant={variant} className="w-9 h-9" />
                   </div>
                 ))}
                 {totalReactions > 3 && <div className="flex items-center gap-0.5 ml-1"><Plus className="w-3 h-3 text-slate-300" /><span className="text-xs font-bold text-slate-300">{totalReactions - 3}</span></div>}
