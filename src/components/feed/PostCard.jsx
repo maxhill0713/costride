@@ -624,20 +624,21 @@ function PostCard({ post, onLike, onComment, onSave, onDelete, fullWidth = false
 
   const isGymAuthoredPost = !!post.post_type;
 
+  // Use a different query key for gym posts to avoid cache collision with the gym owner's user profile
   const { data: postAuthor } = useQuery({
-    queryKey: ['postAuthor', post.member_id],
+    queryKey: ['postAuthor', 'user', post.member_id],
     queryFn: () => base44.functions.invoke('getFriendUsers', { userIds: [post.member_id] }).then(r => r.data?.users?.[0] || null),
     enabled: !!post.member_id && !isGymAuthoredPost,
     staleTime: 10 * 60 * 1000,
     gcTime: 30 * 60 * 1000,
   });
-  // Gym-authored posts always use the stored gym name/avatar — never resolve user profile
+  // Gym-authored posts ALWAYS use the stored gym name/avatar — never use the resolved user profile
   const resolvedMemberName = isGymAuthoredPost
     ? post.member_name
     : (postAuthor?.display_name || postAuthor?.full_name || post.member_name);
   const resolvedMemberAvatar = isGymAuthoredPost
     ? post.member_avatar
-    : (post.member_avatar);
+    : post.member_avatar;
 
   const isOwner = currentUser?.id === post.member_id;
   const isCommunityMember = !isOwner && !friendIdList.includes(post.member_id);
@@ -842,7 +843,7 @@ function PostCard({ post, onLike, onComment, onSave, onDelete, fullWidth = false
 
           <div className="relative z-10 px-4 pt-3.5 pb-3">
             <div className="flex items-center justify-between mb-4">
-              <Link to={createPageUrl('UserProfile') + `?id=${post.member_id}`} className="flex items-center gap-2.5">
+              <Link to={isGymAuthoredPost ? createPageUrl('GymCommunity') + `?id=${post.gym_id}` : createPageUrl('UserProfile') + `?id=${post.member_id}`} className="flex items-center gap-2.5">
                 <div className="w-9 h-9 rounded-full bg-slate-900 overflow-hidden flex items-center justify-center flex-shrink-0">
                   {resolvedMemberAvatar ? <img src={resolvedMemberAvatar} alt={resolvedMemberName} className="w-full h-full object-cover" decoding="async" /> : <span className="text-sm font-bold text-white">{resolvedMemberName?.charAt(0)?.toUpperCase() || '?'}</span>}
                 </div>
@@ -984,7 +985,7 @@ function PostCard({ post, onLike, onComment, onSave, onDelete, fullWidth = false
 
         <div className="relative z-10 px-4 pt-3.5 pb-3">
           <div className="flex items-center justify-between">
-            <Link to={createPageUrl('UserProfile') + `?id=${post.member_id}`} className="flex items-center gap-2.5">
+            <Link to={isGymAuthoredPost ? createPageUrl('GymCommunity') + `?id=${post.gym_id}` : createPageUrl('UserProfile') + `?id=${post.member_id}`} className="flex items-center gap-2.5">
               <div className="w-9 h-9 rounded-full bg-slate-900 overflow-hidden flex items-center justify-center flex-shrink-0">
                 {resolvedMemberAvatar ? <img src={resolvedMemberAvatar} alt={resolvedMemberName} className="w-full h-full object-cover" decoding="async" /> : <span className="text-sm font-bold text-white">{resolvedMemberName?.charAt(0)?.toUpperCase() || '?'}</span>}
               </div>
