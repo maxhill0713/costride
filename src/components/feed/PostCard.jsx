@@ -15,6 +15,15 @@ import { createPageUrl } from '@/utils';
 
 const STREAK_ICON_URL = 'https://media.base44.com/images/public/694b637358644e1c22c8ec6b/5688f98be_Pose1_V2.png';
 
+const POST_TYPE_CONFIG = {
+  update:           { label: 'Announcement', color: '#60a5fa', bg: 'rgba(96,165,250,0.12)', border: 'rgba(96,165,250,0.25)' },
+  achievement:      { label: 'Achievement',  color: '#f59e0b', bg: 'rgba(245,158,11,0.12)', border: 'rgba(245,158,11,0.25)' },
+  event:            { label: 'Event',         color: '#22c55e', bg: 'rgba(34,197,94,0.12)',  border: 'rgba(34,197,94,0.25)'  },
+  offer:            { label: 'Special Offer', color: '#ff4d6d', bg: 'rgba(255,77,109,0.12)', border: 'rgba(255,77,109,0.25)' },
+  tip:              { label: 'Fitness Tip',   color: '#a78bfa', bg: 'rgba(167,139,250,0.12)',border: 'rgba(167,139,250,0.25)'},
+  member_spotlight: { label: 'Member Spotlight', color: '#60a5fa', bg: 'rgba(96,165,250,0.12)', border: 'rgba(96,165,250,0.25)' },
+};
+
 // ── Reactions Modal ───────────────────────────────────────────────────────────
 function ReactionsModal({ open, onClose, reactions, reactedUsers, isLoadingReactedUsers, currentUserId, friends, sentFriendRequests, onAddFriend }) {
   const [search, setSearch] = useState('');
@@ -974,9 +983,24 @@ function PostCard({ post, onLike, onComment, onSave, onDelete, fullWidth = false
               <div>
                 <div className="flex items-center gap-1.5 leading-tight">
                   <p className="text-sm font-bold text-white">{resolvedMemberName}</p>
-                  {isCommunityMember && <span className="text-[11px] font-medium text-slate-400">— Community Member</span>}
+                  {isCommunityMember && !post.post_type && <span className="text-[11px] font-medium text-slate-400">— Community Member</span>}
                 </div>
-                <PostMeta post={post} gymName={null} />
+                {post.post_type && POST_TYPE_CONFIG[post.post_type] ? (
+                  <div className="flex items-center gap-2 mt-1">
+                    <span style={{
+                      fontSize: 9, fontWeight: 700, padding: '1px 7px', borderRadius: 5,
+                      background: POST_TYPE_CONFIG[post.post_type].bg,
+                      border: `1px solid ${POST_TYPE_CONFIG[post.post_type].border}`,
+                      color: POST_TYPE_CONFIG[post.post_type].color,
+                      display: 'inline-flex', alignItems: 'center',
+                    }}>
+                      {POST_TYPE_CONFIG[post.post_type].label}
+                    </span>
+                    <span className="text-[11px] text-slate-500">{formatPostDate(post.created_date)}</span>
+                  </div>
+                ) : (
+                  <PostMeta post={post} gymName={null} />
+                )}
               </div>
             </Link>
             {isOwner ? renderMenu(standardOwnerExtras) : renderMenu(null)}

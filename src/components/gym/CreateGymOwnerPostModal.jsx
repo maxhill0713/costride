@@ -149,9 +149,11 @@ function PostPreview({ postType, content, imageUrl, tags, callToAction, isPinned
               </div>
             )}
             <div style={{ display: 'flex', alignItems: 'center', padding: '9px 14px', borderTop: `1px solid ${C.brd}`, gap: 8 }}>
-              <div style={{ width: 26, height: 26, borderRadius: '50%', background: C.cyanDim, border: `1px solid ${C.cyanBrd}`, display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: 0.5 }}>
-                <span style={{ fontSize: 11 }}>🔥</span>
-              </div>
+              <img
+                src="https://media.base44.com/images/public/694b637358644e1c22c8ec6b/5688f98be_Pose1_V2.png"
+                alt="react"
+                style={{ width: 28, height: 28, objectFit: 'contain', opacity: 0.5 }}
+              />
               <Send size={12} color={C.t3} />
             </div>
           </>
@@ -229,6 +231,7 @@ export default function CreateGymOwnerPostModal({ open, onClose, gym, onSuccess 
         content: content.trim(), image_url: imageUrl || null,
         likes: 0, comments: [], reactions: {},
         post_type: postType, tags, is_pinned: isPinned,
+        share_with_community: true,
         scheduled_date: scheduledDate || null,
         call_to_action: callToAction.enabled && callToAction.text ? { text: callToAction.text, link: callToAction.link } : null,
       });

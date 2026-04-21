@@ -1,9 +1,11 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import {
   Plus, Flame, Check, Calendar, Trophy, BarChart2, FileText,
-  MessageCircle, Trash2, Zap, RefreshCw,
+  MessageCircle, Trash2, Zap, RefreshCw, Pencil, X, Upload,
 } from "lucide-react";
 import { base44 } from "@/api/base44Client";
+
+const STREAK_ICON_URL = "https://media.base44.com/images/public/694b637358644e1c22c8ec6b/5688f98be_Pose1_V2.png";
 
 /* ─── MOBILE HOOK ────────────────────────────────────────────── */
 function useIsMobile(breakpoint = 768) {
@@ -235,8 +237,127 @@ function RemoveChallengeModal({ challenge, onConfirm, onClose }) {
   );
 }
 
+/* ─── EDIT POST MODAL ─────────────────────────────────────────── */
+const POST_TYPE_OPTIONS = [
+  { value: "update",           label: "Announcement"     },
+  { value: "achievement",      label: "Achievement"      },
+  { value: "event",            label: "Event"            },
+  { value: "offer",            label: "Special Offer"    },
+  { value: "tip",              label: "Fitness Tip"      },
+  { value: "member_spotlight", label: "Member Spotlight" },
+];
+
+function EditPostModal({ post, onClose, onSave }) {
+  const [content,  setContent]  = useState(post?.content || "");
+  const [imageUrl, setImageUrl] = useState(post?.image_url || "");
+  const [postType, setPostType] = useState(post?.post_type || "update");
+  const [uploading, setUploading] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const fileRef = useRef();
+
+  const isDirty = content !== (post?.content || "") || imageUrl !== (post?.image_url || "") || postType !== (post?.post_type || "update");
+
+  const handleFile = async (file) => {
+    if (!file || !file.type.startsWith("image/")) return;
+    setUploading(true);
+    try {
+      const r = await base44.integrations.Core.UploadFile({ file });
+      setImageUrl(r.file_url);
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleSave = async () => {
+    if (!isDirty || !content.trim()) return;
+    setSaving(true);
+    try {
+      await base44.entities.Post.update(post.id, {
+        content: content.trim(),
+        image_url: imageUrl || null,
+        post_type: postType,
+      });
+      onSave?.();
+      onClose();
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div style={{ position: "fixed", inset: 0, zIndex: 500, background: "rgba(0,0,0,0.78)", display: "flex", alignItems: "center", justifyContent: "center" }}
+      onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
+      <div style={{ background: C.card, border: `1px solid ${C.brd}`, borderRadius: 16, padding: "22px 22px 18px", width: 480, maxWidth: "94vw", maxHeight: "90vh", display: "flex", flexDirection: "column", gap: 14, overflowY: "auto" }}>
+        {/* Header */}
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <div style={{ fontSize: 15, fontWeight: 800, color: C.t1, letterSpacing: "-0.02em" }}>Edit Post</div>
+          <button onClick={onClose} style={{ background: "none", border: "none", color: C.t3, cursor: "pointer", fontSize: 18, lineHeight: 1, padding: 0, display: "flex", alignItems: "center" }}><X size={16} /></button>
+        </div>
+
+        {/* Post type */}
+        <div>
+          <div style={{ fontSize: 10, fontWeight: 700, color: C.t3, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 7 }}>Post Type</div>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+            {POST_TYPE_OPTIONS.map(opt => (
+              <button key={opt.value} onClick={() => setPostType(opt.value)}
+                style={{ padding: "5px 12px", borderRadius: 7, fontSize: 11.5, fontWeight: 600, cursor: "pointer", fontFamily: FONT,
+                  background: postType === opt.value ? C.cyanDim : "transparent",
+                  border: `1px solid ${postType === opt.value ? C.cyanBrd : C.brd}`,
+                  color: postType === opt.value ? C.cyan : C.t2 }}>
+                {opt.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Content */}
+        <div>
+          <div style={{ fontSize: 10, fontWeight: 700, color: C.t3, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 7 }}>Content</div>
+          <textarea
+            value={content}
+            onChange={e => setContent(e.target.value)}
+            rows={5}
+            style={{ width: "100%", boxSizing: "border-box", padding: "10px 12px", borderRadius: 9, background: C.card2, border: `1px solid ${C.brd}`, color: C.t1, fontSize: 13, fontFamily: FONT, lineHeight: 1.65, resize: "vertical", outline: "none" }}
+            onFocus={e => e.target.style.borderColor = C.cyanBrd}
+            onBlur={e => e.target.style.borderColor = C.brd}
+          />
+        </div>
+
+        {/* Image */}
+        <div>
+          <div style={{ fontSize: 10, fontWeight: 700, color: C.t3, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 7 }}>Image</div>
+          {imageUrl ? (
+            <div style={{ position: "relative", borderRadius: 9, overflow: "hidden", display: "inline-block", maxWidth: "100%" }}>
+              <img src={imageUrl} alt="" style={{ maxHeight: 140, objectFit: "cover", display: "block", borderRadius: 9, border: `1px solid ${C.brd}` }} />
+              <button onClick={() => setImageUrl("")} style={{ position: "absolute", top: 7, right: 7, width: 24, height: 24, borderRadius: 6, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(0,0,0,0.72)", border: "none", cursor: "pointer" }}>
+                <X size={10} color="#fff" />
+              </button>
+            </div>
+          ) : (
+            <div onClick={() => fileRef.current?.click()}
+              style={{ padding: "16px 12px", borderRadius: 9, border: `1.5px dashed ${C.brd}`, background: C.card2, display: "flex", alignItems: "center", justifyContent: "center", gap: 8, cursor: "pointer" }}>
+              <Upload size={13} color={C.t3} />
+              <span style={{ fontSize: 12, color: C.t3 }}>{uploading ? "Uploading…" : "Click to upload image"}</span>
+            </div>
+          )}
+          <input ref={fileRef} type="file" accept="image/*" onChange={e => handleFile(e.target.files?.[0])} style={{ display: "none" }} />
+        </div>
+
+        {/* Footer */}
+        <div style={{ display: "flex", gap: 8, justifyContent: "flex-end", marginTop: 4 }}>
+          <button onClick={onClose} style={{ padding: "8px 16px", borderRadius: 8, background: "transparent", border: `1px solid ${C.brd}`, color: C.t2, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: FONT }}>Cancel</button>
+          <button onClick={handleSave} disabled={!isDirty || !content.trim() || saving}
+            style={{ padding: "8px 20px", borderRadius: 8, background: isDirty && content.trim() ? C.cyan : C.brd, border: "none", color: isDirty && content.trim() ? "#fff" : C.t3, fontSize: 12, fontWeight: 700, cursor: isDirty && content.trim() && !saving ? "pointer" : "not-allowed", fontFamily: FONT, transition: "all 0.15s" }}>
+            {saving ? "Saving…" : "Save"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 /* ─── QUICK ACTIONS COLUMN ───────────────────────────────────── */
-function QuickActions({ post, resolvedName, memberId, gym, currentUser, onDeletePost }) {
+function QuickActions({ post, resolvedName, memberId, gym, currentUser, onDeletePost, isGymPost, onPostEdited }) {
   const [modal, setModal] = useState(null);
   const gymReactionKey = gym?.id ? `gym_${gym.id}` : null;
   const [reacted, setReacted] = useState(() => !!(gymReactionKey && post.reactions?.[gymReactionKey]));
@@ -265,33 +386,59 @@ function QuickActions({ post, resolvedName, memberId, gym, currentUser, onDelete
       <div style={{ width: "30%", flexShrink: 0, borderLeft: `1px solid ${C.brd}`, padding: "12px 14px", display: "flex", flexDirection: "column", gap: 8, justifyContent: "flex-start" }}>
         <div style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.10em", color: C.t3, marginBottom: 2 }}>Quick Actions</div>
 
-        <button
-          onClick={() => setModal("message")}
-          style={{ display: "flex", alignItems: "center", gap: 8, width: "100%", padding: "7px 10px", borderRadius: 8, background: "rgba(255,255,255,0.03)", border: `1px solid ${C.brd}`, color: C.t2, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: FONT, textAlign: "left", transition: "all 0.15s" }}
-          onMouseEnter={e => { e.currentTarget.style.borderColor = C.cyanBrd; e.currentTarget.style.color = C.t1; e.currentTarget.style.background = C.cyanDim; }}
-          onMouseLeave={e => { e.currentTarget.style.borderColor = C.brd; e.currentTarget.style.color = C.t2; e.currentTarget.style.background = "rgba(255,255,255,0.03)"; }}>
-          <MessageCircle size={13} color="currentColor" style={{ flexShrink: 0 }} />
-          <span>Message Member</span>
-        </button>
+        {isGymPost ? (
+          /* ── Gym-authored post: Remove + Edit ── */
+          <>
+            <button
+              onClick={() => setModal("remove")}
+              style={{ display: "flex", alignItems: "center", gap: 8, width: "100%", padding: "7px 10px", borderRadius: 8, background: "rgba(255,255,255,0.03)", border: `1px solid ${C.brd}`, color: C.t2, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: FONT, textAlign: "left", transition: "all 0.15s" }}
+              onMouseEnter={e => { e.currentTarget.style.borderColor = "rgba(255,77,109,0.35)"; e.currentTarget.style.color = C.red; e.currentTarget.style.background = C.redDim; }}
+              onMouseLeave={e => { e.currentTarget.style.borderColor = C.brd; e.currentTarget.style.color = C.t2; e.currentTarget.style.background = "rgba(255,255,255,0.03)"; }}>
+              <Trash2 size={13} color="currentColor" style={{ flexShrink: 0 }} />
+              <span>Remove Post</span>
+            </button>
 
-        <button
-          onClick={() => setModal("remove")}
-          style={{ display: "flex", alignItems: "center", gap: 8, width: "100%", padding: "7px 10px", borderRadius: 8, background: "rgba(255,255,255,0.03)", border: `1px solid ${C.brd}`, color: C.t2, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: FONT, textAlign: "left", transition: "all 0.15s" }}
-          onMouseEnter={e => { e.currentTarget.style.borderColor = "rgba(255,77,109,0.35)"; e.currentTarget.style.color = C.red; e.currentTarget.style.background = C.redDim; }}
-          onMouseLeave={e => { e.currentTarget.style.borderColor = C.brd; e.currentTarget.style.color = C.t2; e.currentTarget.style.background = "rgba(255,255,255,0.03)"; }}>
-          <Trash2 size={13} color="currentColor" style={{ flexShrink: 0 }} />
-          <span>Remove Post</span>
-        </button>
+            <button
+              onClick={() => setModal("edit")}
+              style={{ display: "flex", alignItems: "center", gap: 8, width: "100%", padding: "7px 10px", borderRadius: 8, background: "rgba(255,255,255,0.03)", border: `1px solid ${C.brd}`, color: C.t2, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: FONT, textAlign: "left", transition: "all 0.15s" }}
+              onMouseEnter={e => { e.currentTarget.style.borderColor = C.cyanBrd; e.currentTarget.style.color = C.t1; e.currentTarget.style.background = C.cyanDim; }}
+              onMouseLeave={e => { e.currentTarget.style.borderColor = C.brd; e.currentTarget.style.color = C.t2; e.currentTarget.style.background = "rgba(255,255,255,0.03)"; }}>
+              <Pencil size={13} color="currentColor" style={{ flexShrink: 0 }} />
+              <span>Edit Post</span>
+            </button>
+          </>
+        ) : (
+          /* ── Member post: Message + Remove + React ── */
+          <>
+            <button
+              onClick={() => setModal("message")}
+              style={{ display: "flex", alignItems: "center", gap: 8, width: "100%", padding: "7px 10px", borderRadius: 8, background: "rgba(255,255,255,0.03)", border: `1px solid ${C.brd}`, color: C.t2, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: FONT, textAlign: "left", transition: "all 0.15s" }}
+              onMouseEnter={e => { e.currentTarget.style.borderColor = C.cyanBrd; e.currentTarget.style.color = C.t1; e.currentTarget.style.background = C.cyanDim; }}
+              onMouseLeave={e => { e.currentTarget.style.borderColor = C.brd; e.currentTarget.style.color = C.t2; e.currentTarget.style.background = "rgba(255,255,255,0.03)"; }}>
+              <MessageCircle size={13} color="currentColor" style={{ flexShrink: 0 }} />
+              <span>Message Member</span>
+            </button>
 
-        <button
-          onClick={handleReact}
-          disabled={reacting}
-          style={{ display: "flex", alignItems: "center", gap: 8, width: "100%", padding: "7px 10px", borderRadius: 8, background: reacted ? C.cyanDim : "rgba(255,255,255,0.03)", border: `1px solid ${reacted ? C.cyanBrd : C.brd}`, color: reacted ? C.cyan : C.t2, fontSize: 12, fontWeight: 600, cursor: reacting ? "default" : "pointer", fontFamily: FONT, textAlign: "left", transition: "all 0.15s", opacity: reacting ? 0.65 : 1 }}
-          onMouseEnter={e => { if (!reacted) { e.currentTarget.style.borderColor = C.cyanBrd; e.currentTarget.style.color = C.cyan; e.currentTarget.style.background = C.cyanDim; } }}
-          onMouseLeave={e => { if (!reacted) { e.currentTarget.style.borderColor = C.brd; e.currentTarget.style.color = C.t2; e.currentTarget.style.background = "rgba(255,255,255,0.03)"; } }}>
-          <Zap size={13} color="currentColor" style={{ flexShrink: 0 }} />
-          <span>{reacted ? "Reacted ✓" : "Send a Reaction"}</span>
-        </button>
+            <button
+              onClick={() => setModal("remove")}
+              style={{ display: "flex", alignItems: "center", gap: 8, width: "100%", padding: "7px 10px", borderRadius: 8, background: "rgba(255,255,255,0.03)", border: `1px solid ${C.brd}`, color: C.t2, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: FONT, textAlign: "left", transition: "all 0.15s" }}
+              onMouseEnter={e => { e.currentTarget.style.borderColor = "rgba(255,77,109,0.35)"; e.currentTarget.style.color = C.red; e.currentTarget.style.background = C.redDim; }}
+              onMouseLeave={e => { e.currentTarget.style.borderColor = C.brd; e.currentTarget.style.color = C.t2; e.currentTarget.style.background = "rgba(255,255,255,0.03)"; }}>
+              <Trash2 size={13} color="currentColor" style={{ flexShrink: 0 }} />
+              <span>Remove Post</span>
+            </button>
+
+            <button
+              onClick={handleReact}
+              disabled={reacting}
+              style={{ display: "flex", alignItems: "center", gap: 8, width: "100%", padding: "7px 10px", borderRadius: 8, background: reacted ? C.cyanDim : "rgba(255,255,255,0.03)", border: `1px solid ${reacted ? C.cyanBrd : C.brd}`, color: reacted ? C.cyan : C.t2, fontSize: 12, fontWeight: 600, cursor: reacting ? "default" : "pointer", fontFamily: FONT, textAlign: "left", transition: "all 0.15s", opacity: reacting ? 0.65 : 1 }}
+              onMouseEnter={e => { if (!reacted) { e.currentTarget.style.borderColor = C.cyanBrd; e.currentTarget.style.color = C.cyan; e.currentTarget.style.background = C.cyanDim; } }}
+              onMouseLeave={e => { if (!reacted) { e.currentTarget.style.borderColor = C.brd; e.currentTarget.style.color = C.t2; e.currentTarget.style.background = "rgba(255,255,255,0.03)"; } }}>
+              <Zap size={13} color="currentColor" style={{ flexShrink: 0 }} />
+              <span>{reacted ? "Reacted ✓" : "Send a Reaction"}</span>
+            </button>
+          </>
+        )}
       </div>
 
       {modal === "message" && (
@@ -307,6 +454,13 @@ function QuickActions({ post, resolvedName, memberId, gym, currentUser, onDelete
           resolvedName={resolvedName}
           onConfirm={async (id) => { await onDeletePost?.(id); setModal(null); }}
           onClose={() => setModal(null)}
+        />
+      )}
+      {modal === "edit" && (
+        <EditPostModal
+          post={post}
+          onClose={() => setModal(null)}
+          onSave={onPostEdited}
         />
       )}
     </>
@@ -476,7 +630,7 @@ function MemberStatusBadge({ memberId, checkIns = [] }) {
 }
 
 /* ─── ROOT ───────────────────────────────────────────────────── */
-export default function ContentPage({ events = [], challenges = [], polls = [], posts = [], checkIns = [], openModal, onDeleteEvent, onDeleteChallenge, onDeletePost, avatarMap = {}, nameMap = {}, currentUser = null, gym = null }) {
+export default function ContentPage({ events = [], challenges = [], polls = [], posts = [], checkIns = [], openModal, onDeleteEvent, onDeleteChallenge, onDeletePost, onUpdatePost, avatarMap = {}, nameMap = {}, currentUser = null, gym = null }) {
   const isMobile = useIsMobile();
   const [tab, setTab] = useState("Community Feed");
   const [showMenu, setShowMenu] = useState(false);
@@ -495,10 +649,15 @@ export default function ContentPage({ events = [], challenges = [], polls = [], 
 
   const sevenDaysCutoff = Date.now() - 7 * 24 * 60 * 60 * 1000;
   const gymId = gym?.id;
+
+  // Include gym's own posts (post_type set = gym owner post) + member community posts
   const feedPosts = posts.filter(p => {
     if (p.is_hidden) return false;
-    if (!p.share_with_community) return false;
     if (gymId && p.gym_id !== gymId) return false;
+    // Always include gym-authored posts (they have post_type set)
+    if (p.post_type) return true;
+    // Include member posts shared with community in last 7 days
+    if (!p.share_with_community) return false;
     const d = p.created_date || p.created_at || p.date;
     return d ? new Date(d).getTime() >= sevenDaysCutoff : true;
   });
@@ -574,13 +733,18 @@ export default function ContentPage({ events = [], challenges = [], polls = [], 
               {feedPosts.length === 0
                 ? <EmptyState label="posts" onAdd={() => openModal?.("post")} />
                 : feedPosts.map(p => {
-                  const resolvedName =
-                    (p.member_id && nameMap[p.member_id]) ||
-                    (p.member_name && !p.member_name.includes("@") ? p.member_name : null) ||
-                    (p.member_name && p.member_name.includes("@")
-                      ? p.member_name.split("@")[0].replace(/[._]/g, " ").replace(/\b\w/g, c => c.toUpperCase())
-                      : "Member");
-                  const avatar = (p.member_id && avatarMap[p.member_id]) || p.member_avatar || null;
+                  // Gym-authored posts (post_type set) always show gym name
+                  const isGymPost = !!p.post_type;
+                  const resolvedName = isGymPost
+                    ? (gym?.name || p.member_name || "Gym")
+                    : (p.member_id && nameMap[p.member_id]) ||
+                      (p.member_name && !p.member_name.includes("@") ? p.member_name : null) ||
+                      (p.member_name && p.member_name.includes("@")
+                        ? p.member_name.split("@")[0].replace(/[._]/g, " ").replace(/\b\w/g, c => c.toUpperCase())
+                        : "Member");
+                  const avatar = isGymPost
+                    ? (gym?.logo_url || gym?.image_url || p.member_avatar || null)
+                    : (p.member_id && avatarMap[p.member_id]) || p.member_avatar || null;
                   const palette = ["#6366f1","#8b5cf6","#ec4899","#14b8a6","#f59e0b","#4d7fff","#10b981"];
                   const avatarBg = palette[(resolvedName.charCodeAt(0) || 0) % palette.length];
                   const initials = resolvedName.split(" ").map(w => w[0]).join("").toUpperCase().slice(0, 2) || "?";
@@ -608,11 +772,20 @@ export default function ContentPage({ events = [], challenges = [], polls = [], 
                             {avatar ? <img src={avatar} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : initials}
                           </div>
                           <div style={{ flex: 1 }}>
-                            <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
-                              <div style={{ fontSize: 13, fontWeight: 700, color: C.t1, lineHeight: 1.2 }}>{resolvedName}</div>
-                              <MemberStatusBadge memberId={p.member_id} checkIns={checkIns} />
-                            </div>
-                            {postedAt && <div style={{ fontSize: 11, color: C.t3, marginTop: 1 }}>{postedAt}</div>}
+                            <div style={{ fontSize: 13, fontWeight: 700, color: C.t1, lineHeight: 1.2 }}>{resolvedName}</div>
+                            {isGymPost && p.post_type ? (
+                              <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 3 }}>
+                                <span style={{ fontSize: 9.5, fontWeight: 700, padding: "1px 7px", borderRadius: 5, background: C.cyanDim, border: `1px solid ${C.cyanBrd}`, color: C.cyan }}>
+                                  {({ update:"Announcement", achievement:"Achievement", event:"Event", offer:"Special Offer", tip:"Fitness Tip", member_spotlight:"Member Spotlight" })[p.post_type] || p.post_type}
+                                </span>
+                                <span style={{ fontSize: 11, color: C.t3 }}>{postedAt}</span>
+                              </div>
+                            ) : (
+                              <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 2 }}>
+                                <MemberStatusBadge memberId={p.member_id} checkIns={checkIns} />
+                                {postedAt && <div style={{ fontSize: 11, color: C.t3 }}>{postedAt}</div>}
+                              </div>
+                            )}
                           </div>
                         </div>
 
@@ -636,6 +809,8 @@ export default function ContentPage({ events = [], challenges = [], polls = [], 
                         gym={gym}
                         currentUser={currentUser}
                         onDeletePost={onDeletePost}
+                        isGymPost={isGymPost}
+                        onPostEdited={onUpdatePost}
                       />
                     </div>
                   );
