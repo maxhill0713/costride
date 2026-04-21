@@ -209,13 +209,32 @@ export default function Home() {
   // ── Swipe state for the weekly circles ────────────────────────────────────
   const swipeStartXRef = useRef(null);
   const swipeStartYRef = useRef(null);
-  const [swipeDragX, setSwipeDragX] = useState(0);
-  const [isSwiping, setIsSwiping] = useState(false);
+  // Live drag offset applied directly to the circles container (no state — uses ref + DOM for perf)
+  const circlesInnerRef = useRef(null);
+  const swipeDragXRef = useRef(0);
+  const isSwipingRef = useRef(false);
+  // We still keep a small state flag so the pointerUp handler can read it reliably
+  const [swipeCommitted, setSwipeCommitted] = useState(false);
   // ─────────────────────────────────────────────────────────────────────────
 
   const [headerState, setHeaderState] = useState('top');
   const lastScrollY = useRef(0);
   const ticking = useRef(false);
+
+  // Width of the circles row — measured on mount / resize
+  const circlesContainerRef = useRef(null);
+  const circlesRowWidthRef = useRef(280); // sensible default
+
+  useEffect(() => {
+    const measure = () => {
+      if (circlesContainerRef.current) {
+        circlesRowWidthRef.current = circlesContainerRef.current.offsetWidth;
+      }
+    };
+    measure();
+    window.addEventListener('resize', measure);
+    return () => window.removeEventListener('resize', measure);
+  }, []);
 
   const anyCelebrationActive = showStreakCelebration || showChallengesCelebration || showShareWorkout || showDaysCelebration || showFreezeAnimation || showStreakLossAnimation;
   useEffect(() => {
@@ -780,15 +799,26 @@ export default function Home() {
         <div className="max-w-4xl mx-auto px-4 space-y-4 pb-4">
           <div className="rounded-2xl bg-slate-800/60 animate-pulse h-40" />
           <div className="flex gap-3 overflow-hidden">
-            <div className="flex flex-col items-center gap-1.5 flex-shrink-0"><div className="w-14 h-14 rounded-full bg-slate-700/60 animate-pulse" /><div className="w-10 h-2.5 rounded bg-slate-700/60 animate-pulse" /></div>
-            <div className="flex flex-col items-center gap-1.5 flex-shrink-0"><div className="w-14 h-14 rounded-full bg-slate-700/60 animate-pulse" /><div className="w-10 h-2.5 rounded bg-slate-700/60 animate-pulse" /></div>
-            <div className="flex flex-col items-center gap-1.5 flex-shrink-0"><div className="w-14 h-14 rounded-full bg-slate-700/60 animate-pulse" /><div className="w-10 h-2.5 rounded bg-slate-700/60 animate-pulse" /></div>
-            <div className="flex flex-col items-center gap-1.5 flex-shrink-0"><div className="w-14 h-14 rounded-full bg-slate-700/60 animate-pulse" /><div className="w-10 h-2.5 rounded bg-slate-700/60 animate-pulse" /></div>
-            <div className="flex flex-col items-center gap-1.5 flex-shrink-0"><div className="w-14 h-14 rounded-full bg-slate-700/60 animate-pulse" /><div className="w-10 h-2.5 rounded bg-slate-700/60 animate-pulse" /></div>
+            {[...Array(5)].map((_, i) => (
+              <div key={i} className="flex flex-col items-center gap-1.5 flex-shrink-0">
+                <div className="w-14 h-14 rounded-full bg-slate-700/60 animate-pulse" />
+                <div className="w-10 h-2.5 rounded bg-slate-700/60 animate-pulse" />
+              </div>
+            ))}
           </div>
-          <div className="rounded-2xl bg-slate-800/60 p-4 space-y-3 animate-pulse"><div className="flex items-center gap-3"><div className="w-9 h-9 rounded-full bg-slate-700/60" /><div className="space-y-1.5 flex-1"><div className="h-3 rounded bg-slate-700/60 w-1/3" /><div className="h-2.5 rounded bg-slate-700/60 w-1/5" /></div></div><div className="h-3 rounded bg-slate-700/60 w-5/6" /><div className="h-3 rounded bg-slate-700/60 w-2/3" /></div>
-          <div className="rounded-2xl bg-slate-800/60 p-4 space-y-3 animate-pulse"><div className="flex items-center gap-3"><div className="w-9 h-9 rounded-full bg-slate-700/60" /><div className="space-y-1.5 flex-1"><div className="h-3 rounded bg-slate-700/60 w-1/3" /><div className="h-2.5 rounded bg-slate-700/60 w-1/5" /></div></div><div className="h-3 rounded bg-slate-700/60 w-5/6" /><div className="h-3 rounded bg-slate-700/60 w-2/3" /></div>
-          <div className="rounded-2xl bg-slate-800/60 p-4 space-y-3 animate-pulse"><div className="flex items-center gap-3"><div className="w-9 h-9 rounded-full bg-slate-700/60" /><div className="space-y-1.5 flex-1"><div className="h-3 rounded bg-slate-700/60 w-1/3" /><div className="h-2.5 rounded bg-slate-700/60 w-1/5" /></div></div><div className="h-3 rounded bg-slate-700/60 w-5/6" /><div className="h-3 rounded bg-slate-700/60 w-2/3" /></div>
+          {[...Array(3)].map((_, i) => (
+            <div key={i} className="rounded-2xl bg-slate-800/60 p-4 space-y-3 animate-pulse">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-full bg-slate-700/60" />
+                <div className="space-y-1.5 flex-1">
+                  <div className="h-3 rounded bg-slate-700/60 w-1/3" />
+                  <div className="h-2.5 rounded bg-slate-700/60 w-1/5" />
+                </div>
+              </div>
+              <div className="h-3 rounded bg-slate-700/60 w-5/6" />
+              <div className="h-3 rounded bg-slate-700/60 w-2/3" />
+            </div>
+          ))}
         </div>
       </div>
     );
@@ -932,59 +962,95 @@ export default function Home() {
   );
 
   // ── Swipe handlers for the weekly circles ─────────────────────────────────
+  //
+  // Strategy: track drag with a ref (no re-render during drag), apply the
+  // offset directly to the DOM element for maximum smoothness, then on
+  // release either commit the week change or spring back.
+  //
+  // THRESHOLD: 50 % of the circles row width (measured on mount).
+  //
+
+  const applyDragOffset = (dx) => {
+    if (circlesInnerRef.current) {
+      circlesInnerRef.current.style.transform = `translateX(${dx}px)`;
+      circlesInnerRef.current.style.transition = 'none';
+    }
+  };
+
+  const springBack = () => {
+    if (circlesInnerRef.current) {
+      circlesInnerRef.current.style.transition = 'transform 0.32s cubic-bezier(0.25,0.46,0.45,0.94)';
+      circlesInnerRef.current.style.transform = 'translateX(0)';
+    }
+  };
+
   const handleCircleSwipeTouchStart = (e) => {
     swipeStartXRef.current = e.touches[0].clientX;
     swipeStartYRef.current = e.touches[0].clientY;
-    setSwipeDragX(0);
-    setIsSwiping(false);
+    swipeDragXRef.current = 0;
+    isSwipingRef.current = false;
+    // Kill any in-progress spring so drag takes over instantly
+    if (circlesInnerRef.current) {
+      circlesInnerRef.current.style.transition = 'none';
+    }
   };
 
   const handleCircleSwipeTouchMove = (e) => {
     if (swipeStartXRef.current === null) return;
     const dx = e.touches[0].clientX - swipeStartXRef.current;
-    const dy = Math.abs(e.touches[0].clientY - swipeStartYRef.current);
-    // Only hijack if moving more horizontally than vertically
-    if (!isSwiping && Math.abs(dx) < dy) return;
+    const dy = Math.abs(e.touches[0].clientY - (swipeStartYRef.current ?? 0));
+
+    // Don't hijack vertical scrolls
+    if (!isSwipingRef.current && Math.abs(dx) < dy) return;
+
     if (Math.abs(dx) > 6) {
-      setIsSwiping(true);
-      // Clamp: can't swipe past the limits (weekOffset is clamped to -1..1)
-      const atLeftEdge = weekOffset <= -1;
-      const atRightEdge = weekOffset >= 1;
-      let clampedDx = dx;
-      if (atLeftEdge && dx > 0) clampedDx = Math.min(dx, dx * 0.2); // rubber band
-      if (atRightEdge && dx < 0) clampedDx = Math.max(dx, dx * 0.2);
-      setSwipeDragX(clampedDx);
-      // Prevent page scroll while swiping horizontally
-      e.preventDefault();
+      isSwipingRef.current = true;
+
+      // Rubber-band at the edges
+      const atLeft  = weekOffset <= -1;
+      const atRight = weekOffset >= 1;
+      let clamped = dx;
+      if (atLeft  && dx > 0) clamped = dx * 0.2;
+      if (atRight && dx < 0) clamped = dx * 0.2;
+
+      swipeDragXRef.current = clamped;
+      applyDragOffset(clamped);
+      e.preventDefault(); // stop page scroll while swiping horizontally
     }
   };
 
-  const handleCircleSwipeTouchEnd = (e) => {
-    if (!isSwiping) {
+  const handleCircleSwipeTouchEnd = () => {
+    if (!isSwipingRef.current) {
       swipeStartXRef.current = null;
       swipeStartYRef.current = null;
-      setSwipeDragX(0);
       return;
     }
-    const screenW = window.innerWidth;
-    const threshold = screenW * 0.38; // 38% of screen = commit to swipe
-    if (swipeDragX < -threshold && weekOffset < 1) {
-      // Swiped left → go to next (future) week
+
+    const dx = swipeDragXRef.current;
+    // Threshold = 50 % of the measured circles row width
+    const threshold = circlesRowWidthRef.current * 0.5;
+
+    if (dx < -threshold && weekOffset < 1) {
+      // Swiped left far enough → advance to next week
       setSlideDirection(1);
       setWeekOffset(w => w + 1);
       setActiveCircleDay(null);
       setBubblePos(null);
-    } else if (swipeDragX > threshold && weekOffset > -1) {
-      // Swiped right → go to previous week
+    } else if (dx > threshold && weekOffset > -1) {
+      // Swiped right far enough → go to previous week
       setSlideDirection(-1);
       setWeekOffset(w => w - 1);
       setActiveCircleDay(null);
       setBubblePos(null);
+    } else {
+      // Didn't reach threshold — spring back to current position
+      springBack();
     }
+
     swipeStartXRef.current = null;
     swipeStartYRef.current = null;
-    setSwipeDragX(0);
-    setIsSwiping(false);
+    swipeDragXRef.current = 0;
+    isSwipingRef.current = false;
   };
   // ─────────────────────────────────────────────────────────────────────────
 
@@ -1153,6 +1219,7 @@ export default function Home() {
             return (
               // ── SWIPEABLE WEEKLY CIRCLES CONTAINER ──────────────────────
               <div
+                ref={circlesContainerRef}
                 style={{ margin: '0 -16px', position: 'relative', width: 'calc(100% + 32px)', height: 108, zIndex: activeCircleDay !== null ? 201 : 'auto' }}
                 onTouchStart={handleCircleSwipeTouchStart}
                 onTouchMove={handleCircleSwipeTouchMove}
@@ -1174,6 +1241,7 @@ export default function Home() {
                 <div style={{ position: 'absolute', right: 0, top: 0, bottom: 0, width: 20, display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 10 }}>
                   <ArrowButton direction="right" disabled={weekOffset >= 1} onPress={() => { setSlideDirection(1); setWeekOffset(w => w + 1); setActiveCircleDay(null); setBubblePos(null); }} />
                 </div>
+
                 {/* Overflow container — clips the sliding weeks */}
                 <div style={{ overflowX: 'hidden', overflowY: 'visible', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   <AnimatePresence mode="popLayout" initial={false} custom={slideDirection}>
@@ -1183,20 +1251,32 @@ export default function Home() {
                       variants={{
                         enter: (dir) => ({ x: dir < 0 ? '-100%' : '100%', opacity: 1 }),
                         center: { x: 0, opacity: 1 },
-                        exit: (dir) => ({ x: dir < 0 ? '100%' : '-100%', opacity: 1 }),
+                        exit:  (dir) => ({ x: dir < 0 ? '100%' : '-100%', opacity: 1 }),
                       }}
-                      initial="enter" animate="center" exit="exit"
+                      initial="enter"
+                      animate="center"
+                      exit="exit"
                       transition={{ duration: 0.38, ease: [0.25, 0.46, 0.45, 0.94] }}
-                      // ── Live swipe drag offset applied here ──────────────
+                      // The inner ref is what we translate during a live drag.
+                      // We wrap in an extra div so Framer Motion's own transform
+                      // (for enter/exit) and our drag transform don't clash.
                       style={{
                         display: 'flex', flexDirection: 'row', alignItems: 'flex-start',
                         justifyContent: 'center', gap: 8, overflow: 'visible',
                         position: 'relative', width: '100%',
                         paddingTop: 14, paddingBottom: 14,
-                        transform: isSwiping ? `translateX(${swipeDragX}px)` : undefined,
-                        transition: isSwiping ? 'none' : undefined,
                         willChange: 'transform',
-                      }}>
+                      }}
+                    >
+                      {/* ── Live-drag wrapper — this is what moves with your finger ── */}
+                      <div
+                        ref={circlesInnerRef}
+                        style={{
+                          display: 'flex', flexDirection: 'row', alignItems: 'flex-start',
+                          justifyContent: 'center', gap: 8, overflow: 'visible',
+                          width: '100%', willChange: 'transform',
+                        }}
+                      >
                       {allDays.map((day, i) => {
                         const isDayInFuture = weekOffset === 0 && day > todayDay;
                         const done = !isDayInFuture && loggedDays.has(day);
@@ -1259,7 +1339,7 @@ export default function Home() {
                               data-circle-btn="true"
                               onPointerDown={(e) => {
                                 // Don't open bubble if we're mid-swipe
-                                if (isSwiping) return;
+                                if (isSwipingRef.current) return;
                                 setPressedDay(day);
                                 const rect = e.currentTarget.getBoundingClientRect();
                                 setBubblePos({
@@ -1289,7 +1369,7 @@ export default function Home() {
                                 });
                               }}
                               onPointerUp={() => {
-                                if (isSwiping) { setPressedDay(null); return; }
+                                if (isSwipingRef.current) { setPressedDay(null); return; }
                                 if (pressedDay === day) {
                                   setActiveCircleDay((prev) => {
                                     if (prev === day) { setBubblePos(null); return null; }
@@ -1355,6 +1435,7 @@ export default function Home() {
                           </div>
                         );
                       })}
+                      </div>{/* end live-drag wrapper */}
                     </motion.div>
                   </AnimatePresence>
                 </div>
