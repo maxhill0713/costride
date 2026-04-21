@@ -1185,7 +1185,7 @@ export default function ContentPage({ events = [], challenges = [], polls = [], 
                   {livePolls2.length} Live Poll{livePolls2.length !== 1 ? "s" : ""}
                 </div>
                 {livePolls2.length === 0
-                  ? <EmptyState label="live polls" onAdd={() => openModal?.("poll")} />
+                  ? null
                   : livePolls2.map(poll => <PollCard key={poll.id} poll={poll} showTimer />)
                 }
                 {endedPolls.length > 0 && (
