@@ -63,9 +63,6 @@ const POSE_2_URL = 'https://media.base44.com/images/public/694b637358644e1c22c8e
 const SPARTAN_ICON_URL = 'https://media.base44.com/images/public/694b637358644e1c22c8ec6b/a72ee034d_spartan.png';
 const BEACH_ICON_URL = 'https://media.base44.com/images/public/694b637358644e1c22c8ec6b/9766d8d41_BEACH.png';
 
-// ── NOTE: playWorkoutLoggedSound removed — the streak celebration animation
-// provides all audio/haptic feedback when a workout is logged. ────────────────
-
 const STREAK_KEYFRAMES = `
   @keyframes streakBounceIn {
     0%   { transform: scale(0.4) translateY(40px); opacity: 0; }
@@ -209,11 +206,17 @@ export default function Home() {
   const [, forceUpdateSwaps] = useState(0);
   const celebTimers = useRef([]);
 
+  // ── Swipe state for the weekly circles ────────────────────────────────────
+  const swipeStartXRef = useRef(null);
+  const swipeStartYRef = useRef(null);
+  const [swipeDragX, setSwipeDragX] = useState(0);
+  const [isSwiping, setIsSwiping] = useState(false);
+  // ─────────────────────────────────────────────────────────────────────────
+
   const [headerState, setHeaderState] = useState('top');
   const lastScrollY = useRef(0);
   const ticking = useRef(false);
 
-  // Lock scroll and jump to top during any celebration animation
   const anyCelebrationActive = showStreakCelebration || showChallengesCelebration || showShareWorkout || showDaysCelebration || showFreezeAnimation || showStreakLossAnimation;
   useEffect(() => {
     if (anyCelebrationActive) {
@@ -227,8 +230,6 @@ export default function Home() {
 
   useEffect(() => {
   const handler = () => {
-    // Turn on the next stage BEFORE turning off the current one
-    // so the backdrop in StreakCelebration never sees all three as false simultaneously
     if (celebrationChallenges.length > 0) {
       setShowChallengesCelebration(true);
     } else {
@@ -402,7 +403,6 @@ export default function Home() {
     placeholderData: (prev) => prev,
   });
 
-  // Show pop-up for post_removed notifications
   useEffect(() => {
     if (!notifications.length) return;
     const unread = notifications.find(n => n.type === 'post_removed' && !n.read && !dismissedPostRemovedIds.has(n.id));
@@ -815,7 +815,6 @@ export default function Home() {
       }
     }
     setWorkoutStartTime(null);
-    // NOTE: playWorkoutLoggedSound() removed — streak celebration provides audio feedback
     await queryClient.invalidateQueries({ queryKey: ['checkIns', currentUser?.id] });
     await queryClient.invalidateQueries({ queryKey: ['weeklyWorkoutLogs', currentUser?.id] });
     await queryClient.invalidateQueries({ queryKey: ['userChallengeParticipants', currentUser?.id] });
@@ -931,6 +930,63 @@ export default function Home() {
       </button>
     </div>
   );
+
+  // ── Swipe handlers for the weekly circles ─────────────────────────────────
+  const handleCircleSwipeTouchStart = (e) => {
+    swipeStartXRef.current = e.touches[0].clientX;
+    swipeStartYRef.current = e.touches[0].clientY;
+    setSwipeDragX(0);
+    setIsSwiping(false);
+  };
+
+  const handleCircleSwipeTouchMove = (e) => {
+    if (swipeStartXRef.current === null) return;
+    const dx = e.touches[0].clientX - swipeStartXRef.current;
+    const dy = Math.abs(e.touches[0].clientY - swipeStartYRef.current);
+    // Only hijack if moving more horizontally than vertically
+    if (!isSwiping && Math.abs(dx) < dy) return;
+    if (Math.abs(dx) > 6) {
+      setIsSwiping(true);
+      // Clamp: can't swipe past the limits (weekOffset is clamped to -1..1)
+      const atLeftEdge = weekOffset <= -1;
+      const atRightEdge = weekOffset >= 1;
+      let clampedDx = dx;
+      if (atLeftEdge && dx > 0) clampedDx = Math.min(dx, dx * 0.2); // rubber band
+      if (atRightEdge && dx < 0) clampedDx = Math.max(dx, dx * 0.2);
+      setSwipeDragX(clampedDx);
+      // Prevent page scroll while swiping horizontally
+      e.preventDefault();
+    }
+  };
+
+  const handleCircleSwipeTouchEnd = (e) => {
+    if (!isSwiping) {
+      swipeStartXRef.current = null;
+      swipeStartYRef.current = null;
+      setSwipeDragX(0);
+      return;
+    }
+    const screenW = window.innerWidth;
+    const threshold = screenW * 0.38; // 38% of screen = commit to swipe
+    if (swipeDragX < -threshold && weekOffset < 1) {
+      // Swiped left → go to next (future) week
+      setSlideDirection(1);
+      setWeekOffset(w => w + 1);
+      setActiveCircleDay(null);
+      setBubblePos(null);
+    } else if (swipeDragX > threshold && weekOffset > -1) {
+      // Swiped right → go to previous week
+      setSlideDirection(-1);
+      setWeekOffset(w => w - 1);
+      setActiveCircleDay(null);
+      setBubblePos(null);
+    }
+    swipeStartXRef.current = null;
+    swipeStartYRef.current = null;
+    setSwipeDragX(0);
+    setIsSwiping(false);
+  };
+  // ─────────────────────────────────────────────────────────────────────────
 
   return (
     <PullToRefresh onRefresh={triggerRefresh}>
@@ -1063,8 +1119,6 @@ export default function Home() {
           {memberGym?.id && (() => {
             const baseTrainingDays = (currentUser?.training_days || []).filter((d) => d >= 1 && d <= 7);
             const swappedRestDay = weekOffset === 0 ? getSwappedRestDay() : null;
-
-            // Rest swap: today becomes rest, a future rest day becomes training
             const restSwap = weekOffset === 0 ? getRestSwap() : null;
 
             let trainingDays = swappedRestDay && !baseTrainingDays.includes(swappedRestDay)
@@ -1072,7 +1126,6 @@ export default function Home() {
               : baseTrainingDays;
 
             if (restSwap) {
-              // Remove fromDay (today), add toDay (the future rest day it was moved to)
               trainingDays = trainingDays.filter(d => d !== restSwap.fromDay);
               if (!trainingDays.includes(restSwap.toDay)) {
                 trainingDays = [...trainingDays, restSwap.toDay];
@@ -1098,7 +1151,13 @@ export default function Home() {
             const isFutureWeek = weekOffset > 0;
 
             return (
-              <div style={{ margin: '0 -16px', position: 'relative', width: 'calc(100% + 32px)', height: 108, zIndex: activeCircleDay !== null ? 201 : 'auto' }}>
+              // ── SWIPEABLE WEEKLY CIRCLES CONTAINER ──────────────────────
+              <div
+                style={{ margin: '0 -16px', position: 'relative', width: 'calc(100% + 32px)', height: 108, zIndex: activeCircleDay !== null ? 201 : 'auto' }}
+                onTouchStart={handleCircleSwipeTouchStart}
+                onTouchMove={handleCircleSwipeTouchMove}
+                onTouchEnd={handleCircleSwipeTouchEnd}
+              >
                 {activeCircleDay !== null && (
                   <div
                     onPointerDown={(e) => {
@@ -1115,6 +1174,7 @@ export default function Home() {
                 <div style={{ position: 'absolute', right: 0, top: 0, bottom: 0, width: 20, display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 10 }}>
                   <ArrowButton direction="right" disabled={weekOffset >= 1} onPress={() => { setSlideDirection(1); setWeekOffset(w => w + 1); setActiveCircleDay(null); setBubblePos(null); }} />
                 </div>
+                {/* Overflow container — clips the sliding weeks */}
                 <div style={{ overflowX: 'hidden', overflowY: 'visible', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   <AnimatePresence mode="popLayout" initial={false} custom={slideDirection}>
                     <motion.div
@@ -1127,11 +1187,19 @@ export default function Home() {
                       }}
                       initial="enter" animate="center" exit="exit"
                       transition={{ duration: 0.38, ease: [0.25, 0.46, 0.45, 0.94] }}
-                      style={{ display: 'flex', flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'center', gap: 8, overflow: 'visible', position: 'relative', width: '100%', paddingTop: 14, paddingBottom: 14 }}>
+                      // ── Live swipe drag offset applied here ──────────────
+                      style={{
+                        display: 'flex', flexDirection: 'row', alignItems: 'flex-start',
+                        justifyContent: 'center', gap: 8, overflow: 'visible',
+                        position: 'relative', width: '100%',
+                        paddingTop: 14, paddingBottom: 14,
+                        transform: isSwiping ? `translateX(${swipeDragX}px)` : undefined,
+                        transition: isSwiping ? 'none' : undefined,
+                        willChange: 'transform',
+                      }}>
                       {allDays.map((day, i) => {
                         const isDayInFuture = weekOffset === 0 && day > todayDay;
                         const done = !isDayInFuture && loggedDays.has(day);
-                        // CHANGED: bounce removed — no initial circle pop animation when workout is logged
                         const isTodayCircle = day === todayDay && weekOffset === 0;
                         const joinDate = currentUser?.created_date || currentUser?.created_at || null;
                         const mondayThisWeek = startOfWeek(new Date(), { weekStartsOn: 1 });
@@ -1177,7 +1245,6 @@ export default function Home() {
                           return '0 4px 0 0 #111827, 0 6px 14px rgba(15,20,35,0.5), inset 0 1px 0 rgba(255,255,255,0.1), inset 0 -1px 0 rgba(0,0,0,0.25), inset 0 0 10px rgba(255,255,255,0.02)';
                         };
                         const getAnimation = () => {
-                          // CHANGED: bounce (justLoggedDay) animation removed — no immediate circle pop on log
                           if (isRestDay || done || isPreJoin) return 'none';
                           if (weekOffset !== 0) return 'none';
                           return `dayWiggle 2.4s ease-in-out ${i * 0.18}s infinite`;
@@ -1191,6 +1258,8 @@ export default function Home() {
                             <button
                               data-circle-btn="true"
                               onPointerDown={(e) => {
+                                // Don't open bubble if we're mid-swipe
+                                if (isSwiping) return;
                                 setPressedDay(day);
                                 const rect = e.currentTarget.getBoundingClientRect();
                                 setBubblePos({
@@ -1204,7 +1273,6 @@ export default function Home() {
                                   if (done && workoutLog) return workoutLog.workout_name || workoutLog.title || workoutLog.workout_type || workoutLog.name || workoutLog.split_name || 'Workout';
                                   if (done) return 'Workout';
                                   const customTypes = currentUser?.custom_workout_types;
-                                  // If this day is the "toDay" of a rest swap, show the workout from "fromDay"
                                   const restSwapForLabel = restSwap;
                                   const lookupDay = (restSwapForLabel && restSwapForLabel.toDay === day) ? restSwapForLabel.fromDay : day;
                                   const splitDay = customTypes ? Array.isArray(customTypes) ? customTypes.find((s) => s.day === lookupDay || s.day_of_week === lookupDay) : customTypes[lookupDay] : null;
@@ -1221,6 +1289,7 @@ export default function Home() {
                                 });
                               }}
                               onPointerUp={() => {
+                                if (isSwiping) { setPressedDay(null); return; }
                                 if (pressedDay === day) {
                                   setActiveCircleDay((prev) => {
                                     if (prev === day) { setBubblePos(null); return null; }
@@ -1290,6 +1359,7 @@ export default function Home() {
                   </AnimatePresence>
                 </div>
               </div>
+              // ── END SWIPEABLE CONTAINER ──────────────────────────────────
             );
           })()}
 
@@ -1384,7 +1454,6 @@ export default function Home() {
             </Card>
           )}
 
-
         </div>
       </div>
 
@@ -1467,7 +1536,6 @@ export default function Home() {
 
       <WorkoutSummaryModal summaryLog={summaryLog} onClose={() => setSummaryLog(null)} currentStreak={currentUser?.current_streak} />
 
-      {/* Post removed notification popup */}
       {postRemovedNotif && (
         <div className="fixed inset-0 z-[600] flex items-center justify-center p-4"
           style={{ background: 'rgba(2,4,10,0.85)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)' }}>
@@ -1502,7 +1570,6 @@ export default function Home() {
 
       <AnimatePresence>
         {viewWorkoutDay !== null && (() => {
-          // If restSwap is active and we're viewing the target day, show today's original workout
           const restSwapData = getRestSwap();
           const effectiveViewDay = (restSwapData && viewWorkoutDay === restSwapData.toDay)
             ? restSwapData.fromDay
