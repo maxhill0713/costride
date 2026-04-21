@@ -82,11 +82,12 @@ function VotersModal({ open, onClose, opts, totalVoters, voterAvatarData, isLoad
     return m;
   }, [voterAvatarData]);
 
-  // Check if any option has per-voter tracking (either via opt.voters array or voterOptionMap built from it)
-  const hasPerOptionVoters = useMemo(() =>
-    opts.some(opt => typeof opt === 'object' && Array.isArray(opt.voters) && opt.voters.length > 0),
-    [opts]
-  );
+  // Check if any option has per-voter tracking or if we can infer it from voterOptionMap
+  const hasPerOptionVoters = useMemo(() => {
+    const hasStructuredVoters = opts.some(opt => typeof opt === 'object' && Array.isArray(opt.voters) && opt.voters.length > 0);
+    const hasVoterOptionMapping = Object.keys(voterOptionMap).length > 0;
+    return hasStructuredVoters || hasVoterOptionMapping;
+  }, [opts, voterOptionMap]);
 
   // Section header styled like the reactions modal
   const SectionHeader = ({ label }) => (
@@ -163,7 +164,12 @@ function VotersModal({ open, onClose, opts, totalVoters, voterAvatarData, isLoad
             (() => {
               const sections = opts.map((opt, i) => {
                 const optText = typeof opt === 'object' ? (opt.text || opt.label || `Option ${i + 1}`) : opt;
-                const optVoterIds = typeof opt === 'object' && Array.isArray(opt.voters) ? opt.voters : [];
+                // Try structured voters first, fallback to voterOptionMap
+                let optVoterIds = typeof opt === 'object' && Array.isArray(opt.voters) ? opt.voters : [];
+                if (optVoterIds.length === 0) {
+                  // Fallback: find voters from voterOptionMap that match this option
+                  optVoterIds = voterAvatarData.filter(v => voterOptionMap[v.id] === optText).map(v => v.id);
+                }
                 const optVoters = optVoterIds.map(uid => avatarById[uid]).filter(Boolean);
                 return { optText, optVoters };
               }).filter(s => s.optVoters.length > 0);
