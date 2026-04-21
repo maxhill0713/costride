@@ -117,10 +117,15 @@ function MessageMemberModal({ resolvedName, memberId, onClose }) {
   return (
     <div style={{ position: "fixed", inset: 0, zIndex: 500, background: "rgba(0,0,0,0.72)", display: "flex", alignItems: "center", justifyContent: "center" }}
       onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
-      <div style={{ background: C.card, border: `1px solid ${C.brd}`, borderRadius: 14, padding: "24px 24px 20px", width: 400, maxWidth: "90vw", display: "flex", flexDirection: "column", gap: 14 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <button onClick={onClose} style={{ background: "none", border: "none", color: C.t3, cursor: "pointer", fontSize: 18, lineHeight: 1, padding: 0, flexShrink: 0 }}>×</button>
+      <div style={{ background: C.card, border: `1px solid ${C.brd}`, borderRadius: 14, padding: "20px 24px 20px", width: 400, maxWidth: "90vw", display: "flex", flexDirection: "column", gap: 14 }}>
+        {/* Header with X top-right */}
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <div style={{ fontSize: 15, fontWeight: 800, color: C.t1, letterSpacing: "-0.02em" }}>Message Member</div>
+          <button onClick={onClose} style={{ background: "none", border: "none", color: C.t3, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", padding: 4, borderRadius: 6 }}
+            onMouseEnter={e => e.currentTarget.style.color = C.t1}
+            onMouseLeave={e => e.currentTarget.style.color = C.t3}>
+            <X size={15} />
+          </button>
         </div>
         {sent ? (
           <div style={{ textAlign: "center", padding: "20px 0", color: C.green, fontSize: 13, fontWeight: 600 }}>
@@ -161,13 +166,18 @@ function RemovePostModal({ post, resolvedName, onConfirm, onClose }) {
   return (
     <div style={{ position: "fixed", inset: 0, zIndex: 500, background: "rgba(0,0,0,0.72)", display: "flex", alignItems: "center", justifyContent: "center" }}
       onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
-      <div style={{ background: C.card, border: `1px solid rgba(255,77,109,0.25)`, borderRadius: 14, padding: "24px 24px 20px", width: 380, maxWidth: "90vw", display: "flex", flexDirection: "column", gap: 16 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <button onClick={onClose} style={{ background: "none", border: "none", color: C.t3, cursor: "pointer", fontSize: 18, lineHeight: 1, padding: 0, flexShrink: 0 }}>×</button>
+      <div style={{ background: C.card, border: `1px solid rgba(255,77,109,0.25)`, borderRadius: 14, padding: "20px 24px 20px", width: 380, maxWidth: "90vw", display: "flex", flexDirection: "column", gap: 16 }}>
+        {/* Header with X top-right */}
+        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between" }}>
           <div>
             <div style={{ fontSize: 15, fontWeight: 800, color: C.t1 }}>Remove Post</div>
             <div style={{ fontSize: 12, color: C.t2, marginTop: 2 }}>Posted by <span style={{ color: C.t1, fontWeight: 600 }}>{resolvedName}</span></div>
           </div>
+          <button onClick={onClose} style={{ background: "none", border: "none", color: C.t3, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", padding: 4, borderRadius: 6, flexShrink: 0, marginLeft: 12 }}
+            onMouseEnter={e => e.currentTarget.style.color = C.t1}
+            onMouseLeave={e => e.currentTarget.style.color = C.t3}>
+            <X size={15} />
+          </button>
         </div>
         <div style={{ fontSize: 12.5, color: C.t2, lineHeight: 1.55 }}>
           This will permanently remove the post from the community feed. <span style={{ color: C.red, fontWeight: 600 }}>This cannot be undone.</span>
@@ -282,7 +292,6 @@ function EditPostModal({ post, gym, onClose, onSave }) {
     if (!isDirty || !content.trim()) return;
     setSaving(true);
     try {
-      // Always re-assert gym authorship fields so they can never revert to owner's personal data
       const gymFields = gym ? {
         member_name: gym.name,
         member_avatar: gym.logo_url || gym.image_url || post.member_avatar || null,
@@ -406,7 +415,6 @@ function QuickActions({ post, resolvedName, memberId, gym, currentUser, onDelete
         <div style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.10em", color: C.t3, marginBottom: 2 }}>Quick Actions</div>
 
         {isGymPost ? (
-          /* ── Gym-authored post: Remove + Edit ── */
           <>
             <button
               onClick={() => setModal("remove")}
@@ -427,7 +435,6 @@ function QuickActions({ post, resolvedName, memberId, gym, currentUser, onDelete
             </button>
           </>
         ) : (
-          /* ── Member post: Message + Remove + React ── */
           <>
             <button
               onClick={() => setModal("message")}
@@ -552,7 +559,7 @@ function RightSidebar({ events, challenges, polls, posts, openModal, feedPostsTh
 
         <div style={{ height: 1, background: C.brd }} />
 
-        {/* Content Highlights — renamed, reordered */}
+        {/* Content Highlights */}
         <div>
           <div style={{ fontSize: 12.5, fontWeight: 600, color: C.t1, marginBottom: 10 }}>Content Highlights</div>
           <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
@@ -670,19 +677,15 @@ export default function ContentPage({ events = [], challenges = [], polls = [], 
   const sevenDaysCutoff = Date.now() - 7 * 24 * 60 * 60 * 1000;
   const gymId = gym?.id;
 
-  // Include gym's own posts (post_type set = gym owner post) + member community posts
   const feedPosts = posts.filter(p => {
     if (p.is_hidden) return false;
     if (gymId && p.gym_id !== gymId) return false;
-    // Always include gym-authored posts (they have post_type set)
     if (p.post_type) return true;
-    // Include member posts shared with community in last 7 days
     if (!p.share_with_community) return false;
     const d = p.created_date || p.created_at || p.date;
     return d ? new Date(d).getTime() >= sevenDaysCutoff : true;
   });
 
-  // Sidebar computed metrics
   const feedPostsThisWeek = feedPosts.length;
   const now = new Date();
   const livePolls = polls.filter(p => {
@@ -753,7 +756,6 @@ export default function ContentPage({ events = [], challenges = [], polls = [], 
               {feedPosts.length === 0
                 ? <EmptyState label="posts" onAdd={() => openModal?.("post")} />
                 : feedPosts.map(p => {
-                  // Gym-authored posts (post_type set) always show gym name
                   const isGymPost = !!p.post_type;
                   const resolvedName = isGymPost
                     ? (gym?.name || p.member_name || "Gym")
