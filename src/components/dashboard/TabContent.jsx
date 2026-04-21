@@ -858,7 +858,7 @@ export default function ContentPage({ events = [], challenges = [], polls = [], 
           {tab === "Community Feed" && (
             <>
               <div style={{ fontSize: 12, fontWeight: 500, color: C.t2, marginBottom: 10 }}>
-                {feedPosts.length} post{feedPosts.length !== 1 ? "s" : ""} shared with community in the last 7 days
+                {feedPosts.length} post{feedPosts.length !== 1 ? "s" : ""} shared with your community in the last 7 days
               </div>
               {feedPosts.length === 0
                 ? <EmptyState label="posts" onAdd={() => openModal?.("post")} />
