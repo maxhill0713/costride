@@ -624,21 +624,31 @@ function PostCard({ post, onLike, onComment, onSave, onDelete, fullWidth = false
 
   const isGymAuthoredPost = !!post.post_type;
 
-  // Use a different query key for gym posts to avoid cache collision with the gym owner's user profile
+  // Fetch gym data directly for gym-authored posts to ensure correct name/avatar
+  const { data: gymData } = useQuery({
+    queryKey: ['gymForPost', post.gym_id],
+    queryFn: () => base44.entities.Gym.filter({ id: post.gym_id }).then(r => r[0] || null),
+    enabled: !!post.gym_id && isGymAuthoredPost,
+    staleTime: 30 * 60 * 1000,
+    gcTime: 60 * 60 * 1000,
+  });
+
+  // Only fetch member profile for non-gym posts
   const { data: postAuthor } = useQuery({
-    queryKey: ['postAuthor', 'user', post.member_id],
+    queryKey: ['postAuthor', 'member', post.member_id],
     queryFn: () => base44.functions.invoke('getFriendUsers', { userIds: [post.member_id] }).then(r => r.data?.users?.[0] || null),
     enabled: !!post.member_id && !isGymAuthoredPost,
     staleTime: 10 * 60 * 1000,
     gcTime: 30 * 60 * 1000,
   });
-  // Gym-authored posts ALWAYS use the stored gym name/avatar — never use the resolved user profile
+
+  // Gym-authored posts: use gym's actual name and logo (fetched fresh), falling back to post-stored values
   const resolvedMemberName = isGymAuthoredPost
-    ? post.member_name
+    ? (gymData?.name || post.member_name || 'Gym')
     : (postAuthor?.display_name || postAuthor?.full_name || post.member_name);
   const resolvedMemberAvatar = isGymAuthoredPost
-    ? post.member_avatar
-    : post.member_avatar;
+    ? (gymData?.logo_url || gymData?.image_url || post.member_avatar || null)
+    : (post.member_avatar || null);
 
   const isOwner = currentUser?.id === post.member_id;
   const isCommunityMember = !isOwner && !friendIdList.includes(post.member_id);
