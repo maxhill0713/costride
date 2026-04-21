@@ -631,9 +631,14 @@ function PostCard({ post, onLike, onComment, onSave, onDelete, fullWidth = false
     enabled: !!post.gym_id && isGymAuthoredPost,
     staleTime: 30 * 60 * 1000,
     gcTime: 60 * 60 * 1000,
+    // Use post-stored gym name/avatar as placeholder so there's no flash while fetching
+    placeholderData: post.gym_id && isGymAuthoredPost
+      ? { id: post.gym_id, name: post.member_name, logo_url: post.member_avatar, image_url: null }
+      : undefined,
   });
 
-  // Only fetch member profile for non-gym posts
+  // For gym-authored posts: always use gym data (no user profile lookup)
+  // For member posts: resolve the author's current display name
   const { data: postAuthor } = useQuery({
     queryKey: ['postAuthor', 'member', post.member_id],
     queryFn: () => base44.functions.invoke('getFriendUsers', { userIds: [post.member_id] }).then(r => r.data?.users?.[0] || null),
@@ -642,7 +647,7 @@ function PostCard({ post, onLike, onComment, onSave, onDelete, fullWidth = false
     gcTime: 30 * 60 * 1000,
   });
 
-  // Gym-authored posts: use gym's actual name and logo (fetched fresh), falling back to post-stored values
+  // Gym-authored posts: always use gym name/logo, never the owner's personal profile
   const resolvedMemberName = isGymAuthoredPost
     ? (gymData?.name || post.member_name || 'Gym')
     : (postAuthor?.display_name || postAuthor?.full_name || post.member_name);
