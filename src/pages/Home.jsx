@@ -9,6 +9,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import FriendsIcon from '../components/FriendsIcon';
 import JoinWithCodeModal from '../components/gym/JoinWithCodeModal';
 import PostCard from '../components/feed/PostCard';
+import FeedPollCard from '../components/feed/FeedPollCard';
 import TodayWorkout from '../components/profile/TodayWorkout';
 import StreakVariantPicker from '../components/StreakVariantPicker';
 import CreateSplitModal from '../components/profile/CreateSplitModal';
@@ -463,6 +464,15 @@ export default function Home() {
     placeholderData: (prev) => prev,
   });
 
+  const { data: gymPolls = [] } = useQuery({
+    queryKey: ['gymPolls', primaryGymIdForQuery],
+    queryFn: () => base44.entities.Poll.filter({ gym_id: primaryGymIdForQuery, status: 'active' }, '-created_date', 10),
+    enabled: !!primaryGymIdForQuery,
+    staleTime: 2 * 60 * 1000,
+    gcTime: 5 * 60 * 1000,
+    placeholderData: (prev) => prev,
+  });
+
   const { data: friendRequests = [] } = useQuery({
     queryKey: ['friendRequests', currentUser?.id],
     queryFn: () => base44.entities.Friend.filter({ friend_id: currentUser?.id, status: 'pending' }, '-created_date', 50),
@@ -719,6 +729,14 @@ export default function Home() {
       new Date(post.created_date) >= threeDaysAgo
     );
   }, [allPosts, currentUser?.id]);
+
+  // Merge posts and polls into a single chronological feed
+  const socialFeedItems = useMemo(() => {
+    const livePolls = gymPolls.filter(p => !p.end_date || new Date(p.end_date) >= new Date());
+    const pollItems = livePolls.map(p => ({ type: 'poll', id: `poll-${p.id}`, date: new Date(p.created_date || 0), data: p }));
+    const postItems = socialFeedPosts.map(p => ({ type: 'post', id: `post-${p.id}`, date: new Date(p.created_date || 0), data: p }));
+    return [...pollItems, ...postItems].sort((a, b) => b.date - a.date);
+  }, [socialFeedPosts, gymPolls]);
 
   const activityFeed = useMemo(() => {
     const activities = [];
@@ -1513,11 +1531,15 @@ export default function Home() {
 
           {memberGym?.id && <QuoteCarousel />}
 
-          {socialFeedPosts.length > 0 && (
+          {socialFeedItems.length > 0 && (
             <div className="space-y-3 mt-4">
-              {socialFeedPosts.map((post) => (
-                <PostCard key={post.id} post={post} fullWidth={true} currentUser={currentUser} isOwnProfile={post.member_id === currentUser?.id} onLike={() => {}} onComment={() => {}} onSave={() => {}} onDelete={() => queryClient.invalidateQueries({ queryKey: ['posts'] })} friends={friends} sentFriendRequests={sentFriendRequests} onAddFriend={(user) => addFriendMutation.mutate(user)} friendIdList={friendIdList} />
-              ))}
+              {socialFeedItems.map((item) =>
+                item.type === 'poll' ? (
+                  <FeedPollCard key={item.id} poll={item.data} currentUser={currentUser} />
+                ) : (
+                  <PostCard key={item.id} post={item.data} fullWidth={true} currentUser={currentUser} isOwnProfile={item.data.member_id === currentUser?.id} onLike={() => {}} onComment={() => {}} onSave={() => {}} onDelete={() => queryClient.invalidateQueries({ queryKey: ['posts'] })} friends={friends} sentFriendRequests={sentFriendRequests} onAddFriend={(user) => addFriendMutation.mutate(user)} friendIdList={friendIdList} />
+                )
+              )}
             </div>
           )}
 
