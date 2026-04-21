@@ -247,7 +247,7 @@ const POST_TYPE_OPTIONS = [
   { value: "member_spotlight", label: "Member Spotlight" },
 ];
 
-function EditPostModal({ post, onClose, onSave }) {
+function EditPostModal({ post, gym, onClose, onSave }) {
   const [content,  setContent]  = useState(post?.content || "");
   const [imageUrl, setImageUrl] = useState(post?.image_url || "");
   const [postType, setPostType] = useState(post?.post_type || "update");
@@ -272,10 +272,19 @@ function EditPostModal({ post, onClose, onSave }) {
     if (!isDirty || !content.trim()) return;
     setSaving(true);
     try {
+      // Always re-assert gym authorship fields so they can never revert to owner's personal data
+      const gymFields = gym ? {
+        member_name: gym.name,
+        member_avatar: gym.logo_url || gym.image_url || post.member_avatar || null,
+        gym_id: gym.id,
+        gym_name: gym.name,
+      } : {};
       await base44.entities.Post.update(post.id, {
         content: content.trim(),
         image_url: imageUrl || null,
         post_type: postType,
+        share_with_community: true,
+        ...gymFields,
       });
       onSave?.();
       onClose();
@@ -459,6 +468,7 @@ function QuickActions({ post, resolvedName, memberId, gym, currentUser, onDelete
       {modal === "edit" && (
         <EditPostModal
           post={post}
+          gym={gym}
           onClose={() => setModal(null)}
           onSave={onPostEdited}
         />
