@@ -193,24 +193,25 @@ export default function FeedPollCard({ poll, currentUser }) {
     return null;
   });
 
-  // Fetch avatars for voters
-  const voterIds = voters.slice(0, 20); // limit for perf
+  // Fetch avatars for voters — fetch all, but display only first 4 in avatars section
   const { data: voterAvatarsRaw = {} } = useQuery({
-    queryKey: ['pollVoterAvatars', voterIds.join(',')],
-    queryFn: () => base44.functions.invoke('getUserAvatars', { userIds: voterIds }).then(r => r.data?.avatars || {}),
-    enabled: voterIds.length > 0,
+    queryKey: ['pollVoterAvatars', voters.join(',')],
+    queryFn: () => base44.functions.invoke('getUserAvatars', { userIds: voters }).then(r => r.data?.avatars || {}),
+    enabled: voters.length > 0,
     staleTime: 10 * 60 * 1000,
     gcTime: 30 * 60 * 1000,
   });
 
   const voterAvatarData = useMemo(() =>
-    voterIds.map(id => ({
+    voters.map(id => ({
       id,
       name: voterAvatarsRaw[id]?.full_name || 'Member',
       avatar_url: voterAvatarsRaw[id]?.avatar_url || null,
     })),
-    [voterIds, voterAvatarsRaw]
+    [voters, voterAvatarsRaw]
   );
+
+  const displayedAvatars = voterAvatarData.slice(0, 4);
 
   const voteMutation = useMutation({
     mutationFn: async (optionId) => {
@@ -357,7 +358,7 @@ export default function FeedPollCard({ poll, currentUser }) {
           {/* Footer — voter avatars bottom-right */}
           <div className="mt-3 flex items-center justify-end pr-1">
             <VoterAvatars
-              voterAvatarData={voterAvatarData}
+              voterAvatarData={displayedAvatars}
               totalVoters={voters.length}
               onClick={() => voters.length > 0 && setShowVotersModal(true)}
             />
