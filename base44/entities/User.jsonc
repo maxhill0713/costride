@@ -19,7 +19,7 @@
         "coach",
         "staff"
       ],
-      "description": "What kind of account this user has. 'personal' = regular gym member. Set during onboarding."
+      "description": "What kind of account this user has."
     },
     "onboarding_completed": {
       "type": "boolean",
@@ -55,7 +55,7 @@
     "previous_streak": {
       "type": "number",
       "default": 0,
-      "description": "Previous streak value before it was lost (used to show loss animation)"
+      "description": "Previous streak value before it was lost"
     },
     "streak_freezes": {
       "type": "number",
@@ -64,7 +64,17 @@
     },
     "last_streak_loss_animation_shown": {
       "type": "string",
-      "description": "ISO date string of when streak loss animation was last shown (prevents repeat)"
+      "description": "ISO date string of when streak loss animation was last shown"
+    },
+    "streak_variant": {
+      "type": "string",
+      "enum": [
+        "default",
+        "spartan",
+        "beach"
+      ],
+      "default": "default",
+      "description": "The currently selected streak icon variant shown on reactions and the home screen"
     },
     "unlocked_streak_variants": {
       "type": "array",
@@ -88,7 +98,7 @@
     },
     "workout_split": {
       "type": "string",
-      "description": "ID of the selected workout split (e.g. 'bro', 'ppl', 'upper_lower')"
+      "description": "ID of the selected workout split"
     },
     "custom_split_name": {
       "type": "string",
@@ -96,7 +106,7 @@
     },
     "custom_workout_types": {
       "type": "object",
-      "description": "Map of day number \u2192 workout definition for the selected split",
+      "description": "Map of day number to workout definition for the selected split",
       "additionalProperties": true
     },
     "monthly_challenge_progress": {
@@ -125,23 +135,5 @@
       "description": "Optional override display name (if different from full_name)"
     }
   },
-  "required": [],
-  "rls": {
-    "create": {
-      "user_condition": {
-        "role": "admin"
-      }
-    },
-    "read": {},
-    "update": {
-      "user_condition": {
-        "role": "admin"
-      }
-    },
-    "delete": {
-      "user_condition": {
-        "role": "admin"
-      }
-    }
-  }
+  "required": []
 }
