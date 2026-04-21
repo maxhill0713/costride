@@ -772,19 +772,24 @@ export default function ContentPage({ events = [], challenges = [], polls = [], 
                             {avatar ? <img src={avatar} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : initials}
                           </div>
                           <div style={{ flex: 1 }}>
-                            <div style={{ fontSize: 13, fontWeight: 700, color: C.t1, lineHeight: 1.2 }}>{resolvedName}</div>
                             {isGymPost && p.post_type ? (
-                              <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 3 }}>
-                                <span style={{ fontSize: 9.5, fontWeight: 700, padding: "1px 7px", borderRadius: 5, background: C.cyanDim, border: `1px solid ${C.cyanBrd}`, color: C.cyan }}>
-                                  {({ update:"Announcement", achievement:"Achievement", event:"Event", offer:"Special Offer", tip:"Fitness Tip", member_spotlight:"Member Spotlight" })[p.post_type] || p.post_type}
-                                </span>
-                                <span style={{ fontSize: 11, color: C.t3 }}>{postedAt}</span>
-                              </div>
+                              <>
+                                <div style={{ fontSize: 13, fontWeight: 700, color: C.t1, lineHeight: 1.2 }}>{resolvedName}</div>
+                                <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 3 }}>
+                                  <span style={{ fontSize: 9.5, fontWeight: 700, padding: "1px 7px", borderRadius: 5, background: C.cyanDim, border: `1px solid ${C.cyanBrd}`, color: C.cyan }}>
+                                    {({ update:"Announcement", achievement:"Achievement", event:"Event", offer:"Special Offer", tip:"Fitness Tip", member_spotlight:"Member Spotlight" })[p.post_type] || p.post_type}
+                                  </span>
+                                  <span style={{ fontSize: 11, color: C.t3 }}>{postedAt}</span>
+                                </div>
+                              </>
                             ) : (
-                              <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 2 }}>
-                                <MemberStatusBadge memberId={p.member_id} checkIns={checkIns} />
-                                {postedAt && <div style={{ fontSize: 11, color: C.t3 }}>{postedAt}</div>}
-                              </div>
+                              <>
+                                <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                                  <div style={{ fontSize: 13, fontWeight: 700, color: C.t1, lineHeight: 1.2 }}>{resolvedName}</div>
+                                  <MemberStatusBadge memberId={p.member_id} checkIns={checkIns} />
+                                </div>
+                                {postedAt && <div style={{ fontSize: 11, color: C.t3, marginTop: 2 }}>{postedAt}</div>}
+                              </>
                             )}
                           </div>
                         </div>

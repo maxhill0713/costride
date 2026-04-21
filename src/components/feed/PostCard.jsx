@@ -622,14 +622,22 @@ function PostCard({ post, onLike, onComment, onSave, onDelete, fullWidth = false
     }
   });
 
+  const isGymAuthoredPost = !!post.post_type;
+
   const { data: postAuthor } = useQuery({
     queryKey: ['postAuthor', post.member_id],
     queryFn: () => base44.functions.invoke('getFriendUsers', { userIds: [post.member_id] }).then(r => r.data?.users?.[0] || null),
-    enabled: !!post.member_id,
+    enabled: !!post.member_id && !isGymAuthoredPost,
     staleTime: 10 * 60 * 1000,
     gcTime: 30 * 60 * 1000,
   });
-  const resolvedMemberName = postAuthor?.display_name || postAuthor?.full_name || post.member_name;
+  // Gym-authored posts always use the stored gym name/avatar — never resolve user profile
+  const resolvedMemberName = isGymAuthoredPost
+    ? post.member_name
+    : (postAuthor?.display_name || postAuthor?.full_name || post.member_name);
+  const resolvedMemberAvatar = isGymAuthoredPost
+    ? post.member_avatar
+    : (post.member_avatar);
 
   const isOwner = currentUser?.id === post.member_id;
   const isCommunityMember = !isOwner && !friendIdList.includes(post.member_id);
@@ -836,12 +844,12 @@ function PostCard({ post, onLike, onComment, onSave, onDelete, fullWidth = false
             <div className="flex items-center justify-between mb-4">
               <Link to={createPageUrl('UserProfile') + `?id=${post.member_id}`} className="flex items-center gap-2.5">
                 <div className="w-9 h-9 rounded-full bg-slate-900 overflow-hidden flex items-center justify-center flex-shrink-0">
-                  {post.member_avatar ? <img src={post.member_avatar} alt={resolvedMemberName} className="w-full h-full object-cover" decoding="async" /> : <span className="text-sm font-bold text-white">{resolvedMemberName?.charAt(0)?.toUpperCase() || '?'}</span>}
+                  {resolvedMemberAvatar ? <img src={resolvedMemberAvatar} alt={resolvedMemberName} className="w-full h-full object-cover" decoding="async" /> : <span className="text-sm font-bold text-white">{resolvedMemberName?.charAt(0)?.toUpperCase() || '?'}</span>}
                 </div>
                 <div>
                   <div className="flex items-center gap-1.5 leading-tight">
                     <p className="text-sm font-bold text-white">{resolvedMemberName}</p>
-                    {isCommunityMember && <span className="text-[11px] font-medium text-slate-400">— Community Member</span>}
+                    {isCommunityMember && !isGymAuthoredPost && <span className="text-[11px] font-medium text-slate-400">— Community Member</span>}
                   </div>
                   <PostMeta post={post} gymName={gymName} />
                 </div>
@@ -978,12 +986,12 @@ function PostCard({ post, onLike, onComment, onSave, onDelete, fullWidth = false
           <div className="flex items-center justify-between">
             <Link to={createPageUrl('UserProfile') + `?id=${post.member_id}`} className="flex items-center gap-2.5">
               <div className="w-9 h-9 rounded-full bg-slate-900 overflow-hidden flex items-center justify-center flex-shrink-0">
-                {post.member_avatar ? <img src={post.member_avatar} alt={resolvedMemberName} className="w-full h-full object-cover" decoding="async" /> : <span className="text-sm font-bold text-white">{resolvedMemberName?.charAt(0)?.toUpperCase() || '?'}</span>}
+                {resolvedMemberAvatar ? <img src={resolvedMemberAvatar} alt={resolvedMemberName} className="w-full h-full object-cover" decoding="async" /> : <span className="text-sm font-bold text-white">{resolvedMemberName?.charAt(0)?.toUpperCase() || '?'}</span>}
               </div>
               <div>
                 <div className="flex items-center gap-1.5 leading-tight">
                   <p className="text-sm font-bold text-white">{resolvedMemberName}</p>
-                  {isCommunityMember && !post.post_type && <span className="text-[11px] font-medium text-slate-400">— Community Member</span>}
+                  {isCommunityMember && !isGymAuthoredPost && <span className="text-[11px] font-medium text-slate-400">— Community Member</span>}
                 </div>
                 {post.post_type && POST_TYPE_CONFIG[post.post_type] ? (
                   <div className="flex items-center gap-2 mt-1">
