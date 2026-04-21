@@ -6,6 +6,14 @@ import {
 import { base44 } from "@/api/base44Client";
 
 const STREAK_ICON_URL = "https://media.base44.com/images/public/694b637358644e1c22c8ec6b/5688f98be_Pose1_V2.png";
+const SPARTAN_ICON_URL = "https://media.base44.com/images/public/694b637358644e1c22c8ec6b/a72ee034d_spartan.png";
+const BEACH_ICON_URL = "https://media.base44.com/images/public/694b637358644e1c22c8ec6b/9766d8d41_BEACH.png";
+
+function getStreakIconUrl(variant) {
+  if (variant === "spartan") return SPARTAN_ICON_URL;
+  if (variant === "beach") return BEACH_ICON_URL;
+  return STREAK_ICON_URL;
+}
 
 /* ─── MOBILE HOOK ────────────────────────────────────────────── */
 function useIsMobile(breakpoint = 768) {
@@ -935,16 +943,16 @@ export default function ContentPage({ events = [], challenges = [], polls = [], 
                             {Object.entries(p.reactions || {}).slice(0, 5).map(([uid, variant], i) => (
                               <div key={uid} style={{ position: "relative", width: 26, height: 26, marginLeft: i === 0 ? 0 : -7, zIndex: 5 - i, flexShrink: 0 }}>
                                 {variant === "sunglasses" ? (
-                                  <div style={{ position: "relative", width: "100%", height: "100%" }}>
-                                    <img src={STREAK_ICON_URL} alt="react" style={{ width: "100%", height: "100%", objectFit: "contain" }} />
-                                    <svg style={{ position: "absolute", inset: 0, width: "100%", height: "100%", pointerEvents: "none" }} viewBox="0 0 64 64">
-                                      <circle cx="20" cy="24" r="6" fill="none" stroke="black" strokeWidth="1.5"/>
-                                      <circle cx="44" cy="24" r="6" fill="none" stroke="black" strokeWidth="1.5"/>
-                                      <line x1="26" y1="24" x2="38" y2="24" stroke="black" strokeWidth="1.5"/>
-                                    </svg>
-                                  </div>
+                                 <div style={{ position: "relative", width: "100%", height: "100%" }}>
+                                   <img src={STREAK_ICON_URL} alt="react" style={{ width: "100%", height: "100%", objectFit: "contain" }} />
+                                   <svg style={{ position: "absolute", inset: 0, width: "100%", height: "100%", pointerEvents: "none" }} viewBox="0 0 64 64">
+                                     <circle cx="20" cy="24" r="6" fill="none" stroke="black" strokeWidth="1.5"/>
+                                     <circle cx="44" cy="24" r="6" fill="none" stroke="black" strokeWidth="1.5"/>
+                                     <line x1="26" y1="24" x2="38" y2="24" stroke="black" strokeWidth="1.5"/>
+                                   </svg>
+                                 </div>
                                 ) : (
-                                  <img src={STREAK_ICON_URL} alt="react" style={{ width: "100%", height: "100%", objectFit: "contain" }} />
+                                 <img src={getStreakIconUrl(variant)} alt="react" style={{ width: "100%", height: "100%", objectFit: "contain" }} />
                                 )}
                               </div>
                             ))}

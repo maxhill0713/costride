@@ -14,6 +14,31 @@ import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 
 const STREAK_ICON_URL = 'https://media.base44.com/images/public/694b637358644e1c22c8ec6b/5688f98be_Pose1_V2.png';
+const SPARTAN_ICON_URL = 'https://media.base44.com/images/public/694b637358644e1c22c8ec6b/a72ee034d_spartan.png';
+const BEACH_ICON_URL = 'https://media.base44.com/images/public/694b637358644e1c22c8ec6b/9766d8d41_BEACH.png';
+
+function getStreakIconUrl(variant) {
+  if (variant === 'spartan') return SPARTAN_ICON_URL;
+  if (variant === 'beach') return BEACH_ICON_URL;
+  return STREAK_ICON_URL;
+}
+
+function StreakIconImg({ variant, className, style }) {
+  const url = getStreakIconUrl(variant);
+  if (variant === 'sunglasses') {
+    return (
+      <div className={`relative flex items-center justify-center ${className || ''}`} style={style}>
+        <img src={STREAK_ICON_URL} alt="streak" className="w-full h-full" style={{ objectFit: 'contain' }} />
+        <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 64 64">
+          <circle cx="20" cy="24" r="6" fill="none" stroke="black" strokeWidth="1.5" />
+          <circle cx="44" cy="24" r="6" fill="none" stroke="black" strokeWidth="1.5" />
+          <line x1="26" y1="24" x2="38" y2="24" stroke="black" strokeWidth="1.5" />
+        </svg>
+      </div>
+    );
+  }
+  return <img src={url} alt="streak" className={className} style={{ objectFit: 'contain', ...style }} />;
+}
 
 const POST_TYPE_CONFIG = {
   update:           { label: 'Announcement', color: '#60a5fa', bg: 'rgba(96,165,250,0.12)', border: 'rgba(96,165,250,0.25)' },
@@ -54,16 +79,7 @@ function ReactionsModal({ open, onClose, reactions, reactedUsers, isLoadingReact
     const avatarUrl = user.avatar_url;
     const initials = (displayName || '?').split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
 
-    const StreakIcon = () => variant === 'sunglasses'
-      ? <div className="relative flex-shrink-0" style={{ width: '2.2rem', height: '2.2rem' }}>
-          <img src={STREAK_ICON_URL} alt="streak" className="w-full h-full" style={{ objectFit: 'contain' }} />
-          <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 64 64">
-            <circle cx="20" cy="24" r="6" fill="none" stroke="black" strokeWidth="1.5" />
-            <circle cx="44" cy="24" r="6" fill="none" stroke="black" strokeWidth="1.5" />
-            <line x1="26" y1="24" x2="38" y2="24" stroke="black" strokeWidth="1.5" />
-          </svg>
-        </div>
-      : <img src={STREAK_ICON_URL} alt="streak" className="flex-shrink-0" style={{ width: '2.2rem', height: '2.2rem', objectFit: 'contain' }} />;
+    const StreakIcon = () => <StreakIconImg variant={variant} className="flex-shrink-0" style={{ width: '2.2rem', height: '2.2rem' }} />;
 
     return (
       <Link
@@ -131,7 +147,7 @@ function ReactionsModal({ open, onClose, reactions, reactedUsers, isLoadingReact
             : (user.display_name || '?').charAt(0).toUpperCase()}
         </div>
         <span className="text-sm text-slate-200 font-semibold flex-1 min-w-0 truncate">{user.display_name}</span>
-        <img src={STREAK_ICON_URL} alt="react" className="flex-shrink-0 w-8 h-8" style={{ objectFit: 'contain' }} />
+        <StreakIconImg variant="default" className="flex-shrink-0 w-8 h-8" />
       </Link>
     );
   };
@@ -931,9 +947,7 @@ function PostCard({ post, onLike, onComment, onSave, onDelete, fullWidth = false
             <div className="flex items-center gap-1">
               {currentUser && (
                 <motion.button onClick={() => { if (!reactMutationLockRef.current) reactMutation.mutate(!hasReacted); }} disabled={reactMutation.isPending} className="flex items-center gap-1 flex-shrink-0" whileHover={{ scale: 1.15 }} whileTap={{ scale: 0.9 }}>
-                  {userStreakVariant === 'sunglasses'
-                    ? <div className="relative w-11 h-11 flex items-center justify-center"><img src={STREAK_ICON_URL} alt="streak" className={`w-11 h-11 ${hasReacted ? '' : 'opacity-40'}`} style={{ objectFit: 'contain' }} /><svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 64 64"><circle cx="20" cy="24" r="6" fill="none" stroke="black" strokeWidth="1.5" /><circle cx="44" cy="24" r="6" fill="none" stroke="black" strokeWidth="1.5" /><line x1="26" y1="24" x2="38" y2="24" stroke="black" strokeWidth="1.5" /></svg></div>
-                    : <img src={STREAK_ICON_URL} alt="streak" className={`w-11 h-11 ${hasReacted ? '' : 'opacity-40'}`} style={{ objectFit: 'contain' }} />}
+                  <StreakIconImg variant={userStreakVariant} className={`w-11 h-11 ${hasReacted ? '' : 'opacity-40'}`} />
                 </motion.button>
               )}
               {isOwner && (
@@ -946,10 +960,8 @@ function PostCard({ post, onLike, onComment, onSave, onDelete, fullWidth = false
               <button onClick={() => setShowReactionsModal(true)} className="flex items-center hover:opacity-80 transition-opacity mr-2">
                 <div className="flex items-center" style={{ gap: 0 }}>
                   {Object.entries(localReactions).slice(0, 3).map(([uid, variant], i) => (
-                    <div key={uid} className="relative w-6 h-6" style={{ marginLeft: i === 0 ? 0 : '-6px', zIndex: 3 - i }}>
-                      {variant === 'sunglasses'
-                        ? <div className="relative w-full h-full flex items-center justify-center"><img src={STREAK_ICON_URL} alt="streak" className="w-6 h-6" style={{ objectFit: 'contain' }} /><svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 64 64"><circle cx="20" cy="24" r="6" fill="none" stroke="black" strokeWidth="1.5" /><circle cx="44" cy="24" r="6" fill="none" stroke="black" strokeWidth="1.5" /><line x1="26" y1="24" x2="38" y2="24" stroke="black" strokeWidth="1.5" /></svg></div>
-                        : <img src={STREAK_ICON_URL} alt="streak" className="w-20 h-20 -mt-6" style={{ objectFit: 'contain' }} />}
+                    <div key={uid} className="w-6 h-6" style={{ marginLeft: i === 0 ? 0 : '-6px', zIndex: 3 - i }}>
+                      <StreakIconImg variant={variant} className="w-6 h-6" />
                     </div>
                   ))}
                   {Object.keys(localReactions).length > 3 && <div className="flex items-center gap-0.5 ml-1"><Plus className="w-3 h-3 text-slate-300" /><span className="text-xs font-bold text-slate-300">{Object.keys(localReactions).length - 3}</span></div>}
@@ -1055,9 +1067,7 @@ function PostCard({ post, onLike, onComment, onSave, onDelete, fullWidth = false
           <div className="flex items-center gap-1">
             {currentUser && (
               <motion.button onClick={() => { if (!reactMutationLockRef.current) reactMutation.mutate(!hasReacted); }} disabled={reactMutation.isPending} className="flex items-center gap-1 flex-shrink-0" whileHover={{ scale: 1.15 }} whileTap={{ scale: 0.9 }}>
-                {userStreakVariant === 'sunglasses'
-                  ? <div className="relative w-11 h-11 flex items-center justify-center"><img src={STREAK_ICON_URL} alt="streak" className={`w-11 h-11 ${hasReacted ? '' : 'opacity-40'}`} style={{ objectFit: 'contain' }} /><svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 64 64"><circle cx="20" cy="24" r="6" fill="none" stroke="black" strokeWidth="1.5" /><circle cx="44" cy="24" r="6" fill="none" stroke="black" strokeWidth="1.5" /><line x1="26" y1="24" x2="38" y2="24" stroke="black" strokeWidth="1.5" /></svg></div>
-                  : <img src={STREAK_ICON_URL} alt="streak" className={`w-11 h-11 ${hasReacted ? '' : 'opacity-40'}`} style={{ objectFit: 'contain' }} />}
+              <StreakIconImg variant={userStreakVariant} className={`w-11 h-11 ${hasReacted ? '' : 'opacity-40'}`} />
               </motion.button>
             )}
             {isOwner && (
@@ -1070,10 +1080,8 @@ function PostCard({ post, onLike, onComment, onSave, onDelete, fullWidth = false
             <button onClick={() => setShowReactionsModal(true)} className="flex items-center hover:opacity-80 transition-opacity mr-2">
               <div className="flex items-center" style={{ gap: 0 }}>
                 {Object.entries(localReactions).slice(0, 3).map(([uid, variant], i) => (
-                  <div key={uid} className="relative w-6 h-6" style={{ marginLeft: i === 0 ? 0 : '-6px', zIndex: 3 - i }}>
-                    {variant === 'sunglasses'
-                      ? <div className="relative w-full h-full flex items-center justify-center"><img src={STREAK_ICON_URL} alt="streak" className="w-6 h-6" style={{ objectFit: 'contain' }} /><svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 64 64"><circle cx="20" cy="24" r="6" fill="none" stroke="black" strokeWidth="1.5" /><circle cx="44" cy="24" r="6" fill="none" stroke="black" strokeWidth="1.5" /><line x1="26" y1="24" x2="38" y2="24" stroke="black" strokeWidth="1.5" /></svg></div>
-                      : <img src={STREAK_ICON_URL} alt="streak" className="w-20 h-20 -mt-6" style={{ objectFit: 'contain' }} />}
+                  <div key={uid} className="w-6 h-6" style={{ marginLeft: i === 0 ? 0 : '-6px', zIndex: 3 - i }}>
+                    <StreakIconImg variant={variant} className="w-6 h-6" />
                   </div>
                 ))}
                 {totalReactions > 3 && <div className="flex items-center gap-0.5 ml-1"><Plus className="w-3 h-3 text-slate-300" /><span className="text-xs font-bold text-slate-300">{totalReactions - 3}</span></div>}

@@ -8,7 +8,7 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.21';
 //    FIXED: likes are now tracked as a Set keyed by user_id (liked_by array).
 //    A user can only add one like; unlike removes them. Count derived from array length.
 
-const ALLOWED_REACTIONS = ['fire', 'strong', 'clap', 'heart', 'wow', 'default', 'sunglasses'];
+const ALLOWED_REACTIONS = ['fire', 'strong', 'clap', 'heart', 'wow', 'default', 'sunglasses', 'beach', 'spartan'];
 const ALLOWED_ACTIONS   = ['like', 'unlike', 'react', 'unreact', 'comment'];
 
 function sanitise(str, maxLen = 1000) {
