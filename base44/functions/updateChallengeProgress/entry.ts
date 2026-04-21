@@ -83,12 +83,40 @@ Deno.serve(async (req) => {
       }
 
       const isCompleted = newProgress >= (participant.target_value || 0);
+      const wasAlreadyCompleted = participant.completed === true;
 
       await base44.asServiceRole.entities.ChallengeParticipant.update(participant.id, {
         progress:       Math.max(0, newProgress),
         completed:      isCompleted,
         completed_date: isCompleted ? new Date().toISOString() : null,
       });
+
+      // Grant streak variant reward on first completion
+      if (isCompleted && !wasAlreadyCompleted) {
+        // Determine which variant to unlock based on the challenge title
+        const challenges = await base44.asServiceRole.entities.Challenge.filter({ id: participant.challenge_id });
+        const challenge = challenges[0];
+        let variantToUnlock = null;
+        if (challenge) {
+          const title = (challenge.title || '').toLowerCase();
+          if (title.includes('discipline builder')) variantToUnlock = 'beach';
+          else if (title.includes('witness my gains')) variantToUnlock = 'spartan';
+        }
+
+        if (variantToUnlock) {
+          const userRecords = await base44.asServiceRole.entities.User.filter({ id: userId });
+          if (userRecords.length > 0) {
+            const user = userRecords[0];
+            const existing = user.unlocked_streak_variants || [];
+            if (!existing.includes(variantToUnlock)) {
+              await base44.asServiceRole.entities.User.update(userId, {
+                unlocked_streak_variants: [...existing, variantToUnlock],
+              });
+              console.log(`Granted '${variantToUnlock}' streak variant to user ${userId}`);
+            }
+          }
+        }
+      }
     }
 
     return Response.json({ success: true, updated: participants.length });
