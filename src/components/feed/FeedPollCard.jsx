@@ -82,10 +82,15 @@ function VotersModal({ open, onClose, opts, totalVoters, voterAvatarData, isLoad
     return m;
   }, [voterAvatarData]);
 
-  // Check if any option has per-voter tracking
+  // Check if any option has per-voter tracking (either via opt.voters array or voterOptionMap built from it)
   const hasPerOptionVoters = useMemo(() =>
     opts.some(opt => typeof opt === 'object' && Array.isArray(opt.voters) && opt.voters.length > 0),
     [opts]
+  );
+
+  // Section header styled like the reactions modal
+  const SectionHeader = ({ label }) => (
+    <p className="text-[11px] font-bold text-slate-500 uppercase tracking-widest px-2 pt-3 pb-1">{label}</p>
   );
 
   if (!open) return null;
@@ -147,29 +152,32 @@ function VotersModal({ open, onClose, opts, totalVoters, voterAvatarData, isLoad
           {isLoading ? (
             <p className="text-center text-slate-400 text-sm py-6">Loading...</p>
           ) : sanitised ? (
-            // Search mode — show all matching voters with their chosen option
+            // Search mode — show matching voters with their chosen option to the right
             (() => {
               const filtered = voterAvatarData.filter(v => (v.name || '').toLowerCase().includes(sanitised));
               if (filtered.length === 0) return <p className="text-center text-slate-400 text-sm py-6">No members found</p>;
               return filtered.map(v => renderRow(v, true));
             })()
           ) : hasPerOptionVoters ? (
-            // Grouped by option
-            opts.map((opt, i) => {
-              const optText = typeof opt === 'object' ? (opt.text || opt.label || `Option ${i + 1}`) : opt;
-              const optVoterIds = typeof opt === 'object' && Array.isArray(opt.voters) ? opt.voters : [];
-              if (optVoterIds.length === 0) return null;
-              const optVoters = optVoterIds.map(uid => avatarById[uid]).filter(Boolean);
-              return (
-                <div key={i}>
-                  <p className="text-[11px] font-bold text-slate-500 uppercase tracking-widest px-2 pt-2 pb-1">{optText}</p>
-                  {optVoters.map(v => renderRow(v, false))}
-                  {i < opts.length - 1 && <div className="mx-2 my-1 border-t border-white/[0.07]" />}
+            // Grouped by option with section headers
+            (() => {
+              const sections = opts.map((opt, i) => {
+                const optText = typeof opt === 'object' ? (opt.text || opt.label || `Option ${i + 1}`) : opt;
+                const optVoterIds = typeof opt === 'object' && Array.isArray(opt.voters) ? opt.voters : [];
+                const optVoters = optVoterIds.map(uid => avatarById[uid]).filter(Boolean);
+                return { optText, optVoters };
+              }).filter(s => s.optVoters.length > 0);
+
+              return sections.map((s, si) => (
+                <div key={si}>
+                  <SectionHeader label={s.optText} />
+                  {s.optVoters.map(v => renderRow(v, false))}
+                  {si < sections.length - 1 && <div className="mx-2 my-1 border-t border-white/[0.07]" />}
                 </div>
-              );
-            })
+              ));
+            })()
           ) : (
-            // Fallback: no per-option voter arrays, just list all voters
+            // Fallback: voters known but no per-option breakdown — list all voters flat
             voterAvatarData.length === 0
               ? <p className="text-center text-slate-400 text-sm py-6">No responses yet</p>
               : voterAvatarData.map(v => renderRow(v, false))
