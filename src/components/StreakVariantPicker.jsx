@@ -1,5 +1,4 @@
 import React from 'react';
-import { Check } from 'lucide-react';
 
 const STREAK_ICON_URL = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694b637358644e1c22c8ec6b/2c931d7ec_STREAKICON1.png';
 const SPARTAN_ICON_URL = 'https://media.base44.com/images/public/694b637358644e1c22c8ec6b/a72ee034d_spartan.png';
@@ -12,12 +11,10 @@ export default function StreakVariantPicker({ isOpen, onClose, onSelect, selecte
 
   if (!isOpen) return null;
 
-  // Build the list of available icons — always include default, then any unlocked ones.
-  // Locked variants are simply omitted so there are no empty gaps.
   const availableIcons = [
-    { id: 'default', src: STREAK_ICON_URL, alt: 'streak',  ring: 'ring-green-500', check: 'bg-green-500' },
-    ...(unlockedVariants.includes('spartan') ? [{ id: 'spartan', src: SPARTAN_ICON_URL, alt: 'spartan', ring: 'ring-amber-500', check: 'bg-amber-500' }] : []),
-    ...(unlockedVariants.includes('beach')   ? [{ id: 'beach',   src: BEACH_ICON_URL,   alt: 'beach',   ring: 'ring-blue-500',  check: 'bg-blue-500'  }] : []),
+    { id: 'default', src: STREAK_ICON_URL, alt: 'streak',  ring: 'ring-green-500' },
+    ...(unlockedVariants.includes('spartan') ? [{ id: 'spartan', src: SPARTAN_ICON_URL, alt: 'spartan', ring: 'ring-amber-500' }] : []),
+    ...(unlockedVariants.includes('beach')   ? [{ id: 'beach',   src: BEACH_ICON_URL,   alt: 'beach',   ring: 'ring-blue-500'  }] : []),
   ];
 
   return (
@@ -36,7 +33,7 @@ export default function StreakVariantPicker({ isOpen, onClose, onSelect, selecte
           <span className="text-white font-bold text-[1.665rem] leading-none">{streakFreezes}</span>
         </div>
 
-        {/* 4-column grid — icons are 50% larger by overflowing their cell via negative margin */}
+        {/* 4-column grid */}
         <div className="grid grid-cols-4 gap-2 mt-12">
           {availableIcons.map((icon) => (
             <button
@@ -45,25 +42,18 @@ export default function StreakVariantPicker({ isOpen, onClose, onSelect, selecte
               className={`flex flex-col items-center gap-2 p-2 rounded-2xl transition-all ${
                 selectedVariant === icon.id ? `ring-2 ${icon.ring}` : 'hover:opacity-80'
               }`}>
-              {/* Overflow wrapper: makes the image 50% bigger than the cell while
-                  keeping the grid column width unchanged */}
               <div className="w-full aspect-square flex items-center justify-center overflow-visible">
                 <img
                   src={icon.src}
                   alt={icon.alt}
                   style={{
                     objectFit: 'contain',
-                    width: '170%',
-                    height: '170%',
+                    width: '229.5%',
+                    height: '229.5%',
                     pointerEvents: 'none',
                   }}
                 />
               </div>
-              {selectedVariant === icon.id && (
-                <div className={`flex items-center justify-center w-5 h-5 ${icon.check} rounded-full`}>
-                  <Check className="w-3 h-3 text-white" />
-                </div>
-              )}
             </button>
           ))}
         </div>
