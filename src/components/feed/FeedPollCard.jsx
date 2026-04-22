@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { BarChart2, CheckCircle2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -65,7 +65,6 @@ function VotersModal({ open, onClose, opts, totalVoters, voterAvatarData, isLoad
 
   const sanitised = search.replace(/[^a-zA-Z0-9_. ]/g, '').slice(0, 30).toLowerCase();
 
-  // Build a map: userId -> option text they voted for
   const voterOptionMap = useMemo(() => {
     const map = {};
     opts.forEach(opt => {
@@ -82,14 +81,12 @@ function VotersModal({ open, onClose, opts, totalVoters, voterAvatarData, isLoad
     return m;
   }, [voterAvatarData]);
 
-  // Check if any option has per-voter tracking or if we can infer it from voterOptionMap
   const hasPerOptionVoters = useMemo(() => {
     const hasStructuredVoters = opts.some(opt => typeof opt === 'object' && Array.isArray(opt.voters) && opt.voters.length > 0);
     const hasVoterOptionMapping = Object.keys(voterOptionMap).length > 0;
     return hasStructuredVoters || hasVoterOptionMapping;
   }, [opts, voterOptionMap]);
 
-  // Section header styled like the reactions modal
   const SectionHeader = ({ label }) => (
     <p className="text-[11px] font-bold text-slate-500 uppercase tracking-widest px-2 pt-3 pb-1">{label}</p>
   );
@@ -131,7 +128,6 @@ function VotersModal({ open, onClose, opts, totalVoters, voterAvatarData, isLoad
             {totalVoters} Response{totalVoters !== 1 ? 's' : ''}
           </h3>
         </div>
-        {/* Search */}
         <div className="px-3 pb-2">
           <div className="flex items-center gap-2 px-3 rounded-xl bg-white/10 border border-white/20" style={{ paddingTop: '7px', paddingBottom: '7px' }}>
             <svg className="w-3.5 h-3.5 text-slate-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -153,21 +149,17 @@ function VotersModal({ open, onClose, opts, totalVoters, voterAvatarData, isLoad
           {isLoading ? (
             <p className="text-center text-slate-400 text-sm py-6">Loading...</p>
           ) : sanitised ? (
-            // Search mode — show matching voters with their chosen option to the right
             (() => {
               const filtered = voterAvatarData.filter(v => (v.name || '').toLowerCase().includes(sanitised));
               if (filtered.length === 0) return <p className="text-center text-slate-400 text-sm py-6">No members found</p>;
               return filtered.map(v => renderRow(v, true));
             })()
           ) : hasPerOptionVoters ? (
-            // Grouped by option with section headers
             (() => {
               const sections = opts.map((opt, i) => {
                 const optText = typeof opt === 'object' ? (opt.text || opt.label || `Option ${i + 1}`) : opt;
-                // Try structured voters first, fallback to voterOptionMap
                 let optVoterIds = typeof opt === 'object' && Array.isArray(opt.voters) ? opt.voters : [];
                 if (optVoterIds.length === 0) {
-                  // Fallback: find voters from voterOptionMap that match this option
                   optVoterIds = voterAvatarData.filter(v => voterOptionMap[v.id] === optText).map(v => v.id);
                 }
                 const optVoters = optVoterIds.map(uid => avatarById[uid]).filter(Boolean);
@@ -183,7 +175,6 @@ function VotersModal({ open, onClose, opts, totalVoters, voterAvatarData, isLoad
               ));
             })()
           ) : (
-            // Fallback: voters known but no per-option breakdown — list all voters flat
             voterAvatarData.length === 0
               ? <p className="text-center text-slate-400 text-sm py-6">No responses yet</p>
               : voterAvatarData.map(v => renderRow(v, false))
@@ -191,6 +182,93 @@ function VotersModal({ open, onClose, opts, totalVoters, voterAvatarData, isLoad
         </div>
       </div>
     </>
+  );
+}
+
+// ── Animated poll option bar ──────────────────────────────────────────────────
+function PollOptionBar({ opt, index, isSelected, isWinner, pct, canVote, showResults, onVote }) {
+  const barRef = useRef(null);
+  const MIN_FILL = 3; // minimum % width so 0% still shows a sliver
+
+  useEffect(() => {
+    if (!showResults || !barRef.current) return;
+    // Start at 0, then on next frame animate to target so CSS transition fires
+    barRef.current.style.width = '0%';
+    const frame = requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        if (barRef.current) {
+          barRef.current.style.width = `${pct > 0 ? Math.max(pct, MIN_FILL) : MIN_FILL}%`;
+        }
+      });
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [showResults, pct]);
+
+  return (
+    <button
+      onClick={() => canVote && onVote()}
+      disabled={!canVote}
+      className="w-full text-left transition-all duration-150 active:scale-[0.98]"
+      style={{
+        borderRadius: 9,
+        overflow: 'hidden',
+        position: 'relative',
+        // Box disappears entirely when results are shown
+        border: showResults
+          ? 'none'
+          : isSelected
+            ? '1px solid rgba(96,165,250,0.45)'
+            : '1px solid rgba(255,255,255,0.08)',
+        background: showResults
+          ? 'transparent'
+          : isSelected
+            ? 'rgba(96,165,250,0.12)'
+            : 'rgba(255,255,255,0.04)',
+        cursor: canVote ? 'pointer' : 'default',
+      }}
+    >
+      {/* Animated fill bar — only shown after voting */}
+      {showResults && (
+        <div
+          ref={barRef}
+          style={{
+            position: 'absolute',
+            left: 0,
+            top: 0,
+            bottom: 0,
+            width: '0%', // starts at 0, JS animates to target
+            background: isWinner
+              ? 'rgba(96,165,250,0.35)'   // blue for winner
+              : 'rgba(148,163,184,0.22)', // grey for others
+            borderRadius: 9,
+            transition: 'width 0.7s cubic-bezier(0.4, 0, 0.2, 1)',
+          }}
+        />
+      )}
+
+      <div
+        className="relative flex items-center justify-between px-3"
+        style={{ paddingTop: 8, paddingBottom: 8 }}
+      >
+        <span
+          className="text-[13px] font-semibold"
+          style={{ color: isSelected ? '#93c5fd' : 'rgba(255,255,255,0.8)' }}
+        >
+          {opt.text}
+        </span>
+        {showResults && (
+          <span
+            className="text-[11px] font-bold ml-2 flex-shrink-0"
+            style={{
+              color: isSelected ? '#60a5fa' : 'rgba(255,255,255,0.35)',
+              animation: 'pollPctFadeIn 0.4s ease 0.35s both',
+            }}
+          >
+            {pct}%
+          </span>
+        )}
+      </div>
+    </button>
   );
 }
 
@@ -220,7 +298,6 @@ export default function FeedPollCard({ poll, currentUser }) {
     return null;
   });
 
-  // Fetch avatars for voters — fetch all, but display only first 4 in avatars section
   const { data: voterAvatarsRaw = {}, isFetching: isLoadingVoterAvatars } = useQuery({
     queryKey: ['pollVoterAvatars', voters.join(',')],
     queryFn: () => base44.functions.invoke('getUserAvatars', { userIds: voters }).then(r => r.data?.avatars || {}),
@@ -273,8 +350,19 @@ export default function FeedPollCard({ poll, currentUser }) {
   const showResults = hasVoted || !!localVotedOption;
   const isExpired = poll.end_date && new Date(poll.end_date) < new Date();
 
+  // Determine winner votes for bar colouring
+  const winnerVotes = Math.max(...opts.map(o => (typeof o === 'object' ? o.votes || 0 : 0)));
+
   return (
     <>
+      {/* Keyframe for % label fade-in — injected once */}
+      <style>{`
+        @keyframes pollPctFadeIn {
+          from { opacity: 0; }
+          to   { opacity: 1; }
+        }
+      `}</style>
+
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -307,7 +395,6 @@ export default function FeedPollCard({ poll, currentUser }) {
                   : <span className="text-sm font-bold text-white">{gymInitial}</span>}
               </div>
               <div className="flex flex-col gap-0.5">
-                {/* Name + Poll badge on the same row */}
                 <div className="flex items-center gap-2">
                   <p className="text-sm font-bold text-white leading-tight">{gymName}</p>
                   <span style={{
@@ -336,48 +423,28 @@ export default function FeedPollCard({ poll, currentUser }) {
           </p>
 
           {/* Options */}
-          <div className="space-y-2">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
             {opts.map((opt, i) => {
               const optText = typeof opt === 'object' ? (opt.text || opt.label || `Option ${i + 1}`) : opt;
               const optId = typeof opt === 'object' ? (opt.id || opt.text) : opt;
               const optVotes = typeof opt === 'object' ? (opt.votes || 0) : 0;
               const pct = totalVotes > 0 ? Math.round((optVotes / totalVotes) * 100) : 0;
               const isSelected = localVotedOption === optId;
+              const isWinner = optVotes === winnerVotes && optVotes > 0;
               const canVote = !showResults && !isExpired && !!currentUser && !voteMutation.isPending;
 
               return (
-                <button
+                <PollOptionBar
                   key={i}
-                  onClick={() => canVote && voteMutation.mutate(optId)}
-                  disabled={!canVote}
-                  className="w-full text-left transition-all duration-150 active:scale-[0.98]"
-                  style={{
-                    borderRadius: 10, overflow: 'hidden', position: 'relative',
-                    border: isSelected ? '1px solid rgba(96,165,250,0.5)' : '1px solid rgba(255,255,255,0.08)',
-                    background: isSelected ? 'rgba(96,165,250,0.12)' : 'rgba(255,255,255,0.04)',
-                    cursor: canVote ? 'pointer' : 'default',
-                  }}
-                >
-                  {showResults && (
-                    <div style={{
-                      position: 'absolute', left: 0, top: 0, bottom: 0,
-                      width: `${pct}%`,
-                      background: isSelected ? 'rgba(96,165,250,0.18)' : 'rgba(255,255,255,0.04)',
-                      transition: 'width 0.5s ease',
-                      borderRadius: 10,
-                    }} />
-                  )}
-                  <div className="relative flex items-center justify-between px-3 py-2.5">
-                    <span className="text-sm font-semibold" style={{ color: isSelected ? '#93c5fd' : 'rgba(255,255,255,0.8)' }}>
-                      {optText}
-                    </span>
-                    {showResults && (
-                      <span className="text-xs font-bold ml-2 flex-shrink-0" style={{ color: isSelected ? '#60a5fa' : 'rgba(255,255,255,0.35)' }}>
-                        {pct}%
-                      </span>
-                    )}
-                  </div>
-                </button>
+                  index={i}
+                  opt={{ ...opt, text: optText, id: optId }}
+                  isSelected={isSelected}
+                  isWinner={isWinner}
+                  pct={pct}
+                  canVote={canVote}
+                  showResults={showResults}
+                  onVote={() => voteMutation.mutate(optId)}
+                />
               );
             })}
           </div>
