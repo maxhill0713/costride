@@ -120,8 +120,10 @@ export default function LocationBasedCheckInButton({ gyms, onCheckInSuccess, gym
       });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['checkIns'] });
-      queryClient.invalidateQueries({ queryKey: ['currentUser'] });
+      // Invalidate all variants of checkIns queries (with or without user id suffix)
+      queryClient.invalidateQueries({ predicate: q => q.queryKey[0] === 'checkIns' });
+      queryClient.invalidateQueries({ predicate: q => q.queryKey[0] === 'currentUser' });
+      queryClient.invalidateQueries({ predicate: q => q.queryKey[0] === 'weeklyWorkoutLogs' });
       setSuccess(true);
       onCheckInSuccess?.();
     },
