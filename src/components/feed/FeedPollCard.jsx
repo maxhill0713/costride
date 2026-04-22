@@ -238,7 +238,7 @@ function PollOptionBar({ opt, index, isSelected, isWinner, pct, canVote, showRes
             bottom: 0,
             width: '0%', // starts at 0, JS animates to target
             background: isWinner
-              ? 'rgba(96,165,250,0.35)'   // blue for winner
+              ? 'rgba(37,99,235,0.45)'    // blue for winner — matches Enter Gym button (blue-600)
               : 'rgba(148,163,184,0.22)', // grey for others
             borderRadius: 9,
             transition: 'width 0.7s cubic-bezier(0.4, 0, 0.2, 1)',
@@ -258,7 +258,7 @@ function PollOptionBar({ opt, index, isSelected, isWinner, pct, canVote, showRes
         </span>
         {showResults && (
           <span
-            className="text-[11px] font-bold ml-2 flex-shrink-0"
+            className="text-[12px] font-bold ml-2 flex-shrink-0"
             style={{
               color: isSelected ? '#60a5fa' : 'rgba(255,255,255,0.35)',
               animation: 'pollPctFadeIn 0.4s ease 0.35s both',
