@@ -177,6 +177,7 @@ export default function Home() {
   const [friendsModalViewed, setFriendsModalViewed] = useState(false);
   const [workoutStartTime, setWorkoutStartTime] = useState(null);
   const [workoutOverrideDay, setWorkoutOverrideDay] = useState(null);
+  const [optimisticCheckedIn, setOptimisticCheckedIn] = useState(false);
   const [showStreakCelebration, setShowStreakCelebration] = useState(false);
   const [showChallengesCelebration, setShowChallengesCelebration] = useState(false);
   const [showShareWorkout, setShowShareWorkout] = useState(false);
@@ -527,6 +528,14 @@ export default function Home() {
   });
 
   const todayStr = new Date().toISOString().split('T')[0];
+
+  // Reset optimistic flag once the real query catches up (or on a new day)
+  useEffect(() => {
+    if (optimisticCheckedIn && userCheckIns.some(c => c.check_in_date?.startsWith(todayStr))) {
+      setOptimisticCheckedIn(false);
+    }
+  }, [allCheckIns, todayStr]);
+
   const todayCheckInsForQuery = useMemo(
     () => allCheckIns.filter(c => c.check_in_date?.startsWith(todayStr) && c.gym_id === primaryGymIdForQuery),
     [allCheckIns, todayStr, primaryGymIdForQuery]
@@ -1104,10 +1113,13 @@ export default function Home() {
         <div className={`max-w-4xl mx-auto px-4 py-2 pb-32 ${daysSinceCheckIn === 0 ? 'space-y-2' : 'space-y-3'}`}>
           {memberGym && (
             <>
-              {showCheckInButton && !userCheckIns.some((c) => isToday(new Date(c.check_in_date))) && (
+              {showCheckInButton && !optimisticCheckedIn && !userCheckIns.some((c) => isToday(new Date(c.check_in_date))) && (
                 <LocationBasedCheckInButton
                   gyms={allMemberGyms}
-                  onCheckInSuccess={() => setWorkoutStartTime(Date.now())}
+                  onCheckInSuccess={() => {
+                    setOptimisticCheckedIn(true);
+                    setWorkoutStartTime(Date.now());
+                  }}
                   gymMemberships={gymMemberships} />
               )}
               <div className="flex flex-col items-center justify-center gap-2">
