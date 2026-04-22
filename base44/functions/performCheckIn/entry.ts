@@ -82,9 +82,9 @@ Deno.serve(async (req) => {
       console.log(`Check-in geo-verified: user ${user.id} at ${Math.round(distance)}m from gym ${gymId}`);
     }
 
-    // Duplicate daily check-in guard
+    // Duplicate daily check-in guard (use user's context, not service role, to respect RLS)
     const today = new Date(); today.setHours(0, 0, 0, 0);
-    const todayCheckIn = await base44.asServiceRole.entities.CheckIn.filter({
+    const todayCheckIn = await base44.entities.CheckIn.filter({
       user_id:       user.id,
       gym_id:        gymId,
       check_in_date: { $gte: today.toISOString() },
