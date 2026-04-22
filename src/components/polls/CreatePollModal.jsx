@@ -164,14 +164,15 @@ function CategoryTabs({ value, onChange }) {
 }
 
 /* ─── SHARED: POLL PREVIEW CARD ──────────────────────────────── */
-function PollPreview({ title, description, category, options }) {
+function PollPreview({ title, description, category, options, gym }) {
   const cat = catFor(category);
   const accent = cat?.color || C.blue;
   const validOpts = options.filter(o => o.trim());
   const hasContent = title || validOpts.length > 0;
 
-  // Fake gym avatar placeholder for preview
-  const gymInitial = 'G';
+  const gymName = gym?.name || 'Your Gym';
+  const gymAvatar = gym?.logo_url || gym?.image_url || null;
+  const gymInitial = gymName.charAt(0).toUpperCase();
 
   return (
     <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
@@ -200,12 +201,14 @@ function PollPreview({ title, description, category, options }) {
 
             {/* Header row — gym avatar + name + badge */}
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
-              <div style={{ width: 32, height: 32, borderRadius: '50%', background: '#1e293b', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                <span style={{ fontSize: 12, fontWeight: 700, color: '#fff' }}>{gymInitial}</span>
+              <div style={{ width: 32, height: 32, borderRadius: '50%', background: '#1e293b', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, overflow: 'hidden' }}>
+                {gymAvatar
+                  ? <img src={gymAvatar} alt={gymName} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  : <span style={{ fontSize: 12, fontWeight: 700, color: '#fff' }}>{gymInitial}</span>}
               </div>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
-                  <span style={{ fontSize: 12, fontWeight: 700, color: '#fff', lineHeight: 1.2 }}>Your Gym</span>
+                  <span style={{ fontSize: 12, fontWeight: 700, color: '#fff', lineHeight: 1.2 }}>{gymName}</span>
                   {/* Badge matching exact FeedPollCard style */}
                   <span style={{
                     fontSize: 9, fontWeight: 700, padding: '1px 7px', borderRadius: 5,
@@ -268,7 +271,7 @@ function PollPreview({ title, description, category, options }) {
 ══════════════════════════════════════════════════════════════ */
 
 /* ── MOBILE: PREVIEW BOTTOM SHEET ────────────────────────────── */
-function MobilePollPreviewSheet({ open, onClose, title, description, category, options }) {
+function MobilePollPreviewSheet({ open, onClose, title, description, category, options, gym }) {
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
@@ -310,7 +313,7 @@ function MobilePollPreviewSheet({ open, onClose, title, description, category, o
           </button>
         </div>
         <div style={{ flex: 1, overflowY: 'auto', padding: '16px' }}>
-          <PollPreview title={title} description={description} category={category} options={options} />
+          <PollPreview title={title} description={description} category={category} options={options} gym={gym} />
         </div>
       </div>
     </div>
@@ -318,7 +321,7 @@ function MobilePollPreviewSheet({ open, onClose, title, description, category, o
 }
 
 /* ── MOBILE FULL-SCREEN MODAL ────────────────────────────────── */
-function MobileCreatePollModal({ open, onClose, onSave, isLoading }) {
+function MobileCreatePollModal({ open, onClose, onSave, isLoading, gym }) {
   const [title,       setTitle]       = useState('');
   const [category,    setCategory]    = useState('');
   const [options,     setOptions]     = useState(['', '']);
@@ -507,7 +510,7 @@ function MobileCreatePollModal({ open, onClose, onSave, isLoading }) {
         </div>
       </div>
 
-      <MobilePollPreviewSheet open={previewOpen} onClose={() => setPreviewOpen(false)} title={title} description={description} category={category} options={options} />
+      <MobilePollPreviewSheet open={previewOpen} onClose={() => setPreviewOpen(false)} title={title} description={description} category={category} options={options} gym={gym} />
     </>
   );
 }
@@ -515,7 +518,7 @@ function MobileCreatePollModal({ open, onClose, onSave, isLoading }) {
 /* ══════════════════════════════════════════════════════════════
    DESKTOP MODAL
 ══════════════════════════════════════════════════════════════ */
-function DesktopCreatePollModal({ open, onClose, onSave, isLoading }) {
+function DesktopCreatePollModal({ open, onClose, onSave, isLoading, gym }) {
   const [title,       setTitle]       = useState('');
   const [category,    setCategory]    = useState('');
   const [options,     setOptions]     = useState(['', '']);
@@ -657,7 +660,7 @@ function DesktopCreatePollModal({ open, onClose, onSave, isLoading }) {
             </div>
 
             <div className="pl-scroll" style={{ padding: '18px 16px', background: C.surface, overflowY: 'auto', borderLeft: `1px solid ${C.brd}` }}>
-              <PollPreview title={title} description={description} category={category} options={options} />
+              <PollPreview title={title} description={description} category={category} options={options} gym={gym} />
             </div>
           </div>
 
@@ -692,10 +695,10 @@ function DesktopCreatePollModal({ open, onClose, onSave, isLoading }) {
 /* ══════════════════════════════════════════════════════════════
    ROOT EXPORT — branches on isMobile
 ══════════════════════════════════════════════════════════════ */
-export default function CreatePollModal({ open, onClose, onSave, isLoading }) {
+export default function CreatePollModal({ open, onClose, onSave, isLoading, gym }) {
   const isMobile = useIsMobile();
   if (isMobile) {
-    return <MobileCreatePollModal open={open} onClose={onClose} onSave={onSave} isLoading={isLoading} />;
+    return <MobileCreatePollModal open={open} onClose={onClose} onSave={onSave} isLoading={isLoading} gym={gym} />;
   }
-  return <DesktopCreatePollModal open={open} onClose={onClose} onSave={onSave} isLoading={isLoading} />;
+  return <DesktopCreatePollModal open={open} onClose={onClose} onSave={onSave} isLoading={isLoading} gym={gym} />;
 }

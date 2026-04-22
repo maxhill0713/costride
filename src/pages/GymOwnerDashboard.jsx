@@ -591,7 +591,7 @@ export default function GymOwnerDashboard() {
       <CreateEventModal open={modal === 'event'} onClose={closeModal} onSave={(d) => createEventM.mutate(d)} gym={selectedGym} isLoading={createEventM.isPending} />
       <CreateChallengeModal open={modal === 'challenge'} onClose={closeModal} gyms={gyms} onSave={(d) => createChallengeM.mutate(d)} isLoading={createChallengeM.isPending} />
       <QRScanner open={modal === 'qrScanner'} onClose={closeModal} />
-      <CreatePollModal open={modal === 'poll'} onClose={closeModal} onSave={(d) => createPollM.mutate(d)} isLoading={createPollM.isPending} />
+      <CreatePollModal open={modal === 'poll'} onClose={closeModal} onSave={(d) => createPollM.mutate(d)} isLoading={createPollM.isPending} gym={selectedGym} />
       <ManageRewardsModal open={modal === 'rewards'} onClose={closeModal} rewards={rewards} onCreateReward={(d) => createRewardM.mutate(d)} onDeleteReward={(id) => deleteRewardM.mutate(id)} gym={selectedGym} isLoading={createRewardM.isPending} />
       <ManageCoachesModal open={modal === 'coaches'} onClose={closeModal} coaches={coaches} onCreateCoach={(d) => createCoachM.mutate(d)} onDeleteCoach={(id) => deleteCoachM.mutate(id)} onUpdateCoach={(id, data) => updateCoachM.mutate({ id, data })} gym={selectedGym} isLoading={createCoachM.isPending} allMemberships={allMemberships} classes={classes} />
       <EditGymPhotoModal open={modal === 'heroPhoto'} onClose={closeModal} gym={selectedGym} onSave={(url) => updateGymM.mutate({ image_url: url })} isLoading={updateGymM.isPending} />
