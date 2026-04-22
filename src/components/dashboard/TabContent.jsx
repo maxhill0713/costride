@@ -938,7 +938,6 @@ export default function ContentPage({ events = [], challenges = [], polls = [], 
                           </div>
                         )}
 
-                        {/* CHANGED: streak icons 20% bigger (31px) and closer together (-10px overlap) */}
                         {reactionCount > 0 && (
                           <button onClick={() => setReactionsPost(p)} style={{ marginTop: "auto", display: "flex", alignItems: "center", gap: 0, background: "none", border: "none", cursor: "pointer", padding: 0 }}>
                             {Object.entries(p.reactions || {}).slice(0, 5).map(([uid, variant], i) => (
@@ -1124,53 +1123,85 @@ export default function ContentPage({ events = [], challenges = [], polls = [], 
                 return `${Math.round(diffMs / (1000 * 60 * 60 * 24))}d left`;
               })();
               const isUrgent = timeRemainingLabel && new Date(poll.end_date).getTime() - nowMs < 24 * 60 * 60 * 1000;
+
               return (
                 <div style={{ background: C.card, border: `1px solid ${C.brd}`, borderRadius: 10, padding: isMobile ? "14px 16px" : "13px 16px", marginBottom: 8 }}
                   onMouseEnter={e => { e.currentTarget.style.borderColor = C.cyanBrd; e.currentTarget.style.boxShadow = `0 0 6px rgba(77,127,255,0.06)`; }}
                   onMouseLeave={e => { e.currentTarget.style.borderColor = C.brd; e.currentTarget.style.boxShadow = "none"; }}>
+
+                  {/* ── TOP ROW: question + timer + remove button ── */}
                   <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 10, marginBottom: 10 }}>
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontSize: 13, fontWeight: 600, color: C.t1, marginBottom: 5 }}>{poll.question || poll.title}</div>
-                      <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
-                        <Users size={11} color={C.cyan} />
-                        <span style={{ fontSize: 11.5, fontWeight: 700, color: C.t1 }}>{responseCount} Response{responseCount !== 1 ? "s" : ""}</span>
-                        {memberCount > 0 && <span style={{ fontSize: 11, color: C.t2 }}>({communityPct}% of the community)</span>}
+                      <div style={{ fontSize: 13, fontWeight: 600, color: C.t1 }}>{poll.question || poll.title}</div>
+                    </div>
+                    <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 6, flexShrink: 0 }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                        {showTimer && timeRemainingLabel && (
+                          <div style={{ display: "flex", alignItems: "center", gap: 5, padding: "4px 9px", borderRadius: 7,
+                            background: isUrgent ? "rgba(255,77,109,0.12)" : "rgba(77,127,255,0.10)",
+                            border: `1px solid ${isUrgent ? "rgba(255,77,109,0.3)" : "rgba(77,127,255,0.25)"}`,
+                            color: isUrgent ? "#ff6b85" : C.cyan, fontSize: 11, fontWeight: 700 }}>
+                            <Clock size={11} color="currentColor" />
+                            <span>{timeRemainingLabel}</span>
+                          </div>
+                        )}
+                        <button
+                          onClick={() => setPollToRemove(poll)}
+                          style={{ display: "flex", alignItems: "center", gap: 6, padding: "6px 12px", borderRadius: 8, background: "rgba(255,255,255,0.03)", border: `1px solid ${C.brd}`, color: C.t2, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: FONT, flexShrink: 0, transition: "all 0.15s" }}
+                          onMouseEnter={e => { e.currentTarget.style.borderColor = "rgba(255,77,109,0.35)"; e.currentTarget.style.color = C.red; e.currentTarget.style.background = C.redDim; }}
+                          onMouseLeave={e => { e.currentTarget.style.borderColor = C.brd; e.currentTarget.style.color = C.t2; e.currentTarget.style.background = "rgba(255,255,255,0.03)"; }}>
+                          <Trash2 size={12} color="currentColor" />
+                          <span>Remove</span>
+                        </button>
+                      </div>
+                      {/* Responses count sits under the Remove button, right-aligned */}
+                      <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 2 }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
+                          <Users size={11} color={C.cyan} />
+                          <span style={{ fontSize: 11.5, fontWeight: 700, color: C.t1 }}>{responseCount} Response{responseCount !== 1 ? "s" : ""}</span>
+                        </div>
+                        {memberCount > 0 && (
+                          <span style={{ fontSize: 11, color: C.t2 }}>{communityPct}% of the community</span>
+                        )}
                       </div>
                     </div>
-                    <div style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
-                      {showTimer && timeRemainingLabel && (
-                        <div style={{ display: "flex", alignItems: "center", gap: 5, padding: "4px 9px", borderRadius: 7,
-                          background: isUrgent ? "rgba(255,77,109,0.12)" : "rgba(77,127,255,0.10)",
-                          border: `1px solid ${isUrgent ? "rgba(255,77,109,0.3)" : "rgba(77,127,255,0.25)"}`,
-                          color: isUrgent ? "#ff6b85" : C.cyan, fontSize: 11, fontWeight: 700 }}>
-                          <Clock size={11} color="currentColor" />
-                          <span>{timeRemainingLabel}</span>
-                        </div>
-                      )}
-                      <button
-                        onClick={() => setPollToRemove(poll)}
-                        style={{ display: "flex", alignItems: "center", gap: 6, padding: "6px 12px", borderRadius: 8, background: "rgba(255,255,255,0.03)", border: `1px solid ${C.brd}`, color: C.t2, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: FONT, flexShrink: 0, transition: "all 0.15s" }}
-                        onMouseEnter={e => { e.currentTarget.style.borderColor = "rgba(255,77,109,0.35)"; e.currentTarget.style.color = C.red; e.currentTarget.style.background = C.redDim; }}
-                        onMouseLeave={e => { e.currentTarget.style.borderColor = C.brd; e.currentTarget.style.color = C.t2; e.currentTarget.style.background = "rgba(255,255,255,0.03)"; }}>
-                        <Trash2 size={12} color="currentColor" />
-                        <span>Remove</span>
-                      </button>
-                    </div>
                   </div>
+
+                  {/* ── OPTION BARS ── */}
                   {(poll.options || []).map((opt, i) => {
                     const optText  = typeof opt === "object" ? (opt.text || opt.label || String(i + 1)) : opt;
                     const optVotes = typeof opt === "object" ? (opt.votes || 0) : ((poll.votes || {})[opt] || 0);
                     const total    = Math.max((poll.voters || []).length, 1);
                     const pct      = Math.round(optVotes / total * 100);
-                    const barWidth = Math.round(pct * 0.7);
+
                     return (
-                      <div key={i} style={{ marginBottom: 6 }}>
-                        <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11.5, color: C.t2, marginBottom: 3 }}>
+                      <div key={i} style={{ marginBottom: 8 }}>
+                        {/* Label row */}
+                        <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11.5, color: C.t2, marginBottom: 4 }}>
                           <span>{optText}</span>
-                          <span style={{ color: C.cyan, textShadow: "none" }}>{pct}%</span>
                         </div>
-                        <div style={{ height: 5, background: "rgba(255,255,255,0.06)", borderRadius: 2, overflow: "hidden" }}>
-                          <div style={{ width: `${barWidth}%`, height: "100%", background: C.cyan, borderRadius: 2 }} />
+                        {/* Bar track — full width, then fill inside it */}
+                        <div style={{ position: "relative", height: 5, background: "rgba(255,255,255,0.06)", borderRadius: 2, overflow: "hidden" }}>
+                          <div style={{ width: `${pct}%`, height: "100%", background: C.cyan, borderRadius: 2 }} />
+                          {/* Percentage label floated to the right edge of the fill */}
+                          <div style={{
+                            position: "absolute",
+                            top: "50%",
+                            transform: "translateY(-50%)",
+                            right: `${100 - pct}%`,
+                            // Shift label just outside the right edge of fill
+                            marginRight: -28,
+                            fontSize: 10,
+                            fontWeight: 700,
+                            color: C.cyan,
+                            whiteSpace: "nowrap",
+                            pointerEvents: "none",
+                          }}>
+                          </div>
+                        </div>
+                        {/* Percentage below, right-aligned to the fill edge */}
+                        <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 3 }}>
+                          <span style={{ fontSize: 10.5, fontWeight: 700, color: C.cyan }}>{pct}%</span>
                         </div>
                       </div>
                     );
