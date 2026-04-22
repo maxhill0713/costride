@@ -342,6 +342,16 @@ export default function FeedPollCard({ poll, currentUser }) {
   const gymAvatar = gym?.logo_url || gym?.image_url || null;
   const gymInitial = gymName.charAt(0).toUpperCase();
 
+  const CATEGORY_LABELS = {
+    equipment_replacement: 'Equipment Poll',
+    favorite_equipment: 'Fav. Kit Poll',
+    rewards: 'Rewards Poll',
+    playlist: 'Playlist Poll',
+    schedule: 'Schedule Poll',
+    other: 'Poll',
+  };
+  const pollBadgeLabel = poll.category ? (CATEGORY_LABELS[poll.category] || 'Poll') : 'Poll';
+
   const opts = (poll.options || []).filter(o =>
     typeof o === 'string' ? o.trim() : (o.text || o.label || '').trim()
   );
@@ -406,7 +416,7 @@ export default function FeedPollCard({ poll, currentUser }) {
                     flexShrink: 0,
                   }}>
                     <BarChart2 size={9} />
-                    Poll
+                    {pollBadgeLabel}
                   </span>
                 </div>
                 <div className="flex items-center gap-1.5">

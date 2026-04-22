@@ -31,12 +31,12 @@ const MONO = { fontVariantNumeric: 'tabular-nums' };
 
 /* ─── DATA ───────────────────────────────────────────────────── */
 const CATEGORIES = [
-  { value: 'equipment_replacement', label: 'Equipment', emoji: '🔧', color: C.amber,  dim: C.amberDim,  border: C.amberBrd  },
-  { value: 'favorite_equipment',    label: 'Fav. Kit',  emoji: '💪', color: C.blue,   dim: C.blueDim,   border: C.blueBrd   },
-  { value: 'rewards',               label: 'Rewards',   emoji: '🎁', color: C.green,  dim: C.greenDim,  border: C.greenBrd  },
-  { value: 'playlist',              label: 'Playlist',  emoji: '🎵', color: C.purple, dim: C.purpleDim, border: C.purpleBrd },
-  { value: 'schedule',              label: 'Schedule',  emoji: '📅', color: C.blue,   dim: C.blueDim,   border: C.blueBrd   },
-  { value: 'other',                 label: 'Other',     emoji: '💬', color: C.t2,     dim: 'rgba(152,152,166,0.07)', border: 'rgba(152,152,166,0.18)' },
+  { value: 'equipment_replacement', label: 'Equipment', color: C.amber,  dim: C.amberDim,  border: C.amberBrd  },
+  { value: 'favorite_equipment',    label: 'Fav. Kit',  color: C.blue,   dim: C.blueDim,   border: C.blueBrd   },
+  { value: 'rewards',               label: 'Rewards',   color: C.green,  dim: C.greenDim,  border: C.greenBrd  },
+  { value: 'playlist',              label: 'Playlist',  color: C.purple, dim: C.purpleDim, border: C.purpleBrd },
+  { value: 'schedule',              label: 'Schedule',  color: C.blue,   dim: C.blueDim,   border: C.blueBrd   },
+  { value: 'other',                 label: 'Other',     color: C.t2,     dim: 'rgba(152,152,166,0.07)', border: 'rgba(152,152,166,0.18)' },
 ];
 
 const catFor = val => CATEGORIES.find(c => c.value === val) || null;
@@ -151,11 +151,10 @@ function CategoryTabs({ value, onChange }) {
         const active = value === cat.value;
         return (
           <button key={cat.value} onClick={() => onChange(cat.value)} type="button"
-            style={{ padding: '8px 13px', background: 'none', border: 'none', borderBottom: active ? `2px solid ${cat.color}` : '2px solid transparent', color: active ? C.t1 : C.t2, fontSize: 12.5, fontWeight: active ? 700 : 500, cursor: 'pointer', fontFamily: FONT, whiteSpace: 'nowrap', transition: 'color 0.15s, border-color 0.15s', marginBottom: -1, display: 'flex', alignItems: 'center', gap: 5 }}
+            style={{ padding: '8px 13px', background: 'none', border: 'none', borderBottom: active ? `2px solid ${cat.color}` : '2px solid transparent', color: active ? C.t1 : C.t2, fontSize: 12.5, fontWeight: active ? 700 : 500, cursor: 'pointer', fontFamily: FONT, whiteSpace: 'nowrap', transition: 'color 0.15s, border-color 0.15s', marginBottom: -1 }}
             onMouseEnter={e => { if (!active) e.currentTarget.style.color = C.t1; }}
             onMouseLeave={e => { if (!active) e.currentTarget.style.color = C.t2; }}
           >
-            <span style={{ fontSize: 13 }}>{cat.emoji}</span>
             {cat.label}
           </button>
         );
@@ -191,7 +190,6 @@ function PollPreview({ title, description, category, options }) {
           <div style={{ padding: '14px 15px 0' }}>
             {cat && (
               <div style={{ display: 'inline-flex', alignItems: 'center', gap: 5, padding: '2px 8px', borderRadius: 5, background: cat.dim, border: `1px solid ${cat.border}`, marginBottom: 8 }}>
-                <span style={{ fontSize: 11 }}>{cat.emoji}</span>
                 <span style={{ fontSize: 9.5, fontWeight: 700, color: cat.color }}>{cat.label}</span>
               </div>
             )}
@@ -367,8 +365,7 @@ function MobileCreatePollModal({ open, onClose, onSave, isLoading }) {
               const active = category === c.value;
               return (
                 <button key={c.value} onClick={() => setCategory(c.value)} type="button"
-                  style={{ flexShrink: 0, padding: '8px 14px', borderRadius: 24, background: active ? c.dim : C.card, border: `1.5px solid ${active ? c.border : C.brd}`, color: active ? c.color : C.t2, fontSize: 13, fontWeight: active ? 700 : 500, cursor: 'pointer', fontFamily: FONT, whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: 6, transition: 'all 0.15s' }}>
-                  <span style={{ fontSize: 14 }}>{c.emoji}</span>
+                  style={{ flexShrink: 0, padding: '8px 14px', borderRadius: 24, background: active ? c.dim : C.card, border: `1.5px solid ${active ? c.border : C.brd}`, color: active ? c.color : C.t2, fontSize: 13, fontWeight: active ? 700 : 500, cursor: 'pointer', fontFamily: FONT, whiteSpace: 'nowrap', transition: 'all 0.15s' }}>
                   {c.label}
                 </button>
               );
@@ -544,8 +541,8 @@ function DesktopCreatePollModal({ open, onClose, onSave, isLoading }) {
           <div style={{ flexShrink: 0, padding: '0 20px', background: C.surface, borderBottom: `1px solid ${C.brd}`, position: 'relative', overflow: 'hidden' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: 18, paddingBottom: 0 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 11 }}>
-                <div style={{ width: 32, height: 32, borderRadius: 9, background: cat?.dim || C.blueDim, border: `1px solid ${cat?.border || C.blueBrd}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: cat ? 16 : 'inherit', transition: 'all 0.2s' }}>
-                  {cat ? <span>{cat.emoji}</span> : <BarChart2 size={14} color={C.blue} />}
+                <div style={{ width: 32, height: 32, borderRadius: 9, background: cat?.dim || C.blueDim, border: `1px solid ${cat?.border || C.blueBrd}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'all 0.2s' }}>
+                  <BarChart2 size={14} color={cat?.color || C.blue} />
                 </div>
                 <div style={{ fontSize: 18, fontWeight: 700, color: C.t1, letterSpacing: '-0.02em', lineHeight: 1.2 }}>
                   Create Poll
