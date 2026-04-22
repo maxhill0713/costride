@@ -453,11 +453,13 @@ function GymActivityFeed({ checkIns, memberAvatarMap, memberNameMap = {}, workou
       all.push({ type: 'milestone', id: `ach-${a.id}`, userId: a.user_id, userName: resolveName(a.user_id, a.user_name), date: a.created_date, data: a });
     });
     posts.filter((p) => !p.is_hidden).forEach((p) => {
-      const isGymPost = !!p.post_type;
-      const postUserName = isGymPost ? (p.gym_name || p.member_name || 'Gym') : resolveName(p.member_id, p.member_name);
-      // For gym posts use a special userId key so avatar lookup uses gym logo, not owner profile
-      const postUserId = isGymPost ? `gym_post_${p.gym_id || p.member_id}` : p.member_id;
-      all.push({ type: 'post', id: `post-${p.id}`, userId: postUserId, userName: postUserName, isGymPost, gymAvatar: isGymPost ? (p.member_avatar || null) : null, date: p.created_date, data: p });
+    const isGymPost = !!p.post_type;
+    const postUserName = isGymPost ? (p.gym_name || p.member_name || 'Gym') : resolveName(p.member_id, p.member_name);
+    const postUserId = isGymPost ? `gym_post_${p.gym_id || p.member_id}` : p.member_id;
+    // Only set gymAvatar for gym posts; leave undefined for member posts so memberAvatarMap is used
+    const feedItem = { type: 'post', id: `post-${p.id}`, userId: postUserId, userName: postUserName, isGymPost, date: p.created_date, data: p };
+    if (isGymPost) feedItem.gymAvatar = p.member_avatar || null;
+    all.push(feedItem);
     });
     return all.
     filter((item) => item.date && new Date(item.date) >= sevenDaysAgo).
