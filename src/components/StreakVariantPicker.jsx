@@ -33,22 +33,23 @@ export default function StreakVariantPicker({ isOpen, onClose, onSelect, selecte
           <span className="text-white font-bold text-[1.665rem] leading-none">{streakFreezes}</span>
         </div>
 
-        {/* 4-column grid — pb adds space at bottom so overflowing icons aren't clipped */}
+        {/* 4-column grid */}
         <div className="grid grid-cols-4 gap-2 mt-12 pb-8">
           {availableIcons.map((icon) => (
             <button
               key={icon.id}
               onClick={() => onSelect(icon.id)}
-              className={`relative flex items-center justify-center p-2 rounded-2xl transition-all aspect-square ${
+              className={`relative flex items-center justify-center p-2 rounded-2xl transition-all ${
                 selectedVariant === icon.id ? `ring-2 ${icon.ring}` : 'hover:opacity-80'
-              }`}>
+              }`}
+              style={{ aspectRatio: '1 / 1.2' }}>
               <img
                 src={icon.src}
                 alt={icon.alt}
                 style={{
                   position: 'absolute',
-                  width: '135%',
-                  height: '135%',
+                  width: '142%',
+                  height: '142%',
                   objectFit: 'contain',
                   pointerEvents: 'none',
                   zIndex: 10,
