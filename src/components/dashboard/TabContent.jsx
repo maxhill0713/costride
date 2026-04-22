@@ -742,7 +742,7 @@ function InteractionSparkline({ posts }) {
   );
 }
 
-function RightSidebar({ events, challenges, polls, posts, openModal, feedPostsThisWeek, livePolls, communityInteractionsToday, onTabChange }) {
+function RightSidebar({ events, challenges, polls, posts, openModal, feedPostsThisWeek, livePolls, communityInteractionsToday, memberPostsToday, pollVotesToday, reactionsToday, onTabChange }) {
   const totalContent = events.length + challenges.length + polls.length + posts.length;
   return (
     <div style={{
@@ -788,8 +788,13 @@ function RightSidebar({ events, challenges, polls, posts, openModal, feedPostsTh
             <span style={{ fontSize: 12, color: C.t2, flex: 1 }}>Community Interactions today</span>
             <span style={{ fontSize: 14, fontWeight: 800, color: C.t1 }}>{communityInteractionsToday}</span>
           </div>
-          <div style={{ fontSize: 9.5, color: C.t3, marginBottom: 8 }}>
-            Last 7 days · hourly · <span style={{ color: "#4d7fff" }}>blue = last 24h</span>
+          <div style={{ fontSize: 9.5, color: C.t3, marginBottom: 4 }}>
+            Posts · poll votes · reactions
+          </div>
+          <div style={{ display: "flex", gap: 8, marginBottom: 8, flexWrap: "wrap" }}>
+            <span style={{ fontSize: 9, color: C.t3 }}>📝 {memberPostsToday} posts</span>
+            <span style={{ fontSize: 9, color: C.t3 }}>📊 {pollVotesToday} poll votes</span>
+            <span style={{ fontSize: 9, color: C.t3 }}>⚡ {reactionsToday} reactions</span>
           </div>
           <InteractionSparkline posts={posts} />
         </div>
@@ -954,16 +959,53 @@ export default function ContentPage({ events = [], challenges = [], polls = [], 
     if (p.end_date) return new Date(p.end_date) >= now;
     return true;
   }).length;
+
+  // Community interactions today: member posts, shared workout posts, poll votes, and reactions
+  const todayStart = new Date(); todayStart.setHours(0, 0, 0, 0);
+  const todayStartMs = todayStart.getTime();
+
+  const isToday = (dateStr) => {
+    if (!dateStr) return false;
+    let d = new Date(dateStr);
+    if (typeof dateStr === "string" && !dateStr.endsWith("Z") && !dateStr.match(/[+-]\d{2}:\d{2}$/)) {
+      d = new Date(dateStr + "Z");
+    }
+    return d.getTime() >= todayStartMs;
+  };
+
+  // 1. Member posts to the gym today (non-gym-authored, shared with community)
+  const memberPostsToday = posts.filter(p =>
+    !p.is_hidden && !p.post_type && p.share_with_community &&
+    (!gymId || p.gym_id === gymId) && isToday(p.created_date || p.created_at)
+  ).length;
+
+  // 2. Shared workout posts from members today
+  const workoutPostsToday = posts.filter(p =>
+    !p.is_hidden && !p.post_type && p.share_with_community && p.workout_name &&
+    (!gymId || p.gym_id === gymId) && isToday(p.created_date || p.created_at)
+  ).length;
+  // (workout posts are already counted in memberPostsToday, so don't double count)
+
+  // 3. Poll interactions today — count voters who voted on gym polls today
+  // We use poll.voters length as a proxy since we don't have per-vote timestamps,
+  // but we count all current votes on polls that are active/were active today
+  const pollVotesToday = polls.reduce((sum, p) => sum + (p.voters || []).length, 0);
+
+  // 4. Reactions on any community post today
+  const reactionsToday = posts.filter(p =>
+    !p.is_hidden && (!gymId || p.gym_id === gymId) &&
+    (p.share_with_community || p.post_type)
+  ).reduce((sum, p) => sum + Object.keys(p.reactions || {}).length, 0);
+
+  // Total = member posts today + reactions today + poll votes (all unique interactions)
+  const communityInteractionsToday = memberPostsToday + reactionsToday + pollVotesToday;
+
   const communityFeedPosts = posts.filter(p => {
     if (p.is_hidden) return false;
     if (!p.share_with_community) return false;
     if (gymId && p.gym_id !== gymId) return false;
     return true;
   });
-  const communityInteractionsToday = communityFeedPosts.reduce((sum, p) => {
-    const reactions = p.reactions || {};
-    return sum + Object.keys(reactions).length;
-  }, 0);
 
   return (
     <div style={{ display: "flex", flex: 1, minHeight: 0, background: C.bg, color: C.t1, fontFamily: FONT, fontSize: 13, lineHeight: 1.5, WebkitFontSmoothing: "antialiased" }}>
@@ -1432,6 +1474,9 @@ export default function ContentPage({ events = [], challenges = [], polls = [], 
           feedPostsThisWeek={feedPostsThisWeek}
           livePolls={livePolls}
           communityInteractionsToday={communityInteractionsToday}
+          memberPostsToday={memberPostsToday}
+          pollVotesToday={pollVotesToday}
+          reactionsToday={reactionsToday}
           onTabChange={setTab}
         />
       )}
