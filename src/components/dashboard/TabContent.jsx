@@ -617,8 +617,7 @@ function Tabs({ active, setActive, isMobile }) {
 /* ─── RIGHT SIDEBAR ──────────────────────────────────────────── */
 const QUICK_IDEAS = ["Generate AI Motivation Monday", "Post Member Spotlight", "Create Weekend Challenge Poll"];
 
-/* Build hourly interaction buckets for the last 7 days.
-   An "interaction" = a reaction on a community post, counted at the post's created_date hour. */
+/* Build hourly interaction buckets for the last 7 days. */
 function buildInteractionBuckets(posts) {
   const now = Date.now();
   const HOURS = 7 * 24; // 168 buckets
@@ -642,38 +641,29 @@ function buildInteractionBuckets(posts) {
   return buckets;
 }
 
+// ── CHANGE: Reduced W and adjusted PAD.left to push chart left and fit the box
 function InteractionSparkline({ posts }) {
   const buckets = buildInteractionBuckets(posts);
-  const W = 262, H = 80;
-  const PAD = { top: 6, right: 4, bottom: 18, left: 24 };
+  const W = 224, H = 80;
+  const PAD = { top: 6, right: 4, bottom: 18, left: 20 };
   const chartW = W - PAD.left - PAD.right;
   const chartH = H - PAD.top - PAD.bottom;
   const HOURS = buckets.length; // 168
 
   const maxVal = Math.max(...buckets, 1);
 
-  // X position for bucket index
   const xOf = i => PAD.left + (i / (HOURS - 1)) * chartW;
-  // Y position for value
   const yOf = v => PAD.top + chartH - (v / maxVal) * chartH;
 
-  // Boundary between "older" and "last 24h" (last 24 buckets)
   const splitIdx = HOURS - 24;
   const splitX = xOf(splitIdx);
 
-  // Build SVG path points for the whole line
-  const pts = buckets.map((v, i) => `${xOf(i).toFixed(1)},${yOf(v).toFixed(1)}`);
-  const linePath = `M ${pts.join(" L ")}`;
-
-  // Area fill for old section (left of split)
   const oldAreaPts = buckets.slice(0, splitIdx + 1).map((v, i) => `${xOf(i).toFixed(1)},${yOf(v).toFixed(1)}`);
   const oldArea = `M ${PAD.left},${PAD.top + chartH} L ${oldAreaPts.join(" L ")} L ${splitX.toFixed(1)},${PAD.top + chartH} Z`;
 
-  // Area fill for last 24h section (right of split, shaded blue)
   const newAreaPts = buckets.slice(splitIdx).map((v, i) => `${xOf(splitIdx + i).toFixed(1)},${yOf(v).toFixed(1)}`);
   const newArea = `M ${splitX.toFixed(1)},${PAD.top + chartH} L ${newAreaPts.join(" L ")} L ${xOf(HOURS - 1).toFixed(1)},${PAD.top + chartH} Z`;
 
-  // Day labels: show Mon/Tue/... at every 24th bucket
   const dayLabels = [];
   const now = new Date();
   for (let d = 6; d >= 0; d--) {
@@ -683,11 +673,10 @@ function InteractionSparkline({ posts }) {
     dayLabels.push({ x: xOf(bucketIdx), label, isToday: d === 0 });
   }
 
-  // Y axis ticks
   const yTicks = [0, Math.round(maxVal / 2), maxVal];
 
   return (
-    <svg width={W} height={H} style={{ display: "block", overflow: "visible" }}>
+    <svg width={W} height={H} style={{ display: "block", overflow: "visible", marginLeft: 0 }}>
       <defs>
         <linearGradient id="oldGrad" x1="0" y1="0" x2="0" y2="1">
           <stop offset="0%" stopColor="rgba(138,138,148,0.18)" />
@@ -699,7 +688,6 @@ function InteractionSparkline({ posts }) {
         </linearGradient>
       </defs>
 
-      {/* Y axis ticks */}
       {yTicks.map((v, i) => (
         <g key={i}>
           <line x1={PAD.left} y1={yOf(v)} x2={PAD.left + chartW} y2={yOf(v)}
@@ -709,25 +697,19 @@ function InteractionSparkline({ posts }) {
         </g>
       ))}
 
-      {/* Vertical split line at -24h */}
       <line x1={splitX} y1={PAD.top} x2={splitX} y2={PAD.top + chartH}
         stroke="rgba(77,127,255,0.25)" strokeWidth="1" strokeDasharray="3 2" />
 
-      {/* Old area fill */}
       <path d={oldArea} fill="url(#oldGrad)" />
-      {/* New 24h area fill — blue */}
       <path d={newArea} fill="url(#blueGrad)" />
 
-      {/* Old segment line — grey */}
       <polyline
         points={buckets.slice(0, splitIdx + 1).map((v, i) => `${xOf(i).toFixed(1)},${yOf(v).toFixed(1)}`).join(" ")}
         fill="none" stroke="rgba(138,138,148,0.55)" strokeWidth="1.5" strokeLinejoin="round" strokeLinecap="round" />
-      {/* New 24h segment line — blue */}
       <polyline
         points={buckets.slice(splitIdx).map((v, i) => `${xOf(splitIdx + i).toFixed(1)},${yOf(v).toFixed(1)}`).join(" ")}
         fill="none" stroke="#4d7fff" strokeWidth="1.8" strokeLinejoin="round" strokeLinecap="round" />
 
-      {/* Day label ticks */}
       {dayLabels.map(({ x, label, isToday }) => (
         <g key={label}>
           <line x1={x} y1={PAD.top + chartH} x2={x} y2={PAD.top + chartH + 3}
@@ -742,7 +724,7 @@ function InteractionSparkline({ posts }) {
   );
 }
 
-function RightSidebar({ events, challenges, polls, posts, openModal, feedPostsThisWeek, livePolls, communityInteractionsToday, memberPostsToday, pollVotesToday, reactionsToday, onTabChange }) {
+function RightSidebar({ events, challenges, polls, posts, openModal, feedPostsThisWeek, livePolls, communityInteractionsToday, onTabChange }) {
   const totalContent = events.length + challenges.length + polls.length + posts.length;
   return (
     <div style={{
@@ -781,25 +763,17 @@ function RightSidebar({ events, challenges, polls, posts, openModal, feedPostsTh
 
         <div style={{ height: 1, background: C.brd }} />
 
-        {/* Community Interactions — expanded with sparkline chart */}
+        {/* ── CHANGE: Cleaned up interactions box — label + count + chart only */}
         <div style={{ background: C.card, border: `1px solid ${C.brd}`, borderRadius: 10, padding: "12px 12px 10px" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 2 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 10 }}>
             <Zap size={12} color="#34d399" />
             <span style={{ fontSize: 12, color: C.t2, flex: 1 }}>Community Interactions today</span>
             <span style={{ fontSize: 14, fontWeight: 800, color: C.t1 }}>{communityInteractionsToday}</span>
           </div>
-          <div style={{ fontSize: 9.5, color: C.t3, marginBottom: 4 }}>
-            Posts · poll votes · reactions
-          </div>
-          <div style={{ display: "flex", gap: 8, marginBottom: 8, flexWrap: "wrap" }}>
-            <span style={{ fontSize: 9, color: C.t3 }}>📝 {memberPostsToday} posts</span>
-            <span style={{ fontSize: 9, color: C.t3 }}>📊 {pollVotesToday} poll votes</span>
-            <span style={{ fontSize: 9, color: C.t3 }}>⚡ {reactionsToday} reactions</span>
-          </div>
           <InteractionSparkline posts={posts} />
         </div>
 
-        {/* Other Content Highlights */}
+        {/* Content Highlights */}
         <div>
           <div style={{ fontSize: 12.5, fontWeight: 600, color: C.t1, marginBottom: 8 }}>Content Highlights</div>
           <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
@@ -960,7 +934,6 @@ export default function ContentPage({ events = [], challenges = [], polls = [], 
     return true;
   }).length;
 
-  // Community interactions today: member posts, shared workout posts, poll votes, and reactions
   const todayStart = new Date(); todayStart.setHours(0, 0, 0, 0);
   const todayStartMs = todayStart.getTime();
 
@@ -973,31 +946,18 @@ export default function ContentPage({ events = [], challenges = [], polls = [], 
     return d.getTime() >= todayStartMs;
   };
 
-  // 1. Member posts to the gym today (non-gym-authored, shared with community)
   const memberPostsToday = posts.filter(p =>
     !p.is_hidden && !p.post_type && p.share_with_community &&
     (!gymId || p.gym_id === gymId) && isToday(p.created_date || p.created_at)
   ).length;
 
-  // 2. Shared workout posts from members today
-  const workoutPostsToday = posts.filter(p =>
-    !p.is_hidden && !p.post_type && p.share_with_community && p.workout_name &&
-    (!gymId || p.gym_id === gymId) && isToday(p.created_date || p.created_at)
-  ).length;
-  // (workout posts are already counted in memberPostsToday, so don't double count)
-
-  // 3. Poll interactions today — count voters who voted on gym polls today
-  // We use poll.voters length as a proxy since we don't have per-vote timestamps,
-  // but we count all current votes on polls that are active/were active today
   const pollVotesToday = polls.reduce((sum, p) => sum + (p.voters || []).length, 0);
 
-  // 4. Reactions on any community post today
   const reactionsToday = posts.filter(p =>
     !p.is_hidden && (!gymId || p.gym_id === gymId) &&
     (p.share_with_community || p.post_type)
   ).reduce((sum, p) => sum + Object.keys(p.reactions || {}).length, 0);
 
-  // Total = member posts today + reactions today + poll votes (all unique interactions)
   const communityInteractionsToday = memberPostsToday + reactionsToday + pollVotesToday;
 
   const communityFeedPosts = posts.filter(p => {
@@ -1295,7 +1255,6 @@ export default function ContentPage({ events = [], challenges = [], polls = [], 
           })()}
 
           {/* ── POLLS ── */}
-          {/* CHANGE 2: Redesigned poll cards — 70% left (bars) / 30% right (stats + remove) */}
           {tab === "Polls" && (() => {
             const nowMs = Date.now();
             const livePolls2 = polls.filter(p => !p.end_date || new Date(p.end_date).getTime() >= nowMs);
@@ -1332,10 +1291,7 @@ export default function ContentPage({ events = [], challenges = [], polls = [], 
                   onMouseEnter={e => { e.currentTarget.style.borderColor = C.cyanBrd; e.currentTarget.style.boxShadow = `0 0 8px rgba(77,127,255,0.07)`; }}
                   onMouseLeave={e => { e.currentTarget.style.borderColor = C.brd; e.currentTarget.style.boxShadow = "none"; }}
                 >
-                  {/* LEFT — question + option bars (~70%) */}
                   <div style={{ flex: "0 0 70%", padding: "14px 16px", display: "flex", flexDirection: "column", gap: 10, minWidth: 0 }}>
-
-                    {/* Question row + optional timer badge */}
                     <div style={{ display: "flex", alignItems: "flex-start", gap: 8, flexWrap: "wrap" }}>
                       <span style={{ fontSize: 13, fontWeight: 700, color: C.t1, flex: 1, lineHeight: 1.4 }}>
                         {poll.question || poll.title}
@@ -1355,7 +1311,6 @@ export default function ContentPage({ events = [], challenges = [], polls = [], 
                       )}
                     </div>
 
-                    {/* Option bars */}
                     <div style={{ display: "flex", flexDirection: "column", gap: 9 }}>
                       {opts.map((opt, i) => {
                         const optText  = typeof opt === 'object' ? (opt.text || opt.label || `Option ${i + 1}`) : opt;
@@ -1365,12 +1320,10 @@ export default function ContentPage({ events = [], challenges = [], polls = [], 
 
                         return (
                           <div key={i}>
-                            {/* Label + percentage */}
                             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: 11.5, marginBottom: 5 }}>
                               <span style={{ color: C.t2 }}>{optText}</span>
                               <span style={{ fontWeight: 700, color: isWinner ? C.cyan : C.t3 }}>{pct}%</span>
                             </div>
-                            {/* Bar track */}
                             <div style={{ height: 6, background: "rgba(255,255,255,0.06)", borderRadius: 3, overflow: "hidden" }}>
                               <div style={{
                                 height: "100%",
@@ -1388,7 +1341,6 @@ export default function ContentPage({ events = [], challenges = [], polls = [], 
                     </div>
                   </div>
 
-                  {/* RIGHT — stats + remove button (~30%) */}
                   <div style={{
                     flex: "0 0 30%",
                     borderLeft: `1px solid ${C.brd}`,
@@ -1398,7 +1350,6 @@ export default function ContentPage({ events = [], challenges = [], polls = [], 
                     justifyContent: "space-between",
                     gap: 10,
                   }}>
-                    {/* Response count + community % */}
                     <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
                       <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
                         <Users size={12} color={C.cyan} />
@@ -1413,7 +1364,6 @@ export default function ContentPage({ events = [], challenges = [], polls = [], 
                       )}
                     </div>
 
-                    {/* Remove button */}
                     <button
                       onClick={() => setPollToRemove(poll)}
                       style={{
@@ -1463,7 +1413,6 @@ export default function ContentPage({ events = [], challenges = [], polls = [], 
       </div>
 
       {/* RIGHT SIDEBAR — desktop only */}
-      {/* CHANGE 1: Pass onTabChange={setTab} so highlights can switch tabs */}
       {!isMobile && (
         <RightSidebar
           events={events}
@@ -1474,9 +1423,6 @@ export default function ContentPage({ events = [], challenges = [], polls = [], 
           feedPostsThisWeek={feedPostsThisWeek}
           livePolls={livePolls}
           communityInteractionsToday={communityInteractionsToday}
-          memberPostsToday={memberPostsToday}
-          pollVotesToday={pollVotesToday}
-          reactionsToday={reactionsToday}
           onTabChange={setTab}
         />
       )}
