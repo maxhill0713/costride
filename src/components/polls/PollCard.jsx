@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
-import { BarChart2, CheckCircle2 } from 'lucide-react';
+import { CheckCircle2 } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 
@@ -180,13 +180,6 @@ function PollCard({ poll, onVote, userVoted, isLoading, currentUser }) {
               <div className="flex flex-col gap-0.5">
                 <div className="flex items-center gap-2">
                   <p className="text-sm font-bold text-white leading-tight">{gymName}</p>
-                  <span style={{
-                    fontSize: 9, fontWeight: 700, padding: '1px 7px', borderRadius: 5,
-                    background: 'rgba(96,165,250,0.12)', border: '1px solid rgba(96,165,250,0.25)',
-                    color: '#60a5fa', display: 'inline-flex', alignItems: 'center', gap: 4, flexShrink: 0,
-                  }}>
-                    <BarChart2 size={9} /> Poll
-                  </span>
                 </div>
                 <div className="flex items-center gap-1.5">
                   <span className="text-[11px] text-slate-500">{formatDate(poll.created_date)}</span>
