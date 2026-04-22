@@ -126,6 +126,8 @@ export default function LocationBasedCheckInButton({ gyms, onCheckInSuccess, gym
       queryClient.invalidateQueries({ predicate: q => q.queryKey[0] === 'weeklyWorkoutLogs' });
       setSuccess(true);
       onCheckInSuccess?.();
+      // Auto-reset success state after 2 seconds
+      setTimeout(() => setSuccess(false), 2000);
     },
     onError: (error) => {
       const msg = error?.response?.data?.error || error?.message || 'Check-in failed';
