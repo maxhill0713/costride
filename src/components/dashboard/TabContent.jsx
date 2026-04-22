@@ -924,14 +924,14 @@ export default function ContentPage({ events = [], challenges = [], polls = [], 
                           <div style={{ flex: 1 }}>
                             {isGymPost && p.post_type ? (
                               <>
-                                <div style={{ fontSize: 13, fontWeight: 700, color: C.t1, lineHeight: 1.2 }}>{resolvedName}</div>
-                                <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 3 }}>
+                                <div style={{ display: "flex", alignItems: "center", gap: 7, flexWrap: "wrap" }}>
+                                  <div style={{ fontSize: 13, fontWeight: 700, color: C.t1, lineHeight: 1.2 }}>{resolvedName}</div>
                                   {(() => { const pt = POST_TYPE_STYLES[p.post_type] || POST_TYPE_STYLES.update; return (
-                                  <span style={{ fontSize: 9.5, fontWeight: 700, padding: "1px 7px", borderRadius: 5, background: pt.bg, border: `1px solid ${pt.border}`, color: pt.color }}>
+                                  <span style={{ fontSize: 9.5, fontWeight: 700, padding: "1px 7px", borderRadius: 5, background: pt.bg, border: `1px solid ${pt.border}`, color: pt.color, flexShrink: 0 }}>
                                     {pt.label}
                                   </span>); })()}
-                                  <span style={{ fontSize: 11, color: C.t3 }}>{postedAt}</span>
                                 </div>
+                                {postedAt && <div style={{ fontSize: 11, color: C.t3, marginTop: 2 }}>{postedAt}</div>}
                               </>
                             ) : (
                               <>
