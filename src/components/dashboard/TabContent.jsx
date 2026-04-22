@@ -126,7 +126,6 @@ function MessageMemberModal({ resolvedName, memberId, onClose }) {
     <div style={{ position: "fixed", inset: 0, zIndex: 500, background: "rgba(0,0,0,0.72)", display: "flex", alignItems: "center", justifyContent: "center" }}
       onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
       <div style={{ background: C.card, border: `1px solid ${C.brd}`, borderRadius: 14, padding: "20px 24px 20px", width: 400, maxWidth: "90vw", display: "flex", flexDirection: "column", gap: 14 }}>
-        {/* Header with X top-right */}
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <div style={{ fontSize: 15, fontWeight: 800, color: C.t1, letterSpacing: "-0.02em" }}>Message Member</div>
           <button onClick={onClose} style={{ background: "none", border: "none", color: C.t3, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", padding: 4, borderRadius: 6 }}
@@ -212,8 +211,6 @@ function ReactionsModal({ reactions, onClose }) {
     <div style={{ position: "fixed", inset: 0, zIndex: 500, background: "rgba(0,0,0,0.72)", display: "flex", alignItems: "center", justifyContent: "center" }}
       onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
       <div style={{ background: C.card, border: `1px solid ${C.brd}`, borderRadius: 14, padding: "20px 20px 16px", width: 380, maxWidth: "92vw", display: "flex", flexDirection: "column", gap: 14, maxHeight: "75vh" }}>
-
-        {/* Header */}
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexShrink: 0 }}>
           <div style={{ fontSize: 15, fontWeight: 800, color: C.t1, letterSpacing: "-0.02em" }}>
             {total} Reaction{total !== 1 ? "s" : ""}
@@ -224,8 +221,6 @@ function ReactionsModal({ reactions, onClose }) {
             <X size={15} />
           </button>
         </div>
-
-        {/* Search */}
         <div style={{ display: "flex", alignItems: "center", gap: 8, background: C.card2, border: `1px solid ${C.brd}`, borderRadius: 8, padding: "7px 11px", flexShrink: 0 }}>
           <svg width="13" height="13" fill="none" stroke={C.t3} strokeWidth="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
           <input
@@ -235,8 +230,6 @@ function ReactionsModal({ reactions, onClose }) {
             style={{ flex: 1, background: "none", border: "none", outline: "none", color: C.t1, fontSize: 13, fontFamily: FONT }}
           />
         </div>
-
-        {/* List */}
         <div style={{ overflowY: "auto", display: "flex", flexDirection: "column", gap: 2 }}>
           {loading ? (
             <div style={{ textAlign: "center", padding: "24px 0", color: C.t3, fontSize: 12 }}>Loading…</div>
@@ -281,7 +274,6 @@ function RemovePostModal({ post, resolvedName, onConfirm, onClose }) {
     <div style={{ position: "fixed", inset: 0, zIndex: 500, background: "rgba(0,0,0,0.72)", display: "flex", alignItems: "center", justifyContent: "center" }}
       onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
       <div style={{ background: C.card, border: `1px solid rgba(255,77,109,0.25)`, borderRadius: 14, padding: "20px 24px 20px", width: 380, maxWidth: "90vw", display: "flex", flexDirection: "column", gap: 16 }}>
-        {/* Header with X top-right */}
         <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between" }}>
           <div>
             <div style={{ fontSize: 15, fontWeight: 800, color: C.t1 }}>Remove Post</div>
@@ -430,13 +422,10 @@ function EditPostModal({ post, gym, onClose, onSave }) {
     <div style={{ position: "fixed", inset: 0, zIndex: 500, background: "rgba(0,0,0,0.78)", display: "flex", alignItems: "center", justifyContent: "center" }}
       onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
       <div style={{ background: C.card, border: `1px solid ${C.brd}`, borderRadius: 16, padding: "22px 22px 18px", width: 480, maxWidth: "94vw", maxHeight: "90vh", display: "flex", flexDirection: "column", gap: 14, overflowY: "auto" }}>
-        {/* Header */}
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <div style={{ fontSize: 15, fontWeight: 800, color: C.t1, letterSpacing: "-0.02em" }}>Edit Post</div>
           <button onClick={onClose} style={{ background: "none", border: "none", color: C.t3, cursor: "pointer", fontSize: 18, lineHeight: 1, padding: 0, display: "flex", alignItems: "center" }}><X size={16} /></button>
         </div>
-
-        {/* Post type */}
         <div>
           <div style={{ fontSize: 10, fontWeight: 700, color: C.t3, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 7 }}>Post Type</div>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
@@ -451,8 +440,6 @@ function EditPostModal({ post, gym, onClose, onSave }) {
             ))}
           </div>
         </div>
-
-        {/* Content */}
         <div>
           <div style={{ fontSize: 10, fontWeight: 700, color: C.t3, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 7 }}>Content</div>
           <textarea
@@ -464,8 +451,6 @@ function EditPostModal({ post, gym, onClose, onSave }) {
             onBlur={e => e.target.style.borderColor = C.brd}
           />
         </div>
-
-        {/* Image */}
         <div>
           <div style={{ fontSize: 10, fontWeight: 700, color: C.t3, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 7 }}>Image</div>
           {imageUrl ? (
@@ -484,8 +469,6 @@ function EditPostModal({ post, gym, onClose, onSave }) {
           )}
           <input ref={fileRef} type="file" accept="image/*" onChange={e => handleFile(e.target.files?.[0])} style={{ display: "none" }} />
         </div>
-
-        {/* Footer */}
         <div style={{ display: "flex", gap: 8, justifyContent: "flex-end", marginTop: 4 }}>
           <button onClick={onClose} style={{ padding: "8px 16px", borderRadius: 8, background: "transparent", border: `1px solid ${C.brd}`, color: C.t2, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: FONT }}>Cancel</button>
           <button onClick={handleSave} disabled={!isDirty || !content.trim() || saving}
@@ -632,9 +615,10 @@ function Tabs({ active, setActive, isMobile }) {
 }
 
 /* ─── RIGHT SIDEBAR ──────────────────────────────────────────── */
+// CHANGE 1: Added onTabChange prop so highlight boxes can switch tabs
 const QUICK_IDEAS = ["Generate AI Motivation Monday", "Post Member Spotlight", "Create Weekend Challenge Poll"];
 
-function RightSidebar({ events, challenges, polls, posts, openModal, feedPostsThisWeek, livePolls, communityInteractionsToday }) {
+function RightSidebar({ events, challenges, polls, posts, openModal, feedPostsThisWeek, livePolls, communityInteractionsToday, onTabChange }) {
   const totalContent = events.length + challenges.length + polls.length + posts.length;
   return (
     <div style={{
@@ -673,21 +657,50 @@ function RightSidebar({ events, challenges, polls, posts, openModal, feedPostsTh
 
         <div style={{ height: 1, background: C.brd }} />
 
-        {/* Content Highlights */}
+        {/* Content Highlights — now clickable to switch tabs */}
         <div>
           <div style={{ fontSize: 12.5, fontWeight: 600, color: C.t1, marginBottom: 10 }}>Content Highlights</div>
           <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
             {[
-              { label: "Community Interactions today", count: communityInteractionsToday, Icon: Zap,      color: "#34d399" },
-              { label: "Posts this week",              count: feedPostsThisWeek,           Icon: FileText, color: C.cyan   },
-              { label: "Live Polls",                   count: livePolls,                   Icon: BarChart2,color: "#8b5cf6"},
-              { label: "Challenges",                   count: challenges.length,           Icon: Trophy,   color: "#ec4899"},
-              { label: "Events",                       count: events.length,               Icon: Calendar, color: "#f59e0b"},
-            ].map(({ label, count, Icon, color }) => (
-              <div key={label} style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 10px", background: C.card, border: `1px solid ${C.brd}`, borderRadius: 8 }}>
+              { label: "Community Interactions today", count: communityInteractionsToday, Icon: Zap,       color: "#34d399", tab: null              },
+              { label: "Posts this week",              count: feedPostsThisWeek,           Icon: FileText,  color: C.cyan,    tab: "Community Feed"  },
+              { label: "Live Polls",                   count: livePolls,                   Icon: BarChart2, color: "#8b5cf6", tab: "Polls"           },
+              { label: "Challenges",                   count: challenges.length,           Icon: Trophy,    color: "#ec4899", tab: "Challenges"      },
+              { label: "Events",                       count: events.length,               Icon: Calendar,  color: "#f59e0b", tab: "Events"          },
+            ].map(({ label, count, Icon, color, tab }) => (
+              <div
+                key={label}
+                onClick={() => tab && onTabChange?.(tab)}
+                style={{
+                  display: "flex", alignItems: "center", gap: 8,
+                  padding: "8px 10px",
+                  background: C.card,
+                  border: `1px solid ${C.brd}`,
+                  borderRadius: 8,
+                  cursor: tab ? "pointer" : "default",
+                  transition: "all 0.15s",
+                }}
+                onMouseEnter={e => {
+                  if (tab) {
+                    e.currentTarget.style.borderColor = C.cyanBrd;
+                    e.currentTarget.style.background = C.cyanDim;
+                  }
+                }}
+                onMouseLeave={e => {
+                  if (tab) {
+                    e.currentTarget.style.borderColor = C.brd;
+                    e.currentTarget.style.background = C.card;
+                  }
+                }}
+              >
                 <Icon size={13} color={color} />
                 <span style={{ fontSize: 12, color: C.t2, flex: 1 }}>{label}</span>
                 <span style={{ fontSize: 13, fontWeight: 700, color: C.t1 }}>{count}</span>
+                {tab && (
+                  <svg width="10" height="10" fill="none" stroke={C.t3} strokeWidth="2.5" viewBox="0 0 24 24">
+                    <path d="m9 18 6-6-6-6"/>
+                  </svg>
+                )}
               </div>
             ))}
           </div>
@@ -1106,6 +1119,7 @@ export default function ContentPage({ events = [], challenges = [], polls = [], 
           })()}
 
           {/* ── POLLS ── */}
+          {/* CHANGE 2: Redesigned poll cards — 70% left (bars) / 30% right (stats + remove) */}
           {tab === "Polls" && (() => {
             const nowMs = Date.now();
             const livePolls2 = polls.filter(p => !p.end_date || new Date(p.end_date).getTime() >= nowMs);
@@ -1119,93 +1133,128 @@ export default function ContentPage({ events = [], challenges = [], polls = [], 
                 const diffMs = new Date(poll.end_date).getTime() - nowMs;
                 if (diffMs <= 0) return null;
                 const diffHours = diffMs / (1000 * 60 * 60);
-                if (diffHours < 24) { const h = Math.round(diffHours); return `${h}h left`; }
+                if (diffHours < 24) return `${Math.round(diffHours)}h left`;
                 return `${Math.round(diffMs / (1000 * 60 * 60 * 24))}d left`;
               })();
               const isUrgent = timeRemainingLabel && new Date(poll.end_date).getTime() - nowMs < 24 * 60 * 60 * 1000;
 
-              return (
-                <div style={{ background: C.card, border: `1px solid ${C.brd}`, borderRadius: 10, padding: isMobile ? "14px 16px" : "13px 16px", marginBottom: 8 }}
-                  onMouseEnter={e => { e.currentTarget.style.borderColor = C.cyanBrd; e.currentTarget.style.boxShadow = `0 0 6px rgba(77,127,255,0.06)`; }}
-                  onMouseLeave={e => { e.currentTarget.style.borderColor = C.brd; e.currentTarget.style.boxShadow = "none"; }}>
+              const opts = (poll.options || []);
+              const totalVotes = opts.reduce((sum, o) => sum + (typeof o === 'object' ? (o.votes || 0) : 0), 0);
+              const winnerVotes = Math.max(...opts.map(o => typeof o === 'object' ? (o.votes || 0) : 0), 0);
 
-                  {/* ── TOP ROW: question + timer + remove button ── */}
-                  <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 10, marginBottom: 10 }}>
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontSize: 13, fontWeight: 600, color: C.t1 }}>{poll.question || poll.title}</div>
-                    </div>
-                    <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 6, flexShrink: 0 }}>
-                      <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                        {showTimer && timeRemainingLabel && (
-                          <div style={{ display: "flex", alignItems: "center", gap: 5, padding: "4px 9px", borderRadius: 7,
-                            background: isUrgent ? "rgba(255,77,109,0.12)" : "rgba(77,127,255,0.10)",
-                            border: `1px solid ${isUrgent ? "rgba(255,77,109,0.3)" : "rgba(77,127,255,0.25)"}`,
-                            color: isUrgent ? "#ff6b85" : C.cyan, fontSize: 11, fontWeight: 700 }}>
-                            <Clock size={11} color="currentColor" />
-                            <span>{timeRemainingLabel}</span>
-                          </div>
-                        )}
-                        <button
-                          onClick={() => setPollToRemove(poll)}
-                          style={{ display: "flex", alignItems: "center", gap: 6, padding: "6px 12px", borderRadius: 8, background: "rgba(255,255,255,0.03)", border: `1px solid ${C.brd}`, color: C.t2, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: FONT, flexShrink: 0, transition: "all 0.15s" }}
-                          onMouseEnter={e => { e.currentTarget.style.borderColor = "rgba(255,77,109,0.35)"; e.currentTarget.style.color = C.red; e.currentTarget.style.background = C.redDim; }}
-                          onMouseLeave={e => { e.currentTarget.style.borderColor = C.brd; e.currentTarget.style.color = C.t2; e.currentTarget.style.background = "rgba(255,255,255,0.03)"; }}>
-                          <Trash2 size={12} color="currentColor" />
-                          <span>Remove</span>
-                        </button>
-                      </div>
-                      {/* Responses count sits under the Remove button, right-aligned */}
-                      <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 2 }}>
-                        <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
-                          <Users size={11} color={C.cyan} />
-                          <span style={{ fontSize: 11.5, fontWeight: 700, color: C.t1 }}>{responseCount} Response{responseCount !== 1 ? "s" : ""}</span>
+              return (
+                <div
+                  style={{
+                    background: C.card,
+                    border: `1px solid ${C.brd}`,
+                    borderRadius: 12,
+                    marginBottom: 10,
+                    overflow: "hidden",
+                    display: "flex",
+                    transition: "border-color 0.15s, box-shadow 0.15s",
+                  }}
+                  onMouseEnter={e => { e.currentTarget.style.borderColor = C.cyanBrd; e.currentTarget.style.boxShadow = `0 0 8px rgba(77,127,255,0.07)`; }}
+                  onMouseLeave={e => { e.currentTarget.style.borderColor = C.brd; e.currentTarget.style.boxShadow = "none"; }}
+                >
+                  {/* LEFT — question + option bars (~70%) */}
+                  <div style={{ flex: "0 0 70%", padding: "14px 16px", display: "flex", flexDirection: "column", gap: 10, minWidth: 0 }}>
+
+                    {/* Question row + optional timer badge */}
+                    <div style={{ display: "flex", alignItems: "flex-start", gap: 8, flexWrap: "wrap" }}>
+                      <span style={{ fontSize: 13, fontWeight: 700, color: C.t1, flex: 1, lineHeight: 1.4 }}>
+                        {poll.question || poll.title}
+                      </span>
+                      {showTimer && timeRemainingLabel && (
+                        <div style={{
+                          display: "flex", alignItems: "center", gap: 5,
+                          padding: "3px 8px", borderRadius: 6, flexShrink: 0,
+                          background: isUrgent ? "rgba(255,77,109,0.12)" : "rgba(77,127,255,0.10)",
+                          border: `1px solid ${isUrgent ? "rgba(255,77,109,0.3)" : "rgba(77,127,255,0.25)"}`,
+                          color: isUrgent ? "#ff6b85" : C.cyan,
+                          fontSize: 11, fontWeight: 700,
+                        }}>
+                          <Clock size={10} color="currentColor" />
+                          <span>{timeRemainingLabel}</span>
                         </div>
-                        {memberCount > 0 && (
-                          <span style={{ fontSize: 11, color: C.t2 }}>{communityPct}% of the community</span>
-                        )}
-                      </div>
+                      )}
+                    </div>
+
+                    {/* Option bars */}
+                    <div style={{ display: "flex", flexDirection: "column", gap: 9 }}>
+                      {opts.map((opt, i) => {
+                        const optText  = typeof opt === 'object' ? (opt.text || opt.label || `Option ${i + 1}`) : opt;
+                        const optVotes = typeof opt === 'object' ? (opt.votes || 0) : 0;
+                        const pct      = totalVotes > 0 ? Math.round((optVotes / totalVotes) * 100) : 0;
+                        const isWinner = optVotes === winnerVotes && optVotes > 0;
+
+                        return (
+                          <div key={i}>
+                            {/* Label + percentage */}
+                            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: 11.5, marginBottom: 5 }}>
+                              <span style={{ color: C.t2 }}>{optText}</span>
+                              <span style={{ fontWeight: 700, color: isWinner ? C.cyan : C.t3 }}>{pct}%</span>
+                            </div>
+                            {/* Bar track */}
+                            <div style={{ height: 6, background: "rgba(255,255,255,0.06)", borderRadius: 3, overflow: "hidden" }}>
+                              <div style={{
+                                height: "100%",
+                                width: `${pct}%`,
+                                borderRadius: 3,
+                                background: isWinner
+                                  ? `linear-gradient(90deg, ${C.cyan}, rgba(77,127,255,0.55))`
+                                  : "rgba(148,163,184,0.28)",
+                                transition: "width 0.7s cubic-bezier(0.4,0,0.2,1)",
+                              }} />
+                            </div>
+                          </div>
+                        );
+                      })}
                     </div>
                   </div>
 
-                  {/* ── OPTION BARS ── */}
-                  {(poll.options || []).map((opt, i) => {
-                    const optText  = typeof opt === "object" ? (opt.text || opt.label || String(i + 1)) : opt;
-                    const optVotes = typeof opt === "object" ? (opt.votes || 0) : ((poll.votes || {})[opt] || 0);
-                    const total    = Math.max((poll.voters || []).length, 1);
-                    const pct      = Math.round(optVotes / total * 100);
-
-                    return (
-                      <div key={i} style={{ marginBottom: 8 }}>
-                        {/* Label row */}
-                        <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11.5, color: C.t2, marginBottom: 4 }}>
-                          <span>{optText}</span>
-                        </div>
-                        {/* Bar track — full width, then fill inside it */}
-                        <div style={{ position: "relative", height: 5, background: "rgba(255,255,255,0.06)", borderRadius: 2, overflow: "hidden" }}>
-                          <div style={{ width: `${pct}%`, height: "100%", background: C.cyan, borderRadius: 2 }} />
-                          {/* Percentage label floated to the right edge of the fill */}
-                          <div style={{
-                            position: "absolute",
-                            top: "50%",
-                            transform: "translateY(-50%)",
-                            right: `${100 - pct}%`,
-                            // Shift label just outside the right edge of fill
-                            marginRight: -28,
-                            fontSize: 10,
-                            fontWeight: 700,
-                            color: C.cyan,
-                            whiteSpace: "nowrap",
-                            pointerEvents: "none",
-                          }}>
-                          </div>
-                        </div>
-                        {/* Percentage below, right-aligned to the fill edge */}
-                        <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 3 }}>
-                          <span style={{ fontSize: 10.5, fontWeight: 700, color: C.cyan }}>{pct}%</span>
-                        </div>
+                  {/* RIGHT — stats + remove button (~30%) */}
+                  <div style={{
+                    flex: "0 0 30%",
+                    borderLeft: `1px solid ${C.brd}`,
+                    padding: "14px 14px",
+                    display: "flex",
+                    flexDirection: "column",
+                    justifyContent: "space-between",
+                    gap: 10,
+                  }}>
+                    {/* Response count + community % */}
+                    <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                        <Users size={12} color={C.cyan} />
+                        <span style={{ fontSize: 13, fontWeight: 700, color: C.t1 }}>
+                          {responseCount} Response{responseCount !== 1 ? "s" : ""}
+                        </span>
                       </div>
-                    );
-                  })}
+                      {memberCount > 0 && (
+                        <span style={{ fontSize: 11, color: C.t2, paddingLeft: 18 }}>
+                          {communityPct}% of community
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Remove button */}
+                    <button
+                      onClick={() => setPollToRemove(poll)}
+                      style={{
+                        display: "flex", alignItems: "center", gap: 6,
+                        width: "100%", padding: "7px 10px", borderRadius: 8,
+                        background: "rgba(255,255,255,0.03)", border: `1px solid ${C.brd}`,
+                        color: C.t2, fontSize: 11.5, fontWeight: 600,
+                        cursor: "pointer", fontFamily: FONT,
+                        textAlign: "left", transition: "all 0.15s",
+                      }}
+                      onMouseEnter={e => { e.currentTarget.style.borderColor = "rgba(255,77,109,0.35)"; e.currentTarget.style.color = C.red; e.currentTarget.style.background = C.redDim; }}
+                      onMouseLeave={e => { e.currentTarget.style.borderColor = C.brd; e.currentTarget.style.color = C.t2; e.currentTarget.style.background = "rgba(255,255,255,0.03)"; }}
+                    >
+                      <Trash2 size={12} color="currentColor" />
+                      <span>Remove</span>
+                    </button>
+                  </div>
                 </div>
               );
             };
@@ -1238,6 +1287,7 @@ export default function ContentPage({ events = [], challenges = [], polls = [], 
       </div>
 
       {/* RIGHT SIDEBAR — desktop only */}
+      {/* CHANGE 1: Pass onTabChange={setTab} so highlights can switch tabs */}
       {!isMobile && (
         <RightSidebar
           events={events}
@@ -1248,6 +1298,7 @@ export default function ContentPage({ events = [], challenges = [], polls = [], 
           feedPostsThisWeek={feedPostsThisWeek}
           livePolls={livePolls}
           communityInteractionsToday={communityInteractionsToday}
+          onTabChange={setTab}
         />
       )}
 
