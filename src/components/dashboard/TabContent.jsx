@@ -645,7 +645,7 @@ function buildInteractionBuckets(posts) {
 function InteractionSparkline({ posts }) {
   const buckets = buildInteractionBuckets(posts);
   const W = 224, H = 80;
-  const PAD = { top: 6, right: 4, bottom: 18, left: 20 };
+  const PAD = { top: 6, right: 4, bottom: 18, left: 12 };
   const chartW = W - PAD.left - PAD.right;
   const chartH = H - PAD.top - PAD.bottom;
   const HOURS = buckets.length; // 168
@@ -763,19 +763,19 @@ function RightSidebar({ events, challenges, polls, posts, openModal, feedPostsTh
 
         <div style={{ height: 1, background: C.brd }} />
 
-        {/* ── CHANGE: Cleaned up interactions box — label + count + chart only */}
-        <div style={{ background: C.card, border: `1px solid ${C.brd}`, borderRadius: 10, padding: "12px 12px 10px" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 10 }}>
-            <Zap size={12} color="#34d399" />
-            <span style={{ fontSize: 12, color: C.t2, flex: 1 }}>Community Interactions today</span>
-            <span style={{ fontSize: 14, fontWeight: 800, color: C.t1 }}>{communityInteractionsToday}</span>
-          </div>
-          <InteractionSparkline posts={posts} />
-        </div>
-
         {/* Content Highlights */}
         <div>
           <div style={{ fontSize: 12.5, fontWeight: 600, color: C.t1, marginBottom: 8 }}>Content Highlights</div>
+
+          {/* Interactions box sits here, under the title */}
+          <div style={{ background: C.card, border: `1px solid ${C.brd}`, borderRadius: 10, padding: "12px 12px 10px", marginBottom: 6 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 10 }}>
+              <Zap size={12} color="#34d399" />
+              <span style={{ fontSize: 12, color: C.t2, flex: 1 }}>Community Interactions today</span>
+              <span style={{ fontSize: 14, fontWeight: 800, color: C.t1 }}>{communityInteractionsToday}</span>
+            </div>
+            <InteractionSparkline posts={posts} />
+          </div>
           <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
             {[
               { label: "Posts this week",  count: feedPostsThisWeek,  Icon: FileText,  color: C.cyan,    tab: "Community Feed" },
