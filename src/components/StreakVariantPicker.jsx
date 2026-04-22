@@ -42,7 +42,7 @@ export default function StreakVariantPicker({ isOpen, onClose, onSelect, selecte
               className={`relative flex items-center justify-center p-2 rounded-2xl transition-all ${
                 selectedVariant === icon.id ? `ring-2 ${icon.ring}` : 'hover:opacity-80'
               }`}
-              style={{ aspectRatio: '1 / 1.2' }}>
+              style={{ aspectRatio: '1 / 1.32' }}>
               <img
                 src={icon.src}
                 alt={icon.alt}
