@@ -342,15 +342,15 @@ export default function FeedPollCard({ poll, currentUser }) {
   const gymAvatar = gym?.logo_url || gym?.image_url || null;
   const gymInitial = gymName.charAt(0).toUpperCase();
 
-  const CATEGORY_LABELS = {
-    equipment_replacement: 'Equipment Poll',
-    favorite_equipment: 'Fav. Kit Poll',
-    rewards: 'Rewards Poll',
-    playlist: 'Playlist Poll',
-    schedule: 'Schedule Poll',
-    other: 'Poll',
+  const CATEGORY_CONFIG = {
+    equipment_replacement: { label: 'Equipment Poll', color: '#f59e0b', bg: 'rgba(245,158,11,0.12)', border: 'rgba(245,158,11,0.25)' },
+    favorite_equipment:    { label: 'Fav. Kit Poll',  color: '#60a5fa', bg: 'rgba(96,165,250,0.12)',  border: 'rgba(96,165,250,0.25)'  },
+    rewards:               { label: 'Rewards Poll',   color: '#22c55e', bg: 'rgba(34,197,94,0.12)',   border: 'rgba(34,197,94,0.25)'   },
+    playlist:              { label: 'Playlist Poll',  color: '#a78bfa', bg: 'rgba(167,139,250,0.12)', border: 'rgba(167,139,250,0.25)' },
+    schedule:              { label: 'Schedule Poll',  color: '#60a5fa', bg: 'rgba(96,165,250,0.12)',  border: 'rgba(96,165,250,0.25)'  },
+    other:                 { label: 'Poll',           color: '#60a5fa', bg: 'rgba(96,165,250,0.12)',  border: 'rgba(96,165,250,0.25)'  },
   };
-  const pollBadgeLabel = poll.category ? (CATEGORY_LABELS[poll.category] || 'Poll') : 'Poll';
+  const pollBadgeCfg = (poll.category && CATEGORY_CONFIG[poll.category]) || CATEGORY_CONFIG.other;
 
   const opts = (poll.options || []).filter(o =>
     typeof o === 'string' ? o.trim() : (o.text || o.label || '').trim()
@@ -409,14 +409,14 @@ export default function FeedPollCard({ poll, currentUser }) {
                   <p className="text-sm font-bold text-white leading-tight">{gymName}</p>
                   <span style={{
                     fontSize: 9, fontWeight: 700, padding: '1px 7px', borderRadius: 5,
-                    background: 'rgba(96,165,250,0.12)',
-                    border: '1px solid rgba(96,165,250,0.25)',
-                    color: '#60a5fa',
+                    background: pollBadgeCfg.bg,
+                    border: `1px solid ${pollBadgeCfg.border}`,
+                    color: pollBadgeCfg.color,
                     display: 'inline-flex', alignItems: 'center', gap: 4,
                     flexShrink: 0,
                   }}>
                     <BarChart2 size={9} />
-                    {pollBadgeLabel}
+                    {pollBadgeCfg.label}
                   </span>
                 </div>
                 <div className="flex items-center gap-1.5">
