@@ -177,12 +177,54 @@ export default function LocationBasedCheckInButton({ gyms, onCheckInSuccess, gym
 
   // Don't render until we've finished the initial location check
   if (isCheckingLocation) return null;
-  // Only show button if user is within range of a gym
-  if (!selectedGym) return null;
+  // If no gym in range but there's an error (e.g. too far, no location), show the error banner
+  if (!selectedGym) {
+    if (!locationError) return null;
+    return (
+      <>
+        {injectCheckInStyles()}
+        <div style={{
+          padding: '10px 14px',
+          borderRadius: 12,
+          background: 'rgba(255,77,109,0.12)',
+          border: '1px solid rgba(255,77,109,0.35)',
+          display: 'flex', alignItems: 'flex-start', gap: 8,
+        }}>
+          <svg width="16" height="16" viewBox="0 0 20 20" fill="none" style={{ flexShrink: 0, marginTop: 1 }}>
+            <circle cx="10" cy="10" r="9" stroke="#ff4d6d" strokeWidth="1.8" />
+            <path d="M10 6v5" stroke="#ff4d6d" strokeWidth="2" strokeLinecap="round" />
+            <circle cx="10" cy="14.5" r="1" fill="#ff4d6d" />
+          </svg>
+          <span style={{ fontSize: 13, fontWeight: 600, color: '#ff6b85', lineHeight: 1.4 }}>
+            {locationError}
+          </span>
+        </div>
+      </>
+    );
+  }
 
   return (
     <>
       {injectCheckInStyles()}
+      {locationError && (
+        <div style={{
+          marginBottom: 10,
+          padding: '10px 14px',
+          borderRadius: 12,
+          background: 'rgba(255,77,109,0.12)',
+          border: '1px solid rgba(255,77,109,0.35)',
+          display: 'flex', alignItems: 'flex-start', gap: 8,
+        }}>
+          <svg width="16" height="16" viewBox="0 0 20 20" fill="none" style={{ flexShrink: 0, marginTop: 1 }}>
+            <circle cx="10" cy="10" r="9" stroke="#ff4d6d" strokeWidth="1.8" />
+            <path d="M10 6v5" stroke="#ff4d6d" strokeWidth="2" strokeLinecap="round" />
+            <circle cx="10" cy="14.5" r="1" fill="#ff4d6d" />
+          </svg>
+          <span style={{ fontSize: 13, fontWeight: 600, color: '#ff6b85', lineHeight: 1.4 }}>
+            {locationError}
+          </span>
+        </div>
+      )}
       <div style={{ position: 'relative' }}>
         <div style={{
           position: 'absolute', inset: 0, borderRadius: 18,
