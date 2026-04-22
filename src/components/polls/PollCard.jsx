@@ -1,137 +1,250 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useMemo, useEffect, useRef } from 'react';
+import { motion } from 'framer-motion';
+import { BarChart2, CheckCircle2 } from 'lucide-react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { base44 } from '@/api/base44Client';
 
-function ProgressBar({ percentage, voted }) {
-  const [width, setWidth] = useState(0);
+// ── Animated fill bar (identical to FeedPollCard) ────────────────────────────
+function PollOptionBar({ opt, isSelected, isWinner, pct, canVote, showResults, onVote }) {
+  const barRef = useRef(null);
+  const MIN_FILL = 3;
+
   useEffect(() => {
-    const t = setTimeout(() => setWidth(percentage), 80);
-    return () => clearTimeout(t);
-  }, [percentage]);
-  return (
-    <div className="absolute inset-0 rounded-lg overflow-hidden">
-      <div
-        className={`h-full rounded-lg transition-all duration-600 ease-out ${
-          voted
-            ? "bg-gradient-to-r from-violet-600/50 to-blue-500/40"
-            : "bg-gradient-to-r from-violet-600/18 to-blue-500/14"
-        }`}
-        style={{ width: `${width}%` }}
-      />
-    </div>
-  );
-}
-
-function PollOption({ option, voted, showResults, isClosed, isLoading, onVote, totalVotes, isLeading }) {
-  const percentage = totalVotes ? Math.round((option.votes / totalVotes) * 100) : 0;
-  const isMyVote = voted === option.id;
+    if (!showResults || !barRef.current) return;
+    barRef.current.style.width = '0%';
+    const frame = requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        if (barRef.current) {
+          barRef.current.style.width = `${pct > 0 ? Math.max(pct, MIN_FILL) : MIN_FILL}%`;
+        }
+      });
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [showResults, pct]);
 
   return (
     <button
-      disabled={isClosed || isLoading}
-      onClick={() => { if (!isClosed && !isLoading) onVote?.(option.id); }}
-      className={`
-        group w-full relative overflow-hidden rounded-lg border
-        transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-400/50
-        ${isMyVote
-          ? "border-violet-500/45 shadow-[0_0_0_1px_rgba(139,92,246,0.12)]"
-          : "border-white/[0.08] hover:border-white/[0.18]"
-        }
-        ${isClosed || isLoading ? "cursor-default" : "cursor-pointer active:scale-[0.98]"}
-        bg-slate-950/60
-      `}
+      onClick={() => canVote && onVote()}
+      disabled={!canVote}
+      className="w-full text-left transition-all duration-150 active:scale-[0.98]"
+      style={{
+        borderRadius: 9,
+        overflow: 'hidden',
+        position: 'relative',
+        border: showResults
+          ? 'none'
+          : isSelected
+            ? '1px solid rgba(96,165,250,0.45)'
+            : '1px solid rgba(255,255,255,0.08)',
+        background: showResults
+          ? 'transparent'
+          : isSelected
+            ? 'rgba(96,165,250,0.12)'
+            : 'rgba(255,255,255,0.04)',
+        cursor: canVote ? 'pointer' : 'default',
+      }}
     >
-      {showResults && <ProgressBar percentage={percentage} voted={isMyVote} />}
-      <div className="relative z-10 flex items-center justify-between px-2.5 py-[7px] gap-2">
-        <div className="flex items-center gap-2 min-w-0">
-          {showResults && isLeading && (
-            <span className="flex-shrink-0 w-1 h-1 rounded-full bg-violet-400 shadow-[0_0_5px_rgba(167,139,250,0.8)]" />
-          )}
-          <span className={`text-[11.5px] font-medium truncate transition-colors ${isMyVote ? "text-white" : "text-slate-300 group-hover:text-white"}`}>
-            {option.text}
+      {showResults && (
+        <div
+          ref={barRef}
+          style={{
+            position: 'absolute', left: 0, top: 0, bottom: 0,
+            width: '0%',
+            background: isWinner ? 'rgba(37,99,235,0.45)' : 'rgba(148,163,184,0.22)',
+            borderRadius: 9,
+            transition: 'width 0.7s cubic-bezier(0.4, 0, 0.2, 1)',
+          }}
+        />
+      )}
+      <div className="relative flex items-center justify-between px-3" style={{ paddingTop: 8, paddingBottom: 8 }}>
+        <span className="text-[13px] font-semibold" style={{ color: isSelected ? '#93c5fd' : 'rgba(255,255,255,0.8)' }}>
+          {opt.text}
+        </span>
+        {showResults && (
+          <span
+            className="text-[12px] font-bold ml-2 flex-shrink-0"
+            style={{ color: isSelected ? '#60a5fa' : 'rgba(255,255,255,0.35)', animation: 'pollPctFadeIn 0.4s ease 0.35s both' }}
+          >
+            {pct}%
           </span>
-        </div>
-        <div className="flex-shrink-0 flex items-center gap-1.5">
-          {showResults && (
-            <span className={`text-[10.5px] font-bold tabular-nums ${isMyVote ? "text-violet-300" : "text-violet-400/80"}`}>
-              {percentage}%
-            </span>
-          )}
-          {isMyVote && (
-            <svg className="w-3 h-3 text-violet-400" viewBox="0 0 16 16" fill="none">
-              <circle cx="8" cy="8" r="7" stroke="currentColor" strokeWidth="1.5" />
-              <path d="M5 8l2 2 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-          )}
-          {!showResults && !isClosed && (
-            <svg className="w-3 h-3 text-slate-600 group-hover:text-slate-400 opacity-0 group-hover:opacity-100 transition-all" viewBox="0 0 16 16" fill="none">
-              <path d="M6 4l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-          )}
-        </div>
+        )}
       </div>
     </button>
   );
 }
 
-function PollCard({ poll, onVote, userVoted, isLoading }) {
-  const totalVotes = poll.options.reduce((sum, o) => sum + o.votes, 0);
-  const isClosed = poll.status === "closed";
-  const showResults = !!userVoted || isClosed;
-  const sortedIds = [...poll.options].sort((a, b) => b.votes - a.votes).map(o => o.id);
+// ── Main PollCard (matches FeedPollCard layout exactly) ──────────────────────
+function PollCard({ poll, onVote, userVoted, isLoading, currentUser }) {
+  const queryClient = useQueryClient();
+  const [localVotedOption, setLocalVotedOption] = useState(() => {
+    if (!userVoted) return null;
+    for (const opt of (poll.options || [])) {
+      if (typeof opt === 'object' && Array.isArray(opt.voters) && opt.voters.includes(currentUser?.id)) {
+        return opt.id || opt.text;
+      }
+    }
+    return null;
+  });
+
+  const voters = poll.voters || [];
+  const hasVoted = !!userVoted || !!localVotedOption;
+  const showResults = hasVoted;
+  const isExpired = poll.end_date && new Date(poll.end_date) < new Date();
+
+  const opts = (poll.options || []).filter(o =>
+    typeof o === 'string' ? o.trim() : (o.text || o.label || '').trim()
+  );
+  const totalVotes = opts.reduce((sum, o) => sum + (typeof o === 'object' ? (o.votes || 0) : 0), 0);
+  const winnerVotes = Math.max(...opts.map(o => (typeof o === 'object' ? o.votes || 0 : 0)), 0);
+
+  const voteMutation = useMutation({
+    mutationFn: async (optionId) => {
+      const updatedOpts = (poll.options || []).map(opt => {
+        if (typeof opt !== 'object') return opt;
+        const isThis = (opt.id || opt.text) === optionId;
+        const optVoters = Array.isArray(opt.voters) ? opt.voters : [];
+        return { ...opt, votes: (opt.votes || 0) + (isThis ? 1 : 0), voters: isThis ? [...optVoters, currentUser.id] : optVoters };
+      });
+      await base44.entities.Poll.update(poll.id, { options: updatedOpts, voters: [...voters, currentUser.id] });
+    },
+    onMutate: (optionId) => setLocalVotedOption(optionId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['gymPolls'] });
+      onVote && onVote();
+    },
+    onError: () => setLocalVotedOption(null),
+  });
+
+  // Gym info
+  const gymName = poll.gym_name || 'Your Gym';
+  const gymInitial = gymName.charAt(0).toUpperCase();
+
+  const { data: gym } = useQuery({
+    queryKey: ['gymForPoll', poll.gym_id],
+    queryFn: () => base44.entities.Gym.filter({ id: poll.gym_id }).then(r => r[0] || null),
+    enabled: !!poll.gym_id,
+    staleTime: 30 * 60 * 1000,
+  });
+
+  const gymAvatar = gym?.logo_url || gym?.image_url || null;
+
+  function formatDate(dateStr) {
+    if (!dateStr) return '';
+    let date = new Date(dateStr);
+    if (!dateStr.endsWith('Z') && !dateStr.match(/[+-]\d{2}:\d{2}$/)) date = new Date(dateStr + 'Z');
+    const diffMs = Date.now() - date.getTime();
+    const diffMins = diffMs / 60000;
+    const diffHours = diffMs / 3600000;
+    const diffDays = diffMs / 86400000;
+    if (diffMins < 2) return 'Just now';
+    if (diffMins < 60) return `${Math.floor(diffMins)}m ago`;
+    if (diffHours < 24) return `${Math.floor(diffHours)}h ago`;
+    if (diffDays < 3) return `${Math.floor(diffDays)}d ago`;
+    const day = date.getDate();
+    const suffix = day === 1 || day === 21 || day === 31 ? 'st' : day === 2 || day === 22 ? 'nd' : day === 3 || day === 23 ? 'rd' : 'th';
+    return `${day}${suffix} ${date.toLocaleDateString('en-GB', { month: 'long' })}`;
+  }
 
   return (
-    <div
-      className="relative rounded-2xl overflow-hidden"
-      style={{
-        background: "linear-gradient(150deg, #1e293b 0%, #0f172a 100%)",
-        boxShadow: "0 0 0 1px rgba(255,255,255,0.07), 0 6px 24px rgba(0,0,0,0.4)",
-      }}
-    >
-      <div className="h-px" style={{ background: "linear-gradient(90deg,transparent 10%,rgba(139,92,246,0.22) 50%,transparent 90%)" }} />
-      <div className="p-3.5 space-y-2.5">
-        <div className="flex items-start justify-between gap-2">
-          <div>
-            <p className="text-[12.5px] font-semibold text-slate-100 leading-snug">{poll.title}</p>
-            {poll.description && <p className="text-[10.5px] text-slate-400/70 mt-0.5">{poll.description}</p>}
+    <>
+      <style>{`@keyframes pollPctFadeIn { from { opacity: 0; } to { opacity: 1; } }`}</style>
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="mb-1 overflow-hidden shadow-2xl shadow-black/40 rounded-2xl relative"
+        style={{
+          background: 'linear-gradient(135deg, rgba(16,19,40,0.96) 0%, rgba(6,8,18,0.99) 100%)',
+          border: '1px solid rgba(255,255,255,0.07)',
+          backdropFilter: 'blur(20px)',
+          WebkitBackdropFilter: 'blur(20px)',
+        }}
+      >
+        <div className="absolute inset-x-0 top-0 h-px pointer-events-none z-10"
+          style={{ background: 'linear-gradient(90deg, transparent 10%, rgba(255,255,255,0.1) 50%, transparent 90%)' }} />
+
+        {showResults && (
+          <div className="absolute top-3 right-3 z-20">
+            <CheckCircle2 size={18} className="text-emerald-400" strokeWidth={2.5} />
           </div>
-          {isClosed && (
-            <span className="flex-shrink-0 flex items-center gap-1 rounded-full px-2 py-0.5 text-[9px] font-semibold uppercase tracking-widest text-slate-500 border border-white/10 bg-white/4">
-              Closed
-            </span>
-          )}
-        </div>
+        )}
 
-        <div className="space-y-1.5">
-          {poll.options.map((option) => (
-            <PollOption
-              key={option.id}
-              option={option}
-              voted={userVoted}
-              showResults={showResults}
-              isClosed={isClosed}
-              isLoading={isLoading}
-              onVote={onVote}
-              totalVotes={totalVotes}
-              isLeading={showResults && sortedIds[0] === option.id}
-            />
-          ))}
-        </div>
+        <div className="relative z-10 px-4 pt-3.5 pb-4">
+          {/* Header */}
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2.5">
+              <div className="w-9 h-9 rounded-full bg-slate-900 overflow-hidden flex items-center justify-center flex-shrink-0">
+                {gymAvatar
+                  ? <img src={gymAvatar} alt={gymName} className="w-full h-full object-cover" decoding="async" />
+                  : <span className="text-sm font-bold text-white">{gymInitial}</span>}
+              </div>
+              <div className="flex flex-col gap-0.5">
+                <div className="flex items-center gap-2">
+                  <p className="text-sm font-bold text-white leading-tight">{gymName}</p>
+                  <span style={{
+                    fontSize: 9, fontWeight: 700, padding: '1px 7px', borderRadius: 5,
+                    background: 'rgba(96,165,250,0.12)', border: '1px solid rgba(96,165,250,0.25)',
+                    color: '#60a5fa', display: 'inline-flex', alignItems: 'center', gap: 4, flexShrink: 0,
+                  }}>
+                    <BarChart2 size={9} /> Poll
+                  </span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <span className="text-[11px] text-slate-500">{formatDate(poll.created_date)}</span>
+                  {isExpired && <span className="text-[10px] font-semibold text-slate-500">· Ended</span>}
+                </div>
+              </div>
+            </div>
+          </div>
 
-        <div className="flex items-center justify-between pt-0.5">
-          <span className="text-[10.5px] text-slate-500">
-            <span className="text-slate-300 font-medium">{totalVotes}</span> {totalVotes === 1 ? "vote" : "votes"}
-          </span>
-          {isLoading && (
-            <span className="text-[10px] text-slate-500 flex items-center gap-1">
-              <span className="w-2.5 h-2.5 border border-slate-600 border-t-violet-400 rounded-full animate-spin" />
-              Saving…
+          {/* Question */}
+          <p className="text-sm font-bold text-white mb-3 leading-snug">
+            {poll.question || poll.title}
+          </p>
+
+          {/* Options */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
+            {opts.map((opt, i) => {
+              const optText = typeof opt === 'object' ? (opt.text || opt.label || `Option ${i + 1}`) : opt;
+              const optId = typeof opt === 'object' ? (opt.id || opt.text) : opt;
+              const optVotes = typeof opt === 'object' ? (opt.votes || 0) : 0;
+              const pct = totalVotes > 0 ? Math.round((optVotes / totalVotes) * 100) : 0;
+              const isSelected = localVotedOption === optId || userVoted === optId;
+              const isWinner = optVotes === winnerVotes && optVotes > 0;
+              const canVote = !showResults && !isExpired && !!currentUser && !voteMutation.isPending && !isLoading;
+
+              return (
+                <PollOptionBar
+                  key={i}
+                  opt={{ ...opt, text: optText, id: optId }}
+                  isSelected={isSelected}
+                  isWinner={isWinner}
+                  pct={pct}
+                  canVote={canVote}
+                  showResults={showResults}
+                  onVote={() => {
+                    if (onVote) { onVote(optId); setLocalVotedOption(optId); }
+                    else voteMutation.mutate(optId);
+                  }}
+                />
+              );
+            })}
+          </div>
+
+          {/* Footer */}
+          <div className="mt-3 flex items-center justify-between pr-1">
+            <span className="text-[11px] text-slate-500">
+              <span className="text-slate-300 font-medium">{totalVotes}</span> {totalVotes === 1 ? 'vote' : 'votes'}
             </span>
-          )}
-          {userVoted && !isClosed && !isLoading && (
-            <span className="text-[10px] text-violet-400/75 font-medium">Tap to change vote</span>
-          )}
+            {(voteMutation.isPending || isLoading) && (
+              <span className="text-[10px] text-slate-500 flex items-center gap-1">
+                <span className="w-2.5 h-2.5 border border-slate-600 border-t-blue-400 rounded-full animate-spin" />
+                Saving…
+              </span>
+            )}
+          </div>
         </div>
-      </div>
-    </div>
+      </motion.div>
+    </>
   );
 }
 
