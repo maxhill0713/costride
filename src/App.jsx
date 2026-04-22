@@ -83,6 +83,12 @@ const AuthenticatedApp = () => {
     }
   }
 
+  // Not authenticated — redirect to login
+  if (currentUser === null) {
+    navigateToLogin();
+    return null;
+  }
+
   // If user is loaded and hasn't completed onboarding, redirect to Onboarding for all routes
   if (currentUser && !currentUser.onboarding_completed) {
     return (
