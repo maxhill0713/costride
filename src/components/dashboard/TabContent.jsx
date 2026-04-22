@@ -615,8 +615,132 @@ function Tabs({ active, setActive, isMobile }) {
 }
 
 /* ─── RIGHT SIDEBAR ──────────────────────────────────────────── */
-// CHANGE 1: Added onTabChange prop so highlight boxes can switch tabs
 const QUICK_IDEAS = ["Generate AI Motivation Monday", "Post Member Spotlight", "Create Weekend Challenge Poll"];
+
+/* Build hourly interaction buckets for the last 7 days.
+   An "interaction" = a reaction on a community post, counted at the post's created_date hour. */
+function buildInteractionBuckets(posts) {
+  const now = Date.now();
+  const HOURS = 7 * 24; // 168 buckets
+  const buckets = new Array(HOURS).fill(0);
+
+  posts.forEach(p => {
+    if (p.is_hidden || !p.share_with_community) return;
+    const reactionCount = Object.keys(p.reactions || {}).length;
+    if (reactionCount === 0) return;
+    const dateStr = p.created_date || p.created_at;
+    if (!dateStr) return;
+    let d = new Date(dateStr);
+    if (typeof dateStr === "string" && !dateStr.endsWith("Z") && !dateStr.match(/[+-]\d{2}:\d{2}$/)) {
+      d = new Date(dateStr + "Z");
+    }
+    const hoursAgo = (now - d.getTime()) / (1000 * 60 * 60);
+    const idx = HOURS - 1 - Math.floor(hoursAgo);
+    if (idx >= 0 && idx < HOURS) buckets[idx] += reactionCount;
+  });
+
+  return buckets;
+}
+
+function InteractionSparkline({ posts }) {
+  const buckets = buildInteractionBuckets(posts);
+  const W = 262, H = 80;
+  const PAD = { top: 6, right: 4, bottom: 18, left: 24 };
+  const chartW = W - PAD.left - PAD.right;
+  const chartH = H - PAD.top - PAD.bottom;
+  const HOURS = buckets.length; // 168
+
+  const maxVal = Math.max(...buckets, 1);
+
+  // X position for bucket index
+  const xOf = i => PAD.left + (i / (HOURS - 1)) * chartW;
+  // Y position for value
+  const yOf = v => PAD.top + chartH - (v / maxVal) * chartH;
+
+  // Boundary between "older" and "last 24h" (last 24 buckets)
+  const splitIdx = HOURS - 24;
+  const splitX = xOf(splitIdx);
+
+  // Build SVG path points for the whole line
+  const pts = buckets.map((v, i) => `${xOf(i).toFixed(1)},${yOf(v).toFixed(1)}`);
+  const linePath = `M ${pts.join(" L ")}`;
+
+  // Area fill for old section (left of split)
+  const oldAreaPts = buckets.slice(0, splitIdx + 1).map((v, i) => `${xOf(i).toFixed(1)},${yOf(v).toFixed(1)}`);
+  const oldArea = `M ${PAD.left},${PAD.top + chartH} L ${oldAreaPts.join(" L ")} L ${splitX.toFixed(1)},${PAD.top + chartH} Z`;
+
+  // Area fill for last 24h section (right of split, shaded blue)
+  const newAreaPts = buckets.slice(splitIdx).map((v, i) => `${xOf(splitIdx + i).toFixed(1)},${yOf(v).toFixed(1)}`);
+  const newArea = `M ${splitX.toFixed(1)},${PAD.top + chartH} L ${newAreaPts.join(" L ")} L ${xOf(HOURS - 1).toFixed(1)},${PAD.top + chartH} Z`;
+
+  // Day labels: show Mon/Tue/... at every 24th bucket
+  const dayLabels = [];
+  const now = new Date();
+  for (let d = 6; d >= 0; d--) {
+    const bucketIdx = HOURS - 1 - d * 24;
+    const date = new Date(now.getTime() - d * 24 * 60 * 60 * 1000);
+    const label = d === 0 ? "Today" : date.toLocaleDateString("en-GB", { weekday: "short" });
+    dayLabels.push({ x: xOf(bucketIdx), label, isToday: d === 0 });
+  }
+
+  // Y axis ticks
+  const yTicks = [0, Math.round(maxVal / 2), maxVal];
+
+  return (
+    <svg width={W} height={H} style={{ display: "block", overflow: "visible" }}>
+      <defs>
+        <linearGradient id="oldGrad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="rgba(138,138,148,0.18)" />
+          <stop offset="100%" stopColor="rgba(138,138,148,0)" />
+        </linearGradient>
+        <linearGradient id="blueGrad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="rgba(77,127,255,0.35)" />
+          <stop offset="100%" stopColor="rgba(77,127,255,0.03)" />
+        </linearGradient>
+      </defs>
+
+      {/* Y axis ticks */}
+      {yTicks.map((v, i) => (
+        <g key={i}>
+          <line x1={PAD.left} y1={yOf(v)} x2={PAD.left + chartW} y2={yOf(v)}
+            stroke="rgba(255,255,255,0.05)" strokeWidth="1" />
+          <text x={PAD.left - 3} y={yOf(v) + 3.5} textAnchor="end"
+            style={{ fontSize: 8, fill: "rgba(138,138,148,0.55)", fontFamily: FONT }}>{v}</text>
+        </g>
+      ))}
+
+      {/* Vertical split line at -24h */}
+      <line x1={splitX} y1={PAD.top} x2={splitX} y2={PAD.top + chartH}
+        stroke="rgba(77,127,255,0.25)" strokeWidth="1" strokeDasharray="3 2" />
+
+      {/* Old area fill */}
+      <path d={oldArea} fill="url(#oldGrad)" />
+      {/* New 24h area fill — blue */}
+      <path d={newArea} fill="url(#blueGrad)" />
+
+      {/* Old segment line — grey */}
+      <polyline
+        points={buckets.slice(0, splitIdx + 1).map((v, i) => `${xOf(i).toFixed(1)},${yOf(v).toFixed(1)}`).join(" ")}
+        fill="none" stroke="rgba(138,138,148,0.55)" strokeWidth="1.5" strokeLinejoin="round" strokeLinecap="round" />
+      {/* New 24h segment line — blue */}
+      <polyline
+        points={buckets.slice(splitIdx).map((v, i) => `${xOf(splitIdx + i).toFixed(1)},${yOf(v).toFixed(1)}`).join(" ")}
+        fill="none" stroke="#4d7fff" strokeWidth="1.8" strokeLinejoin="round" strokeLinecap="round" />
+
+      {/* Day label ticks */}
+      {dayLabels.map(({ x, label, isToday }) => (
+        <g key={label}>
+          <line x1={x} y1={PAD.top + chartH} x2={x} y2={PAD.top + chartH + 3}
+            stroke="rgba(138,138,148,0.3)" strokeWidth="1" />
+          <text x={x} y={H - 2} textAnchor="middle"
+            style={{ fontSize: 8, fill: isToday ? "#4d7fff" : "rgba(138,138,148,0.55)", fontFamily: FONT, fontWeight: isToday ? 700 : 400 }}>
+            {label}
+          </text>
+        </g>
+      ))}
+    </svg>
+  );
+}
 
 function RightSidebar({ events, challenges, polls, posts, openModal, feedPostsThisWeek, livePolls, communityInteractionsToday, onTabChange }) {
   const totalContent = events.length + challenges.length + polls.length + posts.length;
@@ -657,16 +781,28 @@ function RightSidebar({ events, challenges, polls, posts, openModal, feedPostsTh
 
         <div style={{ height: 1, background: C.brd }} />
 
-        {/* Content Highlights — now clickable to switch tabs */}
+        {/* Community Interactions — expanded with sparkline chart */}
+        <div style={{ background: C.card, border: `1px solid ${C.brd}`, borderRadius: 10, padding: "12px 12px 10px" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 2 }}>
+            <Zap size={12} color="#34d399" />
+            <span style={{ fontSize: 12, color: C.t2, flex: 1 }}>Community Interactions today</span>
+            <span style={{ fontSize: 14, fontWeight: 800, color: C.t1 }}>{communityInteractionsToday}</span>
+          </div>
+          <div style={{ fontSize: 9.5, color: C.t3, marginBottom: 8 }}>
+            Last 7 days · hourly · <span style={{ color: "#4d7fff" }}>blue = last 24h</span>
+          </div>
+          <InteractionSparkline posts={posts} />
+        </div>
+
+        {/* Other Content Highlights */}
         <div>
-          <div style={{ fontSize: 12.5, fontWeight: 600, color: C.t1, marginBottom: 10 }}>Content Highlights</div>
+          <div style={{ fontSize: 12.5, fontWeight: 600, color: C.t1, marginBottom: 8 }}>Content Highlights</div>
           <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
             {[
-              { label: "Community Interactions today", count: communityInteractionsToday, Icon: Zap,       color: "#34d399", tab: null              },
-              { label: "Posts this week",              count: feedPostsThisWeek,           Icon: FileText,  color: C.cyan,    tab: "Community Feed"  },
-              { label: "Live Polls",                   count: livePolls,                   Icon: BarChart2, color: "#8b5cf6", tab: "Polls"           },
-              { label: "Challenges",                   count: challenges.length,           Icon: Trophy,    color: "#ec4899", tab: "Challenges"      },
-              { label: "Events",                       count: events.length,               Icon: Calendar,  color: "#f59e0b", tab: "Events"          },
+              { label: "Posts this week",  count: feedPostsThisWeek,  Icon: FileText,  color: C.cyan,    tab: "Community Feed" },
+              { label: "Live Polls",       count: livePolls,           Icon: BarChart2, color: "#8b5cf6", tab: "Polls"          },
+              { label: "Challenges",       count: challenges.length,   Icon: Trophy,    color: "#ec4899", tab: "Challenges"     },
+              { label: "Events",           count: events.length,       Icon: Calendar,  color: "#f59e0b", tab: "Events"         },
             ].map(({ label, count, Icon, color, tab }) => (
               <div
                 key={label}
@@ -696,11 +832,9 @@ function RightSidebar({ events, challenges, polls, posts, openModal, feedPostsTh
                 <Icon size={13} color={color} />
                 <span style={{ fontSize: 12, color: C.t2, flex: 1 }}>{label}</span>
                 <span style={{ fontSize: 13, fontWeight: 700, color: C.t1 }}>{count}</span>
-                {tab && (
-                  <svg width="10" height="10" fill="none" stroke={C.t3} strokeWidth="2.5" viewBox="0 0 24 24">
-                    <path d="m9 18 6-6-6-6"/>
-                  </svg>
-                )}
+                <svg width="10" height="10" fill="none" stroke={C.t3} strokeWidth="2.5" viewBox="0 0 24 24">
+                  <path d="m9 18 6-6-6-6"/>
+                </svg>
               </div>
             ))}
           </div>
