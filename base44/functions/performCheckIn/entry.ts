@@ -84,7 +84,7 @@ Deno.serve(async (req) => {
 
     // Duplicate daily check-in guard
     const today = new Date(); today.setHours(0, 0, 0, 0);
-    const todayCheckIn = await base44.entities.CheckIn.filter({
+    const todayCheckIn = await base44.asServiceRole.entities.CheckIn.filter({
       user_id:       user.id,
       gym_id:        gymId,
       check_in_date: { $gte: today.toISOString() },
@@ -94,10 +94,10 @@ Deno.serve(async (req) => {
     }
 
     // Limit 1 — only need to know whether any prior visit exists, not fetch all of them.
-    const previousVisits = await base44.entities.CheckIn.filter({ user_id: user.id, gym_id: gymId }, '-check_in_date', 1);
+    const previousVisits = await base44.asServiceRole.entities.CheckIn.filter({ user_id: user.id, gym_id: gymId }, '-check_in_date', 1);
     const isFirstVisit   = previousVisits.length === 0;
 
-    const checkIn = await base44.entities.CheckIn.create({
+    const checkIn = await base44.asServiceRole.entities.CheckIn.create({
       user_id:       user.id,
       user_name:     user.full_name,
       gym_id:        gymId,
