@@ -54,6 +54,48 @@ function useIsMobile() {
   return isMobile;
 }
 
+/* ─── COUNTDOWN BADGE ────────────────────────────────────────── */
+function CountdownBadge({ endDate }) {
+  const [label, setLabel] = useState('');
+
+  useEffect(() => {
+    if (!endDate) { setLabel(''); return; }
+
+    const compute = () => {
+      const diff = new Date(endDate) - new Date();
+      if (diff <= 0) { setLabel('Ended'); return; }
+
+      const totalMinutes = Math.floor(diff / 60000);
+      const totalHours   = Math.floor(diff / 3600000);
+      const totalDays    = Math.floor(diff / 86400000);
+
+      if (totalDays >= 1)        setLabel(`${totalDays}d left`);
+      else if (totalHours >= 1)  setLabel(`${totalHours}h left`);
+      else                       setLabel(`${totalMinutes}m left`);
+    };
+
+    compute();
+    const id = setInterval(compute, 30000);
+    return () => clearInterval(id);
+  }, [endDate]);
+
+  if (!label) return null;
+
+  return (
+    <div style={{
+      display: 'flex', alignItems: 'center', gap: 4,
+      padding: '3px 7px', borderRadius: 5,
+      background: 'rgba(0,0,0,0.35)',
+      border: '1px solid rgba(255,255,255,0.06)',
+      boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.04)',
+      flexShrink: 0,
+    }}>
+      <span style={{ fontSize: 9, color: 'rgba(255,255,255,0.35)' }}>⏱</span>
+      <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.04em', color: 'rgba(255,255,255,0.45)', ...MONO }}>{label}</span>
+    </div>
+  );
+}
+
 /* ─── SHARED INPUT BASE ──────────────────────────────────────── */
 const baseInp = {
   width: '100%', boxSizing: 'border-box', padding: '9px 12px',
@@ -129,7 +171,7 @@ function PollPreview({ title, description, category, options }) {
   const validOpts = options.filter(o => o.trim());
   const hasContent = title || validOpts.length > 0;
 
-  const fakeVotes = validOpts.map((_, i) => [8, 5, 3, 2][i] || 1);
+  const fakeVotes = validOpts.map((_, i) => [8, 5, 3, 2, 1, 1][i] || 1);
   const total = fakeVotes.reduce((a, b) => a + b, 0);
 
   return (
@@ -396,6 +438,7 @@ function MobileCreatePollModal({ open, onClose, onSave, isLoading }) {
                     onFocus={e => { e.target.style.borderColor = `${accent}40`; e.target.style.background = C.inset; }}
                     onBlur={e =>  { e.target.style.borderColor = C.brd; e.target.style.background = C.card; }}
                     style={{ ...baseInp, flex: 1, paddingTop: 13, paddingBottom: 13, fontSize: 14, borderRadius: 11 }} />
+                  {endDate && <CountdownBadge endDate={endDate} />}
                   {options.length > 2 && (
                     <button type="button" onClick={() => removeOption(idx)} style={{ flexShrink: 0, width: 40, height: 40, borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', background: C.redDim, border: `1.5px solid ${C.redBrd}`, cursor: 'pointer', transition: 'all 0.12s' }}>
                       <Trash2 size={15} color={C.red} />
@@ -404,7 +447,7 @@ function MobileCreatePollModal({ open, onClose, onSave, isLoading }) {
                 </div>
               ))}
             </div>
-            {options.length < 8 && (
+            {options.length < 6 && (
               <button type="button" onClick={addOption} style={{ marginTop: 12, width: '100%', padding: '14px', borderRadius: 12, background: `${accent}07`, border: `2px dashed ${accent}28`, color: accent, fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: FONT, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, transition: 'all 0.15s' }}>
                 <Plus size={15} /> Add option
               </button>
@@ -561,6 +604,7 @@ function DesktopCreatePollModal({ open, onClose, onSave, isLoading }) {
                       <input className="pl-opt" value={opt} onChange={e => updateOption(idx, e.target.value)} placeholder={`Option ${idx + 1}`}
                         onFocus={e => { e.target.style.borderColor = `${accent}38`; e.target.style.background = C.inset; }}
                         onBlur={e =>  { e.target.style.borderColor = C.brd; e.target.style.background = C.card; }} />
+                      {endDate && <CountdownBadge endDate={endDate} />}
                       {options.length > 2 && (
                         <button type="button" onClick={() => removeOption(idx)}
                           style={{ flexShrink: 0, width: 28, height: 28, borderRadius: 7, display: 'flex', alignItems: 'center', justifyContent: 'center', background: C.redDim, border: `1px solid ${C.redBrd}`, cursor: 'pointer', transition: 'all 0.12s' }}
@@ -572,7 +616,7 @@ function DesktopCreatePollModal({ open, onClose, onSave, isLoading }) {
                     </div>
                   ))}
                 </div>
-                {options.length < 8 && (
+                {options.length < 6 && (
                   <button type="button" onClick={addOption}
                     style={{ marginTop: 9, width: '100%', padding: '9px', borderRadius: 9, background: `${accent}07`, border: `1.5px dashed ${accent}28`, color: accent, fontSize: 11.5, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, fontFamily: FONT, transition: 'all 0.15s' }}
                     onMouseEnter={e => e.currentTarget.style.background = `${accent}12`}
