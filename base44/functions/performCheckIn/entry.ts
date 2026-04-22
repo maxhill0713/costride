@@ -10,24 +10,6 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.21';
 //    At minimum, we now validate they are real numbers in plausible ranges.
 // 4. Raw error.message already suppressed (kept).
 
-// In-memory rate limit: 3 check-ins per user per 24h window (server restarts reset it,
-// but the DB duplicate-check is the real guard — this adds a fast pre-check).
-const checkinRateMap = new Map();
-
-function rateAllow(userId) {
-  const now  = Date.now();
-  const DAY  = 24 * 60 * 60 * 1000;
-  const entry = checkinRateMap.get(userId);
-  // Allow 3 rapid calls in case of network retries; true daily limit is enforced by DB query
-  if (!entry || now - entry.windowStart > DAY) {
-    checkinRateMap.set(userId, { windowStart: now, count: 1 });
-    return true;
-  }
-  if (entry.count >= 3) return false;
-  entry.count++;
-  return true;
-}
-
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
@@ -35,11 +17,6 @@ Deno.serve(async (req) => {
 
     if (!user) {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
-    if (!rateAllow(user.id)) {
-      console.warn(`Check-in rate limit hit for user ${user.id}`);
-      return Response.json({ error: 'Too many check-in attempts. Please wait.' }, { status: 429 });
     }
 
     const { gymId, userLat, userLon } = await req.json();
