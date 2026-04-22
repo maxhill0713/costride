@@ -31,12 +31,12 @@ const MONO = { fontVariantNumeric: 'tabular-nums' };
 
 /* ─── DATA ───────────────────────────────────────────────────── */
 const CATEGORIES = [
-  { value: 'equipment_replacement', label: 'Equipment', color: C.amber,  dim: C.amberDim,  border: C.amberBrd  },
-  { value: 'favorite_equipment',    label: 'Fav. Kit',  color: C.blue,   dim: C.blueDim,   border: C.blueBrd   },
-  { value: 'rewards',               label: 'Rewards',   color: C.green,  dim: C.greenDim,  border: C.greenBrd  },
-  { value: 'playlist',              label: 'Playlist',  color: C.purple, dim: C.purpleDim, border: C.purpleBrd },
-  { value: 'schedule',              label: 'Schedule',  color: C.blue,   dim: C.blueDim,   border: C.blueBrd   },
-  { value: 'other',                 label: 'Other',     color: C.t2,     dim: 'rgba(152,152,166,0.07)', border: 'rgba(152,152,166,0.18)' },
+  { value: 'equipment_replacement', label: 'Equipment', badgeLabel: 'Equipment Poll', color: C.amber,  dim: C.amberDim,  border: C.amberBrd  },
+  { value: 'favorite_equipment',    label: 'Fav. Kit',  badgeLabel: 'Fav. Kit Poll',  color: C.blue,   dim: C.blueDim,   border: C.blueBrd   },
+  { value: 'rewards',               label: 'Rewards',   badgeLabel: 'Rewards Poll',   color: C.green,  dim: C.greenDim,  border: C.greenBrd  },
+  { value: 'playlist',              label: 'Playlist',  badgeLabel: 'Playlist Poll',  color: C.purple, dim: C.purpleDim, border: C.purpleBrd },
+  { value: 'schedule',              label: 'Schedule',  badgeLabel: 'Schedule Poll',  color: C.blue,   dim: C.blueDim,   border: C.blueBrd   },
+  { value: 'other',                 label: 'Other',     badgeLabel: 'Poll',           color: C.t2,     dim: 'rgba(152,152,166,0.07)', border: 'rgba(152,152,166,0.18)' },
 ];
 
 const catFor = val => CATEGORIES.find(c => c.value === val) || null;
@@ -170,8 +170,8 @@ function PollPreview({ title, description, category, options }) {
   const validOpts = options.filter(o => o.trim());
   const hasContent = title || validOpts.length > 0;
 
-  const fakeVotes = validOpts.map((_, i) => [8, 5, 3, 2, 1, 1][i] || 1);
-  const total = fakeVotes.reduce((a, b) => a + b, 0);
+  // Fake gym avatar placeholder for preview
+  const gymInitial = 'G';
 
   return (
     <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
@@ -179,51 +179,83 @@ function PollPreview({ title, description, category, options }) {
         <Eye size={11} color={C.t3} />
         <span style={{ fontSize: 9.5, fontWeight: 600, color: C.t3, textTransform: 'uppercase', letterSpacing: '0.09em' }}>Live Preview</span>
       </div>
-      <div style={{ borderRadius: 12, overflow: 'hidden', background: C.card, border: `1px solid ${C.brd}` }}>
-        <div style={{ height: 3, background: `linear-gradient(90deg, ${accent}, ${accent}44, transparent)`, transition: 'background 0.3s' }} />
+
+      <div style={{
+        borderRadius: 14,
+        overflow: 'hidden',
+        background: 'linear-gradient(135deg, rgba(16,19,40,0.96) 0%, rgba(6,8,18,0.99) 100%)',
+        border: '1px solid rgba(255,255,255,0.07)',
+        position: 'relative',
+      }}>
+        {/* Top highlight line */}
+        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 1, background: 'linear-gradient(90deg, transparent 10%, rgba(255,255,255,0.1) 50%, transparent 90%)', pointerEvents: 'none', zIndex: 1 }} />
+
         {!hasContent ? (
           <div style={{ padding: '32px 18px', textAlign: 'center' }}>
             <BarChart2 size={22} color={`${accent}35`} style={{ margin: '0 auto 10px', display: 'block' }} />
             <div style={{ fontSize: 11.5, color: C.t3, fontWeight: 500 }}>Fill in details to preview your poll</div>
           </div>
         ) : (
-          <div style={{ padding: '14px 15px 0' }}>
-            {cat && (
-              <div style={{ display: 'inline-flex', alignItems: 'center', gap: 5, padding: '2px 8px', borderRadius: 5, background: cat.dim, border: `1px solid ${cat.border}`, marginBottom: 8 }}>
-                <span style={{ fontSize: 9.5, fontWeight: 700, color: cat.color }}>{cat.label}</span>
+          <div style={{ padding: '14px 15px 16px', position: 'relative', zIndex: 2 }}>
+
+            {/* Header row — gym avatar + name + badge */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
+              <div style={{ width: 32, height: 32, borderRadius: '50%', background: '#1e293b', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                <span style={{ fontSize: 12, fontWeight: 700, color: '#fff' }}>{gymInitial}</span>
+              </div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+                  <span style={{ fontSize: 12, fontWeight: 700, color: '#fff', lineHeight: 1.2 }}>Your Gym</span>
+                  {/* Badge matching exact FeedPollCard style */}
+                  <span style={{
+                    fontSize: 9, fontWeight: 700, padding: '1px 7px', borderRadius: 5,
+                    background: cat?.dim || C.blueDim,
+                    border: `1px solid ${cat?.border || C.blueBrd}`,
+                    color: cat?.color || C.blue,
+                    display: 'inline-flex', alignItems: 'center', gap: 4,
+                    flexShrink: 0,
+                  }}>
+                    <BarChart2 size={9} />
+                    {cat?.badgeLabel || 'Poll'}
+                  </span>
+                </div>
+                <div style={{ fontSize: 10, color: 'rgba(148,163,184,0.6)', marginTop: 2 }}>just now</div>
+              </div>
+            </div>
+
+            {/* Poll question */}
+            <div style={{ fontSize: 13, fontWeight: 700, color: '#fff', lineHeight: 1.35, marginBottom: description ? 8 : 12 }}>
+              {title || 'Poll question'}
+            </div>
+
+            {/* Description */}
+            {description && (
+              <div style={{ fontSize: 11, color: 'rgba(148,163,184,0.8)', lineHeight: 1.6, marginBottom: 12, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                {description}
               </div>
             )}
-            <div style={{ fontSize: 14, fontWeight: 700, color: C.t1, lineHeight: 1.35, marginBottom: description ? 7 : 12 }}>{title || 'Poll question'}</div>
-            {description && (
-              <div style={{ fontSize: 11, color: C.t2, lineHeight: 1.6, marginBottom: 12, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{description}</div>
-            )}
+
+            {/* Options — pre-vote clickable style, no bars or percentages */}
             {validOpts.length > 0 ? (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 0 }}>
-                {validOpts.map((opt, i) => {
-                  const pct = Math.round((fakeVotes[i] / total) * 100);
-                  const isTop = i === 0;
-                  return (
-                    <div key={i} style={{ borderRadius: 8, overflow: 'hidden', border: `1px solid ${isTop ? accent + '30' : C.brd}`, background: isTop ? `${accent}07` : C.surface }}>
-                      <div style={{ padding: '8px 11px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
-                        <span style={{ fontSize: 12, fontWeight: isTop ? 700 : 500, color: isTop ? C.t1 : C.t2 }}>{opt}</span>
-                        <span style={{ fontSize: 11, fontWeight: 700, color: isTop ? accent : C.t3, flexShrink: 0, ...MONO }}>{pct}%</span>
-                      </div>
-                      <div style={{ height: 3, background: C.brd }}>
-                        <div style={{ height: '100%', width: `${pct}%`, background: isTop ? accent : `${accent}50` }} />
-                      </div>
-                    </div>
-                  );
-                })}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
+                {validOpts.map((opt, i) => (
+                  <div key={i} style={{
+                    borderRadius: 9,
+                    border: '1px solid rgba(255,255,255,0.08)',
+                    background: 'rgba(255,255,255,0.04)',
+                    padding: '8px 12px',
+                    cursor: 'default',
+                  }}>
+                    <span style={{ fontSize: 13, fontWeight: 600, color: 'rgba(255,255,255,0.8)' }}>{opt}</span>
+                  </div>
+                ))}
               </div>
             ) : (
-              <div style={{ padding: '14px', borderRadius: 9, border: `1.5px dashed ${C.brd2}`, textAlign: 'center', marginBottom: 0 }}>
+              <div style={{ padding: '14px', borderRadius: 9, border: `1.5px dashed ${C.brd2}`, textAlign: 'center' }}>
                 <div style={{ fontSize: 11, color: C.t3 }}>Add options to see them here</div>
               </div>
             )}
-            <div style={{ marginTop: 12, paddingTop: 10, paddingBottom: 14, borderTop: `1px solid ${C.brd}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <span style={{ fontSize: 10, color: C.t3 }}>0 votes · Open</span>
-              <div style={{ padding: '5px 14px', borderRadius: 7, background: C.blue, color: '#fff', fontSize: 11, fontWeight: 700 }}>Vote</div>
-            </div>
+
           </div>
         )}
       </div>
