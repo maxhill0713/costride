@@ -617,33 +617,49 @@ function Tabs({ active, setActive, isMobile }) {
 /* ─── RIGHT SIDEBAR ──────────────────────────────────────────── */
 const QUICK_IDEAS = ["Generate AI Motivation Monday", "Post Member Spotlight", "Create Weekend Challenge Poll"];
 
-/* Build hourly interaction buckets for the last 7 days. */
-function buildInteractionBuckets(posts) {
+/* Build hourly interaction buckets for the last 7 days.
+   Uses updated_date (when activity last happened) for posts/reactions and polls. */
+function buildInteractionBuckets(posts, polls) {
   const now = Date.now();
   const HOURS = 7 * 24; // 168 buckets
   const buckets = new Array(HOURS).fill(0);
 
-  posts.forEach(p => {
-    if (p.is_hidden || !p.share_with_community) return;
-    const reactionCount = Object.keys(p.reactions || {}).length;
-    if (reactionCount === 0) return;
-    const dateStr = p.created_date || p.created_at;
-    if (!dateStr) return;
+  const addToBucket = (dateStr, count) => {
+    if (!dateStr || count <= 0) return;
     let d = new Date(dateStr);
     if (typeof dateStr === "string" && !dateStr.endsWith("Z") && !dateStr.match(/[+-]\d{2}:\d{2}$/)) {
       d = new Date(dateStr + "Z");
     }
     const hoursAgo = (now - d.getTime()) / (1000 * 60 * 60);
     const idx = HOURS - 1 - Math.floor(hoursAgo);
-    if (idx >= 0 && idx < HOURS) buckets[idx] += reactionCount;
+    if (idx >= 0 && idx < HOURS) buckets[idx] += count;
+  };
+
+  // Posts: use updated_date so reactions (which update the post) land at the right time
+  posts.forEach(p => {
+    if (p.is_hidden) return;
+    if (!p.share_with_community && !p.post_type) return;
+    const reactionCount = Object.keys(p.reactions || {}).length;
+    const dateStr = p.updated_date || p.updated_at || p.created_date || p.created_at;
+    addToBucket(dateStr, reactionCount);
+    // Also count the post itself as 1 interaction at creation time
+    addToBucket(p.created_date || p.created_at, 1);
+  });
+
+  // Polls: use updated_date (when votes were cast) and count total voters
+  (polls || []).forEach(p => {
+    const voteCount = (p.voters || []).length;
+    if (voteCount === 0) return;
+    const dateStr = p.updated_date || p.updated_at || p.created_date || p.created_at;
+    addToBucket(dateStr, voteCount);
   });
 
   return buckets;
 }
 
 // ── CHANGE: Reduced W and adjusted PAD.left to push chart left and fit the box
-function InteractionSparkline({ posts }) {
-  const buckets = buildInteractionBuckets(posts);
+function InteractionSparkline({ posts, polls }) {
+  const buckets = buildInteractionBuckets(posts, polls);
   const W = 224, H = 80;
   const PAD = { top: 6, right: 4, bottom: 18, left: 12 };
   const chartW = W - PAD.left - PAD.right;
@@ -774,7 +790,7 @@ function RightSidebar({ events, challenges, polls, posts, openModal, feedPostsTh
               <span style={{ fontSize: 12, color: C.t2, flex: 1 }}>Community Interactions today</span>
               <span style={{ fontSize: 14, fontWeight: 800, color: C.t1 }}>{communityInteractionsToday}</span>
             </div>
-            <InteractionSparkline posts={posts} />
+            <InteractionSparkline posts={posts} polls={polls} />
           </div>
           <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
             {[
@@ -946,16 +962,23 @@ export default function ContentPage({ events = [], challenges = [], polls = [], 
     return d.getTime() >= todayStartMs;
   };
 
+  // Posts created today (member posts shared with community)
   const memberPostsToday = posts.filter(p =>
     !p.is_hidden && !p.post_type && p.share_with_community &&
     (!gymId || p.gym_id === gymId) && isToday(p.created_date || p.created_at)
   ).length;
 
-  const pollVotesToday = polls.reduce((sum, p) => sum + (p.voters || []).length, 0);
+  // Poll votes: count voters on polls that were updated today (i.e. someone voted today)
+  const pollVotesToday = polls.filter(p =>
+    (!gymId || p.gym_id === gymId) &&
+    isToday(p.updated_date || p.updated_at || p.created_date || p.created_at)
+  ).reduce((sum, p) => sum + (p.voters || []).length, 0);
 
+  // Reactions on posts that were updated today (reactions update the post's updated_date)
   const reactionsToday = posts.filter(p =>
     !p.is_hidden && (!gymId || p.gym_id === gymId) &&
-    (p.share_with_community || p.post_type)
+    (p.share_with_community || p.post_type) &&
+    isToday(p.updated_date || p.updated_at || p.created_date || p.created_at)
   ).reduce((sum, p) => sum + Object.keys(p.reactions || {}).length, 0);
 
   const communityInteractionsToday = memberPostsToday + reactionsToday + pollVotesToday;
