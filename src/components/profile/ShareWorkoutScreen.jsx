@@ -294,6 +294,7 @@ export default function ShareWorkoutScreen({ workoutName, exercises, previousExe
       toast.success('Workout shared with your friends! 🔥');
       queryClient.invalidateQueries({ queryKey: ['friendPosts'] });
       queryClient.invalidateQueries({ queryKey: ['userPosts'] });
+      queryClient.invalidateQueries({ queryKey: ['currentUser'] });
       triggerFadeOut(() => (onShareComplete || onContinue)());
     } catch (err) {
       console.error('[ShareWorkout] failed:', err);

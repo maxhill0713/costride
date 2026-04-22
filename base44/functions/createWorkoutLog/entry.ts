@@ -74,11 +74,12 @@ Deno.serve(async (req) => {
 
     const newMonthlyProgress = {
       month:              currentMonth,
+      // Preserve witness_my_gains — it's updated separately by createPost when user shares
       witness_my_gains:   isNewMonth ? 0 : (prevProgress.witness_my_gains || 0),
-      discipline_builder: isNewMonth ? 1 : (prevProgress.discipline_builder || 0) + 1,
+      discipline_builder: isNewMonth ? 1 : Math.min((prevProgress.discipline_builder || 0) + 1, 15),
       weekend_warrior:    isNewMonth
         ? (isWeekend ? 1 : 0)
-        : (prevProgress.weekend_warrior || 0) + (isWeekend ? 1 : 0),
+        : Math.min((prevProgress.weekend_warrior || 0) + (isWeekend ? 1 : 0), 5),
     };
 
     await base44.auth.updateMe({

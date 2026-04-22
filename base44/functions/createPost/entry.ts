@@ -105,9 +105,13 @@ Deno.serve(async (req) => {
     // Track "Witness My Gains" challenge — only if it's a workout summary shared with community
     const isWorkoutSummarySharedWithCommunity = !!(workout_name && share_with_community);
     if (isWorkoutSummarySharedWithCommunity) {
+      // Re-fetch the user to get the freshest monthly_challenge_progress
+      // (createWorkoutLog may have just updated it, so `user` above could be stale)
+      const freshUsers = await base44.asServiceRole.entities.User.filter({ id: user.id });
+      const freshUser = freshUsers[0] || user;
       const now = new Date();
       const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
-      const prevProgress = user.monthly_challenge_progress || {};
+      const prevProgress = freshUser.monthly_challenge_progress || {};
       const isNewMonth = prevProgress.month !== currentMonth;
       const currentCount = isNewMonth ? 0 : (prevProgress.witness_my_gains || 0);
       if (currentCount < 4) {
@@ -118,6 +122,7 @@ Deno.serve(async (req) => {
             witness_my_gains: currentCount + 1,
           },
         });
+        console.log(`Witness My Gains: incremented to ${currentCount + 1} for user ${user.id}`);
       }
     }
 
