@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
-import { BarChart2, CheckCircle2 } from 'lucide-react';
+import { CheckCircle2 } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 
@@ -162,44 +162,14 @@ function PollCard({ poll, onVote, userVoted, isLoading, currentUser }) {
         <div className="absolute inset-x-0 top-0 h-px pointer-events-none z-10"
           style={{ background: 'linear-gradient(90deg, transparent 10%, rgba(255,255,255,0.1) 50%, transparent 90%)' }} />
 
-        {showResults && (
-          <div className="absolute top-3 right-3 z-20">
-            <CheckCircle2 size={18} className="text-emerald-400" strokeWidth={2.5} />
-          </div>
-        )}
-
         <div className="relative z-10 px-4 pt-3.5 pb-4">
-          {/* Header */}
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-2.5">
-              <div className="w-9 h-9 rounded-full bg-slate-900 overflow-hidden flex items-center justify-center flex-shrink-0">
-                {gymAvatar
-                  ? <img src={gymAvatar} alt={gymName} className="w-full h-full object-cover" decoding="async" />
-                  : <span className="text-sm font-bold text-white">{gymInitial}</span>}
-              </div>
-              <div className="flex flex-col gap-0.5">
-                <div className="flex items-center gap-2">
-                  <p className="text-sm font-bold text-white leading-tight">{gymName}</p>
-                  <span style={{
-                    fontSize: 9, fontWeight: 700, padding: '1px 7px', borderRadius: 5,
-                    background: 'rgba(96,165,250,0.12)', border: '1px solid rgba(96,165,250,0.25)',
-                    color: '#60a5fa', display: 'inline-flex', alignItems: 'center', gap: 4, flexShrink: 0,
-                  }}>
-                    <BarChart2 size={9} /> Poll
-                  </span>
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <span className="text-[11px] text-slate-500">{formatDate(poll.created_date)}</span>
-                  {isExpired && <span className="text-[10px] font-semibold text-slate-500">· Ended</span>}
-                </div>
-              </div>
-            </div>
+          {/* Question row with voted tick */}
+          <div className="flex items-start justify-between gap-2 mb-3">
+            <p className="text-sm font-bold text-white leading-snug flex-1">
+              {poll.question || poll.title}
+            </p>
+            {showResults && <CheckCircle2 size={18} className="text-emerald-400 flex-shrink-0 mt-0.5" strokeWidth={2.5} />}
           </div>
-
-          {/* Question */}
-          <p className="text-sm font-bold text-white mb-3 leading-snug">
-            {poll.question || poll.title}
-          </p>
 
           {/* Options */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
@@ -231,16 +201,21 @@ function PollCard({ poll, onVote, userVoted, isLoading, currentUser }) {
           </div>
 
           {/* Footer */}
-          <div className="mt-3 flex items-center justify-between pr-1">
+          <div className="mt-3 flex items-center justify-between">
             <span className="text-[11px] text-slate-500">
               <span className="text-slate-300 font-medium">{totalVotes}</span> {totalVotes === 1 ? 'vote' : 'votes'}
             </span>
-            {(voteMutation.isPending || isLoading) && (
-              <span className="text-[10px] text-slate-500 flex items-center gap-1">
-                <span className="w-2.5 h-2.5 border border-slate-600 border-t-blue-400 rounded-full animate-spin" />
-                Saving…
+            <div className="flex items-center gap-2">
+              {(voteMutation.isPending || isLoading) && (
+                <span className="text-[10px] text-slate-500 flex items-center gap-1">
+                  <span className="w-2.5 h-2.5 border border-slate-600 border-t-blue-400 rounded-full animate-spin" />
+                  Saving…
+                </span>
+              )}
+              <span className="text-[11px] text-slate-500">
+                {formatDate(poll.created_date)}{isExpired ? ' · Ended' : ''}
               </span>
-            )}
+            </div>
           </div>
         </div>
       </motion.div>
