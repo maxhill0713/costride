@@ -111,25 +111,23 @@ export default function LocationBasedCheckInButton({ gyms, onCheckInSuccess, gym
 
   const checkInMutation = useMutation({
     mutationFn: async () => {
-      const me = await base44.auth.me();
-      if (!me?.id) throw new Error('Could not identify your account — please log in again');
       if (!selectedGym?.id) throw new Error('No gym selected for check-in');
-      return base44.entities.CheckIn.create({
-        user_id: me.id,
-        user_name: me.full_name || me.email?.split('@')[0] || 'Member',
-        gym_id: selectedGym.id,
-        gym_name: selectedGym.name || '',
-        check_in_date: new Date().toISOString(),
+      const userLocation = await getUserLocation();
+      return base44.functions.invoke('performCheckIn', {
+        gymId: selectedGym.id,
+        userLat: userLocation?.latitude ?? null,
+        userLon: userLocation?.longitude ?? null,
       });
     },
-    onSuccess: async () => {
-      const me = await base44.auth.me();
-      if (me?.id) {
-        queryClient.invalidateQueries({ queryKey: ['checkIns', me.id] });
-      }
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['checkIns'] });
       queryClient.invalidateQueries({ queryKey: ['currentUser'] });
       setSuccess(true);
       onCheckInSuccess?.();
+    },
+    onError: (error) => {
+      const msg = error?.response?.data?.error || error?.message || 'Check-in failed';
+      setLocationError(msg);
     },
   });
 
