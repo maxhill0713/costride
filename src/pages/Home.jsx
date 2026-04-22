@@ -876,13 +876,16 @@ export default function Home() {
 
     const realChallenges = activeAppChallenges.map(ch => {
       const lookup = MONTHLY_CHALLENGES_LOOKUP[ch.id];
-      const currentProgress = isCurrentMonth ? (monthlyProgress[ch.id] || 0) : 0;
+      const targetValue = lookup?.target_value || ch.target_value || 30;
+      const rawProgress = isCurrentMonth ? (monthlyProgress[ch.id] || 0) : 0;
+      // Cap progress at target — never exceed it
+      const currentProgress = Math.min(rawProgress, targetValue);
       const previousProgress = Math.max(0, currentProgress - 1);
       return {
         ...ch,
         title:          lookup?.title         || ch.title,
         description:    lookup?.description   || ch.description,
-        target_value:   lookup?.target_value  || ch.target_value || 30,
+        target_value:   targetValue,
         reward:         lookup?.reward        || ch.reward,
         rewardType:     lookup?.rewardType,
         rewardValue:    lookup?.rewardValue,
@@ -890,7 +893,8 @@ export default function Home() {
         previous_value: previousProgress,
         new_value:      currentProgress,
       };
-    }).filter(ch => ch.new_value > 0);
+    // Only show challenges that: have progress AND were not already completed before this workout
+    }).filter(ch => ch.new_value > 0 && ch.previous_value < ch.target_value);
 
     const finalChallenges = realChallenges.length > 0 ? realChallenges : challengesData;
     setCelebrationChallenges(finalChallenges);

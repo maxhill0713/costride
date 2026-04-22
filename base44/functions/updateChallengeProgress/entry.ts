@@ -82,13 +82,17 @@ Deno.serve(async (req) => {
         continue;
       }
 
-      const isCompleted = newProgress >= (participant.target_value || 0);
+      const targetValue = participant.target_value || 0;
+      const isCompleted = newProgress >= targetValue;
       const wasAlreadyCompleted = participant.completed === true;
 
+      // Cap progress at target — never exceed it
+      const cappedProgress = targetValue > 0 ? Math.min(newProgress, targetValue) : newProgress;
+
       await base44.asServiceRole.entities.ChallengeParticipant.update(participant.id, {
-        progress:       Math.max(0, newProgress),
+        progress:       Math.max(0, cappedProgress),
         completed:      isCompleted,
-        completed_date: isCompleted ? new Date().toISOString() : null,
+        completed_date: isCompleted && !wasAlreadyCompleted ? new Date().toISOString() : (participant.completed_date || null),
       });
 
       // Grant streak variant reward on first completion
