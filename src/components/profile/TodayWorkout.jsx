@@ -141,7 +141,7 @@ function WorkoutSwitcherModal({ open, onClose, currentUser, activeDayKey, adjust
   );
 }
 
-export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutStart, onWorkoutLogged, onOverrideDayChange, checkedInToday = false }) {
+export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutStart, onWorkoutLogged, onOverrideDayChange, checkedInToday = false, todayCheckInTime = null }) {
   const { restTimer, setRestTimer, isTimerActive, setIsTimerActive, initialRestTime, setInitialRestTime, openTimerBar, setOpenTimerBar, setTimerWorkout } = useTimer();
   const [editingIndex, setEditingIndex] = useState(null);
   const [editWeight, setEditWeight] = useState('');
@@ -487,6 +487,9 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
       }, 0);
 
       let durationSecs = frozenDurationRef.current > 0 ? frozenDurationRef.current : workoutDuration;
+      if (!durationSecs && todayCheckInTime) {
+        durationSecs = Math.round((Date.now() - todayCheckInTime) / 1000);
+      }
       if (!durationSecs && currentUser?.id) {
         try {
           const recentCIs = await base44.entities.CheckIn.filter({ user_id: currentUser.id }, '-check_in_date', 5);
@@ -1221,7 +1224,7 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
           isLoading={logWorkoutMutation.isPending} />
       </Card>
 
-      <HomeSummaryModal summaryLog={summaryLog} onClose={() => setSummaryLog(null)} />
+      <HomeSummaryModal summaryLog={summaryLog} onClose={() => setSummaryLog(null)} currentStreak={currentUser?.current_streak} />
 
       {/* Missing data popup */}
       {showMissingData && (
