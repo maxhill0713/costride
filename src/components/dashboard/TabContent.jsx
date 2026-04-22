@@ -619,7 +619,7 @@ const QUICK_IDEAS = ["Generate AI Motivation Monday", "Post Member Spotlight", "
 
 /* Build hourly interaction buckets for the last 7 days.
    Uses updated_date (when activity last happened) for posts/reactions and polls. */
-function buildInteractionBuckets(posts, polls) {
+function buildInteractionBuckets(posts, polls, checkIns) {
   const now = Date.now();
   const HOURS = 7 * 24; // 168 buckets
   const buckets = new Array(HOURS).fill(0);
@@ -654,12 +654,17 @@ function buildInteractionBuckets(posts, polls) {
     addToBucket(dateStr, voteCount);
   });
 
+  // Check-ins: each is a community interaction (member visited the gym)
+  (checkIns || []).forEach(c => {
+    addToBucket(c.check_in_date || c.created_date || c.created_at, 1);
+  });
+
   return buckets;
 }
 
 // ── CHANGE: Reduced W and adjusted PAD.left to push chart left and fit the box
-function InteractionSparkline({ posts, polls }) {
-  const buckets = buildInteractionBuckets(posts, polls);
+function InteractionSparkline({ posts, polls, checkIns }) {
+  const buckets = buildInteractionBuckets(posts, polls, checkIns);
   const W = 224, H = 80;
   const PAD = { top: 6, right: 4, bottom: 18, left: 12 };
   const chartW = W - PAD.left - PAD.right;
@@ -740,7 +745,7 @@ function InteractionSparkline({ posts, polls }) {
   );
 }
 
-function RightSidebar({ events, challenges, polls, posts, openModal, feedPostsThisWeek, livePolls, communityInteractionsToday, onTabChange }) {
+function RightSidebar({ events, challenges, polls, posts, checkIns, openModal, feedPostsThisWeek, livePolls, communityInteractionsToday, onTabChange }) {
   const totalContent = events.length + challenges.length + polls.length + posts.length;
   return (
     <div style={{
@@ -790,7 +795,7 @@ function RightSidebar({ events, challenges, polls, posts, openModal, feedPostsTh
               <span style={{ fontSize: 12, color: C.t2, flex: 1 }}>Community Interactions today</span>
               <span style={{ fontSize: 14, fontWeight: 800, color: C.t1 }}>{communityInteractionsToday}</span>
             </div>
-            <InteractionSparkline posts={posts} polls={polls} />
+            <InteractionSparkline posts={posts} polls={polls} checkIns={checkIns} />
           </div>
           <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
             {[
@@ -981,7 +986,13 @@ export default function ContentPage({ events = [], challenges = [], polls = [], 
     isToday(p.updated_date || p.updated_at || p.created_date || p.created_at)
   ).reduce((sum, p) => sum + Object.keys(p.reactions || {}).length, 0);
 
-  const communityInteractionsToday = memberPostsToday + reactionsToday + pollVotesToday;
+  // Check-ins today: each member visit to the gym is a community interaction
+  const checkInsToday = checkIns.filter(c =>
+    (!gymId || c.gym_id === gymId) &&
+    isToday(c.check_in_date || c.created_date || c.created_at)
+  ).length;
+
+  const communityInteractionsToday = memberPostsToday + reactionsToday + pollVotesToday + checkInsToday;
 
   const communityFeedPosts = posts.filter(p => {
     if (p.is_hidden) return false;
@@ -1442,6 +1453,7 @@ export default function ContentPage({ events = [], challenges = [], polls = [], 
           challenges={challenges}
           polls={polls}
           posts={posts}
+          checkIns={checkIns}
           openModal={openModal}
           feedPostsThisWeek={feedPostsThisWeek}
           livePolls={livePolls}
