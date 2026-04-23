@@ -83,7 +83,7 @@
           "data.gym_id": {
             "$in": {
               "$map": {
-                "input": { "$ifNull": ["{{user.gymMemberships}}", []] },
+                "input": "{{user.gymMemberships}}",
                 "as": "m",
                 "in": "$$m.data.gym_id"
               }
@@ -106,7 +106,7 @@
           "data.gym_id": {
             "$in": {
               "$map": {
-                "input": { "$ifNull": ["{{user.gymMemberships}}", []] },
+                "input": "{{user.gymMemberships}}",
                 "as": "m",
                 "in": "$$m.data.gym_id"
               }
@@ -123,18 +123,18 @@
     "update": {
       "$or": [
         {
-          "data.created_by": "{{user.id}}"
-        },
-        {
           "data.gym_id": {
             "$in": {
               "$map": {
-                "input": { "$ifNull": ["{{user.gymMemberships}}", []] },
+                "input": "{{user.gymMemberships}}",
                 "as": "m",
                 "in": "$$m.data.gym_id"
               }
             }
           }
+        },
+        {
+          "data.created_by": "{{user.id}}"
         },
         {
           "user_condition": {
@@ -152,7 +152,7 @@
           "data.gym_id": {
             "$in": {
               "$map": {
-                "input": { "$ifNull": ["{{user.gymMemberships}}", []] },
+                "input": "{{user.gymMemberships}}",
                 "as": "m",
                 "in": "$$m.data.gym_id"
               }

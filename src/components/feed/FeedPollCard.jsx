@@ -329,8 +329,9 @@ export default function FeedPollCard({ poll, currentUser }) {
       queryClient.invalidateQueries({ queryKey: ['gymPolls', poll.gym_id] });
       queryClient.invalidateQueries({ queryKey: ['friendPosts'] });
     },
-    onError: () => {
+    onError: (err) => {
       setLocalVotedOption(null);
+      console.error('Vote mutation error:', err);
       toast.error('Failed to submit vote');
     },
   });
