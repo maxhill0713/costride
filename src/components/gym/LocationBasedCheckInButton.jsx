@@ -22,6 +22,11 @@ const CHECK_IN_CSS = `
     0%   { opacity: 0; transform: translateY(6px); }
     100% { opacity: 1; transform: translateY(0); }
   }
+  @keyframes ci-fadeout {
+    0%   { opacity: 1; transform: scaleY(1); }
+    80%  { opacity: 1; transform: scaleY(1); }
+    100% { opacity: 0; transform: scaleY(0.85); }
+  }
 `;
 
 function injectCheckInStyles() {
@@ -30,20 +35,6 @@ function injectCheckInStyles() {
   s.id = 'checkin-btn-styles';
   s.textContent = CHECK_IN_CSS;
   document.head.appendChild(s);
-}
-
-function playTone(ctx, freq, startTime, duration, gainVal, type = 'sine') {
-  const osc = ctx.createOscillator();
-  const gain = ctx.createGain();
-  osc.connect(gain);
-  gain.connect(ctx.destination);
-  osc.type = type;
-  osc.frequency.setValueAtTime(freq, startTime);
-  gain.gain.setValueAtTime(0, startTime);
-  gain.gain.linearRampToValueAtTime(gainVal, startTime + 0.01);
-  gain.gain.exponentialRampToValueAtTime(0.001, startTime + duration);
-  osc.start(startTime);
-  osc.stop(startTime + duration + 0.05);
 }
 
 function soundBounceIn(ctx) {
@@ -64,32 +55,27 @@ export default function LocationBasedCheckInButton({ gyms, onCheckInSuccess, gym
   const queryClient = useQueryClient();
   const [pressed, setPressed] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [visible, setVisible] = useState(true);
   const [ripples, setRipples] = useState([]);
-  const [locationError, setLocationError] = useState(null);
+  const [failureMsg, setFailureMsg] = useState(null);
   const [isCheckingLocation, setIsCheckingLocation] = useState(true);
   const [selectedGym, setSelectedGym] = useState(null);
   const btnRef = useRef(null);
   const rippleId = useRef(0);
   const audioCtxRef = useRef(null);
+  const failureTimer = useRef(null);
 
-  // Check location on mount
-  React.useEffect(() => {
+  // Check location on mount — silently, no error banners
+  useEffect(() => {
     const checkLocationOnMount = async () => {
       const userLocation = await getUserLocation();
-      if (!userLocation) {
-        setLocationError('Enable location access to check in at the gym');
-        setIsCheckingLocation(false);
-        return;
-      }
-
-      if (!gyms || gyms.length === 0) {
-        setLocationError('No gym data available');
+      if (!userLocation || !gyms || gyms.length === 0) {
         setIsCheckingLocation(false);
         return;
       }
 
       const gymList = gyms.map(g => ({ id: g.id, name: g.name, latitude: g.latitude, longitude: g.longitude }));
-      const { isWithinRange: inRange, nearestGym, nearestGymDistance } = checkDistanceToGyms(
+      const { isWithinRange: inRange, nearestGym } = checkDistanceToGyms(
         userLocation.latitude,
         userLocation.longitude,
         gymList,
@@ -99,9 +85,6 @@ export default function LocationBasedCheckInButton({ gyms, onCheckInSuccess, gym
       if (inRange && nearestGym) {
         const closest = gyms.find(g => g.id === nearestGym.id);
         setSelectedGym(closest);
-      } else {
-        const distanceM = nearestGymDistance;
-        setLocationError(`You're ${distanceM}m away. Must be within 500m to check in.`);
       }
       setIsCheckingLocation(false);
     };
@@ -120,18 +103,19 @@ export default function LocationBasedCheckInButton({ gyms, onCheckInSuccess, gym
       });
     },
     onSuccess: () => {
-      // Invalidate all variants of checkIns queries (with or without user id suffix)
       queryClient.invalidateQueries({ predicate: q => q.queryKey[0] === 'checkIns' });
       queryClient.invalidateQueries({ predicate: q => q.queryKey[0] === 'currentUser' });
       queryClient.invalidateQueries({ predicate: q => q.queryKey[0] === 'weeklyWorkoutLogs' });
       setSuccess(true);
       onCheckInSuccess?.();
-      // Auto-reset success state after 2 seconds
-      setTimeout(() => setSuccess(false), 2000);
+      // Show green tick for 1.8s then fade out and unmount
+      setTimeout(() => setVisible(false), 1800);
     },
-    onError: (error) => {
-      const msg = error?.response?.data?.error || error?.message || 'Check-in failed';
-      setLocationError(msg);
+    onError: () => {
+      // Clear any existing timer
+      if (failureTimer.current) clearTimeout(failureTimer.current);
+      setFailureMsg('Check in has failed, if this problem persists contact CoStride support');
+      failureTimer.current = setTimeout(() => setFailureMsg(null), 10000);
     },
   });
 
@@ -147,14 +131,12 @@ export default function LocationBasedCheckInButton({ gyms, onCheckInSuccess, gym
 
   const handlePress = async (e) => {
     if (checkInMutation.isPending || success) return;
-
     setPressed(true);
     spawnRipple(e);
-    setLocationError(null);
+    setFailureMsg(null);
     setTimeout(() => setPressed(false), 100);
 
     try {
-      // User is already confirmed within range (checked on mount), proceed directly
       if (!audioCtxRef.current) {
         audioCtxRef.current = new (window.AudioContext || window.webkitAudioContext)();
       }
@@ -162,7 +144,6 @@ export default function LocationBasedCheckInButton({ gyms, onCheckInSuccess, gym
       checkInMutation.mutate();
     } catch (error) {
       console.error('Check-in error:', error);
-      setLocationError('Error during check-in. Please try again.');
       setPressed(false);
     }
   };
@@ -172,41 +153,22 @@ export default function LocationBasedCheckInButton({ gyms, onCheckInSuccess, gym
     setPressed(false);
   };
 
-  const isLoading = checkInMutation.isPending;
-  const isSuccess = success;
-
   // Don't render until we've finished the initial location check
   if (isCheckingLocation) return null;
-  // If no gym in range but there's an error (e.g. too far, no location), show the error banner
-  if (!selectedGym) {
-    if (!locationError) return null;
-    return (
-      <>
-        {injectCheckInStyles()}
-        <div style={{
-          padding: '10px 14px',
-          borderRadius: 12,
-          background: 'rgba(255,77,109,0.12)',
-          border: '1px solid rgba(255,77,109,0.35)',
-          display: 'flex', alignItems: 'flex-start', gap: 8,
-        }}>
-          <svg width="16" height="16" viewBox="0 0 20 20" fill="none" style={{ flexShrink: 0, marginTop: 1 }}>
-            <circle cx="10" cy="10" r="9" stroke="#ff4d6d" strokeWidth="1.8" />
-            <path d="M10 6v5" stroke="#ff4d6d" strokeWidth="2" strokeLinecap="round" />
-            <circle cx="10" cy="14.5" r="1" fill="#ff4d6d" />
-          </svg>
-          <span style={{ fontSize: 13, fontWeight: 600, color: '#ff6b85', lineHeight: 1.4 }}>
-            {locationError}
-          </span>
-        </div>
-      </>
-    );
-  }
+  // Only show button if a gym is in range
+  if (!selectedGym) return null;
+  // Fully unmounted after success fade
+  if (!visible) return null;
+
+  const isLoading = checkInMutation.isPending;
+  const isSuccess = success;
 
   return (
     <>
       {injectCheckInStyles()}
-      {locationError && (
+
+      {/* Failure message — 10 second auto-dismiss */}
+      {failureMsg && (
         <div style={{
           marginBottom: 10,
           padding: '10px 14px',
@@ -221,11 +183,17 @@ export default function LocationBasedCheckInButton({ gyms, onCheckInSuccess, gym
             <circle cx="10" cy="14.5" r="1" fill="#ff4d6d" />
           </svg>
           <span style={{ fontSize: 13, fontWeight: 600, color: '#ff6b85', lineHeight: 1.4 }}>
-            {locationError}
+            {failureMsg}
           </span>
         </div>
       )}
-      <div style={{ position: 'relative' }}>
+
+      {/* Button wrapper — fades out after success */}
+      <div style={{
+        position: 'relative',
+        animation: isSuccess ? 'ci-fadeout 2s ease forwards' : 'none',
+        transformOrigin: 'top center',
+      }}>
         <div style={{
           position: 'absolute', inset: 0, borderRadius: 18,
           background: isSuccess ? '#15803d' : '#1a3fa8',
@@ -302,7 +270,6 @@ export default function LocationBasedCheckInButton({ gyms, onCheckInSuccess, gym
           </div>
         </button>
       </div>
-
     </>
   );
 }
