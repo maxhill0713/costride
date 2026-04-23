@@ -6,9 +6,17 @@
       "type": "string",
       "description": "User who completed the workout"
     },
+    "user_name": {
+      "type": "string",
+      "description": "User's display name"
+    },
     "workout_name": {
       "type": "string",
       "description": "Name of the workout (e.g., Push Day)"
+    },
+    "workout_type": {
+      "type": "string",
+      "description": "Workout type/name alias"
     },
     "split_day": {
       "type": "string",
@@ -29,12 +37,39 @@
           "setsReps": {
             "type": "string"
           },
+          "sets": {
+            "type": "string"
+          },
+          "reps": {
+            "type": "string"
+          },
           "weight": {
             "type": "string"
           }
         }
       },
       "description": "Completed exercises with weights and reps"
+    },
+    "cardio": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "exercise": {
+            "type": "string"
+          },
+          "rounds": {
+            "type": "string"
+          },
+          "time": {
+            "type": "string"
+          },
+          "rest": {
+            "type": "string"
+          }
+        }
+      },
+      "description": "Cardio exercises completed"
     },
     "notes": {
       "type": "string",
@@ -44,6 +79,14 @@
       "type": "string",
       "format": "date",
       "description": "Date when workout was completed"
+    },
+    "duration_minutes": {
+      "type": "number",
+      "description": "Workout duration in minutes"
+    },
+    "total_volume": {
+      "type": "number",
+      "description": "Total volume lifted (sets \u00d7 reps \u00d7 weight)"
     }
   },
   "required": [
