@@ -1,4 +1,4 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.21';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
 // SECURITY FIX [HIGH]:
 // 1. No rate limiting — a user could rapidly call this to inflate check-in counts and
