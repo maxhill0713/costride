@@ -282,6 +282,8 @@ export default function FeedPollCard({ poll, currentUser }) {
     gcTime: 60 * 60 * 1000,
   });
 
+  const [localVoters, setLocalVoters] = useState(poll.voters || []);
+
   const voters = localVoters;
   const hasVoted = !!(currentUser?.id && voters.includes(currentUser.id));
 
@@ -294,8 +296,6 @@ export default function FeedPollCard({ poll, currentUser }) {
     }
     return null;
   });
-
-  const [localVoters, setLocalVoters] = useState(voters);
 
   const { data: voterAvatarsRaw = {}, isFetching: isLoadingVoterAvatars } = useQuery({
     queryKey: ['pollVoterAvatars', voters.join(',')],
