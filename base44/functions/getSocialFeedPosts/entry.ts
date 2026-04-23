@@ -8,7 +8,7 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { friendIds = [], primaryGymId = null, limit = 200 } = await req.json();
+    const { friendIds = [], primaryGymId = null, limit = 200, fetchPolls = false } = await req.json();
 
     // Verify friendIds against actual accepted Friend records
     let verifiedFriendIds = [];
@@ -55,19 +55,6 @@ Deno.serve(async (req) => {
         ).then(posts => posts.map(p => ({ ...p, _source: 'community' })))
       );
 
-      // Also fetch gym-authored posts (post_type is set) — these are gym announcements, events, etc.
-      postPromises.push(
-        base44.asServiceRole.entities.Post.filter(
-          {
-            gym_id: primaryGymId,
-            post_type: { $exists: true },
-            is_hidden: { $ne: true },
-            is_system_generated: { $ne: true },
-          },
-          '-created_date',
-          limit
-        ).then(posts => posts.map(p => ({ ...p, _source: 'community' })))
-      );
     }
 
     const results = await Promise.all(postPromises);
@@ -88,7 +75,17 @@ Deno.serve(async (req) => {
       .sort((a, b) => new Date(b.created_date).getTime() - new Date(a.created_date).getTime())
       .slice(0, limit);
 
-    return Response.json({ posts: combinedPosts });
+    // Fetch polls for primary gym via service role (bypasses RLS issues for regular members)
+    let polls = [];
+    if (primaryGymId && fetchPolls) {
+      polls = await base44.asServiceRole.entities.Poll.filter(
+        { gym_id: primaryGymId, status: 'active' },
+        '-created_date',
+        20
+      );
+    }
+
+    return Response.json({ posts: combinedPosts, polls });
   } catch (error) {
     console.error('getSocialFeedPosts error:', error);
     return Response.json({ error: error.message }, { status: 500 });
