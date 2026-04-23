@@ -565,30 +565,42 @@ return (
             })}
           </div>
         </div>
-        <div style={{ background:C.card, border:`1px solid ${C.brd}`, borderRadius:10, padding:'16px', width:248, flexShrink:0 }}>
-          <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:14 }}>
-            <span style={{ fontSize:13, fontWeight:600, color:C.t1 }}>Today's Priorities</span>
-            <ChevronRight style={{ width:12, height:12, color:C.t3 }}/>
-          </div>
-          {[
-            { avs:['S','M','P'], text:'Nudge 5 at-risk members',                      badge:'Urgent', bColor:'#ff4d6d', bBg:'rgba(255,77,109,0.15)' },
-            { avs:['D','E'],     text:'Launch new challenge\n"30-Day Strength Surge"', badge:'Run It', bColor:'#f59e0b', bBg:'rgba(245,158,11,0.15)' },
-            { avs:['R'],         text:'Review April revenue impact',                   badge:null },
-          ].map((it,i) => (
-            <div key={i} style={{ display:'flex', gap:8, marginBottom:12 }}>
-              <div style={{ display:'flex', flexShrink:0, marginTop:2 }}>
-                {it.avs.map((n,j) => <Av key={j} name={n} size={20} style={{ marginLeft:j>0?-6:0 }}/>)}
-              </div>
-              <div style={{ flex:1 }}>
-                <div style={{ fontSize:12, color:C.t1, lineHeight:1.4, whiteSpace:'pre-line' }}>{it.text}</div>
-                {it.badge && (
-                  <span style={{ display:'inline-block', marginTop:4, fontSize:10, fontWeight:700, color:it.bColor, background:it.bBg, border:`1px solid ${it.bColor}50`, borderRadius:4, padding:'2px 8px' }}>{it.badge}</span>
-                )}
-              </div>
+        <div style={{ background:C.card, border:`1px solid ${C.brd}`, borderRadius:10, padding:'16px', width:248, flexShrink:0, display:'flex', flexDirection:'column' }}>
+          <div style={{ display:'flex', alignItems:'center', gap:6, marginBottom:4 }}>
+            <div style={{ width:20, height:20, borderRadius:5, background:C.redDim, border:`1px solid rgba(255,77,109,0.3)`, display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
+              <AlertTriangle style={{ width:11, height:11, color:C.red }}/>
             </div>
-          ))}
-          <div style={{ paddingTop:10, borderTop:`1px solid ${C.brd}`, fontSize:11, color:C.t3 }}>
-View Live <span style={{ color:C.cyan }}>|</span> Live <span style={{ color:C.cyan }}>|</span> Live Single Studio <span style={{ color:C.cyan }}>|</span> Floor
+            <span style={{ fontSize:13, fontWeight:700, color:C.t1 }}>At-Risk Members</span>
+            <span style={{ marginLeft:'auto', fontSize:11, fontWeight:700, color:C.red, background:C.redDim, border:`1px solid rgba(255,77,109,0.28)`, borderRadius:5, padding:'2px 7px' }}>5</span>
+          </div>
+          <div style={{ fontSize:11, color:C.t3, marginBottom:12 }}>Haven't visited in 14+ days</div>
+          <div style={{ display:'flex', flexDirection:'column', gap:7, flex:1 }}>
+            {[
+              { name:'Sarah M.',   days:21, risk:'High'   },
+              { name:'Jake T.',    days:18, risk:'High'   },
+              { name:'Priya K.',   days:16, risk:'Medium' },
+              { name:'Dan R.',     days:15, risk:'Medium' },
+              { name:'Emma L.',    days:14, risk:'Medium' },
+            ].map((m,i) => (
+              <div key={i} style={{ display:'flex', alignItems:'center', gap:8 }}>
+                <Av name={m.name} size={26} />
+                <div style={{ flex:1, minWidth:0 }}>
+                  <div style={{ fontSize:12, fontWeight:600, color:C.t1, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{m.name}</div>
+                  <div style={{ fontSize:10.5, color:C.t3 }}>{m.days} days away</div>
+                </div>
+                <span style={{
+                  fontSize:9.5, fontWeight:700, borderRadius:4, padding:'2px 7px', flexShrink:0,
+                  color: m.risk === 'High' ? C.red : C.amber,
+                  background: m.risk === 'High' ? C.redDim : C.amberDim,
+                  border: `1px solid ${m.risk === 'High' ? 'rgba(255,77,109,0.28)' : 'rgba(245,158,11,0.28)'}`,
+                }}>{m.risk}</span>
+              </div>
+            ))}
+          </div>
+          <div style={{ marginTop:14, paddingTop:12, borderTop:`1px solid ${C.brd}` }}>
+            <button style={{ width:'100%', padding:'8px 0', borderRadius:7, background:'transparent', border:`1px solid ${C.cyanBrd}`, color:C.cyan, fontSize:12, fontWeight:600, cursor:'pointer', fontFamily:FONT, display:'flex', alignItems:'center', justifyContent:'center', gap:5 }}>
+              See all at-risk members <ChevronRight style={{ width:12, height:12 }}/>
+            </button>
           </div>
         </div>
       </div>
