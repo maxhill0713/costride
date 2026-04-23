@@ -605,8 +605,8 @@ function buildDailyInteractionData(posts, polls, checkIns) {
 
 /* ─── ACTIVITY METER DIAL ────────────────────────────────────── */
 function ActivityMeterDial({ pct }) {
-  const R  = 46;
-  const cx = 56, cy = 54;
+  const R  = 62;
+  const cx = 76, cy = 72;
   const clampedPct = Math.max(0, Math.min(100, pct));
 
   const angleRad = Math.PI - (clampedPct / 100) * Math.PI;
@@ -624,13 +624,13 @@ function ActivityMeterDial({ pct }) {
   const dialLabel = clampedPct < 30 ? "Low" : clampedPct < 60 ? "Moderate" : clampedPct < 85 ? "Good" : "Excellent";
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
-      <svg width="112" height="68" viewBox="0 0 112 68" style={{ overflow: "visible" }}>
-        <path d={trackD} fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="8" strokeLinecap="round" />
-        {fillD && <path d={fillD} fill="none" stroke={dialColor} strokeWidth="8" strokeLinecap="round" strokeOpacity="0.85" />}
-        {clampedPct > 0 && <circle cx={x.toFixed(2)} cy={y.toFixed(2)} r="5" fill={dialColor} />}
-        <text x={cx} y={cy - 2}  textAnchor="middle" style={{ fontSize: 17, fontWeight: 800, fill: "#fff",      fontFamily: "'DM Sans', sans-serif" }}>{clampedPct}%</text>
-        <text x={cx} y={cy + 13} textAnchor="middle" style={{ fontSize: 9,  fontWeight: 700, fill: dialColor,  fontFamily: "'DM Sans', sans-serif" }}>{dialLabel}</text>
+    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", width: "100%" }}>
+      <svg width="152" height="90" viewBox="0 0 152 90" style={{ overflow: "visible" }}>
+        <path d={trackD} fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="10" strokeLinecap="round" />
+        {fillD && <path d={fillD} fill="none" stroke={dialColor} strokeWidth="10" strokeLinecap="round" strokeOpacity="0.85" />}
+        {clampedPct > 0 && <circle cx={x.toFixed(2)} cy={y.toFixed(2)} r="6" fill={dialColor} />}
+        <text x={cx} y={cy - 4}  textAnchor="middle" style={{ fontSize: 22, fontWeight: 800, fill: "#fff",     fontFamily: "'DM Sans', sans-serif" }}>{clampedPct}%</text>
+        <text x={cx} y={cy + 14} textAnchor="middle" style={{ fontSize: 10, fontWeight: 700, fill: dialColor, fontFamily: "'DM Sans', sans-serif" }}>{dialLabel}</text>
       </svg>
       <div style={{ display: "flex", justifyContent: "space-between", width: "100%", marginTop: 2 }}>
         <span style={{ fontSize: 9, color: C.t3, fontWeight: 600 }}>0%</span>
@@ -724,13 +724,13 @@ function RightSidebar({
       </div>
 
       {/* ── INTERACTION TREND CHART (real 7-day data) ── */}
-      <div style={{ padding: "14px 16px 10px", borderBottom: `1px solid ${C.brd}` }}>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
-          <span style={{ fontSize: 12, fontWeight: 600, color: C.t1 }}>This Week</span>
+      <div style={{ padding: "14px 8px 12px 8px", borderBottom: `1px solid ${C.brd}` }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10, padding: "0 8px" }}>
+          <span style={{ fontSize: 12, fontWeight: 600, color: C.t1 }}>Interactions This Week</span>
           <span style={{ fontSize: 10, color: C.t3 }}>7d</span>
         </div>
-        <ResponsiveContainer width="100%" height={88}>
-          <AreaChart data={chartData} margin={{ top: 4, right: 4, bottom: 0, left: -28 }}>
+        <ResponsiveContainer width="100%" height={108}>
+          <AreaChart data={chartData} margin={{ top: 4, right: 6, bottom: 0, left: -20 }}>
             <defs>
               <linearGradient id="ig" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="0%"   stopColor={C.cyan} stopOpacity={0.35} />
@@ -738,7 +738,7 @@ function RightSidebar({
               </linearGradient>
             </defs>
             <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" vertical={false} />
-            <XAxis dataKey="label" tick={{ fill: C.t3, fontSize: 9, fontFamily: FONT }} axisLine={false} tickLine={false} />
+            <XAxis dataKey="label" tick={{ fill: C.t3, fontSize: 8.5, fontFamily: FONT }} axisLine={false} tickLine={false} interval={0} />
             <YAxis tick={{ fill: C.t3, fontSize: 9, fontFamily: FONT }} axisLine={false} tickLine={false} />
             <Tooltip content={<ChartTip />} />
             <Area type="monotone" dataKey="v" stroke={C.cyan} strokeWidth={2} fill="url(#ig)" dot={false}
@@ -748,17 +748,18 @@ function RightSidebar({
       </div>
 
       {/* ── MEMBER ACTIVITY ── */}
-      <div style={{ padding: "14px 16px 16px" }}>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
+      <div style={{ padding: "14px 16px 20px", minHeight: 190 }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
           <span style={{ fontSize: 12, fontWeight: 600, color: C.t1 }}>Member Activity</span>
           <span style={{ fontSize: 10, color: C.t3 }}>7d</span>
         </div>
-        <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+        {/* dial centred horizontally */}
+        <div style={{ display: "flex", justifyContent: "center", marginBottom: 12 }}>
           <ActivityMeterDial pct={activityPct} />
-          <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
-            <div style={{ fontSize: 18, fontWeight: 700, color: C.t1, lineHeight: 1 }}>{activeUserIds.size}</div>
-            <div style={{ fontSize: 10, color: C.t3, lineHeight: 1.4 }}>of {memberCount > 0 ? memberCount : "—"} members<br />active this week</div>
-          </div>
+        </div>
+        {/* single-line summary below the dial */}
+        <div style={{ textAlign: "center", fontSize: 11, color: C.t3 }}>
+          {activeUserIds.size} of {memberCount > 0 ? memberCount : "—"} members active this week
         </div>
       </div>
       {/* sidebar ends here — no extra padding/content below */}
