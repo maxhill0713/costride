@@ -188,11 +188,10 @@ function VotersModal({ open, onClose, opts, totalVoters, voterAvatarData, isLoad
 // ── Animated poll option bar ──────────────────────────────────────────────────
 function PollOptionBar({ opt, index, isSelected, isWinner, pct, canVote, showResults, onVote }) {
   const barRef = useRef(null);
-  const MIN_FILL = 3; // minimum % width so 0% still shows a sliver
+  const MIN_FILL = 3;
 
   useEffect(() => {
     if (!showResults || !barRef.current) return;
-    // Start at 0, then on next frame animate to target so CSS transition fires
     barRef.current.style.width = '0%';
     const frame = requestAnimationFrame(() => {
       requestAnimationFrame(() => {
@@ -213,7 +212,6 @@ function PollOptionBar({ opt, index, isSelected, isWinner, pct, canVote, showRes
         borderRadius: 9,
         overflow: 'hidden',
         position: 'relative',
-        // Box disappears entirely when results are shown
         border: showResults
           ? 'none'
           : isSelected
@@ -227,7 +225,6 @@ function PollOptionBar({ opt, index, isSelected, isWinner, pct, canVote, showRes
         cursor: canVote ? 'pointer' : 'default',
       }}
     >
-      {/* Animated fill bar — only shown after voting */}
       {showResults && (
         <div
           ref={barRef}
@@ -236,10 +233,10 @@ function PollOptionBar({ opt, index, isSelected, isWinner, pct, canVote, showRes
             left: 0,
             top: 0,
             bottom: 0,
-            width: '0%', // starts at 0, JS animates to target
+            width: '0%',
             background: isWinner
-              ? 'rgba(37,99,235,0.45)'    // blue for winner — matches Enter Gym button (blue-600)
-              : 'rgba(148,163,184,0.22)', // grey for others
+              ? 'rgba(37,99,235,0.45)'
+              : 'rgba(148,163,184,0.22)',
             borderRadius: 9,
             transition: 'width 0.7s cubic-bezier(0.4, 0, 0.2, 1)',
           }}
@@ -360,12 +357,10 @@ export default function FeedPollCard({ poll, currentUser }) {
   const showResults = hasVoted || !!localVotedOption;
   const isExpired = poll.end_date && new Date(poll.end_date) < new Date();
 
-  // Determine winner votes for bar colouring
   const winnerVotes = Math.max(...opts.map(o => (typeof o === 'object' ? o.votes || 0 : 0)));
 
   return (
     <>
-      {/* Keyframe for % label fade-in — injected once */}
       <style>{`
         @keyframes pollPctFadeIn {
           from { opacity: 0; }
@@ -404,9 +399,10 @@ export default function FeedPollCard({ poll, currentUser }) {
                   ? <img src={gymAvatar} alt={gymName} className="w-full h-full object-cover" decoding="async" />
                   : <span className="text-sm font-bold text-white">{gymInitial}</span>}
               </div>
+              {/* ── NAME row, then BADGE + TIMESTAMP below ── */}
               <div className="flex flex-col gap-0.5">
-                <div className="flex items-center gap-2">
-                  <p className="text-sm font-bold text-white leading-tight">{gymName}</p>
+                <p className="text-sm font-bold text-white leading-tight">{gymName}</p>
+                <div className="flex items-center gap-1.5">
                   <span style={{
                     fontSize: 9, fontWeight: 700, padding: '1px 7px', borderRadius: 5,
                     background: pollBadgeCfg.bg,
@@ -418,8 +414,6 @@ export default function FeedPollCard({ poll, currentUser }) {
                     <BarChart2 size={9} />
                     {pollBadgeCfg.label}
                   </span>
-                </div>
-                <div className="flex items-center gap-1.5">
                   <span className="text-[11px] text-slate-500">{formatPollDate(poll.created_date)}</span>
                   {isExpired && <span className="text-[10px] font-semibold text-slate-500">· Ended</span>}
                 </div>
@@ -459,7 +453,7 @@ export default function FeedPollCard({ poll, currentUser }) {
             })}
           </div>
 
-          {/* Footer — voter avatars bottom-right */}
+          {/* Footer — voter avatars */}
           <div className="mt-3 flex items-center justify-end pr-1">
             <VoterAvatars
               voterAvatarData={displayedAvatars}
