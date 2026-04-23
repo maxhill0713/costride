@@ -1523,12 +1523,11 @@ export default function Home() {
                   </span>
                   {bubblePos.done && !bubblePos.isRestDay && bubblePos.workoutLog && (
                     <button
-                      onPointerDown={async (e) => {
+                      onPointerDown={(e) => {
                         e.stopPropagation();
                         const wl = bubblePos.workoutLog;
                         setActiveCircleDay(null); setBubblePos(null);
-                        try { const logs = await base44.entities.WorkoutLog.filter({ id: wl.id }); setSummaryLog(logs[0] || wl); }
-                        catch { setSummaryLog(wl); }
+                        setSummaryLog(wl);
                       }}
                       style={{ ...viewSummaryBtnStyle, marginTop: 10 }}>
                       View Summary
