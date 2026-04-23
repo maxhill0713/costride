@@ -12,11 +12,11 @@ import { base44 } from "@/api/base44Client";
 
 const STREAK_ICON_URL = "https://media.base44.com/images/public/694b637358644e1c22c8ec6b/5688f98be_Pose1_V2.png";
 const SPARTAN_ICON_URL = "https://media.base44.com/images/public/694b637358644e1c22c8ec6b/a72ee034d_spartan.png";
-const BEACH_ICON_URL = "https://media.base44.com/images/public/694b637358644e1c22c8ec6b/9766d8d41_BEACH.png";
+const BEACH_ICON_URL   = "https://media.base44.com/images/public/694b637358644e1c22c8ec6b/9766d8d41_BEACH.png";
 
 function getStreakIconUrl(variant) {
   if (variant === "spartan") return SPARTAN_ICON_URL;
-  if (variant === "beach") return BEACH_ICON_URL;
+  if (variant === "beach")   return BEACH_ICON_URL;
   return STREAK_ICON_URL;
 }
 
@@ -56,14 +56,6 @@ const C = {
 const FONT = "'DM Sans', 'Segoe UI', system-ui, sans-serif";
 
 /* ─── HELPERS ────────────────────────────────────────────────── */
-function recentPostCount(posts, days = 7) {
-  const cutoff = Date.now() - days * 24 * 60 * 60 * 1000;
-  return posts.filter(p => {
-    const d = p.created_date || p.created_at || p.date;
-    return d ? new Date(d).getTime() >= cutoff : true;
-  }).length;
-}
-
 function timeAgo(dateStr) {
   if (!dateStr) return "";
   let d = new Date(dateStr);
@@ -176,7 +168,7 @@ function ReactionsModal({ reactions, onClose }) {
 
   const userIds = Object.keys(reactions || {}).filter(k => !k.startsWith("gym_"));
   const gymKeys = Object.keys(reactions || {}).filter(k => k.startsWith("gym_"));
-  const total = Object.keys(reactions || {}).length;
+  const total   = Object.keys(reactions || {}).length;
 
   useEffect(() => {
     if (total === 0) { setLoading(false); return; }
@@ -188,7 +180,7 @@ function ReactionsModal({ reactions, onClose }) {
           const res = await base44.functions.invoke("getUserAvatars", { userIds });
           userIds.forEach(id => users.push({
             id,
-            name: res.data?.avatars?.[id]?.full_name || "Member",
+            name:   res.data?.avatars?.[id]?.full_name || "Member",
             avatar: res.data?.avatars?.[id]?.avatar_url || null,
             variant: reactions[id],
           }));
@@ -206,10 +198,7 @@ function ReactionsModal({ reactions, onClose }) {
     })();
   }, []);
 
-  const filtered = resolvedUsers.filter(u =>
-    u.name.toLowerCase().includes(search.toLowerCase())
-  );
-
+  const filtered = resolvedUsers.filter(u => u.name.toLowerCase().includes(search.toLowerCase()));
   const ini = (n = "") => (n || "?").split(" ").map(w => w[0]).join("").toUpperCase().slice(0, 2);
 
   return (
@@ -228,12 +217,8 @@ function ReactionsModal({ reactions, onClose }) {
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 8, background: C.card2, border: `1px solid ${C.brd}`, borderRadius: 8, padding: "7px 11px", flexShrink: 0 }}>
           <svg width="13" height="13" fill="none" stroke={C.t3} strokeWidth="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-          <input
-            value={search}
-            onChange={e => setSearch(e.target.value.slice(0, 30))}
-            placeholder="Search by name…"
-            style={{ flex: 1, background: "none", border: "none", outline: "none", color: C.t1, fontSize: 13, fontFamily: FONT }}
-          />
+          <input value={search} onChange={e => setSearch(e.target.value.slice(0, 30))} placeholder="Search by name…"
+            style={{ flex: 1, background: "none", border: "none", outline: "none", color: C.t1, fontSize: 13, fontFamily: FONT }} />
         </div>
         <div style={{ overflowY: "auto", display: "flex", flexDirection: "column", gap: 2 }}>
           {loading ? (
@@ -271,10 +256,7 @@ function ReactionsModal({ reactions, onClose }) {
 /* ─── REMOVE POST MODAL ──────────────────────────────────────── */
 function RemovePostModal({ post, resolvedName, onConfirm, onClose }) {
   const [removing, setRemoving] = useState(false);
-  const handleConfirm = async () => {
-    setRemoving(true);
-    try { await onConfirm(post.id); } finally { setRemoving(false); }
-  };
+  const handleConfirm = async () => { setRemoving(true); try { await onConfirm(post.id); } finally { setRemoving(false); } };
   return (
     <div style={{ position: "fixed", inset: 0, zIndex: 500, background: "rgba(0,0,0,0.72)", display: "flex", alignItems: "center", justifyContent: "center" }}
       onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
@@ -308,10 +290,7 @@ function RemovePostModal({ post, resolvedName, onConfirm, onClose }) {
 /* ─── REMOVE POLL MODAL ──────────────────────────────────────── */
 function RemovePollModal({ poll, onConfirm, onClose }) {
   const [removing, setRemoving] = useState(false);
-  const handleConfirm = async () => {
-    setRemoving(true);
-    try { await onConfirm(poll.id); } finally { setRemoving(false); }
-  };
+  const handleConfirm = async () => { setRemoving(true); try { await onConfirm(poll.id); } finally { setRemoving(false); } };
   return (
     <div style={{ position: "fixed", inset: 0, zIndex: 500, background: "rgba(0,0,0,0.72)", display: "flex", alignItems: "center", justifyContent: "center" }}
       onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
@@ -338,10 +317,7 @@ function RemovePollModal({ poll, onConfirm, onClose }) {
 /* ─── REMOVE CHALLENGE MODAL ─────────────────────────────────── */
 function RemoveChallengeModal({ challenge, onConfirm, onClose }) {
   const [removing, setRemoving] = useState(false);
-  const handleConfirm = async () => {
-    setRemoving(true);
-    try { await onConfirm(challenge.id); } finally { setRemoving(false); }
-  };
+  const handleConfirm = async () => { setRemoving(true); try { await onConfirm(challenge.id); } finally { setRemoving(false); } };
   return (
     <div style={{ position: "fixed", inset: 0, zIndex: 500, background: "rgba(0,0,0,0.72)", display: "flex", alignItems: "center", justifyContent: "center" }}
       onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
@@ -383,7 +359,7 @@ function EditPostModal({ post, gym, onClose, onSave }) {
   const [imageUrl, setImageUrl] = useState(post?.image_url || "");
   const [postType, setPostType] = useState(post?.post_type || "update");
   const [uploading, setUploading] = useState(false);
-  const [saving, setSaving] = useState(false);
+  const [saving,    setSaving]    = useState(false);
   const fileRef = useRef();
 
   const isDirty = content !== (post?.content || "") || imageUrl !== (post?.image_url || "") || postType !== (post?.post_type || "update");
@@ -391,36 +367,19 @@ function EditPostModal({ post, gym, onClose, onSave }) {
   const handleFile = async (file) => {
     if (!file || !file.type.startsWith("image/")) return;
     setUploading(true);
-    try {
-      const r = await base44.integrations.Core.UploadFile({ file });
-      setImageUrl(r.file_url);
-    } finally {
-      setUploading(false);
-    }
+    try { const r = await base44.integrations.Core.UploadFile({ file }); setImageUrl(r.file_url); }
+    finally { setUploading(false); }
   };
 
   const handleSave = async () => {
     if (!isDirty || !content.trim()) return;
     setSaving(true);
     try {
-      const gymFields = gym ? {
-        member_name: gym.name,
-        member_avatar: gym.logo_url || gym.image_url || post.member_avatar || null,
-        gym_id: gym.id,
-        gym_name: gym.name,
-      } : {};
-      await base44.entities.Post.update(post.id, {
-        content: content.trim(),
-        image_url: imageUrl || null,
-        post_type: postType,
-        share_with_community: true,
-        ...gymFields,
-      });
+      const gymFields = gym ? { member_name: gym.name, member_avatar: gym.logo_url || gym.image_url || post.member_avatar || null, gym_id: gym.id, gym_name: gym.name } : {};
+      await base44.entities.Post.update(post.id, { content: content.trim(), image_url: imageUrl || null, post_type: postType, share_with_community: true, ...gymFields });
       onSave?.();
       onClose();
-    } finally {
-      setSaving(false);
-    }
+    } finally { setSaving(false); }
   };
 
   return (
@@ -447,14 +406,9 @@ function EditPostModal({ post, gym, onClose, onSave }) {
         </div>
         <div>
           <div style={{ fontSize: 10, fontWeight: 700, color: C.t3, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 7 }}>Content</div>
-          <textarea
-            value={content}
-            onChange={e => setContent(e.target.value)}
-            rows={5}
+          <textarea value={content} onChange={e => setContent(e.target.value)} rows={5}
             style={{ width: "100%", boxSizing: "border-box", padding: "10px 12px", borderRadius: 9, background: C.card2, border: `1px solid ${C.brd}`, color: C.t1, fontSize: 13, fontFamily: FONT, lineHeight: 1.65, resize: "vertical", outline: "none" }}
-            onFocus={e => e.target.style.borderColor = C.cyanBrd}
-            onBlur={e => e.target.style.borderColor = C.brd}
-          />
+            onFocus={e => e.target.style.borderColor = C.cyanBrd} onBlur={e => e.target.style.borderColor = C.brd} />
         </div>
         <div>
           <div style={{ fontSize: 10, fontWeight: 700, color: C.t3, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 7 }}>Image</div>
@@ -490,8 +444,8 @@ function EditPostModal({ post, gym, onClose, onSave }) {
 function QuickActions({ post, resolvedName, memberId, gym, currentUser, onDeletePost, isGymPost, onPostEdited }) {
   const [modal, setModal] = useState(null);
   const gymReactionKey = gym?.id ? `gym_${gym.id}` : null;
-  const [reacted, setReacted] = useState(() => !!(gymReactionKey && post.reactions?.[gymReactionKey]));
-  const [reacting, setReacting] = useState(false);
+  const [reacted,   setReacted]   = useState(() => !!(gymReactionKey && post.reactions?.[gymReactionKey]));
+  const [reacting,  setReacting]  = useState(false);
 
   const handleReact = async (e) => {
     e.stopPropagation();
@@ -504,94 +458,55 @@ function QuickActions({ post, resolvedName, memberId, gym, currentUser, onDelete
       if (next) updated[gymReactionKey] = "gym";
       else delete updated[gymReactionKey];
       await base44.entities.Post.update(post.id, { reactions: updated });
-    } catch {
-      setReacted(!next);
-    } finally {
-      setReacting(false);
-    }
+    } catch { setReacted(!next); }
+    finally { setReacting(false); }
   };
 
   return (
     <>
       <div style={{ width: "30%", flexShrink: 0, borderLeft: `1px solid ${C.brd}`, padding: "12px 14px", display: "flex", flexDirection: "column", gap: 8, justifyContent: "flex-start" }}>
         <div style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.10em", color: C.t3, marginBottom: 2 }}>Quick Actions</div>
-
         {isGymPost ? (
           <>
-            <button
-              onClick={() => setModal("remove")}
+            <button onClick={() => setModal("remove")}
               style={{ display: "flex", alignItems: "center", gap: 8, width: "100%", padding: "7px 10px", borderRadius: 8, background: "rgba(255,255,255,0.03)", border: `1px solid ${C.brd}`, color: C.t2, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: FONT, textAlign: "left", transition: "all 0.15s" }}
               onMouseEnter={e => { e.currentTarget.style.borderColor = "rgba(255,77,109,0.35)"; e.currentTarget.style.color = C.red; e.currentTarget.style.background = C.redDim; }}
               onMouseLeave={e => { e.currentTarget.style.borderColor = C.brd; e.currentTarget.style.color = C.t2; e.currentTarget.style.background = "rgba(255,255,255,0.03)"; }}>
-              <Trash2 size={13} color="currentColor" style={{ flexShrink: 0 }} />
-              <span>Remove Post</span>
+              <Trash2 size={13} color="currentColor" style={{ flexShrink: 0 }} /><span>Remove Post</span>
             </button>
-
-            <button
-              onClick={() => setModal("edit")}
+            <button onClick={() => setModal("edit")}
               style={{ display: "flex", alignItems: "center", gap: 8, width: "100%", padding: "7px 10px", borderRadius: 8, background: "rgba(255,255,255,0.03)", border: `1px solid ${C.brd}`, color: C.t2, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: FONT, textAlign: "left", transition: "all 0.15s" }}
               onMouseEnter={e => { e.currentTarget.style.borderColor = C.cyanBrd; e.currentTarget.style.color = C.t1; e.currentTarget.style.background = C.cyanDim; }}
               onMouseLeave={e => { e.currentTarget.style.borderColor = C.brd; e.currentTarget.style.color = C.t2; e.currentTarget.style.background = "rgba(255,255,255,0.03)"; }}>
-              <Pencil size={13} color="currentColor" style={{ flexShrink: 0 }} />
-              <span>Edit Post</span>
+              <Pencil size={13} color="currentColor" style={{ flexShrink: 0 }} /><span>Edit Post</span>
             </button>
           </>
         ) : (
           <>
-            <button
-              onClick={() => setModal("message")}
+            <button onClick={() => setModal("message")}
               style={{ display: "flex", alignItems: "center", gap: 8, width: "100%", padding: "7px 10px", borderRadius: 8, background: "rgba(255,255,255,0.03)", border: `1px solid ${C.brd}`, color: C.t2, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: FONT, textAlign: "left", transition: "all 0.15s" }}
               onMouseEnter={e => { e.currentTarget.style.borderColor = C.cyanBrd; e.currentTarget.style.color = C.t1; e.currentTarget.style.background = C.cyanDim; }}
               onMouseLeave={e => { e.currentTarget.style.borderColor = C.brd; e.currentTarget.style.color = C.t2; e.currentTarget.style.background = "rgba(255,255,255,0.03)"; }}>
-              <MessageCircle size={13} color="currentColor" style={{ flexShrink: 0 }} />
-              <span>Message Member</span>
+              <MessageCircle size={13} color="currentColor" style={{ flexShrink: 0 }} /><span>Message Member</span>
             </button>
-
-            <button
-              onClick={() => setModal("remove")}
+            <button onClick={() => setModal("remove")}
               style={{ display: "flex", alignItems: "center", gap: 8, width: "100%", padding: "7px 10px", borderRadius: 8, background: "rgba(255,255,255,0.03)", border: `1px solid ${C.brd}`, color: C.t2, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: FONT, textAlign: "left", transition: "all 0.15s" }}
               onMouseEnter={e => { e.currentTarget.style.borderColor = "rgba(255,77,109,0.35)"; e.currentTarget.style.color = C.red; e.currentTarget.style.background = C.redDim; }}
               onMouseLeave={e => { e.currentTarget.style.borderColor = C.brd; e.currentTarget.style.color = C.t2; e.currentTarget.style.background = "rgba(255,255,255,0.03)"; }}>
-              <Trash2 size={13} color="currentColor" style={{ flexShrink: 0 }} />
-              <span>Remove Post</span>
+              <Trash2 size={13} color="currentColor" style={{ flexShrink: 0 }} /><span>Remove Post</span>
             </button>
-
-            <button
-              onClick={handleReact}
-              disabled={reacting}
+            <button onClick={handleReact} disabled={reacting}
               style={{ display: "flex", alignItems: "center", gap: 8, width: "100%", padding: "7px 10px", borderRadius: 8, background: reacted ? C.cyanDim : "rgba(255,255,255,0.03)", border: `1px solid ${reacted ? C.cyanBrd : C.brd}`, color: reacted ? C.cyan : C.t2, fontSize: 12, fontWeight: 600, cursor: reacting ? "default" : "pointer", fontFamily: FONT, textAlign: "left", transition: "all 0.15s", opacity: reacting ? 0.65 : 1 }}
               onMouseEnter={e => { if (!reacted) { e.currentTarget.style.borderColor = C.cyanBrd; e.currentTarget.style.color = C.cyan; e.currentTarget.style.background = C.cyanDim; } }}
               onMouseLeave={e => { if (!reacted) { e.currentTarget.style.borderColor = C.brd; e.currentTarget.style.color = C.t2; e.currentTarget.style.background = "rgba(255,255,255,0.03)"; } }}>
-              <Zap size={13} color="currentColor" style={{ flexShrink: 0 }} />
-              <span>{reacted ? "Reacted ✓" : "Send a Reaction"}</span>
+              <Zap size={13} color="currentColor" style={{ flexShrink: 0 }} /><span>{reacted ? "Reacted ✓" : "Send a Reaction"}</span>
             </button>
           </>
         )}
       </div>
-
-      {modal === "message" && (
-        <MessageMemberModal
-          resolvedName={resolvedName}
-          memberId={memberId}
-          onClose={() => setModal(null)}
-        />
-      )}
-      {modal === "remove" && (
-        <RemovePostModal
-          post={post}
-          resolvedName={resolvedName}
-          onConfirm={async (id) => { await onDeletePost?.(id); setModal(null); }}
-          onClose={() => setModal(null)}
-        />
-      )}
-      {modal === "edit" && (
-        <EditPostModal
-          post={post}
-          gym={gym}
-          onClose={() => setModal(null)}
-          onSave={onPostEdited}
-        />
-      )}
+      {modal === "message" && <MessageMemberModal resolvedName={resolvedName} memberId={memberId} onClose={() => setModal(null)} />}
+      {modal === "remove"  && <RemovePostModal post={post} resolvedName={resolvedName} onConfirm={async (id) => { await onDeletePost?.(id); setModal(null); }} onClose={() => setModal(null)} />}
+      {modal === "edit"    && <EditPostModal post={post} gym={gym} onClose={() => setModal(null)} onSave={onPostEdited} />}
     </>
   );
 }
@@ -620,18 +535,77 @@ function Tabs({ active, setActive, isMobile }) {
 }
 
 /* ─── CHART TOOLTIP ──────────────────────────────────────────── */
-function ChartTip({ active, payload, label, suffix = "" }) {
+function ChartTip({ active, payload, label }) {
   if (!active || !payload?.length) return null;
   return (
     <div style={{ background: "#111c2a", border: `1px solid ${C.cyanBrd}`, borderRadius: 7, padding: "5px 10px", fontSize: 11.5, color: C.t1 }}>
-      <span style={{ color: C.cyan, fontWeight: 700 }}>{payload[0].value}{suffix}</span>
+      <div style={{ fontSize: 10, color: C.t3, marginBottom: 2 }}>{label}</div>
+      <span style={{ color: C.cyan, fontWeight: 700 }}>{payload[0].value} interactions</span>
     </div>
   );
 }
 
+/* ─── BUILD DAILY INTERACTION DATA (last 7 days) ─────────────── */
+function buildDailyInteractionData(posts, polls, checkIns) {
+  const days = [];
+  const now = new Date();
+
+  for (let d = 6; d >= 0; d--) {
+    const date = new Date(now);
+    date.setDate(date.getDate() - d);
+    date.setHours(0, 0, 0, 0);
+    const dayStart = date.getTime();
+    const dayEnd   = dayStart + 24 * 60 * 60 * 1000;
+
+    const label = d === 0 ? "Today" : date.toLocaleDateString("en-GB", { weekday: "short" });
+
+    const isInDay = (dateStr) => {
+      if (!dateStr) return false;
+      let dt = new Date(dateStr);
+      if (typeof dateStr === "string" && !dateStr.endsWith("Z") && !dateStr.match(/[+-]\d{2}:\d{2}$/)) {
+        dt = new Date(dateStr + "Z");
+      }
+      return dt.getTime() >= dayStart && dt.getTime() < dayEnd;
+    };
+
+    let count = 0;
+
+    // member posts that day
+    posts.forEach(p => {
+      if (p.is_hidden) return;
+      if (!p.share_with_community && !p.post_type) return;
+      if (isInDay(p.created_date || p.created_at)) count += 1;
+    });
+
+    // reactions updated that day
+    posts.forEach(p => {
+      if (p.is_hidden) return;
+      if (!p.share_with_community && !p.post_type) return;
+      if (isInDay(p.updated_date || p.updated_at)) {
+        count += Object.keys(p.reactions || {}).length;
+      }
+    });
+
+    // poll votes updated that day
+    polls.forEach(p => {
+      if (isInDay(p.updated_date || p.updated_at || p.created_date || p.created_at)) {
+        count += (p.voters || []).length;
+      }
+    });
+
+    // check-ins that day
+    checkIns.forEach(c => {
+      if (isInDay(c.check_in_date || c.created_date || c.created_at)) count += 1;
+    });
+
+    days.push({ label, v: count });
+  }
+  return days;
+}
+
 /* ─── ACTIVITY METER DIAL ────────────────────────────────────── */
 function ActivityMeterDial({ pct }) {
-  const R = 46;
+  const R  = 46;
   const cx = 56, cy = 54;
   const clampedPct = Math.max(0, Math.min(100, pct));
 
@@ -640,31 +614,23 @@ function ActivityMeterDial({ pct }) {
   const y = cy - R * Math.sin(angleRad);
 
   const trackD = `M ${cx - R} ${cy} A ${R} ${R} 0 0 1 ${cx + R} ${cy}`;
-  const fillD = clampedPct === 0
+  const fillD  = clampedPct === 0
     ? ""
     : clampedPct >= 100
     ? `M ${cx - R} ${cy} A ${R} ${R} 0 0 1 ${cx + R} ${cy}`
     : `M ${cx - R} ${cy} A ${R} ${R} 0 0 1 ${x.toFixed(2)} ${y.toFixed(2)}`;
 
   const dialColor = clampedPct < 30 ? C.red : clampedPct < 60 ? C.amber : C.green;
-  const label = clampedPct < 30 ? "Low" : clampedPct < 60 ? "Moderate" : clampedPct < 85 ? "Good" : "Excellent";
+  const dialLabel = clampedPct < 30 ? "Low" : clampedPct < 60 ? "Moderate" : clampedPct < 85 ? "Good" : "Excellent";
 
   return (
     <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
       <svg width="112" height="68" viewBox="0 0 112 68" style={{ overflow: "visible" }}>
         <path d={trackD} fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="8" strokeLinecap="round" />
-        {fillD && (
-          <path d={fillD} fill="none" stroke={dialColor} strokeWidth="8" strokeLinecap="round" strokeOpacity="0.85" />
-        )}
-        {clampedPct > 0 && (
-          <circle cx={x.toFixed(2)} cy={y.toFixed(2)} r="5" fill={dialColor} />
-        )}
-        <text x={cx} y={cy - 2} textAnchor="middle" style={{ fontSize: 17, fontWeight: 800, fill: "#fff", fontFamily: "'DM Sans', sans-serif" }}>
-          {clampedPct}%
-        </text>
-        <text x={cx} y={cy + 13} textAnchor="middle" style={{ fontSize: 9, fill: dialColor, fontFamily: "'DM Sans', sans-serif", fontWeight: 700 }}>
-          {label}
-        </text>
+        {fillD && <path d={fillD} fill="none" stroke={dialColor} strokeWidth="8" strokeLinecap="round" strokeOpacity="0.85" />}
+        {clampedPct > 0 && <circle cx={x.toFixed(2)} cy={y.toFixed(2)} r="5" fill={dialColor} />}
+        <text x={cx} y={cy - 2}  textAnchor="middle" style={{ fontSize: 17, fontWeight: 800, fill: "#fff",      fontFamily: "'DM Sans', sans-serif" }}>{clampedPct}%</text>
+        <text x={cx} y={cy + 13} textAnchor="middle" style={{ fontSize: 9,  fontWeight: 700, fill: dialColor,  fontFamily: "'DM Sans', sans-serif" }}>{dialLabel}</text>
       </svg>
       <div style={{ display: "flex", justifyContent: "space-between", width: "100%", marginTop: 2 }}>
         <span style={{ fontSize: 9, color: C.t3, fontWeight: 600 }}>0%</span>
@@ -675,15 +641,15 @@ function ActivityMeterDial({ pct }) {
 }
 
 /* ══════════════════════════════════════════════════════════════
-   RIGHT SIDEBAR — REDESIGNED
+   RIGHT SIDEBAR
 ══════════════════════════════════════════════════════════════ */
-const INTERACTION_TREND_DATA = [
-  { m: "Nov", v: 42 }, { m: "Dec", v: 58 }, { m: "Jan", v: 51 },
-  { m: "Feb", v: 74 }, { m: "Mar", v: 89 }, { m: "Apr", v: 96 },
-];
-
-function RightSidebar({ events, challenges, polls, posts, checkIns, openModal, feedPostsThisWeek, livePolls, communityInteractionsToday, onTabChange, memberCount = 0 }) {
-  /* ── compute active member count ── */
+function RightSidebar({
+  events, challenges, polls, posts, checkIns,
+  feedPostsThisWeek, livePolls, communityInteractionsToday,
+  onTabChange, memberCount = 0,
+  liveChallengesCount, eventsThisWeek,
+}) {
+  /* ── active member count ── */
   const weekCutoff = Date.now() - 7 * 24 * 60 * 60 * 1000;
   const activeUserIds = new Set();
   posts.forEach(p => {
@@ -699,20 +665,15 @@ function RightSidebar({ events, challenges, polls, posts, checkIns, openModal, f
   });
   const activityPct = memberCount > 0 ? Math.round((activeUserIds.size / memberCount) * 100) : 0;
 
-  /* ── stat cards config ── */
-  const statCards = [
-    { label: "Posts / week",   val: feedPostsThisWeek,            col: C.cyan,  pct: "+18%", up: true  },
-    { label: "Live polls",     val: livePolls,                    col: "#a78bfa", pct: "+2",   up: true  },
-    { label: "Events",         val: events.length,                col: C.amber, pct: "—",    up: null  },
-    { label: "Today",          val: communityInteractionsToday,   col: C.green, pct: "+5%",  up: true  },
-  ];
+  /* ── real daily interaction chart data ── */
+  const chartData = buildDailyInteractionData(posts, polls, checkIns);
 
-  /* ── content highlight rows config ── */
-  const highlights = [
-    { label: "Community Feed", count: feedPostsThisWeek,   Icon: FileText,   color: C.cyan,    tab: "Community Feed" },
-    { label: "Live Polls",     count: livePolls,            Icon: BarChart2,  color: "#a78bfa", tab: "Polls"          },
-    { label: "Challenges",     count: challenges.length,    Icon: Trophy,     color: "#ec4899", tab: "Challenges"     },
-    { label: "Events",         count: events.length,        Icon: Calendar,   color: C.amber,   tab: "Events"         },
+  /* ── 2×2 stat grid — now clickable ── */
+  const statCards = [
+    { label: "Posts / week",      val: feedPostsThisWeek,     col: C.cyan,    tab: "Community Feed" },
+    { label: "Live polls",        val: livePolls,              col: "#a78bfa", tab: "Polls"          },
+    { label: "Live Challenges",   val: liveChallengesCount,    col: "#ec4899", tab: "Challenges"     },
+    { label: "Events / week",     val: eventsThisWeek,         col: C.amber,   tab: "Events"         },
   ];
 
   return (
@@ -723,11 +684,33 @@ function RightSidebar({ events, challenges, polls, posts, checkIns, openModal, f
       borderLeft: `1px solid ${C.brd}`,
       display: "flex",
       flexDirection: "column",
-      overflowY: "auto",
+      /* no overflowY so height is natural / content-sized */
       fontFamily: FONT,
+      alignSelf: "flex-start", /* key: sidebar doesn't stretch to full page height */
     }}>
 
-      {/* ── TOTAL INTERACTIONS header block ── */}
+      {/* ── CONTENT OVERVIEW header — moved to top ── */}
+      <div style={{ padding: "16px 16px 12px", borderBottom: `1px solid ${C.brd}` }}>
+        <div style={{ fontSize: 12, fontWeight: 700, color: C.t1 }}>Content Overview</div>
+      </div>
+
+      {/* ── 2×2 STAT GRID (clickable) ── */}
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1px", background: C.brd, borderBottom: `1px solid ${C.brd}` }}>
+        {statCards.map((s, i) => (
+          <div
+            key={i}
+            onClick={() => s.tab && onTabChange?.(s.tab)}
+            style={{ padding: "12px 14px", background: C.sidebar, cursor: "pointer", transition: "background 0.12s" }}
+            onMouseEnter={e => e.currentTarget.style.background = C.cyanDim}
+            onMouseLeave={e => e.currentTarget.style.background = C.sidebar}
+          >
+            <div style={{ fontSize: 10, color: C.t3, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 4 }}>{s.label}</div>
+            <div style={{ fontSize: 20, fontWeight: 700, color: s.col, lineHeight: 1 }}>{s.val}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* ── INTERACTIONS TODAY header block ── */}
       <div style={{ padding: "16px 16px 14px", borderBottom: `1px solid ${C.brd}` }}>
         <div style={{ fontSize: 10, color: C.t3, textTransform: "uppercase", letterSpacing: "0.07em", marginBottom: 6 }}>
           Community Activity
@@ -736,63 +719,36 @@ function RightSidebar({ events, challenges, polls, posts, checkIns, openModal, f
           <div style={{ fontSize: 38, fontWeight: 700, color: C.t1, letterSpacing: "-0.03em", lineHeight: 1 }}>
             {communityInteractionsToday}
           </div>
-          <div style={{ display: "flex", alignItems: "center", gap: 3, fontSize: 12, color: C.cyan, fontWeight: 600, marginBottom: 4 }}>
-            <ArrowUpRight style={{ width: 13, height: 13 }} /> +18%
-          </div>
         </div>
         <div style={{ fontSize: 11, color: C.t3, marginTop: 5 }}>interactions today</div>
       </div>
 
-      {/* ── 2×2 STAT GRID ── */}
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1px", background: C.brd, borderBottom: `1px solid ${C.brd}` }}>
-        {statCards.map((s, i) => (
-          <div key={i} style={{ padding: "12px 14px", background: C.sidebar }}>
-            <div style={{ fontSize: 10, color: C.t3, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 4 }}>{s.label}</div>
-            <div style={{ fontSize: 20, fontWeight: 700, color: s.col, lineHeight: 1 }}>{s.val}</div>
-            {s.up !== null && (
-              <div style={{ display: "flex", alignItems: "center", gap: 2, fontSize: 10, color: s.up ? C.cyan : C.red, marginTop: 4 }}>
-                {s.up
-                  ? <ArrowUpRight style={{ width: 10, height: 10 }} />
-                  : <ArrowDownRight style={{ width: 10, height: 10 }} />
-                }
-                {s.pct}
-              </div>
-            )}
-            {s.up === null && (
-              <div style={{ fontSize: 10, color: C.t3, marginTop: 4 }}>{s.pct}</div>
-            )}
-          </div>
-        ))}
-      </div>
-
-      {/* ── INTERACTION TREND CHART ── */}
-      <div style={{ padding: "14px 16px 10px" }}>
+      {/* ── INTERACTION TREND CHART (real 7-day data) ── */}
+      <div style={{ padding: "14px 16px 10px", borderBottom: `1px solid ${C.brd}` }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
-          <span style={{ fontSize: 12, fontWeight: 600, color: C.t1 }}>Interaction Trend</span>
-          <span style={{ fontSize: 10, color: C.t3 }}>6mo</span>
+          <span style={{ fontSize: 12, fontWeight: 600, color: C.t1 }}>This Week</span>
+          <span style={{ fontSize: 10, color: C.t3 }}>7d</span>
         </div>
         <ResponsiveContainer width="100%" height={88}>
-          <AreaChart data={INTERACTION_TREND_DATA} margin={{ top: 4, right: 4, bottom: 0, left: -28 }}>
+          <AreaChart data={chartData} margin={{ top: 4, right: 4, bottom: 0, left: -28 }}>
             <defs>
               <linearGradient id="ig" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor={C.cyan} stopOpacity={0.35} />
+                <stop offset="0%"   stopColor={C.cyan} stopOpacity={0.35} />
                 <stop offset="100%" stopColor={C.cyan} stopOpacity={0.02} />
               </linearGradient>
             </defs>
             <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" vertical={false} />
-            <XAxis dataKey="m" tick={{ fill: C.t3, fontSize: 9, fontFamily: FONT }} axisLine={false} tickLine={false} />
+            <XAxis dataKey="label" tick={{ fill: C.t3, fontSize: 9, fontFamily: FONT }} axisLine={false} tickLine={false} />
             <YAxis tick={{ fill: C.t3, fontSize: 9, fontFamily: FONT }} axisLine={false} tickLine={false} />
-            <Tooltip content={<ChartTip suffix=" actions" />} />
+            <Tooltip content={<ChartTip />} />
             <Area type="monotone" dataKey="v" stroke={C.cyan} strokeWidth={2} fill="url(#ig)" dot={false}
               activeDot={{ r: 3, fill: C.cyan, strokeWidth: 2, stroke: C.card }} />
           </AreaChart>
         </ResponsiveContainer>
       </div>
 
-      <div style={{ height: 1, background: C.brd }} />
-
-      {/* ── ACTIVITY METER ── */}
-      <div style={{ padding: "14px 16px 14px" }}>
+      {/* ── MEMBER ACTIVITY ── */}
+      <div style={{ padding: "14px 16px 16px" }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
           <span style={{ fontSize: 12, fontWeight: 600, color: C.t1 }}>Member Activity</span>
           <span style={{ fontSize: 10, color: C.t3 }}>7d</span>
@@ -805,62 +761,20 @@ function RightSidebar({ events, challenges, polls, posts, checkIns, openModal, f
           </div>
         </div>
       </div>
-
-      <div style={{ height: 1, background: C.brd }} />
-
-      {/* ── CONTENT HIGHLIGHTS (tab shortcuts) ── */}
-      <div style={{ padding: "14px 16px 16px" }}>
-        <div style={{ fontSize: 12, fontWeight: 600, color: C.t1, marginBottom: 12 }}>Content Overview</div>
-        {highlights.map((h, i) => (
-          <div
-            key={i}
-            onClick={() => h.tab && onTabChange?.(h.tab)}
-            style={{
-              display: "flex", alignItems: "center", gap: 9,
-              padding: "8px 10px", borderRadius: 7,
-              background: "transparent",
-              border: `1px solid transparent`,
-              cursor: "pointer", marginBottom: 4,
-              transition: "all 0.12s",
-            }}
-            onMouseEnter={e => {
-              e.currentTarget.style.background = C.cyanDim;
-              e.currentTarget.style.borderColor = C.cyanBrd;
-            }}
-            onMouseLeave={e => {
-              e.currentTarget.style.background = "transparent";
-              e.currentTarget.style.borderColor = "transparent";
-            }}
-          >
-            <div style={{
-              width: 26, height: 26, borderRadius: 6, flexShrink: 0,
-              background: `${h.color}18`,
-              border: `1px solid ${h.color}30`,
-              display: "flex", alignItems: "center", justifyContent: "center",
-            }}>
-              <h.Icon style={{ width: 12, height: 12, color: h.color }} />
-            </div>
-            <span style={{ flex: 1, fontSize: 12, color: C.t2 }}>{h.label}</span>
-            <span style={{ fontSize: 13, fontWeight: 700, color: C.t1 }}>{h.count}</span>
-            <svg width="8" height="8" fill="none" stroke={C.t3} strokeWidth="2.5" viewBox="0 0 24 24" style={{ flexShrink: 0 }}>
-              <path d="m9 18 6-6-6-6"/>
-            </svg>
-          </div>
-        ))}
-      </div>
+      {/* sidebar ends here — no extra padding/content below */}
     </div>
   );
 }
 
 /* ─── EMPTY STATE ────────────────────────────────────────────── */
-function EmptyState({ label, onAdd, noAction }) {
+function EmptyState({ label, onAdd }) {
   return (
     <div style={{ display: "flex", flexDirection: "column", alignItems: "center", padding: "56px 0", gap: 12 }}>
       <div style={{ width: 48, height: 48, borderRadius: 12, background: C.cyanDim, border: `1px solid ${C.cyanBrd}`, display: "flex", alignItems: "center", justifyContent: "center" }}>
         <Flame size={20} color={C.cyan} />
       </div>
       <div style={{ fontSize: 13, fontWeight: 500, color: C.t2 }}>No {label} yet</div>
-      {!noAction && onAdd && (
+      {onAdd && (
         <button onClick={onAdd} style={{ padding: "7px 16px", borderRadius: 8, background: C.cyan, color: "#fff", border: "none", fontSize: 12.5, fontWeight: 700, cursor: "pointer", fontFamily: FONT, display: "flex", alignItems: "center", gap: 6, minHeight: 44, boxShadow: "0 0 10px rgba(77,127,255,0.22), 0 2px 6px rgba(77,127,255,0.12)" }}>
           <Plus size={12} /> Create
         </button>
@@ -894,7 +808,7 @@ function MemberStatusBadge({ memberId, checkIns = [] }) {
   if (!memberId) return null;
   const memberCheckIns = checkIns.filter(c => c.user_id === memberId);
   const total = memberCheckIns.length;
-  const now = Date.now();
+  const now   = Date.now();
   const lastCI = memberCheckIns[0]?.check_in_date ? new Date(memberCheckIns[0].check_in_date).getTime() : null;
   const daysSinceLast = lastCI ? Math.floor((now - lastCI) / (1000 * 60 * 60 * 24)) : null;
   const last30 = memberCheckIns.filter(c => {
@@ -921,14 +835,18 @@ function MemberStatusBadge({ memberId, checkIns = [] }) {
 }
 
 /* ─── ROOT ───────────────────────────────────────────────────── */
-export default function ContentPage({ events = [], challenges = [], polls = [], posts = [], checkIns = [], openModal, onDeleteEvent, onDeleteChallenge, onDeletePost, onDeletePoll, onUpdatePost, avatarMap = {}, nameMap = {}, currentUser = null, gym = null, memberCount = 0 }) {
+export default function ContentPage({
+  events = [], challenges = [], polls = [], posts = [], checkIns = [],
+  openModal, onDeleteEvent, onDeleteChallenge, onDeletePost, onDeletePoll, onUpdatePost,
+  avatarMap = {}, nameMap = {}, currentUser = null, gym = null, memberCount = 0,
+}) {
   const isMobile = useIsMobile();
-  const [tab, setTab] = useState("Community Feed");
-  const [showMenu, setShowMenu] = useState(false);
-  const [pollToRemove, setPollToRemove] = useState(null);
-  const [challengeToRemove, setChallengeToRemove] = useState(null);
-  const [rerunning, setRerunning] = useState(null);
-  const [reactionsPost, setReactionsPost] = useState(null);
+  const [tab,              setTab]              = useState("Community Feed");
+  const [showMenu,         setShowMenu]         = useState(false);
+  const [pollToRemove,     setPollToRemove]     = useState(null);
+  const [challengeToRemove,setChallengeToRemove]= useState(null);
+  const [rerunning,        setRerunning]        = useState(null);
+  const [reactionsPost,    setReactionsPost]    = useState(null);
 
   const createItems = [
     { label: "📝 New Post",      action: () => { openModal?.("post");      setShowMenu(false); setTab("Community Feed"); } },
@@ -953,9 +871,16 @@ export default function ContentPage({ events = [], challenges = [], polls = [], 
 
   const feedPostsThisWeek = feedPosts.length;
   const now = new Date();
-  const livePolls = polls.filter(p => {
-    if (p.end_date) return new Date(p.end_date) >= now;
-    return true;
+
+  const livePolls = polls.filter(p => !p.end_date || new Date(p.end_date) >= now).length;
+
+  /* live challenges count */
+  const liveChallengesCount = challenges.filter(ch => !ch.end_date || new Date(ch.end_date) >= now).length;
+
+  /* events this week */
+  const eventsThisWeek = events.filter(ev => {
+    if (!ev.event_date) return false;
+    return new Date(ev.event_date).getTime() >= sevenDaysCutoff;
   }).length;
 
   const todayStart = new Date(); todayStart.setHours(0, 0, 0, 0);
@@ -964,9 +889,7 @@ export default function ContentPage({ events = [], challenges = [], polls = [], 
   const isToday = (dateStr) => {
     if (!dateStr) return false;
     let d = new Date(dateStr);
-    if (typeof dateStr === "string" && !dateStr.endsWith("Z") && !dateStr.match(/[+-]\d{2}:\d{2}$/)) {
-      d = new Date(dateStr + "Z");
-    }
+    if (typeof dateStr === "string" && !dateStr.endsWith("Z") && !dateStr.match(/[+-]\d{2}:\d{2}$/)) d = new Date(dateStr + "Z");
     return d.getTime() >= todayStartMs;
   };
 
@@ -976,8 +899,7 @@ export default function ContentPage({ events = [], challenges = [], polls = [], 
   ).length;
 
   const pollVotesToday = polls.filter(p =>
-    (!gymId || p.gym_id === gymId) &&
-    isToday(p.updated_date || p.updated_at || p.created_date || p.created_at)
+    (!gymId || p.gym_id === gymId) && isToday(p.updated_date || p.updated_at || p.created_date || p.created_at)
   ).reduce((sum, p) => sum + (p.voters || []).length, 0);
 
   const reactionsToday = posts.filter(p =>
@@ -987,18 +909,10 @@ export default function ContentPage({ events = [], challenges = [], polls = [], 
   ).reduce((sum, p) => sum + Object.keys(p.reactions || {}).length, 0);
 
   const checkInsToday = checkIns.filter(c =>
-    (!gymId || c.gym_id === gymId) &&
-    isToday(c.check_in_date || c.created_date || c.created_at)
+    (!gymId || c.gym_id === gymId) && isToday(c.check_in_date || c.created_date || c.created_at)
   ).length;
 
   const communityInteractionsToday = memberPostsToday + reactionsToday + pollVotesToday + checkInsToday;
-
-  const communityFeedPosts = posts.filter(p => {
-    if (p.is_hidden) return false;
-    if (!p.share_with_community) return false;
-    if (gymId && p.gym_id !== gymId) return false;
-    return true;
-  });
 
   return (
     <div style={{ display: "flex", flex: 1, minHeight: 0, background: C.bg, color: C.t1, fontFamily: FONT, fontSize: 13, lineHeight: 1.5, WebkitFontSmoothing: "antialiased" }}>
@@ -1016,17 +930,7 @@ export default function ContentPage({ events = [], challenges = [], polls = [], 
               {tabAction && (
                 <button
                   onClick={() => openModal?.(tabAction.modal)}
-                  style={{
-                    display: "flex", alignItems: "center", gap: 6,
-                    padding: "9px 18px",
-                    background: C.cyan, border: "none", borderRadius: 9,
-                    fontSize: 12.5, fontWeight: 700, color: "#fff",
-                    cursor: "pointer", fontFamily: FONT,
-                    boxShadow: "0 0 10px rgba(77,127,255,0.22), 0 2px 8px rgba(77,127,255,0.12)",
-                    transition: "opacity 0.15s",
-                    marginTop: 12,
-                    marginRight: 8,
-                  }}
+                  style={{ display: "flex", alignItems: "center", gap: 6, padding: "9px 18px", background: C.cyan, border: "none", borderRadius: 9, fontSize: 12.5, fontWeight: 700, color: "#fff", cursor: "pointer", fontFamily: FONT, boxShadow: "0 0 10px rgba(77,127,255,0.22), 0 2px 8px rgba(77,127,255,0.12)", transition: "opacity 0.15s", marginTop: 12, marginRight: 8 }}
                   onMouseEnter={e => e.currentTarget.style.opacity = "0.88"}
                   onMouseLeave={e => e.currentTarget.style.opacity = "1"}>
                   <Plus size={12} /> {tabAction.label}
@@ -1053,7 +957,7 @@ export default function ContentPage({ events = [], challenges = [], polls = [], 
               {feedPosts.length === 0
                 ? <EmptyState label="posts" onAdd={() => openModal?.("post")} />
                 : feedPosts.map(p => {
-                  const isGymPost = !!p.post_type;
+                  const isGymPost   = !!p.post_type;
                   const resolvedName = isGymPost
                     ? (gym?.name || p.member_name || "Gym")
                     : (p.member_id && nameMap[p.member_id]) ||
@@ -1061,10 +965,10 @@ export default function ContentPage({ events = [], challenges = [], polls = [], 
                       (p.member_name && p.member_name.includes("@")
                         ? p.member_name.split("@")[0].replace(/[._]/g, " ").replace(/\b\w/g, c => c.toUpperCase())
                         : "Member");
-                  const avatar = isGymPost
+                  const avatar   = isGymPost
                     ? (gym?.logo_url || gym?.image_url || p.member_avatar || null)
                     : (p.member_id && avatarMap[p.member_id]) || p.member_avatar || null;
-                  const palette = ["#6366f1","#8b5cf6","#ec4899","#14b8a6","#f59e0b","#4d7fff","#10b981"];
+                  const palette  = ["#6366f1","#8b5cf6","#ec4899","#14b8a6","#f59e0b","#4d7fff","#10b981"];
                   const avatarBg = palette[(resolvedName.charCodeAt(0) || 0) % palette.length];
                   const initials = resolvedName.split(" ").map(w => w[0]).join("").toUpperCase().slice(0, 2) || "?";
                   const postedAt = timeAgo(p.created_date || p.created_at);
@@ -1078,8 +982,7 @@ export default function ContentPage({ events = [], challenges = [], polls = [], 
 
                       {p.image_url ? (
                         <div style={{ width: 160, height: 160, flexShrink: 0, alignSelf: "center", margin: 8, borderRadius: 10, overflow: "hidden" }}>
-                          <img src={p.image_url} alt=""
-                            style={{ width: "100%", height: "100%", objectFit: "cover", display: "block", imageRendering: "high-quality" }} />
+                          <img src={p.image_url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
                         </div>
                       ) : (
                         <div style={{ width: 6, flexShrink: 0, background: C.cyanDim, borderRadius: "12px 0 0 12px" }} />
@@ -1096,9 +999,8 @@ export default function ContentPage({ events = [], challenges = [], polls = [], 
                                 <div style={{ display: "flex", alignItems: "center", gap: 7, flexWrap: "wrap" }}>
                                   <div style={{ fontSize: 13, fontWeight: 700, color: C.t1, lineHeight: 1.2 }}>{resolvedName}</div>
                                   {(() => { const pt = POST_TYPE_STYLES[p.post_type] || POST_TYPE_STYLES.update; return (
-                                  <span style={{ fontSize: 9.5, fontWeight: 700, padding: "1px 7px", borderRadius: 5, background: pt.bg, border: `1px solid ${pt.border}`, color: pt.color, flexShrink: 0 }}>
-                                    {pt.label}
-                                  </span>); })()}
+                                    <span style={{ fontSize: 9.5, fontWeight: 700, padding: "1px 7px", borderRadius: 5, background: pt.bg, border: `1px solid ${pt.border}`, color: pt.color, flexShrink: 0 }}>{pt.label}</span>
+                                  ); })()}
                                 </div>
                                 {postedAt && <div style={{ fontSize: 11, color: C.t3, marginTop: 2 }}>{postedAt}</div>}
                               </>
@@ -1125,35 +1027,28 @@ export default function ContentPage({ events = [], challenges = [], polls = [], 
                             {Object.entries(p.reactions || {}).slice(0, 5).map(([uid, variant], i) => (
                               <div key={uid} style={{ position: "relative", width: 31, height: 31, marginLeft: i === 0 ? 0 : -10, zIndex: 5 - i, flexShrink: 0 }}>
                                 {variant === "sunglasses" ? (
-                                 <div style={{ position: "relative", width: "100%", height: "100%" }}>
-                                   <img src={STREAK_ICON_URL} alt="react" style={{ width: "100%", height: "100%", objectFit: "contain" }} />
-                                   <svg style={{ position: "absolute", inset: 0, width: "100%", height: "100%", pointerEvents: "none" }} viewBox="0 0 64 64">
-                                     <circle cx="20" cy="24" r="6" fill="none" stroke="black" strokeWidth="1.5"/>
-                                     <circle cx="44" cy="24" r="6" fill="none" stroke="black" strokeWidth="1.5"/>
-                                     <line x1="26" y1="24" x2="38" y2="24" stroke="black" strokeWidth="1.5"/>
-                                   </svg>
-                                 </div>
+                                  <div style={{ position: "relative", width: "100%", height: "100%" }}>
+                                    <img src={STREAK_ICON_URL} alt="react" style={{ width: "100%", height: "100%", objectFit: "contain" }} />
+                                    <svg style={{ position: "absolute", inset: 0, width: "100%", height: "100%", pointerEvents: "none" }} viewBox="0 0 64 64">
+                                      <circle cx="20" cy="24" r="6" fill="none" stroke="black" strokeWidth="1.5"/>
+                                      <circle cx="44" cy="24" r="6" fill="none" stroke="black" strokeWidth="1.5"/>
+                                      <line x1="26" y1="24" x2="38" y2="24" stroke="black" strokeWidth="1.5"/>
+                                    </svg>
+                                  </div>
                                 ) : (
-                                 <img src={getStreakIconUrl(variant)} alt="react" style={{ width: "100%", height: "100%", objectFit: "contain" }} />
+                                  <img src={getStreakIconUrl(variant)} alt="react" style={{ width: "100%", height: "100%", objectFit: "contain" }} />
                                 )}
                               </div>
                             ))}
-                            {reactionCount > 5 && (
-                              <span style={{ fontSize: 11, fontWeight: 700, color: C.t2, marginLeft: 5 }}>+{reactionCount - 5}</span>
-                            )}
+                            {reactionCount > 5 && <span style={{ fontSize: 11, fontWeight: 700, color: C.t2, marginLeft: 5 }}>+{reactionCount - 5}</span>}
                           </button>
                         )}
                       </div>
 
                       <QuickActions
-                        post={p}
-                        resolvedName={resolvedName}
-                        memberId={p.member_id}
-                        gym={gym}
-                        currentUser={currentUser}
-                        onDeletePost={onDeletePost}
-                        isGymPost={isGymPost}
-                        onPostEdited={onUpdatePost}
+                        post={p} resolvedName={resolvedName} memberId={p.member_id}
+                        gym={gym} currentUser={currentUser} onDeletePost={onDeletePost}
+                        isGymPost={isGymPost} onPostEdited={onUpdatePost}
                       />
                     </div>
                   );
@@ -1187,25 +1082,14 @@ export default function ContentPage({ events = [], challenges = [], polls = [], 
 
           {/* ── CHALLENGES ── */}
           {tab === "Challenges" && (() => {
-            const now = new Date();
-            const liveChallenges = challenges.filter(ch => {
-              if (!ch.end_date) return true;
-              return new Date(ch.end_date) >= now;
-            });
-            const endedChallenges = challenges.filter(ch => {
-              if (!ch.end_date) return false;
-              return new Date(ch.end_date) < now;
-            });
+            const nowDate = new Date();
+            const liveChallenges  = challenges.filter(ch => !ch.end_date || new Date(ch.end_date) >= nowDate);
+            const endedChallenges = challenges.filter(ch =>  ch.end_date && new Date(ch.end_date) <  nowDate);
 
-            const actionBtnStyle = () => ({
-              display: "flex", alignItems: "center", gap: 6, padding: "6px 12px",
-              borderRadius: 8, background: "rgba(255,255,255,0.03)", border: `1px solid ${C.brd}`,
-              color: C.t2, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: FONT,
-              flexShrink: 0, transition: "all 0.15s",
-            });
-            const actionBtnHoverRed = e => { e.currentTarget.style.borderColor = "rgba(255,77,109,0.35)"; e.currentTarget.style.color = C.red; e.currentTarget.style.background = C.redDim; };
-            const actionBtnHoverBlue = e => { e.currentTarget.style.borderColor = C.cyanBrd; e.currentTarget.style.color = C.cyan; e.currentTarget.style.background = C.cyanDim; };
-            const actionBtnLeave = e => { e.currentTarget.style.borderColor = C.brd; e.currentTarget.style.color = C.t2; e.currentTarget.style.background = "rgba(255,255,255,0.03)"; };
+            const actionBtnStyle = () => ({ display: "flex", alignItems: "center", gap: 6, padding: "6px 12px", borderRadius: 8, background: "rgba(255,255,255,0.03)", border: `1px solid ${C.brd}`, color: C.t2, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: FONT, flexShrink: 0, transition: "all 0.15s" });
+            const actionBtnHoverRed  = e => { e.currentTarget.style.borderColor = "rgba(255,77,109,0.35)"; e.currentTarget.style.color = C.red;  e.currentTarget.style.background = C.redDim;  };
+            const actionBtnHoverBlue = e => { e.currentTarget.style.borderColor = C.cyanBrd;                e.currentTarget.style.color = C.cyan; e.currentTarget.style.background = C.cyanDim; };
+            const actionBtnLeave     = e => { e.currentTarget.style.borderColor = C.brd;                    e.currentTarget.style.color = C.t2;   e.currentTarget.style.background = "rgba(255,255,255,0.03)"; };
 
             const ChallengeCard = ({ ch, showRerun = false }) => (
               <div style={{ background: C.card, border: `1px solid ${C.brd}`, borderRadius: 10, padding: isMobile ? "14px 16px" : "13px 16px", marginBottom: 8 }}
@@ -1218,46 +1102,28 @@ export default function ContentPage({ events = [], challenges = [], polls = [], 
                     <div style={{ fontSize: 11, color: C.t3, marginTop: 3 }}>{ch.start_date} → {ch.end_date}</div>
                     <div style={{ fontSize: 11.5, color: C.t2, marginTop: 4 }}>{(ch.participants || []).length} joined</div>
                   </div>
-                  <button
-                    onClick={() => setChallengeToRemove(ch)}
-                    style={actionBtnStyle()}
-                    onMouseEnter={actionBtnHoverRed}
-                    onMouseLeave={actionBtnLeave}>
-                    <Trash2 size={12} color="currentColor" />
-                    <span>Remove</span>
+                  <button onClick={() => setChallengeToRemove(ch)} style={actionBtnStyle()} onMouseEnter={actionBtnHoverRed} onMouseLeave={actionBtnLeave}>
+                    <Trash2 size={12} color="currentColor" /><span>Remove</span>
                   </button>
                 </div>
                 {showRerun && (
                   <div style={{ display: "flex", gap: 8, marginTop: 10, flexWrap: "wrap" }}>
-                    <button
-                      disabled={rerunning === ch.id}
+                    <button disabled={rerunning === ch.id}
                       onClick={async () => {
                         if (!ch.start_date || !ch.end_date) return;
                         setRerunning(ch.id);
                         try {
-                          const start = new Date(ch.start_date);
-                          const end = new Date(ch.end_date);
+                          const start  = new Date(ch.start_date);
+                          const end    = new Date(ch.end_date);
                           const spanMs = end.getTime() - start.getTime();
                           const newStart = new Date();
-                          const newEnd = new Date(newStart.getTime() + spanMs);
+                          const newEnd   = new Date(newStart.getTime() + spanMs);
                           const fmt = d => d.toISOString().split("T")[0];
                           const { id: _id, created_date: _cd, updated_date: _ud, participants, winner_id, winner_name, ...rest } = ch;
-                          await base44.entities.Challenge.create({
-                            ...rest,
-                            start_date: fmt(newStart),
-                            end_date: fmt(newEnd),
-                            status: "active",
-                            participants: [],
-                            winner_id: null,
-                            winner_name: null,
-                          });
-                        } finally {
-                          setRerunning(null);
-                        }
+                          await base44.entities.Challenge.create({ ...rest, start_date: fmt(newStart), end_date: fmt(newEnd), status: "active", participants: [], winner_id: null, winner_name: null });
+                        } finally { setRerunning(null); }
                       }}
-                      style={actionBtnStyle()}
-                      onMouseEnter={actionBtnHoverBlue}
-                      onMouseLeave={actionBtnLeave}>
+                      style={actionBtnStyle()} onMouseEnter={actionBtnHoverBlue} onMouseLeave={actionBtnLeave}>
                       <RefreshCw size={12} color="currentColor" />
                       <span>{rerunning === ch.id ? "Re-running…" : "Re-run Challenge"}</span>
                     </button>
@@ -1289,13 +1155,13 @@ export default function ContentPage({ events = [], challenges = [], polls = [], 
 
           {/* ── POLLS ── */}
           {tab === "Polls" && (() => {
-            const nowMs = Date.now();
-            const livePolls2 = polls.filter(p => !p.end_date || new Date(p.end_date).getTime() >= nowMs);
-            const endedPolls = polls.filter(p => p.end_date && new Date(p.end_date).getTime() < nowMs);
+            const nowMs    = Date.now();
+            const livePolls2  = polls.filter(p => !p.end_date || new Date(p.end_date).getTime() >= nowMs);
+            const endedPolls  = polls.filter(p =>  p.end_date && new Date(p.end_date).getTime() <  nowMs);
 
             const PollCard = ({ poll, showTimer }) => {
-              const responseCount = (poll.voters || []).length;
-              const communityPct = memberCount > 0 ? Math.round((responseCount / memberCount) * 100) : 0;
+              const responseCount  = (poll.voters || []).length;
+              const communityPct   = memberCount > 0 ? Math.round((responseCount / memberCount) * 100) : 0;
               const timeRemainingLabel = (() => {
                 if (!poll.end_date) return null;
                 const diffMs = new Date(poll.end_date).getTime() - nowMs;
@@ -1305,52 +1171,29 @@ export default function ContentPage({ events = [], challenges = [], polls = [], 
                 return `${Math.round(diffMs / (1000 * 60 * 60 * 24))}d left`;
               })();
               const isUrgent = timeRemainingLabel && new Date(poll.end_date).getTime() - nowMs < 24 * 60 * 60 * 1000;
-
-              const opts = (poll.options || []);
-              const totalVotes = opts.reduce((sum, o) => sum + (typeof o === 'object' ? (o.votes || 0) : 0), 0);
-              const winnerVotes = Math.max(...opts.map(o => typeof o === 'object' ? (o.votes || 0) : 0), 0);
+              const opts        = poll.options || [];
+              const totalVotes  = opts.reduce((sum, o) => sum + (typeof o === "object" ? (o.votes || 0) : 0), 0);
+              const winnerVotes = Math.max(...opts.map(o => typeof o === "object" ? (o.votes || 0) : 0), 0);
 
               return (
-                <div
-                  style={{
-                    background: C.card,
-                    border: `1px solid ${C.brd}`,
-                    borderRadius: 12,
-                    marginBottom: 10,
-                    overflow: "hidden",
-                    display: "flex",
-                    transition: "border-color 0.15s, box-shadow 0.15s",
-                  }}
+                <div style={{ background: C.card, border: `1px solid ${C.brd}`, borderRadius: 12, marginBottom: 10, overflow: "hidden", display: "flex", transition: "border-color 0.15s, box-shadow 0.15s" }}
                   onMouseEnter={e => { e.currentTarget.style.borderColor = C.cyanBrd; e.currentTarget.style.boxShadow = `0 0 8px rgba(77,127,255,0.07)`; }}
-                  onMouseLeave={e => { e.currentTarget.style.borderColor = C.brd; e.currentTarget.style.boxShadow = "none"; }}
-                >
+                  onMouseLeave={e => { e.currentTarget.style.borderColor = C.brd; e.currentTarget.style.boxShadow = "none"; }}>
                   <div style={{ flex: "0 0 70%", padding: "14px 16px", display: "flex", flexDirection: "column", gap: 10, minWidth: 0 }}>
                     <div style={{ display: "flex", alignItems: "flex-start", gap: 8, flexWrap: "wrap" }}>
-                      <span style={{ fontSize: 13, fontWeight: 700, color: C.t1, flex: 1, lineHeight: 1.4 }}>
-                        {poll.question || poll.title}
-                      </span>
+                      <span style={{ fontSize: 13, fontWeight: 700, color: C.t1, flex: 1, lineHeight: 1.4 }}>{poll.question || poll.title}</span>
                       {showTimer && timeRemainingLabel && (
-                        <div style={{
-                          display: "flex", alignItems: "center", gap: 5,
-                          padding: "3px 8px", borderRadius: 6, flexShrink: 0,
-                          background: isUrgent ? "rgba(255,77,109,0.12)" : "rgba(77,127,255,0.10)",
-                          border: `1px solid ${isUrgent ? "rgba(255,77,109,0.3)" : "rgba(77,127,255,0.25)"}`,
-                          color: isUrgent ? "#ff6b85" : C.cyan,
-                          fontSize: 11, fontWeight: 700,
-                        }}>
-                          <Clock size={10} color="currentColor" />
-                          <span>{timeRemainingLabel}</span>
+                        <div style={{ display: "flex", alignItems: "center", gap: 5, padding: "3px 8px", borderRadius: 6, flexShrink: 0, background: isUrgent ? "rgba(255,77,109,0.12)" : "rgba(77,127,255,0.10)", border: `1px solid ${isUrgent ? "rgba(255,77,109,0.3)" : "rgba(77,127,255,0.25)"}`, color: isUrgent ? "#ff6b85" : C.cyan, fontSize: 11, fontWeight: 700 }}>
+                          <Clock size={10} color="currentColor" /><span>{timeRemainingLabel}</span>
                         </div>
                       )}
                     </div>
-
                     <div style={{ display: "flex", flexDirection: "column", gap: 9 }}>
                       {opts.map((opt, i) => {
-                        const optText  = typeof opt === 'object' ? (opt.text || opt.label || `Option ${i + 1}`) : opt;
-                        const optVotes = typeof opt === 'object' ? (opt.votes || 0) : 0;
+                        const optText  = typeof opt === "object" ? (opt.text || opt.label || `Option ${i + 1}`) : opt;
+                        const optVotes = typeof opt === "object" ? (opt.votes || 0) : 0;
                         const pct      = totalVotes > 0 ? Math.round((optVotes / totalVotes) * 100) : 0;
                         const isWinner = optVotes === winnerVotes && optVotes > 0;
-
                         return (
                           <div key={i}>
                             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: 11.5, marginBottom: 5 }}>
@@ -1358,60 +1201,26 @@ export default function ContentPage({ events = [], challenges = [], polls = [], 
                               <span style={{ fontWeight: 700, color: isWinner ? C.cyan : C.t3 }}>{pct}%</span>
                             </div>
                             <div style={{ height: 6, background: "rgba(255,255,255,0.06)", borderRadius: 3, overflow: "hidden" }}>
-                              <div style={{
-                                height: "100%",
-                                width: `${pct}%`,
-                                borderRadius: 3,
-                                background: isWinner
-                                  ? `linear-gradient(90deg, ${C.cyan}, rgba(77,127,255,0.55))`
-                                  : "rgba(148,163,184,0.28)",
-                                transition: "width 0.7s cubic-bezier(0.4,0,0.2,1)",
-                              }} />
+                              <div style={{ height: "100%", width: `${pct}%`, borderRadius: 3, background: isWinner ? `linear-gradient(90deg, ${C.cyan}, rgba(77,127,255,0.55))` : "rgba(148,163,184,0.28)", transition: "width 0.7s cubic-bezier(0.4,0,0.2,1)" }} />
                             </div>
                           </div>
                         );
                       })}
                     </div>
                   </div>
-
-                  <div style={{
-                    flex: "0 0 30%",
-                    borderLeft: `1px solid ${C.brd}`,
-                    padding: "14px 14px",
-                    display: "flex",
-                    flexDirection: "column",
-                    justifyContent: "space-between",
-                    gap: 10,
-                  }}>
+                  <div style={{ flex: "0 0 30%", borderLeft: `1px solid ${C.brd}`, padding: "14px 14px", display: "flex", flexDirection: "column", justifyContent: "space-between", gap: 10 }}>
                     <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
                       <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
                         <Users size={12} color={C.cyan} />
-                        <span style={{ fontSize: 13, fontWeight: 700, color: C.t1 }}>
-                          {responseCount} Response{responseCount !== 1 ? "s" : ""}
-                        </span>
+                        <span style={{ fontSize: 13, fontWeight: 700, color: C.t1 }}>{responseCount} Response{responseCount !== 1 ? "s" : ""}</span>
                       </div>
-                      {memberCount > 0 && (
-                        <span style={{ fontSize: 11, color: C.t2, paddingLeft: 18 }}>
-                          {communityPct}% of community
-                        </span>
-                      )}
+                      {memberCount > 0 && <span style={{ fontSize: 11, color: C.t2, paddingLeft: 18 }}>{communityPct}% of community</span>}
                     </div>
-
-                    <button
-                      onClick={() => setPollToRemove(poll)}
-                      style={{
-                        display: "flex", alignItems: "center", gap: 6,
-                        width: "100%", padding: "7px 10px", borderRadius: 8,
-                        background: "rgba(255,255,255,0.03)", border: `1px solid ${C.brd}`,
-                        color: C.t2, fontSize: 11.5, fontWeight: 600,
-                        cursor: "pointer", fontFamily: FONT,
-                        textAlign: "left", transition: "all 0.15s",
-                      }}
+                    <button onClick={() => setPollToRemove(poll)}
+                      style={{ display: "flex", alignItems: "center", gap: 6, width: "100%", padding: "7px 10px", borderRadius: 8, background: "rgba(255,255,255,0.03)", border: `1px solid ${C.brd}`, color: C.t2, fontSize: 11.5, fontWeight: 600, cursor: "pointer", fontFamily: FONT, textAlign: "left", transition: "all 0.15s" }}
                       onMouseEnter={e => { e.currentTarget.style.borderColor = "rgba(255,77,109,0.35)"; e.currentTarget.style.color = C.red; e.currentTarget.style.background = C.redDim; }}
-                      onMouseLeave={e => { e.currentTarget.style.borderColor = C.brd; e.currentTarget.style.color = C.t2; e.currentTarget.style.background = "rgba(255,255,255,0.03)"; }}
-                    >
-                      <Trash2 size={12} color="currentColor" />
-                      <span>Remove</span>
+                      onMouseLeave={e => { e.currentTarget.style.borderColor = C.brd; e.currentTarget.style.color = C.t2; e.currentTarget.style.background = "rgba(255,255,255,0.03)"; }}>
+                      <Trash2 size={12} color="currentColor" /><span>Remove</span>
                     </button>
                   </div>
                 </div>
@@ -1423,10 +1232,7 @@ export default function ContentPage({ events = [], challenges = [], polls = [], 
                 <div style={{ fontSize: 12, fontWeight: 500, color: C.t2, marginBottom: 10 }}>
                   {livePolls2.length} Live Poll{livePolls2.length !== 1 ? "s" : ""}
                 </div>
-                {livePolls2.length === 0
-                  ? null
-                  : livePolls2.map(poll => <PollCard key={poll.id} poll={poll} showTimer />)
-                }
+                {livePolls2.length > 0 && livePolls2.map(poll => <PollCard key={poll.id} poll={poll} showTimer />)}
                 {endedPolls.length > 0 && (
                   <>
                     <div style={{ fontSize: 12, fontWeight: 700, color: C.t2, margin: "20px 0 10px", paddingTop: 12, borderTop: `1px solid ${C.brd}`, textTransform: "uppercase", letterSpacing: "0.08em" }}>
@@ -1453,12 +1259,13 @@ export default function ContentPage({ events = [], challenges = [], polls = [], 
           polls={polls}
           posts={posts}
           checkIns={checkIns}
-          openModal={openModal}
           feedPostsThisWeek={feedPostsThisWeek}
           livePolls={livePolls}
           communityInteractionsToday={communityInteractionsToday}
           onTabChange={setTab}
           memberCount={memberCount}
+          liveChallengesCount={liveChallengesCount}
+          eventsThisWeek={eventsThisWeek}
         />
       )}
 
@@ -1481,30 +1288,14 @@ export default function ContentPage({ events = [], challenges = [], polls = [], 
         </>
       )}
 
-      {/* REMOVE POLL MODAL */}
       {pollToRemove && (
-        <RemovePollModal
-          poll={pollToRemove}
-          onConfirm={async (id) => { await onDeletePoll?.(id); setPollToRemove(null); }}
-          onClose={() => setPollToRemove(null)}
-        />
+        <RemovePollModal poll={pollToRemove} onConfirm={async (id) => { await onDeletePoll?.(id); setPollToRemove(null); }} onClose={() => setPollToRemove(null)} />
       )}
-
-      {/* REMOVE CHALLENGE MODAL */}
       {challengeToRemove && (
-        <RemoveChallengeModal
-          challenge={challengeToRemove}
-          onConfirm={async (id) => { await onDeleteChallenge?.(id); setChallengeToRemove(null); }}
-          onClose={() => setChallengeToRemove(null)}
-        />
+        <RemoveChallengeModal challenge={challengeToRemove} onConfirm={async (id) => { await onDeleteChallenge?.(id); setChallengeToRemove(null); }} onClose={() => setChallengeToRemove(null)} />
       )}
-
-      {/* REACTIONS MODAL */}
       {reactionsPost && (
-        <ReactionsModal
-          reactions={reactionsPost.reactions || {}}
-          onClose={() => setReactionsPost(null)}
-        />
+        <ReactionsModal reactions={reactionsPost.reactions || {}} onClose={() => setReactionsPost(null)} />
       )}
     </div>
   );
