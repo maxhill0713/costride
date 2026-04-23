@@ -282,7 +282,7 @@ export default function FeedPollCard({ poll, currentUser }) {
     gcTime: 60 * 60 * 1000,
   });
 
-  const voters = poll.voters || [];
+  const voters = localVoters;
   const hasVoted = !!(currentUser?.id && voters.includes(currentUser.id));
 
   const [localVotedOption, setLocalVotedOption] = useState(() => {
@@ -294,6 +294,8 @@ export default function FeedPollCard({ poll, currentUser }) {
     }
     return null;
   });
+
+  const [localVoters, setLocalVoters] = useState(voters);
 
   const { data: voterAvatarsRaw = {}, isFetching: isLoadingVoterAvatars } = useQuery({
     queryKey: ['pollVoterAvatars', voters.join(',')],
@@ -316,7 +318,6 @@ export default function FeedPollCard({ poll, currentUser }) {
 
   const voteMutation = useMutation({
     mutationFn: async (optionId) => {
-      console.log('Vote attempt - currentUser:', currentUser, 'poll.id:', poll.id);
       if (!currentUser?.id) throw new Error('User not authenticated');
       
       const opts = (poll.options || []).map(opt => {
@@ -325,17 +326,19 @@ export default function FeedPollCard({ poll, currentUser }) {
         const optVoters = Array.isArray(opt.voters) ? opt.voters : [];
         return { ...opt, votes: (opt.votes || 0) + (isThis ? 1 : 0), voters: isThis ? [...optVoters, currentUser.id] : optVoters };
       });
-      console.log('Calling votePoll with:', { pollId: poll.id, optionsLength: opts.length, votersLength: voters.length + 1 });
       await base44.functions.invoke('votePoll', { pollId: poll.id, options: opts, voters: [...voters, currentUser.id] });
     },
-    onMutate: (optionId) => setLocalVotedOption(optionId),
+    onMutate: (optionId) => {
+      setLocalVotedOption(optionId);
+      setLocalVoters([...voters, currentUser.id]);
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['gymPolls', poll.gym_id] });
       queryClient.invalidateQueries({ queryKey: ['friendPosts'] });
     },
     onError: (err) => {
       setLocalVotedOption(null);
-      console.error('Vote mutation error:', err);
+      setLocalVoters(voters);
       toast.error('Failed to submit vote');
     },
   });
