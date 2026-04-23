@@ -322,7 +322,7 @@ export default function FeedPollCard({ poll, currentUser }) {
         const optVoters = Array.isArray(opt.voters) ? opt.voters : [];
         return { ...opt, votes: (opt.votes || 0) + (isThis ? 1 : 0), voters: isThis ? [...optVoters, currentUser.id] : optVoters };
       });
-      await base44.entities.Poll.update(poll.id, { options: opts, voters: [...voters, currentUser.id] });
+      await base44.functions.invoke('votePoll', { pollId: poll.id, options: opts, voters: [...voters, currentUser.id] });
     },
     onMutate: (optionId) => setLocalVotedOption(optionId),
     onSuccess: () => {
