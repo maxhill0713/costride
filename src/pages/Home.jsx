@@ -178,6 +178,8 @@ export default function Home() {
   const [workoutStartTime, setWorkoutStartTime] = useState(null);
   const [workoutOverrideDay, setWorkoutOverrideDay] = useState(null);
   const [optimisticCheckedIn, setOptimisticCheckedIn] = useState(false);
+  const [checkedInGymId, setCheckedInGymId] = useState(null);
+  const [checkedInGymName, setCheckedInGymName] = useState(null);
   const [showStreakCelebration, setShowStreakCelebration] = useState(false);
   const [showChallengesCelebration, setShowChallengesCelebration] = useState(false);
   const [showShareWorkout, setShowShareWorkout] = useState(false);
@@ -1116,9 +1118,13 @@ export default function Home() {
               {showCheckInButton && !optimisticCheckedIn && !userCheckIns.some((c) => isToday(new Date(c.check_in_date))) && (
                 <LocationBasedCheckInButton
                   gyms={allMemberGyms}
-                  onCheckInSuccess={() => {
+                  onCheckInSuccess={(gym) => {
                     setOptimisticCheckedIn(true);
                     setWorkoutStartTime(Date.now());
+                    if (gym) {
+                      setCheckedInGymId(gym.id);
+                      setCheckedInGymName(gym.name);
+                    }
                   }}
                   gymMemberships={gymMemberships} />
               )}
@@ -1600,18 +1606,8 @@ export default function Home() {
         celebrationPreviousExercises={celebrationPreviousExercises}
         celebrationDurationMinutes={celebrationDurationMinutes}
         currentUser={currentUser}
-        gymId={(() => {
-          const todayCI = allCheckIns.find(c => c.user_id === currentUser?.id && isToday(new Date(c.check_in_date)));
-          return todayCI?.gym_id || primaryGymIdForQuery;
-        })()}
-        gymName={(() => {
-          const todayCI = allCheckIns.find(c => c.user_id === currentUser?.id && isToday(new Date(c.check_in_date)));
-          if (todayCI?.gym_id) {
-            const g = allMemberGyms.find(g => g.id === todayCI.gym_id);
-            return g?.name || todayCI.gym_name || null;
-          }
-          return memberGym?.name || null;
-        })()}
+        gymId={checkedInGymId || primaryGymIdForQuery}
+        gymName={checkedInGymName || memberGym?.name || null}
         showDaysCelebration={showDaysCelebration}
         weeklyWorkoutLogs={weeklyWorkoutLogs}
         todayDowAdjusted={todayDowAdjusted}

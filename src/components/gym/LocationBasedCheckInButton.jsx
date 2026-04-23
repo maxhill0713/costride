@@ -107,7 +107,8 @@ export default function LocationBasedCheckInButton({ gyms, onCheckInSuccess, gym
       queryClient.invalidateQueries({ predicate: q => q.queryKey[0] === 'currentUser' });
       queryClient.invalidateQueries({ predicate: q => q.queryKey[0] === 'weeklyWorkoutLogs' });
       setSuccess(true);
-      onCheckInSuccess?.();
+      // Pass the gym the user actually checked into
+      onCheckInSuccess?.(selectedGym);
       // Show green tick for 1.8s then fade out and unmount
       setTimeout(() => setVisible(false), 1800);
     },
