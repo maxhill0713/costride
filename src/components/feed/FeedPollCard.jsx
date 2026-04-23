@@ -316,12 +316,16 @@ export default function FeedPollCard({ poll, currentUser }) {
 
   const voteMutation = useMutation({
     mutationFn: async (optionId) => {
+      console.log('Vote attempt - currentUser:', currentUser, 'poll.id:', poll.id);
+      if (!currentUser?.id) throw new Error('User not authenticated');
+      
       const opts = (poll.options || []).map(opt => {
         if (typeof opt !== 'object') return opt;
         const isThis = (opt.id || opt.text) === optionId;
         const optVoters = Array.isArray(opt.voters) ? opt.voters : [];
         return { ...opt, votes: (opt.votes || 0) + (isThis ? 1 : 0), voters: isThis ? [...optVoters, currentUser.id] : optVoters };
       });
+      console.log('Calling votePoll with:', { pollId: poll.id, optionsLength: opts.length, votersLength: voters.length + 1 });
       await base44.functions.invoke('votePoll', { pollId: poll.id, options: opts, voters: [...voters, currentUser.id] });
     },
     onMutate: (optionId) => setLocalVotedOption(optionId),
