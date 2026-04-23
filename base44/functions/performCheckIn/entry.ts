@@ -97,7 +97,7 @@ Deno.serve(async (req) => {
     const previousVisits = await base44.asServiceRole.entities.CheckIn.filter({ user_id: user.id, gym_id: gymId }, '-check_in_date', 1);
     const isFirstVisit   = previousVisits.length === 0;
 
-    const checkIn = await base44.asServiceRole.entities.CheckIn.create({
+    const checkIn = await base44.entities.CheckIn.create({
       user_id:       user.id,
       user_name:     user.full_name,
       gym_id:        gymId,
