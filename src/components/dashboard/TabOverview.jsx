@@ -574,16 +574,16 @@ return (
             <span style={{ marginLeft:'auto', fontSize:11, fontWeight:700, color:C.red, background:C.redDim, border:`1px solid rgba(255,77,109,0.28)`, borderRadius:5, padding:'2px 7px' }}>5</span>
           </div>
           <div style={{ fontSize:11, color:C.t3, marginBottom:12 }}>Haven't visited in 14+ days</div>
-          <div style={{ display:'flex', flexDirection:'column', gap:7, flex:1 }}>
+          <div style={{ display:'flex', flexDirection:'column', gap:9, flex:1, justifyContent:'space-between' }}>
             {[
-              { name:'Sarah M.',   days:21, risk:'High'   },
-              { name:'Jake T.',    days:18, risk:'High'   },
-              { name:'Priya K.',   days:16, risk:'Medium' },
-              { name:'Dan R.',     days:15, risk:'Medium' },
-              { name:'Emma L.',    days:14, risk:'Medium' },
+              { name:'Sarah M.',   days:21, risk:'High',   avatar:'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=64&h=64&fit=crop&crop=face' },
+              { name:'Jake T.',    days:18, risk:'High',   avatar:'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=64&h=64&fit=crop&crop=face' },
+              { name:'Priya K.',   days:16, risk:'Medium', avatar:'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=64&h=64&fit=crop&crop=face' },
+              { name:'Dan R.',     days:15, risk:'Medium', avatar:'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=64&h=64&fit=crop&crop=face' },
+              { name:'Emma L.',    days:14, risk:'Medium', avatar:'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=64&h=64&fit=crop&crop=face' },
             ].map((m,i) => (
               <div key={i} style={{ display:'flex', alignItems:'center', gap:8 }}>
-                <Av name={m.name} size={26} />
+                <img src={m.avatar} alt={m.name} style={{ width:28, height:28, borderRadius:'50%', objectFit:'cover', flexShrink:0, border:`1.5px solid ${C.brd}` }} />
                 <div style={{ flex:1, minWidth:0 }}>
                   <div style={{ fontSize:12, fontWeight:600, color:C.t1, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{m.name}</div>
                   <div style={{ fontSize:10.5, color:C.t3 }}>{m.days} days away</div>
@@ -598,7 +598,7 @@ return (
             ))}
           </div>
           <div style={{ marginTop:14, paddingTop:12, borderTop:`1px solid ${C.brd}` }}>
-            <button style={{ width:'100%', padding:'8px 0', borderRadius:7, background:'transparent', border:`1px solid ${C.cyanBrd}`, color:C.cyan, fontSize:12, fontWeight:600, cursor:'pointer', fontFamily:FONT, display:'flex', alignItems:'center', justifyContent:'center', gap:5 }}>
+            <button style={{ background:'none', border:'none', padding:0, color:C.cyan, fontSize:12, fontWeight:600, cursor:'pointer', fontFamily:FONT, display:'flex', alignItems:'center', gap:4 }}>
               See all at-risk members <ChevronRight style={{ width:12, height:12 }}/>
             </button>
           </div>
