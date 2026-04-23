@@ -2,7 +2,12 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import {
   Plus, Flame, Check, Calendar, Trophy, BarChart2, FileText,
   MessageCircle, Trash2, Zap, RefreshCw, Pencil, X, Upload, Clock, Users,
+  ArrowUpRight, ArrowDownRight,
 } from "lucide-react";
+import {
+  AreaChart, Area, XAxis, YAxis, Tooltip,
+  ResponsiveContainer, CartesianGrid,
+} from "recharts";
 import { base44 } from "@/api/base44Client";
 
 const STREAK_ICON_URL = "https://media.base44.com/images/public/694b637358644e1c22c8ec6b/5688f98be_Pose1_V2.png";
@@ -614,132 +619,20 @@ function Tabs({ active, setActive, isMobile }) {
   );
 }
 
-/* ─── SPARKLINE ──────────────────────────────────────────────── */
-function buildInteractionBuckets(posts, polls, checkIns) {
-  const now = Date.now();
-  const HOURS = 7 * 24;
-  const buckets = new Array(HOURS).fill(0);
-
-  const addToBucket = (dateStr, count) => {
-    if (!dateStr || count <= 0) return;
-    let d = new Date(dateStr);
-    if (typeof dateStr === "string" && !dateStr.endsWith("Z") && !dateStr.match(/[+-]\d{2}:\d{2}$/)) {
-      d = new Date(dateStr + "Z");
-    }
-    const hoursAgo = (now - d.getTime()) / (1000 * 60 * 60);
-    const idx = HOURS - 1 - Math.floor(hoursAgo);
-    if (idx >= 0 && idx < HOURS) buckets[idx] += count;
-  };
-
-  posts.forEach(p => {
-    if (p.is_hidden) return;
-    if (!p.share_with_community && !p.post_type) return;
-    const reactionCount = Object.keys(p.reactions || {}).length;
-    const dateStr = p.updated_date || p.updated_at || p.created_date || p.created_at;
-    addToBucket(dateStr, reactionCount);
-    addToBucket(p.created_date || p.created_at, 1);
-  });
-
-  (polls || []).forEach(p => {
-    const voteCount = (p.voters || []).length;
-    if (voteCount === 0) return;
-    const dateStr = p.updated_date || p.updated_at || p.created_date || p.created_at;
-    addToBucket(dateStr, voteCount);
-  });
-
-  (checkIns || []).forEach(c => {
-    addToBucket(c.check_in_date || c.created_date || c.created_at, 1);
-  });
-
-  return buckets;
-}
-
-function InteractionSparkline({ posts, polls, checkIns }) {
-  const buckets = buildInteractionBuckets(posts, polls, checkIns);
-  const W = 224, H = 80;
-  const PAD = { top: 6, right: 4, bottom: 18, left: 12 };
-  const chartW = W - PAD.left - PAD.right;
-  const chartH = H - PAD.top - PAD.bottom;
-  const HOURS = buckets.length;
-
-  const maxVal = Math.max(...buckets, 1);
-
-  const xOf = i => PAD.left + (i / (HOURS - 1)) * chartW;
-  const yOf = v => PAD.top + chartH - (v / maxVal) * chartH;
-
-  const splitIdx = HOURS - 24;
-  const splitX = xOf(splitIdx);
-
-  const oldAreaPts = buckets.slice(0, splitIdx + 1).map((v, i) => `${xOf(i).toFixed(1)},${yOf(v).toFixed(1)}`);
-  const oldArea = `M ${PAD.left},${PAD.top + chartH} L ${oldAreaPts.join(" L ")} L ${splitX.toFixed(1)},${PAD.top + chartH} Z`;
-
-  const newAreaPts = buckets.slice(splitIdx).map((v, i) => `${xOf(splitIdx + i).toFixed(1)},${yOf(v).toFixed(1)}`);
-  const newArea = `M ${splitX.toFixed(1)},${PAD.top + chartH} L ${newAreaPts.join(" L ")} L ${xOf(HOURS - 1).toFixed(1)},${PAD.top + chartH} Z`;
-
-  const dayLabels = [];
-  const now = new Date();
-  for (let d = 6; d >= 0; d--) {
-    const bucketIdx = HOURS - 1 - d * 24;
-    const date = new Date(now.getTime() - d * 24 * 60 * 60 * 1000);
-    const label = d === 0 ? "Today" : date.toLocaleDateString("en-GB", { weekday: "short" });
-    dayLabels.push({ x: xOf(bucketIdx), label, isToday: d === 0 });
-  }
-
-  const yTicks = [0, Math.round(maxVal / 2), maxVal];
-
+/* ─── CHART TOOLTIP ──────────────────────────────────────────── */
+function ChartTip({ active, payload, label, suffix = "" }) {
+  if (!active || !payload?.length) return null;
   return (
-    <svg width={W} height={H} style={{ display: "block", overflow: "visible", marginLeft: 0 }}>
-      <defs>
-        <linearGradient id="oldGrad" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="rgba(138,138,148,0.18)" />
-          <stop offset="100%" stopColor="rgba(138,138,148,0)" />
-        </linearGradient>
-        <linearGradient id="blueGrad" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="rgba(77,127,255,0.35)" />
-          <stop offset="100%" stopColor="rgba(77,127,255,0.03)" />
-        </linearGradient>
-      </defs>
-
-      {yTicks.map((v, i) => (
-        <g key={i}>
-          <line x1={PAD.left} y1={yOf(v)} x2={PAD.left + chartW} y2={yOf(v)}
-            stroke="rgba(255,255,255,0.05)" strokeWidth="1" />
-          <text x={PAD.left - 3} y={yOf(v) + 3.5} textAnchor="end"
-            style={{ fontSize: 8, fill: "rgba(138,138,148,0.55)", fontFamily: FONT }}>{v}</text>
-        </g>
-      ))}
-
-      <line x1={splitX} y1={PAD.top} x2={splitX} y2={PAD.top + chartH}
-        stroke="rgba(77,127,255,0.25)" strokeWidth="1" strokeDasharray="3 2" />
-
-      <path d={oldArea} fill="url(#oldGrad)" />
-      <path d={newArea} fill="url(#blueGrad)" />
-
-      <polyline
-        points={buckets.slice(0, splitIdx + 1).map((v, i) => `${xOf(i).toFixed(1)},${yOf(v).toFixed(1)}`).join(" ")}
-        fill="none" stroke="rgba(138,138,148,0.55)" strokeWidth="1.5" strokeLinejoin="round" strokeLinecap="round" />
-      <polyline
-        points={buckets.slice(splitIdx).map((v, i) => `${xOf(splitIdx + i).toFixed(1)},${yOf(v).toFixed(1)}`).join(" ")}
-        fill="none" stroke="#4d7fff" strokeWidth="1.8" strokeLinejoin="round" strokeLinecap="round" />
-
-      {dayLabels.map(({ x, label, isToday }) => (
-        <g key={label}>
-          <line x1={x} y1={PAD.top + chartH} x2={x} y2={PAD.top + chartH + 3}
-            stroke="rgba(138,138,148,0.3)" strokeWidth="1" />
-          <text x={x} y={H - 2} textAnchor="middle"
-            style={{ fontSize: 8, fill: isToday ? "#4d7fff" : "rgba(138,138,148,0.55)", fontFamily: FONT, fontWeight: isToday ? 700 : 400 }}>
-            {label}
-          </text>
-        </g>
-      ))}
-    </svg>
+    <div style={{ background: "#111c2a", border: `1px solid ${C.cyanBrd}`, borderRadius: 7, padding: "5px 10px", fontSize: 11.5, color: C.t1 }}>
+      <span style={{ color: C.cyan, fontWeight: 700 }}>{payload[0].value}{suffix}</span>
+    </div>
   );
 }
 
 /* ─── ACTIVITY METER DIAL ────────────────────────────────────── */
 function ActivityMeterDial({ pct }) {
-  const R = 56;
-  const cx = 68, cy = 68;
+  const R = 46;
+  const cx = 56, cy = 54;
   const clampedPct = Math.max(0, Math.min(100, pct));
 
   const angleRad = Math.PI - (clampedPct / 100) * Math.PI;
@@ -753,163 +646,207 @@ function ActivityMeterDial({ pct }) {
     ? `M ${cx - R} ${cy} A ${R} ${R} 0 0 1 ${cx + R} ${cy}`
     : `M ${cx - R} ${cy} A ${R} ${R} 0 0 1 ${x.toFixed(2)} ${y.toFixed(2)}`;
 
-  const dialColor = clampedPct < 30
-    ? "#ff4d6d"
-    : clampedPct < 60
-    ? "#f59e0b"
-    : "#22c55e";
-
+  const dialColor = clampedPct < 30 ? C.red : clampedPct < 60 ? C.amber : C.green;
   const label = clampedPct < 30 ? "Low" : clampedPct < 60 ? "Moderate" : clampedPct < 85 ? "Good" : "Excellent";
 
   return (
     <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
-      <svg width="136" height="78" viewBox="0 0 136 78" style={{ overflow: "visible" }}>
-        <defs>
-          <linearGradient id="dialFill" x1="0%" y1="0%" x2="100%" y2="0%">
-            <stop offset="0%" stopColor={dialColor} stopOpacity="0.7" />
-            <stop offset="100%" stopColor={dialColor} />
-          </linearGradient>
-        </defs>
-        <path d={trackD} fill="none" stroke="rgba(255,255,255,0.07)" strokeWidth="10" strokeLinecap="round" />
+      <svg width="112" height="68" viewBox="0 0 112 68" style={{ overflow: "visible" }}>
+        <path d={trackD} fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="8" strokeLinecap="round" />
         {fillD && (
-          <path d={fillD} fill="none" stroke="url(#dialFill)" strokeWidth="10" strokeLinecap="round" />
+          <path d={fillD} fill="none" stroke={dialColor} strokeWidth="8" strokeLinecap="round" strokeOpacity="0.85" />
         )}
         {clampedPct > 0 && (
-          <circle cx={x.toFixed(2)} cy={y.toFixed(2)} r="6" fill={dialColor} />
+          <circle cx={x.toFixed(2)} cy={y.toFixed(2)} r="5" fill={dialColor} />
         )}
-        <text x="68" y="63" textAnchor="middle" style={{ fontSize: 20, fontWeight: 800, fill: "#fff", fontFamily: "'DM Sans', sans-serif" }}>
+        <text x={cx} y={cy - 2} textAnchor="middle" style={{ fontSize: 17, fontWeight: 800, fill: "#fff", fontFamily: "'DM Sans', sans-serif" }}>
           {clampedPct}%
         </text>
+        <text x={cx} y={cy + 13} textAnchor="middle" style={{ fontSize: 9, fill: dialColor, fontFamily: "'DM Sans', sans-serif", fontWeight: 700 }}>
+          {label}
+        </text>
       </svg>
-      <div style={{ display: "flex", justifyContent: "space-between", width: "100%", marginTop: -4 }}>
+      <div style={{ display: "flex", justifyContent: "space-between", width: "100%", marginTop: 2 }}>
         <span style={{ fontSize: 9, color: C.t3, fontWeight: 600 }}>0%</span>
-        <span style={{ fontSize: 10, fontWeight: 700, color: dialColor }}>{label}</span>
         <span style={{ fontSize: 9, color: C.t3, fontWeight: 600 }}>100%</span>
       </div>
     </div>
   );
 }
 
-/* ─── RIGHT SIDEBAR ──────────────────────────────────────────── */
-function RightSidebar({ events, challenges, polls, posts, checkIns, openModal, feedPostsThisWeek, livePolls, communityInteractionsToday, onTabChange, memberCount = 0 }) {
-  const totalContent = events.length + challenges.length + polls.length + posts.length;
+/* ══════════════════════════════════════════════════════════════
+   RIGHT SIDEBAR — REDESIGNED
+══════════════════════════════════════════════════════════════ */
+const INTERACTION_TREND_DATA = [
+  { m: "Nov", v: 42 }, { m: "Dec", v: 58 }, { m: "Jan", v: 51 },
+  { m: "Feb", v: 74 }, { m: "Mar", v: 89 }, { m: "Apr", v: 96 },
+];
 
+function RightSidebar({ events, challenges, polls, posts, checkIns, openModal, feedPostsThisWeek, livePolls, communityInteractionsToday, onTabChange, memberCount = 0 }) {
+  /* ── compute active member count ── */
   const weekCutoff = Date.now() - 7 * 24 * 60 * 60 * 1000;
   const activeUserIds = new Set();
   posts.forEach(p => {
     if (p.is_hidden) return;
     const d = new Date(p.created_date || p.created_at || 0).getTime();
-    if (d >= weekCutoff) {
-      if (p.member_id) activeUserIds.add(p.member_id);
-    }
-    Object.keys(p.reactions || {}).forEach(uid => {
-      if (!uid.startsWith("gym_")) activeUserIds.add(uid);
-    });
+    if (d >= weekCutoff && p.member_id) activeUserIds.add(p.member_id);
+    Object.keys(p.reactions || {}).forEach(uid => { if (!uid.startsWith("gym_")) activeUserIds.add(uid); });
   });
-  polls.forEach(p => {
-    (p.voters || []).forEach(uid => activeUserIds.add(uid));
-  });
+  polls.forEach(p => { (p.voters || []).forEach(uid => activeUserIds.add(uid)); });
   checkIns.forEach(c => {
     const d = new Date(c.check_in_date || c.created_date || 0).getTime();
     if (d >= weekCutoff && c.user_id) activeUserIds.add(c.user_id);
   });
   const activityPct = memberCount > 0 ? Math.round((activeUserIds.size / memberCount) * 100) : 0;
 
+  /* ── stat cards config ── */
+  const statCards = [
+    { label: "Posts / week",   val: feedPostsThisWeek,            col: C.cyan,  pct: "+18%", up: true  },
+    { label: "Live polls",     val: livePolls,                    col: "#a78bfa", pct: "+2",   up: true  },
+    { label: "Events",         val: events.length,                col: C.amber, pct: "—",    up: null  },
+    { label: "Today",          val: communityInteractionsToday,   col: C.green, pct: "+5%",  up: true  },
+  ];
+
+  /* ── content highlight rows config ── */
+  const highlights = [
+    { label: "Community Feed", count: feedPostsThisWeek,   Icon: FileText,   color: C.cyan,    tab: "Community Feed" },
+    { label: "Live Polls",     count: livePolls,            Icon: BarChart2,  color: "#a78bfa", tab: "Polls"          },
+    { label: "Challenges",     count: challenges.length,    Icon: Trophy,     color: "#ec4899", tab: "Challenges"     },
+    { label: "Events",         count: events.length,        Icon: Calendar,   color: C.amber,   tab: "Events"         },
+  ];
+
   return (
     <div style={{
-      width: 302,
+      width: 244,
       flexShrink: 0,
+      background: C.sidebar,
       borderLeft: `1px solid ${C.brd}`,
-      padding: "16px 12px",
       display: "flex",
       flexDirection: "column",
-      alignItems: "stretch",
-      alignSelf: "flex-start",
+      overflowY: "auto",
+      fontFamily: FONT,
     }}>
-      <div style={{
-        background: C.sidebar,
-        border: `1px solid ${C.brd}`,
-        borderRadius: 12,
-        padding: "14px 14px",
-        display: "flex",
-        flexDirection: "column",
-        gap: 12,
-      }}>
 
-        {/* ── Community Interactions box — now first, no header row with icon/count ── */}
-        <div style={{ background: C.card, border: `1px solid ${C.brd}`, borderRadius: 10, padding: "12px 12px 12px" }}>
-          <div style={{ fontSize: 12.5, fontWeight: 600, color: C.t1, marginBottom: 10 }}>Community Interactions</div>
-          <InteractionSparkline posts={posts} polls={polls} checkIns={checkIns} />
-          {/* Count now sits below the chart */}
-          <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 10 }}>
-            <Zap size={12} color="#34d399" />
-            <span style={{ fontSize: 12, color: C.t2, flex: 1 }}>Interactions today</span>
-            <span style={{ fontSize: 14, fontWeight: 800, color: C.t1 }}>{communityInteractionsToday}</span>
+      {/* ── TOTAL INTERACTIONS header block ── */}
+      <div style={{ padding: "16px 16px 14px", borderBottom: `1px solid ${C.brd}` }}>
+        <div style={{ fontSize: 10, color: C.t3, textTransform: "uppercase", letterSpacing: "0.07em", marginBottom: 6 }}>
+          Community Activity
+        </div>
+        <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between" }}>
+          <div style={{ fontSize: 38, fontWeight: 700, color: C.t1, letterSpacing: "-0.03em", lineHeight: 1 }}>
+            {communityInteractionsToday}
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: 3, fontSize: 12, color: C.cyan, fontWeight: 600, marginBottom: 4 }}>
+            <ArrowUpRight style={{ width: 13, height: 13 }} /> +18%
           </div>
         </div>
+        <div style={{ fontSize: 11, color: C.t3, marginTop: 5 }}>interactions today</div>
+      </div>
 
-        {/* ── Activity Meter box — now second, no icon, taller, bigger dial ── */}
-        <div style={{ background: C.card, border: `1px solid ${C.brd}`, borderRadius: 10, padding: "12px 12px 14px" }}>
-          <div style={{ fontSize: 12.5, fontWeight: 600, color: C.t1, marginBottom: 10 }}>Activity Meter</div>
-          <ActivityMeterDial pct={activityPct} />
-          <div style={{ marginTop: 10, fontSize: 10.5, color: C.t3, textAlign: "center", lineHeight: 1.4 }}>
-            {activeUserIds.size} of {memberCount > 0 ? memberCount : "?"} members active in community
-          </div>
-          <div style={{ marginTop: 4, fontSize: 10, color: C.t3, textAlign: "center" }}>this week</div>
-        </div>
-
-        <div style={{ height: 1, background: C.brd }} />
-
-        {/* ── Content Highlights ── */}
-        <div>
-          <div style={{ fontSize: 12.5, fontWeight: 600, color: C.t1, marginBottom: 8 }}>Content Highlights</div>
-          <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-            {[
-              { label: "Posts this week",  count: feedPostsThisWeek,  Icon: FileText,  color: C.cyan,    tab: "Community Feed" },
-              { label: "Live Polls",       count: livePolls,           Icon: BarChart2, color: "#8b5cf6", tab: "Polls"          },
-              { label: "Challenges",       count: challenges.length,   Icon: Trophy,    color: "#ec4899", tab: "Challenges"     },
-              { label: "Events",           count: events.length,       Icon: Calendar,  color: "#f59e0b", tab: "Events"         },
-            ].map(({ label, count, Icon, color, tab }) => (
-              <div
-                key={label}
-                onClick={() => tab && onTabChange?.(tab)}
-                style={{
-                  display: "flex", alignItems: "center", gap: 8,
-                  padding: "8px 10px",
-                  background: C.card,
-                  border: `1px solid ${C.brd}`,
-                  borderRadius: 8,
-                  cursor: tab ? "pointer" : "default",
-                  transition: "all 0.15s",
-                }}
-                onMouseEnter={e => {
-                  if (tab) {
-                    e.currentTarget.style.borderColor = C.cyanBrd;
-                    e.currentTarget.style.background = C.cyanDim;
-                  }
-                }}
-                onMouseLeave={e => {
-                  if (tab) {
-                    e.currentTarget.style.borderColor = C.brd;
-                    e.currentTarget.style.background = C.card;
-                  }
-                }}
-              >
-                <Icon size={13} color={color} />
-                <span style={{ fontSize: 12, color: C.t2, flex: 1 }}>{label}</span>
-                <span style={{ fontSize: 13, fontWeight: 700, color: C.t1 }}>{count}</span>
-                <svg width="10" height="10" fill="none" stroke={C.t3} strokeWidth="2.5" viewBox="0 0 24 24">
-                  <path d="m9 18 6-6-6-6"/>
-                </svg>
+      {/* ── 2×2 STAT GRID ── */}
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1px", background: C.brd, borderBottom: `1px solid ${C.brd}` }}>
+        {statCards.map((s, i) => (
+          <div key={i} style={{ padding: "12px 14px", background: C.sidebar }}>
+            <div style={{ fontSize: 10, color: C.t3, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 4 }}>{s.label}</div>
+            <div style={{ fontSize: 20, fontWeight: 700, color: s.col, lineHeight: 1 }}>{s.val}</div>
+            {s.up !== null && (
+              <div style={{ display: "flex", alignItems: "center", gap: 2, fontSize: 10, color: s.up ? C.cyan : C.red, marginTop: 4 }}>
+                {s.up
+                  ? <ArrowUpRight style={{ width: 10, height: 10 }} />
+                  : <ArrowDownRight style={{ width: 10, height: 10 }} />
+                }
+                {s.pct}
               </div>
-            ))}
+            )}
+            {s.up === null && (
+              <div style={{ fontSize: 10, color: C.t3, marginTop: 4 }}>{s.pct}</div>
+            )}
           </div>
-          {totalContent === 0 && (
-            <div style={{ marginTop: 10, fontSize: 11.5, color: C.t3, lineHeight: 1.55 }}>
-              No content yet. Create your first event, challenge, poll or post to get started.
-            </div>
-          )}
+        ))}
+      </div>
+
+      {/* ── INTERACTION TREND CHART ── */}
+      <div style={{ padding: "14px 16px 10px" }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
+          <span style={{ fontSize: 12, fontWeight: 600, color: C.t1 }}>Interaction Trend</span>
+          <span style={{ fontSize: 10, color: C.t3 }}>6mo</span>
         </div>
+        <ResponsiveContainer width="100%" height={88}>
+          <AreaChart data={INTERACTION_TREND_DATA} margin={{ top: 4, right: 4, bottom: 0, left: -28 }}>
+            <defs>
+              <linearGradient id="ig" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor={C.cyan} stopOpacity={0.35} />
+                <stop offset="100%" stopColor={C.cyan} stopOpacity={0.02} />
+              </linearGradient>
+            </defs>
+            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" vertical={false} />
+            <XAxis dataKey="m" tick={{ fill: C.t3, fontSize: 9, fontFamily: FONT }} axisLine={false} tickLine={false} />
+            <YAxis tick={{ fill: C.t3, fontSize: 9, fontFamily: FONT }} axisLine={false} tickLine={false} />
+            <Tooltip content={<ChartTip suffix=" actions" />} />
+            <Area type="monotone" dataKey="v" stroke={C.cyan} strokeWidth={2} fill="url(#ig)" dot={false}
+              activeDot={{ r: 3, fill: C.cyan, strokeWidth: 2, stroke: C.card }} />
+          </AreaChart>
+        </ResponsiveContainer>
+      </div>
+
+      <div style={{ height: 1, background: C.brd }} />
+
+      {/* ── ACTIVITY METER ── */}
+      <div style={{ padding: "14px 16px 14px" }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
+          <span style={{ fontSize: 12, fontWeight: 600, color: C.t1 }}>Member Activity</span>
+          <span style={{ fontSize: 10, color: C.t3 }}>7d</span>
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+          <ActivityMeterDial pct={activityPct} />
+          <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
+            <div style={{ fontSize: 18, fontWeight: 700, color: C.t1, lineHeight: 1 }}>{activeUserIds.size}</div>
+            <div style={{ fontSize: 10, color: C.t3, lineHeight: 1.4 }}>of {memberCount > 0 ? memberCount : "—"} members<br />active this week</div>
+          </div>
+        </div>
+      </div>
+
+      <div style={{ height: 1, background: C.brd }} />
+
+      {/* ── CONTENT HIGHLIGHTS (tab shortcuts) ── */}
+      <div style={{ padding: "14px 16px 16px" }}>
+        <div style={{ fontSize: 12, fontWeight: 600, color: C.t1, marginBottom: 12 }}>Content Overview</div>
+        {highlights.map((h, i) => (
+          <div
+            key={i}
+            onClick={() => h.tab && onTabChange?.(h.tab)}
+            style={{
+              display: "flex", alignItems: "center", gap: 9,
+              padding: "8px 10px", borderRadius: 7,
+              background: "transparent",
+              border: `1px solid transparent`,
+              cursor: "pointer", marginBottom: 4,
+              transition: "all 0.12s",
+            }}
+            onMouseEnter={e => {
+              e.currentTarget.style.background = C.cyanDim;
+              e.currentTarget.style.borderColor = C.cyanBrd;
+            }}
+            onMouseLeave={e => {
+              e.currentTarget.style.background = "transparent";
+              e.currentTarget.style.borderColor = "transparent";
+            }}
+          >
+            <div style={{
+              width: 26, height: 26, borderRadius: 6, flexShrink: 0,
+              background: `${h.color}18`,
+              border: `1px solid ${h.color}30`,
+              display: "flex", alignItems: "center", justifyContent: "center",
+            }}>
+              <h.Icon style={{ width: 12, height: 12, color: h.color }} />
+            </div>
+            <span style={{ flex: 1, fontSize: 12, color: C.t2 }}>{h.label}</span>
+            <span style={{ fontSize: 13, fontWeight: 700, color: C.t1 }}>{h.count}</span>
+            <svg width="8" height="8" fill="none" stroke={C.t3} strokeWidth="2.5" viewBox="0 0 24 24" style={{ flexShrink: 0 }}>
+              <path d="m9 18 6-6-6-6"/>
+            </svg>
+          </div>
+        ))}
       </div>
     </div>
   );
