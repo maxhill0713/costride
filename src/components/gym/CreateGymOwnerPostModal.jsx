@@ -2,12 +2,14 @@
  * CreateGymOwnerPostModal — Content Hub design system
  * Mobile-first responsive: adapts on ≤768px, desktop layout unchanged.
  * Blue #60a5fa · DM Sans · #0d0d11 bg / #17171c surface / #1f1f26 card
+ * Preview panel: 360px (was 300px, +20%), matches actual PostCard dark style
  */
 import React, { useState, useRef, useCallback, useEffect } from 'react';
 import {
   X, Upload, Tag, Calendar, CheckCircle, Pin,
   Megaphone, Trophy, Gift, Lightbulb, Star, Eye,
   Zap, Clock, Send, ArrowUpRight, ChevronDown, Image as ImageIcon,
+  MoreHorizontal,
 } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { useMutation } from '@tanstack/react-query';
@@ -27,6 +29,9 @@ const C = {
 };
 const FONT = "'DM Sans','Inter',system-ui,sans-serif";
 const MONO = { fontVariantNumeric: 'tabular-nums', fontFeatureSettings: '"tnum"' };
+
+/* ─── STREAK ICON ─────────────────────────────────────────────── */
+const STREAK_ICON_URL = 'https://media.base44.com/images/public/694b637358644e1c22c8ec6b/5688f98be_Pose1_V2.png';
 
 /* ─── POST TYPES ─────────────────────────────────────────────── */
 const POST_TYPES = [
@@ -87,76 +92,115 @@ function Toggle({ value, onChange, color = C.blue, label, sub }) {
   );
 }
 
-/* ─── LIVE PREVIEW ───────────────────────────────────────────── */
+/* ─── LIVE PREVIEW — matches actual PostCard dark style ──────── */
 function PostPreview({ postType, content, imageUrl, tags, callToAction, isPinned, scheduledDate, gym }) {
   const type  = POST_TYPES.find(t => t.value === postType) || POST_TYPES[0];
   const empty = !content.trim() && !imageUrl;
+
+  const gymName   = gym?.name || 'Your Gym';
+  const gymAvatar = gym?.logo_url || gym?.image_url || null;
+  const gymInitial = gymName.charAt(0).toUpperCase();
+
   return (
     <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 12 }}>
         <Eye size={11} color={C.t3} />
         <span style={{ fontSize: 9.5, fontWeight: 600, color: C.t3, textTransform: 'uppercase', letterSpacing: '0.09em' }}>Live Preview</span>
       </div>
-      <div style={{ borderRadius: 12, overflow: 'hidden', background: C.card, border: `1px solid ${C.brd}` }}>
-        <div style={{ height: 3, background: `linear-gradient(90deg, ${type.color}, ${type.color}55, transparent)` }} />
+
+      {/* Outer card — exact PostCard dark shell */}
+      <div style={{
+        borderRadius: 16,
+        overflow: 'hidden',
+        background: 'linear-gradient(135deg, rgba(16,19,40,0.96) 0%, rgba(6,8,18,0.99) 100%)',
+        border: '1px solid rgba(255,255,255,0.07)',
+        backdropFilter: 'blur(20px)',
+        WebkitBackdropFilter: 'blur(20px)',
+        boxShadow: '0 32px 80px rgba(0,0,0,0.5)',
+        position: 'relative',
+      }}>
+        {/* Top highlight line */}
+        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 1, background: 'linear-gradient(90deg, transparent 10%, rgba(255,255,255,0.1) 50%, transparent 90%)', pointerEvents: 'none', zIndex: 1 }} />
+        {/* Radial glow */}
+        <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', borderRadius: 16, background: 'radial-gradient(ellipse at 25% 35%, rgba(99,102,241,0.12) 0%, transparent 60%)' }} />
+
         {empty ? (
-          <div style={{ padding: '32px 18px', textAlign: 'center' }}>
-            <type.Icon size={22} color={`${type.color}35`} style={{ margin: '0 auto 10px', display: 'block' }} />
-            <div style={{ fontSize: 11.5, color: C.t3, fontWeight: 500 }}>Start typing to see your post</div>
+          <div style={{ padding: '36px 20px', textAlign: 'center', position: 'relative', zIndex: 2 }}>
+            <type.Icon size={24} color={`${type.color}35`} style={{ margin: '0 auto 10px', display: 'block' }} />
+            <div style={{ fontSize: 12, color: C.t3, fontWeight: 500 }}>Start typing to see your post</div>
           </div>
         ) : (
-          <>
-            <div style={{ padding: '13px 14px 8px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
-                <div style={{ width: 34, height: 34, borderRadius: '50%', background: C.surface, overflow: 'hidden', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', border: `1px solid ${C.brd}` }}>
-                  {gym?.logo_url || gym?.image_url
-                    ? <img src={gym.logo_url || gym.image_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                    : <span style={{ fontSize: 13, fontWeight: 800, color: C.t1 }}>{(gym?.name || 'G').charAt(0).toUpperCase()}</span>}
+          <div style={{ position: 'relative', zIndex: 2 }}>
+            {/* Header */}
+            <div style={{ padding: '14px 16px 0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <div style={{ width: 36, height: 36, borderRadius: '50%', background: '#0f172a', overflow: 'hidden', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid rgba(255,255,255,0.08)' }}>
+                  {gymAvatar
+                    ? <img src={gymAvatar} alt={gymName} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    : <span style={{ fontSize: 13, fontWeight: 800, color: '#fff' }}>{gymInitial}</span>}
                 </div>
                 <div>
-                  <div style={{ fontSize: 12.5, fontWeight: 700, color: C.t1, lineHeight: 1.2 }}>{gym?.name || 'Your Gym'}</div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginTop: 3 }}>
-                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3, padding: '1px 7px', borderRadius: 5, background: type.dim, border: `1px solid ${type.border}`, fontSize: 9, fontWeight: 700, color: type.color }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, lineHeight: 1.2 }}>
+                    <span style={{ fontSize: 13, fontWeight: 700, color: '#fff' }}>{gymName}</span>
+                    {isPinned && <span style={{ fontSize: 12 }}>📌</span>}
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 3 }}>
+                    {/* Type badge — exact PostCard badge */}
+                    <span style={{
+                      fontSize: 9, fontWeight: 700, padding: '1px 7px', borderRadius: 5,
+                      background: type.dim, border: `1px solid ${type.border}`, color: type.color,
+                      display: 'inline-flex', alignItems: 'center', gap: 3,
+                    }}>
                       <type.Icon size={8} /> {type.label}
                     </span>
-                    <span style={{ fontSize: 9.5, color: C.t3 }}>
+                    <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)' }}>
                       {scheduledDate ? `Scheduled · ${format(new Date(scheduledDate), 'MMM d')}` : 'Just now'}
                     </span>
-                    {isPinned && <span style={{ fontSize: 10, color: C.amber }}>📌</span>}
                   </div>
                 </div>
               </div>
+              <MoreHorizontal size={18} color='rgba(148,163,184,0.4)' />
             </div>
-            <div style={{ padding: '0 14px 12px' }}>
-              <p style={{ fontSize: 12.5, color: C.t1, lineHeight: 1.7, margin: 0, whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>{content}</p>
-            </div>
-            {imageUrl && (
-              <div style={{ width: '100%', overflow: 'hidden', maxHeight: 170 }}>
-                <img src={imageUrl} alt="" style={{ width: '100%', objectFit: 'cover', display: 'block', maxHeight: 170 }} />
+
+            {/* Content */}
+            {content && (
+              <div style={{ padding: '10px 16px 0' }}>
+                <p style={{ fontSize: 13.5, color: '#e2e8f0', lineHeight: 1.7, margin: 0, whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>{content}</p>
               </div>
             )}
+
+            {/* Image */}
+            {imageUrl && (
+              <div style={{ width: '100%', overflow: 'hidden', maxHeight: 200, marginTop: 10 }}>
+                <img src={imageUrl} alt="" style={{ width: '100%', objectFit: 'cover', display: 'block', maxHeight: 200 }} />
+              </div>
+            )}
+
+            {/* Tags */}
             {tags.length > 0 && (
-              <div style={{ padding: '8px 14px', display: 'flex', flexWrap: 'wrap', gap: 5 }}>
+              <div style={{ padding: '8px 16px 0', display: 'flex', flexWrap: 'wrap', gap: 5 }}>
                 {tags.map((t, i) => (
-                  <span key={i} style={{ fontSize: 9.5, fontWeight: 700, color: type.color, background: type.dim, border: `1px solid ${type.border}`, borderRadius: 5, padding: '2px 7px' }}>#{t}</span>
+                  <span key={i} style={{ fontSize: 10, fontWeight: 700, color: type.color, background: type.dim, border: `1px solid ${type.border}`, borderRadius: 5, padding: '2px 7px' }}>#{t}</span>
                 ))}
               </div>
             )}
+
+            {/* CTA */}
             {callToAction.enabled && callToAction.text && (
-              <div style={{ margin: '0 14px 12px', padding: '9px 12px', borderRadius: 9, background: type.dim, border: `1px solid ${type.border}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <span style={{ fontSize: 11.5, fontWeight: 700, color: type.color }}>{callToAction.text}</span>
-                <ArrowUpRight size={11} color={type.color} />
+              <div style={{ margin: '10px 16px 0', padding: '9px 12px', borderRadius: 9, background: type.dim, border: `1px solid ${type.border}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <span style={{ fontSize: 12, fontWeight: 700, color: type.color }}>{callToAction.text}</span>
+                <ArrowUpRight size={12} color={type.color} />
               </div>
             )}
-            <div style={{ display: 'flex', alignItems: 'center', padding: '9px 14px', borderTop: `1px solid ${C.brd}`, gap: 8 }}>
-              <img
-                src="https://media.base44.com/images/public/694b637358644e1c22c8ec6b/5688f98be_Pose1_V2.png"
-                alt="react"
-                style={{ width: 28, height: 28, objectFit: 'contain', opacity: 0.5 }}
-              />
-              <Send size={12} color={C.t3} />
+
+            {/* Action bar — matches PostCard */}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 12px 10px', borderTop: '1px solid rgba(255,255,255,0.06)', marginTop: 10, minHeight: 44 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                <img src={STREAK_ICON_URL} alt="react" style={{ width: 44, height: 44, objectFit: 'contain', opacity: 0.35 }} />
+              </div>
+              <Send size={15} color='rgba(148,163,184,0.35)' style={{ marginRight: 4 }} />
             </div>
-          </>
+          </div>
         )}
       </div>
     </div>
@@ -181,7 +225,6 @@ export default function CreateGymOwnerPostModal({ open, onClose, gym, onSuccess 
   const [showPreview,   setShowPreview]   = useState(false);
   const fileRef = useRef();
 
-  /* ── Mobile detection ──────────────────────────────────────── */
   const [isMobile, setIsMobile] = useState(
     typeof window !== 'undefined' ? window.innerWidth <= 768 : false
   );
@@ -194,8 +237,6 @@ export default function CreateGymOwnerPostModal({ open, onClose, gym, onSuccess 
   const activeType  = POST_TYPES.find(t => t.value === postType) || POST_TYPES[0];
   const canSubmit   = content.trim().length > 0 && !submitting;
   const isScheduled = !!scheduledDate;
-
-  // Button label: "Schedule" if a date is set, otherwise "Post"
   const submitLabel = isScheduled ? 'Schedule' : 'Post';
 
   const uploadMutation = useMutation({
@@ -305,7 +346,7 @@ export default function CreateGymOwnerPostModal({ open, onClose, gym, onSuccess 
         }
       `}</style>
 
-      {/* ── Backdrop ──────────────────────────────────────────── */}
+      {/* Backdrop */}
       <div
         onClick={e => e.target === e.currentTarget && handleClose()}
         style={{
@@ -318,8 +359,7 @@ export default function CreateGymOwnerPostModal({ open, onClose, gym, onSuccess 
           animation: 'fade-in 0.15s ease', fontFamily: FONT,
         }}
       >
-
-        {/* ── Shell ─────────────────────────────────────────── */}
+        {/* Shell */}
         <div style={{
           width: '100%',
           maxWidth: isMobile ? '100%' : 960,
@@ -334,20 +374,18 @@ export default function CreateGymOwnerPostModal({ open, onClose, gym, onSuccess 
           WebkitFontSmoothing: 'antialiased',
         }}>
 
-          {/* ── HEADER ──────────────────────────────────────── */}
+          {/* HEADER */}
           <div style={{
             flexShrink: 0, padding: isMobile ? '0 16px' : '0 20px',
             background: C.surface, borderBottom: `1px solid ${C.brd}`,
             position: 'relative', overflow: 'hidden',
           }}>
-            {/* Drag handle on mobile */}
             {isMobile && (
               <div style={{ display: 'flex', justifyContent: 'center', padding: '10px 0 4px' }}>
                 <div style={{ width: 36, height: 4, borderRadius: 2, background: C.brd2 }} />
               </div>
             )}
 
-            {/* Top row */}
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: isMobile ? 4 : 16, paddingBottom: 0 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? 8 : 11 }}>
                 <div style={{ width: isMobile ? 28 : 32, height: isMobile ? 28 : 32, borderRadius: 9, background: activeType.dim, border: `1px solid ${activeType.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'all 0.2s' }}>
@@ -359,7 +397,6 @@ export default function CreateGymOwnerPostModal({ open, onClose, gym, onSuccess 
               </div>
 
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                {/* Mobile: preview toggle */}
                 {isMobile && (
                   <button
                     onClick={() => setShowPreview(v => !v)}
@@ -384,7 +421,6 @@ export default function CreateGymOwnerPostModal({ open, onClose, gym, onSuccess 
               </div>
             </div>
 
-            {/* Tab bar */}
             <div style={{ display: 'flex', marginTop: 8, gap: 0, marginLeft: -2, overflowX: isMobile ? 'auto' : 'visible', WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none' }}>
               {POST_TYPES.map(type => (
                 <button
@@ -399,16 +435,16 @@ export default function CreateGymOwnerPostModal({ open, onClose, gym, onSuccess 
             </div>
           </div>
 
-          {/* ── BODY ────────────────────────────────────────── */}
+          {/* BODY — preview column 360px (was 300px) */}
           <div style={{
             flex: 1,
             display: 'grid',
-            gridTemplateColumns: isMobile ? '1fr' : '1fr 300px',
+            gridTemplateColumns: isMobile ? '1fr' : '1fr 360px',
             minHeight: 0,
             overflow: 'hidden',
           }}>
 
-            {/* ── FORM ── */}
+            {/* FORM */}
             {(!isMobile || !showPreview) && (
               <div style={{
                 padding: isMobile ? '12px 16px' : '13px 20px',
@@ -418,7 +454,6 @@ export default function CreateGymOwnerPostModal({ open, onClose, gym, onSuccess 
                 WebkitOverflowScrolling: 'touch',
               }}>
 
-                {/* Content — rows reduced by ~20%: desktop 6→4, mobile 5→4 */}
                 <div>
                   <SL required right={<CharRing count={content.length} max={500} />}>Content</SL>
                   <textarea
@@ -430,7 +465,6 @@ export default function CreateGymOwnerPostModal({ open, onClose, gym, onSuccess 
                   />
                 </div>
 
-                {/* Image upload */}
                 <div>
                   <SL>Media</SL>
                   {imageUrl ? (
@@ -462,7 +496,6 @@ export default function CreateGymOwnerPostModal({ open, onClose, gym, onSuccess 
                   )}
                 </div>
 
-                {/* Tags */}
                 <div>
                   <SL>Tags <span style={{ fontSize: 9, color: C.t3, fontWeight: 400, textTransform: 'none', letterSpacing: 0 }}>({tags.length}/8)</span></SL>
                   <div style={{ display: 'flex', gap: 7 }}>
@@ -496,7 +529,6 @@ export default function CreateGymOwnerPostModal({ open, onClose, gym, onSuccess 
                   )}
                 </div>
 
-                {/* Call to Action */}
                 <div>
                   <SL>Call to Action</SL>
                   <Toggle
@@ -520,7 +552,6 @@ export default function CreateGymOwnerPostModal({ open, onClose, gym, onSuccess 
                   )}
                 </div>
 
-                {/* Pin + Schedule */}
                 <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: isMobile ? 12 : 10 }}>
                   <Toggle value={isPinned} onChange={setIsPinned} color={C.amber} label="📌 Pin to top" sub="Stays at the top of the member feed" />
                   <div>
@@ -542,11 +573,12 @@ export default function CreateGymOwnerPostModal({ open, onClose, gym, onSuccess 
               </div>
             )}
 
-            {/* ── PREVIEW panel ─────────────────────────────── */}
+            {/* PREVIEW panel — dark bg matching feed */}
             {(!isMobile || showPreview) && (
               <div style={{
                 padding: isMobile ? '12px 16px' : '13px 16px',
-                background: C.surface, overflowY: 'auto',
+                background: '#0d0d11',
+                overflowY: 'auto',
                 borderLeft: isMobile ? 'none' : `1px solid ${C.brd}`,
                 WebkitOverflowScrolling: 'touch',
               }}>
@@ -558,7 +590,7 @@ export default function CreateGymOwnerPostModal({ open, onClose, gym, onSuccess 
             )}
           </div>
 
-          {/* ── FOOTER ──────────────────────────────────────── */}
+          {/* FOOTER */}
           <div style={{
             flexShrink: 0,
             padding: isMobile ? '12px 16px' : '12px 20px',
