@@ -44,14 +44,18 @@ Deno.serve(async (req) => {
     const gym = gymData[0];
 
     // SECURITY: Verify the user is an active member of this gym
-    const membership = await base44.asServiceRole.entities.GymMembership.filter({
-      user_id: user.id,
-      gym_id:  gymId,
-      status:  'active',
-    });
-    if (membership.length === 0) {
-      console.warn(`User ${user.id} tried to check in to gym ${gymId} without membership`);
-      return Response.json({ error: 'You are not a member of this gym' }, { status: 403 });
+    // Gym owners/admins are allowed to check in to their own gym without a membership record
+    const isGymOwner = user.role === 'admin' || gym.admin_id === user.id || gym.owner_email === user.email;
+    if (!isGymOwner) {
+      const membership = await base44.asServiceRole.entities.GymMembership.filter({
+        user_id: user.id,
+        gym_id:  gymId,
+        status:  'active',
+      });
+      if (membership.length === 0) {
+        console.warn(`User ${user.id} tried to check in to gym ${gymId} without membership`);
+        return Response.json({ error: 'You are not a member of this gym' }, { status: 403 });
+      }
     }
 
     // SECURITY: Check if user is banned from this gym
