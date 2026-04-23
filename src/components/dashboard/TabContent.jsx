@@ -614,14 +614,10 @@ function Tabs({ active, setActive, isMobile }) {
   );
 }
 
-/* ─── RIGHT SIDEBAR ──────────────────────────────────────────── */
-const QUICK_IDEAS = ["Generate AI Motivation Monday", "Post Member Spotlight", "Create Weekend Challenge Poll"];
-
-/* Build hourly interaction buckets for the last 7 days.
-   Uses updated_date (when activity last happened) for posts/reactions and polls. */
+/* ─── SPARKLINE ──────────────────────────────────────────────── */
 function buildInteractionBuckets(posts, polls, checkIns) {
   const now = Date.now();
-  const HOURS = 7 * 24; // 168 buckets
+  const HOURS = 7 * 24;
   const buckets = new Array(HOURS).fill(0);
 
   const addToBucket = (dateStr, count) => {
@@ -635,18 +631,15 @@ function buildInteractionBuckets(posts, polls, checkIns) {
     if (idx >= 0 && idx < HOURS) buckets[idx] += count;
   };
 
-  // Posts: use updated_date so reactions (which update the post) land at the right time
   posts.forEach(p => {
     if (p.is_hidden) return;
     if (!p.share_with_community && !p.post_type) return;
     const reactionCount = Object.keys(p.reactions || {}).length;
     const dateStr = p.updated_date || p.updated_at || p.created_date || p.created_at;
     addToBucket(dateStr, reactionCount);
-    // Also count the post itself as 1 interaction at creation time
     addToBucket(p.created_date || p.created_at, 1);
   });
 
-  // Polls: use updated_date (when votes were cast) and count total voters
   (polls || []).forEach(p => {
     const voteCount = (p.voters || []).length;
     if (voteCount === 0) return;
@@ -654,7 +647,6 @@ function buildInteractionBuckets(posts, polls, checkIns) {
     addToBucket(dateStr, voteCount);
   });
 
-  // Check-ins: each is a community interaction (member visited the gym)
   (checkIns || []).forEach(c => {
     addToBucket(c.check_in_date || c.created_date || c.created_at, 1);
   });
@@ -662,14 +654,13 @@ function buildInteractionBuckets(posts, polls, checkIns) {
   return buckets;
 }
 
-// ── CHANGE: Reduced W and adjusted PAD.left to push chart left and fit the box
 function InteractionSparkline({ posts, polls, checkIns }) {
   const buckets = buildInteractionBuckets(posts, polls, checkIns);
   const W = 224, H = 80;
   const PAD = { top: 6, right: 4, bottom: 18, left: 12 };
   const chartW = W - PAD.left - PAD.right;
   const chartH = H - PAD.top - PAD.bottom;
-  const HOURS = buckets.length; // 168
+  const HOURS = buckets.length;
 
   const maxVal = Math.max(...buckets, 1);
 
@@ -747,27 +738,21 @@ function InteractionSparkline({ posts, polls, checkIns }) {
 
 /* ─── ACTIVITY METER DIAL ────────────────────────────────────── */
 function ActivityMeterDial({ pct }) {
-  // Half-circle: centre 60,60, radius 50, sweep from 180° to 0° (left to right)
-  const R = 50;
-  const cx = 60, cy = 60;
+  const R = 56;
+  const cx = 68, cy = 68;
   const clampedPct = Math.max(0, Math.min(100, pct));
 
-  // Arc from left (-π) to angle, mapped so 0%=left, 100%=right
-  const angleRad = Math.PI - (clampedPct / 100) * Math.PI; // goes from π → 0
+  const angleRad = Math.PI - (clampedPct / 100) * Math.PI;
   const x = cx + R * Math.cos(angleRad);
-  const y = cy - R * Math.sin(angleRad); // SVG y flipped
+  const y = cy - R * Math.sin(angleRad);
 
-  // Track path (full half arc, left to right)
   const trackD = `M ${cx - R} ${cy} A ${R} ${R} 0 0 1 ${cx + R} ${cy}`;
-
-  // Fill path (partial arc from left to current angle)
   const fillD = clampedPct === 0
     ? ""
     : clampedPct >= 100
     ? `M ${cx - R} ${cy} A ${R} ${R} 0 0 1 ${cx + R} ${cy}`
     : `M ${cx - R} ${cy} A ${R} ${R} 0 0 1 ${x.toFixed(2)} ${y.toFixed(2)}`;
 
-  // Colour: red→amber→green based on %
   const dialColor = clampedPct < 30
     ? "#ff4d6d"
     : clampedPct < 60
@@ -778,29 +763,24 @@ function ActivityMeterDial({ pct }) {
 
   return (
     <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
-      <svg width="120" height="68" viewBox="0 0 120 68" style={{ overflow: "visible" }}>
+      <svg width="136" height="78" viewBox="0 0 136 78" style={{ overflow: "visible" }}>
         <defs>
           <linearGradient id="dialFill" x1="0%" y1="0%" x2="100%" y2="0%">
             <stop offset="0%" stopColor={dialColor} stopOpacity="0.7" />
             <stop offset="100%" stopColor={dialColor} />
           </linearGradient>
         </defs>
-        {/* Track */}
-        <path d={trackD} fill="none" stroke="rgba(255,255,255,0.07)" strokeWidth="9" strokeLinecap="round" />
-        {/* Fill */}
+        <path d={trackD} fill="none" stroke="rgba(255,255,255,0.07)" strokeWidth="10" strokeLinecap="round" />
         {fillD && (
-          <path d={fillD} fill="none" stroke="url(#dialFill)" strokeWidth="9" strokeLinecap="round" />
+          <path d={fillD} fill="none" stroke="url(#dialFill)" strokeWidth="10" strokeLinecap="round" />
         )}
-        {/* Needle dot */}
         {clampedPct > 0 && (
-          <circle cx={x.toFixed(2)} cy={y.toFixed(2)} r="5" fill={dialColor} />
+          <circle cx={x.toFixed(2)} cy={y.toFixed(2)} r="6" fill={dialColor} />
         )}
-        {/* Percentage text */}
-        <text x="60" y="57" textAnchor="middle" style={{ fontSize: 18, fontWeight: 800, fill: "#fff", fontFamily: "'DM Sans', sans-serif" }}>
+        <text x="68" y="63" textAnchor="middle" style={{ fontSize: 20, fontWeight: 800, fill: "#fff", fontFamily: "'DM Sans', sans-serif" }}>
           {clampedPct}%
         </text>
       </svg>
-      {/* 0 / 100 labels */}
       <div style={{ display: "flex", justifyContent: "space-between", width: "100%", marginTop: -4 }}>
         <span style={{ fontSize: 9, color: C.t3, fontWeight: 600 }}>0%</span>
         <span style={{ fontSize: 10, fontWeight: 700, color: dialColor }}>{label}</span>
@@ -810,10 +790,10 @@ function ActivityMeterDial({ pct }) {
   );
 }
 
+/* ─── RIGHT SIDEBAR ──────────────────────────────────────────── */
 function RightSidebar({ events, challenges, polls, posts, checkIns, openModal, feedPostsThisWeek, livePolls, communityInteractionsToday, onTabChange, memberCount = 0 }) {
   const totalContent = events.length + challenges.length + polls.length + posts.length;
 
-  // Weekly active members: unique user_ids who posted, reacted, voted, or checked in this week
   const weekCutoff = Date.now() - 7 * 24 * 60 * 60 * 1000;
   const activeUserIds = new Set();
   posts.forEach(p => {
@@ -822,7 +802,6 @@ function RightSidebar({ events, challenges, polls, posts, checkIns, openModal, f
     if (d >= weekCutoff) {
       if (p.member_id) activeUserIds.add(p.member_id);
     }
-    // Reactions
     Object.keys(p.reactions || {}).forEach(uid => {
       if (!uid.startsWith("gym_")) activeUserIds.add(uid);
     });
@@ -835,6 +814,7 @@ function RightSidebar({ events, challenges, polls, posts, checkIns, openModal, f
     if (d >= weekCutoff && c.user_id) activeUserIds.add(c.user_id);
   });
   const activityPct = memberCount > 0 ? Math.round((activeUserIds.size / memberCount) * 100) : 0;
+
   return (
     <div style={{
       width: 302,
@@ -855,49 +835,34 @@ function RightSidebar({ events, challenges, polls, posts, checkIns, openModal, f
         flexDirection: "column",
         gap: 12,
       }}>
-        {/* What to Post Today */}
-        <div>
-          <div style={{ fontSize: 12.5, fontWeight: 600, color: C.t1, marginBottom: 2 }}>What to Post Today?</div>
-          <div style={{ fontSize: 10.5, color: C.t2, marginBottom: 9 }}>Guided ideas for today</div>
-          <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-            {QUICK_IDEAS.map((q, i) => (
-              <button key={i} style={{ width: "100%", padding: "8px 12px", borderRadius: 8, textAlign: "left", background: C.card, border: `1px solid ${C.brd}`, color: C.t2, fontSize: 11.5, fontWeight: 500, cursor: "pointer", fontFamily: FONT }}
-                onMouseEnter={e => { e.currentTarget.style.borderColor = C.cyanBrd; e.currentTarget.style.color = C.t1; }}
-                onMouseLeave={e => { e.currentTarget.style.borderColor = C.brd; e.currentTarget.style.color = C.t2; }}>
-                {q}
-              </button>
-            ))}
+
+        {/* ── Community Interactions box — now first, no header row with icon/count ── */}
+        <div style={{ background: C.card, border: `1px solid ${C.brd}`, borderRadius: 10, padding: "12px 12px 12px" }}>
+          <div style={{ fontSize: 12.5, fontWeight: 600, color: C.t1, marginBottom: 10 }}>Community Interactions</div>
+          <InteractionSparkline posts={posts} polls={polls} checkIns={checkIns} />
+          {/* Count now sits below the chart */}
+          <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 10 }}>
+            <Zap size={12} color="#34d399" />
+            <span style={{ fontSize: 12, color: C.t2, flex: 1 }}>Interactions today</span>
+            <span style={{ fontSize: 14, fontWeight: 800, color: C.t1 }}>{communityInteractionsToday}</span>
           </div>
+        </div>
+
+        {/* ── Activity Meter box — now second, no icon, taller, bigger dial ── */}
+        <div style={{ background: C.card, border: `1px solid ${C.brd}`, borderRadius: 10, padding: "12px 12px 14px" }}>
+          <div style={{ fontSize: 12.5, fontWeight: 600, color: C.t1, marginBottom: 10 }}>Activity Meter</div>
+          <ActivityMeterDial pct={activityPct} />
+          <div style={{ marginTop: 10, fontSize: 10.5, color: C.t3, textAlign: "center", lineHeight: 1.4 }}>
+            {activeUserIds.size} of {memberCount > 0 ? memberCount : "?"} members active in community
+          </div>
+          <div style={{ marginTop: 4, fontSize: 10, color: C.t3, textAlign: "center" }}>this week</div>
         </div>
 
         <div style={{ height: 1, background: C.brd }} />
 
-        {/* Content Highlights */}
+        {/* ── Content Highlights ── */}
         <div>
           <div style={{ fontSize: 12.5, fontWeight: 600, color: C.t1, marginBottom: 8 }}>Content Highlights</div>
-
-          {/* Interactions box */}
-          <div style={{ background: C.card, border: `1px solid ${C.brd}`, borderRadius: 10, padding: "12px 12px 10px", marginBottom: 6 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 10 }}>
-              <Zap size={12} color="#34d399" />
-              <span style={{ fontSize: 12, color: C.t2, flex: 1 }}>Community Interactions today</span>
-              <span style={{ fontSize: 14, fontWeight: 800, color: C.t1 }}>{communityInteractionsToday}</span>
-            </div>
-            <InteractionSparkline posts={posts} polls={polls} checkIns={checkIns} />
-          </div>
-
-          {/* Activity Meter */}
-          <div style={{ background: C.card, border: `1px solid ${C.brd}`, borderRadius: 10, padding: "12px 12px 10px", marginBottom: 6 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 10 }}>
-              <Users size={12} color={C.cyan} />
-              <span style={{ fontSize: 12, color: C.t2, flex: 1 }}>Activity Meter</span>
-              <span style={{ fontSize: 10, color: C.t3, fontWeight: 500 }}>this week</span>
-            </div>
-            <ActivityMeterDial pct={activityPct} />
-            <div style={{ marginTop: 8, fontSize: 10.5, color: C.t3, textAlign: "center", lineHeight: 1.4 }}>
-              {activeUserIds.size} of {memberCount > 0 ? memberCount : "?"} members active in community
-            </div>
-          </div>
           <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
             {[
               { label: "Posts this week",  count: feedPostsThisWeek,  Icon: FileText,  color: C.cyan,    tab: "Community Feed" },
@@ -1068,26 +1033,22 @@ export default function ContentPage({ events = [], challenges = [], polls = [], 
     return d.getTime() >= todayStartMs;
   };
 
-  // Posts created today (member posts shared with community)
   const memberPostsToday = posts.filter(p =>
     !p.is_hidden && !p.post_type && p.share_with_community &&
     (!gymId || p.gym_id === gymId) && isToday(p.created_date || p.created_at)
   ).length;
 
-  // Poll votes: count voters on polls that were updated today (i.e. someone voted today)
   const pollVotesToday = polls.filter(p =>
     (!gymId || p.gym_id === gymId) &&
     isToday(p.updated_date || p.updated_at || p.created_date || p.created_at)
   ).reduce((sum, p) => sum + (p.voters || []).length, 0);
 
-  // Reactions on posts that were updated today (reactions update the post's updated_date)
   const reactionsToday = posts.filter(p =>
     !p.is_hidden && (!gymId || p.gym_id === gymId) &&
     (p.share_with_community || p.post_type) &&
     isToday(p.updated_date || p.updated_at || p.created_date || p.created_at)
   ).reduce((sum, p) => sum + Object.keys(p.reactions || {}).length, 0);
 
-  // Check-ins today: each member visit to the gym is a community interaction
   const checkInsToday = checkIns.filter(c =>
     (!gymId || c.gym_id === gymId) &&
     isToday(c.check_in_date || c.created_date || c.created_at)
