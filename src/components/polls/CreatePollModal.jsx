@@ -1,11 +1,13 @@
 /**
  * CreatePollModal — Content Hub design system
  * Blue #60a5fa · DM Sans · #0d0d11 / #17171c / #1f1f26
+ * Preview panel: 360px (was 300px), matches actual FeedPollCard dark style
  */
 import React, { useState, useEffect } from 'react';
 import {
   X, BarChart2, Plus, CheckCircle,
   MessageSquare, Trash2, Eye, Zap, ChevronDown, ChevronLeft, Calendar,
+  MoreHorizontal, Send,
 } from 'lucide-react';
 
 /* ─── TOKENS ─────────────────────────────────────────────────── */
@@ -60,20 +62,16 @@ function CountdownBadge({ endDate }) {
 
   useEffect(() => {
     if (!endDate) { setLabel(''); return; }
-
     const compute = () => {
       const diff = new Date(endDate) - new Date();
       if (diff <= 0) { setLabel('Ended'); return; }
-
       const totalMinutes = Math.floor(diff / 60000);
       const totalHours   = Math.floor(diff / 3600000);
       const totalDays    = Math.floor(diff / 86400000);
-
       if (totalDays >= 1)        setLabel(`${totalDays}d left`);
       else if (totalHours >= 1)  setLabel(`${totalHours}h left`);
       else                       setLabel(`${totalMinutes}m left`);
     };
-
     compute();
     const id = setInterval(compute, 30000);
     return () => clearInterval(id);
@@ -163,7 +161,10 @@ function CategoryTabs({ value, onChange }) {
   );
 }
 
-/* ─── SHARED: POLL PREVIEW CARD ──────────────────────────────── */
+/* ─── STREAK ICON (matches PostCard) ────────────────────────── */
+const STREAK_ICON_URL = 'https://media.base44.com/images/public/694b637358644e1c22c8ec6b/5688f98be_Pose1_V2.png';
+
+/* ─── POLL PREVIEW CARD — matches actual PostCard dark style ── */
 function PollPreview({ title, description, category, options, gym }) {
   const cat = catFor(category);
   const accent = cat?.color || C.blue;
@@ -181,84 +182,101 @@ function PollPreview({ title, description, category, options, gym }) {
         <span style={{ fontSize: 9.5, fontWeight: 600, color: C.t3, textTransform: 'uppercase', letterSpacing: '0.09em' }}>Live Preview</span>
       </div>
 
+      {/* Outer card — exact PostCard dark shell */}
       <div style={{
-        borderRadius: 14,
+        borderRadius: 16,
         overflow: 'hidden',
         background: 'linear-gradient(135deg, rgba(16,19,40,0.96) 0%, rgba(6,8,18,0.99) 100%)',
         border: '1px solid rgba(255,255,255,0.07)',
+        backdropFilter: 'blur(20px)',
+        WebkitBackdropFilter: 'blur(20px)',
+        boxShadow: '0 32px 80px rgba(0,0,0,0.5)',
         position: 'relative',
       }}>
-        {/* Top highlight line */}
+        {/* Top highlight line — matches PostCard */}
         <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 1, background: 'linear-gradient(90deg, transparent 10%, rgba(255,255,255,0.1) 50%, transparent 90%)', pointerEvents: 'none', zIndex: 1 }} />
+        {/* Radial glow — matches PostCard */}
+        <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', borderRadius: 16, background: 'radial-gradient(ellipse at 25% 35%, rgba(99,102,241,0.12) 0%, transparent 60%)' }} />
 
         {!hasContent ? (
-          <div style={{ padding: '32px 18px', textAlign: 'center' }}>
-            <BarChart2 size={22} color={`${accent}35`} style={{ margin: '0 auto 10px', display: 'block' }} />
-            <div style={{ fontSize: 11.5, color: C.t3, fontWeight: 500 }}>Fill in details to preview your poll</div>
+          <div style={{ padding: '36px 20px', textAlign: 'center', position: 'relative', zIndex: 2 }}>
+            <BarChart2 size={24} color={`${accent}35`} style={{ margin: '0 auto 10px', display: 'block' }} />
+            <div style={{ fontSize: 12, color: C.t3, fontWeight: 500 }}>Fill in details to preview your poll</div>
           </div>
         ) : (
-          <div style={{ padding: '14px 15px 16px', position: 'relative', zIndex: 2 }}>
-
-            {/* Header row — gym avatar + name + badge */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
-              <div style={{ width: 32, height: 32, borderRadius: '50%', background: '#1e293b', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, overflow: 'hidden' }}>
-                {gymAvatar
-                  ? <img src={gymAvatar} alt={gymName} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                  : <span style={{ fontSize: 12, fontWeight: 700, color: '#fff' }}>{gymInitial}</span>}
-              </div>
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
-                  <span style={{ fontSize: 12, fontWeight: 700, color: '#fff', lineHeight: 1.2 }}>{gymName}</span>
-                  {/* Badge matching exact FeedPollCard style */}
-                  <span style={{
-                    fontSize: 9, fontWeight: 700, padding: '1px 7px', borderRadius: 5,
-                    background: cat?.dim || C.blueDim,
-                    border: `1px solid ${cat?.border || C.blueBrd}`,
-                    color: cat?.color || C.blue,
-                    display: 'inline-flex', alignItems: 'center', gap: 4,
-                    flexShrink: 0,
-                  }}>
-                    <BarChart2 size={9} />
-                    {cat?.badgeLabel || 'Poll'}
-                  </span>
+          <div style={{ position: 'relative', zIndex: 2 }}>
+            {/* Header row — avatar + name + badge + menu dot — matches PostCard header */}
+            <div style={{ padding: '14px 16px 0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <div style={{ width: 36, height: 36, borderRadius: '50%', background: '#0f172a', overflow: 'hidden', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid rgba(255,255,255,0.08)' }}>
+                  {gymAvatar
+                    ? <img src={gymAvatar} alt={gymName} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    : <span style={{ fontSize: 13, fontWeight: 800, color: '#fff' }}>{gymInitial}</span>}
                 </div>
-                <div style={{ fontSize: 10, color: 'rgba(148,163,184,0.6)', marginTop: 2 }}>just now</div>
+                <div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <span style={{ fontSize: 13, fontWeight: 700, color: '#fff', lineHeight: 1.2 }}>{gymName}</span>
+                    {/* Type badge — exact PostCard badge style */}
+                    <span style={{
+                      fontSize: 9, fontWeight: 700, padding: '1px 7px', borderRadius: 5,
+                      background: cat?.dim || C.blueDim,
+                      border: `1px solid ${cat?.border || C.blueBrd}`,
+                      color: cat?.color || C.blue,
+                      display: 'inline-flex', alignItems: 'center', gap: 4,
+                      flexShrink: 0,
+                    }}>
+                      <BarChart2 size={9} />
+                      {cat?.badgeLabel || 'Poll'}
+                    </span>
+                  </div>
+                  <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', marginTop: 2 }}>Just now</div>
+                </div>
               </div>
+              {/* 3-dot menu — decorative, matches PostCard */}
+              <MoreHorizontal size={18} color='rgba(148,163,184,0.4)' />
             </div>
 
             {/* Poll question */}
-            <div style={{ fontSize: 13, fontWeight: 700, color: '#fff', lineHeight: 1.35, marginBottom: description ? 8 : 12 }}>
+            <div style={{ padding: '12px 16px 0', fontSize: 14, fontWeight: 700, color: '#fff', lineHeight: 1.35 }}>
               {title || 'Poll question'}
             </div>
 
             {/* Description */}
             {description && (
-              <div style={{ fontSize: 11, color: 'rgba(148,163,184,0.8)', lineHeight: 1.6, marginBottom: 12, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+              <div style={{ padding: '6px 16px 0', fontSize: 12, color: 'rgba(148,163,184,0.75)', lineHeight: 1.6, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
                 {description}
               </div>
             )}
 
-            {/* Options — pre-vote clickable style, no bars or percentages */}
-            {validOpts.length > 0 ? (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
-                {validOpts.map((opt, i) => (
-                  <div key={i} style={{
-                    borderRadius: 9,
-                    border: '1px solid rgba(255,255,255,0.08)',
-                    background: 'rgba(255,255,255,0.04)',
-                    padding: '8px 12px',
-                    cursor: 'default',
-                  }}>
-                    <span style={{ fontSize: 13, fontWeight: 600, color: 'rgba(255,255,255,0.8)' }}>{opt}</span>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div style={{ padding: '14px', borderRadius: 9, border: `1.5px dashed ${C.brd2}`, textAlign: 'center' }}>
-                <div style={{ fontSize: 11, color: C.t3 }}>Add options to see them here</div>
-              </div>
-            )}
+            {/* Options */}
+            <div style={{ padding: '12px 16px 14px' }}>
+              {validOpts.length > 0 ? (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  {validOpts.map((opt, i) => (
+                    <div key={i} style={{
+                      borderRadius: 10,
+                      border: '1px solid rgba(255,255,255,0.08)',
+                      background: 'rgba(255,255,255,0.04)',
+                      padding: '9px 13px',
+                    }}>
+                      <span style={{ fontSize: 13, fontWeight: 600, color: 'rgba(255,255,255,0.8)' }}>{opt}</span>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div style={{ padding: '14px', borderRadius: 10, border: `1.5px dashed ${C.brd2}`, textAlign: 'center' }}>
+                  <div style={{ fontSize: 11, color: C.t3 }}>Add options to see them here</div>
+                </div>
+              )}
+            </div>
 
+            {/* Action bar — matches PostCard action bar */}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '6px 12px 10px', borderTop: '1px solid rgba(255,255,255,0.06)', minHeight: 44 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                <img src={STREAK_ICON_URL} alt="react" style={{ width: 44, height: 44, objectFit: 'contain', opacity: 0.35 }} />
+              </div>
+              <Send size={15} color='rgba(148,163,184,0.35)' style={{ marginRight: 4 }} />
+            </div>
           </div>
         )}
       </div>
@@ -270,7 +288,6 @@ function PollPreview({ title, description, category, options, gym }) {
    MOBILE-ONLY COMPONENTS
 ══════════════════════════════════════════════════════════════ */
 
-/* ── MOBILE: PREVIEW BOTTOM SHEET ────────────────────────────── */
 function MobilePollPreviewSheet({ open, onClose, title, description, category, options, gym }) {
   const [visible, setVisible] = useState(false);
 
@@ -320,7 +337,6 @@ function MobilePollPreviewSheet({ open, onClose, title, description, category, o
   );
 }
 
-/* ── MOBILE FULL-SCREEN MODAL ────────────────────────────────── */
 function MobileCreatePollModal({ open, onClose, onSave, isLoading, gym }) {
   const [title,       setTitle]       = useState('');
   const [category,    setCategory]    = useState('');
@@ -380,7 +396,7 @@ function MobileCreatePollModal({ open, onClose, onSave, isLoading, gym }) {
         transition: 'transform 0.38s cubic-bezier(0.32, 0.72, 0, 1)',
       }}>
 
-        {/* ── HEADER ── */}
+        {/* HEADER */}
         <div style={{ flexShrink: 0, background: C.surface, borderBottom: `1px solid ${C.brd}` }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 16px 12px' }}>
             <button onClick={handleClose} style={{ width: 38, height: 38, borderRadius: 10, background: C.card, border: `1px solid ${C.brd}`, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0 }}>
@@ -408,7 +424,7 @@ function MobileCreatePollModal({ open, onClose, onSave, isLoading, gym }) {
           </div>
         </div>
 
-        {/* ── SCROLLABLE FORM ── */}
+        {/* SCROLLABLE FORM */}
         <div className="pl-mobile-scroll" style={{ flex: 1, overflowY: 'auto', padding: '20px 16px', display: 'flex', flexDirection: 'column', gap: 24 }}>
           <div>
             <div style={{ fontSize: 11, fontWeight: 600, color: C.t3, textTransform: 'uppercase', letterSpacing: '0.09em', marginBottom: 10, display: 'flex', alignItems: 'center', gap: 4 }}>
@@ -442,9 +458,7 @@ function MobileCreatePollModal({ open, onClose, onSave, isLoading, gym }) {
                 <Calendar size={15} color={endDate ? accent : C.t3} />
               </div>
               <input
-                type="date"
-                value={endDate}
-                onChange={e => setEndDate(e.target.value)}
+                type="date" value={endDate} onChange={e => setEndDate(e.target.value)}
                 min={new Date().toISOString().split('T')[0]}
                 onFocus={e => { e.target.style.borderColor = `${accent}40`; e.target.style.background = C.inset; }}
                 onBlur={e =>  { e.target.style.borderColor = C.brd; e.target.style.background = C.card; }}
@@ -488,7 +502,7 @@ function MobileCreatePollModal({ open, onClose, onSave, isLoading, gym }) {
           <div style={{ height: 8 }} />
         </div>
 
-        {/* ── STICKY FOOTER ── */}
+        {/* STICKY FOOTER */}
         <div style={{ flexShrink: 0, padding: '14px 16px', paddingBottom: 'calc(14px + env(safe-area-inset-bottom, 0px))', borderTop: `1px solid ${C.brd}`, background: C.surface, display: 'flex', flexDirection: 'column', gap: 10 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
             {canSave ? (
@@ -517,6 +531,8 @@ function MobileCreatePollModal({ open, onClose, onSave, isLoading, gym }) {
 
 /* ══════════════════════════════════════════════════════════════
    DESKTOP MODAL
+   Preview column: 360px (was 300px, +20%)
+   Modal max-width unchanged at 920px
 ══════════════════════════════════════════════════════════════ */
 function DesktopCreatePollModal({ open, onClose, onSave, isLoading, gym }) {
   const [title,       setTitle]       = useState('');
@@ -594,8 +610,9 @@ function DesktopCreatePollModal({ open, onClose, onSave, isLoading, gym }) {
             </div>
           </div>
 
-          {/* BODY */}
-          <div style={{ flex: 1, display: 'grid', gridTemplateColumns: '1fr 300px', minHeight: 0, overflow: 'hidden' }}>
+          {/* BODY — preview column 360px (was 300px) */}
+          <div style={{ flex: 1, display: 'grid', gridTemplateColumns: '1fr 360px', minHeight: 0, overflow: 'hidden' }}>
+            {/* Form column */}
             <div className="pl-scroll" style={{ padding: '18px 20px', borderRight: `1px solid ${C.brd}`, display: 'flex', flexDirection: 'column', gap: 18, overflowY: 'auto', background: C.bg }}>
               <div>
                 <SL required>Question</SL>
@@ -612,9 +629,7 @@ function DesktopCreatePollModal({ open, onClose, onSave, isLoading, gym }) {
                     <Calendar size={12} color={endDate ? accent : C.t3} style={{ transition: 'color 0.15s' }} />
                   </div>
                   <input
-                    type="date"
-                    value={endDate}
-                    onChange={e => setEndDate(e.target.value)}
+                    type="date" value={endDate} onChange={e => setEndDate(e.target.value)}
                     min={new Date().toISOString().split('T')[0]}
                     onFocus={e => { e.target.style.borderColor = `${accent}38`; e.target.style.background = C.inset; }}
                     onBlur={e =>  { e.target.style.borderColor = C.brd; e.target.style.background = C.card; }}
@@ -659,7 +674,8 @@ function DesktopCreatePollModal({ open, onClose, onSave, isLoading, gym }) {
               </div>
             </div>
 
-            <div className="pl-scroll" style={{ padding: '18px 16px', background: C.surface, overflowY: 'auto', borderLeft: `1px solid ${C.brd}` }}>
+            {/* Preview column — 360px, dark bg matching feed */}
+            <div className="pl-scroll" style={{ padding: '18px 16px', background: '#0d0d11', overflowY: 'auto', borderLeft: `1px solid ${C.brd}` }}>
               <PollPreview title={title} description={description} category={category} options={options} gym={gym} />
             </div>
           </div>
@@ -693,7 +709,7 @@ function DesktopCreatePollModal({ open, onClose, onSave, isLoading, gym }) {
 }
 
 /* ══════════════════════════════════════════════════════════════
-   ROOT EXPORT — branches on isMobile
+   ROOT EXPORT
 ══════════════════════════════════════════════════════════════ */
 export default function CreatePollModal({ open, onClose, onSave, isLoading, gym }) {
   const isMobile = useIsMobile();
