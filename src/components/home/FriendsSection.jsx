@@ -54,11 +54,19 @@ function FriendsSection({
   cancelFriendMutation,
   addFriendMutation
 }) {
-  // Build a fast lookup map: userId → resolved avatar
+  // Build fast lookup maps: userId → avatar and userId → full user data
   const userAvatarMap = useMemo(() => {
     const map = {};
     (friendUsersList || []).forEach(u => {
       if (u.id) map[u.id] = u.avatar_url || null;
+    });
+    return map;
+  }, [friendUsersList]);
+
+  const userDataMap = useMemo(() => {
+    const map = {};
+    (friendUsersList || []).forEach(u => {
+      if (u.id) map[u.id] = u;
     });
     return map;
   }, [friendUsersList]);
@@ -212,11 +220,14 @@ function FriendsSection({
                     })}
 
                     {/* Incoming friend requests */}
-                    {friendRequests.filter((req) =>
-                      (req.user_name || '').toLowerCase().includes(friendsListSearchQuery.toLowerCase())
-                    ).map((request) => {
-                      const name = request.user_name || 'User';
-                      const avatarUrl = userAvatarMap[request.user_id] || request.user_avatar;
+                    {friendRequests.filter((req) => {
+                      const userData = userDataMap[req.user_id];
+                      const displayName = userData?.full_name || req.user_name || 'User';
+                      return displayName.toLowerCase().includes(friendsListSearchQuery.toLowerCase());
+                    }).map((request) => {
+                      const userData = userDataMap[request.user_id];
+                      const name = userData?.full_name || request.user_name || 'User';
+                      const avatarUrl = userData?.avatar_url || userAvatarMap[request.user_id] || request.user_avatar;
                       return (
                         <div key={request.id} className="px-2.5 py-1 rounded-lg bg-slate-700/40 flex items-center gap-2 relative">
                           <Link to={createPageUrl('UserProfile') + `?id=${request.user_id}`} onClick={closeAll} className="flex items-center gap-2 min-w-0 flex-1">
