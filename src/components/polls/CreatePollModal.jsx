@@ -182,7 +182,7 @@ function PollPreview({ title, description, category, options, gym }) {
         <span style={{ fontSize: 9.5, fontWeight: 600, color: C.t3, textTransform: 'uppercase', letterSpacing: '0.09em' }}>Live Preview</span>
       </div>
 
-      {/* Outer card — exact PostCard dark shell */}
+      {/* Outer card */}
       <div style={{
         borderRadius: 16,
         overflow: 'hidden',
@@ -193,9 +193,7 @@ function PollPreview({ title, description, category, options, gym }) {
         boxShadow: '0 32px 80px rgba(0,0,0,0.5)',
         position: 'relative',
       }}>
-        {/* Top highlight line — matches PostCard */}
         <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 1, background: 'linear-gradient(90deg, transparent 10%, rgba(255,255,255,0.1) 50%, transparent 90%)', pointerEvents: 'none', zIndex: 1 }} />
-        {/* Radial glow — matches PostCard */}
         <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', borderRadius: 16, background: 'radial-gradient(ellipse at 25% 35%, rgba(99,102,241,0.12) 0%, transparent 60%)' }} />
 
         {!hasContent ? (
@@ -205,7 +203,7 @@ function PollPreview({ title, description, category, options, gym }) {
           </div>
         ) : (
           <div style={{ position: 'relative', zIndex: 2 }}>
-            {/* Header row — avatar + name + badge + menu dot — matches PostCard header */}
+            {/* Header row */}
             <div style={{ padding: '14px 16px 0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                 <div style={{ width: 36, height: 36, borderRadius: '50%', background: '#0f172a', overflow: 'hidden', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid rgba(255,255,255,0.08)' }}>
@@ -213,26 +211,24 @@ function PollPreview({ title, description, category, options, gym }) {
                     ? <img src={gymAvatar} alt={gymName} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                     : <span style={{ fontSize: 13, fontWeight: 800, color: '#fff' }}>{gymInitial}</span>}
                 </div>
+                {/* ── NAME + BADGE BELOW ── */}
                 <div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                    <span style={{ fontSize: 13, fontWeight: 700, color: '#fff', lineHeight: 1.2 }}>{gymName}</span>
-                    {/* Type badge — exact PostCard badge style */}
+                  <div style={{ fontSize: 13, fontWeight: 700, color: '#fff', lineHeight: 1.2 }}>{gymName}</div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 3 }}>
                     <span style={{
                       fontSize: 9, fontWeight: 700, padding: '1px 7px', borderRadius: 5,
                       background: cat?.dim || C.blueDim,
                       border: `1px solid ${cat?.border || C.blueBrd}`,
                       color: cat?.color || C.blue,
-                      display: 'inline-flex', alignItems: 'center', gap: 4,
-                      flexShrink: 0,
+                      display: 'inline-flex', alignItems: 'center', gap: 4, flexShrink: 0,
                     }}>
                       <BarChart2 size={9} />
                       {cat?.badgeLabel || 'Poll'}
                     </span>
+                    <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)' }}>Just now</div>
                   </div>
-                  <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', marginTop: 2 }}>Just now</div>
                 </div>
               </div>
-              {/* 3-dot menu — decorative, matches PostCard */}
               <MoreHorizontal size={18} color='rgba(148,163,184,0.4)' />
             </div>
 
@@ -270,7 +266,7 @@ function PollPreview({ title, description, category, options, gym }) {
               )}
             </div>
 
-            {/* Action bar — matches PostCard action bar */}
+            {/* Action bar */}
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '6px 12px 10px', borderTop: '1px solid rgba(255,255,255,0.06)', minHeight: 44 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                 <img src={STREAK_ICON_URL} alt="react" style={{ width: 44, height: 44, objectFit: 'contain', opacity: 0.35 }} />
@@ -504,22 +500,10 @@ function MobileCreatePollModal({ open, onClose, onSave, isLoading, gym }) {
 
         {/* STICKY FOOTER */}
         <div style={{ flexShrink: 0, padding: '14px 16px', paddingBottom: 'calc(14px + env(safe-area-inset-bottom, 0px))', borderTop: `1px solid ${C.brd}`, background: C.surface, display: 'flex', flexDirection: 'column', gap: 10 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-            {canSave ? (
-              <>
-                <CheckCircle size={13} color={C.green} />
-                <span style={{ fontSize: 12, color: C.t3 }}>{title} · {validOpts.length} option{validOpts.length !== 1 ? 's' : ''}{cat ? ` · ${cat.label}` : ''}</span>
-              </>
-            ) : (
-              <span style={{ fontSize: 12, color: C.t3 }}>
-                {!title.trim() ? 'Add a question to continue' : !endDate ? 'Set an end date to continue' : 'Add at least 2 options'}
-              </span>
-            )}
-          </div>
           <button onClick={handleSubmit} disabled={!canSave} style={{ width: '100%', padding: '15px', borderRadius: 14, border: 'none', fontFamily: FONT, fontSize: 15, fontWeight: 800, background: canSave ? C.blue : C.brd2, color: canSave ? '#fff' : C.t3, cursor: canSave ? 'pointer' : 'default', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, boxShadow: canSave ? `0 0 28px ${C.blue}40` : 'none', opacity: canSave ? 1 : 0.45, transition: 'all 0.2s' }}>
             {isLoading
               ? <><div style={{ width: 14, height: 14, border: '2.5px solid rgba(255,255,255,0.25)', borderTop: '2.5px solid #fff', borderRadius: '50%', animation: 'pl-spin 0.7s linear infinite' }} /> Creating…</>
-              : <><Zap size={16} /> Create Poll</>}
+              : 'Post'}
           </button>
         </div>
       </div>
@@ -531,8 +515,6 @@ function MobileCreatePollModal({ open, onClose, onSave, isLoading, gym }) {
 
 /* ══════════════════════════════════════════════════════════════
    DESKTOP MODAL
-   Preview column: 360px (was 300px, +20%)
-   Modal max-width unchanged at 920px
 ══════════════════════════════════════════════════════════════ */
 function DesktopCreatePollModal({ open, onClose, onSave, isLoading, gym }) {
   const [title,       setTitle]       = useState('');
@@ -588,8 +570,8 @@ function DesktopCreatePollModal({ open, onClose, onSave, isLoading, gym }) {
       >
         <div style={{ width: '100%', maxWidth: 920, maxHeight: '92vh', display: 'flex', flexDirection: 'column', background: C.bg, border: `1px solid ${C.brd}`, borderRadius: 14, overflow: 'hidden', boxShadow: `0 40px 100px rgba(0,0,0,0.85), 0 0 0 1px rgba(96,165,250,0.04)`, animation: 'pl-in 0.24s cubic-bezier(0.16,1,0.3,1)', WebkitFontSmoothing: 'antialiased' }}>
 
-          {/* HEADER */}
-          <div style={{ flexShrink: 0, padding: '0 20px', background: C.surface, borderBottom: `1px solid ${C.brd}`, position: 'relative', overflow: 'hidden' }}>
+          {/* HEADER — overflow removed to fix the vertical bar glitch */}
+          <div style={{ flexShrink: 0, padding: '0 20px', background: C.surface, borderBottom: `1px solid ${C.brd}`, position: 'relative' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: 18, paddingBottom: 0 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 11 }}>
                 <div style={{ width: 32, height: 32, borderRadius: 9, background: cat?.dim || C.blueDim, border: `1px solid ${cat?.border || C.blueBrd}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'all 0.2s' }}>
@@ -610,7 +592,7 @@ function DesktopCreatePollModal({ open, onClose, onSave, isLoading, gym }) {
             </div>
           </div>
 
-          {/* BODY — preview column 360px (was 300px) */}
+          {/* BODY */}
           <div style={{ flex: 1, display: 'grid', gridTemplateColumns: '1fr 360px', minHeight: 0, overflow: 'hidden' }}>
             {/* Form column */}
             <div className="pl-scroll" style={{ padding: '18px 20px', borderRight: `1px solid ${C.brd}`, display: 'flex', flexDirection: 'column', gap: 18, overflowY: 'auto', background: C.bg }}>
@@ -674,32 +656,23 @@ function DesktopCreatePollModal({ open, onClose, onSave, isLoading, gym }) {
               </div>
             </div>
 
-            {/* Preview column — 360px, dark bg matching feed */}
+            {/* Preview column */}
             <div className="pl-scroll" style={{ padding: '18px 16px', background: '#0d0d11', overflowY: 'auto', borderLeft: `1px solid ${C.brd}` }}>
               <PollPreview title={title} description={description} category={category} options={options} gym={gym} />
             </div>
           </div>
 
-          {/* FOOTER */}
+          {/* FOOTER — no hint text, button just says "Post" */}
           <div style={{ flexShrink: 0, padding: '12px 20px', borderTop: `1px solid ${C.brd}`, display: 'flex', alignItems: 'center', gap: 10, background: C.surface }}>
-            <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 6 }}>
-              {canSave ? (
-                <>
-                  <CheckCircle size={11} color={C.green} />
-                  <span style={{ fontSize: 10.5, color: C.t3 }}>{title} · {validOpts.length} option{validOpts.length !== 1 ? 's' : ''}{cat ? ` · ${cat.label}` : ''}</span>
-                </>
-              ) : (
-                <span style={{ fontSize: 10.5, color: C.t3 }}>{!category ? 'Pick a category to continue' : !title.trim() ? 'Add a question to continue' : !endDate ? 'Set an end date to continue' : 'Add at least 2 options'}</span>
-              )}
-            </div>
+            <div style={{ flex: 1 }} />
             <button className="pl-cancel" onClick={handleClose} type="button">Cancel</button>
             <button onClick={handleSubmit} disabled={!canSave} type="button"
-              style={{ padding: '9px 22px', borderRadius: 8, border: 'none', fontFamily: FONT, fontSize: 13, fontWeight: 700, letterSpacing: '-0.01em', background: canSave ? C.blue : C.brd2, color: canSave ? '#fff' : C.t3, cursor: canSave ? 'pointer' : 'default', display: 'inline-flex', alignItems: 'center', gap: 7, boxShadow: canSave ? `0 0 24px ${C.blue}40` : 'none', opacity: canSave ? 1 : 0.4, minWidth: 150, justifyContent: 'center', transition: 'opacity 0.15s, box-shadow 0.15s' }}
+              style={{ padding: '9px 22px', borderRadius: 8, border: 'none', fontFamily: FONT, fontSize: 13, fontWeight: 700, letterSpacing: '-0.01em', background: canSave ? C.blue : C.brd2, color: canSave ? '#fff' : C.t3, cursor: canSave ? 'pointer' : 'default', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', boxShadow: canSave ? `0 0 24px ${C.blue}40` : 'none', opacity: canSave ? 1 : 0.4, minWidth: 100, transition: 'opacity 0.15s, box-shadow 0.15s' }}
               onMouseEnter={e => { if (canSave) e.currentTarget.style.opacity = '0.88'; }}
               onMouseLeave={e => { if (canSave) e.currentTarget.style.opacity = '1'; }}>
               {isLoading
                 ? <><div style={{ width: 12, height: 12, border: '2px solid rgba(255,255,255,0.2)', borderTop: '2px solid #fff', borderRadius: '50%', animation: 'pl-spin 0.7s linear infinite' }} /> Creating…</>
-                : <><Zap size={13} /> Create Poll</>}
+                : 'Post'}
             </button>
           </div>
         </div>
