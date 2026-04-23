@@ -40,12 +40,27 @@ Deno.serve(async (req) => {
     }
 
     // Fetch community posts from the user's primary gym
+    // Includes both member posts shared with community AND gym-authored posts (post_type set)
     if (primaryGymId) {
       postPromises.push(
         base44.asServiceRole.entities.Post.filter(
           {
             gym_id: primaryGymId,
             share_with_community: true,
+            is_hidden: { $ne: true },
+            is_system_generated: { $ne: true },
+          },
+          '-created_date',
+          limit
+        ).then(posts => posts.map(p => ({ ...p, _source: 'community' })))
+      );
+
+      // Also fetch gym-authored posts (post_type is set) — these are gym announcements, events, etc.
+      postPromises.push(
+        base44.asServiceRole.entities.Post.filter(
+          {
+            gym_id: primaryGymId,
+            post_type: { $exists: true },
             is_hidden: { $ne: true },
             is_system_generated: { $ne: true },
           },

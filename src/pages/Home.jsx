@@ -467,10 +467,23 @@ export default function Home() {
     placeholderData: (prev) => prev,
   });
 
+  // Collect all gym IDs the member belongs to (primary first, then rest)
+  const allMemberGymIds = useMemo(() => {
+    const ids = new Set();
+    if (currentUser?.primary_gym_id) ids.add(currentUser.primary_gym_id);
+    gymMemberships.forEach(m => { if (m.gym_id) ids.add(m.gym_id); });
+    return Array.from(ids);
+  }, [currentUser?.primary_gym_id, gymMemberships]);
+
   const { data: gymPolls = [] } = useQuery({
-    queryKey: ['gymPolls', primaryGymIdForQuery],
-    queryFn: () => base44.entities.Poll.filter({ gym_id: primaryGymIdForQuery, status: 'active' }, '-created_date', 10),
-    enabled: !!primaryGymIdForQuery,
+    queryKey: ['gymPolls', allMemberGymIds.join(',')],
+    queryFn: () => {
+      if (allMemberGymIds.length === 1) {
+        return base44.entities.Poll.filter({ gym_id: allMemberGymIds[0], status: 'active' }, '-created_date', 20);
+      }
+      return base44.entities.Poll.filter({ gym_id: { $in: allMemberGymIds }, status: 'active' }, '-created_date', 20);
+    },
+    enabled: allMemberGymIds.length > 0,
     staleTime: 2 * 60 * 1000,
     gcTime: 5 * 60 * 1000,
     placeholderData: (prev) => prev,
