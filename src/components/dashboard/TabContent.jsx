@@ -724,13 +724,13 @@ function RightSidebar({
       </div>
 
       {/* ── INTERACTION TREND CHART (real 7-day data) ── */}
-      <div style={{ padding: "14px 8px 12px 8px", borderBottom: `1px solid ${C.brd}` }}>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10, padding: "0 8px" }}>
+      <div style={{ padding: "14px 16px 12px 4px", borderBottom: `1px solid ${C.brd}` }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10, padding: "0 12px 0 12px" }}>
           <span style={{ fontSize: 12, fontWeight: 600, color: C.t1 }}>Interactions This Week</span>
           <span style={{ fontSize: 10, color: C.t3 }}>7d</span>
         </div>
         <ResponsiveContainer width="100%" height={108}>
-          <AreaChart data={chartData} margin={{ top: 4, right: 6, bottom: 0, left: -20 }}>
+          <AreaChart data={chartData} margin={{ top: 4, right: 22, bottom: 0, left: -24 }}>
             <defs>
               <linearGradient id="ig" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="0%"   stopColor={C.cyan} stopOpacity={0.35} />
