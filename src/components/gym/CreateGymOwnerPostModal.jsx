@@ -238,6 +238,7 @@ export default function CreateGymOwnerPostModal({ open, onClose, gym, onSuccess 
   const canSubmit   = content.trim().length > 0 && !submitting;
   const isScheduled = !!scheduledDate;
   const submitLabel = isScheduled ? 'Schedule' : 'Post';
+  const [savingDraft, setSavingDraft] = useState(false);
 
   const uploadMutation = useMutation({
     mutationFn: async (file) => { const r = await base44.integrations.Core.UploadFile({ file }); return r.file_url; },
@@ -263,25 +264,43 @@ export default function CreateGymOwnerPostModal({ open, onClose, gym, onSuccess 
     setIsPinned(false); setScheduledDate(''); setCallToAction({ enabled: false, text: '', link: '' }); setNewTag('');
   };
 
+  const buildPostData = async (overrides = {}) => {
+    const user = await base44.auth.me();
+    return {
+      member_id: user.id, member_name: gym.name,
+      member_avatar: gym.logo_url || gym.image_url || null,
+      gym_id: gym.id, gym_name: gym.name,
+      content: content.trim(), image_url: imageUrl || null,
+      likes: 0, comments: [], reactions: {},
+      post_type: postType, tags, is_pinned: isPinned,
+      share_with_community: true,
+      scheduled_date: scheduledDate || null,
+      call_to_action: callToAction.enabled && callToAction.text ? { text: callToAction.text, link: callToAction.link } : null,
+      ...overrides,
+    };
+  };
+
   const handleSubmit = async () => {
     if (!canSubmit) return;
     setSubmitting(true);
     try {
-      const user = await base44.auth.me();
-      await base44.entities.Post.create({
-        member_id: user.id, member_name: gym.name,
-        member_avatar: gym.logo_url || gym.image_url || null,
-        gym_id: gym.id, gym_name: gym.name,
-        content: content.trim(), image_url: imageUrl || null,
-        likes: 0, comments: [], reactions: {},
-        post_type: postType, tags, is_pinned: isPinned,
-        share_with_community: true,
-        scheduled_date: scheduledDate || null,
-        call_to_action: callToAction.enabled && callToAction.text ? { text: callToAction.text, link: callToAction.link } : null,
-      });
+      // If scheduled: save as hidden so it doesn't appear in feed until published
+      const data = await buildPostData(isScheduled ? { is_hidden: true, is_draft: false } : { is_hidden: false, is_draft: false });
+      await base44.entities.Post.create(data);
       onSuccess?.(); reset(); onClose();
     } catch (e) { console.error(e); }
     finally { setSubmitting(false); }
+  };
+
+  const handleSaveDraft = async () => {
+    if (!canSubmit) return;
+    setSavingDraft(true);
+    try {
+      const data = await buildPostData({ is_draft: true, is_hidden: true, share_with_community: false });
+      await base44.entities.Post.create(data);
+      onSuccess?.(); reset(); onClose();
+    } catch (e) { console.error(e); }
+    finally { setSavingDraft(false); }
   };
 
   const handleClose = () => { reset(); onClose(); };
@@ -328,6 +347,8 @@ export default function CreateGymOwnerPostModal({ open, onClose, gym, onSuccess 
         .ch-cta-btn:hover { opacity:0.88; }
         .ch-cta-btn:disabled { background:${C.brd2}; color:${C.t3}; cursor:default; box-shadow:none; }
         .ch-cta-btn.schedule { background:${C.amber}; color:#000; }
+        .ch-cta-btn.draft { background:transparent; border:1px solid ${C.brd2}; color:${C.t2}; box-shadow:none; }
+        .ch-cta-btn.draft:hover { border-color:${C.brdHover}; color:${C.t1}; }
 
         .ch-cancel {
           padding:9px 18px; border-radius:8px; background:transparent; border:1px solid ${C.brd};
@@ -619,6 +640,12 @@ export default function CreateGymOwnerPostModal({ open, onClose, gym, onSuccess 
                     ? <><div style={{ width: 14, height: 14, border: '2px solid rgba(255,255,255,0.2)', borderTop: '2px solid #fff', borderRadius: '50%', animation: 'spin 0.7s linear infinite' }} /> Publishing…</>
                     : submitLabel}
                 </button>
+                <button
+                  onClick={handleSaveDraft}
+                  disabled={!canSubmit || savingDraft}
+                  style={{ background: 'none', border: `1px solid ${C.brd2}`, borderRadius: 12, color: C.t2, fontSize: 13, fontWeight: 600, cursor: canSubmit ? 'pointer' : 'default', fontFamily: FONT, padding: '12px 0', textAlign: 'center', opacity: canSubmit ? 1 : 0.38 }}>
+                  {savingDraft ? 'Saving…' : 'Save as Draft'}
+                </button>
                 <button onClick={handleClose} style={{ background: 'none', border: 'none', color: C.t3, fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: FONT, padding: '6px 0', textAlign: 'center' }}>
                   Cancel
                 </button>
@@ -626,6 +653,14 @@ export default function CreateGymOwnerPostModal({ open, onClose, gym, onSuccess 
             ) : (
               <>
                 <button onClick={handleClose} className="ch-cancel">Cancel</button>
+                <button
+                  onClick={handleSaveDraft}
+                  disabled={!canSubmit || savingDraft}
+                  className="ch-cta-btn draft"
+                  style={{ opacity: canSubmit ? 1 : 0.38, cursor: canSubmit ? 'pointer' : 'default', minWidth: 90, justifyContent: 'center' }}
+                >
+                  {savingDraft ? 'Saving…' : 'Draft'}
+                </button>
                 <button
                   onClick={handleSubmit}
                   disabled={!canSubmit}

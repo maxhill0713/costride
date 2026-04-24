@@ -89,8 +89,7 @@ const TAB_ACTION = {
   "Events":         { label: "Add Event",       modal: "event"     },
   "Challenges":     { label: "New Challenge",   modal: "challenge" },
   "Polls":          { label: "New Poll",        modal: "poll"      },
-  "Drafts":         { label: "Create Draft",    modal: "post"      },
-  "Scheduled":      { label: "Schedule Post",   modal: "post"      },
+  // No action buttons for Drafts or Scheduled — posts are created via "New Post"
 };
 
 /* ─── PRIMITIVES ─────────────────────────────────────────────────── */
@@ -751,18 +750,10 @@ function RightSidebar({
 }
 
 /* ─── EMPTY STATE ────────────────────────────────────────────────── */
-function EmptyState({ label, onAdd }) {
+function EmptyState({ label }) {
   return (
     <div style={{ display: "flex", flexDirection: "column", alignItems: "center", padding: "56px 0", gap: 12 }}>
-      <div style={{ width: 48, height: 48, borderRadius: 12, background: C.cyanDim, border: `1px solid ${C.cyanBrd}`, display: "flex", alignItems: "center", justifyContent: "center" }}>
-        <Flame size={20} color={C.cyan} />
-      </div>
       <div style={{ fontSize: 13, fontWeight: 500, color: C.t2 }}>No {label} yet</div>
-      {onAdd && (
-        <button onClick={onAdd} style={{ padding: "7px 16px", borderRadius: 8, background: C.cyan, color: "#fff", border: "none", fontSize: 12.5, fontWeight: 700, cursor: "pointer", fontFamily: FONT, display: "flex", alignItems: "center", gap: 6, minHeight: 44, boxShadow: "0 0 10px rgba(77,127,255,0.22), 0 2px 6px rgba(77,127,255,0.12)" }}>
-          <Plus size={12} /> Create
-        </button>
-      )}
     </div>
   );
 }
@@ -831,6 +822,7 @@ export default function ContentPage({
   const [challengeToRemove,setChallengeToRemove]= useState(null);
   const [rerunning,        setRerunning]        = useState(null);
   const [reactionsPost,    setReactionsPost]    = useState(null);
+  const [publishingDraftId, setPublishingDraftId] = useState(null);
 
   const createItems = [
     { label: "📝 New Post",      action: () => { openModal?.("post");      setShowMenu(false); setTab("Community Feed"); } },
@@ -937,7 +929,7 @@ export default function ContentPage({
                 {feedPosts.length} post{feedPosts.length !== 1 ? "s" : ""} shared with your community in the last 7 days
               </div>
               {feedPosts.length === 0
-                ? <EmptyState label="posts" onAdd={() => openModal?.("post")} />
+                ? <EmptyState label="posts" />
                 : feedPosts.map(p => {
                   const isGymPost   = !!p.post_type;
                   const resolvedName = isGymPost
@@ -1046,7 +1038,7 @@ export default function ContentPage({
                 {events.length} event{events.length !== 1 ? "s" : ""}
               </div>
               {events.length === 0
-                ? <EmptyState label="events" onAdd={() => openModal?.("event")} />
+                ? <EmptyState label="events" />
                 : events.map(ev => (
                   <ListCard key={ev.id} isMobile={isMobile}>
                     <div style={{ flex: 1, minWidth: 0 }}>
@@ -1120,7 +1112,7 @@ export default function ContentPage({
                   {liveChallenges.length} live challenge{liveChallenges.length !== 1 ? "s" : ""}
                 </div>
                 {liveChallenges.length === 0
-                  ? <EmptyState label="live challenges" onAdd={() => openModal?.("challenge")} />
+                  ? <EmptyState label="live challenges" />
                   : liveChallenges.map(ch => <ChallengeCard key={ch.id} ch={ch} />)
                 }
                 {endedChallenges.length > 0 && (
@@ -1288,8 +1280,134 @@ export default function ContentPage({
             );
           })()}
 
-          {tab === "Drafts"    && <EmptyState label="drafts"          onAdd={() => openModal?.("post")} />}
-          {tab === "Scheduled" && <EmptyState label="scheduled posts" onAdd={() => openModal?.("post")} />}
+          {/* ── DRAFTS ── */}
+          {tab === "Drafts" && (() => {
+            const drafts = posts.filter(p => p.is_draft && (!gymId || p.gym_id === gymId));
+            const handlePublishDraft = async (post) => {
+              setPublishingDraftId(post.id);
+              try {
+                await base44.entities.Post.update(post.id, { is_draft: false, is_hidden: false, share_with_community: true, scheduled_date: null });
+                onUpdatePost?.();
+              } finally { setPublishingDraftId(null); }
+            };
+            if (drafts.length === 0) return <EmptyState label="drafts" />;
+            return (
+              <>
+                <div style={{ fontSize: 12, fontWeight: 500, color: C.t2, marginBottom: 10 }}>
+                  {drafts.length} draft{drafts.length !== 1 ? "s" : ""}
+                </div>
+                {drafts.map(p => {
+                  const pt = POST_TYPE_STYLES[p.post_type] || POST_TYPE_STYLES.update;
+                  const palette = ["#6366f1","#8b5cf6","#ec4899","#14b8a6","#f59e0b","#4d7fff","#10b981"];
+                  const name = p.member_name || "Gym";
+                  const avatarBg = palette[(name.charCodeAt(0) || 0) % palette.length];
+                  const avatar = gymId && p.gym_id === gymId ? null : p.member_avatar;
+                  const initials = name.split(" ").map(w => w[0]).join("").toUpperCase().slice(0, 2) || "?";
+                  return (
+                    <div key={p.id} style={{ background: C.card, border: `1px solid ${C.brd}`, borderRadius: 12, marginBottom: 10, display: "flex", overflow: "hidden" }}
+                      onMouseEnter={e => { e.currentTarget.style.borderColor = C.cyanBrd; }}
+                      onMouseLeave={e => { e.currentTarget.style.borderColor = C.brd; }}>
+                      <div style={{ width: 6, flexShrink: 0, background: "rgba(245,158,11,0.3)", borderRadius: "12px 0 0 12px" }} />
+                      <div style={{ flex: 1, minWidth: 0, padding: "11px 14px 11px 10px", display: "flex", flexDirection: "column", gap: 6 }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                          <div style={{ width: 30, height: 30, borderRadius: "50%", flexShrink: 0, background: avatarBg, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 800, color: "#fff", overflow: "hidden" }}>
+                            {avatar ? <img src={avatar} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : initials}
+                          </div>
+                          <div>
+                            <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
+                              <div style={{ fontSize: 13, fontWeight: 700, color: C.t1 }}>{name}</div>
+                              {p.post_type && <span style={{ fontSize: 9.5, fontWeight: 700, padding: "1px 7px", borderRadius: 5, background: pt.bg, border: `1px solid ${pt.border}`, color: pt.color }}>{pt.label}</span>}
+                              <span style={{ fontSize: 9.5, fontWeight: 700, padding: "1px 7px", borderRadius: 5, background: "rgba(245,158,11,0.12)", border: "1px solid rgba(245,158,11,0.28)", color: C.amber }}>Draft</span>
+                            </div>
+                            <div style={{ fontSize: 11, color: C.t3, marginTop: 2 }}>Saved {timeAgo(p.created_date)}</div>
+                          </div>
+                        </div>
+                        {p.content && <div style={{ fontSize: 12.5, color: C.t2, lineHeight: 1.5, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{p.content}</div>}
+                      </div>
+                      <div style={{ flexShrink: 0, borderLeft: `1px solid ${C.brd}`, padding: "12px 14px", display: "flex", flexDirection: "column", gap: 8, justifyContent: "center" }}>
+                        <button onClick={() => handlePublishDraft(p)} disabled={publishingDraftId === p.id}
+                          style={{ display: "flex", alignItems: "center", gap: 6, padding: "7px 14px", borderRadius: 8, background: C.cyan, border: "none", color: "#fff", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: FONT, opacity: publishingDraftId === p.id ? 0.6 : 1, whiteSpace: "nowrap" }}>
+                          {publishingDraftId === p.id ? "Posting…" : "Post Now"}
+                        </button>
+                        {onDeletePost && <button onClick={() => onDeletePost(p.id)}
+                          style={{ display: "flex", alignItems: "center", gap: 6, padding: "7px 10px", borderRadius: 8, background: "rgba(255,255,255,0.03)", border: `1px solid ${C.brd}`, color: C.t2, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: FONT }}
+                          onMouseEnter={e => { e.currentTarget.style.borderColor = "rgba(255,77,109,0.35)"; e.currentTarget.style.color = C.red; e.currentTarget.style.background = C.redDim; }}
+                          onMouseLeave={e => { e.currentTarget.style.borderColor = C.brd; e.currentTarget.style.color = C.t2; e.currentTarget.style.background = "rgba(255,255,255,0.03)"; }}>
+                          <Trash2 size={12} color="currentColor" /><span>Delete</span>
+                        </button>}
+                      </div>
+                    </div>
+                  );
+                })}
+              </>
+            );
+          })()}
+
+          {/* ── SCHEDULED ── */}
+          {tab === "Scheduled" && (() => {
+            const nowMs = Date.now();
+            const scheduled = posts.filter(p =>
+              p.scheduled_date && !p.is_draft && (!gymId || p.gym_id === gymId) &&
+              new Date(p.scheduled_date).getTime() > nowMs
+            ).sort((a, b) => new Date(a.scheduled_date) - new Date(b.scheduled_date));
+            if (scheduled.length === 0) return <EmptyState label="scheduled posts" />;
+            return (
+              <>
+                <div style={{ fontSize: 12, fontWeight: 500, color: C.t2, marginBottom: 10 }}>
+                  {scheduled.length} scheduled post{scheduled.length !== 1 ? "s" : ""}
+                </div>
+                {scheduled.map(p => {
+                  const pt = POST_TYPE_STYLES[p.post_type] || POST_TYPE_STYLES.update;
+                  const palette = ["#6366f1","#8b5cf6","#ec4899","#14b8a6","#f59e0b","#4d7fff","#10b981"];
+                  const name = p.member_name || "Gym";
+                  const avatarBg = palette[(name.charCodeAt(0) || 0) % palette.length];
+                  const avatar = p.member_avatar;
+                  const initials = name.split(" ").map(w => w[0]).join("").toUpperCase().slice(0, 2) || "?";
+                  const schedDate = new Date(p.scheduled_date);
+                  const schedLabel = schedDate.toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short" }) + " at " + schedDate.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" });
+                  const diffMs = schedDate.getTime() - nowMs;
+                  const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+                  const timeUntil = diffDays <= 0 ? "Today" : diffDays === 1 ? "Tomorrow" : `In ${diffDays} days`;
+                  return (
+                    <div key={p.id} style={{ background: C.card, border: `1px solid ${C.brd}`, borderRadius: 12, marginBottom: 10, display: "flex", overflow: "hidden" }}
+                      onMouseEnter={e => { e.currentTarget.style.borderColor = C.cyanBrd; }}
+                      onMouseLeave={e => { e.currentTarget.style.borderColor = C.brd; }}>
+                      <div style={{ width: 6, flexShrink: 0, background: "rgba(77,127,255,0.35)", borderRadius: "12px 0 0 12px" }} />
+                      <div style={{ flex: 1, minWidth: 0, padding: "11px 14px 11px 10px", display: "flex", flexDirection: "column", gap: 6 }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                          <div style={{ width: 30, height: 30, borderRadius: "50%", flexShrink: 0, background: avatarBg, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 800, color: "#fff", overflow: "hidden" }}>
+                            {avatar ? <img src={avatar} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : initials}
+                          </div>
+                          <div>
+                            <div style={{ display: "flex", alignItems: "center", gap: 7, flexWrap: "wrap" }}>
+                              <div style={{ fontSize: 13, fontWeight: 700, color: C.t1 }}>{name}</div>
+                              {p.post_type && <span style={{ fontSize: 9.5, fontWeight: 700, padding: "1px 7px", borderRadius: 5, background: pt.bg, border: `1px solid ${pt.border}`, color: pt.color }}>{pt.label}</span>}
+                            </div>
+                            <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 2 }}>
+                              <Clock size={10} color={C.cyan} />
+                              <span style={{ fontSize: 11, color: C.cyan, fontWeight: 700 }}>{schedLabel}</span>
+                              <span style={{ fontSize: 10, color: C.t3 }}>· {timeUntil}</span>
+                            </div>
+                          </div>
+                        </div>
+                        {p.content && <div style={{ fontSize: 12.5, color: C.t2, lineHeight: 1.5, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{p.content}</div>}
+                      </div>
+                      {onDeletePost && (
+                        <div style={{ flexShrink: 0, borderLeft: `1px solid ${C.brd}`, padding: "12px 14px", display: "flex", flexDirection: "column", gap: 8, justifyContent: "center" }}>
+                          <button onClick={() => onDeletePost(p.id)}
+                            style={{ display: "flex", alignItems: "center", gap: 6, padding: "7px 10px", borderRadius: 8, background: "rgba(255,255,255,0.03)", border: `1px solid ${C.brd}`, color: C.t2, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: FONT }}
+                            onMouseEnter={e => { e.currentTarget.style.borderColor = "rgba(255,77,109,0.35)"; e.currentTarget.style.color = C.red; e.currentTarget.style.background = C.redDim; }}
+                            onMouseLeave={e => { e.currentTarget.style.borderColor = C.brd; e.currentTarget.style.color = C.t2; e.currentTarget.style.background = "rgba(255,255,255,0.03)"; }}>
+                            <Trash2 size={12} color="currentColor" /><span>Cancel</span>
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </>
+            );
+          })()}
 
         </div>
       </div>
