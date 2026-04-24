@@ -480,7 +480,6 @@ function MobileCreatePollModal({ open, onClose, onSave, isLoading, gym }) {
                     onFocus={e => { e.target.style.borderColor = `${accent}40`; e.target.style.background = C.inset; }}
                     onBlur={e =>  { e.target.style.borderColor = C.brd; e.target.style.background = C.card; }}
                     style={{ ...baseInp, flex: 1, paddingTop: 13, paddingBottom: 13, fontSize: 14, borderRadius: 11 }} />
-                  {endDate && <CountdownBadge endDate={endDate} />}
                   {options.length > 2 && (
                     <button type="button" onClick={() => removeOption(idx)} style={{ flexShrink: 0, width: 40, height: 40, borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', background: C.redDim, border: `1.5px solid ${C.redBrd}`, cursor: 'pointer', transition: 'all 0.12s' }}>
                       <Trash2 size={15} color={C.red} />
@@ -633,7 +632,6 @@ function DesktopCreatePollModal({ open, onClose, onSave, isLoading, gym }) {
                       <input className="pl-opt" value={opt} onChange={e => updateOption(idx, e.target.value)} placeholder={`Option ${idx + 1}`}
                         onFocus={e => { e.target.style.borderColor = `${accent}38`; e.target.style.background = C.inset; }}
                         onBlur={e =>  { e.target.style.borderColor = C.brd; e.target.style.background = C.card; }} />
-                      {endDate && <CountdownBadge endDate={endDate} />}
                       {options.length > 2 && (
                         <button type="button" onClick={() => removeOption(idx)}
                           style={{ flexShrink: 0, width: 28, height: 28, borderRadius: 7, display: 'flex', alignItems: 'center', justifyContent: 'center', background: C.redDim, border: `1px solid ${C.redBrd}`, cursor: 'pointer', transition: 'all 0.12s' }}
