@@ -24,7 +24,9 @@
         "equipment_replacement",
         "favorite_equipment",
         "rewards",
-        "playlist"
+        "playlist",
+        "schedule",
+        "other"
       ],
       "description": "Category of the poll"
     },
@@ -63,6 +65,11 @@
       ],
       "default": "active",
       "description": "Poll status"
+    },
+    "end_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Date the poll ends"
     },
     "created_by": {
       "type": "string",
