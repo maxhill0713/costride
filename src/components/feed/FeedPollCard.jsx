@@ -319,18 +319,19 @@ export default function FeedPollCard({ poll, currentUser }) {
   const voteMutation = useMutation({
     mutationFn: async (optionId) => {
       if (!currentUser?.id) throw new Error('User not authenticated');
-      
+      // Use poll.voters (server state) to avoid double-counting from optimistic update
+      const originalVoters = poll.voters || [];
       const opts = (poll.options || []).map(opt => {
         if (typeof opt !== 'object') return opt;
         const isThis = (opt.id || opt.text) === optionId;
         const optVoters = Array.isArray(opt.voters) ? opt.voters : [];
         return { ...opt, votes: (opt.votes || 0) + (isThis ? 1 : 0), voters: isThis ? [...optVoters, currentUser.id] : optVoters };
       });
-      await base44.functions.invoke('votePoll', { pollId: poll.id, options: opts, voters: [...voters, currentUser.id] });
+      await base44.functions.invoke('votePoll', { pollId: poll.id, options: opts, voters: [...originalVoters, currentUser.id] });
     },
     onMutate: (optionId) => {
       setLocalVotedOption(optionId);
-      setLocalVoters([...voters, currentUser.id]);
+      setLocalVoters([...(poll.voters || []), currentUser.id]);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['gymPolls', poll.gym_id] });
