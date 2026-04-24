@@ -1,4 +1,4 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.26';
 
 const GYM_CREATION_LIMIT = 5; // max gyms a single user can add to the platform
 const GYM_MEMBERSHIP_LIMIT = 3; // max gyms a user can be a member of at once
