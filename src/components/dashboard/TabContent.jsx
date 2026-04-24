@@ -895,27 +895,25 @@ export default function ContentPage({
       {/* ── MAIN SCROLL ── */}
       <div style={{ flex: 1, overflowY: "auto", minWidth: 0, ...(isMobile ? { paddingBottom: 80 } : {}) }}>
 
-        {/* HEADER */}
-        <div style={{ padding: isMobile ? "10px 12px 0" : "4px 8px 0" }}>
-          {!isMobile && (
-            <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 8 }}>
-              <h1 style={{ fontSize: 22, fontWeight: 800, color: C.t1, margin: 0, letterSpacing: "-0.03em", lineHeight: 1.2 }}>
-                Content <span style={{ color: C.cyan }}>Hub</span>
-              </h1>
-              {tabAction && (
-                <button
-                  onClick={() => openModal?.(tabAction.modal)}
-                  style={{ display: "flex", alignItems: "center", gap: 6, padding: "9px 18px", background: C.cyan, border: "none", borderRadius: 9, fontSize: 12.5, fontWeight: 700, color: "#fff", cursor: "pointer", fontFamily: FONT, boxShadow: "0 0 10px rgba(77,127,255,0.22), 0 2px 8px rgba(77,127,255,0.12)", transition: "opacity 0.15s", marginTop: 12, marginRight: 8 }}
-                  onMouseEnter={e => e.currentTarget.style.opacity = "0.88"}
-                  onMouseLeave={e => e.currentTarget.style.opacity = "1"}>
-                  <Plus size={12} /> {tabAction.label}
-                </button>
-              )}
-            </div>
-          )}
-        </div>
+        {/* HEADER — title + action button, always above tabs */}
+        {!isMobile && (
+          <div style={{ padding: "4px 16px 0", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+            <h1 style={{ fontSize: 22, fontWeight: 800, color: C.t1, margin: 0, letterSpacing: "-0.03em", lineHeight: 1.2 }}>
+              Content <span style={{ color: C.cyan }}>Hub</span>
+            </h1>
+            {tabAction && (
+              <button
+                onClick={() => openModal?.(tabAction.modal)}
+                style={{ display: "flex", alignItems: "center", gap: 6, padding: "9px 18px", background: C.cyan, border: "none", borderRadius: 9, fontSize: 12.5, fontWeight: 700, color: "#fff", cursor: "pointer", fontFamily: FONT, boxShadow: "0 0 10px rgba(77,127,255,0.22), 0 2px 8px rgba(77,127,255,0.12)", transition: "opacity 0.15s" }}
+                onMouseEnter={e => e.currentTarget.style.opacity = "0.88"}
+                onMouseLeave={e => e.currentTarget.style.opacity = "1"}>
+                <Plus size={12} /> {tabAction.label}
+              </button>
+            )}
+          </div>
+        )}
 
-        {/* TABS */}
+        {/* TABS — always immediately below the header */}
         <div style={{ padding: isMobile ? "0 12px" : "0 16px" }}>
           <Tabs active={tab} setActive={setTab} isMobile={isMobile} />
         </div>
@@ -926,7 +924,7 @@ export default function ContentPage({
           {/* ── COMMUNITY FEED ── */}
           {tab === "Community Feed" && (
             <>
-              <div style={{ fontSize: 12, fontWeight: 500, color: C.t2, marginBottom: 10 }}>
+              <div style={{ fontSize: 12, fontWeight: 500, color: C.t2, marginBottom: 10, marginTop: 2 }}>
                 {feedPosts.length} post{feedPosts.length !== 1 ? "s" : ""} shared with your community in the last 7 days
               </div>
               {feedPosts.length === 0
@@ -1033,7 +1031,7 @@ export default function ContentPage({
           {/* ── EVENTS ── */}
           {tab === "Events" && (
             <>
-              <div style={{ fontSize: 12, fontWeight: 500, color: C.t2, marginBottom: 10 }}>
+              <div style={{ fontSize: 12, fontWeight: 500, color: C.t2, marginBottom: 10, marginTop: 2 }}>
                 {events.length} event{events.length !== 1 ? "s" : ""}
               </div>
               {events.length === 0
@@ -1107,7 +1105,7 @@ export default function ContentPage({
 
             return (
               <>
-                <div style={{ fontSize: 12, fontWeight: 500, color: C.t2, marginBottom: 10 }}>
+                <div style={{ fontSize: 12, fontWeight: 500, color: C.t2, marginBottom: 10, marginTop: 2 }}>
                   {liveChallenges.length} live challenge{liveChallenges.length !== 1 ? "s" : ""}
                 </div>
                 {liveChallenges.length === 0
@@ -1137,7 +1135,6 @@ export default function ContentPage({
             const PollCard = ({ poll, showTimer }) => {
               const responseCount  = (poll.voters || []).length;
               const communityPct   = memberCount > 0 ? Math.round((responseCount / memberCount) * 100) : 0;
-              // Treat end_date as end of that calendar day (23:59:59 UTC)
               const endMs = poll.end_date ? new Date(poll.end_date).getTime() + 24 * 60 * 60 * 1000 - 1 : null;
               const timeRemainingLabel = (() => {
                 if (!endMs) return null;
@@ -1188,7 +1185,6 @@ export default function ContentPage({
 
                         return (
                           <div key={i} style={{ position: "relative", borderRadius: 9, overflow: "hidden" }}>
-                            {/* Fill bar */}
                             <div style={{
                               position: "absolute",
                               left: 0, top: 0, bottom: 0,
@@ -1199,7 +1195,6 @@ export default function ContentPage({
                               borderRadius: 9,
                               transition: "width 0.7s cubic-bezier(0.4,0,0.2,1)",
                             }} />
-                            {/* Text row */}
                             <div style={{
                               position: "relative",
                               display: "flex",
@@ -1230,7 +1225,7 @@ export default function ContentPage({
                     </div>
                   </div>
 
-                  {/* ── RIGHT PANEL: responses + time badge + remove btn ── */}
+                  {/* ── RIGHT PANEL: responses + remove btn ── */}
                   <div style={{ flex: "0 0 30%", borderLeft: `1px solid ${C.brd}`, padding: "14px 14px", display: "flex", flexDirection: "column", justifyContent: "space-between", gap: 10 }}>
                     <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
                       <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
@@ -1238,8 +1233,6 @@ export default function ContentPage({
                         <span style={{ fontSize: 13, fontWeight: 700, color: C.t1 }}>{responseCount} Response{responseCount !== 1 ? "s" : ""}</span>
                       </div>
                       {memberCount > 0 && <span style={{ fontSize: 11, color: C.t2, paddingLeft: 18 }}>{communityPct}% of community</span>}
-
-
                     </div>
 
                     <button onClick={() => setPollToRemove(poll)}
@@ -1255,25 +1248,29 @@ export default function ContentPage({
 
             return (
               <>
-                <div style={{ fontSize: 12, fontWeight: 500, color: C.t2, marginBottom: 10 }}>
+                {/* ── LIVE POLLS ── */}
+                <div style={{ fontSize: 12, fontWeight: 500, color: C.t2, marginBottom: 10, marginTop: 2 }}>
                   {livePolls2.length} Live Poll{livePolls2.length !== 1 ? "s" : ""}
                 </div>
 
-                {livePolls2.length > 0 && (
+                {livePolls2.length > 0 ? (
                   <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 10, marginBottom: 10 }}>
                     {livePolls2.map(poll => <PollCard key={poll.id} poll={poll} showTimer />)}
                   </div>
+                ) : (
+                  <EmptyState label="live polls" />
                 )}
 
-                {endedPolls.length > 0 && (
-                  <>
-                    <div style={{ fontSize: 12, fontWeight: 700, color: C.t2, margin: "20px 0 10px", paddingTop: 12, borderTop: `1px solid ${C.brd}`, textTransform: "uppercase", letterSpacing: "0.08em" }}>
-                      {endedPolls.length} Ended Poll{endedPolls.length !== 1 ? "s" : ""}
-                    </div>
-                    <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 10 }}>
-                      {endedPolls.map(poll => <PollCard key={poll.id} poll={poll} showTimer={false} />)}
-                    </div>
-                  </>
+                {/* ── ENDED POLLS — always shown ── */}
+                <div style={{ fontSize: 12, fontWeight: 700, color: C.t2, margin: "20px 0 10px", paddingTop: 12, borderTop: `1px solid ${C.brd}`, textTransform: "uppercase", letterSpacing: "0.08em" }}>
+                  {endedPolls.length} Ended Poll{endedPolls.length !== 1 ? "s" : ""}
+                </div>
+                {endedPolls.length > 0 ? (
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 10 }}>
+                    {endedPolls.map(poll => <PollCard key={poll.id} poll={poll} showTimer={false} />)}
+                  </div>
+                ) : (
+                  <div style={{ fontSize: 12, color: C.t3, paddingBottom: 8 }}>No ended polls</div>
                 )}
               </>
             );
@@ -1289,7 +1286,6 @@ export default function ContentPage({
                 onUpdatePost?.();
               } finally { setPublishingDraftId(null); }
             };
-            // Gym avatar: prefer logo_url, then image_url
             const gymAvatar = gym?.logo_url || gym?.image_url || null;
             const gymName = gym?.name || "Gym";
             const gymInitials = gymName.split(" ").map(w => w[0]).join("").toUpperCase().slice(0, 2) || "?";
@@ -1301,7 +1297,6 @@ export default function ContentPage({
                 </div>
                 {drafts.map(p => {
                   const pt = POST_TYPE_STYLES[p.post_type] || POST_TYPE_STYLES.update;
-                  // For member posts, fall back to member avatar; for gym posts use gym avatar
                   const isGymPost = !!p.post_type;
                   const displayName = isGymPost ? gymName : (p.member_name || gymName);
                   const displayAvatar = isGymPost ? gymAvatar : (avatarMap[p.member_id] || p.member_avatar || gymAvatar);
@@ -1313,17 +1308,14 @@ export default function ContentPage({
                       onMouseEnter={e => { e.currentTarget.style.borderColor = C.cyanBrd; e.currentTarget.style.boxShadow = `0 0 8px rgba(77,127,255,0.07)`; }}
                       onMouseLeave={e => { e.currentTarget.style.borderColor = C.brd; e.currentTarget.style.boxShadow = "none"; }}>
 
-                      {/* Image thumbnail or accent bar */}
                       {p.image_url ? (
                         <div style={{ width: 160, height: 160, flexShrink: 0, alignSelf: "center", margin: 8, borderRadius: 10, overflow: "hidden" }}>
                           <img src={p.image_url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
                         </div>
                       ) : null}
 
-                      {/* Main content */}
                       <div style={{ flex: 1, minWidth: 0, padding: "11px 14px 11px 10px", display: "flex", flexDirection: "column", gap: 6 }}>
                         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                          {/* Gym/member avatar */}
                           <div style={{ width: 30, height: 30, borderRadius: "50%", flexShrink: 0, background: avatarBg, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 800, color: "#fff", overflow: "hidden" }}>
                             {displayAvatar
                               ? <img src={displayAvatar} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
@@ -1347,7 +1339,6 @@ export default function ContentPage({
                         )}
                       </div>
 
-                      {/* Quick actions */}
                       <div style={{ width: "30%", flexShrink: 0, borderLeft: `1px solid ${C.brd}`, padding: "12px 14px", display: "flex", flexDirection: "column", gap: 8, justifyContent: "flex-start" }}>
                         <div style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.10em", color: C.t3, marginBottom: 2 }}>Quick Actions</div>
                         <button onClick={() => handlePublishDraft(p)} disabled={publishingDraftId === p.id}
@@ -1410,14 +1401,12 @@ export default function ContentPage({
                       onMouseEnter={e => { e.currentTarget.style.borderColor = C.cyanBrd; e.currentTarget.style.boxShadow = `0 0 8px rgba(77,127,255,0.07)`; }}
                       onMouseLeave={e => { e.currentTarget.style.borderColor = C.brd; e.currentTarget.style.boxShadow = "none"; }}>
 
-                      {/* Image thumbnail or nothing */}
                       {p.image_url ? (
                         <div style={{ width: 160, height: 160, flexShrink: 0, alignSelf: "center", margin: 8, borderRadius: 10, overflow: "hidden" }}>
                           <img src={p.image_url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
                         </div>
                       ) : null}
 
-                      {/* Main content */}
                       <div style={{ flex: 1, minWidth: 0, padding: "11px 14px 11px 10px", display: "flex", flexDirection: "column", gap: 6 }}>
                         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                           <div style={{ width: 30, height: 30, borderRadius: "50%", flexShrink: 0, background: avatarBg, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 800, color: "#fff", overflow: "hidden" }}>
@@ -1444,7 +1433,6 @@ export default function ContentPage({
                         )}
                       </div>
 
-                      {/* Quick actions */}
                       <div style={{ width: "30%", flexShrink: 0, borderLeft: `1px solid ${C.brd}`, padding: "12px 14px", display: "flex", flexDirection: "column", gap: 8, justifyContent: "flex-start" }}>
                         <div style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.10em", color: C.t3, marginBottom: 2 }}>Quick Actions</div>
                         <button onClick={() => setEditingPost(p)}
