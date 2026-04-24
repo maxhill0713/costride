@@ -367,13 +367,14 @@ export default function FeedPollCard({ poll, currentUser }) {
   const endMs = poll.end_date ? new Date(poll.end_date).getTime() + 24 * 60 * 60 * 1000 - 1 : null;
   const isExpired = endMs ? endMs < Date.now() : false;
   const timeRemainingLabel = (() => {
-    if (!endMs || isExpired) return null;
+    if (isExpired) return null;
+    if (!endMs) return 'Ongoing';
     const diffMs = endMs - Date.now();
     const diffHours = diffMs / (1000 * 60 * 60);
     if (diffHours < 24) return `${Math.round(diffHours)}h left`;
     return `${Math.round(diffMs / (1000 * 60 * 60 * 24))}d left`;
   })();
-  const isUrgent = timeRemainingLabel && endMs - Date.now() < 24 * 60 * 60 * 1000;
+  const isUrgent = timeRemainingLabel && endMs && endMs - Date.now() < 24 * 60 * 60 * 1000;
 
   const winnerVotes = Math.max(...opts.map(o => (typeof o === 'object' ? o.votes || 0 : 0)));
 
