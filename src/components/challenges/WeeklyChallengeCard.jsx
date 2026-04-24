@@ -124,7 +124,7 @@ export default function WeeklyChallengeCard({ challenge, currentUser, userProgre
             ) : challenge.id === 'witness_my_gains' ? (
               <img src="https://media.base44.com/images/public/694b637358644e1c22c8ec6b/fa6c9c42e_spartanbadge21.png" alt="Spartan Badge" className="w-12 h-12 object-contain flex-shrink-0" />
             ) : challenge.id === 'discipline_builder' ? (
-              <img src="https://media.base44.com/images/public/694b637358644e1c22c8ec6b/9bf9eb25d_beachbadge.png" alt="Beach Badge" className="w-12 h-12 object-contain flex-shrink-0" />
+              <img src="https://media.base44.com/images/public/694b637358644e1c22c8ec6b/33bf94a48_beachbadge2.png" alt="Beach Badge" className="w-12 h-12 object-contain flex-shrink-0" />
             ) : (
               <UniqueBadge reward={challenge.reward} size="sm" />
             )}
