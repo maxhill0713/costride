@@ -20,7 +20,7 @@ function getStreakIconUrl(variant) {
   return STREAK_ICON_URL;
 }
 
-/* ─── MOBILE HOOK ────────────────────────────────────────────── */
+/* ─── MOBILE HOOK ────────────────────────────────────────────────── */
 function useIsMobile(breakpoint = 768) {
   const [isMobile, setIsMobile] = useState(
     typeof window !== "undefined" ? window.innerWidth < breakpoint : false
@@ -33,7 +33,7 @@ function useIsMobile(breakpoint = 768) {
   return isMobile;
 }
 
-/* ─── TOKENS ─────────────────────────────────────────────────── */
+/* ─── TOKENS ─────────────────────────────────────────────────────── */
 const C = {
   bg:       "#000000",
   sidebar:  "#0f0f12",
@@ -55,7 +55,7 @@ const C = {
 };
 const FONT = "'DM Sans', 'Segoe UI', system-ui, sans-serif";
 
-/* ─── HELPERS ────────────────────────────────────────────────── */
+/* ─── HELPERS ────────────────────────────────────────────────────── */
 function timeAgo(dateStr) {
   if (!dateStr) return "";
   let d = new Date(dateStr);
@@ -71,7 +71,7 @@ function timeAgo(dateStr) {
   return d.toLocaleDateString("en-GB", { day: "numeric", month: "short" });
 }
 
-/* ─── POST TYPE COLORS ───────────────────────────────────────── */
+/* ─── POST TYPE COLORS ───────────────────────────────────────────── */
 const POST_TYPE_STYLES = {
   update:           { label: "Announcement",     color: "#60a5fa", bg: "rgba(96,165,250,0.12)",  border: "rgba(96,165,250,0.28)"  },
   achievement:      { label: "Achievement",      color: "#f59e0b", bg: "rgba(245,158,11,0.12)",  border: "rgba(245,158,11,0.28)"  },
@@ -81,7 +81,7 @@ const POST_TYPE_STYLES = {
   member_spotlight: { label: "Member Spotlight", color: "#60a5fa", bg: "rgba(96,165,250,0.12)",  border: "rgba(96,165,250,0.28)"  },
 };
 
-/* ─── TAB CONFIG ─────────────────────────────────────────────── */
+/* ─── TAB CONFIG ─────────────────────────────────────────────────── */
 const VISIBLE_TABS = ["Community Feed", "Events", "Challenges", "Polls", "Drafts", "Scheduled"];
 
 const TAB_ACTION = {
@@ -93,7 +93,7 @@ const TAB_ACTION = {
   "Scheduled":      { label: "Schedule Post",   modal: "post"      },
 };
 
-/* ─── PRIMITIVES ─────────────────────────────────────────────── */
+/* ─── PRIMITIVES ─────────────────────────────────────────────────── */
 function DeleteBtn({ onClick }) {
   return (
     <button onClick={onClick} style={{ background: C.redDim, border: `1px solid rgba(255,77,109,0.3)`, borderRadius: 6, padding: "4px 10px", color: C.red, fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: FONT, flexShrink: 0, minHeight: 36 }}>
@@ -102,7 +102,7 @@ function DeleteBtn({ onClick }) {
   );
 }
 
-/* ─── MESSAGE MEMBER MODAL ───────────────────────────────────── */
+/* ─── MESSAGE MEMBER MODAL ───────────────────────────────────────── */
 function MessageMemberModal({ resolvedName, memberId, onClose }) {
   const [msg, setMsg] = useState("");
   const [sent, setSent] = useState(false);
@@ -160,7 +160,7 @@ function MessageMemberModal({ resolvedName, memberId, onClose }) {
   );
 }
 
-/* ─── REACTIONS MODAL ───────────────────────────────────────── */
+/* ─── REACTIONS MODAL ───────────────────────────────────────────── */
 function ReactionsModal({ reactions, onClose }) {
   const [search, setSearch] = useState("");
   const [resolvedUsers, setResolvedUsers] = useState([]);
@@ -253,7 +253,7 @@ function ReactionsModal({ reactions, onClose }) {
   );
 }
 
-/* ─── REMOVE POST MODAL ──────────────────────────────────────── */
+/* ─── REMOVE POST MODAL ──────────────────────────────────────────── */
 function RemovePostModal({ post, resolvedName, onConfirm, onClose }) {
   const [removing, setRemoving] = useState(false);
   const handleConfirm = async () => { setRemoving(true); try { await onConfirm(post.id); } finally { setRemoving(false); } };
@@ -287,7 +287,7 @@ function RemovePostModal({ post, resolvedName, onConfirm, onClose }) {
   );
 }
 
-/* ─── REMOVE POLL MODAL ──────────────────────────────────────── */
+/* ─── REMOVE POLL MODAL ──────────────────────────────────────────── */
 function RemovePollModal({ poll, onConfirm, onClose }) {
   const [removing, setRemoving] = useState(false);
   const handleConfirm = async () => { setRemoving(true); try { await onConfirm(poll.id); } finally { setRemoving(false); } };
@@ -314,7 +314,7 @@ function RemovePollModal({ poll, onConfirm, onClose }) {
   );
 }
 
-/* ─── REMOVE CHALLENGE MODAL ─────────────────────────────────── */
+/* ─── REMOVE CHALLENGE MODAL ─────────────────────────────────────── */
 function RemoveChallengeModal({ challenge, onConfirm, onClose }) {
   const [removing, setRemoving] = useState(false);
   const handleConfirm = async () => { setRemoving(true); try { await onConfirm(challenge.id); } finally { setRemoving(false); } };
@@ -344,7 +344,7 @@ function RemoveChallengeModal({ challenge, onConfirm, onClose }) {
   );
 }
 
-/* ─── EDIT POST MODAL ─────────────────────────────────────────── */
+/* ─── EDIT POST MODAL ─────────────────────────────────────────────── */
 const POST_TYPE_OPTIONS = [
   { value: "update",           label: "Announcement"     },
   { value: "achievement",      label: "Achievement"      },
@@ -440,7 +440,7 @@ function EditPostModal({ post, gym, onClose, onSave }) {
   );
 }
 
-/* ─── QUICK ACTIONS COLUMN ───────────────────────────────────── */
+/* ─── QUICK ACTIONS COLUMN ───────────────────────────────────────── */
 function QuickActions({ post, resolvedName, memberId, gym, currentUser, onDeletePost, isGymPost, onPostEdited }) {
   const [modal, setModal] = useState(null);
   const gymReactionKey = gym?.id ? `gym_${gym.id}` : null;
@@ -511,7 +511,7 @@ function QuickActions({ post, resolvedName, memberId, gym, currentUser, onDelete
   );
 }
 
-/* ─── TABS ───────────────────────────────────────────────────── */
+/* ─── TABS ───────────────────────────────────────────────────────── */
 function Tabs({ active, setActive, isMobile }) {
   const ref = useRef(null);
   useEffect(() => {
@@ -534,7 +534,7 @@ function Tabs({ active, setActive, isMobile }) {
   );
 }
 
-/* ─── CHART TOOLTIP ──────────────────────────────────────────── */
+/* ─── CHART TOOLTIP ──────────────────────────────────────────────── */
 function ChartTip({ active, payload, label }) {
   if (!active || !payload?.length) return null;
   return (
@@ -545,7 +545,7 @@ function ChartTip({ active, payload, label }) {
   );
 }
 
-/* ─── BUILD DAILY INTERACTION DATA (last 7 days) ─────────────── */
+/* ─── BUILD DAILY INTERACTION DATA (last 7 days) ─────────────────── */
 function buildDailyInteractionData(posts, polls, checkIns) {
   const days = [];
   const now = new Date();
@@ -570,14 +570,12 @@ function buildDailyInteractionData(posts, polls, checkIns) {
 
     let count = 0;
 
-    // member posts that day
     posts.forEach(p => {
       if (p.is_hidden) return;
       if (!p.share_with_community && !p.post_type) return;
       if (isInDay(p.created_date || p.created_at)) count += 1;
     });
 
-    // reactions updated that day
     posts.forEach(p => {
       if (p.is_hidden) return;
       if (!p.share_with_community && !p.post_type) return;
@@ -586,14 +584,12 @@ function buildDailyInteractionData(posts, polls, checkIns) {
       }
     });
 
-    // poll votes updated that day
     polls.forEach(p => {
       if (isInDay(p.updated_date || p.updated_at || p.created_date || p.created_at)) {
         count += (p.voters || []).length;
       }
     });
 
-    // check-ins that day
     checkIns.forEach(c => {
       if (isInDay(c.check_in_date || c.created_date || c.created_at)) count += 1;
     });
@@ -603,7 +599,7 @@ function buildDailyInteractionData(posts, polls, checkIns) {
   return days;
 }
 
-/* ─── ACTIVITY METER DIAL ────────────────────────────────────── */
+/* ─── ACTIVITY METER DIAL ────────────────────────────────────────── */
 function ActivityMeterDial({ pct }) {
   const R  = 62;
   const cx = 76, cy = 72;
@@ -649,7 +645,6 @@ function RightSidebar({
   onTabChange, memberCount = 0,
   liveChallengesCount, eventsThisWeek,
 }) {
-  /* ── active member count ── */
   const weekCutoff = Date.now() - 7 * 24 * 60 * 60 * 1000;
   const activeUserIds = new Set();
   posts.forEach(p => {
@@ -665,10 +660,8 @@ function RightSidebar({
   });
   const activityPct = memberCount > 0 ? Math.round((activeUserIds.size / memberCount) * 100) : 0;
 
-  /* ── real daily interaction chart data ── */
   const chartData = buildDailyInteractionData(posts, polls, checkIns);
 
-  /* ── 2×2 stat grid — now clickable ── */
   const statCards = [
     { label: "Posts / week",      val: feedPostsThisWeek,     col: C.cyan,    tab: "Community Feed" },
     { label: "Live polls",        val: livePolls,              col: "#a78bfa", tab: "Polls"          },
@@ -684,17 +677,13 @@ function RightSidebar({
       borderLeft: `1px solid ${C.brd}`,
       display: "flex",
       flexDirection: "column",
-      /* no overflowY so height is natural / content-sized */
       fontFamily: FONT,
-      alignSelf: "flex-start", /* key: sidebar doesn't stretch to full page height */
+      alignSelf: "flex-start",
     }}>
-
-      {/* ── CONTENT OVERVIEW header — moved to top ── */}
       <div style={{ padding: "16px 16px 12px", borderBottom: `1px solid ${C.brd}` }}>
         <div style={{ fontSize: 12, fontWeight: 700, color: C.t1 }}>Content Overview</div>
       </div>
 
-      {/* ── 2×2 STAT GRID (clickable) ── */}
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1px", background: C.brd, borderBottom: `1px solid ${C.brd}` }}>
         {statCards.map((s, i) => (
           <div
@@ -710,7 +699,6 @@ function RightSidebar({
         ))}
       </div>
 
-      {/* ── INTERACTIONS TODAY header block ── */}
       <div style={{ padding: "16px 16px 14px", borderBottom: `1px solid ${C.brd}` }}>
         <div style={{ fontSize: 10, color: C.t3, textTransform: "uppercase", letterSpacing: "0.07em", marginBottom: 6 }}>
           Community Activity
@@ -723,7 +711,6 @@ function RightSidebar({
         <div style={{ fontSize: 11, color: C.t3, marginTop: 5 }}>interactions today</div>
       </div>
 
-      {/* ── INTERACTION TREND CHART (real 7-day data) ── */}
       <div style={{ padding: "14px 16px 12px 4px", borderBottom: `1px solid ${C.brd}` }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10, padding: "0 12px 0 12px" }}>
           <span style={{ fontSize: 12, fontWeight: 600, color: C.t1 }}>Interactions This Week</span>
@@ -747,27 +734,23 @@ function RightSidebar({
         </ResponsiveContainer>
       </div>
 
-      {/* ── MEMBER ACTIVITY ── */}
       <div style={{ padding: "14px 16px 20px", minHeight: 190 }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
           <span style={{ fontSize: 12, fontWeight: 600, color: C.t1 }}>Member Activity</span>
           <span style={{ fontSize: 10, color: C.t3 }}>7d</span>
         </div>
-        {/* dial centred horizontally */}
         <div style={{ display: "flex", justifyContent: "center", marginBottom: 12 }}>
           <ActivityMeterDial pct={activityPct} />
         </div>
-        {/* single-line summary below the dial */}
         <div style={{ textAlign: "center", fontSize: 11, color: C.t3 }}>
           {activeUserIds.size} of {memberCount > 0 ? memberCount : "—"} members active this week
         </div>
       </div>
-      {/* sidebar ends here — no extra padding/content below */}
     </div>
   );
 }
 
-/* ─── EMPTY STATE ────────────────────────────────────────────── */
+/* ─── EMPTY STATE ────────────────────────────────────────────────── */
 function EmptyState({ label, onAdd }) {
   return (
     <div style={{ display: "flex", flexDirection: "column", alignItems: "center", padding: "56px 0", gap: 12 }}>
@@ -784,7 +767,7 @@ function EmptyState({ label, onAdd }) {
   );
 }
 
-/* ─── LIST CARD ──────────────────────────────────────────────── */
+/* ─── LIST CARD ──────────────────────────────────────────────────── */
 function ListCard({ children, isMobile }) {
   return (
     <div style={{ background: C.card, border: `1px solid ${C.brd}`, borderRadius: 10, padding: isMobile ? "14px 16px" : "13px 16px", display: "flex", alignItems: "center", gap: 12, marginBottom: 8 }}
@@ -795,7 +778,7 @@ function ListCard({ children, isMobile }) {
   );
 }
 
-/* ─── MOBILE FAB ─────────────────────────────────────────────── */
+/* ─── MOBILE FAB ─────────────────────────────────────────────────── */
 function FAB({ onClick }) {
   return (
     <button onClick={onClick} style={{ position: "fixed", bottom: 76, right: 18, zIndex: 190, width: 52, height: 52, borderRadius: "50%", background: C.cyan, border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 0 14px rgba(77,127,255,0.28), 0 4px 10px rgba(77,127,255,0.16)" }}>
@@ -804,7 +787,7 @@ function FAB({ onClick }) {
   );
 }
 
-/* ─── MEMBER STATUS BADGE ────────────────────────────────────── */
+/* ─── MEMBER STATUS BADGE ────────────────────────────────────────── */
 function MemberStatusBadge({ memberId, checkIns = [] }) {
   if (!memberId) return null;
   const memberCheckIns = checkIns.filter(c => c.user_id === memberId);
@@ -835,7 +818,7 @@ function MemberStatusBadge({ memberId, checkIns = [] }) {
   );
 }
 
-/* ─── ROOT ───────────────────────────────────────────────────── */
+/* ─── ROOT ───────────────────────────────────────────────────────── */
 export default function ContentPage({
   events = [], challenges = [], polls = [], posts = [], checkIns = [],
   openModal, onDeleteEvent, onDeleteChallenge, onDeletePost, onDeletePoll, onUpdatePost,
@@ -875,10 +858,8 @@ export default function ContentPage({
 
   const livePolls = polls.filter(p => !p.end_date || new Date(p.end_date) >= now).length;
 
-  /* live challenges count */
   const liveChallengesCount = challenges.filter(ch => !ch.end_date || new Date(ch.end_date) >= now).length;
 
-  /* events this week */
   const eventsThisWeek = events.filter(ev => {
     if (!ev.event_date) return false;
     return new Date(ev.event_date).getTime() >= sevenDaysCutoff;
@@ -1177,17 +1158,15 @@ export default function ContentPage({
               const winnerVotes = Math.max(...opts.map(o => typeof o === "object" ? (o.votes || 0) : 0), 0);
 
               return (
-                <div style={{ background: C.card, border: `1px solid ${C.brd}`, borderRadius: 12, marginBottom: 10, overflow: "hidden", display: "flex", transition: "border-color 0.15s, box-shadow 0.15s" }}
+                <div style={{ background: C.card, border: `1px solid ${C.brd}`, borderRadius: 12, overflow: "hidden", display: "flex", transition: "border-color 0.15s, box-shadow 0.15s" }}
                   onMouseEnter={e => { e.currentTarget.style.borderColor = C.cyanBrd; e.currentTarget.style.boxShadow = `0 0 8px rgba(77,127,255,0.07)`; }}
                   onMouseLeave={e => { e.currentTarget.style.borderColor = C.brd; e.currentTarget.style.boxShadow = "none"; }}>
+
+                  {/* ── LEFT PANEL: question + options only ── */}
                   <div style={{ flex: "0 0 70%", padding: "14px 16px", display: "flex", flexDirection: "column", gap: 10, minWidth: 0 }}>
-                    <div style={{ display: "flex", alignItems: "flex-start", gap: 8, flexWrap: "wrap" }}>
+                    {/* CHANGE 1: header row no longer contains the time badge */}
+                    <div style={{ display: "flex", alignItems: "flex-start", gap: 8 }}>
                       <span style={{ fontSize: 13, fontWeight: 700, color: C.t1, flex: 1, lineHeight: 1.4 }}>{poll.question || poll.title}</span>
-                      {showTimer && timeRemainingLabel && (
-                        <div style={{ display: "flex", alignItems: "center", gap: 5, padding: "3px 8px", borderRadius: 6, flexShrink: 0, background: isUrgent ? "rgba(255,77,109,0.12)" : "rgba(77,127,255,0.10)", border: `1px solid ${isUrgent ? "rgba(255,77,109,0.3)" : "rgba(77,127,255,0.25)"}`, color: isUrgent ? "#ff6b85" : C.cyan, fontSize: 11, fontWeight: 700 }}>
-                          <Clock size={10} color="currentColor" /><span>{timeRemainingLabel}</span>
-                        </div>
-                      )}
                     </div>
                     <div style={{ display: "flex", flexDirection: "column", gap: 9 }}>
                       {opts.map((opt, i) => {
@@ -1209,6 +1188,8 @@ export default function ContentPage({
                       })}
                     </div>
                   </div>
+
+                  {/* ── RIGHT PANEL: responses + time badge + remove btn ── */}
                   <div style={{ flex: "0 0 30%", borderLeft: `1px solid ${C.brd}`, padding: "14px 14px", display: "flex", flexDirection: "column", justifyContent: "space-between", gap: 10 }}>
                     <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
                       <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
@@ -1216,7 +1197,22 @@ export default function ContentPage({
                         <span style={{ fontSize: 13, fontWeight: 700, color: C.t1 }}>{responseCount} Response{responseCount !== 1 ? "s" : ""}</span>
                       </div>
                       {memberCount > 0 && <span style={{ fontSize: 11, color: C.t2, paddingLeft: 18 }}>{communityPct}% of community</span>}
+
+                      {/* CHANGE 2: time badge now lives here in the right panel */}
+                      {showTimer && timeRemainingLabel && (
+                        <div style={{
+                          display: "flex", alignItems: "center", gap: 5,
+                          padding: "3px 8px", borderRadius: 6, marginTop: 4,
+                          background: isUrgent ? "rgba(255,77,109,0.12)" : "rgba(77,127,255,0.10)",
+                          border: `1px solid ${isUrgent ? "rgba(255,77,109,0.3)" : "rgba(77,127,255,0.25)"}`,
+                          color: isUrgent ? "#ff6b85" : C.cyan, fontSize: 11, fontWeight: 700,
+                        }}>
+                          <Clock size={10} color="currentColor" />
+                          <span>{timeRemainingLabel}</span>
+                        </div>
+                      )}
                     </div>
+
                     <button onClick={() => setPollToRemove(poll)}
                       style={{ display: "flex", alignItems: "center", gap: 6, width: "100%", padding: "7px 10px", borderRadius: 8, background: "rgba(255,255,255,0.03)", border: `1px solid ${C.brd}`, color: C.t2, fontSize: 11.5, fontWeight: 600, cursor: "pointer", fontFamily: FONT, textAlign: "left", transition: "all 0.15s" }}
                       onMouseEnter={e => { e.currentTarget.style.borderColor = "rgba(255,77,109,0.35)"; e.currentTarget.style.color = C.red; e.currentTarget.style.background = C.redDim; }}
@@ -1233,13 +1229,23 @@ export default function ContentPage({
                 <div style={{ fontSize: 12, fontWeight: 500, color: C.t2, marginBottom: 10 }}>
                   {livePolls2.length} Live Poll{livePolls2.length !== 1 ? "s" : ""}
                 </div>
-                {livePolls2.length > 0 && livePolls2.map(poll => <PollCard key={poll.id} poll={poll} showTimer />)}
+
+                {/* CHANGE 3: live polls wrapped in a 2-column grid */}
+                {livePolls2.length > 0 && (
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 10, marginBottom: 10 }}>
+                    {livePolls2.map(poll => <PollCard key={poll.id} poll={poll} showTimer />)}
+                  </div>
+                )}
+
                 {endedPolls.length > 0 && (
                   <>
                     <div style={{ fontSize: 12, fontWeight: 700, color: C.t2, margin: "20px 0 10px", paddingTop: 12, borderTop: `1px solid ${C.brd}`, textTransform: "uppercase", letterSpacing: "0.08em" }}>
                       {endedPolls.length} Ended Poll{endedPolls.length !== 1 ? "s" : ""}
                     </div>
-                    {endedPolls.map(poll => <PollCard key={poll.id} poll={poll} showTimer={false} />)}
+                    {/* CHANGE 3 (also): ended polls in the same 2-column grid */}
+                    <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 10 }}>
+                      {endedPolls.map(poll => <PollCard key={poll.id} poll={poll} showTimer={false} />)}
+                    </div>
                   </>
                 )}
               </>
