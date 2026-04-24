@@ -823,6 +823,7 @@ export default function ContentPage({
   const [rerunning,        setRerunning]        = useState(null);
   const [reactionsPost,    setReactionsPost]    = useState(null);
   const [publishingDraftId, setPublishingDraftId] = useState(null);
+  const [editingPost, setEditingPost] = useState(null);
 
   const createItems = [
     { label: "📝 New Post",      action: () => { openModal?.("post");      setShowMenu(false); setTab("Community Feed"); } },
@@ -1354,6 +1355,12 @@ export default function ContentPage({
                           <Plus size={13} color="#fff" style={{ flexShrink: 0 }} />
                           <span>{publishingDraftId === p.id ? "Posting…" : "Post Now"}</span>
                         </button>
+                        <button onClick={() => setEditingPost(p)}
+                          style={{ display: "flex", alignItems: "center", gap: 8, width: "100%", padding: "7px 10px", borderRadius: 8, background: "rgba(255,255,255,0.03)", border: `1px solid ${C.brd}`, color: C.t2, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: FONT, textAlign: "left", transition: "all 0.15s" }}
+                          onMouseEnter={e => { e.currentTarget.style.borderColor = C.cyanBrd; e.currentTarget.style.color = C.t1; e.currentTarget.style.background = C.cyanDim; }}
+                          onMouseLeave={e => { e.currentTarget.style.borderColor = C.brd; e.currentTarget.style.color = C.t2; e.currentTarget.style.background = "rgba(255,255,255,0.03)"; }}>
+                          <Pencil size={12} color="currentColor" style={{ flexShrink: 0 }} /><span>Edit Draft</span>
+                        </button>
                         {onDeletePost && (
                           <button onClick={() => onDeletePost(p.id)}
                             style={{ display: "flex", alignItems: "center", gap: 8, width: "100%", padding: "7px 10px", borderRadius: 8, background: "rgba(255,255,255,0.03)", border: `1px solid ${C.brd}`, color: C.t2, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: FONT, textAlign: "left", transition: "all 0.15s" }}
@@ -1440,6 +1447,12 @@ export default function ContentPage({
                       {/* Quick actions */}
                       <div style={{ width: "30%", flexShrink: 0, borderLeft: `1px solid ${C.brd}`, padding: "12px 14px", display: "flex", flexDirection: "column", gap: 8, justifyContent: "flex-start" }}>
                         <div style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.10em", color: C.t3, marginBottom: 2 }}>Quick Actions</div>
+                        <button onClick={() => setEditingPost(p)}
+                          style={{ display: "flex", alignItems: "center", gap: 8, width: "100%", padding: "7px 10px", borderRadius: 8, background: "rgba(255,255,255,0.03)", border: `1px solid ${C.brd}`, color: C.t2, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: FONT, textAlign: "left", transition: "all 0.15s" }}
+                          onMouseEnter={e => { e.currentTarget.style.borderColor = C.cyanBrd; e.currentTarget.style.color = C.t1; e.currentTarget.style.background = C.cyanDim; }}
+                          onMouseLeave={e => { e.currentTarget.style.borderColor = C.brd; e.currentTarget.style.color = C.t2; e.currentTarget.style.background = "rgba(255,255,255,0.03)"; }}>
+                          <Pencil size={12} color="currentColor" style={{ flexShrink: 0 }} /><span>Edit Post</span>
+                        </button>
                         {onDeletePost && (
                           <button onClick={() => onDeletePost(p.id)}
                             style={{ display: "flex", alignItems: "center", gap: 8, width: "100%", padding: "7px 10px", borderRadius: 8, background: "rgba(255,255,255,0.03)", border: `1px solid ${C.brd}`, color: C.t2, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: FONT, textAlign: "left", transition: "all 0.15s" }}
@@ -1504,6 +1517,9 @@ export default function ContentPage({
       )}
       {reactionsPost && (
         <ReactionsModal reactions={reactionsPost.reactions || {}} onClose={() => setReactionsPost(null)} />
+      )}
+      {editingPost && (
+        <EditPostModal post={editingPost} gym={gym} onClose={() => setEditingPost(null)} onSave={() => { setEditingPost(null); onUpdatePost?.(); }} />
       )}
     </div>
   );
