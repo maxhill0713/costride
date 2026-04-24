@@ -18,6 +18,7 @@ import StreakFreezeAnimation from '../components/home/StreakFreezeAnimation';
 import StreakLossAnimation from '../components/home/StreakLossAnimation';
 import WorkoutSummaryModal from '../components/home/WorkoutSummaryModal';
 import StreakCelebration from '../components/home/StreakCelebration';
+import ChallengeCompletionCelebration, { getUnseenCompletions } from '../components/home/ChallengeCompletionCelebration';
 import FriendsSection from '../components/home/FriendsSection';
 import { useState } from 'react';
 import { isToday, differenceInDays, startOfWeek, startOfDay } from 'date-fns';
@@ -199,6 +200,7 @@ export default function Home() {
   const [celebrationWorkoutName, setCelebrationWorkoutName] = useState('');
   const [celebrationPreviousExercises, setCelebrationPreviousExercises] = useState([]);
   const [celebrationDurationMinutes, setCelebrationDurationMinutes] = useState(0);
+  const [challengeCompletionVariant, setChallengeCompletionVariant] = useState(null);
   const [justLoggedDay, setJustLoggedDay] = useState(null);
   const [activeCircleDay, setActiveCircleDay] = useState(null);
   const [bubblePos, setBubblePos] = useState(null);
@@ -240,7 +242,16 @@ export default function Home() {
     return () => window.removeEventListener('resize', measure);
   }, []);
 
-  const anyCelebrationActive = showStreakCelebration || showChallengesCelebration || showShareWorkout || showDaysCelebration || showFreezeAnimation || showStreakLossAnimation;
+  // ── Show challenge completion celebration once, 1 s after load ───────────
+  useEffect(() => {
+    if (!currentUser?.unlocked_streak_variants?.length) return;
+    const unseen = getUnseenCompletions(currentUser.unlocked_streak_variants);
+    if (unseen.length === 0) return;
+    const t = setTimeout(() => setChallengeCompletionVariant(unseen[0]), 1000);
+    return () => clearTimeout(t);
+  }, [currentUser?.id, currentUser?.unlocked_streak_variants?.join(',')]);
+
+  const anyCelebrationActive = showStreakCelebration || showChallengesCelebration || showShareWorkout || showDaysCelebration || showFreezeAnimation || showStreakLossAnimation || !!challengeCompletionVariant;
   useEffect(() => {
     if (anyCelebrationActive) {
       window.scrollTo({ top: 0, behavior: 'instant' });
@@ -1624,6 +1635,13 @@ export default function Home() {
 
       <StreakVariantPicker isOpen={showStreakVariants} onClose={() => setShowStreakVariants(false)} onSelect={handleStreakVariantSelect} selectedVariant={streakVariant} streakFreezes={currentUser?.streak_freezes || 0} unlockedVariants={currentUser?.unlocked_streak_variants || []} />
       <JoinWithCodeModal open={showJoinModal} onClose={() => setShowJoinModal(false)} currentUser={currentUser} gymCount={gymMemberships.length} />
+
+      {challengeCompletionVariant && (
+        <ChallengeCompletionCelebration
+          variantId={challengeCompletionVariant}
+          onDismiss={() => setChallengeCompletionVariant(null)}
+        />
+      )}
       <CreateSplitModal isOpen={showSplitModal} onClose={() => setShowSplitModal(false)} currentUser={currentUser} />
 
       <FriendsSection
