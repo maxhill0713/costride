@@ -1162,26 +1162,59 @@ export default function ContentPage({
                   onMouseEnter={e => { e.currentTarget.style.borderColor = C.cyanBrd; e.currentTarget.style.boxShadow = `0 0 8px rgba(77,127,255,0.07)`; }}
                   onMouseLeave={e => { e.currentTarget.style.borderColor = C.brd; e.currentTarget.style.boxShadow = "none"; }}>
 
-                  {/* ── LEFT PANEL: question + options only ── */}
+                  {/* ── LEFT PANEL: question + options ── */}
                   <div style={{ flex: "0 0 70%", padding: "14px 16px", display: "flex", flexDirection: "column", gap: 10, minWidth: 0 }}>
-                    {/* CHANGE 1: header row no longer contains the time badge */}
-                    <div style={{ display: "flex", alignItems: "flex-start", gap: 8 }}>
-                      <span style={{ fontSize: 13, fontWeight: 700, color: C.t1, flex: 1, lineHeight: 1.4 }}>{poll.question || poll.title}</span>
+                    <div style={{ fontSize: 13, fontWeight: 700, color: C.t1, lineHeight: 1.4 }}>
+                      {poll.question || poll.title}
                     </div>
-                    <div style={{ display: "flex", flexDirection: "column", gap: 9 }}>
+
+                    {/* ── UPDATED BAR STYLE ── */}
+                    <div style={{ display: "flex", flexDirection: "column", gap: 7 }}>
                       {opts.map((opt, i) => {
                         const optText  = typeof opt === "object" ? (opt.text || opt.label || `Option ${i + 1}`) : opt;
                         const optVotes = typeof opt === "object" ? (opt.votes || 0) : 0;
                         const pct      = totalVotes > 0 ? Math.round((optVotes / totalVotes) * 100) : 0;
                         const isWinner = optVotes === winnerVotes && optVotes > 0;
+                        const MIN_FILL = 3;
+                        const barWidth = pct > 0 ? Math.max(pct, MIN_FILL) : MIN_FILL;
+
                         return (
-                          <div key={i}>
-                            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: 11.5, marginBottom: 5 }}>
-                              <span style={{ color: C.t2 }}>{optText}</span>
-                              <span style={{ fontWeight: 700, color: isWinner ? C.cyan : C.t3 }}>{pct}%</span>
-                            </div>
-                            <div style={{ height: 6, background: "rgba(255,255,255,0.06)", borderRadius: 3, overflow: "hidden" }}>
-                              <div style={{ height: "100%", width: `${pct}%`, borderRadius: 3, background: isWinner ? `linear-gradient(90deg, ${C.cyan}, rgba(77,127,255,0.55))` : "rgba(148,163,184,0.28)", transition: "width 0.7s cubic-bezier(0.4,0,0.2,1)" }} />
+                          <div key={i} style={{ position: "relative", borderRadius: 9, overflow: "hidden" }}>
+                            {/* Fill bar */}
+                            <div style={{
+                              position: "absolute",
+                              left: 0, top: 0, bottom: 0,
+                              width: `${barWidth}%`,
+                              background: isWinner
+                                ? "rgba(37,99,235,0.45)"
+                                : "rgba(148,163,184,0.22)",
+                              borderRadius: 9,
+                              transition: "width 0.7s cubic-bezier(0.4,0,0.2,1)",
+                            }} />
+                            {/* Text row */}
+                            <div style={{
+                              position: "relative",
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "space-between",
+                              padding: "8px 12px",
+                            }}>
+                              <span style={{
+                                fontSize: 13,
+                                fontWeight: 600,
+                                color: isWinner ? "#93c5fd" : "rgba(255,255,255,0.8)",
+                              }}>
+                                {optText}
+                              </span>
+                              <span style={{
+                                fontSize: 12,
+                                fontWeight: 700,
+                                marginLeft: 8,
+                                flexShrink: 0,
+                                color: isWinner ? "#60a5fa" : "rgba(255,255,255,0.35)",
+                              }}>
+                                {pct}%
+                              </span>
                             </div>
                           </div>
                         );
@@ -1198,7 +1231,6 @@ export default function ContentPage({
                       </div>
                       {memberCount > 0 && <span style={{ fontSize: 11, color: C.t2, paddingLeft: 18 }}>{communityPct}% of community</span>}
 
-                      {/* CHANGE 2: time badge now lives here in the right panel */}
                       {showTimer && timeRemainingLabel && (
                         <div style={{
                           display: "flex", alignItems: "center", gap: 5,
@@ -1206,6 +1238,7 @@ export default function ContentPage({
                           background: isUrgent ? "rgba(255,77,109,0.12)" : "rgba(77,127,255,0.10)",
                           border: `1px solid ${isUrgent ? "rgba(255,77,109,0.3)" : "rgba(77,127,255,0.25)"}`,
                           color: isUrgent ? "#ff6b85" : C.cyan, fontSize: 11, fontWeight: 700,
+                          width: "fit-content",
                         }}>
                           <Clock size={10} color="currentColor" />
                           <span>{timeRemainingLabel}</span>
@@ -1230,7 +1263,6 @@ export default function ContentPage({
                   {livePolls2.length} Live Poll{livePolls2.length !== 1 ? "s" : ""}
                 </div>
 
-                {/* CHANGE 3: live polls wrapped in a 2-column grid */}
                 {livePolls2.length > 0 && (
                   <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 10, marginBottom: 10 }}>
                     {livePolls2.map(poll => <PollCard key={poll.id} poll={poll} showTimer />)}
@@ -1242,7 +1274,6 @@ export default function ContentPage({
                     <div style={{ fontSize: 12, fontWeight: 700, color: C.t2, margin: "20px 0 10px", paddingTop: 12, borderTop: `1px solid ${C.brd}`, textTransform: "uppercase", letterSpacing: "0.08em" }}>
                       {endedPolls.length} Ended Poll{endedPolls.length !== 1 ? "s" : ""}
                     </div>
-                    {/* CHANGE 3 (also): ended polls in the same 2-column grid */}
                     <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 10 }}>
                       {endedPolls.map(poll => <PollCard key={poll.id} poll={poll} showTimer={false} />)}
                     </div>
