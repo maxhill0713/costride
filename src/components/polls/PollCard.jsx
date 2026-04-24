@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
-import { CheckCircle2 } from 'lucide-react';
+import { CheckCircle2, Clock } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 
@@ -89,7 +89,16 @@ function PollCard({ poll, onVote, userVoted, isLoading, currentUser }) {
   const voters = poll.voters || [];
   const hasVoted = !!userVoted || !!localVotedOption;
   const showResults = hasVoted;
-  const isExpired = poll.end_date && new Date(poll.end_date) < new Date();
+  const endMs = poll.end_date ? new Date(poll.end_date).getTime() + 24 * 60 * 60 * 1000 - 1 : null;
+  const isExpired = endMs ? endMs < Date.now() : false;
+  const timeRemainingLabel = (() => {
+    if (!endMs || isExpired) return null;
+    const diffMs = endMs - Date.now();
+    const diffHours = diffMs / (1000 * 60 * 60);
+    if (diffHours < 24) return `${Math.round(diffHours)}h left`;
+    return `${Math.round(diffMs / (1000 * 60 * 60 * 24))}d left`;
+  })();
+  const isUrgent = timeRemainingLabel && endMs - Date.now() < 24 * 60 * 60 * 1000;
 
   const opts = (poll.options || []).filter(o =>
     typeof o === 'string' ? o.trim() : (o.text || o.label || '').trim()
@@ -163,12 +172,27 @@ function PollCard({ poll, onVote, userVoted, isLoading, currentUser }) {
           style={{ background: 'linear-gradient(90deg, transparent 10%, rgba(255,255,255,0.1) 50%, transparent 90%)' }} />
 
         <div className="relative z-10 px-4 pt-3.5 pb-4">
-          {/* Question row with voted tick */}
+          {/* Question row with timer + voted tick */}
           <div className="flex items-start justify-between gap-2 mb-3">
             <p className="text-sm font-bold text-white leading-snug flex-1">
               {poll.question || poll.title}
             </p>
-            {showResults && <CheckCircle2 size={18} className="text-emerald-400 flex-shrink-0 mt-0.5" strokeWidth={2.5} />}
+            <div className="flex items-center gap-1.5 flex-shrink-0 mt-0.5">
+              {timeRemainingLabel && (
+                <div style={{
+                  display: 'flex', alignItems: 'center', gap: 4,
+                  padding: '2px 7px', borderRadius: 6,
+                  background: isUrgent ? 'rgba(255,77,109,0.15)' : 'rgba(77,127,255,0.12)',
+                  border: `1px solid ${isUrgent ? 'rgba(255,77,109,0.35)' : 'rgba(77,127,255,0.3)'}`,
+                  color: isUrgent ? '#ff6b85' : '#60a5fa',
+                  fontSize: 10, fontWeight: 700,
+                }}>
+                  <Clock size={9} color="currentColor" />
+                  {timeRemainingLabel}
+                </div>
+              )}
+              {showResults && <CheckCircle2 size={18} className="text-emerald-400" strokeWidth={2.5} />}
+            </div>
           </div>
 
           {/* Options */}

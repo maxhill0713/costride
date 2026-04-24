@@ -1168,8 +1168,21 @@ export default function ContentPage({
 
                   {/* ── LEFT PANEL: question + options ── */}
                   <div style={{ flex: "0 0 70%", padding: "14px 16px", display: "flex", flexDirection: "column", gap: 10, minWidth: 0 }}>
-                    <div style={{ fontSize: 13, fontWeight: 700, color: C.t1, lineHeight: 1.4 }}>
-                      {poll.question || poll.title}
+                    <div style={{ display: "flex", alignItems: "flex-start", gap: 8, flexWrap: "wrap" }}>
+                      <span style={{ fontSize: 13, fontWeight: 700, color: C.t1, lineHeight: 1.4, flex: 1 }}>
+                        {poll.question || poll.title}
+                      </span>
+                      {showTimer && timeRemainingLabel && (
+                        <div style={{
+                          display: "flex", alignItems: "center", gap: 4, flexShrink: 0,
+                          padding: "3px 8px", borderRadius: 6,
+                          background: isUrgent ? "rgba(255,77,109,0.12)" : "rgba(77,127,255,0.10)",
+                          border: `1px solid ${isUrgent ? "rgba(255,77,109,0.3)" : "rgba(77,127,255,0.25)"}`,
+                          color: isUrgent ? "#ff6b85" : C.cyan, fontSize: 11, fontWeight: 700,
+                        }}>
+                          <Clock size={10} color="currentColor" /><span>{timeRemainingLabel}</span>
+                        </div>
+                      )}
                     </div>
 
                     {/* ── UPDATED BAR STYLE ── */}
@@ -1235,19 +1248,7 @@ export default function ContentPage({
                       </div>
                       {memberCount > 0 && <span style={{ fontSize: 11, color: C.t2, paddingLeft: 18 }}>{communityPct}% of community</span>}
 
-                      {showTimer && timeRemainingLabel && (
-                        <div style={{
-                          display: "flex", alignItems: "center", gap: 5,
-                          padding: "3px 8px", borderRadius: 6, marginTop: 4,
-                          background: isUrgent ? "rgba(255,77,109,0.12)" : "rgba(77,127,255,0.10)",
-                          border: `1px solid ${isUrgent ? "rgba(255,77,109,0.3)" : "rgba(77,127,255,0.25)"}`,
-                          color: isUrgent ? "#ff6b85" : C.cyan, fontSize: 11, fontWeight: 700,
-                          width: "fit-content",
-                        }}>
-                          <Clock size={10} color="currentColor" />
-                          <span>{timeRemainingLabel}</span>
-                        </div>
-                      )}
+
                     </div>
 
                     <button onClick={() => setPollToRemove(poll)}

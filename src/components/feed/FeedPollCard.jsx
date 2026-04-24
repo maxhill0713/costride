@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { BarChart2, CheckCircle2 } from 'lucide-react';
+import { BarChart2, CheckCircle2, Clock } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { base44 } from '@/api/base44Client';
@@ -363,7 +363,17 @@ export default function FeedPollCard({ poll, currentUser }) {
 
   const totalVotes = opts.reduce((sum, o) => sum + (typeof o === 'object' ? (o.votes || 0) : 0), 0);
   const showResults = hasVoted || !!localVotedOption;
-  const isExpired = poll.end_date && new Date(poll.end_date) < new Date();
+  // End-of-day (treat end_date as 23:59:59 UTC of that day)
+  const endMs = poll.end_date ? new Date(poll.end_date).getTime() + 24 * 60 * 60 * 1000 - 1 : null;
+  const isExpired = endMs ? endMs < Date.now() : false;
+  const timeRemainingLabel = (() => {
+    if (!endMs || isExpired) return null;
+    const diffMs = endMs - Date.now();
+    const diffHours = diffMs / (1000 * 60 * 60);
+    if (diffHours < 24) return `${Math.round(diffHours)}h left`;
+    return `${Math.round(diffMs / (1000 * 60 * 60 * 24))}d left`;
+  })();
+  const isUrgent = timeRemainingLabel && endMs - Date.now() < 24 * 60 * 60 * 1000;
 
   const winnerVotes = Math.max(...opts.map(o => (typeof o === 'object' ? o.votes || 0 : 0)));
 
@@ -391,12 +401,23 @@ export default function FeedPollCard({ poll, currentUser }) {
         <div className="absolute inset-x-0 top-0 h-px pointer-events-none z-10"
           style={{ background: 'linear-gradient(90deg, transparent 10%, rgba(255,255,255,0.1) 50%, transparent 90%)' }} />
 
-        {/* Green tick if voted */}
-        {showResults && (
-          <div className="absolute top-3 right-3 z-20">
-            <CheckCircle2 size={18} className="text-emerald-400" strokeWidth={2.5} />
-          </div>
-        )}
+        {/* Top-right: timer badge + green tick */}
+        <div className="absolute top-3 right-3 z-20 flex items-center gap-1.5">
+          {timeRemainingLabel && (
+            <div style={{
+              display: 'flex', alignItems: 'center', gap: 4,
+              padding: '2px 7px', borderRadius: 6,
+              background: isUrgent ? 'rgba(255,77,109,0.15)' : 'rgba(77,127,255,0.12)',
+              border: `1px solid ${isUrgent ? 'rgba(255,77,109,0.35)' : 'rgba(77,127,255,0.3)'}`,
+              color: isUrgent ? '#ff6b85' : '#60a5fa',
+              fontSize: 10, fontWeight: 700,
+            }}>
+              <Clock size={9} color="currentColor" />
+              {timeRemainingLabel}
+            </div>
+          )}
+          {showResults && <CheckCircle2 size={18} className="text-emerald-400" strokeWidth={2.5} />}
+        </div>
 
         <div className="relative z-10 px-4 pt-3.5 pb-4">
           {/* Header */}
