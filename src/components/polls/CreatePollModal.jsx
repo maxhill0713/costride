@@ -7,7 +7,7 @@ import React, { useState, useEffect } from 'react';
 import {
   X, BarChart2, Plus, CheckCircle,
   MessageSquare, Trash2, Eye, Zap, ChevronDown, ChevronLeft, Calendar,
-  MoreHorizontal, Send,
+  Clock, Send,
 } from 'lucide-react';
 
 /* ─── TOKENS ─────────────────────────────────────────────────── */
@@ -56,22 +56,26 @@ function useIsMobile() {
   return isMobile;
 }
 
-/* ─── COUNTDOWN BADGE ────────────────────────────────────────── */
-function CountdownBadge({ endDate }) {
+/* ─── TIME REMAINING BADGE (mirrors FeedPollCard) ────────────── */
+function TimeRemainingBadge({ endDate }) {
   const [label, setLabel] = useState('');
+  const [isUrgent, setIsUrgent] = useState(false);
 
   useEffect(() => {
     if (!endDate) { setLabel(''); return; }
+
     const compute = () => {
-      const diff = new Date(endDate) - new Date();
-      if (diff <= 0) { setLabel('Ended'); return; }
-      const totalMinutes = Math.floor(diff / 60000);
-      const totalHours   = Math.floor(diff / 3600000);
-      const totalDays    = Math.floor(diff / 86400000);
-      if (totalDays >= 1)        setLabel(`${totalDays}d left`);
-      else if (totalHours >= 1)  setLabel(`${totalHours}h left`);
-      else                       setLabel(`${totalMinutes}m left`);
+      // treat end_date as end-of-day UTC (same as FeedPollCard)
+      const endMs = new Date(endDate).getTime() + 24 * 60 * 60 * 1000 - 1;
+      const diffMs = endMs - Date.now();
+      if (diffMs <= 0) { setLabel('Ended'); setIsUrgent(false); return; }
+      const diffHours = diffMs / (1000 * 60 * 60);
+      const urgent = diffHours < 24;
+      setIsUrgent(urgent);
+      if (diffHours < 24) setLabel(`${Math.round(diffHours)}h left`);
+      else setLabel(`${Math.round(diffMs / (1000 * 60 * 60 * 24))}d left`);
     };
+
     compute();
     const id = setInterval(compute, 30000);
     return () => clearInterval(id);
@@ -82,14 +86,15 @@ function CountdownBadge({ endDate }) {
   return (
     <div style={{
       display: 'flex', alignItems: 'center', gap: 4,
-      padding: '3px 7px', borderRadius: 5,
-      background: 'rgba(0,0,0,0.35)',
-      border: '1px solid rgba(255,255,255,0.06)',
-      boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.04)',
+      padding: '2px 7px', borderRadius: 6,
+      background: isUrgent ? 'rgba(255,77,109,0.15)' : 'rgba(77,127,255,0.12)',
+      border: `1px solid ${isUrgent ? 'rgba(255,77,109,0.35)' : 'rgba(77,127,255,0.3)'}`,
+      color: isUrgent ? '#ff6b85' : '#60a5fa',
+      fontSize: 10, fontWeight: 700,
       flexShrink: 0,
     }}>
-      <span style={{ fontSize: 9, color: 'rgba(255,255,255,0.35)' }}>⏱</span>
-      <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.04em', color: 'rgba(255,255,255,0.45)', ...MONO }}>{label}</span>
+      <Clock size={9} color="currentColor" />
+      {label}
     </div>
   );
 }
@@ -161,11 +166,8 @@ function CategoryTabs({ value, onChange }) {
   );
 }
 
-/* ─── STREAK ICON (matches PostCard) ────────────────────────── */
-const STREAK_ICON_URL = 'https://media.base44.com/images/public/694b637358644e1c22c8ec6b/5688f98be_Pose1_V2.png';
-
 /* ─── POLL PREVIEW CARD — matches actual PostCard dark style ── */
-function PollPreview({ title, description, category, options, gym }) {
+function PollPreview({ title, description, category, options, gym, endDate }) {
   const cat = catFor(category);
   const accent = cat?.color || C.blue;
   const validOpts = options.filter(o => o.trim());
@@ -229,7 +231,9 @@ function PollPreview({ title, description, category, options, gym }) {
                   </div>
                 </div>
               </div>
-              <MoreHorizontal size={18} color='rgba(148,163,184,0.4)' />
+
+              {/* ── TIME REMAINING BADGE (replaces 3-dots) ── */}
+              <TimeRemainingBadge endDate={endDate} />
             </div>
 
             {/* Poll question */}
@@ -266,13 +270,7 @@ function PollPreview({ title, description, category, options, gym }) {
               )}
             </div>
 
-            {/* Action bar */}
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '6px 12px 10px', borderTop: '1px solid rgba(255,255,255,0.06)', minHeight: 44 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                <img src={STREAK_ICON_URL} alt="react" style={{ width: 44, height: 44, objectFit: 'contain', opacity: 0.35 }} />
-              </div>
-              <Send size={15} color='rgba(148,163,184,0.35)' style={{ marginRight: 4 }} />
-            </div>
+            {/* Action bar — streak icon and share arrow removed */}
           </div>
         )}
       </div>
@@ -284,7 +282,7 @@ function PollPreview({ title, description, category, options, gym }) {
    MOBILE-ONLY COMPONENTS
 ══════════════════════════════════════════════════════════════ */
 
-function MobilePollPreviewSheet({ open, onClose, title, description, category, options, gym }) {
+function MobilePollPreviewSheet({ open, onClose, title, description, category, options, gym, endDate }) {
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
@@ -326,7 +324,7 @@ function MobilePollPreviewSheet({ open, onClose, title, description, category, o
           </button>
         </div>
         <div style={{ flex: 1, overflowY: 'auto', padding: '16px' }}>
-          <PollPreview title={title} description={description} category={category} options={options} gym={gym} />
+          <PollPreview title={title} description={description} category={category} options={options} gym={gym} endDate={endDate} />
         </div>
       </div>
     </div>
@@ -507,7 +505,7 @@ function MobileCreatePollModal({ open, onClose, onSave, isLoading, gym }) {
         </div>
       </div>
 
-      <MobilePollPreviewSheet open={previewOpen} onClose={() => setPreviewOpen(false)} title={title} description={description} category={category} options={options} gym={gym} />
+      <MobilePollPreviewSheet open={previewOpen} onClose={() => setPreviewOpen(false)} title={title} description={description} category={category} options={options} gym={gym} endDate={endDate} />
     </>
   );
 }
@@ -569,7 +567,7 @@ function DesktopCreatePollModal({ open, onClose, onSave, isLoading, gym }) {
       >
         <div style={{ width: '100%', maxWidth: 920, maxHeight: '92vh', display: 'flex', flexDirection: 'column', background: C.bg, border: `1px solid ${C.brd}`, borderRadius: 14, overflow: 'hidden', boxShadow: `0 40px 100px rgba(0,0,0,0.85), 0 0 0 1px rgba(96,165,250,0.04)`, animation: 'pl-in 0.24s cubic-bezier(0.16,1,0.3,1)', WebkitFontSmoothing: 'antialiased' }}>
 
-          {/* HEADER — overflow removed to fix the vertical bar glitch */}
+          {/* HEADER */}
           <div style={{ flexShrink: 0, padding: '0 20px', background: C.surface, borderBottom: `1px solid ${C.brd}`, position: 'relative' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: 18, paddingBottom: 0 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 11 }}>
@@ -656,11 +654,11 @@ function DesktopCreatePollModal({ open, onClose, onSave, isLoading, gym }) {
 
             {/* Preview column */}
             <div className="pl-scroll" style={{ padding: '18px 16px', background: '#0d0d11', overflowY: 'auto', borderLeft: `1px solid ${C.brd}` }}>
-              <PollPreview title={title} description={description} category={category} options={options} gym={gym} />
+              <PollPreview title={title} description={description} category={category} options={options} gym={gym} endDate={endDate} />
             </div>
           </div>
 
-          {/* FOOTER — no hint text, button just says "Post" */}
+          {/* FOOTER */}
           <div style={{ flexShrink: 0, padding: '12px 20px', borderTop: `1px solid ${C.brd}`, display: 'flex', alignItems: 'center', gap: 10, background: C.surface }}>
             <div style={{ flex: 1 }} />
             <button className="pl-cancel" onClick={handleClose} type="button">Cancel</button>
