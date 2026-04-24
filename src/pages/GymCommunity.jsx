@@ -1729,9 +1729,15 @@ export default function GymCommunity() {
             <TabsContent value="home" className="space-y-3 mt-0 w-full" asChild>
               <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.25 }} className="space-y-3">
                 <BusyTimesChart checkIns={checkIns} gymId={gymId} />
-                {polls.length > 0 &&
+                {polls.filter(p => {
+                  if (!p.end_date) return true;
+                  return new Date(p.end_date).getTime() + 24 * 60 * 60 * 1000 - 1 >= Date.now();
+                }).length > 0 &&
                 <div className="space-y-3">
-                    {polls.map((poll) =>
+                    {polls.filter(p => {
+                      if (!p.end_date) return true;
+                      return new Date(p.end_date).getTime() + 24 * 60 * 60 * 1000 - 1 >= Date.now();
+                    }).map((poll) =>
                   <PollCard key={poll.id} poll={poll} onVote={!showOwnerControls && !poll.voters?.includes(currentUser?.id) ? (optionId) => votePollMutation.mutate({ pollId: poll.id, optionId }) : null} userVoted={poll.voters?.includes(currentUser?.id)} isLoading={votePollMutation.isPending} currentUser={currentUser} />
                   )}
                   </div>

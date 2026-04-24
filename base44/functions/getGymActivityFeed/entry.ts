@@ -62,7 +62,12 @@ Deno.serve(async (req) => {
         { gym_id: gymId, status: 'active' },
         '-created_date',
         30
-      ),
+      ).then(polls => polls.filter(p => {
+        if (!p.end_date) return true;
+        // Treat end_date as end of day (23:59:59) in UTC
+        const endMs = new Date(p.end_date).getTime() + 24 * 60 * 60 * 1000 - 1;
+        return endMs >= Date.now();
+      })),
     ]);
 
     // Get all unique user IDs across check-ins and posts

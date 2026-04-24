@@ -1138,21 +1138,25 @@ export default function ContentPage({
           {/* ── POLLS ── */}
           {tab === "Polls" && (() => {
             const nowMs    = Date.now();
-            const livePolls2  = polls.filter(p => !p.end_date || new Date(p.end_date).getTime() >= nowMs);
-            const endedPolls  = polls.filter(p =>  p.end_date && new Date(p.end_date).getTime() <  nowMs);
+            // Treat end_date as end of that calendar day (23:59:59 UTC)
+            const pollEndMs = p => p.end_date ? new Date(p.end_date).getTime() + 24 * 60 * 60 * 1000 - 1 : Infinity;
+            const livePolls2  = polls.filter(p => pollEndMs(p) >= nowMs);
+            const endedPolls  = polls.filter(p => p.end_date && pollEndMs(p) < nowMs);
 
             const PollCard = ({ poll, showTimer }) => {
               const responseCount  = (poll.voters || []).length;
               const communityPct   = memberCount > 0 ? Math.round((responseCount / memberCount) * 100) : 0;
+              // Treat end_date as end of that calendar day (23:59:59 UTC)
+              const endMs = poll.end_date ? new Date(poll.end_date).getTime() + 24 * 60 * 60 * 1000 - 1 : null;
               const timeRemainingLabel = (() => {
-                if (!poll.end_date) return null;
-                const diffMs = new Date(poll.end_date).getTime() - nowMs;
+                if (!endMs) return null;
+                const diffMs = endMs - nowMs;
                 if (diffMs <= 0) return null;
                 const diffHours = diffMs / (1000 * 60 * 60);
                 if (diffHours < 24) return `${Math.round(diffHours)}h left`;
                 return `${Math.round(diffMs / (1000 * 60 * 60 * 24))}d left`;
               })();
-              const isUrgent = timeRemainingLabel && new Date(poll.end_date).getTime() - nowMs < 24 * 60 * 60 * 1000;
+              const isUrgent = timeRemainingLabel && endMs - nowMs < 24 * 60 * 60 * 1000;
               const opts        = poll.options || [];
               const totalVotes  = opts.reduce((sum, o) => sum + (typeof o === "object" ? (o.votes || 0) : 0), 0);
               const winnerVotes = Math.max(...opts.map(o => typeof o === "object" ? (o.votes || 0) : 0), 0);
@@ -1197,7 +1201,7 @@ export default function ContentPage({
                               display: "flex",
                               alignItems: "center",
                               justifyContent: "space-between",
-                              padding: "8px 12px",
+                              padding: "6px 12px",
                             }}>
                               <span style={{
                                 fontSize: 13,

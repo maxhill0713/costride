@@ -76,13 +76,20 @@ Deno.serve(async (req) => {
       .slice(0, limit);
 
     // Fetch polls for primary gym via service role (bypasses RLS issues for regular members)
+    // Only return polls that haven't expired yet (treat end_date as end of that day)
     let polls = [];
     if (primaryGymId && fetchPolls) {
-      polls = await base44.asServiceRole.entities.Poll.filter(
+      const allPolls = await base44.asServiceRole.entities.Poll.filter(
         { gym_id: primaryGymId, status: 'active' },
         '-created_date',
         20
       );
+      const now = Date.now();
+      polls = allPolls.filter(p => {
+        if (!p.end_date) return true;
+        const endMs = new Date(p.end_date).getTime() + 24 * 60 * 60 * 1000 - 1;
+        return endMs >= now;
+      });
     }
 
     return Response.json({ posts: combinedPosts, polls });
