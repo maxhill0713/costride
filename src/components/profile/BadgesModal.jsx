@@ -10,7 +10,7 @@ const BADGE_LIBRARY = [
     description: 'Witness My Gains',
     icon: Trophy,
     color: 'from-amber-400 to-amber-600',
-    image: 'https://media.base44.com/images/public/694b637358644e1c22c8ec6b/04f579c72_spartanbadge.png'
+    image: 'https://media.base44.com/images/public/694b637358644e1c22c8ec6b/fa6c9c42e_spartanbadge21.png'
   },
   {
     id: 'beach',
@@ -18,7 +18,15 @@ const BADGE_LIBRARY = [
     description: 'Discipline Builder',
     icon: Star,
     color: 'from-orange-400 to-orange-600',
-    image: 'https://media.base44.com/images/public/694b637358644e1c22c8ec6b/9bf9eb25d_beachbadge.png'
+    image: 'https://media.base44.com/images/public/694b637358644e1c22c8ec6b/33bf94a48_beachbadge2.png'
+  },
+  {
+    id: 'mermaid',
+    title: 'Mermaid Power',
+    description: 'Discipline Builder — May',
+    icon: Star,
+    color: 'from-teal-400 to-green-600',
+    image: 'https://media.base44.com/images/public/694b637358644e1c22c8ec6b/50e07054f_mermaidbadge2.png'
   }
 ];
 

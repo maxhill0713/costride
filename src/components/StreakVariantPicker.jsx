@@ -3,6 +3,7 @@ import React from 'react';
 const STREAK_ICON_URL = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/694b637358644e1c22c8ec6b/2c931d7ec_STREAKICON1.png';
 const SPARTAN_ICON_URL = 'https://media.base44.com/images/public/694b637358644e1c22c8ec6b/a72ee034d_spartan.png';
 const BEACH_ICON_URL = 'https://media.base44.com/images/public/694b637358644e1c22c8ec6b/9766d8d41_BEACH.png';
+const MERMAID_ICON_URL = 'https://media.base44.com/images/public/694b637358644e1c22c8ec6b/024cf0fc0_mermaidpose1.png';
 
 export default function StreakVariantPicker({ isOpen, onClose, onSelect, selectedVariant, streakFreezes = 0, unlockedVariants = [] }) {
   const handleBackdropClick = (e) => {
@@ -13,8 +14,9 @@ export default function StreakVariantPicker({ isOpen, onClose, onSelect, selecte
 
   const availableIcons = [
     { id: 'default', src: STREAK_ICON_URL, alt: 'streak',  ring: 'ring-green-500' },
-    ...(unlockedVariants.includes('spartan') ? [{ id: 'spartan', src: SPARTAN_ICON_URL, alt: 'spartan', ring: 'ring-amber-500' }] : []),
-    ...(unlockedVariants.includes('beach')   ? [{ id: 'beach',   src: BEACH_ICON_URL,   alt: 'beach',   ring: 'ring-blue-500'  }] : []),
+    ...(unlockedVariants.includes('spartan')  ? [{ id: 'spartan',  src: SPARTAN_ICON_URL,  alt: 'spartan',  ring: 'ring-amber-500' }] : []),
+    ...(unlockedVariants.includes('beach')    ? [{ id: 'beach',    src: BEACH_ICON_URL,    alt: 'beach',    ring: 'ring-blue-500'  }] : []),
+    ...(unlockedVariants.includes('mermaid')  ? [{ id: 'mermaid',  src: MERMAID_ICON_URL,  alt: 'mermaid',  ring: 'ring-teal-500'  }] : []),
   ];
 
   return (
