@@ -958,9 +958,7 @@ export default function ContentPage({
                         <div style={{ width: 160, height: 160, flexShrink: 0, alignSelf: "center", margin: 8, borderRadius: 10, overflow: "hidden" }}>
                           <img src={p.image_url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
                         </div>
-                      ) : (
-                        <div style={{ width: 6, flexShrink: 0, background: C.cyanDim, borderRadius: "12px 0 0 12px" }} />
-                      )}
+                      ) : null}
 
                       <div style={{ flex: 1, minWidth: 0, padding: "11px 14px 11px 10px", display: "flex", flexDirection: "column", gap: 6 }}>
                         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
@@ -1319,9 +1317,7 @@ export default function ContentPage({
                         <div style={{ width: 160, height: 160, flexShrink: 0, alignSelf: "center", margin: 8, borderRadius: 10, overflow: "hidden" }}>
                           <img src={p.image_url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
                         </div>
-                      ) : (
-                        <div style={{ width: 6, flexShrink: 0, background: "rgba(245,158,11,0.35)", borderRadius: "12px 0 0 12px" }} />
-                      )}
+                      ) : null}
 
                       {/* Main content */}
                       <div style={{ flex: 1, minWidth: 0, padding: "11px 14px 11px 10px", display: "flex", flexDirection: "column", gap: 6 }}>
