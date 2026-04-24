@@ -27,6 +27,14 @@ const BADGE_LIBRARY = [
     icon: Star,
     color: 'from-teal-400 to-green-600',
     image: 'https://media.base44.com/images/public/694b637358644e1c22c8ec6b/50e07054f_mermaidbadge2.png'
+  },
+  {
+    id: 'pirate',
+    title: 'Pirate Gains',
+    description: 'Witness My Gains — May',
+    icon: Trophy,
+    color: 'from-orange-500 to-amber-700',
+    image: 'https://media.base44.com/images/public/694b637358644e1c22c8ec6b/8d96e98fb_piratebadge2.png'
   }
 ];
 
