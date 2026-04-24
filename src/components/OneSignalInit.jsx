@@ -17,7 +17,6 @@ export default function OneSignalInit() {
       try {
         await OneSignal.init({
           appId: ONESIGNAL_APP_ID,
-          // Allow prompting on first visit
           promptOptions: {
             slidedown: {
               prompts: [
@@ -34,8 +33,7 @@ export default function OneSignalInit() {
             },
           },
           notifyButton: { enable: false },
-          // Required for Safari on iOS (PWA)
-          safari_web_id: '',
+          allowLocalhostAsSecureOrigin: true,
         });
 
         // Link the OneSignal device to the authenticated base44 user
