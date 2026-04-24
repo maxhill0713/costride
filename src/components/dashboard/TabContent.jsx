@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import {
   Plus, Flame, Check, Calendar, Trophy, BarChart2, FileText,
   MessageCircle, Trash2, Zap, RefreshCw, Pencil, X, Upload, Clock, Users,
-  ArrowUpRight, ArrowDownRight,
+  ArrowUpRight, ArrowDownRight, ChevronDown,
 } from "lucide-react";
 import {
   AreaChart, Area, XAxis, YAxis, Tooltip,
@@ -89,7 +89,6 @@ const TAB_ACTION = {
   "Events":         { label: "Add Event",       modal: "event"     },
   "Challenges":     { label: "New Challenge",   modal: "challenge" },
   "Polls":          { label: "New Poll",        modal: "poll"      },
-  // No action buttons for Drafts or Scheduled — posts are created via "New Post"
 };
 
 /* ─── PRIMITIVES ─────────────────────────────────────────────────── */
@@ -809,6 +808,77 @@ function MemberStatusBadge({ memberId, checkIns = [] }) {
   );
 }
 
+/* ─── SORT DROPDOWN (Scheduled tab) ─────────────────────────────── */
+function SortDropdown({ value, onChange }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef(null);
+
+  const options = [
+    { value: "planned", label: "Planned Release" },
+    { value: "created", label: "Date Created"    },
+  ];
+  const current = options.find(o => o.value === value) || options[0];
+
+  useEffect(() => {
+    const handler = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
+  return (
+    <div ref={ref} style={{ position: "relative", flexShrink: 0 }}>
+      <button
+        onClick={() => setOpen(o => !o)}
+        style={{
+          display: "flex", alignItems: "center", gap: 5,
+          padding: "4px 10px 4px 10px",
+          background: "rgba(255,255,255,0.04)",
+          border: `1px solid ${open ? C.cyanBrd : C.brd}`,
+          borderRadius: 7,
+          color: open ? C.t1 : C.t2,
+          fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: FONT,
+          transition: "all 0.15s",
+        }}
+        onMouseEnter={e => { e.currentTarget.style.borderColor = C.cyanBrd; e.currentTarget.style.color = C.t1; }}
+        onMouseLeave={e => { if (!open) { e.currentTarget.style.borderColor = C.brd; e.currentTarget.style.color = C.t2; } }}
+      >
+        <span>{current.label}</span>
+        <ChevronDown size={12} color="currentColor" style={{ transition: "transform 0.2s", transform: open ? "rotate(180deg)" : "rotate(0deg)" }} />
+      </button>
+
+      {open && (
+        <div style={{
+          position: "absolute", top: "calc(100% + 5px)", right: 0, zIndex: 200,
+          background: C.card2, border: `1px solid ${C.brd}`, borderRadius: 9,
+          overflow: "hidden", minWidth: 148,
+          boxShadow: "0 8px 24px rgba(0,0,0,0.55)",
+        }}>
+          {options.map(opt => (
+            <button
+              key={opt.value}
+              onClick={() => { onChange(opt.value); setOpen(false); }}
+              style={{
+                display: "block", width: "100%", textAlign: "left",
+                padding: "9px 13px",
+                background: opt.value === value ? C.cyanDim : "transparent",
+                border: "none",
+                color: opt.value === value ? C.cyan : C.t2,
+                fontSize: 12, fontWeight: opt.value === value ? 700 : 500,
+                cursor: "pointer", fontFamily: FONT,
+                transition: "background 0.12s, color 0.12s",
+              }}
+              onMouseEnter={e => { if (opt.value !== value) { e.currentTarget.style.background = "rgba(255,255,255,0.05)"; e.currentTarget.style.color = C.t1; } }}
+              onMouseLeave={e => { if (opt.value !== value) { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = C.t2; } }}
+            >
+              {opt.label}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 /* ─── ROOT ───────────────────────────────────────────────────────── */
 export default function ContentPage({
   events = [], challenges = [], polls = [], posts = [], checkIns = [],
@@ -824,6 +894,7 @@ export default function ContentPage({
   const [reactionsPost,    setReactionsPost]    = useState(null);
   const [publishingDraftId, setPublishingDraftId] = useState(null);
   const [editingPost, setEditingPost] = useState(null);
+  const [scheduledSort, setScheduledSort] = useState("planned"); // "planned" | "created"
 
   const createItems = [
     { label: "📝 New Post",      action: () => { openModal?.("post");      setShowMenu(false); setTab("Community Feed"); } },
@@ -895,21 +966,38 @@ export default function ContentPage({
       {/* ── MAIN SCROLL ── */}
       <div style={{ flex: 1, overflowY: "auto", minWidth: 0, ...(isMobile ? { paddingBottom: 80 } : {}) }}>
 
-        {/* HEADER — title + action button, always above tabs */}
+        {/* ─────────────────────────────────────────────────────────────
+            HEADER — title + action button row.
+            We always render the button slot to prevent layout shift.
+            When there's no action for this tab, we render an invisible
+            placeholder with the same dimensions.
+        ───────────────────────────────────────────────────────────── */}
         {!isMobile && (
           <div style={{ padding: "4px 16px 0", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
             <h1 style={{ fontSize: 22, fontWeight: 800, color: C.t1, margin: 0, letterSpacing: "-0.03em", lineHeight: 1.2 }}>
               Content <span style={{ color: C.cyan }}>Hub</span>
             </h1>
-            {tabAction && (
-              <button
-                onClick={() => openModal?.(tabAction.modal)}
-                style={{ display: "flex", alignItems: "center", gap: 6, padding: "9px 18px", background: C.cyan, border: "none", borderRadius: 9, fontSize: 12.5, fontWeight: 700, color: "#fff", cursor: "pointer", fontFamily: FONT, boxShadow: "0 0 10px rgba(77,127,255,0.22), 0 2px 8px rgba(77,127,255,0.12)", transition: "opacity 0.15s" }}
-                onMouseEnter={e => e.currentTarget.style.opacity = "0.88"}
-                onMouseLeave={e => e.currentTarget.style.opacity = "1"}>
-                <Plus size={12} /> {tabAction.label}
-              </button>
-            )}
+            {/* Always render a button-sized slot — hidden when no action */}
+            <button
+              onClick={() => tabAction && openModal?.(tabAction.modal)}
+              style={{
+                display: "flex", alignItems: "center", gap: 6,
+                padding: "9px 18px",
+                background: C.cyan,
+                border: "none", borderRadius: 9,
+                fontSize: 12.5, fontWeight: 700, color: "#fff",
+                cursor: "pointer", fontFamily: FONT,
+                boxShadow: "0 0 10px rgba(77,127,255,0.22), 0 2px 8px rgba(77,127,255,0.12)",
+                transition: "opacity 0.15s",
+                // Hide (but keep space) when no action for this tab
+                visibility: tabAction ? "visible" : "hidden",
+                pointerEvents: tabAction ? "auto" : "none",
+              }}
+              onMouseEnter={e => e.currentTarget.style.opacity = "0.88"}
+              onMouseLeave={e => e.currentTarget.style.opacity = "1"}
+            >
+              <Plus size={12} /> {tabAction?.label ?? "Action"}
+            </button>
           </div>
         )}
 
@@ -1127,10 +1215,17 @@ export default function ContentPage({
           {/* ── POLLS ── */}
           {tab === "Polls" && (() => {
             const nowMs    = Date.now();
-            // Treat end_date as end of that calendar day (23:59:59 UTC)
             const pollEndMs = p => p.end_date ? new Date(p.end_date).getTime() + 24 * 60 * 60 * 1000 - 1 : Infinity;
             const livePolls2  = polls.filter(p => pollEndMs(p) >= nowMs);
             const endedPolls  = polls.filter(p => p.end_date && pollEndMs(p) < nowMs);
+
+            // Shared heading style — same look for both "live" and "ended" headings
+            const sectionHeadingStyle = {
+              fontSize: 12,
+              fontWeight: 500,
+              color: C.t2,
+              marginBottom: 10,
+            };
 
             const PollCard = ({ poll, showTimer }) => {
               const responseCount  = (poll.voters || []).length;
@@ -1154,7 +1249,6 @@ export default function ContentPage({
                   onMouseEnter={e => { e.currentTarget.style.borderColor = C.cyanBrd; e.currentTarget.style.boxShadow = `0 0 8px rgba(77,127,255,0.07)`; }}
                   onMouseLeave={e => { e.currentTarget.style.borderColor = C.brd; e.currentTarget.style.boxShadow = "none"; }}>
 
-                  {/* ── LEFT PANEL: question + options ── */}
                   <div style={{ flex: "0 0 70%", padding: "14px 16px", display: "flex", flexDirection: "column", gap: 10, minWidth: 0 }}>
                     <div style={{ display: "flex", alignItems: "flex-start", gap: 8, flexWrap: "wrap" }}>
                       <span style={{ fontSize: 13, fontWeight: 700, color: C.t1, lineHeight: 1.4, flex: 1 }}>
@@ -1173,7 +1267,6 @@ export default function ContentPage({
                       )}
                     </div>
 
-                    {/* ── UPDATED BAR STYLE ── */}
                     <div style={{ display: "flex", flexDirection: "column", gap: 7 }}>
                       {opts.map((opt, i) => {
                         const optText  = typeof opt === "object" ? (opt.text || opt.label || `Option ${i + 1}`) : opt;
@@ -1186,38 +1279,15 @@ export default function ContentPage({
                         return (
                           <div key={i} style={{ position: "relative", borderRadius: 9, overflow: "hidden" }}>
                             <div style={{
-                              position: "absolute",
-                              left: 0, top: 0, bottom: 0,
+                              position: "absolute", left: 0, top: 0, bottom: 0,
                               width: `${barWidth}%`,
-                              background: isWinner
-                                ? "rgba(37,99,235,0.45)"
-                                : "rgba(148,163,184,0.22)",
+                              background: isWinner ? "rgba(37,99,235,0.45)" : "rgba(148,163,184,0.22)",
                               borderRadius: 9,
                               transition: "width 0.7s cubic-bezier(0.4,0,0.2,1)",
                             }} />
-                            <div style={{
-                              position: "relative",
-                              display: "flex",
-                              alignItems: "center",
-                              justifyContent: "space-between",
-                              padding: "6px 12px",
-                            }}>
-                              <span style={{
-                                fontSize: 13,
-                                fontWeight: 600,
-                                color: isWinner ? "#93c5fd" : "rgba(255,255,255,0.8)",
-                              }}>
-                                {optText}
-                              </span>
-                              <span style={{
-                                fontSize: 12,
-                                fontWeight: 700,
-                                marginLeft: 8,
-                                flexShrink: 0,
-                                color: isWinner ? "#60a5fa" : "rgba(255,255,255,0.35)",
-                              }}>
-                                {pct}%
-                              </span>
+                            <div style={{ position: "relative", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "6px 12px" }}>
+                              <span style={{ fontSize: 13, fontWeight: 600, color: isWinner ? "#93c5fd" : "rgba(255,255,255,0.8)" }}>{optText}</span>
+                              <span style={{ fontSize: 12, fontWeight: 700, marginLeft: 8, flexShrink: 0, color: isWinner ? "#60a5fa" : "rgba(255,255,255,0.35)" }}>{pct}%</span>
                             </div>
                           </div>
                         );
@@ -1225,7 +1295,6 @@ export default function ContentPage({
                     </div>
                   </div>
 
-                  {/* ── RIGHT PANEL: responses + remove btn ── */}
                   <div style={{ flex: "0 0 30%", borderLeft: `1px solid ${C.brd}`, padding: "14px 14px", display: "flex", flexDirection: "column", justifyContent: "space-between", gap: 10 }}>
                     <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
                       <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
@@ -1248,8 +1317,8 @@ export default function ContentPage({
 
             return (
               <>
-                {/* ── LIVE POLLS ── */}
-                <div style={{ fontSize: 12, fontWeight: 500, color: C.t2, marginBottom: 10, marginTop: 2 }}>
+                {/* ── LIVE POLLS heading — matches ended polls heading style ── */}
+                <div style={{ ...sectionHeadingStyle, marginTop: 2 }}>
                   {livePolls2.length} Live Poll{livePolls2.length !== 1 ? "s" : ""}
                 </div>
 
@@ -1261,16 +1330,16 @@ export default function ContentPage({
                   <EmptyState label="live polls" />
                 )}
 
-                {/* ── ENDED POLLS — always shown ── */}
-                <div style={{ fontSize: 12, fontWeight: 700, color: C.t2, margin: "20px 0 10px", paddingTop: 12, borderTop: `1px solid ${C.brd}`, textTransform: "uppercase", letterSpacing: "0.08em" }}>
+                {/* ── ENDED POLLS heading — same style as live polls ── */}
+                <div style={{ ...sectionHeadingStyle, marginTop: 20, paddingTop: 12, borderTop: `1px solid ${C.brd}` }}>
                   {endedPolls.length} Ended Poll{endedPolls.length !== 1 ? "s" : ""}
                 </div>
-                {endedPolls.length > 0 ? (
+
+                {/* No "No ended polls" text — just show the grid or nothing */}
+                {endedPolls.length > 0 && (
                   <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 10 }}>
                     {endedPolls.map(poll => <PollCard key={poll.id} poll={poll} showTimer={false} />)}
                   </div>
-                ) : (
-                  <div style={{ fontSize: 12, color: C.t3, paddingBottom: 8 }}>No ended polls</div>
                 )}
               </>
             );
@@ -1288,7 +1357,6 @@ export default function ContentPage({
             };
             const gymAvatar = gym?.logo_url || gym?.image_url || null;
             const gymName = gym?.name || "Gym";
-            const gymInitials = gymName.split(" ").map(w => w[0]).join("").toUpperCase().slice(0, 2) || "?";
             if (drafts.length === 0) return <EmptyState label="drafts" />;
             return (
               <>
@@ -1300,7 +1368,6 @@ export default function ContentPage({
                   const isGymPost = !!p.post_type;
                   const displayName = isGymPost ? gymName : (p.member_name || gymName);
                   const displayAvatar = isGymPost ? gymAvatar : (avatarMap[p.member_id] || p.member_avatar || gymAvatar);
-                  const displayInitials = displayName.split(" ").map(w => w[0]).join("").toUpperCase().slice(0, 2) || "?";
                   const palette = ["#6366f1","#8b5cf6","#ec4899","#14b8a6","#f59e0b","#4d7fff","#10b981"];
                   const avatarBg = palette[(displayName.charCodeAt(0) || 0) % palette.length];
                   return (
@@ -1319,7 +1386,7 @@ export default function ContentPage({
                           <div style={{ width: 30, height: 30, borderRadius: "50%", flexShrink: 0, background: avatarBg, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 800, color: "#fff", overflow: "hidden" }}>
                             {displayAvatar
                               ? <img src={displayAvatar} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                              : displayInitials}
+                              : displayName.split(" ").map(w => w[0]).join("").toUpperCase().slice(0, 2) || "?"}
                           </div>
                           <div style={{ flex: 1, minWidth: 0 }}>
                             <div style={{ display: "flex", alignItems: "center", gap: 7, flexWrap: "wrap" }}>
@@ -1371,24 +1438,43 @@ export default function ContentPage({
           {/* ── SCHEDULED ── */}
           {tab === "Scheduled" && (() => {
             const nowMs = Date.now();
-            const scheduled = posts.filter(p =>
+            const scheduledRaw = posts.filter(p =>
               p.scheduled_date && !p.is_draft && (!gymId || p.gym_id === gymId) &&
               new Date(p.scheduled_date).getTime() > nowMs
-            ).sort((a, b) => new Date(a.scheduled_date) - new Date(b.scheduled_date));
+            );
+
+            // Sort based on chosen sort mode
+            const scheduled = [...scheduledRaw].sort((a, b) => {
+              if (scheduledSort === "planned") {
+                return new Date(a.scheduled_date) - new Date(b.scheduled_date);
+              } else {
+                // "created" — most recently created first
+                const aDate = new Date(a.created_date || a.created_at || 0);
+                const bDate = new Date(b.created_date || b.created_at || 0);
+                return bDate - aDate;
+              }
+            });
+
             const gymAvatar = gym?.logo_url || gym?.image_url || null;
             const gymName = gym?.name || "Gym";
+
             if (scheduled.length === 0) return <EmptyState label="scheduled posts" />;
+
             return (
               <>
-                <div style={{ fontSize: 12, fontWeight: 500, color: C.t2, marginBottom: 10 }}>
-                  {scheduled.length} scheduled post{scheduled.length !== 1 ? "s" : ""}
+                {/* Header row: count on left, sort dropdown on right */}
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
+                  <div style={{ fontSize: 12, fontWeight: 500, color: C.t2 }}>
+                    {scheduled.length} scheduled post{scheduled.length !== 1 ? "s" : ""}
+                  </div>
+                  <SortDropdown value={scheduledSort} onChange={setScheduledSort} />
                 </div>
+
                 {scheduled.map(p => {
                   const pt = POST_TYPE_STYLES[p.post_type] || POST_TYPE_STYLES.update;
                   const isGymPost = !!p.post_type;
                   const displayName = isGymPost ? gymName : (p.member_name || gymName);
                   const displayAvatar = isGymPost ? gymAvatar : (avatarMap[p.member_id] || p.member_avatar || gymAvatar);
-                  const displayInitials = displayName.split(" ").map(w => w[0]).join("").toUpperCase().slice(0, 2) || "?";
                   const palette = ["#6366f1","#8b5cf6","#ec4899","#14b8a6","#f59e0b","#4d7fff","#10b981"];
                   const avatarBg = palette[(displayName.charCodeAt(0) || 0) % palette.length];
                   const schedDate = new Date(p.scheduled_date);
@@ -1396,6 +1482,7 @@ export default function ContentPage({
                   const diffMs = schedDate.getTime() - nowMs;
                   const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
                   const timeUntil = diffDays <= 0 ? "Today" : diffDays === 1 ? "Tomorrow" : `In ${diffDays} days`;
+
                   return (
                     <div key={p.id} style={{ background: C.card, border: `1px solid ${C.brd}`, borderRadius: 12, marginBottom: 10, minHeight: 140, display: "flex", overflow: "hidden", transition: "border-color 0.15s, box-shadow 0.15s" }}
                       onMouseEnter={e => { e.currentTarget.style.borderColor = C.cyanBrd; e.currentTarget.style.boxShadow = `0 0 8px rgba(77,127,255,0.07)`; }}
@@ -1412,7 +1499,7 @@ export default function ContentPage({
                           <div style={{ width: 30, height: 30, borderRadius: "50%", flexShrink: 0, background: avatarBg, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 800, color: "#fff", overflow: "hidden" }}>
                             {displayAvatar
                               ? <img src={displayAvatar} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                              : displayInitials}
+                              : displayName.split(" ").map(w => w[0]).join("").toUpperCase().slice(0, 2) || "?"}
                           </div>
                           <div style={{ flex: 1, minWidth: 0 }}>
                             <div style={{ display: "flex", alignItems: "center", gap: 7, flexWrap: "wrap" }}>
