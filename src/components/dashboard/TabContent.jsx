@@ -1377,6 +1377,8 @@ export default function ContentPage({
               p.scheduled_date && !p.is_draft && (!gymId || p.gym_id === gymId) &&
               new Date(p.scheduled_date).getTime() > nowMs
             ).sort((a, b) => new Date(a.scheduled_date) - new Date(b.scheduled_date));
+            const gymAvatar = gym?.logo_url || gym?.image_url || null;
+            const gymName = gym?.name || "Gym";
             if (scheduled.length === 0) return <EmptyState label="scheduled posts" />;
             return (
               <>
@@ -1385,29 +1387,40 @@ export default function ContentPage({
                 </div>
                 {scheduled.map(p => {
                   const pt = POST_TYPE_STYLES[p.post_type] || POST_TYPE_STYLES.update;
+                  const isGymPost = !!p.post_type;
+                  const displayName = isGymPost ? gymName : (p.member_name || gymName);
+                  const displayAvatar = isGymPost ? gymAvatar : (avatarMap[p.member_id] || p.member_avatar || gymAvatar);
+                  const displayInitials = displayName.split(" ").map(w => w[0]).join("").toUpperCase().slice(0, 2) || "?";
                   const palette = ["#6366f1","#8b5cf6","#ec4899","#14b8a6","#f59e0b","#4d7fff","#10b981"];
-                  const name = p.member_name || "Gym";
-                  const avatarBg = palette[(name.charCodeAt(0) || 0) % palette.length];
-                  const avatar = p.member_avatar;
-                  const initials = name.split(" ").map(w => w[0]).join("").toUpperCase().slice(0, 2) || "?";
+                  const avatarBg = palette[(displayName.charCodeAt(0) || 0) % palette.length];
                   const schedDate = new Date(p.scheduled_date);
                   const schedLabel = schedDate.toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short" }) + " at " + schedDate.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" });
                   const diffMs = schedDate.getTime() - nowMs;
                   const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
                   const timeUntil = diffDays <= 0 ? "Today" : diffDays === 1 ? "Tomorrow" : `In ${diffDays} days`;
                   return (
-                    <div key={p.id} style={{ background: C.card, border: `1px solid ${C.brd}`, borderRadius: 12, marginBottom: 10, display: "flex", overflow: "hidden" }}
-                      onMouseEnter={e => { e.currentTarget.style.borderColor = C.cyanBrd; }}
-                      onMouseLeave={e => { e.currentTarget.style.borderColor = C.brd; }}>
-                      <div style={{ width: 6, flexShrink: 0, background: "rgba(77,127,255,0.35)", borderRadius: "12px 0 0 12px" }} />
+                    <div key={p.id} style={{ background: C.card, border: `1px solid ${C.brd}`, borderRadius: 12, marginBottom: 10, minHeight: 140, display: "flex", overflow: "hidden", transition: "border-color 0.15s, box-shadow 0.15s" }}
+                      onMouseEnter={e => { e.currentTarget.style.borderColor = C.cyanBrd; e.currentTarget.style.boxShadow = `0 0 8px rgba(77,127,255,0.07)`; }}
+                      onMouseLeave={e => { e.currentTarget.style.borderColor = C.brd; e.currentTarget.style.boxShadow = "none"; }}>
+
+                      {/* Image thumbnail or nothing */}
+                      {p.image_url ? (
+                        <div style={{ width: 160, height: 160, flexShrink: 0, alignSelf: "center", margin: 8, borderRadius: 10, overflow: "hidden" }}>
+                          <img src={p.image_url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+                        </div>
+                      ) : null}
+
+                      {/* Main content */}
                       <div style={{ flex: 1, minWidth: 0, padding: "11px 14px 11px 10px", display: "flex", flexDirection: "column", gap: 6 }}>
                         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                           <div style={{ width: 30, height: 30, borderRadius: "50%", flexShrink: 0, background: avatarBg, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 800, color: "#fff", overflow: "hidden" }}>
-                            {avatar ? <img src={avatar} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : initials}
+                            {displayAvatar
+                              ? <img src={displayAvatar} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                              : displayInitials}
                           </div>
-                          <div>
+                          <div style={{ flex: 1, minWidth: 0 }}>
                             <div style={{ display: "flex", alignItems: "center", gap: 7, flexWrap: "wrap" }}>
-                              <div style={{ fontSize: 13, fontWeight: 700, color: C.t1 }}>{name}</div>
+                              <div style={{ fontSize: 13, fontWeight: 700, color: C.t1 }}>{displayName}</div>
                               {p.post_type && <span style={{ fontSize: 9.5, fontWeight: 700, padding: "1px 7px", borderRadius: 5, background: pt.bg, border: `1px solid ${pt.border}`, color: pt.color }}>{pt.label}</span>}
                             </div>
                             <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 2 }}>
@@ -1417,18 +1430,25 @@ export default function ContentPage({
                             </div>
                           </div>
                         </div>
-                        {p.content && <div style={{ fontSize: 12.5, color: C.t2, lineHeight: 1.5, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{p.content}</div>}
+                        {p.content && (
+                          <div style={{ fontSize: 12.5, color: C.t2, lineHeight: 1.5, display: "-webkit-box", WebkitLineClamp: 3, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
+                            {p.content}
+                          </div>
+                        )}
                       </div>
-                      {onDeletePost && (
-                        <div style={{ flexShrink: 0, borderLeft: `1px solid ${C.brd}`, padding: "12px 14px", display: "flex", flexDirection: "column", gap: 8, justifyContent: "center" }}>
+
+                      {/* Quick actions */}
+                      <div style={{ width: "30%", flexShrink: 0, borderLeft: `1px solid ${C.brd}`, padding: "12px 14px", display: "flex", flexDirection: "column", gap: 8, justifyContent: "flex-start" }}>
+                        <div style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.10em", color: C.t3, marginBottom: 2 }}>Quick Actions</div>
+                        {onDeletePost && (
                           <button onClick={() => onDeletePost(p.id)}
-                            style={{ display: "flex", alignItems: "center", gap: 6, padding: "7px 10px", borderRadius: 8, background: "rgba(255,255,255,0.03)", border: `1px solid ${C.brd}`, color: C.t2, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: FONT }}
+                            style={{ display: "flex", alignItems: "center", gap: 8, width: "100%", padding: "7px 10px", borderRadius: 8, background: "rgba(255,255,255,0.03)", border: `1px solid ${C.brd}`, color: C.t2, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: FONT, textAlign: "left", transition: "all 0.15s" }}
                             onMouseEnter={e => { e.currentTarget.style.borderColor = "rgba(255,77,109,0.35)"; e.currentTarget.style.color = C.red; e.currentTarget.style.background = C.redDim; }}
                             onMouseLeave={e => { e.currentTarget.style.borderColor = C.brd; e.currentTarget.style.color = C.t2; e.currentTarget.style.background = "rgba(255,255,255,0.03)"; }}>
-                            <Trash2 size={12} color="currentColor" /><span>Cancel</span>
+                            <Trash2 size={12} color="currentColor" style={{ flexShrink: 0 }} /><span>Cancel Schedule</span>
                           </button>
-                        </div>
-                      )}
+                        )}
+                      </div>
                     </div>
                   );
                 })}
