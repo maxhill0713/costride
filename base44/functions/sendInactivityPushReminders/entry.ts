@@ -70,16 +70,15 @@ Deno.serve(async (req) => {
           read: false,
         });
 
-        // Also send via the sendPushNotification function if it exists
+        // Send real push notification via OneSignal
         try {
-          await base44.asServiceRole.functions.invoke('sendPushNotification', {
-            userId: user.id,
+          await base44.asServiceRole.functions.invoke('sendOneSignalPush', {
+            userIds: [user.id],
             title,
             body,
           });
         } catch (pushErr) {
-          // Push notification service may not be available for all users — that's fine
-          console.log(`Push not sent for user ${user.id}: ${pushErr.message}`);
+          console.log(`OneSignal push not sent for user ${user.id}: ${pushErr.message}`);
         }
 
         notified++;
