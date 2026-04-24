@@ -362,9 +362,12 @@ export default function GymSignup() {
       if (!gym) throw new Error('Gym creation failed');
       return gym;
     },
-    onSuccess: (gym) => {
+    onSuccess: async (gym) => {
       queryClient.invalidateQueries({ queryKey: ['gyms'] });
       queryClient.invalidateQueries({ queryKey: ['gymMemberships'] });
+      // Mark onboarding complete so App.jsx doesn't redirect back to Onboarding
+      try { await base44.auth.updateMe({ onboarding_completed: true }); } catch {}
+      queryClient.invalidateQueries({ queryKey: ['currentUser'] });
       toast.success(gym.status === 'pending' ? "Gym submitted — we'll review within 24 hours." : 'Gym registered and live.');
       setCreatedGym(gym);
       setStep(8);
@@ -1090,8 +1093,8 @@ export default function GymSignup() {
             </div>
           </div>
 
-          <button className="gs-btn-primary" onClick={() => navigate(createPageUrl('GymOwnerDashboard'))}>
-            <span style={{ position: 'relative', zIndex: 1 }}>Go to Dashboard</span>
+          <button className="gs-btn-primary" onClick={() => navigate(createdGym?.status === 'approved' ? createPageUrl('GymOwnerDashboard') : createPageUrl('GymUnderReview'))}>
+            <span style={{ position: 'relative', zIndex: 1 }}>{createdGym?.status === 'approved' ? 'Go to Dashboard' : 'View Status'}</span>
             <ArrowRight style={{ width: 14, height: 14, position: 'relative', zIndex: 1 }} />
           </button>
         </div>
