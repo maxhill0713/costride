@@ -122,7 +122,7 @@ export default function WeeklyChallengeCard({ challenge, currentUser, userProgre
             {challenge.reward?.toLowerCase().includes('streak freeze') ? (
               <img src="https://media.base44.com/images/public/694b637358644e1c22c8ec6b/4b125b24a_ICEP1_V2.png" alt="Streak Freeze" className="w-12 h-12 object-contain flex-shrink-0" />
             ) : challenge.id === 'witness_my_gains' ? (
-              <img src="https://media.base44.com/images/public/694b637358644e1c22c8ec6b/04f579c72_spartanbadge.png" alt="Spartan Badge" className="w-12 h-12 object-contain flex-shrink-0" />
+              <img src="https://media.base44.com/images/public/694b637358644e1c22c8ec6b/fa6c9c42e_spartanbadge21.png" alt="Spartan Badge" className="w-12 h-12 object-contain flex-shrink-0" />
             ) : challenge.id === 'discipline_builder' ? (
               <img src="https://media.base44.com/images/public/694b637358644e1c22c8ec6b/9bf9eb25d_beachbadge.png" alt="Beach Badge" className="w-12 h-12 object-contain flex-shrink-0" />
             ) : (
