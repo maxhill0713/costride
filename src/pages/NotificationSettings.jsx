@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { useLocation } from 'react-router-dom';
 import { Switch } from '@/components/ui/switch';
+import { BellRing, CheckCircle2 } from 'lucide-react';
 import SettingsSubPageShell from '../components/settings/SettingsSubPageShell';
 
 const PAGE_BG  = 'linear-gradient(135deg, #02040a 0%, #0d2360 50%, #02040a 100%)';
@@ -54,6 +55,7 @@ function Row({ label, sublabel, children, isLast }) {
 export default function NotificationSettings() {
   const queryClient = useQueryClient();
   const highlighted = useSectionHighlight();
+  const [notifStatus, setNotifStatus] = useState(null);
 
   const { data: currentUser } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
 
@@ -62,10 +64,60 @@ export default function NotificationSettings() {
     onSuccess: (u) => { queryClient.setQueryData(['currentUser'], u); queryClient.invalidateQueries({ queryKey: ['currentUser'] }); },
   });
 
+  const handleRequestPermission = async () => {
+    if (!window.OneSignal) {
+      console.warn('OneSignal not available');
+      return;
+    }
+    const granted = await window.OneSignal.Notifications.requestPermission();
+    if (granted) {
+      console.log('OneSignal push notification permission granted');
+      setNotifStatus('granted');
+    } else {
+      console.log('OneSignal push notification permission denied');
+      setNotifStatus('denied');
+    }
+  };
+
   if (!currentUser) return <SettingsSubPageShell title="Notifications"><p style={{ color: '#475569', textAlign: 'center', paddingTop: 40 }}>Loading…</p></SettingsSubPageShell>;
 
   return (
     <SettingsSubPageShell title="Notifications">
+
+      <div style={{ marginBottom: 24 }}>
+        <button
+          onClick={handleRequestPermission}
+          style={{
+            width: '100%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            padding: '16px',
+            borderRadius: '12px',
+            background: '#2563eb',
+            border: 'none',
+            color: '#fff',
+            fontWeight: 'bold',
+            fontSize: '16px',
+            cursor: 'pointer',
+            transition: 'all 0.2s',
+          }}
+          onMouseEnter={e => e.target.style.background = '#1d4ed8'}
+          onMouseLeave={e => e.target.style.background = '#2563eb'}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <BellRing style={{ width: 24, height: 24 }} />
+            <span>Turn On Notifications</span>
+          </div>
+          <CheckCircle2 style={{ width: 20, height: 20, opacity: notifStatus === 'granted' ? 1 : 0 }} />
+        </button>
+        {notifStatus === 'granted' && (
+          <p style={{ color: '#4ade80', fontWeight: 'bold', marginTop: 8, textAlign: 'center', fontSize: 14 }}>✓ Notifications enabled!</p>
+        )}
+        {notifStatus === 'denied' && (
+          <p style={{ color: '#f87171', marginTop: 8, textAlign: 'center', fontSize: 14 }}>Permission denied. Check browser settings.</p>
+        )}
+      </div>
 
       <SectionLabel>Push</SectionLabel>
       <Group sectionId="push" highlighted={highlighted}>
