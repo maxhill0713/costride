@@ -297,11 +297,8 @@ export default function UpcomingEvents({ gymMemberships = [], currentUser }) {
                     }} />
                     <div style={{
                       position: 'absolute', top: 10, left: 12,
-                      background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(8px)',
-                      border: '1px solid rgba(255,255,255,0.12)',
-                      borderRadius: 8, padding: '4px 10px',
                       fontSize: 13, fontWeight: 700, color: '#fff',
-                      display: 'flex', alignItems: 'center', gap: 5,
+                      textShadow: '0 1px 4px rgba(0,0,0,0.8)',
                     }}>
                       {formatDate(event.event_date)}
                     </div>
