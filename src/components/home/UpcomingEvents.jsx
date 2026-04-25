@@ -77,24 +77,21 @@ function RangeDropdown({ value, onChange }) {
 
 function LeaveConfirmDialog({ open, onClose, onConfirm, eventName, eventDate }) {
   if (!open) return null;
-  
+
   const formatEventDate = (dateStr) => {
     const d = new Date(dateStr);
     const day = d.getDate();
     const month = d.toLocaleDateString('en-GB', { month: 'long' });
     return `${day}th of ${month}`;
   };
-  
+
   return (
     <>
-      <div
-        onClick={onClose}
-        style={{
-          position: 'fixed', inset: 0, zIndex: 10003,
-          background: 'rgba(2,4,10,0.85)',
-          backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)',
-        }}
-      />
+      <div onClick={onClose} style={{
+        position: 'fixed', inset: 0, zIndex: 10003,
+        background: 'rgba(2,4,10,0.85)',
+        backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)',
+      }} />
       <div style={{
         position: 'fixed', left: '50%', top: '50%',
         transform: 'translate(-50%, -50%)',
@@ -116,46 +113,36 @@ function LeaveConfirmDialog({ open, onClose, onConfirm, eventName, eventDate }) 
             You can always join again later.
           </p>
           <div style={{ display: 'flex', gap: 10 }}>
-            <button
-              onClick={onClose}
-              style={{
-                flex: 1, padding: '12px 0', borderRadius: 14,
-                fontSize: 13, fontWeight: 800, color: '#fff',
-                background: 'linear-gradient(to bottom, #2d3748, #1a202c)',
-                border: '1px solid rgba(255,255,255,0.12)',
-                borderBottom: '3px solid rgba(0,0,0,0.5)',
-                boxShadow: '0 2px 0 rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.08)',
-                cursor: 'pointer',
-                transition: 'transform 0.08s ease',
-              }}
+            <button onClick={onClose} style={{
+              flex: 1, padding: '12px 0', borderRadius: 14,
+              fontSize: 13, fontWeight: 800, color: '#fff',
+              background: 'linear-gradient(to bottom, #2d3748, #1a202c)',
+              border: '1px solid rgba(255,255,255,0.12)',
+              borderBottom: '3px solid rgba(0,0,0,0.5)',
+              boxShadow: '0 2px 0 rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.08)',
+              cursor: 'pointer', transition: 'transform 0.08s ease',
+            }}
               onMouseDown={e => { e.currentTarget.style.transform = 'translateY(3px)'; }}
               onMouseUp={e => { e.currentTarget.style.transform = ''; }}
               onMouseLeave={e => { e.currentTarget.style.transform = ''; }}
               onTouchStart={e => { e.currentTarget.style.transform = 'translateY(3px)'; }}
               onTouchEnd={e => { e.currentTarget.style.transform = ''; }}
-            >
-              Cancel
-            </button>
-            <button
-              onClick={onConfirm}
-              style={{
-                flex: 1, padding: '12px 0', borderRadius: 14,
-                fontSize: 13, fontWeight: 800, color: '#fff',
-                background: 'linear-gradient(to bottom, #f87171, #ef4444 40%, #b91c1c)',
-                border: '1px solid transparent',
-                borderBottom: '3px solid #7f1d1d',
-                boxShadow: '0 2px 0 rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.15), 0 6px 16px rgba(200,0,0,0.3)',
-                cursor: 'pointer',
-                transition: 'transform 0.08s ease',
-              }}
+            >Cancel</button>
+            <button onClick={onConfirm} style={{
+              flex: 1, padding: '12px 0', borderRadius: 14,
+              fontSize: 13, fontWeight: 800, color: '#fff',
+              background: 'linear-gradient(to bottom, #f87171, #ef4444 40%, #b91c1c)',
+              border: '1px solid transparent',
+              borderBottom: '3px solid #7f1d1d',
+              boxShadow: '0 2px 0 rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.15), 0 6px 16px rgba(200,0,0,0.3)',
+              cursor: 'pointer', transition: 'transform 0.08s ease',
+            }}
               onMouseDown={e => { e.currentTarget.style.transform = 'translateY(3px)'; e.currentTarget.style.boxShadow = 'none'; }}
               onMouseUp={e => { e.currentTarget.style.transform = ''; e.currentTarget.style.boxShadow = ''; }}
               onMouseLeave={e => { e.currentTarget.style.transform = ''; e.currentTarget.style.boxShadow = ''; }}
               onTouchStart={e => { e.currentTarget.style.transform = 'translateY(3px)'; e.currentTarget.style.boxShadow = 'none'; }}
               onTouchEnd={e => { e.currentTarget.style.transform = ''; e.currentTarget.style.boxShadow = ''; }}
-            >
-              Leave
-            </button>
+            >Leave</button>
           </div>
         </div>
       </div>
@@ -163,12 +150,30 @@ function LeaveConfirmDialog({ open, onClose, onConfirm, eventName, eventDate }) 
   );
 }
 
+const getStorageKey = (userId) => `joinedEventIds_${userId || 'guest'}`;
+
 export default function UpcomingEvents({ gymMemberships = [], currentUser }) {
   const [range, setRange] = useState('week');
+  const [joinedEventIds, setJoinedEventIds] = useState(() => {
+    try {
+      const key = getStorageKey(currentUser?.id);
+      const stored = localStorage.getItem(key);
+      return new Set(stored ? JSON.parse(stored) : []);
+    } catch {
+      return new Set();
+    }
+  });
   const [leaveConfirmEventId, setLeaveConfirmEventId] = useState(null);
   const queryClient = useQueryClient();
 
   const gymIds = gymMemberships.map(m => m.gym_id);
+
+  useEffect(() => {
+    try {
+      const key = getStorageKey(currentUser?.id);
+      localStorage.setItem(key, JSON.stringify(Array.from(joinedEventIds)));
+    } catch {}
+  }, [joinedEventIds, currentUser?.id]);
 
   const { data: events = [] } = useQuery({
     queryKey: ['upcomingEvents', gymIds.join(','), range],
@@ -194,29 +199,21 @@ export default function UpcomingEvents({ gymMemberships = [], currentUser }) {
   });
 
   const joinMutation = useMutation({
-    mutationFn: ({ eventId, currentAttendees, attendeeIds }) => {
-      const newAttendeeIds = currentUser?.id ? [...(attendeeIds || []), currentUser.id] : attendeeIds;
-      return base44.entities.Event.update(eventId, {
-        attendees: (currentAttendees || 0) + 1,
-        attendee_ids: newAttendeeIds
-      });
+    mutationFn: ({ eventId, currentAttendees }) =>
+      base44.entities.Event.update(eventId, { attendees: (currentAttendees || 0) + 1 }),
+    onMutate: async ({ eventId }) => {
+      setJoinedEventIds(prev => new Set(prev).add(eventId));
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['upcomingEvents'] });
-    },
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['upcomingEvents'] }); },
   });
 
   const leaveMutation = useMutation({
-    mutationFn: ({ eventId, currentAttendees, attendeeIds }) => {
-      const newAttendeeIds = (attendeeIds || []).filter(id => id !== currentUser?.id);
-      return base44.entities.Event.update(eventId, {
-        attendees: Math.max(0, (currentAttendees || 1) - 1),
-        attendee_ids: newAttendeeIds
-      });
+    mutationFn: ({ eventId, currentAttendees }) =>
+      base44.entities.Event.update(eventId, { attendees: Math.max(0, (currentAttendees || 1) - 1) }),
+    onMutate: async ({ eventId }) => {
+      setJoinedEventIds(prev => { const next = new Set(prev); next.delete(eventId); return next; });
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['upcomingEvents'] });
-    },
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['upcomingEvents'] }); },
   });
 
   if (gymIds.length === 0 || events.length === 0) return null;
@@ -226,20 +223,67 @@ export default function UpcomingEvents({ gymMemberships = [], currentUser }) {
     return d.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' });
   };
 
-  const formatTime = (dateStr, endTime) => {
+  const formatTime = (dateStr) => {
     const d = new Date(dateStr);
-    const start = d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
-    return endTime ? `${start}–${endTime}` : start;
-  };
-
-  const getDaysUntil = (dateStr) => {
-    const diff = Math.ceil((new Date(dateStr) - new Date()) / (1000 * 60 * 60 * 24));
-    if (diff === 0) return 'Today';
-    if (diff === 1) return 'Tomorrow';
-    return `In ${diff} days`;
+    return d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
   };
 
   const leaveEvent = events.find(e => e.id === leaveConfirmEventId);
+
+  // Shared join/leave button renderer
+  const JoinButton = ({ event, isJoined }) => (
+    <button
+      onClick={() => {
+        if (isJoined) {
+          setLeaveConfirmEventId(event.id);
+        } else {
+          joinMutation.mutate({ eventId: event.id, currentAttendees: event.attendees || 0 });
+        }
+      }}
+      style={{
+        display: 'flex', alignItems: 'center', gap: 5,
+        padding: '7px 14px', borderRadius: 10,
+        fontSize: 12, fontWeight: 800,
+        cursor: 'pointer', border: 'none',
+        transition: 'all 0.12s ease', flexShrink: 0,
+        ...(isJoined ? {
+          background: 'rgba(52,211,153,0.12)',
+          color: '#34d399',
+          outline: '1px solid rgba(52,211,153,0.28)',
+        } : {
+          background: 'linear-gradient(to bottom, #3b82f6 0%, #2563eb 40%, #1d4ed8 100%)',
+          color: '#fff',
+          boxShadow: '0 2px 0 #1a3fa8, 0 4px 14px rgba(37,99,235,0.35), inset 0 1px 0 rgba(255,255,255,0.2)',
+          borderBottom: '2px solid #1a3fa8',
+        }),
+      }}
+      onMouseDown={e => { if (!isJoined) { e.currentTarget.style.transform = 'translateY(2px)'; e.currentTarget.style.boxShadow = 'none'; } }}
+      onMouseUp={e => { e.currentTarget.style.transform = ''; e.currentTarget.style.boxShadow = ''; }}
+      onMouseLeave={e => { e.currentTarget.style.transform = ''; e.currentTarget.style.boxShadow = ''; }}
+      onTouchStart={e => { if (!isJoined) { e.currentTarget.style.transform = 'translateY(2px)'; e.currentTarget.style.boxShadow = 'none'; } }}
+      onTouchEnd={e => { e.currentTarget.style.transform = ''; e.currentTarget.style.boxShadow = ''; }}
+    >
+      {isJoined ? (<><CheckCircle style={{ width: 12, height: 12 }} /> Joined</>) : 'Join Event'}
+    </button>
+  );
+
+  // Shared bottom row: attendees + time + button
+  const BottomRow = ({ event, isJoined, topMargin = 0 }) => (
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, marginTop: topMargin }}>
+      <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.3)', fontWeight: 600 }}>
+        {event.attendees || 0} attending
+      </span>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+          <Clock style={{ width: 10, height: 10, color: 'rgba(255,255,255,0.4)' }} />
+          <span style={{ fontSize: 13, color: 'rgba(255,255,255,0.45)', fontWeight: 600 }}>
+            {formatTime(event.event_date)}
+          </span>
+        </div>
+        <JoinButton event={event} isJoined={isJoined} />
+      </div>
+    </div>
+  );
 
   return (
     <>
@@ -250,149 +294,103 @@ export default function UpcomingEvents({ gymMemberships = [], currentUser }) {
           borderBottom: '1px solid rgba(255,255,255,0.055)',
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         }}>
-          <span style={{ fontSize: 14, fontWeight: 900, color: '#fff', letterSpacing: '-0.01em' }}>
-            Upcoming Events
-          </span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+            <Calendar style={{ width: 15, height: 15, color: '#fff', flexShrink: 0 }} />
+            <span style={{ fontSize: 16, fontWeight: 900, color: '#fff', letterSpacing: '-0.01em' }}>
+              Upcoming Events
+            </span>
+          </div>
           <RangeDropdown value={range} onChange={setRange} />
         </div>
 
         {/* Events list */}
         <div style={{ display: 'flex', flexDirection: 'column' }}>
           {events.map((event, i) => {
-            const isJoined = currentUser?.id && (event.attendee_ids || []).includes(currentUser.id);
+            const isJoined = joinedEventIds.has(event.id);
             const isLast = i === events.length - 1;
             return (
-              <div
-                key={event.id}
-                style={{ borderBottom: isLast ? 'none' : '1px solid rgba(255,255,255,0.045)' }}>
-                {/* Banner image */}
+              <div key={event.id} style={{ borderBottom: isLast ? 'none' : '1px solid rgba(255,255,255,0.045)' }}>
+
+                {/* ── WITH BANNER IMAGE ── */}
                 {event.image_url && (
-                  <div style={{ height: 130, overflow: 'hidden', position: 'relative' }}>
-                    <img
-                      src={event.image_url}
-                      alt={event.title}
-                      style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
-                    />
-                    <div style={{
-                      position: 'absolute', inset: 0,
-                      background: 'linear-gradient(to bottom, transparent 40%, rgba(8,10,20,0.85) 100%)',
-                    }} />
-                    <div style={{
-                      position: 'absolute', top: 10, left: 12,
-                      fontSize: 13, fontWeight: 700, color: '#fff',
-                      textShadow: '0 1px 4px rgba(0,0,0,0.8)',
-                    }}>
-                      {formatDate(event.event_date)}
+                  <>
+                    <div style={{ height: 150, overflow: 'hidden', position: 'relative' }}>
+                      <img
+                        src={event.image_url}
+                        alt={event.title}
+                        style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                      />
+                      {/* Gradient overlay — stronger at bottom for title legibility */}
+                      <div style={{
+                        position: 'absolute', inset: 0,
+                        background: 'linear-gradient(to bottom, transparent 25%, rgba(8,10,20,0.95) 100%)',
+                      }} />
+                      {/* Date — top left */}
+                      <div style={{
+                        position: 'absolute', top: 10, left: 12,
+                        fontSize: 13, fontWeight: 700, color: '#fff',
+                        textShadow: '0 1px 4px rgba(0,0,0,0.8)',
+                      }}>
+                        {formatDate(event.event_date)}
+                      </div>
+                      {/* Title — overlaid at bottom of image, just below date */}
+                      <div style={{ position: 'absolute', bottom: 12, left: 12, right: 12 }}>
+                        <h3 style={{
+                          fontSize: 15, fontWeight: 900, color: '#fff',
+                          letterSpacing: '-0.02em', lineHeight: 1.25, margin: 0,
+                          textShadow: '0 1px 6px rgba(0,0,0,0.6)',
+                        }}>
+                          {event.title}
+                        </h3>
+                      </div>
                     </div>
+
+                    <div style={{ padding: '10px 14px 14px' }}>
+                      {/* Description in the content area */}
+                      {event.description && (
+                        <p style={{
+                          fontSize: 12.5, color: 'rgba(226,232,240,0.6)',
+                          lineHeight: 1.5, margin: '0 0 10px',
+                          display: '-webkit-box', WebkitLineClamp: 2,
+                          WebkitBoxOrient: 'vertical', overflow: 'hidden',
+                        }}>
+                          {event.description}
+                        </p>
+                      )}
+                      <BottomRow event={event} isJoined={isJoined} topMargin={event.description ? 0 : 4} />
+                    </div>
+                  </>
+                )}
+
+                {/* ── WITHOUT BANNER IMAGE ── */}
+                {!event.image_url && (
+                  <div style={{ padding: '16px 14px 16px' }}>
+                    {/* Date */}
+                    <span style={{ fontSize: 13, fontWeight: 700, color: '#fff', display: 'block', marginBottom: 5 }}>
+                      {formatDate(event.event_date)}
+                    </span>
+                    {/* Title */}
+                    <h3 style={{
+                      fontSize: 14, fontWeight: 900, color: '#fff',
+                      letterSpacing: '-0.02em', lineHeight: 1.3, margin: '0 0 6px',
+                    }}>
+                      {event.title}
+                    </h3>
+                    {/* Description */}
+                    {event.description && (
+                      <p style={{
+                        fontSize: 12.5, color: 'rgba(226,232,240,0.6)',
+                        lineHeight: 1.5, margin: '0 0 12px',
+                        display: '-webkit-box', WebkitLineClamp: 2,
+                        WebkitBoxOrient: 'vertical', overflow: 'hidden',
+                      }}>
+                        {event.description}
+                      </p>
+                    )}
+                    <BottomRow event={event} isJoined={isJoined} topMargin={event.description ? 0 : 10} />
                   </div>
                 )}
 
-                <div style={{ padding: '12px 14px 14px' }}>
-                  {/* Date row (if no image) */}
-                  {!event.image_url && (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
-                      <span style={{ fontSize: 13, fontWeight: 700, color: '#fff' }}>
-                        {formatDate(event.event_date)}
-                      </span>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 13, color: 'rgba(255,255,255,0.5)', fontWeight: 600 }}>
-                        <Clock style={{ width: 10, height: 10 }} />
-                        {formatTime(event.event_date, event.end_time)}
-                      </div>
-                      <span style={{
-                        marginLeft: 'auto', fontSize: 10, fontWeight: 700,
-                        color: '#60a5fa', background: 'rgba(96,165,250,0.08)',
-                        border: '1px solid rgba(96,165,250,0.18)',
-                        borderRadius: 6, padding: '2px 7px',
-                      }}>
-                        {getDaysUntil(event.event_date)}
-                      </span>
-                    </div>
-                  )}
-
-                  {/* Title */}
-                  <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8, marginBottom: 4 }}>
-                    <h3 style={{ fontSize: 14, fontWeight: 900, color: '#fff', letterSpacing: '-0.02em', lineHeight: 1.3, margin: 0, flex: 1 }}>
-                      {event.title}
-                    </h3>
-                    {event.image_url && (
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 4, flexShrink: 0 }}>
-                        <Clock style={{ width: 10, height: 10, color: 'rgba(255,255,255,0.5)' }} />
-                        <span style={{ fontSize: 13, color: 'rgba(255,255,255,0.5)', fontWeight: 600 }}>
-                          {formatTime(event.event_date, event.end_time)}
-                        </span>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Description */}
-                  {event.description && (
-                    <p style={{
-                      fontSize: 12.5, color: 'rgba(226,232,240,0.6)',
-                      lineHeight: 1.5, margin: '0 0 10px',
-                      display: '-webkit-box', WebkitLineClamp: 2,
-                      WebkitBoxOrient: 'vertical', overflow: 'hidden',
-                    }}>
-                      {event.description}
-                    </p>
-                  )}
-
-                  {/* Attendees + Join/Leave button row */}
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, marginTop: event.description ? 0 : 8 }}>
-                    <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.3)', fontWeight: 600 }}>
-                      {event.attendees || 0} attending
-                    </span>
-                    <button
-                      onClick={() => {
-                        if (isJoined) {
-                          setLeaveConfirmEventId(event.id);
-                        } else {
-                          joinMutation.mutate({ eventId: event.id, currentAttendees: event.attendees || 0, attendeeIds: event.attendee_ids || [] });
-                        }
-                      }}
-                      style={{
-                        display: 'flex', alignItems: 'center', gap: 5,
-                        padding: '7px 14px', borderRadius: 10,
-                        fontSize: 12, fontWeight: 800,
-                        cursor: 'pointer',
-                        border: 'none',
-                        transition: 'all 0.12s ease',
-                        flexShrink: 0,
-                        ...(isJoined ? {
-                          background: 'rgba(52,211,153,0.12)',
-                          color: '#34d399',
-                          outline: '1px solid rgba(52,211,153,0.28)',
-                        } : {
-                          background: 'linear-gradient(to bottom, #3b82f6 0%, #2563eb 40%, #1d4ed8 100%)',
-                          color: '#fff',
-                          boxShadow: '0 2px 0 #1a3fa8, 0 4px 14px rgba(37,99,235,0.35), inset 0 1px 0 rgba(255,255,255,0.2)',
-                          borderBottom: '2px solid #1a3fa8',
-                        }),
-                      }}
-                      onMouseDown={e => {
-                        if (!isJoined) {
-                          e.currentTarget.style.transform = 'translateY(2px)';
-                          e.currentTarget.style.boxShadow = 'none';
-                        }
-                      }}
-                      onMouseUp={e => { e.currentTarget.style.transform = ''; e.currentTarget.style.boxShadow = ''; }}
-                      onMouseLeave={e => { e.currentTarget.style.transform = ''; e.currentTarget.style.boxShadow = ''; }}
-                      onTouchStart={e => {
-                        if (!isJoined) {
-                          e.currentTarget.style.transform = 'translateY(2px)';
-                          e.currentTarget.style.boxShadow = 'none';
-                        }
-                      }}
-                      onTouchEnd={e => { e.currentTarget.style.transform = ''; e.currentTarget.style.boxShadow = ''; }}
-                    >
-                      {isJoined ? (
-                        <>
-                          <CheckCircle style={{ width: 12, height: 12 }} />
-                          Joined
-                        </>
-                      ) : 'Join Event'}
-                    </button>
-                  </div>
-                </div>
               </div>
             );
           })}
@@ -404,7 +402,7 @@ export default function UpcomingEvents({ gymMemberships = [], currentUser }) {
         onClose={() => setLeaveConfirmEventId(null)}
         onConfirm={() => {
           if (leaveEvent) {
-            leaveMutation.mutate({ eventId: leaveEvent.id, currentAttendees: leaveEvent.attendees || 0, attendeeIds: leaveEvent.attendee_ids || [] });
+            leaveMutation.mutate({ eventId: leaveEvent.id, currentAttendees: leaveEvent.attendees || 0 });
           }
           setLeaveConfirmEventId(null);
         }}
