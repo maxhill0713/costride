@@ -163,31 +163,12 @@ function LeaveConfirmDialog({ open, onClose, onConfirm, eventName, eventDate }) 
   );
 }
 
-const getStorageKey = (userId) => `joinedEventIds_${userId || 'guest'}`;
-
 export default function UpcomingEvents({ gymMemberships = [], currentUser }) {
   const [range, setRange] = useState('week');
-  const [joinedEventIds, setJoinedEventIds] = useState(() => {
-    try {
-      const key = getStorageKey(currentUser?.id);
-      const stored = localStorage.getItem(key);
-      return new Set(stored ? JSON.parse(stored) : []);
-    } catch {
-      return new Set();
-    }
-  });
   const [leaveConfirmEventId, setLeaveConfirmEventId] = useState(null);
   const queryClient = useQueryClient();
 
   const gymIds = gymMemberships.map(m => m.gym_id);
-
-  // Persist joined IDs to localStorage whenever they change
-  useEffect(() => {
-    try {
-      const key = getStorageKey(currentUser?.id);
-      localStorage.setItem(key, JSON.stringify(Array.from(joinedEventIds)));
-    } catch {}
-  }, [joinedEventIds, currentUser?.id]);
 
   const { data: events = [] } = useQuery({
     queryKey: ['upcomingEvents', gymIds.join(','), range],
@@ -213,10 +194,12 @@ export default function UpcomingEvents({ gymMemberships = [], currentUser }) {
   });
 
   const joinMutation = useMutation({
-    mutationFn: ({ eventId, currentAttendees }) =>
-      base44.entities.Event.update(eventId, { attendees: (currentAttendees || 0) + 1 }),
-    onMutate: async ({ eventId }) => {
-      setJoinedEventIds(prev => new Set(prev).add(eventId));
+    mutationFn: ({ eventId, currentAttendees, attendeeIds }) => {
+      const newAttendeeIds = currentUser?.id ? [...(attendeeIds || []), currentUser.id] : attendeeIds;
+      return base44.entities.Event.update(eventId, {
+        attendees: (currentAttendees || 0) + 1,
+        attendee_ids: newAttendeeIds
+      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['upcomingEvents'] });
@@ -224,13 +207,11 @@ export default function UpcomingEvents({ gymMemberships = [], currentUser }) {
   });
 
   const leaveMutation = useMutation({
-    mutationFn: ({ eventId, currentAttendees }) =>
-      base44.entities.Event.update(eventId, { attendees: Math.max(0, (currentAttendees || 1) - 1) }),
-    onMutate: async ({ eventId }) => {
-      setJoinedEventIds(prev => {
-        const next = new Set(prev);
-        next.delete(eventId);
-        return next;
+    mutationFn: ({ eventId, currentAttendees, attendeeIds }) => {
+      const newAttendeeIds = (attendeeIds || []).filter(id => id !== currentUser?.id);
+      return base44.entities.Event.update(eventId, {
+        attendees: Math.max(0, (currentAttendees || 1) - 1),
+        attendee_ids: newAttendeeIds
       });
     },
     onSuccess: () => {
@@ -277,7 +258,7 @@ export default function UpcomingEvents({ gymMemberships = [], currentUser }) {
         {/* Events list */}
         <div style={{ display: 'flex', flexDirection: 'column' }}>
           {events.map((event, i) => {
-            const isJoined = joinedEventIds.has(event.id);
+            const isJoined = currentUser?.id && (event.attendee_ids || []).includes(currentUser.id);
             const isLast = i === events.length - 1;
             return (
               <div
@@ -364,7 +345,7 @@ export default function UpcomingEvents({ gymMemberships = [], currentUser }) {
                         if (isJoined) {
                           setLeaveConfirmEventId(event.id);
                         } else {
-                          joinMutation.mutate({ eventId: event.id, currentAttendees: event.attendees || 0 });
+                          joinMutation.mutate({ eventId: event.id, currentAttendees: event.attendees || 0, attendeeIds: event.attendee_ids || [] });
                         }
                       }}
                       style={{
@@ -422,7 +403,7 @@ export default function UpcomingEvents({ gymMemberships = [], currentUser }) {
         onClose={() => setLeaveConfirmEventId(null)}
         onConfirm={() => {
           if (leaveEvent) {
-            leaveMutation.mutate({ eventId: leaveEvent.id, currentAttendees: leaveEvent.attendees || 0 });
+            leaveMutation.mutate({ eventId: leaveEvent.id, currentAttendees: leaveEvent.attendees || 0, attendeeIds: leaveEvent.attendee_ids || [] });
           }
           setLeaveConfirmEventId(null);
         }}

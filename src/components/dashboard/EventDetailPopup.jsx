@@ -135,27 +135,11 @@ function EditEventModal({ event, onClose, onSave }) {
 }
 
 function EventAttendeesModal({ event, onClose }) {
-  const [search, setSearch] = useState("");
-  const [resolvedUsers, setResolvedUsers] = useState([]);
-  const [loading, setLoading] = useState(true);
+   const [search, setSearch] = useState("");
+   const [resolvedUsers, setResolvedUsers] = useState([]);
+   const [loading, setLoading] = useState(true);
 
-  const joinedUserIds = (() => {
-    const ids = new Set();
-    try {
-      for (let i = 0; i < localStorage.length; i++) {
-        const key = localStorage.key(i);
-        if (!key || !key.startsWith("joinedEventIds_")) continue;
-        const stored = localStorage.getItem(key);
-        if (!stored) continue;
-        const parsed = JSON.parse(stored);
-        if (Array.isArray(parsed) && parsed.includes(event.id)) {
-          const userId = key.replace("joinedEventIds_", "");
-          if (userId !== "guest") ids.add(userId);
-        }
-      }
-    } catch {}
-    return Array.from(ids);
-  })();
+   const joinedUserIds = event.attendee_ids || [];
 
   useEffect(() => {
     if (joinedUserIds.length === 0) { setLoading(false); return; }
@@ -219,27 +203,11 @@ function EventAttendeesModal({ event, onClose }) {
 }
 
 export default function EventDetailPopup({ event, onClose, onDelete, onEditSaved }) {
-  const [modal, setModal] = useState(null);
-  const [attendeeAvatars, setAttendeeAvatars] = useState([]);
-  const [liveAttendees, setLiveAttendees] = useState(event.attendees || 0);
+   const [modal, setModal] = useState(null);
+   const [attendeeAvatars, setAttendeeAvatars] = useState([]);
+   const [liveAttendees, setLiveAttendees] = useState(event.attendees || 0);
 
-  const joinedUserIds = (() => {
-    const ids = new Set();
-    try {
-      for (let i = 0; i < localStorage.length; i++) {
-        const key = localStorage.key(i);
-        if (!key || !key.startsWith("joinedEventIds_")) continue;
-        const stored = localStorage.getItem(key);
-        if (!stored) continue;
-        const parsed = JSON.parse(stored);
-        if (Array.isArray(parsed) && parsed.includes(event.id)) {
-          const userId = key.replace("joinedEventIds_", "");
-          if (userId !== "guest") ids.add(userId);
-        }
-      }
-    } catch {}
-    return Array.from(ids);
-  })();
+   const joinedUserIds = event.attendee_ids || [];
 
   useEffect(() => {
     base44.entities.Event.filter({ id: event.id }).then(res => {

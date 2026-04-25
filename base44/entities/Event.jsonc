@@ -31,11 +31,124 @@
       "type": "number",
       "default": 0,
       "description": "Number of attendees"
+    },
+    "attendee_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": [],
+      "description": "Array of user IDs who have joined this event"
     }
   },
   "required": [
     "gym_id",
     "title",
     "event_date"
-  ]
+  ],
+  "rls": {
+    "create": {
+      "$or": [
+        {
+          "data.gym_id": {
+            "$in": {
+              "$map": {
+                "input": "{{user.gymMemberships}}",
+                "as": "m",
+                "in": "$$m.data.gym_id"
+              }
+            }
+          },
+          "user_condition": {
+            "account_type": "gym_owner"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "read": {
+      "$or": [
+        {
+          "data.event_date": {
+            "$gte": "{{now}}"
+          }
+        },
+        {
+          "data.gym_id": {
+            "$in": {
+              "$map": {
+                "input": "{{user.gymMemberships}}",
+                "as": "m",
+                "in": "$$m.data.gym_id"
+              }
+            }
+          }
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "created_by": "{{user.email}}"
+        },
+        {
+          "data.gym_id": {
+            "$in": {
+              "$map": {
+                "input": "{{user.gymMemberships}}",
+                "as": "m",
+                "in": "$$m.data.gym_id"
+              }
+            }
+          },
+          "user_condition": {
+            "account_type": "gym_owner"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "data.attendee_ids": "{{user.id}}"
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "created_by": "{{user.email}}"
+        },
+        {
+          "data.gym_id": {
+            "$in": {
+              "$map": {
+                "input": "{{user.gymMemberships}}",
+                "as": "m",
+                "in": "$$m.data.gym_id"
+              }
+            }
+          },
+          "user_condition": {
+            "account_type": "gym_owner"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
 }
