@@ -53,11 +53,9 @@ const C = {
 };
 const FONT = "'DM Sans', 'Segoe UI', system-ui, sans-serif";
 
-// Shared gradient button style (matches Overview "New Post" button)
+// Flat button style — same blue, no 3D effect
 const GRAD_BTN = {
-  background: "linear-gradient(to bottom, #3b82f6 0%, #2563eb 40%, #1d4ed8 100%)",
-  boxShadow: "0 2px 0 #1a3fa8, inset 0 1px 0 rgba(255,255,255,0.2)",
-  borderBottom: "2px solid #1a3fa8",
+  background: "#2563eb",
   border: "none",
   color: "#fff",
 };
@@ -806,10 +804,9 @@ function ListCard({ children, isMobile }) {
   );
 }
 
-// FAB uses gradient to match Overview style
 function FAB({ onClick }) {
   return (
-    <button onClick={onClick} style={{ position: "fixed", bottom: 76, right: 18, zIndex: 190, width: 52, height: 52, borderRadius: "50%", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", ...GRAD_BTN, boxShadow: "0 2px 0 #1a3fa8, inset 0 1px 0 rgba(255,255,255,0.2), 0 0 14px rgba(59,130,246,0.28), 0 4px 10px rgba(59,130,246,0.16)" }}>
+    <button onClick={onClick} style={{ position: "fixed", bottom: 76, right: 18, zIndex: 190, width: 52, height: 52, borderRadius: "50%", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", ...GRAD_BTN, boxShadow: "0 4px 10px rgba(37,99,235,0.35)" }}>
       <Plus size={22} color="#fff" strokeWidth={2.5} />
     </button>
   );
@@ -1234,7 +1231,6 @@ export default function ContentPage({
             <h1 style={{ fontSize: 22, fontWeight: 800, color: C.t1, margin: 0, letterSpacing: "-0.03em", lineHeight: 1.2 }}>
               Content <span style={{ color: C.cyan }}>Hub</span>
             </h1>
-            {/* Top-right action button — gradient style */}
             <button
               onClick={() => tabAction && openModal?.(tabAction.modal)}
               style={{ display: "flex", alignItems: "center", gap: 6, padding: "9px 18px", borderRadius: 9, fontSize: 12.5, fontWeight: 700, cursor: "pointer", fontFamily: FONT, transition: "opacity 0.15s", visibility: tabAction ? "visible" : "hidden", pointerEvents: tabAction ? "auto" : "none", ...GRAD_BTN }}
@@ -1558,7 +1554,6 @@ export default function ContentPage({
                       </div>
                       <div style={{ width: "30%", flexShrink: 0, borderLeft: `1px solid ${C.brd}`, padding: "12px 14px", display: "flex", flexDirection: "column", gap: 8, justifyContent: "flex-start" }}>
                         <div style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.10em", color: C.t3, marginBottom: 2 }}>Quick Actions</div>
-                        {/* "Post Now" — gradient button */}
                         <button onClick={() => handlePublishDraft(p)} disabled={publishingDraftId === p.id}
                           style={{ display: "flex", alignItems: "center", gap: 8, width: "100%", padding: "7px 10px", borderRadius: 8, fontSize: 12, fontWeight: 700, cursor: publishingDraftId === p.id ? "default" : "pointer", fontFamily: FONT, opacity: publishingDraftId === p.id ? 0.6 : 1, transition: "opacity 0.15s", justifyContent: "flex-start", ...(publishingDraftId === p.id ? { background: C.brd, border: "none", color: C.t3 } : GRAD_BTN) }}>
                           <Plus size={13} color="#fff" style={{ flexShrink: 0 }} /><span>{publishingDraftId === p.id ? "Posting…" : "Post Now"}</span>
