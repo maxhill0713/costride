@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { MapPin, Star, Users, Trophy, TrendingUp, MessageCircle, Heart, BadgeCheck, Gift, ChevronLeft, ChevronRight, Calendar, Plus, Edit, GraduationCap, Clock, Target, Award, Crown, Dumbbell, Flame, CheckCircle, Trash2, Home, Mail, Copy, Zap, Activity, Timer, ChevronDown, ChevronUp, UserPlus } from 'lucide-react';
+import { MapPin, Star, Users, Trophy, TrendingUp, MessageCircle, Heart, BadgeCheck, Gift, ChevronLeft, ChevronRight, Calendar, Plus, Edit, GraduationCap, Clock, Target, Award, Crown, Dumbbell, Flame, CheckCircle, Trash2, Home, Mail, Copy, Zap, Activity, Timer, ChevronDown, ChevronUp, UserPlus, BarChart2 } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Progress } from '@/components/ui/progress';
 import { Card } from '@/components/ui/card';
@@ -1729,19 +1729,6 @@ export default function GymCommunity() {
             <TabsContent value="home" className="space-y-3 mt-0 w-full" asChild>
               <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.25 }} className="space-y-3">
                 <BusyTimesChart checkIns={checkIns} gymId={gymId} />
-                {polls.filter(p => {
-                  if (!p.end_date) return true;
-                  return new Date(p.end_date).getTime() + 24 * 60 * 60 * 1000 - 1 >= Date.now();
-                }).length > 0 &&
-                <div className="space-y-3">
-                    {polls.filter(p => {
-                      if (!p.end_date) return true;
-                      return new Date(p.end_date).getTime() + 24 * 60 * 60 * 1000 - 1 >= Date.now();
-                    }).map((poll) =>
-                  <PollCard key={poll.id} poll={poll} onVote={!showOwnerControls && !poll.voters?.includes(currentUser?.id) ? (optionId) => votePollMutation.mutate({ pollId: poll.id, optionId }) : null} userVoted={poll.voters?.includes(currentUser?.id)} isLoading={votePollMutation.isPending} currentUser={currentUser} />
-                  )}
-                  </div>
-                }
                 <InlineLeaderboard view={leaderboardView} setView={setLeaderboardView} checkInLeaderboardWeek={checkInLeaderboardWeek} checkInLeaderboardMonth={checkInLeaderboardMonth} checkInLeaderboardAllTime={checkInLeaderboardAllTime} streakLeaderboardWeek={streakLeaderboardWeek} streakLeaderboardMonth={streakLeaderboardMonth} streakLeaderboardAllTime={streakLeaderboardAllTime} progressLeaderboardWeek={progressLeaderboardWeek} progressLeaderboardMonth={progressLeaderboardMonth} progressLeaderboardAllTime={progressLeaderboardAllTime} />
                 {coaches.length > 0 &&
                 <div style={{ ...CARD_STYLE, borderRadius: 18, overflow: 'hidden' }}>
@@ -1885,6 +1872,36 @@ export default function GymCommunity() {
                   </div>
                 }
                 <SuggestedFriendsCard checkIns={checkIns} currentUser={currentUser} memberAvatarMap={memberAvatarMap} />
+
+                {/* Live Polls section */}
+                {(() => {
+                  const livePolls = polls.filter(p => {
+                    if (!p.end_date) return true;
+                    return new Date(p.end_date).getTime() + 24 * 60 * 60 * 1000 - 1 >= Date.now();
+                  });
+                  if (livePolls.length === 0) return null;
+                  return (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '4px 2px' }}>
+                        <div style={{ width: 28, height: 28, borderRadius: 8, background: 'rgba(96,165,250,0.12)', border: '1px solid rgba(96,165,250,0.22)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                          <BarChart2 style={{ width: 13, height: 13, color: '#60a5fa' }} />
+                        </div>
+                        <span style={{ fontSize: 15, fontWeight: 900, color: '#fff', letterSpacing: '-0.01em' }}>Live Polls</span>
+                        <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.3)', fontWeight: 600 }}>{livePolls.length} active</span>
+                      </div>
+                      {livePolls.map(poll => (
+                        <PollCard
+                          key={poll.id}
+                          poll={poll}
+                          onVote={!showOwnerControls && !poll.voters?.includes(currentUser?.id) ? (optionId) => votePollMutation.mutate({ pollId: poll.id, optionId }) : null}
+                          userVoted={poll.voters?.includes(currentUser?.id)}
+                          isLoading={votePollMutation.isPending}
+                          currentUser={currentUser}
+                        />
+                      ))}
+                    </div>
+                  );
+                })()}
               </motion.div>
             </TabsContent>
 
