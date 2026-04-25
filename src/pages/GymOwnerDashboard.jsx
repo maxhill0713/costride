@@ -513,7 +513,7 @@ export default function GymOwnerDashboard() {
   }, [isCoach, activeCoachRecord, checkIns]);
   const coachCi30 = [];
   const coachUserId = activeCoachRecord ? activeCoachRecord.id : currentUser?.id;
-  const coachPosts = isCoach ? posts.filter((p) => p.author_id === coachUserId || p.created_by === coachUserId || !p.author_id) : posts;
+  const coachPosts = isCoach ? posts.filter((p) => p.author_id === coachUserId || p.created_by === coachUserId || !p.author_id) : posts.filter((p) => p.member_id !== currentUser?.id && p.created_by !== currentUser?.id);
   const coachEvents = isCoach ? events.filter((e) => e.created_by === coachUserId || e.coach_id === coachUserId || !e.created_by) : events;
   const coachChallenges = isCoach ? challenges.filter((c) => c.created_by === coachUserId || c.coach_id === coachUserId || !c.created_by) : challenges;
   const coachPolls = isCoach ? polls.filter((p) => p.created_by === coachUserId || !p.created_by) : polls;
