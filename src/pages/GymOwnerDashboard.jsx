@@ -327,6 +327,9 @@ export default function GymOwnerDashboard() {
   const [memberPageSize] = useState(10);
   const [selectedRows, setSelectedRows] = useState(new Set());
   const [showChat, setShowChat] = useState(false);
+  const [joinCodeDismissed, setJoinCodeDismissed] = useState(() => {
+    try { return localStorage.getItem('joinCodeBannerDismissed') === 'true'; } catch { return false; }
+  });
   const [memberSearchQuery, setMemberSearchQuery] = useState('');
   const [memberSearchOpen, setMemberSearchOpen] = useState(false);
   const [selectedQuickMember, setSelectedQuickMember] = useState(null);
@@ -771,6 +774,28 @@ export default function GymOwnerDashboard() {
             );
           })}
         </nav>
+        {!collapsed && isGymOwner && selectedGym?.join_code && !joinCodeDismissed && (
+          <div style={{ padding: '0 10px 10px', flexShrink: 0 }}>
+            <div style={{ borderRadius: 10, overflow: 'hidden', background: 'linear-gradient(135deg, #050c1a 0%, #071225 100%)', border: '1px solid rgba(14,165,233,0.25)', position: 'relative' }}>
+              <div style={{ height: 2, background: 'linear-gradient(90deg,#0ea5e9,#06b6d4,#8b5cf6)', width: '100%' }} />
+              <button
+                onClick={() => { setJoinCodeDismissed(true); try { localStorage.setItem('joinCodeBannerDismissed', 'true'); } catch {} }}
+                style={{ position: 'absolute', top: 6, right: 6, width: 18, height: 18, borderRadius: 4, background: 'rgba(255,255,255,0.07)', border: 'none', color: 'rgba(255,255,255,0.35)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, zIndex: 1 }}>
+                <X style={{ width: 10, height: 10 }} />
+              </button>
+              <div style={{ padding: '10px 10px 8px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
+                <div style={{ background: '#fff', borderRadius: 7, padding: 6, boxShadow: '0 0 0 1px rgba(14,165,233,0.3)' }}>
+                  <QRCode value={`${window.location.origin}/Gyms?joinCode=${selectedGym.join_code}`} size={90} level="H" />
+                </div>
+                <div style={{ textAlign: 'center' }}>
+                  <div style={{ fontSize: 9, fontWeight: 700, color: 'rgba(255,255,255,0.3)', textTransform: 'uppercase', letterSpacing: '0.14em', marginBottom: 3 }}>Member Join Code</div>
+                  <div style={{ fontSize: 20, fontWeight: 900, letterSpacing: '0.18em', color: '#fff', fontFamily: "'Courier New', monospace", lineHeight: 1 }}>{selectedGym.join_code}</div>
+                  <div style={{ fontSize: 9.5, color: 'rgba(255,255,255,0.25)', marginTop: 5, lineHeight: 1.4 }}>Also visible in the top nav bar</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
         {!collapsed && isGymOwner && (
           <div style={{ padding: '0 10px 10px', flexShrink: 0 }}>
             <Link to={createPageUrl('Plus')}>
@@ -895,29 +920,7 @@ export default function GymOwnerDashboard() {
         {selectedQuickMember && <MemberQuickModal member={selectedQuickMember} onClose={() => setSelectedQuickMember(null)} checkIns={checkIns} avatarMap={avatarMapFull} />}
         <main style={{ flex: 1, overflow: 'hidden', padding: '20px 22px 28px', display: 'flex', flexDirection: 'column' }}>
           <div style={{ flex: 1, minHeight: 0, width: '100%', maxWidth: 1600, overflowY: 'auto' }}>
-            {isGymOwner && selectedGym?.join_code && (
-              <div onClick={() => setShowPoster(true)} style={{ marginBottom: 18, borderRadius: 14, overflow: 'hidden', cursor: 'pointer', background: 'linear-gradient(135deg, #050c1a 0%, #071225 60%, #050810 100%)', border: '1px solid rgba(14,165,233,0.25)', position: 'relative', transition: 'border-color 0.18s' }}
-                onMouseEnter={e => e.currentTarget.style.borderColor = 'rgba(14,165,233,0.55)'}
-                onMouseLeave={e => e.currentTarget.style.borderColor = 'rgba(14,165,233,0.25)'}>
-                <div style={{ height: 3, background: 'linear-gradient(90deg,#0ea5e9,#06b6d4,#8b5cf6)', width: '100%' }} />
-                <div style={{ display: 'flex', alignItems: 'center', gap: 20, padding: '16px 22px' }}>
-                  <div style={{ background: '#fff', borderRadius: 10, padding: 8, flexShrink: 0, boxShadow: '0 0 0 1px rgba(14,165,233,0.3)' }}>
-                    <QRCode value={`${window.location.origin}/Gyms?joinCode=${selectedGym.join_code}`} size={60} level="H" />
-                  </div>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontSize: 10, fontWeight: 700, color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase', letterSpacing: '0.16em', marginBottom: 4 }}>Member Join Code</div>
-                    <div style={{ fontSize: 34, fontWeight: 900, letterSpacing: '0.22em', color: '#fff', fontFamily: "'Courier New', monospace", lineHeight: 1 }}>{selectedGym.join_code}</div>
-                    <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.3)', marginTop: 5 }}>Scan the QR or enter this code in the CoStride app</div>
-                  </div>
-                  <div style={{ flexShrink: 0, display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 8 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '7px 14px', borderRadius: 8, background: 'rgba(14,165,233,0.1)', border: '1px solid rgba(14,165,233,0.3)', color: '#38bdf8', fontSize: 12, fontWeight: 700 }}>
-                      <QrCode style={{ width: 12, height: 12 }} /> View Flyer
-                    </div>
-                    <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.2)' }}>Print · Download · Share</div>
-                  </div>
-                </div>
-              </div>
-            )}
+
             <Suspense fallback={<TabLoader />}>
               {tabPanels.map((p) => (
                 <div key={p.id} style={{ display: p.id === tab ? 'block' : 'none' }}>{p.content}</div>
