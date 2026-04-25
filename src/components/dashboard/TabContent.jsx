@@ -551,7 +551,7 @@ function QuickActions({ post, resolvedName, memberId, gym, currentUser, onDelete
 
   const btnStyle = { display: "flex", alignItems: "center", gap: compact ? 5 : 8, width: "100%", padding: compact ? "5px 8px" : "7px 10px", borderRadius: 8, background: "rgba(255,255,255,0.03)", border: `1px solid ${C.brd}`, color: C.t2, fontSize: compact ? 10.5 : 12, fontWeight: 600, cursor: "pointer", fontFamily: FONT, textAlign: "left", transition: "all 0.15s" };
   const iconSize = compact ? 11 : 13;
-  const containerStyle = { width: compact ? 180 : 240, flexShrink: 0, borderLeft: `1px solid ${C.brd}`, padding: compact ? "10px 10px" : "12px 14px", display: "flex", flexDirection: "column", gap: compact ? 7 : 8, justifyContent: "flex-start" };
+  const containerStyle = { width: compact ? 90 : 120, flexShrink: 0, borderLeft: `1px solid ${C.brd}`, padding: compact ? "10px 8px" : "12px 10px", display: "flex", flexDirection: "column", gap: compact ? 7 : 8, justifyContent: "flex-start" };
 
   return (
     <>
@@ -1310,25 +1310,25 @@ export default function ContentPage({
                               </div>
                             )}
                             {reactionCount > 0 && (
-                              <button onClick={() => setReactionsPost(p)} style={{ marginTop: "auto", display: "flex", alignItems: "center", gap: 0, background: "none", border: "none", cursor: "pointer", padding: 0 }}>
-                                {Object.entries(p.reactions || {}).slice(0, 3).map(([uid, variant], i) => (
-                                  <div key={uid} style={{ position: "relative", width: 22, height: 22, marginLeft: i === 0 ? 0 : -7, zIndex: 3 - i, flexShrink: 0 }}>
-                                    {variant === "sunglasses" ? (
-                                      <div style={{ position: "relative", width: "100%", height: "100%" }}>
-                                        <img src={STREAK_ICON_URL} alt="react" style={{ width: "100%", height: "100%", objectFit: "contain" }} />
-                                        <svg style={{ position: "absolute", inset: 0, width: "100%", height: "100%", pointerEvents: "none" }} viewBox="0 0 64 64">
-                                          <circle cx="20" cy="24" r="6" fill="none" stroke="black" strokeWidth="1.5"/>
-                                          <circle cx="44" cy="24" r="6" fill="none" stroke="black" strokeWidth="1.5"/>
-                                          <line x1="26" y1="24" x2="38" y2="24" stroke="black" strokeWidth="1.5"/>
-                                        </svg>
-                                      </div>
-                                    ) : (
-                                      <img src={getStreakIconUrl(variant)} alt="react" style={{ width: "100%", height: "100%", objectFit: "contain" }} />
-                                    )}
-                                  </div>
-                                ))}
-                                {reactionCount > 3 && <span style={{ fontSize: 10, fontWeight: 700, color: C.t2, marginLeft: 4 }}>+{reactionCount - 3}</span>}
-                              </button>
+                            <button onClick={() => setReactionsPost(p)} style={{ marginTop: "auto", display: "flex", alignItems: "center", gap: 0, background: "none", border: "none", cursor: "pointer", padding: 0 }}>
+                              {Object.entries(p.reactions || {}).slice(0, 3).map(([uid, variant], i) => (
+                                <div key={uid} style={{ position: "relative", width: 44, height: 44, marginLeft: i === 0 ? 0 : -14, zIndex: 3 - i, flexShrink: 0 }}>
+                                  {variant === "sunglasses" ? (
+                                    <div style={{ position: "relative", width: "100%", height: "100%" }}>
+                                      <img src={STREAK_ICON_URL} alt="react" style={{ width: "100%", height: "100%", objectFit: "contain" }} />
+                                      <svg style={{ position: "absolute", inset: 0, width: "100%", height: "100%", pointerEvents: "none" }} viewBox="0 0 64 64">
+                                        <circle cx="20" cy="24" r="6" fill="none" stroke="black" strokeWidth="1.5"/>
+                                        <circle cx="44" cy="24" r="6" fill="none" stroke="black" strokeWidth="1.5"/>
+                                        <line x1="26" y1="24" x2="38" y2="24" stroke="black" strokeWidth="1.5"/>
+                                      </svg>
+                                    </div>
+                                  ) : (
+                                    <img src={getStreakIconUrl(variant)} alt="react" style={{ width: "100%", height: "100%", objectFit: "contain" }} />
+                                  )}
+                                </div>
+                              ))}
+                              {reactionCount > 3 && <span style={{ fontSize: 10, fontWeight: 700, color: C.t2, marginLeft: 4 }}>+{reactionCount - 3}</span>}
+                            </button>
                             )}
                           </div>
                           <QuickActions post={p} resolvedName={resolvedName} memberId={p.member_id} gym={gym} currentUser={currentUser} onDeletePost={onDeletePost} isGymPost={isGymPost} onPostEdited={onUpdatePost} compact />
