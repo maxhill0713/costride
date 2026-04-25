@@ -335,8 +335,8 @@ export default function UpcomingEvents({ gymMemberships = [], currentUser }) {
                         position: 'absolute', inset: 0,
                         background: 'linear-gradient(to bottom, transparent 25%, rgba(8,10,20,0.95) 100%)',
                       }} />
-                      {/* Date and Title — overlaid at bottom of image */}
-                      <div style={{ position: 'absolute', bottom: 12, left: 12, right: 12 }}>
+                      {/* Date and Title — overlaid near top of image */}
+                      <div style={{ position: 'absolute', top: 12, left: 12, right: 12 }}>
                         <h3 style={{
                           fontSize: 15, fontWeight: 900, color: '#fff',
                           letterSpacing: '-0.02em', lineHeight: 1.25, margin: 0,
