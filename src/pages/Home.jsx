@@ -1377,13 +1377,17 @@ export default function Home() {
                         const isPast = isFutureWeek ? false : weekOffset < 0 ? true : day < todayDay;
                         const isPreJoin = joinDayNum !== null && day < joinDayNum && weekOffset === 0;
                         const isInCurrentSplit = trainingDays.includes(day);
-                        const isRestDay = done ? false : !isInCurrentSplit;
-                        const isMissed = !isRestDay && !done && isPast && !isPreJoin && !isFutureWeek;
+                        // For past days: never use the current split to decide rest/missed.
+                        // Past days are either logged (blue) or not (green = rest).
+                        // Only today and future days use the current split to classify as training/rest.
+                        // This ensures changing your split never retroactively changes past day colours.
+                        const isRestDay = done ? false : isPast ? true : !isInCurrentSplit;
+                        const isMissed = !isRestDay && !done && isTodayCircle && !isFutureWeek;
                         const isPastOrTodayRestDay = isRestDay && (isPast || isTodayCircle);
                         const size = isTodayCircle ? 49 : 40;
                         const verticalOffset = Math.round(Math.sin(i / (allDays.length - 1) * Math.PI * 2) * 11);
                         const workoutLog = logsByDay[day];
-                        const showViewWorkout = !done && !isRestDay && !isMissed && (isFutureWeek || day > todayDay || isTodayCircle);
+                        const showViewWorkout = !done && isInCurrentSplit && !isMissed && (isFutureWeek || day > todayDay || isTodayCircle);
                         const hasBubbleBtn = (done && !isRestDay && workoutLog) || showViewWorkout;
 
                         const getBg = () => {
