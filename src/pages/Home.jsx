@@ -242,15 +242,6 @@ export default function Home() {
     return () => window.removeEventListener('resize', measure);
   }, []);
 
-  // ── Show challenge completion celebration once, 1 s after load ───────────
-  useEffect(() => {
-    if (!currentUser?.unlocked_streak_variants?.length) return;
-    const unseen = getUnseenCompletions(currentUser.unlocked_streak_variants);
-    if (unseen.length === 0) return;
-    const t = setTimeout(() => setChallengeCompletionVariant(unseen[0]), 1000);
-    return () => clearTimeout(t);
-  }, [currentUser?.id, currentUser?.unlocked_streak_variants?.join(',')]);
-
   const anyCelebrationActive = showStreakCelebration || showChallengesCelebration || showShareWorkout || showDaysCelebration || showFreezeAnimation || showStreakLossAnimation || !!challengeCompletionVariant;
   useEffect(() => {
     if (anyCelebrationActive) {
@@ -344,6 +335,15 @@ export default function Home() {
     staleTime: 0,
     gcTime: 10 * 60 * 1000,
   });
+
+  // ── Show challenge completion celebration once, 1 s after load ───────────
+  useEffect(() => {
+    if (!currentUser?.unlocked_streak_variants?.length) return;
+    const unseen = getUnseenCompletions(currentUser.unlocked_streak_variants);
+    if (unseen.length === 0) return;
+    const t = setTimeout(() => setChallengeCompletionVariant(unseen[0]), 1000);
+    return () => clearTimeout(t);
+  }, [currentUser?.id, currentUser?.unlocked_streak_variants?.join(',')]);
 
   useEffect(() => {
     injectStreakStyles();
