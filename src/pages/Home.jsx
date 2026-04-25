@@ -1396,7 +1396,10 @@ export default function Home() {
                         // A past day is a rest day only if it was NOT in the training split.
                         // A past day is missed (red) if it WAS in the training split but not logged.
                         const isRestDay = done ? false : !isInCurrentSplit;
-                        const isMissed = !isRestDay && !done && (isPast || (isTodayCircle && !isFutureWeek));
+                        // Today showing as a rest-day-override (user switched a rest day to workout) should
+                        // show grey (planned) not red (missed) — treat it like a future training day
+                        const isTodayRestDayOverride = isTodayCircle && restDayOverride === day;
+                        const isMissed = !isRestDay && !done && !isTodayRestDayOverride && (isPast || (isTodayCircle && !isFutureWeek));
                         const isPastOrTodayRestDay = isRestDay && (isPast || isTodayCircle);
                         const size = isTodayCircle ? 49 : 40;
                         const verticalOffset = Math.round(Math.sin(i / (allDays.length - 1) * Math.PI * 2) * 11);

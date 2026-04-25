@@ -60,7 +60,16 @@ function WorkoutSwitcherModal({ open, onClose, currentUser, activeDayKey, adjust
   const creditAvailable = hasRestDayCredit();
 
   // True if today was originally a rest day but the user switched it to a workout
-  const todayWasRestDayOverridden = !trainingDays.includes(adjustedDay) && activeDayKey === adjustedDay && !restSwapActive && !creditRestActive;
+  // overrideDayKey is now always set to adjustedDay (today) when active, so check localStorage for the source day
+  const hasRestDayOverride = (() => {
+    try {
+      const stored = localStorage.getItem('workoutOverrideDay');
+      const storedDate = localStorage.getItem('workoutOverrideDayDate');
+      const todayStr = new Date().toISOString().split('T')[0];
+      return stored && storedDate === todayStr;
+    } catch { return false; }
+  })();
+  const todayWasRestDayOverridden = !trainingDays.includes(adjustedDay) && hasRestDayOverride && !restSwapActive && !creditRestActive;
 
   const todayIsTrainingDay = trainingDays.includes(adjustedDay) && !restSwapActive;
   const futureRestDaysForSwap = (!creditAvailable && todayIsTrainingDay)
@@ -228,18 +237,12 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
 
   useEffect(() => {
     try {
-      const todayStr = new Date().toISOString().split('T')[0];
       if (overrideDayKey === null) {
         localStorage.removeItem('workoutOverrideDay');
         localStorage.removeItem('workoutOverrideDayDate');
         localStorage.removeItem('workoutOverrideSourceDay');
-      } else {
-        // Store TODAY's day number (the day being overridden) so Home.jsx circles know which circle to change
-        localStorage.setItem('workoutOverrideDay', String(adjustedDay));
-        localStorage.setItem('workoutOverrideDayDate', todayStr);
-        // Also store the source workout day key so getTodayWorkout can look up the right workout
-        localStorage.setItem('workoutOverrideSourceDay', String(overrideDayKey));
       }
+      // When active, localStorage is written directly in onSelect to preserve the source day key
     } catch {}
   }, [overrideDayKey]);
 
@@ -1360,10 +1363,16 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
             onOverrideDayChange?.(null);
             window.dispatchEvent(new Event('weekSwapChanged'));
           } else {
-            const newOverride = dayKey === adjustedDay ? null : dayKey;
-            setOverrideDayKey(newOverride);
+            // Store the source workout day key separately; overrideDayKey always = adjustedDay when active
+            try {
+              const todayStr = new Date().toISOString().split('T')[0];
+              localStorage.setItem('workoutOverrideSourceDay', String(dayKey));
+              localStorage.setItem('workoutOverrideDay', String(adjustedDay));
+              localStorage.setItem('workoutOverrideDayDate', todayStr);
+            } catch {}
+            setOverrideDayKey(adjustedDay);
             setEditingIndex(null);
-            onOverrideDayChange?.(newOverride);
+            onOverrideDayChange?.(adjustedDay);
             window.dispatchEvent(new Event('weekSwapChanged'));
           }
         }} />
