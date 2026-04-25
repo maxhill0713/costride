@@ -43,7 +43,7 @@ const MONTHLY_CHALLENGES = [
     description: 'Stay active on the weekend! Log your workout on Saturday or Sunday 5 times!',
     goal_type: 'weekend_workouts',
     target_value: 5,
-    reward: '2 x Streak Freezes',
+    reward: '1 x Week Streak Freeze',
     end_date: monthEnd.toISOString(),
     progressKey: 'weekend_warrior',
   },
