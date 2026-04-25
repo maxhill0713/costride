@@ -37,6 +37,16 @@
             }
           });
           
+          // Debug: Log initialization status
+          const isPushEnabled = await OneSignal.Notifications.isPushNotificationsEnabled();
+          const userId = await OneSignal.getUserId();
+          console.log("OneSignal: push notifications enabled =", isPushEnabled);
+          console.log("OneSignal: user ID =", userId);
+          
+          if (!userId) {
+            console.warn("OneSignal: user ID is null - subscription may have failed");
+          }
+          
           // Delay prompt by 2-3 seconds after initialization
           setTimeout(async () => {
             try {
