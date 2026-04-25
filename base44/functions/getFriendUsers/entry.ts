@@ -19,14 +19,20 @@ Deno.serve(async (req) => {
       { id: { $in: userIds.slice(0, 200) } }
     );
 
-    // Only return safe public fields — no sensitive data
-    const safeUsers = users.map(u => ({
-      id: u.id,
-      full_name: u.full_name,
-      display_name: u.display_name || null,
-      avatar_url: u.avatar_url || u.profile_picture || u.photo_url || null,
-      username: u.username || null,
-    }));
+    // Map users by ID to ensure correct association even if query returns different order
+    const userMap = {};
+    users.forEach(u => {
+      userMap[u.id] = {
+        id: u.id,
+        full_name: u.full_name,
+        display_name: u.display_name || null,
+        avatar_url: u.avatar_url || u.profile_picture || u.photo_url || null,
+        username: u.username || null,
+      };
+    });
+
+    // Return in the same order as requested to maintain consistency
+    const safeUsers = userIds.slice(0, 200).map(id => userMap[id]).filter(Boolean);
 
     return Response.json({ users: safeUsers });
   } catch (error) {
