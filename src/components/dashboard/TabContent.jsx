@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import {
   Plus, Flame, Check, Calendar, Clock, Users, MapPin,
   ArrowUpRight, ArrowDownRight, ChevronDown, ChevronLeft, ChevronRight,
