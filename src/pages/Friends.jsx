@@ -67,7 +67,7 @@ export default function Friends() {
     queryKey: ['friendUserProfiles', knownUserIds.join(',')],
     queryFn: async () => {
       if (knownUserIds.length === 0) return [];
-      return base44.entities.User.filter({ id: { $in: knownUserIds } });
+      return base44.functions.invoke('getFriendUsers', { userIds: knownUserIds }).then(r => r.data?.users || []);
     },
     enabled: knownUserIds.length > 0,
     staleTime: 5 * 60 * 1000,
@@ -767,13 +767,13 @@ export default function Friends() {
                   friendsWithActivity
                     .filter((friend) => {
                        const friendUser = allUsers.find((u) => u.id === friend.friend_id);
-                       const displayName = friendUser?.full_name || friend.friend_name;
+                       const displayName = friendUser?.display_name || friendUser?.full_name || friend.friend_name;
                        return displayName.toLowerCase().includes(friendsSearchQuery.toLowerCase());
                      })
                      .map((friend) => {
                        const { activity } = friend;
                        const friendUser = allUsers.find((u) => u.id === friend.friend_id);
-                       const currentName = friendUser?.full_name || friend.friend_name;
+                       const currentName = friendUser?.display_name || friendUser?.full_name || friend.friend_name;
                       return (
                         <div
                           key={friend.id}
