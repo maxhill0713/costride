@@ -316,16 +316,16 @@ export default function EventDetailPopup({ event, onClose, onDelete, onEditSaved
               <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                 <span style={{ fontSize: 12.5, fontWeight: 600, color: C.t1 }}>{liveAttendees} attending</span>
                 {attendeeAvatars.length > 0 && (
-                  <div style={{ display: "flex", alignItems: "center" }}>
-                    {attendeeAvatars.map((u, i) => (
-                      <div key={u.id} style={{ width: 29, height: 29, borderRadius: "50%", border: `2px solid ${C.card}`, overflow: "hidden", background: C.brd, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 10, fontWeight: 800, color: C.t1, marginLeft: i === 0 ? 0 : -9, zIndex: attendeeAvatars.length - i, flexShrink: 0 }}>
-                        {u.avatar ? <img src={u.avatar} alt={u.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : ini(u.name)}
-                      </div>
-                    ))}
+                  <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                    <div style={{ display: "flex", alignItems: "center" }}>
+                      {attendeeAvatars.map((u, i) => (
+                        <div key={u.id} style={{ width: 29, height: 29, borderRadius: "50%", border: `2px solid ${C.card}`, overflow: "hidden", background: C.brd, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 10, fontWeight: 800, color: C.t1, marginLeft: i === 0 ? 0 : -9, zIndex: attendeeAvatars.length - i, flexShrink: 0 }}>
+                          {u.avatar ? <img src={u.avatar} alt={u.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : ini(u.name)}
+                        </div>
+                      ))}
+                    </div>
                     {extraCount > 0 && (
-                      <div style={{ width: 29, height: 29, borderRadius: "50%", border: `2px solid ${C.card}`, background: C.brd, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 10, fontWeight: 800, color: C.t2, marginLeft: -9, flexShrink: 0 }}>
-                        +{extraCount}
-                      </div>
+                      <span style={{ fontSize: 11, fontWeight: 700, color: C.t2 }}>+{extraCount}</span>
                     )}
                   </div>
                 )}
