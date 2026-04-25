@@ -1462,6 +1462,22 @@ export default function Home() {
                                   if (isMissed) return 'No Workout';
                                   if (done && workoutLog) return workoutLog.workout_name || workoutLog.title || workoutLog.workout_type || workoutLog.name || workoutLog.split_name || 'Workout';
                                   if (done) return 'Workout';
+                                  // For rest-day overrides, look up the source workout day key
+                                  if (isTodayRestDayOverride) {
+                                    try {
+                                      const srcDay = localStorage.getItem('workoutOverrideSourceDay');
+                                      if (srcDay) {
+                                        const srcKey = parseInt(srcDay);
+                                        const w = currentUser?.custom_workout_types?.[srcKey];
+                                        if (w?.name) return w.name;
+                                        const savedSplits = currentUser?.saved_splits || [];
+                                        const activeSplitId = currentUser?.active_split_id;
+                                        const activeSplit = savedSplits.find((s) => s.id === activeSplitId) || savedSplits[0];
+                                        const sw = activeSplit?.workouts?.[srcKey] || activeSplit?.workouts?.[String(srcKey)];
+                                        if (sw?.name) return sw.name;
+                                      }
+                                    } catch {}
+                                  }
                                   const customTypes = currentUser?.custom_workout_types;
                                   const restSwapForLabel = restSwap;
                                   const lookupDay = (restSwapForLabel && restSwapForLabel.toDay === day) ? restSwapForLabel.fromDay : day;
@@ -1762,10 +1778,37 @@ export default function Home() {
       <AnimatePresence>
         {viewWorkoutDay !== null && (() => {
           const restSwapData = getRestSwap();
-          const effectiveViewDay = (restSwapData && viewWorkoutDay === restSwapData.toDay)
+          let effectiveViewDay = (restSwapData && viewWorkoutDay === restSwapData.toDay)
             ? restSwapData.fromDay
             : viewWorkoutDay;
-          const workout = currentUser?.custom_workout_types?.[effectiveViewDay];
+
+          // If this is a rest-day-override for today, use the source workout day key
+          const todayDowNow = new Date().getDay();
+          const todayNumNow = todayDowNow === 0 ? 7 : todayDowNow;
+          const restDayOverrideForView = weekOffset === 0 ? getRestDayOverride() : null;
+          if (viewWorkoutDay === todayNumNow && restDayOverrideForView === todayNumNow) {
+            try {
+              const srcDay = localStorage.getItem('workoutOverrideSourceDay');
+              if (srcDay) effectiveViewDay = parseInt(srcDay);
+            } catch {}
+          }
+
+          // Look up workout from custom_workout_types or saved_splits
+          const lookupWorkoutForView = (key) => {
+            const w = currentUser?.custom_workout_types?.[key];
+            if (w && (w.exercises || []).length > 0) return w;
+            const savedSplits = currentUser?.saved_splits || [];
+            const activeSplitId = currentUser?.active_split_id;
+            const activeSplit = savedSplits.find((s) => s.id === activeSplitId) || savedSplits[0];
+            const sw = activeSplit?.workouts?.[key] || activeSplit?.workouts?.[String(key)];
+            if (sw && (sw.exercises || []).length > 0) return sw;
+            for (const split of savedSplits) {
+              const fw = split.workouts?.[key] || split.workouts?.[String(key)];
+              if (fw && (fw.exercises || []).length > 0) return fw;
+            }
+            return null;
+          };
+          const workout = lookupWorkoutForView(effectiveViewDay);
           if (!workout) return null;
           const workoutName = workout.name || 'Training Day';
           const exercises = workout.exercises || [];
