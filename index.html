@@ -15,54 +15,78 @@
     <!-- OneSignal SDK -->
     <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
     <script>
-      window.OneSignalDeferred = window.OneSignalDeferred || [];
-      OneSignalDeferred.push(async function(OneSignal) {
-        try {
-          // Initialize OneSignal
-          await OneSignal.init({
-            appId: "9b5b68c2-c473-49eb-b74e-eac55368db3b",
-            serviceWorkerPath: "/OneSignalSDKWorker.js",
-            serviceWorkerUpdateStrategy: "auto",
-            notifyButton: {
-              enable: false,
-            },
-          });
-          
-          console.log("OneSignal: initialized successfully");
-          
-          // Listen for permission changes
-          OneSignal.Notifications.addEventListener("permission_change", async (change) => {
-            if (change.permission === "granted") {
-              window.dispatchEvent(new CustomEvent('onesignalPermissionGranted'));
-            }
-          });
-          
-          // Debug: Log initialization status
-          const isPushEnabled = await OneSignal.Notifications.isPushNotificationsEnabled();
-          const userId = await OneSignal.getUserId();
-          console.log("OneSignal: push notifications enabled =", isPushEnabled);
-          console.log("OneSignal: user ID =", userId);
-          
-          if (!userId) {
-            console.warn("OneSignal: user ID is null - subscription may have failed");
-          }
-          
-          // Delay prompt by 2-3 seconds after initialization
-          setTimeout(async () => {
-            try {
-              const permission = await OneSignal.Notifications.getPermission();
-              // Only show prompt if not already granted or denied
-              if (permission === null) {
-                await OneSignal.Notifications.requestPermission();
-              }
-            } catch (err) {
-              console.warn("OneSignal: failed to show prompt", err);
-            }
-          }, 2500);
-        } catch (err) {
-          console.error("OneSignal: initialization error", err);
+      // Ensure OneSignal initialization only happens once
+      let isOneSignalInitialized = false;
+      
+      function initializeOneSignal() {
+        if (isOneSignalInitialized) {
+          console.warn("OneSignal: already initialized, skipping duplicate init");
+          return;
         }
-      });
+        
+        window.OneSignalDeferred = window.OneSignalDeferred || [];
+        OneSignalDeferred.push(async function(OneSignal) {
+          try {
+            // Initialize OneSignal
+            await OneSignal.init({
+              appId: "9b5b68c2-c473-49eb-b74e-eac55368db3b",
+              serviceWorkerPath: "/OneSignalSDKWorker.js",
+              serviceWorkerUpdateStrategy: "auto",
+              notifyButton: { enable: false },
+            });
+            
+            isOneSignalInitialized = true;
+            console.log("OneSignal: initialized successfully");
+            
+            // Check subscription status
+            const isPushEnabled = await OneSignal.Notifications.isPushNotificationsEnabled();
+            const userId = await OneSignal.getUserId();
+            console.log("OneSignal: push notifications enabled =", isPushEnabled);
+            console.log("OneSignal: user ID =", userId);
+            
+            if (!userId) {
+              console.warn("OneSignal: user ID is null - subscription may have failed");
+            }
+            
+            // Listen for permission changes
+            OneSignal.Notifications.addEventListener("permission_change", async (change) => {
+              if (change.permission === "granted") {
+                const newUserId = await OneSignal.getUserId();
+                console.log("OneSignal: permission granted, user ID =", newUserId);
+                window.dispatchEvent(new CustomEvent('onesignalPermissionGranted'));
+              }
+            });
+            
+            // Only show prompt after 2 seconds if notifications are NOT already enabled
+            if (!isPushEnabled) {
+              setTimeout(async () => {
+                try {
+                  const permission = await OneSignal.Notifications.getPermission();
+                  // Only show prompt if permission is null (not yet decided)
+                  if (permission === null) {
+                    console.log("OneSignal: showing notification prompt");
+                    await OneSignal.Notifications.requestPermission();
+                  }
+                } catch (err) {
+                  console.error("OneSignal: failed to show prompt", err);
+                }
+              }, 2000);
+            } else {
+              console.log("OneSignal: notifications already enabled, skipping prompt");
+            }
+          } catch (err) {
+            console.error("OneSignal: initialization error", err);
+          }
+        });
+      }
+      
+      // Initialize on DOMContentLoaded to ensure SDK is ready
+      if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", initializeOneSignal);
+      } else {
+        // DOM already loaded
+        initializeOneSignal();
+      }
     </script>
   </head>
   <body style="overflow-x:hidden;scrollbar-width:none;-ms-overflow-style:none;">
