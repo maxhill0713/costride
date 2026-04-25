@@ -1358,6 +1358,11 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
             onOverrideDayChange?.(null);
             window.dispatchEvent(new Event('weekSwapChanged'));
           } else if (mode === 'revert-rest-override') {
+            try {
+              localStorage.removeItem('workoutOverrideDay');
+              localStorage.removeItem('workoutOverrideDayDate');
+              localStorage.removeItem('workoutOverrideSourceDay');
+            } catch {}
             setOverrideDayKey(null);
             setEditingIndex(null);
             onOverrideDayChange?.(null);
