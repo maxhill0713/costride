@@ -53,9 +53,9 @@ const MONTHLY_CHALLENGES_LOOKUP = {
     title: 'Weekend Warrior',
     description: 'Log your workout on Saturday or Sunday 5 times!',
     target_value: 5,
-    reward: '2 x Streak Freezes',
+    reward: '1 x Streak Freeze',
     rewardType: 'freezes',
-    rewardValue: 2,
+    rewardValue: 1,
     emoji: '🏋️',
   },
 };
