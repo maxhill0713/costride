@@ -337,13 +337,37 @@ export default function Home() {
   });
 
   // ── Show challenge completion celebration once, 1 s after load ───────────
+  // Only fire if the user has ACTUALLY completed a challenge that grants this variant
+  // (cross-reference with their ChallengeParticipant records to prevent false positives)
   useEffect(() => {
     if (!currentUser?.unlocked_streak_variants?.length) return;
+    if (!userChallengeParticipants.length) return;
     const unseen = getUnseenCompletions(currentUser.unlocked_streak_variants);
     if (unseen.length === 0) return;
-    const t = setTimeout(() => setChallengeCompletionVariant(unseen[0]), 1000);
+    // Only show variants where there is a completed participant record
+    const completedChallengeIds = new Set(
+      userChallengeParticipants.filter(p => p.completed).map(p => p.challenge_id)
+    );
+    if (completedChallengeIds.size === 0) return;
+    // We need to match variant → challenge. activeAppChallenges holds the challenge titles.
+    const VARIANT_TO_TITLE = {
+      beach:   'discipline builder',
+      spartan: 'witness my gains',
+      mermaid: 'discipline builder',
+      pirate:  'witness my gains',
+    };
+    const confirmedUnseen = unseen.filter(variant => {
+      const targetTitle = VARIANT_TO_TITLE[variant];
+      if (!targetTitle) return false;
+      return activeAppChallenges.some(ch =>
+        completedChallengeIds.has(ch.id) &&
+        (ch.title || '').toLowerCase().includes(targetTitle)
+      );
+    });
+    if (confirmedUnseen.length === 0) return;
+    const t = setTimeout(() => setChallengeCompletionVariant(confirmedUnseen[0]), 1000);
     return () => clearTimeout(t);
-  }, [currentUser?.id, currentUser?.unlocked_streak_variants?.join(',')]);
+  }, [currentUser?.id, currentUser?.unlocked_streak_variants?.join(','), userChallengeParticipants, activeAppChallenges]);
 
   useEffect(() => {
     injectStreakStyles();
