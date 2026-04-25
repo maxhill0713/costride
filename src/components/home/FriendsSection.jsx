@@ -275,11 +275,11 @@ function FriendsSection({
                       ? <p className="text-center text-slate-400 text-sm py-8">No friends yet</p>
                       : friendsWithActivity.filter((friend) => {
                           const userData = userDataMap[friend.friend_id];
-                          const displayName = userData?.username || friend.friend_name || 'User';
+                          const displayName = userData?.full_name || userData?.display_name || friend.friend_name || 'User';
                           return displayName.toLowerCase().includes(friendsListSearchQuery.toLowerCase());
                         }).map((friend) => {
                           const userData = userDataMap[friend.friend_id];
-                          const name = userData?.username || friend.friend_name || 'User';
+                          const name = userData?.full_name || userData?.display_name || friend.friend_name || 'User';
                           const avatarUrl = userData?.avatar_url || userAvatarMap[friend.friend_id] || friend.friend_avatar;
                           return (
                             <div key={friend.id} className="px-2 py-1 rounded-lg bg-slate-700/40 flex items-center justify-between gap-2 relative">
