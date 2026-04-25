@@ -150,9 +150,11 @@ function FriendsSection({
                   <div className="flex-1 overflow-y-auto p-4 space-y-2">
 
                     {/* Sent / pending requests */}
-                    {sentFriendRequests.filter((req) =>
-                      (req.friend_name || '').toLowerCase().includes(friendsListSearchQuery.toLowerCase())
-                    ).map((request) => {
+                    {sentFriendRequests.filter((req) => {
+                      const userData = userDataMap[req.friend_id];
+                      const displayName = userData?.full_name || req.friend_name || 'User';
+                      return displayName.toLowerCase().includes(friendsListSearchQuery.toLowerCase());
+                    }).map((request) => {
                       const userData = userDataMap[request.friend_id];
                       const name = userData?.full_name || request.friend_name || 'User';
                       const avatarUrl = userData?.avatar_url || request.friend_avatar;
@@ -292,7 +294,7 @@ function FriendsSection({
                                   <>
                                     <div className="fixed inset-0 z-[10001]" onClick={() => setFriendMenuOpen(null)} />
                                     <div className="absolute right-0 top-8 z-[10002] bg-slate-800 border border-slate-700/50 rounded-lg shadow-[0_3px_0_0_#1e293b,0_8px_20px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.1)] overflow-hidden min-w-[110px]">
-                                      <button onClick={(e) => { e.stopPropagation(); setFriendMenuOpen(null); setConfirmRemoveFriend({ id: friend.friend_id, name: friend.friend_name }); }} className="w-full px-4 py-2.5 text-left text-sm font-semibold text-red-400 hover:text-red-300 hover:bg-slate-700 transition-colors">
+                                      <button onClick={(e) => { e.stopPropagation(); setFriendMenuOpen(null); setConfirmRemoveFriend({ id: friend.friend_id, name }); }} className="w-full px-4 py-2.5 text-left text-sm font-semibold text-red-400 hover:text-red-300 hover:bg-slate-700 transition-colors">
                                         Remove
                                       </button>
                                     </div>
