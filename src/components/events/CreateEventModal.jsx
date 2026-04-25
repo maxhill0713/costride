@@ -506,12 +506,13 @@ export default function CreateEventModal({ open, onClose, onSave, gym, isLoading
                   disabled={!canSubmit}
                   style={{
                     width: '100%', height: 50, borderRadius: 12, border: 'none',
-                    fontFamily: FONT, fontSize: 15, fontWeight: 700, letterSpacing: '-0.01em',
-                    background: canSubmit ? C.blue : C.brd2,
+                    borderBottom: canSubmit ? '2px solid #1a3fa8' : 'none',
+                    fontFamily: FONT, fontSize: 15, fontWeight: 800, letterSpacing: '-0.01em',
+                    background: canSubmit ? 'linear-gradient(to bottom, #3b82f6 0%, #2563eb 40%, #1d4ed8 100%)' : C.brd2,
                     color: canSubmit ? '#fff' : C.t3,
                     cursor: canSubmit ? 'pointer' : 'default',
                     display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-                    boxShadow: canSubmit ? `0 0 24px ${C.blue}40` : 'none',
+                    boxShadow: canSubmit ? '0 2px 0 #1a3fa8, inset 0 1px 0 rgba(255,255,255,0.2)' : 'none',
                     opacity: canSubmit ? 1 : 0.4,
                     WebkitTapHighlightColor: 'transparent',
                   }}
@@ -532,13 +533,14 @@ export default function CreateEventModal({ open, onClose, onSave, gym, isLoading
                   onClick={handleSubmit}
                   disabled={!canSubmit}
                   style={{
-                    padding: '9px 22px', borderRadius: 8, border: 'none',
-                    fontFamily: FONT, fontSize: 13, fontWeight: 700, letterSpacing: '-0.01em',
-                    background: canSubmit ? C.blue : C.brd2,
+                    padding: '9px 22px', borderRadius: 10, border: 'none',
+                    borderBottom: canSubmit ? '2px solid #1a3fa8' : 'none',
+                    fontFamily: FONT, fontSize: 13, fontWeight: 800, letterSpacing: '-0.01em',
+                    background: canSubmit ? 'linear-gradient(to bottom, #3b82f6 0%, #2563eb 40%, #1d4ed8 100%)' : C.brd2,
                     color: canSubmit ? '#fff' : C.t3,
                     cursor: canSubmit ? 'pointer' : 'default',
                     display: 'inline-flex', alignItems: 'center', gap: 7,
-                    boxShadow: canSubmit ? `0 0 24px ${C.blue}40` : 'none',
+                    boxShadow: canSubmit ? '0 2px 0 #1a3fa8, inset 0 1px 0 rgba(255,255,255,0.2)' : 'none',
                     opacity: canSubmit ? 1 : 0.4,
                     minWidth: 100, justifyContent: 'center',
                     transition: 'opacity 0.15s, box-shadow 0.15s',
