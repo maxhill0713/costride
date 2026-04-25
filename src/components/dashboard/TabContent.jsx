@@ -548,14 +548,14 @@ function QuickActions({ post, resolvedName, memberId, gym, currentUser, onDelete
     finally { setReacting(false); }
   };
 
-  const btnStyle = { display: "flex", alignItems: "center", gap: compact ? 5 : 8, width: "100%", padding: compact ? "5px 8px" : "7px 10px", borderRadius: 8, background: "rgba(255,255,255,0.03)", border: `1px solid ${C.brd}`, color: C.t2, fontSize: compact ? 10.5 : 12, fontWeight: 600, cursor: "pointer", fontFamily: FONT, textAlign: "left", transition: "all 0.15s" };
+  const btnStyle = { display: "flex", alignItems: "center", gap: 5, width: "100%", padding: compact ? "5px 8px" : "7px 10px", borderRadius: 8, background: "rgba(255,255,255,0.03)", border: `1px solid ${C.brd}`, color: C.t2, fontSize: compact ? 10.5 : 12, fontWeight: 600, cursor: "pointer", fontFamily: FONT, textAlign: "left", transition: "all 0.15s" };
   const iconSize = compact ? 11 : 13;
-  const containerStyle = { width: compact ? 90 : 120, flexShrink: 0, borderLeft: `1px solid ${C.brd}`, padding: compact ? "10px 8px" : "12px 10px", display: "flex", flexDirection: "column", gap: compact ? 7 : 8, justifyContent: "flex-start" };
+  const containerStyle = { width: compact ? 100 : 120, flexShrink: 0, borderLeft: `1px solid ${C.brd}`, padding: compact ? "10px 8px" : "12px 10px", display: "flex", flexDirection: "column", gap: compact ? 7 : 8, justifyContent: "flex-start" };
 
   return (
     <>
       <div style={containerStyle}>
-        <div style={{ fontSize: 9, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.10em", color: C.t3, marginBottom: 2 }}>Quick Actions</div>
+        <div style={{ fontSize: 9, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.10em", color: C.t3, marginBottom: 2 }}>{compact ? "Actions" : "Quick Actions"}</div>
         {isGymPost ? (
           <>
             <button onClick={() => setModal("remove")}
@@ -1291,7 +1291,7 @@ export default function ContentPage({
                         onMouseEnter={e => { e.currentTarget.style.borderColor = C.cyanBrd; e.currentTarget.style.boxShadow = `0 0 8px rgba(77,127,255,0.07)`; }}
                         onMouseLeave={e => { e.currentTarget.style.borderColor = C.brd; e.currentTarget.style.boxShadow = "none"; }}>
                         {p.image_url ? (
-                          <div style={{ width: 120, height: 120, flexShrink: 0, alignSelf: "center", margin: 8, borderRadius: 8, overflow: "hidden" }}>
+                          <div style={{ width: 100, height: 100, flexShrink: 0, alignSelf: "center", margin: 8, borderRadius: 8, overflow: "hidden" }}>
                             <img src={p.image_url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
                           </div>
                         ) : null}
@@ -1594,7 +1594,7 @@ export default function ContentPage({
                             )}
                           </div>
                           {/* Quick Actions panel — same compact style as Community Feed */}
-                          <div style={{ width: 100, flexShrink: 0, borderLeft: `1px solid ${C.brd}`, padding: "10px 8px", display: "flex", flexDirection: "column", gap: 7, justifyContent: "flex-start" }}>
+                          <div style={{ width: 110, flexShrink: 0, borderLeft: `1px solid ${C.brd}`, padding: "10px 8px", display: "flex", flexDirection: "column", gap: 7, justifyContent: "flex-start" }}>
                             <div style={{ fontSize: 9, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.10em", color: C.t3, marginBottom: 2 }}>Actions</div>
                             <button onClick={() => handlePublishDraft(p)} disabled={publishingDraftId === p.id}
                               style={{ display: "flex", alignItems: "center", gap: 5, width: "100%", padding: "5px 8px", borderRadius: 8, fontSize: 10.5, fontWeight: 700, cursor: publishingDraftId === p.id ? "default" : "pointer", fontFamily: FONT, opacity: publishingDraftId === p.id ? 0.6 : 1, transition: "opacity 0.15s", ...(publishingDraftId === p.id ? { background: C.brd, border: "none", color: C.t3 } : GRAD_BTN) }}>
