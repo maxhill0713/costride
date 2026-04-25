@@ -527,6 +527,144 @@ function RepeatEventPicker({ events, onSelect, onClose }) {
   );
 }
 
+/* ── NOTIFICATION TICKER ─────────────────────────────────────────── */
+function NotificationTicker({ posts, events, polls, checkIns, gymId }) {
+  const WINDOW_MS = 2 * 60 * 60 * 1000; // 2-hour recency window
+
+  const notifications = useMemo(() => {
+    const recentMs = Date.now() - WINDOW_MS;
+    const isRecent = (dateStr) => {
+      if (!dateStr) return false;
+      let d = new Date(dateStr);
+      if (typeof dateStr === "string" && !dateStr.endsWith("Z") && !dateStr.match(/[+-]\d{2}:\d{2}$/)) {
+        d = new Date(dateStr + "Z");
+      }
+      return d.getTime() > recentMs;
+    };
+
+    const notifs = [];
+
+    // Recent community posts
+    const recentPosts = posts.filter(p =>
+      !p.is_hidden && p.share_with_community && !p.post_type &&
+      (!gymId || p.gym_id === gymId) &&
+      isRecent(p.created_date || p.created_at)
+    );
+    if (recentPosts.length === 1) notifs.push("1 member posted to the community");
+    else if (recentPosts.length > 1) notifs.push(`${recentPosts.length} members posted to the community`);
+
+    // Gym announcements / posts with type
+    const recentGymPosts = posts.filter(p =>
+      !p.is_hidden && p.post_type && (!gymId || p.gym_id === gymId) &&
+      isRecent(p.created_date || p.created_at)
+    );
+    if (recentGymPosts.length > 0) notifs.push(`${recentGymPosts.length} new gym announcement${recentGymPosts.length > 1 ? "s" : ""} posted`);
+
+    // Event joins
+    events.forEach(ev => {
+      if (!ev.title) return;
+      const count = (ev.participants || []).length;
+      if (count > 0 && isRecent(ev.updated_date || ev.updated_at)) {
+        notifs.push(`${count} member${count !== 1 ? "s" : ""} joined "${ev.title}"`);
+      }
+    });
+
+    // Poll responses
+    polls.forEach(poll => {
+      const q = poll.question || poll.title;
+      if (!q) return;
+      const count = (poll.voters || []).length;
+      if (count > 0 && isRecent(poll.updated_date || poll.updated_at)) {
+        const label = q.length > 38 ? q.slice(0, 36) + "…" : q;
+        notifs.push(`${count} member${count !== 1 ? "s" : ""} responded to "${label}"`);
+      }
+    });
+
+    // Recent check-ins
+    const recentCI = checkIns.filter(c =>
+      (!gymId || c.gym_id === gymId) &&
+      isRecent(c.check_in_date || c.created_date || c.created_at)
+    );
+    if (recentCI.length === 1) notifs.push("1 member checked in");
+    else if (recentCI.length > 1) notifs.push(`${recentCI.length} members checked in`);
+
+    return notifs;
+  }, [posts, events, polls, checkIns, gymId]);
+
+  const [index, setIndex]   = useState(0);
+  const [animKey, setAnimKey] = useState(0);
+
+  // Clamp index if notification list shrinks
+  const safeIndex = notifications.length > 0 ? index % notifications.length : 0;
+
+  useEffect(() => {
+    if (notifications.length <= 1) return;
+    const id = setInterval(() => {
+      setIndex(i => (i + 1) % notifications.length);
+      setAnimKey(k => k + 1);
+    }, 15000);
+    return () => clearInterval(id);
+  }, [notifications.length]);
+
+  if (!notifications.length) return null;
+
+  return (
+    <>
+      <style>{`
+        @keyframes notifSlideIn {
+          from { transform: translateX(28px); opacity: 0; }
+          to   { transform: translateX(0);    opacity: 1; }
+        }
+        @keyframes notifDotPulse {
+          0%, 100% { opacity: 1;   transform: scale(1);   }
+          50%      { opacity: 0.35; transform: scale(0.65); }
+        }
+        .notif-dot { animation: notifDotPulse 2.2s ease-in-out infinite; }
+        .notif-text { animation: notifSlideIn 0.48s cubic-bezier(0.22,1,0.36,1) forwards; }
+      `}</style>
+      <div style={{
+        flex: 1, minWidth: 0, height: 34,
+        background: "rgba(77,127,255,0.11)",
+        border: "1px solid rgba(77,127,255,0.26)",
+        borderRadius: 8,
+        overflow: "hidden",
+        display: "flex",
+        alignItems: "center",
+        gap: 8,
+        padding: "0 12px",
+      }}>
+        {/* pulsing live dot */}
+        <div className="notif-dot" style={{ width: 6, height: 6, borderRadius: "50%", background: C.cyan, flexShrink: 0 }} />
+
+        {/* sliding notification text */}
+        <span
+          key={animKey}
+          className="notif-text"
+          style={{
+            flex: 1, minWidth: 0,
+            fontSize: 11.5, fontWeight: 600, color: "#93c5fd",
+            fontFamily: FONT, whiteSpace: "nowrap",
+            overflow: "hidden", textOverflow: "ellipsis",
+            display: "block",
+          }}
+        >
+          {notifications[safeIndex]}
+        </span>
+
+        {/* counter badge */}
+        {notifications.length > 1 && (
+          <span style={{
+            fontSize: 9, fontWeight: 700, color: "rgba(147,197,253,0.45)",
+            fontFamily: FONT, flexShrink: 0, letterSpacing: "0.04em",
+          }}>
+            {safeIndex + 1}/{notifications.length}
+          </span>
+        )}
+      </div>
+    </>
+  );
+}
+
 function QuickActions({ post, resolvedName, memberId, gym, currentUser, onDeletePost, isGymPost, onPostEdited, compact }) {
   const [modal, setModal] = useState(null);
   const gymReactionKey = gym?.id ? `gym_${gym.id}` : null;
@@ -1240,13 +1378,16 @@ export default function ContentPage({
       <div style={{ flex: 1, overflowY: "auto", minWidth: 0, ...(isMobile ? { paddingBottom: 80 } : {}) }}>
 
         {!isMobile && (
-          <div style={{ padding: "4px 16px 0 4px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-            <h1 style={{ fontSize: 22, fontWeight: 800, color: C.t1, margin: 0, letterSpacing: "-0.03em", lineHeight: 1.2 }}>
+          <div style={{ padding: "4px 16px 0 4px", display: "flex", alignItems: "center", gap: 12 }}>
+            <h1 style={{ fontSize: 22, fontWeight: 800, color: C.t1, margin: 0, letterSpacing: "-0.03em", lineHeight: 1.2, flexShrink: 0 }}>
               Content <span style={{ color: C.cyan }}>Hub</span>
             </h1>
+            <NotificationTicker
+              posts={posts} events={events} polls={polls} checkIns={checkIns} gymId={gymId}
+            />
             <button
               onClick={() => tabAction && openModal?.(tabAction.modal)}
-              style={{ display: "flex", alignItems: "center", gap: 6, padding: "9px 18px", borderRadius: 9, fontSize: 12.5, fontWeight: 700, cursor: "pointer", fontFamily: FONT, transition: "opacity 0.15s", visibility: tabAction ? "visible" : "hidden", pointerEvents: tabAction ? "auto" : "none", ...GRAD_BTN }}
+              style={{ display: "flex", alignItems: "center", gap: 6, padding: "9px 18px", borderRadius: 9, fontSize: 12.5, fontWeight: 700, cursor: "pointer", fontFamily: FONT, transition: "opacity 0.15s", visibility: tabAction ? "visible" : "hidden", pointerEvents: tabAction ? "auto" : "none", flexShrink: 0, ...GRAD_BTN }}
               onMouseEnter={e => e.currentTarget.style.opacity = "0.88"}
               onMouseLeave={e => e.currentTarget.style.opacity = "1"}>
               <Plus size={12} /> {tabAction?.label ?? "Action"}
