@@ -1319,6 +1319,7 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
             setOverrideDayKey(newOverride);
             setEditingIndex(null);
             onOverrideDayChange?.(newOverride);
+            window.dispatchEvent(new Event('weekSwapChanged'));
           }
         }} />
     </>);
