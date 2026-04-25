@@ -840,10 +840,10 @@ function MemberStatusBadge({ memberId, checkIns = [] }) {
   );
 }
 
-function SortDropdown({ value, onChange }) {
+function SortDropdown({ value, onChange, options: optionsProp }) {
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
-  const options = [
+  const options = optionsProp || [
     { value: "planned", label: "Planned Release" },
     { value: "created", label: "Date Created"    },
   ];
@@ -1164,6 +1164,7 @@ export default function ContentPage({
   const [publishingDraftId, setPublishingDraftId] = useState(null);
   const [editingPost, setEditingPost] = useState(null);
   const [scheduledSort, setScheduledSort] = useState("planned");
+  const [pollSort, setPollSort] = useState("created");
 
   const createItems = [
     { label: "📝 New Post",      action: () => { openModal?.("post");      setShowMenu(false); setTab("Community Feed"); } },
@@ -1419,8 +1420,18 @@ export default function ContentPage({
           {tab === "Polls" && (() => {
             const nowMs    = Date.now();
             const pollEndMs = p => p.end_date ? new Date(p.end_date).getTime() + 24 * 60 * 60 * 1000 - 1 : Infinity;
-            const livePolls2  = polls.filter(p => pollEndMs(p) >= nowMs);
-            const endedPolls  = polls.filter(p => p.end_date && pollEndMs(p) < nowMs);
+            const livePolls2Raw  = polls.filter(p => pollEndMs(p) >= nowMs);
+            const livePolls2 = [...livePolls2Raw].sort((a, b) => {
+              if (pollSort === "created") {
+                return new Date(a.created_date || a.created_at || 0) - new Date(b.created_date || b.created_at || 0);
+              }
+              // time_left: least time left first (soonest ending first); polls with no end_date go last
+              const aMs = a.end_date ? pollEndMs(a) : Infinity;
+              const bMs = b.end_date ? pollEndMs(b) : Infinity;
+              return aMs - bMs;
+            });
+            const endedPolls = [...polls.filter(p => p.end_date && pollEndMs(p) < nowMs)]
+              .sort((a, b) => pollEndMs(b) - pollEndMs(a));
             const sectionHeadingStyle = { fontSize: 12, fontWeight: 500, color: C.t2, marginBottom: 10 };
             const PollCard = ({ poll, showTimer }) => {
               const responseCount  = (poll.voters || []).length;
@@ -1490,7 +1501,17 @@ export default function ContentPage({
             };
             return (
               <>
-                <div style={{ ...sectionHeadingStyle, marginTop: 2 }}>{livePolls2.length} Live Poll{livePolls2.length !== 1 ? "s" : ""}</div>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10, marginTop: 2 }}>
+                  <div style={{ fontSize: 12, fontWeight: 500, color: C.t2 }}>{livePolls2.length} Live Poll{livePolls2.length !== 1 ? "s" : ""}</div>
+                  <SortDropdown
+                    value={pollSort}
+                    onChange={setPollSort}
+                    options={[
+                      { value: "created", label: "Date Created" },
+                      { value: "time_left", label: "Time Left" },
+                    ]}
+                  />
+                </div>
                 {livePolls2.length > 0 ? (
                   <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 10, marginBottom: 10 }}>
                     {livePolls2.map(poll => <PollCard key={poll.id} poll={poll} showTimer />)}
