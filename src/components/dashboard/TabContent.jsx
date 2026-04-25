@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback, useMemo } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import {
   Plus, Flame, Check, Calendar, Clock, Users, MapPin,
   ArrowUpRight, ArrowDownRight, ChevronDown, ChevronLeft, ChevronRight,
@@ -1308,6 +1308,7 @@ export default function ContentPage({
   const [editingPost, setEditingPost] = useState(null);
   const [scheduledSort, setScheduledSort] = useState("planned");
   const [pollSort, setPollSort] = useState("created");
+  const [feedFilter, setFeedFilter] = useState("all");
 
   const createItems = [
     { label: "📝 New Post",      action: () => { openModal?.("post");      setShowMenu(false); setTab("Community Feed"); } },
@@ -1402,14 +1403,31 @@ export default function ContentPage({
           {/* ── COMMUNITY FEED ── */}
           {tab === "Community Feed" && (
             <>
-              <div style={{ fontSize: 12, fontWeight: 500, color: C.t2, marginBottom: 10, marginTop: 2 }}>
-                {feedPosts.length} post{feedPosts.length !== 1 ? "s" : ""} shared with your community in the last 7 days
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10, marginTop: 2 }}>
+                <div style={{ fontSize: 12, fontWeight: 500, color: C.t2 }}>
+                  {feedPosts.length} post{feedPosts.length !== 1 ? "s" : ""} shared with your community in the last 7 days
+                </div>
+                <SortDropdown
+                  value={feedFilter}
+                  onChange={setFeedFilter}
+                  options={[
+                    { value: "all",     label: "All Posts"     },
+                    { value: "members", label: "Members Only"  },
+                    { value: "gym",     label: "Gym Only"      },
+                  ]}
+                />
               </div>
-              {feedPosts.length === 0
-                ? <EmptyState label="posts" />
-                : (
+              {(() => {
+                const visiblePosts = feedPosts.filter(p => {
+                  if (feedFilter === "members") return !p.post_type;
+                  if (feedFilter === "gym")     return !!p.post_type;
+                  return true;
+                });
+                return visiblePosts.length === 0
+                  ? <EmptyState label="posts" />
+                  : (
                   <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
-                    {feedPosts.map(p => {
+                    {visiblePosts.map(p => {
                     const isGymPost   = !!p.post_type;
                     const resolvedName = isGymPost
                       ? (gym?.name || p.member_name || "Gym")
@@ -1485,8 +1503,8 @@ export default function ContentPage({
                     );
                   })}
                   </div>
-                )
-              }
+                );
+              })()}
             </>
           )}
 
