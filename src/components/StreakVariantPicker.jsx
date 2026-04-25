@@ -30,7 +30,7 @@ export default function StreakVariantPicker({ isOpen, onClose, onSelect, selecte
         {/* Top row: description left, freezes right */}
         <div className="flex items-start justify-between gap-0.5 mb-4">
           <p className="text-slate-300 text-[11.5px] leading-relaxed flex-1" style={{ fontWeight: 500 }}>
-            Workout once a week to maintain your streak . If you do miss a week don't worry, a streak freeze will save you, so look after them!
+            Workout once a week to keep your streak . If you miss a week don't worry, a streak freeze will save you, so look after them!
           </p>
           <div className="flex items-center gap-0.5 flex-shrink-0">
             <img
