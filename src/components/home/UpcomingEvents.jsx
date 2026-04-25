@@ -231,7 +231,6 @@ export default function UpcomingEvents({ gymMemberships = [], currentUser }) {
 
   const leaveEvent = events.find(e => e.id === leaveConfirmEventId);
 
-  // Shared join/leave button renderer
   const JoinButton = ({ event, isJoined }) => (
     <button
       onClick={() => {
@@ -268,21 +267,33 @@ export default function UpcomingEvents({ gymMemberships = [], currentUser }) {
     </button>
   );
 
-  // Shared bottom row: attendees + time above button
-  const BottomRow = ({ event, isJoined, topMargin = 0 }) => (
-    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, marginTop: topMargin }}>
-      <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.3)', fontWeight: 600 }}>
-        {event.attendees || 0} attending
-      </span>
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 5 }}>
+  // Bottom row: description+time on left, join button on right
+  const BottomRow = ({ event, isJoined }) => (
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+      {/* Left: description (if any) + time stacked */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 4, minWidth: 0 }}>
+        {event.description && (
+          <p style={{
+            fontSize: 12.5, color: 'rgba(226,232,240,0.6)',
+            lineHeight: 1.5, margin: 0,
+            display: '-webkit-box', WebkitLineClamp: 2,
+            WebkitBoxOrient: 'vertical', overflow: 'hidden',
+          }}>
+            {event.description}
+          </p>
+        )}
         <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-          <Clock style={{ width: 10, height: 10, color: 'rgba(255,255,255,0.4)' }} />
+          <Clock style={{ width: 10, height: 10, color: 'rgba(255,255,255,0.4)', flexShrink: 0 }} />
           <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.45)', fontWeight: 600 }}>
             {formatTime(event.event_date, event.end_time)}
           </span>
+          <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.25)', fontWeight: 600, marginLeft: 6 }}>
+            {event.attendees || 0} attending
+          </span>
         </div>
-        <JoinButton event={event} isJoined={isJoined} />
       </div>
+      {/* Right: join button */}
+      <JoinButton event={event} isJoined={isJoined} />
     </div>
   );
 
@@ -330,12 +341,12 @@ export default function UpcomingEvents({ gymMemberships = [], currentUser }) {
                         alt={event.title}
                         style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
                       />
-                      {/* Gradient overlay — stronger at bottom for title legibility */}
+                      {/* Gradient overlay — stronger at top for title legibility */}
                       <div style={{
                         position: 'absolute', inset: 0,
-                        background: 'linear-gradient(to bottom, transparent 25%, rgba(8,10,20,0.95) 100%)',
+                        background: 'linear-gradient(to bottom, rgba(8,10,20,0.82) 0%, transparent 55%)',
                       }} />
-                      {/* Date and Title — overlaid near top of image */}
+                      {/* Date and Title — overlaid at TOP of image */}
                       <div style={{ position: 'absolute', top: 12, left: 12, right: 12 }}>
                         <h3 style={{
                           fontSize: 15, fontWeight: 900, color: '#fff',
@@ -348,44 +359,21 @@ export default function UpcomingEvents({ gymMemberships = [], currentUser }) {
                     </div>
 
                     <div style={{ padding: '10px 14px 14px' }}>
-                      {/* Description in the content area */}
-                      {event.description && (
-                        <p style={{
-                          fontSize: 12.5, color: 'rgba(226,232,240,0.6)',
-                          lineHeight: 1.5, margin: '0 0 10px',
-                          display: '-webkit-box', WebkitLineClamp: 2,
-                          WebkitBoxOrient: 'vertical', overflow: 'hidden',
-                        }}>
-                          {event.description}
-                        </p>
-                      )}
-                      <BottomRow event={event} isJoined={isJoined} topMargin={event.description ? 0 : 4} />
+                      <BottomRow event={event} isJoined={isJoined} />
                     </div>
                   </>
                 )}
 
                 {/* ── WITHOUT BANNER IMAGE ── */}
                 {!event.image_url && (
-                  <div style={{ padding: '16px 14px 16px' }}>
-                    {/* Date and Title */}
+                  <div style={{ padding: '14px 14px' }}>
                     <h3 style={{
                       fontSize: 14, fontWeight: 900, color: '#fff',
-                      letterSpacing: '-0.02em', lineHeight: 1.3, margin: '0 0 6px',
+                      letterSpacing: '-0.02em', lineHeight: 1.3, margin: '0 0 8px',
                     }}>
                       {formatDate(event.event_date)} - {event.title}
                     </h3>
-                    {/* Description */}
-                    {event.description && (
-                      <p style={{
-                        fontSize: 12.5, color: 'rgba(226,232,240,0.6)',
-                        lineHeight: 1.5, margin: '0 0 12px',
-                        display: '-webkit-box', WebkitLineClamp: 2,
-                        WebkitBoxOrient: 'vertical', overflow: 'hidden',
-                      }}>
-                        {event.description}
-                      </p>
-                    )}
-                    <BottomRow event={event} isJoined={isJoined} topMargin={event.description ? 0 : 10} />
+                    <BottomRow event={event} isJoined={isJoined} />
                   </div>
                 )}
 
