@@ -21,7 +21,11 @@
     "event_date": {
       "type": "string",
       "format": "date-time",
-      "description": "When the event happens"
+      "description": "When the event starts"
+    },
+    "end_time": {
+      "type": "string",
+      "description": "Event end time in HH:MM format (e.g. 18:00)"
     },
     "image_url": {
       "type": "string",

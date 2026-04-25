@@ -227,8 +227,9 @@ export default function EventDetailPopup({ event, onClose, onDelete, onEditSaved
   }, [joinedUserIds.join(",")]);
 
   const eventDate = event.event_date ? new Date(event.event_date) : null;
-  const dateLabel = eventDate ? eventDate.toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long", year: "numeric" }) : null;
-  const timeLabel = eventDate ? eventDate.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" }) : null;
+   const dateLabel = eventDate ? eventDate.toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long", year: "numeric" }) : null;
+   const startTime = eventDate ? eventDate.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" }) : null;
+   const timeLabel = startTime && event.end_time ? `${startTime}–${event.end_time}` : startTime;
   const ini = (n = "") => (n || "?").split(" ").map(w => w[0]).join("").toUpperCase().slice(0, 2);
   const extraCount = Math.max(0, liveAttendees - attendeeAvatars.length);
 

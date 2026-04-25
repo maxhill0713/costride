@@ -226,9 +226,10 @@ export default function UpcomingEvents({ gymMemberships = [], currentUser }) {
     return d.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' });
   };
 
-  const formatTime = (dateStr) => {
+  const formatTime = (dateStr, endTime) => {
     const d = new Date(dateStr);
-    return d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+    const start = d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+    return endTime ? `${start}–${endTime}` : start;
   };
 
   const getDaysUntil = (dateStr) => {
@@ -295,7 +296,7 @@ export default function UpcomingEvents({ gymMemberships = [], currentUser }) {
                       </span>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 13, color: 'rgba(255,255,255,0.5)', fontWeight: 600 }}>
                         <Clock style={{ width: 10, height: 10 }} />
-                        {formatTime(event.event_date)}
+                        {formatTime(event.event_date, event.end_time)}
                       </div>
                       <span style={{
                         marginLeft: 'auto', fontSize: 10, fontWeight: 700,
@@ -317,7 +318,7 @@ export default function UpcomingEvents({ gymMemberships = [], currentUser }) {
                       <div style={{ display: 'flex', alignItems: 'center', gap: 4, flexShrink: 0 }}>
                         <Clock style={{ width: 10, height: 10, color: 'rgba(255,255,255,0.5)' }} />
                         <span style={{ fontSize: 13, color: 'rgba(255,255,255,0.5)', fontWeight: 600 }}>
-                          {formatTime(event.event_date)}
+                          {formatTime(event.event_date, event.end_time)}
                         </span>
                       </div>
                     )}
