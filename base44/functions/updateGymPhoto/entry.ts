@@ -1,81 +1,81 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.21';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.26';
 
-// SECURITY FIX [MEDIUM]:
-// 1. SDK version bumped.
-// 2. No ownership check — any authenticated user could update any gym's photo by gym_id.
-//    Now validates the caller is the gym owner or admin.
-// 3. Google Places API error details were passed through to the client — now suppressed.
-// 4. Raw error.message suppressed.
-
-Deno.serve(async (req) => {
+async function fetchAndUploadPhoto(base44, googlePlaceId) {
   try {
-    const base44 = createClientFromRequest(req);
-    const user = await base44.auth.me();
-
-    if (!user) {
-      return Response.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
-    const { gym_id } = await req.json();
-    if (!gym_id || typeof gym_id !== 'string') {
-      return Response.json({ error: 'gym_id is required' }, { status: 400 });
-    }
-
     const apiKey = Deno.env.get('GOOGLE_PLACES_API_KEY');
     if (!apiKey) {
-      console.error('Google Places API key not found');
-      return Response.json({ error: 'API key not configured' }, { status: 500 });
+      console.error('GOOGLE_PLACES_API_KEY not set');
+      return null;
     }
 
-    const gymRecords = await base44.asServiceRole.entities.Gym.filter({ id: gym_id });
-    if (!gymRecords.length || !gymRecords[0].google_place_id) {
-      return Response.json({ error: 'Gym not found or missing google_place_id' }, { status: 404 });
-    }
-
-    const gym = gymRecords[0];
-
-    // SECURITY: Verify the caller owns this gym
-    const isOwner = gym.owner_email === user.email || gym.admin_id === user.id;
-    if (!isOwner && user.role !== 'admin') {
-      console.warn(`SECURITY: User ${user.email} tried to update photo for gym ${gym_id}`);
-      return Response.json({ error: 'Forbidden' }, { status: 403 });
-    }
-
-    const url = `https://places.googleapis.com/v1/${gym.google_place_id}`;
-    const response = await fetch(url, {
-      method:  'GET',
+    // Fetch place details to get photo
+    const detailsUrl = `https://places.googleapis.com/v1/places/${googlePlaceId}`;
+    const detailsRes = await fetch(detailsUrl, {
       headers: {
-        'Content-Type':    'application/json',
-        'X-Goog-Api-Key':  apiKey,
+        'X-Goog-Api-Key': apiKey,
         'X-Goog-FieldMask': 'photos',
       },
     });
 
-    const data = await response.json();
-    if (!response.ok) {
-      console.error('Google Places API error:', response.status, data?.error?.message);
-      return Response.json({ error: 'Could not fetch gym photos' }, { status: 500 });
+    if (!detailsRes.ok) {
+      console.warn(`Failed to fetch place details: ${detailsRes.status}`);
+      return null;
     }
 
-    let photoUrl = null;
-    if (data.photos && data.photos.length > 0) {
-      const photoName = data.photos[0].name;
-      photoUrl = `https://places.googleapis.com/v1/${photoName}/media?key=${apiKey}&maxHeightPx=800&maxWidthPx=800`;
+    const details = await detailsRes.json();
+    if (!details.photos?.length) {
+      console.log('No photos found for place');
+      return null;
     }
 
-    if (photoUrl) {
-      // Only update if gym doesn't already have an image to preserve existing ones
-      if (!gym.image_url) {
-        await base44.asServiceRole.entities.Gym.update(gym_id, { image_url: photoUrl });
-        return Response.json({ success: true, photo_url: photoUrl });
-      } else {
-        return Response.json({ success: false, message: 'Gym already has an image' });
-      }
-    } else {
-      return Response.json({ success: false, message: 'No photos available for this gym' });
+    const photoName = details.photos[0].name;
+    const photoUrl = `https://places.googleapis.com/v1/${photoName}/media?key=${apiKey}&maxHeightPx=800&maxWidthPx=800`;
+
+    // Download the image
+    const imgRes = await fetch(photoUrl);
+    if (!imgRes.ok) {
+      console.warn(`Failed to download photo: ${imgRes.status}`);
+      return null;
     }
+
+    const imgBuffer = await imgRes.arrayBuffer();
+    const contentType = imgRes.headers.get('content-type') || 'image/jpeg';
+    const ext = contentType.includes('png') ? 'png' : 'jpg';
+    const blob = new Blob([imgBuffer], { type: contentType });
+    const file = new File([blob], `gym_photo.${ext}`, { type: contentType });
+
+    // Upload to permanent Base44 storage
+    const uploadResult = await base44.asServiceRole.integrations.Core.UploadFile({ file });
+    return uploadResult?.file_url || null;
+  } catch (e) {
+    console.error('Photo upload error:', e.message);
+    return null;
+  }
+}
+
+Deno.serve(async (req) => {
+  try {
+    const base44 = createClientFromRequest(req);
+    const { gym_id, googlePlaceId } = await req.json();
+
+    if (!gym_id || !googlePlaceId) {
+      return Response.json({ error: 'gym_id and googlePlaceId are required' }, { status: 400 });
+    }
+
+    // Fetch and upload photo
+    const permanentUrl = await fetchAndUploadPhoto(base44, googlePlaceId);
+
+    if (!permanentUrl) {
+      return Response.json({ error: 'Failed to fetch or upload photo' }, { status: 500 });
+    }
+
+    // Update gym with new image URL
+    await base44.asServiceRole.entities.Gym.update(gym_id, { image_url: permanentUrl });
+
+    console.log(`Updated gym ${gym_id} with image URL: ${permanentUrl}`);
+    return Response.json({ success: true, image_url: permanentUrl });
   } catch (error) {
-    console.error('Error updating gym photo:', error);
-    return Response.json({ error: 'An internal error occurred' }, { status: 500 });
+    console.error('Error:', error.message);
+    return Response.json({ error: error.message }, { status: 500 });
   }
 });
