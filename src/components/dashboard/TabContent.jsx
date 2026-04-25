@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback, useMemo } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import {
   Plus, Flame, Check, Calendar, Clock, Users, MapPin,
   ArrowUpRight, ArrowDownRight, ChevronDown, ChevronLeft, ChevronRight,
@@ -619,11 +619,11 @@ function NotificationTicker({ posts, events, polls, checkIns, gymId }) {
       `}</style>
       <div style={{
         /* fixed width ~70% of the former flex:1 space, truly centered between heading and button */
-        width: "clamp(351px, 82%, 975px)",
+        width: "clamp(421px, 98%, 1170px)",
         height: 37,                          /* 34px × 1.10 ≈ 37px */
         background: "rgba(77,127,255,0.11)",
         border: "none",                      /* no outline */
-        borderRadius: 0,
+        borderRadius: 4,
         overflow: "hidden",
         display: "flex",
         alignItems: "center",
