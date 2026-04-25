@@ -223,9 +223,10 @@ export default function UpcomingEvents({ gymMemberships = [], currentUser }) {
     return d.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' });
   };
 
-  const formatTime = (dateStr) => {
+  const formatTime = (dateStr, endTime) => {
     const d = new Date(dateStr);
-    return d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+    const start = d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+    return endTime ? `${start}–${endTime}` : start;
   };
 
   const leaveEvent = events.find(e => e.id === leaveConfirmEventId);
@@ -253,7 +254,7 @@ export default function UpcomingEvents({ gymMemberships = [], currentUser }) {
         } : {
           background: 'linear-gradient(to bottom, #3b82f6 0%, #2563eb 40%, #1d4ed8 100%)',
           color: '#fff',
-          boxShadow: '0 2px 0 #1a3fa8, 0 4px 14px rgba(37,99,235,0.35), inset 0 1px 0 rgba(255,255,255,0.2)',
+          boxShadow: '0 2px 0 #1a3fa8, inset 0 1px 0 rgba(255,255,255,0.2)',
           borderBottom: '2px solid #1a3fa8',
         }),
       }}
@@ -269,15 +270,17 @@ export default function UpcomingEvents({ gymMemberships = [], currentUser }) {
 
   // Shared bottom row: attendees + time + button
   const BottomRow = ({ event, isJoined, topMargin = 0 }) => (
-    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, marginTop: topMargin }}>
-      <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.3)', fontWeight: 600 }}>
-        {event.attendees || 0} attending
-      </span>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: topMargin }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+        <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.3)', fontWeight: 600 }}>
+          {event.attendees || 0} attending
+        </span>
+      </div>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
           <Clock style={{ width: 10, height: 10, color: 'rgba(255,255,255,0.4)' }} />
           <span style={{ fontSize: 13, color: 'rgba(255,255,255,0.45)', fontWeight: 600 }}>
-            {formatTime(event.event_date)}
+            {formatTime(event.event_date, event.end_time)}
           </span>
         </div>
         <JoinButton event={event} isJoined={isJoined} />
