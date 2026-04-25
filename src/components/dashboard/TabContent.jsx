@@ -529,7 +529,7 @@ function RepeatEventPicker({ events, onSelect, onClose }) {
 
 /* ── NOTIFICATION TICKER ─────────────────────────────────────────── */
 function NotificationTicker({ posts, events, polls, checkIns, gymId }) {
-  const WINDOW_MS = 2 * 60 * 60 * 1000; // 2-hour recency window
+  const WINDOW_MS = 2 * 60 * 60 * 1000;
 
   const notifications = useMemo(() => {
     const recentMs = Date.now() - WINDOW_MS;
@@ -544,16 +544,13 @@ function NotificationTicker({ posts, events, polls, checkIns, gymId }) {
 
     const notifs = [];
 
-    // Recent community posts
     const recentPosts = posts.filter(p =>
       !p.is_hidden && p.share_with_community && !p.post_type &&
-      (!gymId || p.gym_id === gymId) &&
-      isRecent(p.created_date || p.created_at)
+      (!gymId || p.gym_id === gymId) && isRecent(p.created_date || p.created_at)
     );
     if (recentPosts.length === 1) notifs.push("1 member just posted to the community");
     else if (recentPosts.length > 1) notifs.push(`${recentPosts.length} members just posted to the community`);
 
-    // Gym announcements / posts with type
     const recentGymPosts = posts.filter(p =>
       !p.is_hidden && p.post_type && (!gymId || p.gym_id === gymId) &&
       isRecent(p.created_date || p.created_at)
@@ -561,7 +558,6 @@ function NotificationTicker({ posts, events, polls, checkIns, gymId }) {
     if (recentGymPosts.length === 1) notifs.push("1 new gym announcement just posted");
     else if (recentGymPosts.length > 1) notifs.push(`${recentGymPosts.length} new gym announcements just posted`);
 
-    // Event joins
     events.forEach(ev => {
       if (!ev.title) return;
       const count = (ev.participants || []).length;
@@ -571,7 +567,6 @@ function NotificationTicker({ posts, events, polls, checkIns, gymId }) {
       }
     });
 
-    // Poll responses
     polls.forEach(poll => {
       const q = poll.question || poll.title;
       if (!q) return;
@@ -582,7 +577,6 @@ function NotificationTicker({ posts, events, polls, checkIns, gymId }) {
       }
     });
 
-    // Recent check-ins
     const recentCI = checkIns.filter(c =>
       (!gymId || c.gym_id === gymId) &&
       isRecent(c.check_in_date || c.created_date || c.created_at)
@@ -593,15 +587,25 @@ function NotificationTicker({ posts, events, polls, checkIns, gymId }) {
     return notifs;
   }, [posts, events, polls, checkIns, gymId]);
 
-  const [index,   setIndex]   = useState(0);
-  const [animKey, setAnimKey] = useState(0);
-  const safeIndex = notifications.length > 0 ? index % notifications.length : 0;
+  const indexRef        = useRef(0);
+  const [index,       setIndex]       = useState(0);
+  const [prevIndex,   setPrevIndex]   = useState(null);
+  const [transitioning, setTransitioning] = useState(false);
 
   useEffect(() => {
     if (notifications.length <= 1) return;
+    const SLIDE_MS = 800;
     const id = setInterval(() => {
-      setIndex(i => (i + 1) % notifications.length);
-      setAnimKey(k => k + 1);
+      const prev = indexRef.current;
+      const next = (prev + 1) % notifications.length;
+      indexRef.current = next;
+      setPrevIndex(prev);
+      setIndex(next);
+      setTransitioning(true);
+      setTimeout(() => {
+        setPrevIndex(null);
+        setTransitioning(false);
+      }, SLIDE_MS);
     }, 15000);
     return () => clearInterval(id);
   }, [notifications.length]);
@@ -611,48 +615,56 @@ function NotificationTicker({ posts, events, polls, checkIns, gymId }) {
   return (
     <>
       <style>{`
-        @keyframes notifSlideIn {
-          from { transform: translateX(28px); opacity: 0; }
-          to   { transform: translateX(0);    opacity: 1; }
+        @keyframes notifSlideOut {
+          from { transform: translateX(0);     opacity: 1; }
+          to   { transform: translateX(-110%); opacity: 0; }
         }
-        .notif-text { animation: notifSlideIn 0.48s cubic-bezier(0.22,1,0.36,1) forwards; }
+        @keyframes notifSlideInR {
+          from { transform: translateX(110%);  opacity: 0; }
+          to   { transform: translateX(0);     opacity: 1; }
+        }
       `}</style>
       <div style={{
-        /* fixed width ~70% of the former flex:1 space, truly centered between heading and button */
-        width: "clamp(421px, 98%, 1170px)",
-        height: 37,                          /* 34px × 1.10 ≈ 37px */
+        width: "100%", height: 37,
         background: "rgba(77,127,255,0.11)",
-        border: "none",                      /* no outline */
+        border: "none",
         borderRadius: 4,
         overflow: "hidden",
+        position: "relative",
         display: "flex",
         alignItems: "center",
-        justifyContent: "center",            /* centre the text */
-        padding: "0 14px",
-        flexShrink: 0,
       }}>
-        <span
-          key={animKey}
-          className="notif-text"
-          style={{
+        {/* Exiting notification — slides out to the left */}
+        {transitioning && prevIndex !== null && (
+          <span style={{
+            position: "absolute", left: 0, right: 0,
+            textAlign: "center",
             fontSize: 11.5, fontWeight: 600, color: "#93c5fd",
             fontFamily: FONT, whiteSpace: "nowrap",
             overflow: "hidden", textOverflow: "ellipsis",
-            textAlign: "center",
-            display: "block",
-            width: "100%",
-          }}
-        >
-          {notifications[safeIndex]}
-        </span>
-        {notifications.length > 1 && (
-          <span style={{
-            fontSize: 9, fontWeight: 700, color: "rgba(147,197,253,0.38)",
-            fontFamily: FONT, flexShrink: 0, marginLeft: 8, letterSpacing: "0.04em",
+            padding: "0 14px", boxSizing: "border-box",
+            animation: "notifSlideOut 0.8s cubic-bezier(0.4,0,0.2,1) forwards",
           }}>
-            {safeIndex + 1}/{notifications.length}
+            {notifications[prevIndex]}
           </span>
         )}
+        {/* Entering notification — slides in from the right */}
+        <span
+          key={index}
+          style={{
+            position: "absolute", left: 0, right: 0,
+            textAlign: "center",
+            fontSize: 11.5, fontWeight: 600, color: "#93c5fd",
+            fontFamily: FONT, whiteSpace: "nowrap",
+            overflow: "hidden", textOverflow: "ellipsis",
+            padding: "0 14px", boxSizing: "border-box",
+            animation: transitioning
+              ? "notifSlideInR 0.8s cubic-bezier(0.4,0,0.2,1) forwards"
+              : "none",
+          }}
+        >
+          {notifications[index]}
+        </span>
       </div>
     </>
   );
@@ -1183,7 +1195,7 @@ function EventsCalendar({ events, onDeleteEvent, onAddEvent, onEventEdited, onRe
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
         <div>
           <span style={{ fontSize: 12, fontWeight: 500, color: C.t2 }}>
-            {totalEvents} event{totalEvents !== 1 ? "s" : ""} this month
+            {totalEvents} event{totalEvents !== 1 ? "s" : ""} planned this month
           </span>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 0 }}>
@@ -1377,7 +1389,7 @@ export default function ContentPage({
               Content <span style={{ color: C.cyan }}>Hub</span>
             </h1>
             {/* Ticker sits absolutely centred — button stays pinned right whether or not it renders */}
-            <div style={{ position: "absolute", left: "50%", transform: "translateX(-50%)", display: "flex", justifyContent: "center", pointerEvents: "none" }}>
+            <div style={{ position: "absolute", left: "50%", transform: "translateX(-50%)", width: "clamp(300px, 52%, 780px)", pointerEvents: "none" }}>
               <div style={{ pointerEvents: "auto" }}>
                 <NotificationTicker
                   posts={posts} events={events} polls={polls} checkIns={checkIns} gymId={gymId}
