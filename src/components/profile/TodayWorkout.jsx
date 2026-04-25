@@ -23,17 +23,22 @@ const DAY_NAMES_FULL = ['', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Frida
 function WorkoutSwitcherModal({ open, onClose, currentUser, activeDayKey, adjustedDay, onSelect, restSwapActive, creditRestActive }) {
   if (!open) return null;
 
-  const workoutTypes = currentUser?.custom_workout_types || {};
+  const customWorkoutTypes = currentUser?.custom_workout_types || {};
   const trainingDays = currentUser?.training_days || [];
 
   const activeSplitId = currentUser?.active_split_id;
-  const activeSplit = (currentUser?.saved_splits || []).find((s) => s.id === activeSplitId);
+  const savedSplits = currentUser?.saved_splits || [];
+  const activeSplit = savedSplits.find((s) => s.id === activeSplitId) || savedSplits[0];
   const mirroredPairs = activeSplit?.mirrored_pairs || [];
   const mirroredSecondDays = new Set();
   mirroredPairs.forEach(([dayA, dayB]) => mirroredSecondDays.add(Math.max(dayA, dayB)));
 
+  // Merge custom_workout_types with active split workouts so all workouts are available
+  const splitWorkouts = activeSplit?.workouts || {};
+  const mergedWorkoutTypes = { ...splitWorkouts, ...customWorkoutTypes };
+
   const seenNames = new Set();
-  const workoutDays = Object.entries(workoutTypes)
+  const workoutDays = Object.entries(mergedWorkoutTypes)
     .map(([dayKey, workout]) => ({
       dayKey: parseInt(dayKey),
       name: workout?.name || DAY_NAMES_FULL[parseInt(dayKey)] || `Day ${dayKey}`,
@@ -264,13 +269,35 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
     }
 
     if (overrideDayKey !== null) {
+      // First try custom_workout_types
       const workout = currentUser.custom_workout_types[overrideDayKey];
-      if (!workout) return null;
-      return {
-        name: workout.name || 'Training Day',
-        exercises: workout.exercises || [],
-        cardio: workout.cardio || []
-      };
+      if (workout && (workout.exercises || []).length > 0) {
+        return {
+          name: workout.name || 'Training Day',
+          exercises: workout.exercises || [],
+          cardio: workout.cardio || []
+        };
+      }
+      // Fallback: search saved_splits for the workout at this day
+      const activeSplitId = currentUser?.active_split_id;
+      const savedSplits = currentUser?.saved_splits || [];
+      const activeSplit = savedSplits.find((s) => s.id === activeSplitId) || savedSplits[0];
+      if (activeSplit?.workouts?.[overrideDayKey]) {
+        const sw = activeSplit.workouts[overrideDayKey];
+        return {
+          name: sw.name || 'Training Day',
+          exercises: sw.exercises || [],
+          cardio: sw.cardio || []
+        };
+      }
+      // Last fallback: any workout in saved_splits at this day key (string or number)
+      for (const split of savedSplits) {
+        const sw = split.workouts?.[overrideDayKey] || split.workouts?.[String(overrideDayKey)];
+        if (sw && (sw.exercises || []).length > 0) {
+          return { name: sw.name || 'Training Day', exercises: sw.exercises || [], cardio: sw.cardio || [] };
+        }
+      }
+      return null;
     }
 
     // If today is the "toDay" of a rest swap, show the workout from "fromDay"
