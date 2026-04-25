@@ -15,8 +15,14 @@ Deno.serve(async (req) => {
       return Response.json({ users: [] });
     }
 
+    // Filter out any obviously invalid IDs before querying
+    const validIds = userIds.slice(0, 200).filter(id => id && typeof id === 'string' && id.length >= 12);
+    if (validIds.length === 0) {
+      return Response.json({ users: [] });
+    }
+
     const users = await base44.asServiceRole.entities.User.filter(
-      { id: { $in: userIds.slice(0, 200) } }
+      { id: { $in: validIds } }
     );
 
     // Map users by ID to ensure correct association even if query returns different order
@@ -32,7 +38,7 @@ Deno.serve(async (req) => {
     });
 
     // Return in the same order as requested to maintain consistency
-    const safeUsers = userIds.slice(0, 200).map(id => userMap[id]).filter(Boolean);
+    const safeUsers = validIds.map(id => userMap[id]).filter(Boolean);
 
     return Response.json({ users: safeUsers });
   } catch (error) {

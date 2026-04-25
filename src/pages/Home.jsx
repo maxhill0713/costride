@@ -519,9 +519,8 @@ export default function Home() {
       ? base44.functions.invoke('getFriendUsers', { userIds: allFriendAndRequestIds }).then(r => r.data?.users || [])
       : Promise.resolve([]),
     enabled: allFriendAndRequestIds.length > 0,
-    staleTime: 5 * 60 * 1000,
-    gcTime: 15 * 60 * 1000,
-    placeholderData: (prev) => prev,
+    staleTime: 30 * 1000,
+    gcTime: 5 * 60 * 1000,
   });
 
   const { data: searchResults = [] } = useQuery({
