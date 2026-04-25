@@ -686,7 +686,7 @@ function QuickActions({ post, resolvedName, memberId, gym, currentUser, onDelete
   return (
     <>
       <div style={containerStyle}>
-        <div style={{ fontSize: 9, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.10em", color: C.t3, marginBottom: 2 }}>{compact ? "Actions" : "Quick Actions"}</div>
+        <div style={{ fontSize: 9, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.10em", color: C.t3, marginBottom: 2 }}>Quick Actions</div>
         {isGymPost ? (
           <>
             <button onClick={() => setModal("remove")}
@@ -1405,7 +1405,12 @@ export default function ContentPage({
             <>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10, marginTop: 2 }}>
                 <div style={{ fontSize: 12, fontWeight: 500, color: C.t2 }}>
-                  {feedPosts.length} post{feedPosts.length !== 1 ? "s" : ""} shared with your community in the last 7 days
+                  {feedFilter === "members"
+                    ? `${feedPosts.filter(p => !p.post_type).length} member${feedPosts.filter(p => !p.post_type).length !== 1 ? "s" : ""} posted with your community in the last 7 days`
+                    : feedFilter === "gym"
+                    ? `You've made ${feedPosts.filter(p => !!p.post_type).length} gym post${feedPosts.filter(p => !!p.post_type).length !== 1 ? "s" : ""} in the last 7 days`
+                    : `${feedPosts.length} post${feedPosts.length !== 1 ? "s" : ""} shared with your community in the last 7 days`
+                  }
                 </div>
                 <SortDropdown
                   value={feedFilter}
@@ -1752,7 +1757,7 @@ export default function ContentPage({
                           </div>
                           {/* Quick Actions panel — same compact style as Community Feed */}
                           <div style={{ width: 110, flexShrink: 0, borderLeft: `1px solid ${C.brd}`, padding: "10px 8px", display: "flex", flexDirection: "column", gap: 7, justifyContent: "flex-start" }}>
-                            <div style={{ fontSize: 9, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.10em", color: C.t3, marginBottom: 2 }}>Actions</div>
+                            <div style={{ fontSize: 9, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.10em", color: C.t3, marginBottom: 2 }}>Quick Actions</div>
                             <button onClick={() => handlePublishDraft(p)} disabled={publishingDraftId === p.id}
                               style={{ display: "flex", alignItems: "center", gap: 5, width: "100%", padding: "5px 8px", borderRadius: 8, fontSize: 10.5, fontWeight: 700, cursor: publishingDraftId === p.id ? "default" : "pointer", fontFamily: FONT, opacity: publishingDraftId === p.id ? 0.6 : 1, transition: "opacity 0.15s", ...(publishingDraftId === p.id ? { background: C.brd, border: "none", color: C.t3 } : GRAD_BTN) }}>
                               <Plus size={11} color="#fff" style={{ flexShrink: 0 }} /><span>{publishingDraftId === p.id ? "Posting…" : "Post Now"}</span>
@@ -1852,7 +1857,7 @@ export default function ContentPage({
                           </div>
                           {/* Quick Actions panel — same compact style as Community Feed */}
                           <div style={{ width: 100, flexShrink: 0, borderLeft: `1px solid ${C.brd}`, padding: "10px 8px", display: "flex", flexDirection: "column", gap: 7, justifyContent: "flex-start" }}>
-                            <div style={{ fontSize: 9, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.10em", color: C.t3, marginBottom: 2 }}>Actions</div>
+                            <div style={{ fontSize: 9, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.10em", color: C.t3, marginBottom: 2 }}>Quick Actions</div>
                             <button onClick={() => setEditingPost(p)}
                               style={{ display: "flex", alignItems: "center", gap: 5, width: "100%", padding: "5px 8px", borderRadius: 8, background: "rgba(255,255,255,0.03)", border: `1px solid ${C.brd}`, color: C.t2, fontSize: 10.5, fontWeight: 600, cursor: "pointer", fontFamily: FONT, textAlign: "left", transition: "all 0.15s" }}
                               onMouseEnter={e => { e.currentTarget.style.borderColor = C.cyanBrd; e.currentTarget.style.color = C.t1; e.currentTarget.style.background = C.cyanDim; }}
