@@ -20,7 +20,6 @@ function getStreakIconUrl(variant) {
   return STREAK_ICON_URL;
 }
 
-/* ─── MOBILE HOOK ────────────────────────────────────────────────── */
 function useIsMobile(breakpoint = 768) {
   const [isMobile, setIsMobile] = useState(
     typeof window !== "undefined" ? window.innerWidth < breakpoint : false
@@ -33,7 +32,6 @@ function useIsMobile(breakpoint = 768) {
   return isMobile;
 }
 
-/* ─── TOKENS ─────────────────────────────────────────────────────── */
 const C = {
   bg:       "#000000",
   sidebar:  "#0f0f12",
@@ -55,7 +53,6 @@ const C = {
 };
 const FONT = "'DM Sans', 'Segoe UI', system-ui, sans-serif";
 
-/* ─── HELPERS ────────────────────────────────────────────────────── */
 function timeAgo(dateStr) {
   if (!dateStr) return "";
   let d = new Date(dateStr);
@@ -71,7 +68,6 @@ function timeAgo(dateStr) {
   return d.toLocaleDateString("en-GB", { day: "numeric", month: "short" });
 }
 
-/* ─── POST TYPE COLORS ───────────────────────────────────────────── */
 const POST_TYPE_STYLES = {
   update:           { label: "Announcement",     color: "#60a5fa", bg: "rgba(96,165,250,0.12)",  border: "rgba(96,165,250,0.28)"  },
   achievement:      { label: "Achievement",      color: "#f59e0b", bg: "rgba(245,158,11,0.12)",  border: "rgba(245,158,11,0.28)"  },
@@ -81,7 +77,6 @@ const POST_TYPE_STYLES = {
   member_spotlight: { label: "Member Spotlight", color: "#60a5fa", bg: "rgba(96,165,250,0.12)",  border: "rgba(96,165,250,0.28)"  },
 };
 
-/* ─── TAB CONFIG ─────────────────────────────────────────────────── */
 const VISIBLE_TABS = ["Community Feed", "Events", "Challenges", "Polls", "Drafts", "Scheduled"];
 
 const TAB_ACTION = {
@@ -91,7 +86,6 @@ const TAB_ACTION = {
   "Polls":          { label: "New Poll",        modal: "poll"      },
 };
 
-/* ─── PRIMITIVES ─────────────────────────────────────────────────── */
 function DeleteBtn({ onClick }) {
   return (
     <button onClick={onClick} style={{ background: C.redDim, border: `1px solid rgba(255,77,109,0.3)`, borderRadius: 6, padding: "4px 10px", color: C.red, fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: FONT, flexShrink: 0, minHeight: 36 }}>
@@ -100,7 +94,6 @@ function DeleteBtn({ onClick }) {
   );
 }
 
-/* ─── MESSAGE MEMBER MODAL ───────────────────────────────────────── */
 function MessageMemberModal({ resolvedName, memberId, onClose }) {
   const [msg, setMsg] = useState("");
   const [sent, setSent] = useState(false);
@@ -158,7 +151,6 @@ function MessageMemberModal({ resolvedName, memberId, onClose }) {
   );
 }
 
-/* ─── REACTIONS MODAL ───────────────────────────────────────────── */
 function ReactionsModal({ reactions, onClose }) {
   const [search, setSearch] = useState("");
   const [resolvedUsers, setResolvedUsers] = useState([]);
@@ -251,7 +243,6 @@ function ReactionsModal({ reactions, onClose }) {
   );
 }
 
-/* ─── REMOVE POST MODAL ──────────────────────────────────────────── */
 function RemovePostModal({ post, resolvedName, onConfirm, onClose }) {
   const [removing, setRemoving] = useState(false);
   const handleConfirm = async () => { setRemoving(true); try { await onConfirm(post.id); } finally { setRemoving(false); } };
@@ -285,7 +276,40 @@ function RemovePostModal({ post, resolvedName, onConfirm, onClose }) {
   );
 }
 
-/* ─── REMOVE POLL MODAL ──────────────────────────────────────────── */
+/* ─── REMOVE EVENT MODAL ─────────────────────────────────────────── */
+function RemoveEventModal({ event, onConfirm, onClose }) {
+  const [removing, setRemoving] = useState(false);
+  const handleConfirm = async () => { setRemoving(true); try { await onConfirm(event.id); } finally { setRemoving(false); } };
+  return (
+    <div style={{ position: "fixed", inset: 0, zIndex: 700, background: "rgba(0,0,0,0.72)", display: "flex", alignItems: "center", justifyContent: "center" }}
+      onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
+      <div style={{ background: C.card, border: `1px solid rgba(255,77,109,0.25)`, borderRadius: 14, padding: "20px 24px 20px", width: 380, maxWidth: "90vw", display: "flex", flexDirection: "column", gap: 16 }}>
+        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between" }}>
+          <div>
+            <div style={{ fontSize: 15, fontWeight: 800, color: C.t1 }}>Remove Event</div>
+            <div style={{ fontSize: 12, color: C.t2, marginTop: 2 }}><span style={{ color: C.t1, fontWeight: 600 }}>{event.title}</span></div>
+          </div>
+          <button onClick={onClose} style={{ background: "none", border: "none", color: C.t3, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", padding: 4, borderRadius: 6, flexShrink: 0, marginLeft: 12 }}
+            onMouseEnter={e => e.currentTarget.style.color = C.t1}
+            onMouseLeave={e => e.currentTarget.style.color = C.t3}>
+            <X size={15} />
+          </button>
+        </div>
+        <div style={{ fontSize: 12.5, color: C.t2, lineHeight: 1.55 }}>
+          This will permanently remove the event. <span style={{ color: C.red, fontWeight: 600 }}>This cannot be undone.</span>
+        </div>
+        <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
+          <button onClick={onClose} style={{ padding: "8px 16px", borderRadius: 8, background: "transparent", border: `1px solid ${C.brd}`, color: C.t2, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: FONT }}>Cancel</button>
+          <button onClick={handleConfirm} disabled={removing}
+            style={{ padding: "8px 18px", borderRadius: 8, background: C.red, border: "none", color: "#fff", fontSize: 12, fontWeight: 700, cursor: removing ? "not-allowed" : "pointer", opacity: removing ? 0.7 : 1, fontFamily: FONT }}>
+            {removing ? "Removing…" : "Remove Event"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function RemovePollModal({ poll, onConfirm, onClose }) {
   const [removing, setRemoving] = useState(false);
   const handleConfirm = async () => { setRemoving(true); try { await onConfirm(poll.id); } finally { setRemoving(false); } };
@@ -312,7 +336,6 @@ function RemovePollModal({ poll, onConfirm, onClose }) {
   );
 }
 
-/* ─── REMOVE CHALLENGE MODAL ─────────────────────────────────────── */
 function RemoveChallengeModal({ challenge, onConfirm, onClose }) {
   const [removing, setRemoving] = useState(false);
   const handleConfirm = async () => { setRemoving(true); try { await onConfirm(challenge.id); } finally { setRemoving(false); } };
@@ -342,7 +365,6 @@ function RemoveChallengeModal({ challenge, onConfirm, onClose }) {
   );
 }
 
-/* ─── EDIT POST MODAL ─────────────────────────────────────────────── */
 const POST_TYPE_OPTIONS = [
   { value: "update",           label: "Announcement"     },
   { value: "achievement",      label: "Achievement"      },
@@ -438,7 +460,141 @@ function EditPostModal({ post, gym, onClose, onSave }) {
   );
 }
 
-/* ─── QUICK ACTIONS COLUMN ───────────────────────────────────────── */
+/* ─── EDIT EVENT MODAL ───────────────────────────────────────────── */
+function EditEventModal({ event, gym, onClose, onSave }) {
+  const toLocalDatetime = (dateStr) => {
+    if (!dateStr) return "";
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return "";
+    const pad = n => String(n).padStart(2, "0");
+    return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  };
+
+  const [title,       setTitle]       = useState(event?.title || "");
+  const [description, setDescription] = useState(event?.description || "");
+  const [eventDate,   setEventDate]   = useState(toLocalDatetime(event?.event_date));
+  const [imageUrl,    setImageUrl]    = useState(event?.image_url || "");
+  const [uploading,   setUploading]   = useState(false);
+  const [saving,      setSaving]      = useState(false);
+  const fileRef = useRef();
+
+  const isDirty = title !== (event?.title || "") ||
+    description !== (event?.description || "") ||
+    eventDate !== toLocalDatetime(event?.event_date) ||
+    imageUrl !== (event?.image_url || "");
+
+  const handleFile = async (file) => {
+    if (!file || !file.type.startsWith("image/")) return;
+    setUploading(true);
+    try { const r = await base44.integrations.Core.UploadFile({ file }); setImageUrl(r.file_url); }
+    finally { setUploading(false); }
+  };
+
+  const handleSave = async () => {
+    if (!title.trim() || saving) return;
+    setSaving(true);
+    try {
+      await base44.entities.Event.update(event.id, {
+        title: title.trim(),
+        description: description.trim() || null,
+        event_date: eventDate ? new Date(eventDate).toISOString() : event.event_date,
+        image_url: imageUrl || null,
+      });
+      onSave?.();
+      onClose();
+    } finally { setSaving(false); }
+  };
+
+  const formatPreview = (dtStr) => {
+    if (!dtStr) return null;
+    const d = new Date(dtStr);
+    if (isNaN(d.getTime())) return null;
+    return d.toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long", year: "numeric" }) +
+      " at " + d.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" });
+  };
+
+  return (
+    <div style={{ position: "fixed", inset: 0, zIndex: 700, background: "rgba(0,0,0,0.82)", display: "flex", alignItems: "center", justifyContent: "center" }}
+      onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
+      <div style={{ background: C.card, border: `1px solid ${C.brd}`, borderRadius: 16, padding: "22px 24px 20px", width: 520, maxWidth: "94vw", maxHeight: "90vh", display: "flex", flexDirection: "column", gap: 16, overflowY: "auto" }}>
+        {/* Header */}
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <div style={{ width: 30, height: 30, borderRadius: 9, background: C.cyanDim, border: `1px solid ${C.cyanBrd}`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+              <Calendar size={13} color={C.cyan} />
+            </div>
+            <div style={{ fontSize: 15, fontWeight: 800, color: C.t1, letterSpacing: "-0.02em" }}>Edit Event</div>
+          </div>
+          <button onClick={onClose} style={{ background: "none", border: "none", color: C.t3, cursor: "pointer", display: "flex", alignItems: "center", padding: 4, borderRadius: 6 }}
+            onMouseEnter={e => e.currentTarget.style.color = C.t1}
+            onMouseLeave={e => e.currentTarget.style.color = C.t3}>
+            <X size={15} />
+          </button>
+        </div>
+
+        {/* Title */}
+        <div>
+          <div style={{ fontSize: 10, fontWeight: 700, color: C.t3, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 7 }}>Event Title <span style={{ color: C.red }}>*</span></div>
+          <input value={title} onChange={e => setTitle(e.target.value)} placeholder="e.g. Summer Fitness Challenge"
+            style={{ width: "100%", boxSizing: "border-box", padding: "9px 12px", borderRadius: 9, background: C.card2, border: `1px solid ${C.brd}`, color: C.t1, fontSize: 13, fontFamily: FONT, outline: "none" }}
+            onFocus={e => e.target.style.borderColor = C.cyanBrd} onBlur={e => e.target.style.borderColor = C.brd} />
+        </div>
+
+        {/* Description */}
+        <div>
+          <div style={{ fontSize: 10, fontWeight: 700, color: C.t3, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 7 }}>Description</div>
+          <textarea value={description} onChange={e => setDescription(e.target.value)} rows={4}
+            placeholder="Tell members what to expect…"
+            style={{ width: "100%", boxSizing: "border-box", padding: "10px 12px", borderRadius: 9, background: C.card2, border: `1px solid ${C.brd}`, color: C.t1, fontSize: 13, fontFamily: FONT, lineHeight: 1.65, resize: "vertical", outline: "none" }}
+            onFocus={e => e.target.style.borderColor = C.cyanBrd} onBlur={e => e.target.style.borderColor = C.brd} />
+        </div>
+
+        {/* Date & Time */}
+        <div>
+          <div style={{ fontSize: 10, fontWeight: 700, color: C.t3, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 7 }}>Date & Time</div>
+          <input type="datetime-local" value={eventDate} onChange={e => setEventDate(e.target.value)}
+            style={{ width: "100%", boxSizing: "border-box", padding: "9px 12px", borderRadius: 9, background: C.card2, border: `1px solid ${C.brd}`, color: C.t1, fontSize: 13, fontFamily: FONT, outline: "none", colorScheme: "dark" }}
+            onFocus={e => e.target.style.borderColor = C.cyanBrd} onBlur={e => e.target.style.borderColor = C.brd} />
+          {eventDate && formatPreview(eventDate) && (
+            <div style={{ fontSize: 10, color: C.cyan, fontWeight: 600, marginTop: 5, display: "flex", alignItems: "center", gap: 4 }}>
+              <Clock size={9} color={C.cyan} />{formatPreview(eventDate)}
+            </div>
+          )}
+        </div>
+
+        {/* Image */}
+        <div>
+          <div style={{ fontSize: 10, fontWeight: 700, color: C.t3, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 7 }}>Banner Image</div>
+          {imageUrl ? (
+            <div style={{ position: "relative", borderRadius: 9, overflow: "hidden", display: "inline-block", maxWidth: "100%" }}>
+              <img src={imageUrl} alt="" style={{ maxHeight: 140, width: "100%", objectFit: "cover", display: "block", borderRadius: 9, border: `1px solid ${C.brd}` }} />
+              <button onClick={() => setImageUrl("")} style={{ position: "absolute", top: 7, right: 7, width: 24, height: 24, borderRadius: 6, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(0,0,0,0.72)", border: "none", cursor: "pointer" }}>
+                <X size={10} color="#fff" />
+              </button>
+            </div>
+          ) : (
+            <div onClick={() => fileRef.current?.click()}
+              style={{ padding: "16px 12px", borderRadius: 9, border: `1.5px dashed ${C.brd}`, background: C.card2, display: "flex", alignItems: "center", justifyContent: "center", gap: 8, cursor: "pointer" }}>
+              <Upload size={13} color={C.t3} />
+              <span style={{ fontSize: 12, color: C.t3 }}>{uploading ? "Uploading…" : "Click to upload image"}</span>
+            </div>
+          )}
+          <input ref={fileRef} type="file" accept="image/*" onChange={e => handleFile(e.target.files?.[0])} style={{ display: "none" }} />
+        </div>
+
+        {/* Footer */}
+        <div style={{ display: "flex", gap: 8, justifyContent: "flex-end", marginTop: 4 }}>
+          <button onClick={onClose} style={{ padding: "8px 16px", borderRadius: 8, background: "transparent", border: `1px solid ${C.brd}`, color: C.t2, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: FONT }}>Cancel</button>
+          <button onClick={handleSave} disabled={!title.trim() || saving}
+            style={{ padding: "8px 20px", borderRadius: 8, background: title.trim() ? C.cyan : C.brd, border: "none", color: title.trim() ? "#fff" : C.t3, fontSize: 12, fontWeight: 700, cursor: title.trim() && !saving ? "pointer" : "not-allowed", fontFamily: FONT, transition: "all 0.15s" }}>
+            {saving ? "Saving…" : "Save Changes"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function QuickActions({ post, resolvedName, memberId, gym, currentUser, onDeletePost, isGymPost, onPostEdited }) {
   const [modal, setModal] = useState(null);
   const gymReactionKey = gym?.id ? `gym_${gym.id}` : null;
@@ -509,7 +665,6 @@ function QuickActions({ post, resolvedName, memberId, gym, currentUser, onDelete
   );
 }
 
-/* ─── TABS ───────────────────────────────────────────────────────── */
 function Tabs({ active, setActive, isMobile }) {
   const ref = useRef(null);
   useEffect(() => {
@@ -532,7 +687,6 @@ function Tabs({ active, setActive, isMobile }) {
   );
 }
 
-/* ─── CHART TOOLTIP ──────────────────────────────────────────────── */
 function ChartTip({ active, payload, label }) {
   if (!active || !payload?.length) return null;
   return (
@@ -543,7 +697,6 @@ function ChartTip({ active, payload, label }) {
   );
 }
 
-/* ─── BUILD DAILY INTERACTION DATA (last 7 days) ─────────────────── */
 function buildDailyInteractionData(posts, polls, checkIns) {
   const days = [];
   const now = new Date();
@@ -582,7 +735,6 @@ function buildDailyInteractionData(posts, polls, checkIns) {
   return days;
 }
 
-/* ─── ACTIVITY METER DIAL ────────────────────────────────────────── */
 function ActivityMeterDial({ pct }) {
   const R  = 62;
   const cx = 76, cy = 72;
@@ -611,9 +763,6 @@ function ActivityMeterDial({ pct }) {
   );
 }
 
-/* ══════════════════════════════════════════════════════════════
-   RIGHT SIDEBAR
-══════════════════════════════════════════════════════════════ */
 function RightSidebar({
   events, challenges, polls, posts, checkIns,
   feedPostsThisWeek, livePolls, communityInteractionsToday,
@@ -704,7 +853,6 @@ function RightSidebar({
   );
 }
 
-/* ─── EMPTY STATE ────────────────────────────────────────────────── */
 function EmptyState({ label }) {
   return (
     <div style={{ display: "flex", flexDirection: "column", alignItems: "center", padding: "56px 0", gap: 12 }}>
@@ -713,7 +861,6 @@ function EmptyState({ label }) {
   );
 }
 
-/* ─── LIST CARD ──────────────────────────────────────────────────── */
 function ListCard({ children, isMobile }) {
   return (
     <div style={{ background: C.card, border: `1px solid ${C.brd}`, borderRadius: 10, padding: isMobile ? "14px 16px" : "13px 16px", display: "flex", alignItems: "center", gap: 12, marginBottom: 8 }}
@@ -724,7 +871,6 @@ function ListCard({ children, isMobile }) {
   );
 }
 
-/* ─── MOBILE FAB ─────────────────────────────────────────────────── */
 function FAB({ onClick }) {
   return (
     <button onClick={onClick} style={{ position: "fixed", bottom: 76, right: 18, zIndex: 190, width: 52, height: 52, borderRadius: "50%", background: C.cyan, border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 0 14px rgba(77,127,255,0.28), 0 4px 10px rgba(77,127,255,0.16)" }}>
@@ -733,7 +879,6 @@ function FAB({ onClick }) {
   );
 }
 
-/* ─── MEMBER STATUS BADGE ────────────────────────────────────────── */
 function MemberStatusBadge({ memberId, checkIns = [] }) {
   if (!memberId) return null;
   const memberCheckIns = checkIns.filter(c => c.user_id === memberId);
@@ -762,7 +907,6 @@ function MemberStatusBadge({ memberId, checkIns = [] }) {
   );
 }
 
-/* ─── SORT DROPDOWN ──────────────────────────────────────────────── */
 function SortDropdown({ value, onChange }) {
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
@@ -802,18 +946,10 @@ function SortDropdown({ value, onChange }) {
 }
 
 /* ══════════════════════════════════════════════════════════════
-   EVENT DETAIL POPUP
+   EVENT DETAIL POPUP — updated
 ══════════════════════════════════════════════════════════════ */
-function EventDetailPopup({ event, onClose, onDelete }) {
-  const [deleting, setDeleting] = useState(false);
-  const [confirmDelete, setConfirmDelete] = useState(false);
-
-  const handleDelete = async () => {
-    if (!confirmDelete) { setConfirmDelete(true); return; }
-    setDeleting(true);
-    try { await onDelete(event.id); onClose(); }
-    finally { setDeleting(false); }
-  };
+function EventDetailPopup({ event, onClose, onDelete, onEditSaved }) {
+  const [modal, setModal] = useState(null); // null | "remove" | "edit"
 
   const eventDate = event.event_date ? new Date(event.event_date) : null;
   const dateLabel = eventDate
@@ -824,95 +960,170 @@ function EventDetailPopup({ event, onClose, onDelete }) {
     : null;
 
   return (
-    <div
-      style={{ position: "fixed", inset: 0, zIndex: 600, background: "rgba(0,0,0,0.75)", display: "flex", alignItems: "center", justifyContent: "center", backdropFilter: "blur(4px)" }}
-      onClick={e => { if (e.target === e.currentTarget) onClose(); }}
-    >
-      <div style={{ background: C.card, border: `1px solid ${C.brd}`, borderRadius: 16, width: 440, maxWidth: "92vw", overflow: "hidden", boxShadow: "0 32px 80px rgba(0,0,0,0.8), 0 0 0 1px rgba(77,127,255,0.06)" }}>
-        <div style={{ background: "linear-gradient(135deg, rgba(77,127,255,0.14) 0%, rgba(77,127,255,0.04) 100%)", borderBottom: `1px solid ${C.brd}`, padding: "18px 20px 16px" }}>
-          <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-              <div style={{ width: 36, height: 36, borderRadius: 10, background: C.cyanDim, border: `1px solid ${C.cyanBrd}`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                <Calendar size={16} color={C.cyan} />
+    <>
+      <div
+        style={{ position: "fixed", inset: 0, zIndex: 600, background: "rgba(0,0,0,0.75)", display: "flex", alignItems: "center", justifyContent: "center", backdropFilter: "blur(4px)" }}
+        onClick={e => { if (e.target === e.currentTarget) onClose(); }}
+      >
+        <div style={{ background: C.card, border: `1px solid ${C.brd}`, borderRadius: 16, width: 440, maxWidth: "92vw", overflow: "hidden", boxShadow: "0 32px 80px rgba(0,0,0,0.8), 0 0 0 1px rgba(77,127,255,0.06)" }}>
+          {/* Header */}
+          <div style={{ background: "linear-gradient(135deg, rgba(77,127,255,0.14) 0%, rgba(77,127,255,0.04) 100%)", borderBottom: `1px solid ${C.brd}`, padding: "18px 20px 16px" }}>
+            <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                <div style={{ width: 36, height: 36, borderRadius: 10, background: C.cyanDim, border: `1px solid ${C.cyanBrd}`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                  <Calendar size={16} color={C.cyan} />
+                </div>
+                <div>
+                  <div style={{ fontSize: 16, fontWeight: 800, color: C.t1, letterSpacing: "-0.02em", lineHeight: 1.2 }}>{event.title}</div>
+                  <div style={{ fontSize: 10, fontWeight: 600, color: C.cyan, textTransform: "uppercase", letterSpacing: "0.08em", marginTop: 3 }}>Event</div>
+                </div>
               </div>
-              <div>
-                <div style={{ fontSize: 16, fontWeight: 800, color: C.t1, letterSpacing: "-0.02em", lineHeight: 1.2 }}>{event.title}</div>
-                <div style={{ fontSize: 10, fontWeight: 600, color: C.cyan, textTransform: "uppercase", letterSpacing: "0.08em", marginTop: 3 }}>Event</div>
+              {/* Clean X — no box */}
+              <button
+                onClick={onClose}
+                style={{ background: "none", border: "none", cursor: "pointer", color: C.t3, display: "flex", alignItems: "center", justifyContent: "center", padding: 4, flexShrink: 0, transition: "color 0.15s" }}
+                onMouseEnter={e => { e.currentTarget.style.color = C.t1; }}
+                onMouseLeave={e => { e.currentTarget.style.color = C.t3; }}>
+                <X size={16} />
+              </button>
+            </div>
+          </div>
+
+          {/* Body */}
+          <div style={{ padding: "18px 20px", display: "flex", flexDirection: "column", gap: 14 }}>
+            {dateLabel && (
+              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                <div style={{ width: 28, height: 28, borderRadius: 7, background: "rgba(255,255,255,0.04)", border: `1px solid ${C.brd}`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                  <Calendar size={12} color={C.t3} />
+                </div>
+                <div>
+                  <div style={{ fontSize: 12.5, fontWeight: 600, color: C.t1 }}>{dateLabel}</div>
+                  {timeLabel && <div style={{ fontSize: 11, color: C.t3, marginTop: 1 }}>{timeLabel}</div>}
+                </div>
+              </div>
+            )}
+            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+              <div style={{ width: 28, height: 28, borderRadius: 7, background: "rgba(255,255,255,0.04)", border: `1px solid ${C.brd}`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                <Users size={12} color={C.t3} />
+              </div>
+              <div style={{ fontSize: 12.5, fontWeight: 600, color: C.t1 }}>
+                {event.attendees || 0} attending
               </div>
             </div>
+            {event.description && (
+              <div style={{ padding: "11px 13px", borderRadius: 9, background: "rgba(255,255,255,0.03)", border: `1px solid ${C.brd}` }}>
+                <div style={{ fontSize: 10, fontWeight: 600, color: C.t3, textTransform: "uppercase", letterSpacing: "0.09em", marginBottom: 6 }}>Description</div>
+                <div style={{ fontSize: 12.5, color: C.t2, lineHeight: 1.6 }}>{event.description}</div>
+              </div>
+            )}
+            {event.image_url && (
+              <div style={{ borderRadius: 9, overflow: "hidden", border: `1px solid ${C.brd}` }}>
+                <img src={event.image_url} alt={event.title} style={{ width: "100%", height: 130, objectFit: "cover", display: "block" }} />
+              </div>
+            )}
+          </div>
+
+          {/* Footer — Edit Event (left) + Remove Event (right), no Close button */}
+          <div style={{ padding: "12px 20px 16px", borderTop: `1px solid ${C.brd}`, display: "flex", gap: 8, justifyContent: "flex-end" }}>
             <button
-              onClick={onClose}
-              style={{ width: 28, height: 28, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(255,255,255,0.06)", border: `1px solid ${C.brd}`, borderRadius: 7, cursor: "pointer", color: C.t3, flexShrink: 0 }}
-              onMouseEnter={e => { e.currentTarget.style.color = C.t1; }}
-              onMouseLeave={e => { e.currentTarget.style.color = C.t3; }}>
-              <X size={13} />
+              onClick={() => setModal("edit")}
+              style={{ display: "flex", alignItems: "center", gap: 7, padding: "8px 16px", borderRadius: 8, background: C.cyanDim, border: `1px solid ${C.cyanBrd}`, color: C.cyan, fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: FONT, transition: "all 0.15s" }}
+              onMouseEnter={e => { e.currentTarget.style.background = "rgba(77,127,255,0.22)"; e.currentTarget.style.borderColor = "rgba(77,127,255,0.5)"; }}
+              onMouseLeave={e => { e.currentTarget.style.background = C.cyanDim; e.currentTarget.style.borderColor = C.cyanBrd; }}>
+              <Pencil size={12} color="currentColor" /> Edit Event
+            </button>
+            <button
+              onClick={() => setModal("remove")}
+              style={{ display: "flex", alignItems: "center", gap: 7, padding: "8px 16px", borderRadius: 8, background: C.redDim, border: `1px solid rgba(255,77,109,0.3)`, color: C.red, fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: FONT, transition: "all 0.15s" }}
+              onMouseEnter={e => { e.currentTarget.style.background = "rgba(255,77,109,0.25)"; e.currentTarget.style.borderColor = "rgba(255,77,109,0.5)"; }}
+              onMouseLeave={e => { e.currentTarget.style.background = C.redDim; e.currentTarget.style.borderColor = "rgba(255,77,109,0.3)"; }}>
+              <Trash2 size={12} color="currentColor" /> Remove Event
             </button>
           </div>
         </div>
-        <div style={{ padding: "18px 20px", display: "flex", flexDirection: "column", gap: 14 }}>
-          {dateLabel && (
-            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-              <div style={{ width: 28, height: 28, borderRadius: 7, background: "rgba(255,255,255,0.04)", border: `1px solid ${C.brd}`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                <Calendar size={12} color={C.t3} />
-              </div>
-              <div>
-                <div style={{ fontSize: 12.5, fontWeight: 600, color: C.t1 }}>{dateLabel}</div>
-                {timeLabel && <div style={{ fontSize: 11, color: C.t3, marginTop: 1 }}>{timeLabel}</div>}
-              </div>
-            </div>
-          )}
-          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <div style={{ width: 28, height: 28, borderRadius: 7, background: "rgba(255,255,255,0.04)", border: `1px solid ${C.brd}`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-              <Users size={12} color={C.t3} />
-            </div>
-            <div style={{ fontSize: 12.5, fontWeight: 600, color: C.t1 }}>
-              {event.attendees || 0} attending
-            </div>
-          </div>
-          {event.description && (
-            <div style={{ padding: "11px 13px", borderRadius: 9, background: "rgba(255,255,255,0.03)", border: `1px solid ${C.brd}` }}>
-              <div style={{ fontSize: 10, fontWeight: 600, color: C.t3, textTransform: "uppercase", letterSpacing: "0.09em", marginBottom: 6 }}>Description</div>
-              <div style={{ fontSize: 12.5, color: C.t2, lineHeight: 1.6 }}>{event.description}</div>
-            </div>
-          )}
-          {event.image_url && (
-            <div style={{ borderRadius: 9, overflow: "hidden", border: `1px solid ${C.brd}` }}>
-              <img src={event.image_url} alt={event.title} style={{ width: "100%", height: 130, objectFit: "cover", display: "block" }} />
-            </div>
-          )}
-        </div>
-        <div style={{ padding: "12px 20px 16px", borderTop: `1px solid ${C.brd}`, display: "flex", gap: 8, justifyContent: "flex-end" }}>
-          <button
-            onClick={onClose}
-            style={{ padding: "8px 16px", borderRadius: 8, background: "transparent", border: `1px solid ${C.brd}`, color: C.t2, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: FONT }}>
-            Close
-          </button>
-          <button
-            onClick={handleDelete}
-            disabled={deleting}
-            style={{ padding: "8px 18px", borderRadius: 8, background: confirmDelete ? C.red : C.redDim, border: `1px solid ${confirmDelete ? C.red : "rgba(255,77,109,0.3)"}`, color: confirmDelete ? "#fff" : C.red, fontSize: 12, fontWeight: 700, cursor: deleting ? "not-allowed" : "pointer", fontFamily: FONT, transition: "all 0.15s", opacity: deleting ? 0.7 : 1 }}>
-            {deleting ? "Deleting…" : confirmDelete ? "Confirm Delete" : "Delete Event"}
-          </button>
-        </div>
       </div>
-    </div>
+
+      {/* Remove Event confirm modal */}
+      {modal === "remove" && (
+        <RemoveEventModal
+          event={event}
+          onConfirm={async (id) => { await onDelete?.(id); setModal(null); onClose(); }}
+          onClose={() => setModal(null)}
+        />
+      )}
+
+      {/* Edit Event modal */}
+      {modal === "edit" && (
+        <EditEventModal
+          event={event}
+          onClose={() => setModal(null)}
+          onSave={() => { setModal(null); onEditSaved?.(); onClose(); }}
+        />
+      )}
+    </>
   );
 }
 
 /* ══════════════════════════════════════════════════════════════
-   EVENTS CALENDAR  — fully reworked
+   EVENTS CALENDAR — updated month nav + dropdown
 ══════════════════════════════════════════════════════════════ */
 const DAYS_OF_WEEK = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 const MONTH_NAMES  = ["January","February","March","April","May","June","July","August","September","October","November","December"];
 
-function EventsCalendar({ events, onDeleteEvent, onAddEvent }) {
+function MonthDropdown({ viewYear, viewMonth, onSelect }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef(null);
+
+  // Build ±6 months from today
+  const today = new Date();
+  const options = [];
+  for (let delta = -6; delta <= 6; delta++) {
+    const d = new Date(today.getFullYear(), today.getMonth() + delta, 1);
+    options.push({ year: d.getFullYear(), month: d.getMonth(), label: `${MONTH_NAMES[d.getMonth()]} ${d.getFullYear()}` });
+  }
+
+  useEffect(() => {
+    const handler = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
+  const isActive = (o) => o.year === viewYear && o.month === viewMonth;
+
+  return (
+    <div ref={ref} style={{ position: "relative" }}>
+      <button
+        onClick={() => setOpen(o => !o)}
+        style={{ minWidth: 148, textAlign: "center", fontSize: 14, fontWeight: 700, color: C.t1, letterSpacing: "-0.01em", userSelect: "none", background: "none", border: "none", cursor: "pointer", fontFamily: FONT, padding: "2px 6px", borderRadius: 6, transition: "background 0.12s" }}
+        onMouseEnter={e => e.currentTarget.style.background = "rgba(255,255,255,0.05)"}
+        onMouseLeave={e => e.currentTarget.style.background = "none"}>
+        {MONTH_NAMES[viewMonth]} {viewYear}
+      </button>
+      {open && (
+        <div style={{ position: "absolute", top: "calc(100% + 6px)", left: "50%", transform: "translateX(-50%)", zIndex: 300, background: C.card2, border: `1px solid ${C.brd}`, borderRadius: 10, overflow: "hidden", minWidth: 180, boxShadow: "0 12px 32px rgba(0,0,0,0.65)", maxHeight: 280, overflowY: "auto" }}>
+          {options.map((o, i) => (
+            <button
+              key={i}
+              onClick={() => { onSelect(o.year, o.month); setOpen(false); }}
+              style={{ display: "block", width: "100%", textAlign: "center", padding: "9px 16px", background: isActive(o) ? C.cyanDim : "transparent", border: "none", color: isActive(o) ? C.cyan : C.t2, fontSize: 12.5, fontWeight: isActive(o) ? 700 : 500, cursor: "pointer", fontFamily: FONT, transition: "background 0.12s, color 0.12s" }}
+              onMouseEnter={e => { if (!isActive(o)) { e.currentTarget.style.background = "rgba(255,255,255,0.05)"; e.currentTarget.style.color = C.t1; } }}
+              onMouseLeave={e => { if (!isActive(o)) { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = C.t2; } }}>
+              {o.label}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function EventsCalendar({ events, onDeleteEvent, onAddEvent, onEventEdited }) {
   const today = new Date();
   const [viewYear,  setViewYear]  = useState(today.getFullYear());
   const [viewMonth, setViewMonth] = useState(today.getMonth());
   const [selectedEvent, setSelectedEvent] = useState(null);
 
-  // Slide animation state
-  const [slideDir, setSlideDir]   = useState(null); // "left" | "right"
+  const [slideDir, setSlideDir]   = useState(null);
   const [animating, setAnimating] = useState(false);
   const timeoutRef = useRef(null);
 
@@ -928,14 +1139,17 @@ function EventsCalendar({ events, onDeleteEvent, onAddEvent }) {
         return nm;
       });
       setSlideDir(null);
-      // small pause so new month starts centred before fade-in
       setTimeout(() => setAnimating(false), 40);
     }, 220);
   };
 
+  const handleMonthSelect = (year, month) => {
+    setViewYear(year);
+    setViewMonth(month);
+  };
+
   useEffect(() => () => clearTimeout(timeoutRef.current), []);
 
-  // Build event map for ALL days (including overflow)
   const eventsByDay = {};
   events.forEach(ev => {
     if (!ev.event_date) return;
@@ -945,11 +1159,9 @@ function EventsCalendar({ events, onDeleteEvent, onAddEvent }) {
     eventsByDay[key].push(ev);
   });
 
-  // Calendar grid — Monday-first
   const firstOfMonth = new Date(viewYear, viewMonth, 1);
-  const startDow     = (firstOfMonth.getDay() + 6) % 7; // Mon=0
+  const startDow     = (firstOfMonth.getDay() + 6) % 7;
   const daysInMonth  = new Date(viewYear, viewMonth + 1, 0).getDate();
-  // Days in prev month
   const prevMonthDays = new Date(viewYear, viewMonth, 0).getDate();
   const totalCells   = Math.ceil((startDow + daysInMonth) / 7) * 7;
 
@@ -957,18 +1169,16 @@ function EventsCalendar({ events, onDeleteEvent, onAddEvent }) {
 
   const cells = [];
   for (let i = 0; i < totalCells; i++) {
-    const dayOffset = i - startDow; // negative = prev month, 0..daysInMonth-1 = current, >= daysInMonth = next
+    const dayOffset = i - startDow;
     let cellYear = viewYear, cellMonth = viewMonth, cellDay;
     let isOtherMonth = false;
 
     if (dayOffset < 0) {
-      // Previous month
       isOtherMonth = true;
       cellDay = prevMonthDays + dayOffset + 1;
       cellMonth = viewMonth - 1;
       if (cellMonth < 0) { cellMonth = 11; cellYear = viewYear - 1; }
     } else if (dayOffset >= daysInMonth) {
-      // Next month
       isOtherMonth = true;
       cellDay = dayOffset - daysInMonth + 1;
       cellMonth = viewMonth + 1;
@@ -992,10 +1202,6 @@ function EventsCalendar({ events, onDeleteEvent, onAddEvent }) {
     const d = new Date(ev.event_date);
     return d.getFullYear() === viewYear && d.getMonth() === viewMonth;
   }).length;
-
-  // Slide keyframe direction classes
-  const slideInClass  = slideDir === "left"  ? "cal-slide-in-left"  : slideDir === "right" ? "cal-slide-in-right"  : "";
-  const slideOutClass = slideDir === "left"  ? "cal-slide-out-left" : slideDir === "right" ? "cal-slide-out-right" : "";
 
   return (
     <>
@@ -1021,8 +1227,8 @@ function EventsCalendar({ events, onDeleteEvent, onAddEvent }) {
             {totalEvents} event{totalEvents !== 1 ? "s" : ""} this month
           </span>
         </div>
-        {/* Nav: chevrons tight to month label, no box */}
-        <div style={{ display: "flex", alignItems: "center", gap: 2 }}>
+        {/* Tight nav: chevron · month dropdown · chevron */}
+        <div style={{ display: "flex", alignItems: "center", gap: 0 }}>
           <button
             onClick={() => navigate(-1)}
             disabled={animating}
@@ -1031,9 +1237,9 @@ function EventsCalendar({ events, onDeleteEvent, onAddEvent }) {
             onMouseLeave={e => { e.currentTarget.style.color = C.t2; }}>
             <ChevronLeft size={16} />
           </button>
-          <div style={{ minWidth: 148, textAlign: "center", fontSize: 14, fontWeight: 700, color: C.t1, letterSpacing: "-0.01em", userSelect: "none" }}>
-            {MONTH_NAMES[viewMonth]} {viewYear}
-          </div>
+
+          <MonthDropdown viewYear={viewYear} viewMonth={viewMonth} onSelect={handleMonthSelect} />
+
           <button
             onClick={() => navigate(1)}
             disabled={animating}
@@ -1045,97 +1251,52 @@ function EventsCalendar({ events, onDeleteEvent, onAddEvent }) {
         </div>
       </div>
 
-      {/* ── Grid wrapper (clipping + slide) ── */}
+      {/* ── Grid ── */}
       <div style={{ borderRadius: 12, overflow: "hidden", border: `1px solid ${C.brd}`, background: C.card }}>
-        {/* Day-of-week header — static, no slide */}
         <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", borderBottom: `1px solid ${C.brd}` }}>
           {DAYS_OF_WEEK.map(d => (
             <div key={d} style={{ padding: "9px 0", textAlign: "center", fontSize: 10, fontWeight: 700, color: C.t3, textTransform: "uppercase", letterSpacing: "0.08em" }}>{d}</div>
           ))}
         </div>
 
-        {/* Sliding cells area */}
         <div
-          className={`cal-grid-wrap${slideDir ? " " + (slideDir === "left" ? "cal-slide-out-left" : "cal-slide-out-right") : (!animating && slideDir === null ? "" : (slideDir === null ? (animating ? "" : "") : ""))}`}
+          className={`cal-grid-wrap${slideDir ? " " + (slideDir === "left" ? "cal-slide-out-left" : "cal-slide-out-right") : ""}`}
           key={`${viewYear}-${viewMonth}`}
-          style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", animation: !animating && slideDir === null ? (slideDir === null ? undefined : undefined) : undefined }}
+          style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)" }}
         >
           {cells.map((cell, idx) => {
             const isLastRow = idx >= cells.length - 7;
             const isLastCol = (idx % 7) === 6;
-            const borderRight  = isLastCol ? "none" : `1px solid ${C.brd}`;
-            const borderBottom = isLastRow ? "none" : `1px solid ${C.brd}`;
-
             return (
               <div
                 key={cell.key}
                 className="cal-cell"
                 style={{
                   padding: "8px 7px 8px",
-                  borderRight,
-                  borderBottom,
-                  background: cell.isToday
-                    ? "rgba(77,127,255,0.06)"
-                    : cell.isOtherMonth
-                      ? "rgba(255,255,255,0.012)"
-                      : "transparent",
+                  borderRight: isLastCol ? "none" : `1px solid ${C.brd}`,
+                  borderBottom: isLastRow ? "none" : `1px solid ${C.brd}`,
+                  background: cell.isToday ? "rgba(77,127,255,0.06)" : cell.isOtherMonth ? "rgba(255,255,255,0.012)" : "transparent",
                   transition: "background 0.12s",
-                  // All cells same height — use min-height so content can grow
                   minHeight: 100,
                   boxSizing: "border-box",
-                  verticalAlign: "top",
                   opacity: cell.isOtherMonth ? 0.45 : 1,
                 }}
               >
-                {/* Day number */}
-                <div style={{
-                  width: 22, height: 22,
-                  display: "flex", alignItems: "center", justifyContent: "center",
-                  borderRadius: "50%",
-                  background: cell.isToday ? C.cyan : "transparent",
-                  marginBottom: 5,
-                  fontSize: 11.5,
-                  fontWeight: cell.isToday ? 800 : cell.isOtherMonth ? 400 : 500,
-                  color: cell.isToday ? "#fff" : cell.isOtherMonth ? C.t3 : C.t2,
-                  lineHeight: 1,
-                  flexShrink: 0,
-                }}>
+                <div style={{ width: 22, height: 22, display: "flex", alignItems: "center", justifyContent: "center", borderRadius: "50%", background: cell.isToday ? C.cyan : "transparent", marginBottom: 5, fontSize: 11.5, fontWeight: cell.isToday ? 800 : cell.isOtherMonth ? 400 : 500, color: cell.isToday ? "#fff" : cell.isOtherMonth ? C.t3 : C.t2, lineHeight: 1, flexShrink: 0 }}>
                   {cell.dayNum}
                 </div>
-
-                {/* Event pills — multi-line text, no truncation */}
                 <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
                   {cell.events.slice(0, 4).map(ev => (
                     <button
                       key={ev.id}
                       className="cal-event-pill"
                       onClick={() => !cell.isOtherMonth && setSelectedEvent(ev)}
-                      style={{
-                        display: "block",
-                        width: "100%",
-                        textAlign: "left",
-                        padding: "3px 6px",
-                        borderRadius: 5,
-                        background: cell.isOtherMonth ? "rgba(77,127,255,0.06)" : C.cyanDim,
-                        border: `1px solid ${cell.isOtherMonth ? "rgba(77,127,255,0.12)" : C.cyanBrd}`,
-                        cursor: cell.isOtherMonth ? "default" : "pointer",
-                        fontFamily: FONT,
-                        overflow: "hidden",
-                        whiteSpace: "normal",
-                        wordBreak: "break-word",
-                        fontSize: 10.5,
-                        fontWeight: 600,
-                        color: cell.isOtherMonth ? "rgba(77,127,255,0.5)" : C.cyan,
-                        lineHeight: 1.35,
-                        boxSizing: "border-box",
-                      }}>
+                      style={{ display: "block", width: "100%", textAlign: "left", padding: "3px 6px", borderRadius: 5, background: cell.isOtherMonth ? "rgba(77,127,255,0.06)" : C.cyanDim, border: `1px solid ${cell.isOtherMonth ? "rgba(77,127,255,0.12)" : C.cyanBrd}`, cursor: cell.isOtherMonth ? "default" : "pointer", fontFamily: FONT, overflow: "hidden", whiteSpace: "normal", wordBreak: "break-word", fontSize: 10.5, fontWeight: 600, color: cell.isOtherMonth ? "rgba(77,127,255,0.5)" : C.cyan, lineHeight: 1.35, boxSizing: "border-box" }}>
                       {ev.title}
                     </button>
                   ))}
                   {cell.events.length > 4 && (
-                    <div style={{ fontSize: 10, color: C.t3, fontWeight: 600, paddingLeft: 6, marginTop: 1 }}>
-                      +{cell.events.length - 4} more
-                    </div>
+                    <div style={{ fontSize: 10, color: C.t3, fontWeight: 600, paddingLeft: 6, marginTop: 1 }}>+{cell.events.length - 4} more</div>
                   )}
                 </div>
               </div>
@@ -1165,6 +1326,7 @@ function EventsCalendar({ events, onDeleteEvent, onAddEvent }) {
           event={selectedEvent}
           onClose={() => setSelectedEvent(null)}
           onDelete={async (id) => { await onDeleteEvent?.(id); setSelectedEvent(null); }}
+          onEditSaved={() => { setSelectedEvent(null); onEventEdited?.(); }}
         />
       )}
     </>
@@ -1174,7 +1336,7 @@ function EventsCalendar({ events, onDeleteEvent, onAddEvent }) {
 /* ─── ROOT ───────────────────────────────────────────────────────── */
 export default function ContentPage({
   events = [], challenges = [], polls = [], posts = [], checkIns = [],
-  openModal, onDeleteEvent, onDeleteChallenge, onDeletePost, onDeletePoll, onUpdatePost,
+  openModal, onDeleteEvent, onDeleteChallenge, onDeletePost, onDeletePoll, onUpdatePost, onUpdateEvent,
   avatarMap = {}, nameMap = {}, currentUser = null, gym = null, memberCount = 0,
 }) {
   const isMobile = useIsMobile();
@@ -1249,7 +1411,6 @@ export default function ContentPage({
 
       <div style={{ flex: 1, overflowY: "auto", minWidth: 0, ...(isMobile ? { paddingBottom: 80 } : {}) }}>
 
-        {/* ── Header: reduced left padding to shift content left ── */}
         {!isMobile && (
           <div style={{ padding: "4px 16px 0 4px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
             <h1 style={{ fontSize: 22, fontWeight: 800, color: C.t1, margin: 0, letterSpacing: "-0.03em", lineHeight: 1.2 }}>
@@ -1265,12 +1426,10 @@ export default function ContentPage({
           </div>
         )}
 
-        {/* ── Tabs: also reduced left padding ── */}
         <div style={{ padding: isMobile ? "0 12px" : "0 4px" }}>
           <Tabs active={tab} setActive={setTab} isMobile={isMobile} />
         </div>
 
-        {/* ── Tab content: reduced left padding ── */}
         <div style={{ padding: isMobile ? "8px 12px 24px" : "0 16px 32px 4px" }}>
 
           {/* ── COMMUNITY FEED ── */}
@@ -1366,12 +1525,13 @@ export default function ContentPage({
             </>
           )}
 
-          {/* ── EVENTS — Calendar View ── */}
+          {/* ── EVENTS ── */}
           {tab === "Events" && (
             <EventsCalendar
               events={events}
               onDeleteEvent={onDeleteEvent}
               onAddEvent={() => openModal?.("event")}
+              onEventEdited={onUpdateEvent}
             />
           )}
 
@@ -1690,7 +1850,7 @@ export default function ContentPage({
         </div>
       </div>
 
-      {/* RIGHT SIDEBAR — desktop only */}
+      {/* RIGHT SIDEBAR */}
       {!isMobile && (
         <RightSidebar
           events={events} challenges={challenges} polls={polls} posts={posts} checkIns={checkIns}
@@ -1701,7 +1861,7 @@ export default function ContentPage({
         />
       )}
 
-      {/* MOBILE FAB + MENU */}
+      {/* MOBILE FAB */}
       {isMobile && (
         <>
           <FAB onClick={() => setShowMenu(o => !o)} />
