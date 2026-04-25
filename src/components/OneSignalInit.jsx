@@ -36,11 +36,13 @@ export default function OneSignalInit() {
           allowLocalhostAsSecureOrigin: true,
         });
 
-        // Link the OneSignal device to the authenticated base44 user
+        // Get user and login immediately after init
         const user = await base44.auth.me().catch(() => null);
         if (user?.id) {
           await OneSignal.login(user.id);
-          console.log('OneSignal: linked device to user', user.id);
+          console.log('OneSignal: user logged in with ID', user.id);
+        } else {
+          console.warn('OneSignal: no user found to login');
         }
 
         // Listen for permission grant event from index.html
