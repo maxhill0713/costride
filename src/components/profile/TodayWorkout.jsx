@@ -106,18 +106,20 @@ function WorkoutSwitcherModal({ open, onClose, currentUser, activeDayKey, adjust
           )}
 
           {creditRestActive && (
-            <button
-              onClick={() => { onSelect(adjustedDay, 'revert-credit-rest'); onClose(); }}
-              className="w-full text-left rounded-2xl border border-blue-500/40 bg-blue-500/10 hover:bg-blue-500/20 transition-all duration-200 px-4 py-3 flex items-center gap-3">
-              <ArrowLeftRight className="w-4 h-4 text-blue-400 flex-shrink-0" />
-              <div>
-                <p className="text-base font-black text-blue-300">Switch today back to a workout</p>
-                <p className="text-xs text-blue-500/80 mt-0.5">Your rest token will be returned</p>
-              </div>
-            </button>
+            <>
+              <button
+                onClick={() => { onSelect(adjustedDay, 'revert-credit-rest'); onClose(); }}
+                className="w-full text-left rounded-2xl border border-blue-500/40 bg-blue-500/10 hover:bg-blue-500/20 transition-all duration-200 px-4 py-3 flex items-center gap-3">
+                <ArrowLeftRight className="w-4 h-4 text-blue-400 flex-shrink-0" />
+                <div>
+                  <p className="text-base font-black text-blue-300">Switch today back to a workout</p>
+                  <p className="text-xs text-blue-500/80 mt-0.5">Your rest token will be returned</p>
+                </div>
+              </button>
+            </>
           )}
 
-          {todayWasRestDayOverridden && (
+          {!creditRestActive && todayWasRestDayOverridden && (
             <button
               onClick={() => { onSelect(adjustedDay, 'revert-rest-override'); onClose(); }}
               className="w-full text-left rounded-2xl border border-green-500/40 bg-green-500/10 hover:bg-green-500/20 transition-all duration-200 px-4 py-3 flex items-center gap-3">
@@ -141,7 +143,7 @@ function WorkoutSwitcherModal({ open, onClose, currentUser, activeDayKey, adjust
             </>
           )}
 
-          {!restSwapActive && futureRestDaysForSwap.length > 0 && (
+          {!restSwapActive && !creditRestActive && futureRestDaysForSwap.length > 0 && (
             <>
               {futureRestDaysForSwap.map((d) => (
                 <button
@@ -156,10 +158,10 @@ function WorkoutSwitcherModal({ open, onClose, currentUser, activeDayKey, adjust
             </>
           )}
 
-          {!restSwapActive && workoutDays.length === 0 && (
+          {!restSwapActive && !creditRestActive && workoutDays.length === 0 && (
             <p className="text-slate-400 text-sm text-center py-4">No workouts configured yet.</p>
           )}
-          {!restSwapActive && workoutDays.map((wd) => {
+          {!restSwapActive && !creditRestActive && workoutDays.map((wd) => {
             const isActive = wd.dayKey === activeDayKey;
             return (
               <button
