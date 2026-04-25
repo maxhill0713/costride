@@ -268,19 +268,9 @@ export default function UpcomingEvents({ gymMemberships = [], currentUser }) {
           borderBottom: '1px solid rgba(255,255,255,0.055)',
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <div style={{
-              width: 28, height: 28, borderRadius: 8, flexShrink: 0,
-              background: 'rgba(96,165,250,0.12)',
-              border: '1px solid rgba(96,165,250,0.22)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-            }}>
-              <Calendar style={{ width: 13, height: 13, color: '#60a5fa' }} />
-            </div>
-            <span style={{ fontSize: 14, fontWeight: 900, color: '#fff', letterSpacing: '-0.01em' }}>
-              Upcoming Events
-            </span>
-          </div>
+          <span style={{ fontSize: 14, fontWeight: 900, color: '#fff', letterSpacing: '-0.01em' }}>
+            Upcoming Events
+          </span>
           <RangeDropdown value={range} onChange={setRange} />
         </div>
 
@@ -310,10 +300,9 @@ export default function UpcomingEvents({ gymMemberships = [], currentUser }) {
                       background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(8px)',
                       border: '1px solid rgba(255,255,255,0.12)',
                       borderRadius: 8, padding: '4px 10px',
-                      fontSize: 11, fontWeight: 700, color: '#93c5fd',
+                      fontSize: 13, fontWeight: 700, color: '#fff',
                       display: 'flex', alignItems: 'center', gap: 5,
                     }}>
-                      <Calendar style={{ width: 10, height: 10 }} />
                       {formatDate(event.event_date)}
                     </div>
                   </div>
@@ -323,18 +312,11 @@ export default function UpcomingEvents({ gymMemberships = [], currentUser }) {
                   {/* Date row (if no image) */}
                   {!event.image_url && (
                     <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
-                      <div style={{
-                        display: 'flex', alignItems: 'center', gap: 5,
-                        background: 'rgba(96,165,250,0.08)',
-                        border: '1px solid rgba(96,165,250,0.18)',
-                        borderRadius: 7, padding: '3px 9px',
-                        fontSize: 11, fontWeight: 700, color: '#93c5fd',
-                      }}>
-                        <Calendar style={{ width: 10, height: 10 }} />
+                      <span style={{ fontSize: 13, fontWeight: 700, color: '#fff' }}>
                         {formatDate(event.event_date)}
-                      </div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, color: 'rgba(255,255,255,0.35)', fontWeight: 600 }}>
-                        <Clock style={{ width: 9, height: 9 }} />
+                      </span>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 13, color: 'rgba(255,255,255,0.5)', fontWeight: 600 }}>
+                        <Clock style={{ width: 10, height: 10 }} />
                         {formatTime(event.event_date)}
                       </div>
                       <span style={{
@@ -355,8 +337,8 @@ export default function UpcomingEvents({ gymMemberships = [], currentUser }) {
                     </h3>
                     {event.image_url && (
                       <div style={{ display: 'flex', alignItems: 'center', gap: 4, flexShrink: 0 }}>
-                        <Clock style={{ width: 9, height: 9, color: 'rgba(255,255,255,0.35)' }} />
-                        <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.35)', fontWeight: 600 }}>
+                        <Clock style={{ width: 10, height: 10, color: 'rgba(255,255,255,0.5)' }} />
+                        <span style={{ fontSize: 13, color: 'rgba(255,255,255,0.5)', fontWeight: 600 }}>
                           {formatTime(event.event_date)}
                         </span>
                       </div>
@@ -379,7 +361,6 @@ export default function UpcomingEvents({ gymMemberships = [], currentUser }) {
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, marginTop: event.description ? 0 : 8 }}>
                     <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.3)', fontWeight: 600 }}>
                       {event.attendees || 0} attending
-                      {event.gym_name && <span style={{ color: 'rgba(255,255,255,0.2)' }}> · {event.gym_name}</span>}
                     </span>
                     <button
                       onClick={() => {
