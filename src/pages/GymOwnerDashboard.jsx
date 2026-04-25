@@ -343,11 +343,23 @@ export default function GymOwnerDashboard() {
   
   // ── OneSignal login for push notifications ──
   useEffect(() => {
-    if (currentUser?.id && window.OneSignalDeferred) {
-      window.OneSignalDeferred.push((OneSignal) => {
-        OneSignal.login(currentUser.id);
-        console.log('OneSignal login attempted for:', currentUser.id);
-      });
+    if (currentUser?.id) {
+      const loginUser = () => {
+        try {
+          window.OneSignal?.login(currentUser.id);
+          console.log('OneSignal login attempted for:', currentUser.id);
+        } catch (error) {
+          console.warn('OneSignal login failed:', error);
+        }
+      };
+      
+      // If OneSignal is already initialized, login immediately
+      if (window.OneSignal) {
+        loginUser();
+      } else if (window.OneSignalDeferred) {
+        // Otherwise defer until SDK is ready
+        window.OneSignalDeferred.push(loginUser);
+      }
     }
   }, [currentUser?.id]);
   
