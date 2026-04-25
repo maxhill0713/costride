@@ -1,5 +1,22 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.26';
 
+async function fetchAndUploadPhoto(base44, photoUrl) {
+  try {
+    const imgRes = await fetch(photoUrl);
+    if (!imgRes.ok) return null;
+    const imgBuffer   = await imgRes.arrayBuffer();
+    const contentType = imgRes.headers.get('content-type') || 'image/jpeg';
+    const ext         = contentType.includes('png') ? 'png' : 'jpg';
+    const blob        = new Blob([imgBuffer], { type: contentType });
+    const file        = new File([blob], `gym_photo.${ext}`, { type: contentType });
+    const result      = await base44.asServiceRole.integrations.Core.UploadFile({ file });
+    return result?.file_url || null;
+  } catch (e) {
+    console.warn('Photo upload failed:', e.message);
+    return null;
+  }
+}
+
 const GYM_CREATION_LIMIT = 5; // max gyms a single user can add to the platform
 const GYM_MEMBERSHIP_LIMIT = 3; // max gyms a user can be a member of at once
 
@@ -59,9 +76,17 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'GYM_CREATION_LIMIT', limit: GYM_CREATION_LIMIT }, { status: 403 });
     }
 
+    // Resolve image: download & permanently upload the Google Places photo if present
+    let resolvedImageUrl = gymData.image_url || null;
+    if (!resolvedImageUrl && gymData.photo_url) {
+      resolvedImageUrl = await fetchAndUploadPhoto(base44, gymData.photo_url);
+    }
+
     // Create the gym using service role (bypasses RLS which requires admin)
+    const { photo_url: _unused, ...gymDataClean } = gymData;
     const gym = await base44.asServiceRole.entities.Gym.create({
-      ...gymData,
+      ...gymDataClean,
+      ...(resolvedImageUrl ? { image_url: resolvedImageUrl } : {}),
       status: 'approved',
       members_count: 1, // the creator is the first member
       created_by_user_id: user.id, // track who created it for limit enforcement
