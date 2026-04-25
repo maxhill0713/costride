@@ -273,11 +273,14 @@ function FriendsSection({
                     {/* Accepted friends list */}
                     {friends.length === 0 && friendRequests.length === 0 && sentFriendRequests.length === 0
                       ? <p className="text-center text-slate-400 text-sm py-8">No friends yet</p>
-                      : friendsWithActivity.filter((friend) =>
-                          (friend.friend_name || '').toLowerCase().includes(friendsListSearchQuery.toLowerCase())
-                        ).map((friend) => {
-                          const name = friend.friend_name;
-                          const avatarUrl = userAvatarMap[friend.friend_id] || friend.friend_avatar;
+                      : friendsWithActivity.filter((friend) => {
+                          const userData = userDataMap[friend.friend_id];
+                          const displayName = userData?.full_name || friend.friend_name || 'User';
+                          return displayName.toLowerCase().includes(friendsListSearchQuery.toLowerCase());
+                        }).map((friend) => {
+                          const userData = userDataMap[friend.friend_id];
+                          const name = userData?.full_name || friend.friend_name || 'User';
+                          const avatarUrl = userData?.avatar_url || userAvatarMap[friend.friend_id] || friend.friend_avatar;
                           return (
                             <div key={friend.id} className="px-2 py-1 rounded-lg bg-slate-700/40 flex items-center justify-between gap-2 relative">
                               <Link to={createPageUrl('UserProfile') + `?id=${friend.friend_id}`} className="flex items-center gap-2 flex-1 min-w-0" onClick={closeAll}>
