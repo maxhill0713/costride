@@ -161,7 +161,7 @@ function EventPreview({ form, gym }) {
    MAIN EXPORT
 ═══════════════════════════════════════════════════════════════ */
 export default function CreateEventModal({ open, onClose, onSave, gym, isLoading }) {
-  const [form, setForm] = useState({ title: '', description: '', event_date: '', image_url: '' });
+  const [form, setForm] = useState({ title: '', description: '', event_date: '', end_time: '', image_url: '' });
   const [uploading, setUploading] = useState(false);
   const [dragOver,  setDragOver]  = useState(false);
   const [showPreview, setShowPreview] = useState(false);
@@ -198,11 +198,11 @@ export default function CreateEventModal({ open, onClose, onSave, gym, isLoading
     e?.preventDefault();
     if (!canSubmit) return;
     onSave(form);
-    setForm({ title: '', description: '', event_date: '', image_url: '' });
+    setForm({ title: '', description: '', event_date: '', end_time: '', image_url: '' });
   };
 
   const handleClose = () => {
-    setForm({ title: '', description: '', event_date: '', image_url: '' });
+    setForm({ title: '', description: '', event_date: '', end_time: '', image_url: '' });
     onClose();
   };
 
@@ -345,7 +345,7 @@ export default function CreateEventModal({ open, onClose, onSave, gym, isLoading
                   <Textarea value={form.description} onChange={e => set('description', e.target.value)} placeholder="Tell members what to expect, what to bring, and who it's for…" rows={isMobile ? 3 : 4} accentColor={C.blue} />
                 </Field>
 
-                {/* Date + Location */}
+                {/* Date & Time + Finish Time */}
                 <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: isMobile ? 14 : 12 }}>
                   <Field label="Date & Time" required>
                     <Inp type="datetime-local" value={form.event_date} onChange={e => set('event_date', e.target.value)} Icon={Calendar} accentColor={C.blue} />
@@ -356,10 +356,15 @@ export default function CreateEventModal({ open, onClose, onSave, gym, isLoading
                       </div>
                     )}
                   </Field>
-                  <Field label="Location" hint="Set to your gym by default">
-                    <Inp value={gym?.name || ''} disabled Icon={MapPin} accentColor={C.blue} />
+                  <Field label="Finish Time" hint="Optional end time (e.g. 18:00)">
+                    <Inp type="time" value={form.end_time} onChange={e => set('end_time', e.target.value)} Icon={Clock} accentColor={C.blue} />
                   </Field>
                 </div>
+
+                {/* Location */}
+                <Field label="Location" hint="Set to your gym by default">
+                  <Inp value={gym?.name || ''} disabled Icon={MapPin} accentColor={C.blue} />
+                </Field>
 
                 {/* Banner image */}
                 <Field label="Banner Image" hint="Recommended: 1200×630px · PNG or JPG">
