@@ -528,7 +528,7 @@ function EmbeddedDayCircles({ currentUser, weeklyWorkoutLogs, todayDow, startAni
     const done       = isToday ? todayColoured : doneBase;
     const isRestDay  = trainingDays.length > 0 && !trainingDays.includes(day) && !doneBase && !isToday && day !== swappedRestDay;
     const isPast     = day < todayDowAdjusted;
-    const isMissed   = !isRestDay && !doneBase && isPast;
+    const isMissed   = !isRestDay && !doneBase && isPast && !isToday;
     const isPastRest = isRestDay && isPast;
     const size       = isToday ? 54 : 44;
     const isVisible  = i <= animatedIdx;
