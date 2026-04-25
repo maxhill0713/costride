@@ -271,7 +271,7 @@ function DesktopOverview({
   todayCI, yesterdayCI, todayVsYest, activeThisWeek, totalMembers,
   retentionRate, newSignUps, monthChangePct, atRisk, sparkData,
   checkIns, allMemberships, challenges, posts, events, classes,
-  atRiskMembers, openModal, setTab, ownerName,
+  atRiskMembers, openModal, setTab, ownerName, avatarMap = {},
   peakLabel, peakEntry,
 }) {
   const [scheduleExpanded, setScheduleExpanded] = useState(false);
@@ -448,7 +448,7 @@ function DesktopOverview({
             </div>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 9, flex: 1, justifyContent: 'space-between' }}>
-              {atRiskList.map((m, i) => <AtRiskRow key={m.user_id || i} member={m} />)}
+              {atRiskList.map((m, i) => <AtRiskRow key={m.user_id || i} member={m} avatarMap={avatarMap} />)}
             </div>
           )}
           <div style={{ marginTop: 14, paddingTop: 12, borderTop: `1px solid ${C.brd}` }}>
@@ -484,7 +484,7 @@ function MobileOverview({
   todayCI, todayVsYest, activeThisWeek, totalMembers,
   retentionRate, atRisk, checkIns, allMemberships,
   challenges, posts, events, classes, atRiskMembers,
-  openModal, setTab, monthChangePct,
+  openModal, setTab, monthChangePct, avatarMap = {},
 }) {
   const [expanded, setExpanded] = useState(false);
 
@@ -591,7 +591,7 @@ function MobileOverview({
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             {atRiskList.map((m, i) => (
               <div key={m.user_id || i} style={{ padding: '12px 14px', borderRadius: 13, background: C.card, border: `1px solid ${C.brd}` }}>
-                <AtRiskRow member={m} />
+                <AtRiskRow member={m} avatarMap={avatarMap} />
               </div>
             ))}
           </div>
