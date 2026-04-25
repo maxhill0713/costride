@@ -340,6 +340,17 @@ export default function GymOwnerDashboard() {
   const navigate = useNavigate();
   const { data: currentUser } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me(), staleTime: 5 * 60 * 1000 });
   const [selectedCoachId, setSelectedCoachId] = useState(null);
+  
+  // ── OneSignal login for push notifications ──
+  useEffect(() => {
+    if (currentUser?.id && window.OneSignalDeferred) {
+      window.OneSignalDeferred.push((OneSignal) => {
+        OneSignal.login(currentUser.id);
+        console.log('OneSignal login attempted for:', currentUser.id);
+      });
+    }
+  }, [currentUser?.id]);
+  
   const effectiveAccountType = selectedCoachId ? 'coach' : currentUser?.account_type;
   const isCoach = effectiveAccountType === 'coach';
   const isGymOwner = effectiveAccountType === 'gym_owner';
