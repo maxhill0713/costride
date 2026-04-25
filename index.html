@@ -17,25 +17,41 @@
     <script>
       window.OneSignalDeferred = window.OneSignalDeferred || [];
       OneSignalDeferred.push(async function(OneSignal) {
-        await OneSignal.init({
-          appId: "9b5b68c2-c473-49eb-b74e-eac55368db3b",
-          serviceWorkerPath: "/OneSignalSDKWorker.js",
-          serviceWorkerUpdateStrategy: "auto",
-          notifyButton: {
-            enable: true,
-          },
-        });
-        
-        // Listen for permission changes
-        OneSignal.Notifications.addEventListener("permission_change", async (change) => {
-          if (change.permission === "granted") {
-            // Dispatch a custom event that the app can listen to
-            window.dispatchEvent(new CustomEvent('onesignalPermissionGranted'));
-          }
-        });
-        
-        // Request permission on page load (will only show if not already answered)
-        await OneSignal.Notifications.requestPermission();
+        try {
+          // Initialize OneSignal
+          await OneSignal.init({
+            appId: "9b5b68c2-c473-49eb-b74e-eac55368db3b",
+            serviceWorkerPath: "/OneSignalSDKWorker.js",
+            serviceWorkerUpdateStrategy: "auto",
+            notifyButton: {
+              enable: false,
+            },
+          });
+          
+          console.log("OneSignal: initialized successfully");
+          
+          // Listen for permission changes
+          OneSignal.Notifications.addEventListener("permission_change", async (change) => {
+            if (change.permission === "granted") {
+              window.dispatchEvent(new CustomEvent('onesignalPermissionGranted'));
+            }
+          });
+          
+          // Delay prompt by 2-3 seconds after initialization
+          setTimeout(async () => {
+            try {
+              const permission = await OneSignal.Notifications.getPermission();
+              // Only show prompt if not already granted or denied
+              if (permission === null) {
+                await OneSignal.Notifications.requestPermission();
+              }
+            } catch (err) {
+              console.warn("OneSignal: failed to show prompt", err);
+            }
+          }, 2500);
+        } catch (err) {
+          console.error("OneSignal: initialization error", err);
+        }
       });
     </script>
   </head>
