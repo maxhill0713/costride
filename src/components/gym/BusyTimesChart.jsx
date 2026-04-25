@@ -124,8 +124,8 @@ export default function BusyTimesChart({ checkIns, gymId }) {
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12, position: 'relative' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
-          <Clock style={{ width: 15, height: 15, color: 'rgba(130,160,255,0.9)', flexShrink: 0 }} />
-          <span style={{ fontSize: 13, fontWeight: 700, color: 'rgba(240,245,255,0.92)', letterSpacing: '0.01em' }}>
+          <Clock style={{ width: 15, height: 15, color: '#fff', flexShrink: 0 }} />
+          <span style={{ fontSize: 16, fontWeight: 900, color: '#fff', letterSpacing: '-0.01em' }}>
             Busy Times
           </span>
           {useBestTime && (
