@@ -134,13 +134,9 @@ export default function InlineLeaderboard({ view, setView, checkInLeaderboardWee
   const { getVal, fmt, unit } = currentTab;
   const initials = (n) => (n || '?').split(' ').map((w) => w[0]).join('').toUpperCase().slice(0, 2);
 
-  // Full ranked list (with position preserved)
   const rankedList = list.map((m, i) => ({ ...m, rank: i + 1 }));
-
   const podium = rankedList.slice(0, 3);
 
-  // If searching, find matching entries anywhere in the full list
-  // Otherwise show top 3 below podium
   const q = search.trim().toLowerCase();
   const restList = q
     ? rankedList.filter(m => (m.userName || '').toLowerCase().includes(q))
@@ -162,9 +158,12 @@ export default function InlineLeaderboard({ view, setView, checkInLeaderboardWee
 
         {/* Header: title left + compact slider right */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
-          <span style={{ fontSize: 14, fontWeight: 900, color: '#fff', letterSpacing: '-0.01em', lineHeight: 1 }}>
-            Community Leaderboard
-          </span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+            <Trophy style={{ width: 15, height: 15, color: '#fff', flexShrink: 0 }} />
+            <span style={{ fontSize: 16, fontWeight: 900, color: '#fff', letterSpacing: '-0.01em', lineHeight: 1 }}>
+              Community Leaderboard
+            </span>
+          </div>
           <TimeframeSlider value={timeframe} onChange={setTimeframe} />
         </div>
 
@@ -214,7 +213,6 @@ export default function InlineLeaderboard({ view, setView, checkInLeaderboardWee
         </div>
       ) : (
         <>
-          {/* Podium — hide during search */}
           {!q && <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'center', gap: 10, padding: '20px 14px 14px' }}>
             {[
               { data: podium[1], pcIdx: 1, lift: 0  },
@@ -230,20 +228,14 @@ export default function InlineLeaderboard({ view, setView, checkInLeaderboardWee
                   onClick={() => navigate(createPageUrl('UserProfile') + '?id=' + data.userId)}
                   style={{
                     flex: isFirst ? '0 0 116px' : '0 0 100px',
-                    borderRadius: 16,
-                    overflow: 'hidden',
+                    borderRadius: 16, overflow: 'hidden',
                     background: 'rgba(18,20,36,0.92)',
                     border: `1px solid ${pc.border}`,
                     marginBottom: lift,
-                    cursor: 'pointer',
-                    transition: 'transform 0.2s',
+                    cursor: 'pointer', transition: 'transform 0.2s',
                   }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.transform = 'scale(1.05)';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.transform = '';
-                  }}
+                  onMouseEnter={e => { e.currentTarget.style.transform = 'scale(1.05)'; }}
+                  onMouseLeave={e => { e.currentTarget.style.transform = ''; }}
                 >
                   <div style={{ height: 3, background: `linear-gradient(90deg, transparent, ${pc.color}, transparent)`, opacity: 0.6 }} />
                   <div style={{ padding: isFirst ? '16px 10px 16px' : '14px 10px 14px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: isFirst ? 7 : 6 }}>
@@ -276,15 +268,13 @@ export default function InlineLeaderboard({ view, setView, checkInLeaderboardWee
             })}
           </div>}
 
-          {/* Rows below podium / search results */}
           {restList.length > 0 && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 3, padding: q ? '4px 10px 12px' : '4px 10px 12px', flex: q ? 1 : 'initial' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 3, padding: '4px 10px 12px', flex: q ? 1 : 'initial' }}>
               {restList.map((m, i) => {
                 const opacity = Math.max(0.45, 1 - i * 0.12);
-                const isHighlighted = q && (m.userName || '').toLowerCase().includes(q);
                 return (
-                  <div 
-                    key={m.userId || i} 
+                  <div
+                    key={m.userId || i}
                     onClick={() => navigate(createPageUrl('UserProfile') + '?id=' + m.userId)}
                     style={{
                       ...CARD_STYLE, borderRadius: 12, padding: '8px 10px',
@@ -292,14 +282,8 @@ export default function InlineLeaderboard({ view, setView, checkInLeaderboardWee
                       border: '1px solid transparent',
                       cursor: 'pointer', transition: 'all 0.2s',
                     }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.03)';
-                      e.currentTarget.style.transform = 'scale(1.01)';
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.backgroundColor = '';
-                      e.currentTarget.style.transform = '';
-                    }}
+                    onMouseEnter={e => { e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.03)'; e.currentTarget.style.transform = 'scale(1.01)'; }}
+                    onMouseLeave={e => { e.currentTarget.style.backgroundColor = ''; e.currentTarget.style.transform = ''; }}
                   >
                     <div style={{ width: 24, flexShrink: 0, textAlign: 'center', fontSize: 12, fontWeight: 900, color: `rgba(255,255,255,${opacity * 0.55})`, fontVariantNumeric: 'tabular-nums' }}>#{m.rank}</div>
                     <div style={{ width: 30, height: 30, borderRadius: '50%', flexShrink: 0, overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 900, background: 'rgba(255,255,255,0.06)', border: `1px solid rgba(255,255,255,${opacity * 0.1})`, color: `rgba(255,255,255,${opacity * 0.6})` }}>
