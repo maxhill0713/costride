@@ -704,22 +704,32 @@ function RightSidebar({
   events, challenges, polls, posts, checkIns,
   feedPostsThisWeek, livePolls, communityInteractionsToday,
   onTabChange, memberCount = 0,
-  liveChallengesCount, eventsThisWeek,
+  liveChallengesCount, eventsThisWeek, gym, memberUserRecords = [],
 }) {
   const weekCutoff = Date.now() - 7 * 24 * 60 * 60 * 1000;
-  const activeUserIds = new Set();
+  const allActiveUserIds = new Set();
   posts.forEach(p => {
     if (p.is_hidden) return;
     const d = new Date(p.created_date || p.created_at || 0).getTime();
-    if (d >= weekCutoff && p.member_id) activeUserIds.add(p.member_id);
-    Object.keys(p.reactions || {}).forEach(uid => { if (!uid.startsWith("gym_")) activeUserIds.add(uid); });
+    if (d >= weekCutoff && p.member_id) allActiveUserIds.add(p.member_id);
+    Object.keys(p.reactions || {}).forEach(uid => { if (!uid.startsWith("gym_")) allActiveUserIds.add(uid); });
   });
-  polls.forEach(p => { (p.voters || []).forEach(uid => activeUserIds.add(uid)); });
+  polls.forEach(p => { (p.voters || []).forEach(uid => allActiveUserIds.add(uid)); });
   checkIns.forEach(c => {
     const d = new Date(c.check_in_date || c.created_date || 0).getTime();
-    if (d >= weekCutoff && c.user_id) activeUserIds.add(c.user_id);
+    if (d >= weekCutoff && c.user_id) allActiveUserIds.add(c.user_id);
   });
-  const activityPct = memberCount > 0 ? Math.round((activeUserIds.size / memberCount) * 100) : 0;
+
+  // Filter to only users who have this gym as their primary gym
+  const primaryGymUserIds = gym?.id
+    ? new Set(memberUserRecords.filter(u => u.primary_gym_id === gym.id).map(u => u.id))
+    : null;
+  const activeUserIds = primaryGymUserIds
+    ? new Set([...allActiveUserIds].filter(id => primaryGymUserIds.has(id)))
+    : allActiveUserIds;
+  const primaryMemberCount = primaryGymUserIds ? primaryGymUserIds.size : memberCount;
+
+  const activityPct = primaryMemberCount > 0 ? Math.round((activeUserIds.size / primaryMemberCount) * 100) : 0;
   const chartData = buildDailyInteractionData(posts, polls, checkIns);
 
   const statCards = [
@@ -783,7 +793,7 @@ function RightSidebar({
           <ActivityMeterDial pct={activityPct} />
         </div>
         <div style={{ textAlign: "center", fontSize: 11, color: C.t3 }}>
-          {activeUserIds.size} of {memberCount > 0 ? memberCount : "—"} members active this week
+          {activeUserIds.size} of {primaryMemberCount > 0 ? primaryMemberCount : "—"} members active this week
         </div>
       </div>
     </div>
@@ -1156,7 +1166,7 @@ export { CreateEventModal } from "./CreateEventModal";
 export default function ContentPage({
   events = [], challenges = [], polls = [], posts = [], checkIns = [],
   openModal, onDeleteEvent, onDeleteChallenge, onDeletePost, onDeletePoll, onUpdatePost, onUpdateEvent,
-  avatarMap = {}, nameMap = {}, currentUser = null, gym = null, memberCount = 0,
+  avatarMap = {}, nameMap = {}, currentUser = null, gym = null, memberCount = 0, memberUserRecords = [],
 }) {
   const isMobile = useIsMobile();
   const [tab,              setTab]              = useState("Community Feed");
@@ -1695,6 +1705,7 @@ export default function ContentPage({
           communityInteractionsToday={communityInteractionsToday}
           onTabChange={setTab} memberCount={memberCount}
           liveChallengesCount={liveChallengesCount} eventsThisWeek={eventsThisWeek}
+          gym={gym} memberUserRecords={memberUserRecords}
         />
       )}
 
