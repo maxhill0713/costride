@@ -80,7 +80,11 @@ Deno.serve(async (req) => {
         console.log(`[${user.id}] Freeze used. Remaining: ${streakFreezes - 1}. Streak stays at ${currentStreak}.`);
         freezeUsed++;
       } else {
-        await base44.asServiceRole.entities.User.update(user.id, { current_streak: 0 });
+        // Save previous_streak before resetting so the client-side loss animation can detect it
+        await base44.asServiceRole.entities.User.update(user.id, { 
+          current_streak: 0,
+          previous_streak: currentStreak > 0 ? currentStreak : (user.previous_streak || 0),
+        });
         console.log(`[${user.id}] No freezes. Streak reset from ${currentStreak} to 0.`);
         streakReset++;
       }

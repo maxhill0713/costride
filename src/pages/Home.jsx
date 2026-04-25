@@ -339,15 +339,21 @@ export default function Home() {
   useEffect(() => {
     injectStreakStyles();
     if (!currentUser) return;
-    const todayDow = new Date().getDay();
-    const todayAdjustedDay = todayDow === 0 ? 7 : todayDow;
-    const trainingDaysForCheck = currentUser?.training_days || [];
-    const isTodayRestDay = trainingDaysForCheck.length > 0 && !trainingDaysForCheck.includes(todayAdjustedDay);
-    if (isTodayRestDay) return;
-
     const checkMissedWorkouts = async () => {
       try {
-        const result = await base44.functions.invoke('checkMissedWorkoutsAndConsumeFreezes', { restSwap: getRestSwap() });
+        const result = await base44.functions.invoke('checkMissedWorkoutsAndConsumeFreezes', {
+          restSwap: getRestSwap(),
+          creditRestDay: getCreditRestDay(),
+          restDayOverride: (() => {
+            try {
+              const stored = localStorage.getItem('workoutOverrideDay');
+              const storedDate = localStorage.getItem('workoutOverrideDayDate');
+              const todayStr = new Date().toISOString().split('T')[0];
+              if (stored && storedDate === todayStr) return parseInt(stored);
+              return null;
+            } catch { return null; }
+          })(),
+        });
         if (result.data?.shouldShowAnimation) {
           setFreezeAnimationData({
             freezesLostCount: result.data.freezesLostCount,
