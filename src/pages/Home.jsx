@@ -1281,7 +1281,27 @@ export default function Home() {
           )}
 
           {memberGym?.id && (() => {
-            const baseTrainingDays = (currentUser?.training_days || []).filter((d) => d >= 1 && d <= 7);
+            const currentTrainingDays = (currentUser?.training_days || []).filter((d) => d >= 1 && d <= 7);
+
+            // Persist training days snapshot at the start of each week in localStorage.
+            // This ensures past day circles never change colour when the user switches splits.
+            const weekKey = (() => {
+              const mon = startOfWeek(new Date(), { weekStartsOn: 1 });
+              return mon.toISOString().split('T')[0];
+            })();
+            const snapshotKey = `trainingDaysSnapshot_${weekKey}`;
+            const baseTrainingDays = (() => {
+              try {
+                const stored = localStorage.getItem(snapshotKey);
+                if (stored) return JSON.parse(stored);
+                // First time this week — save current split as the snapshot
+                localStorage.setItem(snapshotKey, JSON.stringify(currentTrainingDays));
+                return currentTrainingDays;
+              } catch {
+                return currentTrainingDays;
+              }
+            })();
+
             const swappedRestDay = weekOffset === 0 ? getSwappedRestDay() : null;
             const restSwap = weekOffset === 0 ? getRestSwap() : null;
             const creditRestDay = weekOffset === 0 ? getCreditRestDay() : null;
