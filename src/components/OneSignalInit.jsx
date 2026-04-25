@@ -17,21 +17,6 @@ export default function OneSignalInit() {
       try {
         await OneSignal.init({
           appId: ONESIGNAL_APP_ID,
-          promptOptions: {
-            slidedown: {
-              prompts: [
-                {
-                  type: 'push',
-                  autoPrompt: true,
-                  text: {
-                    actionMessage: 'Stay connected with your gym community — enable notifications.',
-                    acceptButton: 'Allow',
-                    cancelButton: 'Not now',
-                  },
-                },
-              ],
-            },
-          },
           notifyButton: { enable: false },
           allowLocalhostAsSecureOrigin: true,
         });
@@ -43,6 +28,19 @@ export default function OneSignalInit() {
           console.log('OneSignal: user logged in with ID', user.id);
         } else {
           console.warn('OneSignal: no user found to login');
+        }
+
+        // Safeguard: only show prompt if notifications are not already enabled
+        const isEnabled = await OneSignal.Notifications.isPushNotificationsEnabled();
+        if (!isEnabled) {
+          // Delay prompt by 1 second after full initialization
+          setTimeout(async () => {
+            try {
+              await OneSignal.Notifications.requestPermission();
+            } catch (err) {
+              console.warn('OneSignal: failed to show prompt', err);
+            }
+          }, 1000);
         }
 
         // Listen for permission grant event from index.html
