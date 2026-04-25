@@ -42,6 +42,20 @@ export default function OneSignalInit() {
           await OneSignal.login(user.id);
           console.log('OneSignal: linked device to user', user.id);
         }
+
+        // Handle notification clicks
+        OneSignal.Notifications.addEventListener('click', (event) => {
+          console.log('Notification clicked:', event.notification);
+          const { custom_data } = event.notification.data || {};
+          if (custom_data?.route) {
+            window.location.href = custom_data.route;
+          }
+        });
+
+        // Handle notification dismissed
+        OneSignal.Notifications.addEventListener('dismiss', (event) => {
+          console.log('Notification dismissed:', event.notification.id);
+        });
       } catch (err) {
         console.warn('OneSignal init error:', err.message);
       }
