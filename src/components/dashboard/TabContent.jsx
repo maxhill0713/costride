@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import {
-  Plus, Flame, Check, Calendar, Clock, Users,
+  Plus, Flame, Check, Calendar, Clock, Users, MapPin,
   ArrowUpRight, ArrowDownRight, ChevronDown, ChevronLeft, ChevronRight,
   Trophy, BarChart2, FileText, MessageCircle, Trash2, Zap, RefreshCw, Pencil, X, Upload, Search, RepeatIcon,
 } from "lucide-react";
