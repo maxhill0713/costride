@@ -15,57 +15,13 @@
     <!-- OneSignal SDK -->
     <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
     <script>
-      // ─── OneSignal Single Init (no double-init with React component) ───────
-      // CRITICAL: Only init once here. The React OneSignalInit component
-      // only handles user login — it does NOT call OneSignal.init() again.
-      
       window.OneSignalDeferred = window.OneSignalDeferred || [];
-      
       OneSignalDeferred.push(async function(OneSignal) {
-        try {
-          await OneSignal.init({
-            appId: "9b5b68c2-c473-49eb-b74e-eac55368db3b",
-            serviceWorkerPath: "/OneSignalSDKWorker.js",
-            serviceWorkerUpdateStrategy: "auto",
-            notifyButton: { enable: false },
-          });
-          
-          console.log("[OneSignal] Initialized");
-          console.log("[OneSignal] navigator.standalone =", navigator.standalone);
-          console.log("[OneSignal] userAgent =", navigator.userAgent);
-          
-          const isPushEnabled = await OneSignal.Notifications.isPushNotificationsEnabled();
-          const userId = await OneSignal.getUserId();
-          console.log("[OneSignal] isPushNotificationsEnabled =", isPushEnabled);
-          console.log("[OneSignal] userId =", userId);
-          
-          if (!userId) {
-            console.warn("[OneSignal] userId is null — user not yet subscribed");
-          }
-
-          // Listen for permission changes
-          OneSignal.Notifications.addEventListener("permission_change", async function(change) {
-            if (change.permission === "granted") {
-              const newUserId = await OneSignal.getUserId();
-              console.log("[OneSignal] Permission granted. userId =", newUserId);
-              window.dispatchEvent(new CustomEvent("onesignalPermissionGranted"));
-            }
-          });
-
-          // Expose a prompt function for the "Enable Notifications" button
-          window._OneSignalShowPrompt = async function() {
-            const isEnabled = await OneSignal.Notifications.isPushNotificationsEnabled();
-            if (isEnabled) {
-              console.log("[OneSignal] Already subscribed, skipping prompt");
-              return;
-            }
-            console.log("[OneSignal] Requesting permission...");
-            await OneSignal.Notifications.requestPermission();
-          };
-
-        } catch (err) {
-          console.error("[OneSignal] Init error:", err);
-        }
+        await OneSignal.init({
+          appId: "9b5b68c2-c473-49eb-b74e-eac55368db3b",
+          notifyButton: { enable: true },
+        });
+        // The auto-force line has been removed to comply with Apple's rules
       });
     </script>
   </head>
