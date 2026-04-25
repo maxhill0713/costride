@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback, useMemo } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import {
   Plus, Flame, Check, Calendar, Clock, Users, MapPin,
   ArrowUpRight, ArrowDownRight, ChevronDown, ChevronLeft, ChevronRight,
@@ -578,7 +578,7 @@ function NotificationTicker({ posts, events, polls, checkIns, gymId }) {
       const count = (poll.voters || []).length;
       if (count > 0 && isRecent(poll.updated_date || poll.updated_at)) {
         const label = q.length > 34 ? q.slice(0, 32) + "…" : q;
-        notifs.push(`${count} member${count !== 1 ? "s" : ""} just responded to ${label}`);
+        notifs.push(`${count} member${count !== 1 ? "s" : ""} just responded to the ${label.toLowerCase()} poll`);
       }
     });
 
@@ -619,11 +619,11 @@ function NotificationTicker({ posts, events, polls, checkIns, gymId }) {
       `}</style>
       <div style={{
         /* fixed width ~70% of the former flex:1 space, truly centered between heading and button */
-        width: "clamp(180px, 42%, 500px)",
+        width: "clamp(270px, 63%, 750px)",
         height: 37,                          /* 34px × 1.10 ≈ 37px */
         background: "rgba(77,127,255,0.11)",
         border: "none",                      /* no outline */
-        borderRadius: 8,
+        borderRadius: 0,
         overflow: "hidden",
         display: "flex",
         alignItems: "center",
