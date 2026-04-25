@@ -55,14 +55,6 @@ function FriendsSection({
   addFriendMutation
 }) {
   // Build fast lookup maps: userId → avatar and userId → full user data
-  const userAvatarMap = useMemo(() => {
-    const map = {};
-    (friendUsersList || []).forEach(u => {
-      if (u.id) map[u.id] = u.avatar_url || null;
-    });
-    return map;
-  }, [friendUsersList]);
-
   const userDataMap = useMemo(() => {
     const map = {};
     (friendUsersList || []).forEach(u => {
@@ -161,8 +153,9 @@ function FriendsSection({
                     {sentFriendRequests.filter((req) =>
                       (req.friend_name || '').toLowerCase().includes(friendsListSearchQuery.toLowerCase())
                     ).map((request) => {
-                      const name = request.friend_name || 'User';
-                      const avatarUrl = userAvatarMap[request.friend_id] || request.friend_avatar;
+                      const userData = userDataMap[request.friend_id];
+                      const name = userData?.full_name || request.friend_name || 'User';
+                      const avatarUrl = userData?.avatar_url || request.friend_avatar;
                       const rawDate = request.created_date;
                       const parsedDate = rawDate && !rawDate.endsWith('Z') && !rawDate.match(/[+-]\d{2}:\d{2}$/)
                         ? new Date(rawDate + 'Z')
@@ -227,7 +220,7 @@ function FriendsSection({
                     }).map((request) => {
                       const userData = userDataMap[request.user_id];
                       const name = userData?.full_name || request.user_name || 'User';
-                      const avatarUrl = userData?.avatar_url || userAvatarMap[request.user_id] || request.user_avatar;
+                      const avatarUrl = userData?.avatar_url || request.user_avatar;
                       return (
                         <div key={request.id} className="px-2.5 py-1 rounded-lg bg-slate-700/40 flex items-center gap-2 relative">
                           <Link to={createPageUrl('UserProfile') + `?id=${request.user_id}`} onClick={closeAll} className="flex items-center gap-2 min-w-0 flex-1">
@@ -280,7 +273,7 @@ function FriendsSection({
                         }).map((friend) => {
                           const userData = userDataMap[friend.friend_id];
                           const name = userData?.full_name || friend.friend_name || 'User';
-                          const avatarUrl = userData?.avatar_url || userAvatarMap[friend.friend_id] || friend.friend_avatar;
+                          const avatarUrl = userData?.avatar_url || friend.friend_avatar;
                           return (
                             <div key={friend.id} className="px-2 py-1 rounded-lg bg-slate-700/40 flex items-center justify-between gap-2 relative">
                               <Link to={createPageUrl('UserProfile') + `?id=${friend.friend_id}`} className="flex items-center gap-2 flex-1 min-w-0" onClick={closeAll}>
@@ -346,8 +339,8 @@ function FriendsSection({
                               <div className="flex items-center gap-3">
                                 <div className="w-10 h-10 rounded-full bg-gradient-to-br from-slate-600 to-slate-700 flex items-center justify-center overflow-hidden">
                                   {user.avatar_url
-                                    ? <img src={user.avatar_url} alt={user.display_name || user.full_name} className="w-full h-full object-cover rounded-full" />
-                                    : <span className="text-sm font-semibold text-white">{(user.display_name || user.full_name)?.charAt(0)?.toUpperCase()}</span>}
+                                    ? <img src={user.avatar_url} alt={user.full_name} className="w-full h-full object-cover rounded-full" />
+                                    : <span className="text-sm font-semibold text-white">{user.full_name?.charAt(0)?.toUpperCase()}</span>}
                                 </div>
                                 <div>
                                   <div className="font-semibold text-white text-sm">{user.full_name}</div>
