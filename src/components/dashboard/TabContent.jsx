@@ -636,7 +636,6 @@ function RightSidebar({
   const activityPct = memberCount > 0 ? Math.round((activeUserIds.size / memberCount) * 100) : 0;
   const chartData = buildDailyInteractionData(posts, polls, checkIns);
 
-  // ── All stat card numbers now use C.cyan (the blue) ──
   const statCards = [
     { label: "Posts / week",    val: feedPostsThisWeek,  col: C.cyan, tab: "Community Feed" },
     { label: "Live polls",      val: livePolls,           col: C.cyan, tab: "Polls"          },
@@ -830,8 +829,6 @@ function EventDetailPopup({ event, onClose, onDelete }) {
       onClick={e => { if (e.target === e.currentTarget) onClose(); }}
     >
       <div style={{ background: C.card, border: `1px solid ${C.brd}`, borderRadius: 16, width: 440, maxWidth: "92vw", overflow: "hidden", boxShadow: "0 32px 80px rgba(0,0,0,0.8), 0 0 0 1px rgba(77,127,255,0.06)" }}>
-
-        {/* Header band */}
         <div style={{ background: "linear-gradient(135deg, rgba(77,127,255,0.14) 0%, rgba(77,127,255,0.04) 100%)", borderBottom: `1px solid ${C.brd}`, padding: "18px 20px 16px" }}>
           <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
@@ -846,17 +843,13 @@ function EventDetailPopup({ event, onClose, onDelete }) {
             <button
               onClick={onClose}
               style={{ width: 28, height: 28, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(255,255,255,0.06)", border: `1px solid ${C.brd}`, borderRadius: 7, cursor: "pointer", color: C.t3, flexShrink: 0 }}
-              onMouseEnter={e => { e.currentTarget.style.color = C.t1; e.currentTarget.style.borderColor = C.brd; }}
+              onMouseEnter={e => { e.currentTarget.style.color = C.t1; }}
               onMouseLeave={e => { e.currentTarget.style.color = C.t3; }}>
               <X size={13} />
             </button>
           </div>
         </div>
-
-        {/* Body */}
         <div style={{ padding: "18px 20px", display: "flex", flexDirection: "column", gap: 14 }}>
-
-          {/* Date & time */}
           {dateLabel && (
             <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
               <div style={{ width: 28, height: 28, borderRadius: 7, background: "rgba(255,255,255,0.04)", border: `1px solid ${C.brd}`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
@@ -868,8 +861,6 @@ function EventDetailPopup({ event, onClose, onDelete }) {
               </div>
             </div>
           )}
-
-          {/* Attendees */}
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
             <div style={{ width: 28, height: 28, borderRadius: 7, background: "rgba(255,255,255,0.04)", border: `1px solid ${C.brd}`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
               <Users size={12} color={C.t3} />
@@ -878,24 +869,18 @@ function EventDetailPopup({ event, onClose, onDelete }) {
               {event.attendees || 0} attending
             </div>
           </div>
-
-          {/* Description */}
           {event.description && (
             <div style={{ padding: "11px 13px", borderRadius: 9, background: "rgba(255,255,255,0.03)", border: `1px solid ${C.brd}` }}>
               <div style={{ fontSize: 10, fontWeight: 600, color: C.t3, textTransform: "uppercase", letterSpacing: "0.09em", marginBottom: 6 }}>Description</div>
               <div style={{ fontSize: 12.5, color: C.t2, lineHeight: 1.6 }}>{event.description}</div>
             </div>
           )}
-
-          {/* Banner image if any */}
           {event.image_url && (
             <div style={{ borderRadius: 9, overflow: "hidden", border: `1px solid ${C.brd}` }}>
               <img src={event.image_url} alt={event.title} style={{ width: "100%", height: 130, objectFit: "cover", display: "block" }} />
             </div>
           )}
         </div>
-
-        {/* Footer actions */}
         <div style={{ padding: "12px 20px 16px", borderTop: `1px solid ${C.brd}`, display: "flex", gap: 8, justifyContent: "flex-end" }}>
           <button
             onClick={onClose}
@@ -915,7 +900,7 @@ function EventDetailPopup({ event, onClose, onDelete }) {
 }
 
 /* ══════════════════════════════════════════════════════════════
-   EVENTS CALENDAR
+   EVENTS CALENDAR  — fully reworked
 ══════════════════════════════════════════════════════════════ */
 const DAYS_OF_WEEK = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 const MONTH_NAMES  = ["January","February","March","April","May","June","July","August","September","October","November","December"];
@@ -923,47 +908,83 @@ const MONTH_NAMES  = ["January","February","March","April","May","June","July","
 function EventsCalendar({ events, onDeleteEvent, onAddEvent }) {
   const today = new Date();
   const [viewYear,  setViewYear]  = useState(today.getFullYear());
-  const [viewMonth, setViewMonth] = useState(today.getMonth()); // 0-indexed
+  const [viewMonth, setViewMonth] = useState(today.getMonth());
   const [selectedEvent, setSelectedEvent] = useState(null);
 
-  const goBack = () => {
-    if (viewMonth === 0) { setViewMonth(11); setViewYear(y => y - 1); }
-    else setViewMonth(m => m - 1);
-  };
-  const goForward = () => {
-    if (viewMonth === 11) { setViewMonth(0); setViewYear(y => y + 1); }
-    else setViewMonth(m => m + 1);
+  // Slide animation state
+  const [slideDir, setSlideDir]   = useState(null); // "left" | "right"
+  const [animating, setAnimating] = useState(false);
+  const timeoutRef = useRef(null);
+
+  const navigate = (delta) => {
+    if (animating) return;
+    setSlideDir(delta > 0 ? "left" : "right");
+    setAnimating(true);
+    timeoutRef.current = setTimeout(() => {
+      setViewMonth(m => {
+        let nm = m + delta;
+        if (nm < 0)  { setViewYear(y => y - 1); return 11; }
+        if (nm > 11) { setViewYear(y => y + 1); return 0; }
+        return nm;
+      });
+      setSlideDir(null);
+      // small pause so new month starts centred before fade-in
+      setTimeout(() => setAnimating(false), 40);
+    }, 220);
   };
 
-  // Build a map: "YYYY-MM-DD" → [events]
+  useEffect(() => () => clearTimeout(timeoutRef.current), []);
+
+  // Build event map for ALL days (including overflow)
   const eventsByDay = {};
   events.forEach(ev => {
     if (!ev.event_date) return;
     const d = new Date(ev.event_date);
-    const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+    const key = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
     if (!eventsByDay[key]) eventsByDay[key] = [];
     eventsByDay[key].push(ev);
   });
 
   // Calendar grid — Monday-first
   const firstOfMonth = new Date(viewYear, viewMonth, 1);
-  // getDay() → 0=Sun…6=Sat; shift to Mon=0
-  const startDow = (firstOfMonth.getDay() + 6) % 7;
-  const daysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate();
-  // Pad with prev-month days + fill grid to complete weeks
-  const totalCells = Math.ceil((startDow + daysInMonth) / 7) * 7;
+  const startDow     = (firstOfMonth.getDay() + 6) % 7; // Mon=0
+  const daysInMonth  = new Date(viewYear, viewMonth + 1, 0).getDate();
+  // Days in prev month
+  const prevMonthDays = new Date(viewYear, viewMonth, 0).getDate();
+  const totalCells   = Math.ceil((startDow + daysInMonth) / 7) * 7;
 
   const todayKey = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,"0")}-${String(today.getDate()).padStart(2,"0")}`;
 
   const cells = [];
   for (let i = 0; i < totalCells; i++) {
-    const dayNum = i - startDow + 1;
-    if (dayNum < 1 || dayNum > daysInMonth) {
-      cells.push({ dayNum: null, key: null, events: [] });
+    const dayOffset = i - startDow; // negative = prev month, 0..daysInMonth-1 = current, >= daysInMonth = next
+    let cellYear = viewYear, cellMonth = viewMonth, cellDay;
+    let isOtherMonth = false;
+
+    if (dayOffset < 0) {
+      // Previous month
+      isOtherMonth = true;
+      cellDay = prevMonthDays + dayOffset + 1;
+      cellMonth = viewMonth - 1;
+      if (cellMonth < 0) { cellMonth = 11; cellYear = viewYear - 1; }
+    } else if (dayOffset >= daysInMonth) {
+      // Next month
+      isOtherMonth = true;
+      cellDay = dayOffset - daysInMonth + 1;
+      cellMonth = viewMonth + 1;
+      if (cellMonth > 11) { cellMonth = 0; cellYear = viewYear + 1; }
     } else {
-      const key = `${viewYear}-${String(viewMonth + 1).padStart(2, "0")}-${String(dayNum).padStart(2, "0")}`;
-      cells.push({ dayNum, key, events: eventsByDay[key] || [], isToday: key === todayKey });
+      cellDay = dayOffset + 1;
     }
+
+    const key = `${cellYear}-${String(cellMonth+1).padStart(2,"0")}-${String(cellDay).padStart(2,"0")}`;
+    cells.push({
+      dayNum: cellDay,
+      key,
+      events: eventsByDay[key] || [],
+      isToday: key === todayKey,
+      isOtherMonth,
+    });
   }
 
   const totalEvents = events.filter(ev => {
@@ -972,152 +993,173 @@ function EventsCalendar({ events, onDeleteEvent, onAddEvent }) {
     return d.getFullYear() === viewYear && d.getMonth() === viewMonth;
   }).length;
 
+  // Slide keyframe direction classes
+  const slideInClass  = slideDir === "left"  ? "cal-slide-in-left"  : slideDir === "right" ? "cal-slide-in-right"  : "";
+  const slideOutClass = slideDir === "left"  ? "cal-slide-out-left" : slideDir === "right" ? "cal-slide-out-right" : "";
+
   return (
     <>
       <style>{`
-        @keyframes cal-pop { from { opacity: 0; transform: scale(0.97) translateY(4px); } to { opacity: 1; transform: scale(1) translateY(0); } }
-        .cal-cell { transition: background 0.12s; }
+        @keyframes slideInFromRight  { from { opacity:0; transform:translateX(40px);  } to { opacity:1; transform:translateX(0); } }
+        @keyframes slideInFromLeft   { from { opacity:0; transform:translateX(-40px); } to { opacity:1; transform:translateX(0); } }
+        @keyframes slideOutToLeft    { from { opacity:1; transform:translateX(0);  } to { opacity:0; transform:translateX(-40px); } }
+        @keyframes slideOutToRight   { from { opacity:1; transform:translateX(0);  } to { opacity:0; transform:translateX(40px);  } }
+        .cal-grid-wrap { overflow: hidden; position: relative; }
+        .cal-grid-wrap.cal-slide-out-left  { animation: slideOutToLeft   0.22s ease forwards; }
+        .cal-grid-wrap.cal-slide-out-right { animation: slideOutToRight  0.22s ease forwards; }
+        .cal-grid-wrap.entering-left  { animation: slideInFromRight 0.22s ease forwards; }
+        .cal-grid-wrap.entering-right { animation: slideInFromLeft  0.22s ease forwards; }
         .cal-cell:hover { background: rgba(77,127,255,0.04) !important; }
-        .cal-event-pill { transition: background 0.12s, border-color 0.12s; }
+        .cal-event-pill { transition: background 0.12s, border-color 0.12s; white-space: normal !important; word-break: break-word; }
         .cal-event-pill:hover { background: rgba(77,127,255,0.22) !important; border-color: rgba(77,127,255,0.5) !important; }
       `}</style>
 
-      <div style={{ animation: "cal-pop 0.2s ease" }}>
-
-        {/* ── Calendar header ── */}
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
-          <div>
-            <span style={{ fontSize: 12, fontWeight: 500, color: C.t2 }}>
-              {totalEvents} event{totalEvents !== 1 ? "s" : ""} this month
-            </span>
-          </div>
-          <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-            <button
-              onClick={goBack}
-              style={{ width: 30, height: 30, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(255,255,255,0.04)", border: `1px solid ${C.brd}`, borderRadius: 7, cursor: "pointer", color: C.t2, transition: "all 0.12s" }}
-              onMouseEnter={e => { e.currentTarget.style.borderColor = C.cyanBrd; e.currentTarget.style.color = C.t1; }}
-              onMouseLeave={e => { e.currentTarget.style.borderColor = C.brd; e.currentTarget.style.color = C.t2; }}>
-              <ChevronLeft size={14} />
-            </button>
-            <div style={{ minWidth: 140, textAlign: "center", fontSize: 14, fontWeight: 700, color: C.t1, letterSpacing: "-0.01em" }}>
-              {MONTH_NAMES[viewMonth]} {viewYear}
-            </div>
-            <button
-              onClick={goForward}
-              style={{ width: 30, height: 30, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(255,255,255,0.04)", border: `1px solid ${C.brd}`, borderRadius: 7, cursor: "pointer", color: C.t2, transition: "all 0.12s" }}
-              onMouseEnter={e => { e.currentTarget.style.borderColor = C.cyanBrd; e.currentTarget.style.color = C.t1; }}
-              onMouseLeave={e => { e.currentTarget.style.borderColor = C.brd; e.currentTarget.style.color = C.t2; }}>
-              <ChevronRight size={14} />
-            </button>
-          </div>
+      {/* ── Calendar header ── */}
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
+        <div>
+          <span style={{ fontSize: 12, fontWeight: 500, color: C.t2 }}>
+            {totalEvents} event{totalEvents !== 1 ? "s" : ""} this month
+          </span>
         </div>
-
-        {/* ── Grid ── */}
-        <div style={{ background: C.card, border: `1px solid ${C.brd}`, borderRadius: 12, overflow: "hidden" }}>
-
-          {/* Day-of-week header */}
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", borderBottom: `1px solid ${C.brd}` }}>
-            {DAYS_OF_WEEK.map(d => (
-              <div key={d} style={{ padding: "9px 0", textAlign: "center", fontSize: 10, fontWeight: 700, color: C.t3, textTransform: "uppercase", letterSpacing: "0.08em" }}>{d}</div>
-            ))}
+        {/* Nav: chevrons tight to month label, no box */}
+        <div style={{ display: "flex", alignItems: "center", gap: 2 }}>
+          <button
+            onClick={() => navigate(-1)}
+            disabled={animating}
+            style={{ width: 26, height: 26, display: "flex", alignItems: "center", justifyContent: "center", background: "transparent", border: "none", borderRadius: 6, cursor: animating ? "default" : "pointer", color: C.t2, transition: "color 0.12s" }}
+            onMouseEnter={e => { e.currentTarget.style.color = C.t1; }}
+            onMouseLeave={e => { e.currentTarget.style.color = C.t2; }}>
+            <ChevronLeft size={16} />
+          </button>
+          <div style={{ minWidth: 148, textAlign: "center", fontSize: 14, fontWeight: 700, color: C.t1, letterSpacing: "-0.01em", userSelect: "none" }}>
+            {MONTH_NAMES[viewMonth]} {viewYear}
           </div>
-
-          {/* Cells */}
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)" }}>
-            {cells.map((cell, idx) => {
-              const isLastRow = idx >= cells.length - 7;
-              const isLastCol = (idx % 7) === 6;
-              const borderRight = isLastCol ? "none" : `1px solid ${C.brd}`;
-              const borderBottom = isLastRow ? "none" : `1px solid ${C.brd}`;
-              const isOtherMonth = cell.dayNum === null;
-
-              return (
-                <div
-                  key={idx}
-                  className="cal-cell"
-                  style={{
-                    minHeight: 90,
-                    padding: "8px 7px 6px",
-                    borderRight,
-                    borderBottom,
-                    background: cell.isToday ? "rgba(77,127,255,0.06)" : "transparent",
-                    position: "relative",
-                    verticalAlign: "top",
-                  }}
-                >
-                  {/* Day number */}
-                  {cell.dayNum !== null && (
-                    <div style={{
-                      width: 22, height: 22,
-                      display: "flex", alignItems: "center", justifyContent: "center",
-                      borderRadius: "50%",
-                      background: cell.isToday ? C.cyan : "transparent",
-                      marginBottom: 5,
-                      fontSize: 11.5,
-                      fontWeight: cell.isToday ? 800 : 500,
-                      color: cell.isToday ? "#fff" : C.t2,
-                      lineHeight: 1,
-                      flexShrink: 0,
-                    }}>
-                      {cell.dayNum}
-                    </div>
-                  )}
-
-                  {/* Event pills */}
-                  <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
-                    {cell.events.slice(0, 3).map(ev => (
-                      <button
-                        key={ev.id}
-                        className="cal-event-pill"
-                        onClick={() => setSelectedEvent(ev)}
-                        style={{
-                          display: "block",
-                          width: "100%",
-                          textAlign: "left",
-                          padding: "3px 6px",
-                          borderRadius: 5,
-                          background: C.cyanDim,
-                          border: `1px solid ${C.cyanBrd}`,
-                          cursor: "pointer",
-                          fontFamily: FONT,
-                          overflow: "hidden",
-                          whiteSpace: "nowrap",
-                          textOverflow: "ellipsis",
-                          fontSize: 10.5,
-                          fontWeight: 600,
-                          color: C.cyan,
-                          lineHeight: 1.3,
-                        }}>
-                        {ev.title}
-                      </button>
-                    ))}
-                    {/* Overflow indicator */}
-                    {cell.events.length > 3 && (
-                      <div style={{ fontSize: 10, color: C.t3, fontWeight: 600, paddingLeft: 6, marginTop: 1 }}>
-                        +{cell.events.length - 3} more
-                      </div>
-                    )}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* Legend / hint */}
-        <div style={{ display: "flex", alignItems: "center", gap: 12, marginTop: 12, paddingLeft: 2 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
-            <div style={{ width: 10, height: 10, borderRadius: 3, background: C.cyanDim, border: `1px solid ${C.cyanBrd}` }} />
-            <span style={{ fontSize: 10.5, color: C.t3 }}>Scheduled event — click for details</span>
-          </div>
-          <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
-            <div style={{ width: 10, height: 10, borderRadius: "50%", background: C.cyan }} />
-            <span style={{ fontSize: 10.5, color: C.t3 }}>Today</span>
-          </div>
+          <button
+            onClick={() => navigate(1)}
+            disabled={animating}
+            style={{ width: 26, height: 26, display: "flex", alignItems: "center", justifyContent: "center", background: "transparent", border: "none", borderRadius: 6, cursor: animating ? "default" : "pointer", color: C.t2, transition: "color 0.12s" }}
+            onMouseEnter={e => { e.currentTarget.style.color = C.t1; }}
+            onMouseLeave={e => { e.currentTarget.style.color = C.t2; }}>
+            <ChevronRight size={16} />
+          </button>
         </div>
       </div>
 
-      {/* Event detail popup */}
+      {/* ── Grid wrapper (clipping + slide) ── */}
+      <div style={{ borderRadius: 12, overflow: "hidden", border: `1px solid ${C.brd}`, background: C.card }}>
+        {/* Day-of-week header — static, no slide */}
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", borderBottom: `1px solid ${C.brd}` }}>
+          {DAYS_OF_WEEK.map(d => (
+            <div key={d} style={{ padding: "9px 0", textAlign: "center", fontSize: 10, fontWeight: 700, color: C.t3, textTransform: "uppercase", letterSpacing: "0.08em" }}>{d}</div>
+          ))}
+        </div>
+
+        {/* Sliding cells area */}
+        <div
+          className={`cal-grid-wrap${slideDir ? " " + (slideDir === "left" ? "cal-slide-out-left" : "cal-slide-out-right") : (!animating && slideDir === null ? "" : (slideDir === null ? (animating ? "" : "") : ""))}`}
+          key={`${viewYear}-${viewMonth}`}
+          style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", animation: !animating && slideDir === null ? (slideDir === null ? undefined : undefined) : undefined }}
+        >
+          {cells.map((cell, idx) => {
+            const isLastRow = idx >= cells.length - 7;
+            const isLastCol = (idx % 7) === 6;
+            const borderRight  = isLastCol ? "none" : `1px solid ${C.brd}`;
+            const borderBottom = isLastRow ? "none" : `1px solid ${C.brd}`;
+
+            return (
+              <div
+                key={cell.key}
+                className="cal-cell"
+                style={{
+                  padding: "8px 7px 8px",
+                  borderRight,
+                  borderBottom,
+                  background: cell.isToday
+                    ? "rgba(77,127,255,0.06)"
+                    : cell.isOtherMonth
+                      ? "rgba(255,255,255,0.012)"
+                      : "transparent",
+                  transition: "background 0.12s",
+                  // All cells same height — use min-height so content can grow
+                  minHeight: 100,
+                  boxSizing: "border-box",
+                  verticalAlign: "top",
+                  opacity: cell.isOtherMonth ? 0.45 : 1,
+                }}
+              >
+                {/* Day number */}
+                <div style={{
+                  width: 22, height: 22,
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  borderRadius: "50%",
+                  background: cell.isToday ? C.cyan : "transparent",
+                  marginBottom: 5,
+                  fontSize: 11.5,
+                  fontWeight: cell.isToday ? 800 : cell.isOtherMonth ? 400 : 500,
+                  color: cell.isToday ? "#fff" : cell.isOtherMonth ? C.t3 : C.t2,
+                  lineHeight: 1,
+                  flexShrink: 0,
+                }}>
+                  {cell.dayNum}
+                </div>
+
+                {/* Event pills — multi-line text, no truncation */}
+                <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
+                  {cell.events.slice(0, 4).map(ev => (
+                    <button
+                      key={ev.id}
+                      className="cal-event-pill"
+                      onClick={() => !cell.isOtherMonth && setSelectedEvent(ev)}
+                      style={{
+                        display: "block",
+                        width: "100%",
+                        textAlign: "left",
+                        padding: "3px 6px",
+                        borderRadius: 5,
+                        background: cell.isOtherMonth ? "rgba(77,127,255,0.06)" : C.cyanDim,
+                        border: `1px solid ${cell.isOtherMonth ? "rgba(77,127,255,0.12)" : C.cyanBrd}`,
+                        cursor: cell.isOtherMonth ? "default" : "pointer",
+                        fontFamily: FONT,
+                        overflow: "hidden",
+                        whiteSpace: "normal",
+                        wordBreak: "break-word",
+                        fontSize: 10.5,
+                        fontWeight: 600,
+                        color: cell.isOtherMonth ? "rgba(77,127,255,0.5)" : C.cyan,
+                        lineHeight: 1.35,
+                        boxSizing: "border-box",
+                      }}>
+                      {ev.title}
+                    </button>
+                  ))}
+                  {cell.events.length > 4 && (
+                    <div style={{ fontSize: 10, color: C.t3, fontWeight: 600, paddingLeft: 6, marginTop: 1 }}>
+                      +{cell.events.length - 4} more
+                    </div>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Legend */}
+      <div style={{ display: "flex", alignItems: "center", gap: 12, marginTop: 12, paddingLeft: 2 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
+          <div style={{ width: 10, height: 10, borderRadius: 3, background: C.cyanDim, border: `1px solid ${C.cyanBrd}` }} />
+          <span style={{ fontSize: 10.5, color: C.t3 }}>Scheduled event — click for details</span>
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
+          <div style={{ width: 10, height: 10, borderRadius: "50%", background: C.cyan }} />
+          <span style={{ fontSize: 10.5, color: C.t3 }}>Today</span>
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
+          <div style={{ width: 10, height: 10, borderRadius: 3, background: "rgba(77,127,255,0.06)", border: "1px solid rgba(77,127,255,0.12)", opacity: 0.6 }} />
+          <span style={{ fontSize: 10.5, color: C.t3 }}>Adjacent month (faded)</span>
+        </div>
+      </div>
+
       {selectedEvent && (
         <EventDetailPopup
           event={selectedEvent}
@@ -1207,8 +1249,9 @@ export default function ContentPage({
 
       <div style={{ flex: 1, overflowY: "auto", minWidth: 0, ...(isMobile ? { paddingBottom: 80 } : {}) }}>
 
+        {/* ── Header: reduced left padding to shift content left ── */}
         {!isMobile && (
-          <div style={{ padding: "4px 16px 0", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <div style={{ padding: "4px 16px 0 4px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
             <h1 style={{ fontSize: 22, fontWeight: 800, color: C.t1, margin: 0, letterSpacing: "-0.03em", lineHeight: 1.2 }}>
               Content <span style={{ color: C.cyan }}>Hub</span>
             </h1>
@@ -1222,11 +1265,13 @@ export default function ContentPage({
           </div>
         )}
 
-        <div style={{ padding: isMobile ? "0 12px" : "0 16px" }}>
+        {/* ── Tabs: also reduced left padding ── */}
+        <div style={{ padding: isMobile ? "0 12px" : "0 4px" }}>
           <Tabs active={tab} setActive={setTab} isMobile={isMobile} />
         </div>
 
-        <div style={{ padding: isMobile ? "8px 12px 24px" : "0 16px 32px" }}>
+        {/* ── Tab content: reduced left padding ── */}
+        <div style={{ padding: isMobile ? "8px 12px 24px" : "0 16px 32px 4px" }}>
 
           {/* ── COMMUNITY FEED ── */}
           {tab === "Community Feed" && (
