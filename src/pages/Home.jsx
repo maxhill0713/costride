@@ -1399,7 +1399,7 @@ export default function Home() {
                         // Today showing as a rest-day-override (user switched a rest day to workout) should
                         // show grey (planned) not red (missed) — treat it like a future training day
                         const isTodayRestDayOverride = isTodayCircle && restDayOverride === day;
-                        const isMissed = !isRestDay && !done && !isTodayRestDayOverride && (isPast || (isTodayCircle && !isFutureWeek));
+                        const isMissed = !isRestDay && !done && !isTodayRestDayOverride && isPast && !isTodayCircle;
                         const isPastOrTodayRestDay = isRestDay && (isPast || isTodayCircle);
                         const size = isTodayCircle ? 49 : 40;
                         const verticalOffset = Math.round(Math.sin(i / (allDays.length - 1) * Math.PI * 2) * 11);
