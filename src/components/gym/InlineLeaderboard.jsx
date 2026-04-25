@@ -160,9 +160,9 @@ export default function InlineLeaderboard({ view, setView, checkInLeaderboardWee
     }}>
       <div style={{ padding: '12px 14px 10px', borderBottom: '1px solid rgba(255,255,255,0.055)' }}>
 
-        {/* Header: big title left + compact slider right */}
+        {/* Header: title left + compact slider right */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
-          <span style={{ fontSize: 18, fontWeight: 900, color: '#fff', letterSpacing: '-0.02em', lineHeight: 1 }}>
+          <span style={{ fontSize: 14, fontWeight: 900, color: '#fff', letterSpacing: '-0.01em', lineHeight: 1 }}>
             Community Leaderboard
           </span>
           <TimeframeSlider value={timeframe} onChange={setTimeframe} />
