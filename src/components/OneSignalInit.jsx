@@ -1,13 +1,16 @@
 import { useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 
-// OneSignal App ID — get from environment or use fallback
-const ONESIGNAL_APP_ID = import.meta.env.VITE_ONESIGNAL_APP_ID || '9b5b68c2-c473-49eb-b74e-eac55368db3b';
-
 /**
- * Initialises OneSignal and registers the current user's device token.
- * We set external_id = base44 user ID so the backend can target users by ID.
- * Drop this component anywhere inside AuthProvider (it renders nothing).
+ * OneSignal React Init Component
+ * 
+ * IMPORTANT: index.html already handles OneSignal.init().
+ * This component ONLY handles:
+ * 1. Logging in the base44 user after init is complete
+ * 2. Listening for notification click events
+ * 
+ * DO NOT call OneSignal.init() here — it's called in index.html
+ * to avoid the double-init bug which breaks mobile push.
  */
 export default function OneSignalInit() {
   useEffect(() => {
@@ -15,13 +18,7 @@ export default function OneSignalInit() {
 
     window.OneSignalDeferred.push(async (OneSignal) => {
       try {
-        await OneSignal.init({
-          appId: ONESIGNAL_APP_ID,
-          notifyButton: { enable: false },
-          allowLocalhostAsSecureOrigin: true,
-        });
-
-        // Get user and login immediately after init
+        // Login the base44 user so we can target them by ID
         const user = await base44.auth.me().catch(() => null);
         if (user?.id) {
           await OneSignal.login(user.id);
@@ -30,20 +27,8 @@ export default function OneSignalInit() {
           console.warn('OneSignal: no user found to login');
         }
 
-        // Safeguard: only show prompt if notifications are not already enabled
-        const isEnabled = await OneSignal.Notifications.isPushNotificationsEnabled();
-        if (!isEnabled) {
-          // Delay prompt by 1 second after full initialization
-          setTimeout(async () => {
-            try {
-              await OneSignal.Notifications.requestPermission();
-            } catch (err) {
-              console.warn('OneSignal: failed to show prompt', err);
-            }
-          }, 1000);
-        }
-
-        // Listen for permission grant event from index.html
+        // Re-login after permission is granted (covers the case where user
+        // grants permission before we fetched their base44 ID)
         window.addEventListener('onesignalPermissionGranted', async () => {
           const currentUser = await base44.auth.me().catch(() => null);
           if (currentUser?.id) {
@@ -52,21 +37,14 @@ export default function OneSignalInit() {
           }
         });
 
-        // Handle notification clicks
+        // Handle notification clicks → navigate to route
         OneSignal.Notifications.addEventListener('click', (event) => {
-          console.log('Notification clicked:', event.notification);
-          const { custom_data } = event.notification.data || {};
-          if (custom_data?.route) {
-            window.location.href = custom_data.route;
-          }
+          const route = event?.notification?.data?.custom_data?.route;
+          if (route) window.location.href = route;
         });
 
-        // Handle notification dismissed
-        OneSignal.Notifications.addEventListener('dismiss', (event) => {
-          console.log('Notification dismissed:', event.notification.id);
-        });
       } catch (err) {
-        console.warn('OneSignal init error:', err.message);
+        console.warn('OneSignalInit: error', err.message);
       }
     });
   }, []);

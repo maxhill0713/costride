@@ -15,101 +15,58 @@
     <!-- OneSignal SDK -->
     <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
     <script>
-      // ─── OneSignal iOS Web Push Diagnostics & Setup ───
-      // Status: Working on desktop/web, troubleshooting iOS PWA
+      // ─── OneSignal Single Init (no double-init with React component) ───────
+      // CRITICAL: Only init once here. The React OneSignalInit component
+      // only handles user login — it does NOT call OneSignal.init() again.
       
-      let isOneSignalInitialized = false;
-      window._OneSignalPromptShown = false;
+      window.OneSignalDeferred = window.OneSignalDeferred || [];
       
-      function logDiagnostics() {
-        console.log("=== OneSignal Diagnostics ===");
-        console.log("Platform: iOS Web Push Issue Detected");
-        console.log("Status: Working on desktop, NOT working on iOS home screen");
-        console.log("Root Cause: iOS PWA-specific configuration");
-        console.log("Fix: Service workers must be at /root, manifest.json must have 'standalone'");
-        console.log("navigator.standalone:", navigator.standalone);
-        console.log("navigator.userAgent:", navigator.userAgent);
-      }
-      
-      function initializeOneSignal() {
-        if (isOneSignalInitialized) {
-          console.warn("OneSignal: already initialized, skipping duplicate init");
-          return;
-        }
-        
-        window.OneSignalDeferred = window.OneSignalDeferred || [];
-        OneSignalDeferred.push(async function(OneSignal) {
-          try {
-            // Initialize OneSignal
-            await OneSignal.init({
-              appId: "9b5b68c2-c473-49eb-b74e-eac55368db3b",
-              serviceWorkerPath: "/OneSignalSDKWorker.js",
-              serviceWorkerUpdateStrategy: "auto",
-              notifyButton: { enable: false },
-            });
-            
-            isOneSignalInitialized = true;
-            console.log("OneSignal: initialized successfully");
-            
-            // iOS Debug Logging
-            const isPushEnabled = await OneSignal.Notifications.isPushNotificationsEnabled();
-            const userId = await OneSignal.getUserId();
-            console.log("OneSignal: isPushNotificationsEnabled =", isPushEnabled);
-            console.log("OneSignal: userId =", userId);
-            console.log("OneSignal: navigator.standalone =", navigator.standalone);
-            
-            if (!userId) {
-              console.warn("OneSignal: user ID is null - subscription failed or not yet granted");
-            }
-            
-            // Listen for permission changes
-            OneSignal.Notifications.addEventListener("permission_change", async (change) => {
-              if (change.permission === "granted") {
-                const newUserId = await OneSignal.getUserId();
-                console.log("OneSignal: permission granted, new userId =", newUserId);
-                if (newUserId) {
-                  console.log("✓ User successfully registered in OneSignal dashboard");
-                }
-                window.dispatchEvent(new CustomEvent('onesignalPermissionGranted'));
-              }
-            });
-            
-            // Make showPrompt function globally available
-            window._OneSignalShowPrompt = async () => {
-              if (window._OneSignalPromptShown) {
-                console.log("OneSignal: prompt already shown, skipping");
-                return;
-              }
-              
-              const isEnabled = await OneSignal.Notifications.isPushNotificationsEnabled();
-              if (isEnabled) {
-                console.log("OneSignal: notifications already enabled, skipping prompt");
-                return;
-              }
-              
-              try {
-                window._OneSignalPromptShown = true;
-                console.log("OneSignal: showing prompt");
-                await OneSignal.Notifications.requestPermission();
-              } catch (err) {
-                console.error("OneSignal: failed to show prompt", err);
-                window._OneSignalPromptShown = false;
-              }
-            };
-            
-            logDiagnostics();
-          } catch (err) {
-            console.error("OneSignal: initialization error", err);
+      OneSignalDeferred.push(async function(OneSignal) {
+        try {
+          await OneSignal.init({
+            appId: "9b5b68c2-c473-49eb-b74e-eac55368db3b",
+            serviceWorkerPath: "/OneSignalSDKWorker.js",
+            serviceWorkerUpdateStrategy: "auto",
+            notifyButton: { enable: false },
+          });
+          
+          console.log("[OneSignal] Initialized");
+          console.log("[OneSignal] navigator.standalone =", navigator.standalone);
+          console.log("[OneSignal] userAgent =", navigator.userAgent);
+          
+          const isPushEnabled = await OneSignal.Notifications.isPushNotificationsEnabled();
+          const userId = await OneSignal.getUserId();
+          console.log("[OneSignal] isPushNotificationsEnabled =", isPushEnabled);
+          console.log("[OneSignal] userId =", userId);
+          
+          if (!userId) {
+            console.warn("[OneSignal] userId is null — user not yet subscribed");
           }
-        });
-      }
-      
-      // Initialize on DOMContentLoaded
-      if (document.readyState === "loading") {
-        document.addEventListener("DOMContentLoaded", initializeOneSignal);
-      } else {
-        initializeOneSignal();
-      }
+
+          // Listen for permission changes
+          OneSignal.Notifications.addEventListener("permission_change", async function(change) {
+            if (change.permission === "granted") {
+              const newUserId = await OneSignal.getUserId();
+              console.log("[OneSignal] Permission granted. userId =", newUserId);
+              window.dispatchEvent(new CustomEvent("onesignalPermissionGranted"));
+            }
+          });
+
+          // Expose a prompt function for the "Enable Notifications" button
+          window._OneSignalShowPrompt = async function() {
+            const isEnabled = await OneSignal.Notifications.isPushNotificationsEnabled();
+            if (isEnabled) {
+              console.log("[OneSignal] Already subscribed, skipping prompt");
+              return;
+            }
+            console.log("[OneSignal] Requesting permission...");
+            await OneSignal.Notifications.requestPermission();
+          };
+
+        } catch (err) {
+          console.error("[OneSignal] Init error:", err);
+        }
+      });
     </script>
   </head>
   <body style="overflow-x:hidden;scrollbar-width:none;-ms-overflow-style:none;">

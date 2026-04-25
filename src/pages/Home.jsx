@@ -5,6 +5,7 @@ import PullToRefresh from '../components/PullToRefresh';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ChevronRight, Users } from 'lucide-react';
+import NotificationBanner from '../components/NotificationBanner';
 import { AnimatePresence, motion } from 'framer-motion';
 import FriendsIcon from '../components/FriendsIcon';
 import JoinWithCodeModal from '../components/gym/JoinWithCodeModal';
@@ -1170,6 +1171,10 @@ export default function Home() {
         </div>
 
         <div className={`max-w-4xl mx-auto px-4 py-2 pb-32 ${daysSinceCheckIn === 0 ? 'space-y-2' : 'space-y-3'}`}>
+
+          {/* ── Enable Notifications Banner ─────────────────────────────── */}
+          <NotificationBanner />
+
           {memberGym && (
             <>
               {showCheckInButton && !optimisticCheckedIn && !userCheckIns.some((c) => isToday(new Date(c.check_in_date))) && (
