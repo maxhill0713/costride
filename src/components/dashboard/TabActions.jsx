@@ -11,6 +11,8 @@ import {
   MessageCircle, Plus, Eye, RefreshCw, MoreHorizontal, Sparkles,
   UserPlus, BookOpen, Target, DollarSign, BarChart2, Filter,
 } from "lucide-react";
+import { base44 } from "@/api/base44Client";
+import { toast } from "sonner";
 
 /* ─── TOKENS — exact ContentPage palette ────────────────────── */
 const C = {
@@ -443,9 +445,7 @@ function MobileTopBar({urgentCount}) {
         </div>
         <div style={{fontSize:11.5,color:C.t3}}>AI-suggested actions to reduce churn</div>
       </div>
-      <div style={{width:36,height:36,borderRadius:10,background:C.card,border:`1px solid ${C.brd}`,display:"flex",alignItems:"center",justifyContent:"center"}}>
-        <Bell size={16} color={C.t2}/>
-      </div>
+      <SendTestPushButton/>
     </div>
   );
 }
@@ -806,6 +806,7 @@ function DesktopActions() {
               <div style={{fontSize:12,color:C.t3,letterSpacing:"0.01em"}}>Boost member engagement and reduce churn with AI-suggested actions.</div>
             </div>
             <div style={{display:"flex",gap:7,flexShrink:0}}>
+              <SendTestPushButton/>
               <button onClick={()=>setShowDone(v=>!v)} style={{display:"flex",alignItems:"center",gap:5,padding:"7px 12px",borderRadius:7,background:"rgba(255,255,255,0.02)",border:`1px solid ${C.brd}`,color:C.t2,fontSize:11.5,fontWeight:500,cursor:"pointer",fontFamily:FONT}}>
                 <Check size={10}/> {showDone?"Hide":"Show"} completed
               </button>
@@ -885,6 +886,44 @@ function DesktopActions() {
       </div>
       <RightSidebar/>
     </div>
+  );
+}
+
+/* ─── TEST PUSH BUTTON ───────────────────────────────────────── */
+function SendTestPushButton() {
+  const [loading, setLoading] = useState(false);
+  const handleSend = async () => {
+    setLoading(true);
+    try {
+      const result = await base44.functions.invoke('sendTestPushToAllUsers', {});
+      console.log(result.data);
+      toast.success(`Test push sent to ${result.data?.recipients ?? 0} users`);
+    } catch (err) {
+      console.error(err);
+      toast.error('Failed to send test push');
+    } finally {
+      setLoading(false);
+    }
+  };
+  return (
+    <button
+      onClick={handleSend}
+      disabled={loading}
+      style={{
+        display: "flex", alignItems: "center", gap: 5,
+        padding: "7px 14px", borderRadius: 7,
+        background: loading ? "rgba(255,255,255,0.02)" : C.cyanDim,
+        border: `1px solid ${C.cyanBrd}`,
+        color: C.cyan, fontSize: 11.5, fontWeight: 600,
+        cursor: loading ? "default" : "pointer",
+        fontFamily: FONT, opacity: loading ? 0.6 : 1,
+        boxShadow: "0 0 10px rgba(77,127,255,0.22)",
+        transition: "opacity 0.15s",
+      }}
+    >
+      <Bell size={10}/>
+      {loading ? "Sending…" : "Send Test Push"}
+    </button>
   );
 }
 
