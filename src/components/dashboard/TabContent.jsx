@@ -528,7 +528,7 @@ function RepeatEventPicker({ events, onSelect, onClose }) {
   );
 }
 
-function QuickActions({ post, resolvedName, memberId, gym, currentUser, onDeletePost, isGymPost, onPostEdited }) {
+function QuickActions({ post, resolvedName, memberId, gym, currentUser, onDeletePost, isGymPost, onPostEdited, compact }) {
   const [modal, setModal] = useState(null);
   const gymReactionKey = gym?.id ? `gym_${gym.id}` : null;
   const [reacted,   setReacted]   = useState(() => !!(gymReactionKey && post.reactions?.[gymReactionKey]));
@@ -549,44 +549,58 @@ function QuickActions({ post, resolvedName, memberId, gym, currentUser, onDelete
     finally { setReacting(false); }
   };
 
+  const btnStyle = compact
+    ? { display: "flex", alignItems: "center", justifyContent: "center", width: "100%", padding: "5px 4px", borderRadius: 6, background: "rgba(255,255,255,0.03)", border: `1px solid ${C.brd}`, color: C.t2, fontSize: 10, fontWeight: 600, cursor: "pointer", fontFamily: FONT, transition: "all 0.15s", minHeight: 28 }
+    : { display: "flex", alignItems: "center", gap: 8, width: "100%", padding: "7px 10px", borderRadius: 8, background: "rgba(255,255,255,0.03)", border: `1px solid ${C.brd}`, color: C.t2, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: FONT, textAlign: "left", transition: "all 0.15s" };
+
+  const iconSize = compact ? 11 : 13;
+  const containerStyle = compact
+    ? { width: 44, flexShrink: 0, borderLeft: `1px solid ${C.brd}`, padding: "8px 5px", display: "flex", flexDirection: "column", gap: 5, justifyContent: "flex-start", alignItems: "center" }
+    : { width: "30%", flexShrink: 0, borderLeft: `1px solid ${C.brd}`, padding: "12px 14px", display: "flex", flexDirection: "column", gap: 8, justifyContent: "flex-start" };
+
   return (
     <>
-      <div style={{ width: "30%", flexShrink: 0, borderLeft: `1px solid ${C.brd}`, padding: "12px 14px", display: "flex", flexDirection: "column", gap: 8, justifyContent: "flex-start" }}>
-        <div style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.10em", color: C.t3, marginBottom: 2 }}>Quick Actions</div>
+      <div style={containerStyle}>
+        {!compact && <div style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.10em", color: C.t3, marginBottom: 2 }}>Quick Actions</div>}
         {isGymPost ? (
           <>
             <button onClick={() => setModal("remove")}
-              style={{ display: "flex", alignItems: "center", gap: 8, width: "100%", padding: "7px 10px", borderRadius: 8, background: "rgba(255,255,255,0.03)", border: `1px solid ${C.brd}`, color: C.t2, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: FONT, textAlign: "left", transition: "all 0.15s" }}
+              title="Remove Post"
+              style={btnStyle}
               onMouseEnter={e => { e.currentTarget.style.borderColor = "rgba(255,77,109,0.35)"; e.currentTarget.style.color = C.red; e.currentTarget.style.background = C.redDim; }}
               onMouseLeave={e => { e.currentTarget.style.borderColor = C.brd; e.currentTarget.style.color = C.t2; e.currentTarget.style.background = "rgba(255,255,255,0.03)"; }}>
-              <Trash2 size={13} color="currentColor" style={{ flexShrink: 0 }} /><span>Remove Post</span>
+              <Trash2 size={iconSize} color="currentColor" style={{ flexShrink: 0 }} />{!compact && <span>Remove Post</span>}
             </button>
             <button onClick={() => setModal("edit")}
-              style={{ display: "flex", alignItems: "center", gap: 8, width: "100%", padding: "7px 10px", borderRadius: 8, background: "rgba(255,255,255,0.03)", border: `1px solid ${C.brd}`, color: C.t2, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: FONT, textAlign: "left", transition: "all 0.15s" }}
+              title="Edit Post"
+              style={btnStyle}
               onMouseEnter={e => { e.currentTarget.style.borderColor = C.cyanBrd; e.currentTarget.style.color = C.t1; e.currentTarget.style.background = C.cyanDim; }}
               onMouseLeave={e => { e.currentTarget.style.borderColor = C.brd; e.currentTarget.style.color = C.t2; e.currentTarget.style.background = "rgba(255,255,255,0.03)"; }}>
-              <Pencil size={13} color="currentColor" style={{ flexShrink: 0 }} /><span>Edit Post</span>
+              <Pencil size={iconSize} color="currentColor" style={{ flexShrink: 0 }} />{!compact && <span>Edit Post</span>}
             </button>
           </>
         ) : (
           <>
             <button onClick={() => setModal("message")}
-              style={{ display: "flex", alignItems: "center", gap: 8, width: "100%", padding: "7px 10px", borderRadius: 8, background: "rgba(255,255,255,0.03)", border: `1px solid ${C.brd}`, color: C.t2, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: FONT, textAlign: "left", transition: "all 0.15s" }}
+              title="Message Member"
+              style={btnStyle}
               onMouseEnter={e => { e.currentTarget.style.borderColor = C.cyanBrd; e.currentTarget.style.color = C.t1; e.currentTarget.style.background = C.cyanDim; }}
               onMouseLeave={e => { e.currentTarget.style.borderColor = C.brd; e.currentTarget.style.color = C.t2; e.currentTarget.style.background = "rgba(255,255,255,0.03)"; }}>
-              <MessageCircle size={13} color="currentColor" style={{ flexShrink: 0 }} /><span>Message Member</span>
+              <MessageCircle size={iconSize} color="currentColor" style={{ flexShrink: 0 }} />{!compact && <span>Message Member</span>}
             </button>
             <button onClick={() => setModal("remove")}
-              style={{ display: "flex", alignItems: "center", gap: 8, width: "100%", padding: "7px 10px", borderRadius: 8, background: "rgba(255,255,255,0.03)", border: `1px solid ${C.brd}`, color: C.t2, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: FONT, textAlign: "left", transition: "all 0.15s" }}
+              title="Remove Post"
+              style={btnStyle}
               onMouseEnter={e => { e.currentTarget.style.borderColor = "rgba(255,77,109,0.35)"; e.currentTarget.style.color = C.red; e.currentTarget.style.background = C.redDim; }}
               onMouseLeave={e => { e.currentTarget.style.borderColor = C.brd; e.currentTarget.style.color = C.t2; e.currentTarget.style.background = "rgba(255,255,255,0.03)"; }}>
-              <Trash2 size={13} color="currentColor" style={{ flexShrink: 0 }} /><span>Remove Post</span>
+              <Trash2 size={iconSize} color="currentColor" style={{ flexShrink: 0 }} />{!compact && <span>Remove Post</span>}
             </button>
             <button onClick={handleReact} disabled={reacting}
-              style={{ display: "flex", alignItems: "center", gap: 8, width: "100%", padding: "7px 10px", borderRadius: 8, background: reacted ? C.cyanDim : "rgba(255,255,255,0.03)", border: `1px solid ${reacted ? C.cyanBrd : C.brd}`, color: reacted ? C.cyan : C.t2, fontSize: 12, fontWeight: 600, cursor: reacting ? "default" : "pointer", fontFamily: FONT, textAlign: "left", transition: "all 0.15s", opacity: reacting ? 0.65 : 1 }}
+              title={reacted ? "Reacted ✓" : "Send a Reaction"}
+              style={{ ...btnStyle, background: reacted ? C.cyanDim : "rgba(255,255,255,0.03)", border: `1px solid ${reacted ? C.cyanBrd : C.brd}`, color: reacted ? C.cyan : C.t2, cursor: reacting ? "default" : "pointer", opacity: reacting ? 0.65 : 1 }}
               onMouseEnter={e => { if (!reacted) { e.currentTarget.style.borderColor = C.cyanBrd; e.currentTarget.style.color = C.cyan; e.currentTarget.style.background = C.cyanDim; } }}
               onMouseLeave={e => { if (!reacted) { e.currentTarget.style.borderColor = C.brd; e.currentTarget.style.color = C.t2; e.currentTarget.style.background = "rgba(255,255,255,0.03)"; } }}>
-              <Zap size={13} color="currentColor" style={{ flexShrink: 0 }} /><span>{reacted ? "Reacted ✓" : "Send a Reaction"}</span>
+              <Zap size={iconSize} color="currentColor" style={{ flexShrink: 0 }} />{!compact && <span>{reacted ? "Reacted ✓" : "Send a Reaction"}</span>}
             </button>
           </>
         )}
@@ -1256,87 +1270,84 @@ export default function ContentPage({
               </div>
               {feedPosts.length === 0
                 ? <EmptyState label="posts" />
-                : feedPosts.map(p => {
-                  const isGymPost   = !!p.post_type;
-                  const resolvedName = isGymPost
-                    ? (gym?.name || p.member_name || "Gym")
-                    : (p.member_id && nameMap[p.member_id]) ||
-                      (p.member_name && !p.member_name.includes("@") ? p.member_name : null) ||
-                      (p.member_name && p.member_name.includes("@")
-                        ? p.member_name.split("@")[0].replace(/[._]/g, " ").replace(/\b\w/g, c => c.toUpperCase())
-                        : "Member");
-                  const avatar   = isGymPost ? (gym?.logo_url || gym?.image_url || p.member_avatar || null) : (p.member_id && avatarMap[p.member_id]) || p.member_avatar || null;
-                  const palette  = ["#6366f1","#8b5cf6","#ec4899","#14b8a6","#f59e0b","#4d7fff","#10b981"];
-                  const avatarBg = palette[(resolvedName.charCodeAt(0) || 0) % palette.length];
-                  const initials = resolvedName.split(" ").map(w => w[0]).join("").toUpperCase().slice(0, 2) || "?";
-                  const postedAt = timeAgo(p.created_date || p.created_at);
-                  const reactionCount = Object.keys(p.reactions || {}).length;
-                  return (
-                    <div key={p.id}
-                      style={{ background: C.card, border: `1px solid ${C.brd}`, borderRadius: 12, marginBottom: 10, minHeight: 140, display: "flex", overflow: "hidden", position: "relative" }}
-                      onMouseEnter={e => { e.currentTarget.style.borderColor = C.cyanBrd; e.currentTarget.style.boxShadow = `0 0 8px rgba(77,127,255,0.07)`; }}
-                      onMouseLeave={e => { e.currentTarget.style.borderColor = C.brd; e.currentTarget.style.boxShadow = "none"; }}>
-                      {p.image_url ? (
-                        <div style={{ width: 160, height: 160, flexShrink: 0, alignSelf: "center", margin: 8, borderRadius: 10, overflow: "hidden" }}>
-                          <img src={p.image_url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
-                        </div>
-                      ) : null}
-                      <div style={{ flex: 1, minWidth: 0, padding: "11px 14px 11px 10px", display: "flex", flexDirection: "column", gap: 6 }}>
-                        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                          <div style={{ width: 30, height: 30, borderRadius: "50%", flexShrink: 0, background: avatarBg, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 800, color: "#fff", overflow: "hidden" }}>
-                            {avatar ? <img src={avatar} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : initials}
+                : (
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+                    {feedPosts.map(p => {
+                    const isGymPost   = !!p.post_type;
+                    const resolvedName = isGymPost
+                      ? (gym?.name || p.member_name || "Gym")
+                      : (p.member_id && nameMap[p.member_id]) ||
+                        (p.member_name && !p.member_name.includes("@") ? p.member_name : null) ||
+                        (p.member_name && p.member_name.includes("@")
+                          ? p.member_name.split("@")[0].replace(/[._]/g, " ").replace(/\b\w/g, c => c.toUpperCase())
+                          : "Member");
+                    const avatar   = isGymPost ? (gym?.logo_url || gym?.image_url || p.member_avatar || null) : (p.member_id && avatarMap[p.member_id]) || p.member_avatar || null;
+                    const palette  = ["#6366f1","#8b5cf6","#ec4899","#14b8a6","#f59e0b","#4d7fff","#10b981"];
+                    const avatarBg = palette[(resolvedName.charCodeAt(0) || 0) % palette.length];
+                    const initials = resolvedName.split(" ").map(w => w[0]).join("").toUpperCase().slice(0, 2) || "?";
+                    const postedAt = timeAgo(p.created_date || p.created_at);
+                    const reactionCount = Object.keys(p.reactions || {}).length;
+                    return (
+                      <div key={p.id}
+                        style={{ background: C.card, border: `1px solid ${C.brd}`, borderRadius: 12, display: "flex", flexDirection: "column", overflow: "hidden", position: "relative" }}
+                        onMouseEnter={e => { e.currentTarget.style.borderColor = C.cyanBrd; e.currentTarget.style.boxShadow = `0 0 8px rgba(77,127,255,0.07)`; }}
+                        onMouseLeave={e => { e.currentTarget.style.borderColor = C.brd; e.currentTarget.style.boxShadow = "none"; }}>
+                        {p.image_url ? (
+                          <div style={{ width: "100%", height: 110, flexShrink: 0, overflow: "hidden" }}>
+                            <img src={p.image_url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
                           </div>
-                          <div style={{ flex: 1 }}>
-                            {isGymPost && p.post_type ? (
-                              <>
-                                <div style={{ display: "flex", alignItems: "center", gap: 7, flexWrap: "wrap" }}>
-                                  <div style={{ fontSize: 13, fontWeight: 700, color: C.t1, lineHeight: 1.2 }}>{resolvedName}</div>
-                                  {(() => { const pt = POST_TYPE_STYLES[p.post_type] || POST_TYPE_STYLES.update; return (<span style={{ fontSize: 9.5, fontWeight: 700, padding: "1px 7px", borderRadius: 5, background: pt.bg, border: `1px solid ${pt.border}`, color: pt.color, flexShrink: 0 }}>{pt.label}</span>); })()}
+                        ) : null}
+                        <div style={{ flex: 1, display: "flex", overflow: "hidden" }}>
+                          <div style={{ flex: 1, minWidth: 0, padding: "10px 10px 10px 10px", display: "flex", flexDirection: "column", gap: 5 }}>
+                            <div style={{ display: "flex", alignItems: "flex-start", gap: 7 }}>
+                              <div style={{ width: 26, height: 26, borderRadius: "50%", flexShrink: 0, background: avatarBg, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 10, fontWeight: 800, color: "#fff", overflow: "hidden" }}>
+                                {avatar ? <img src={avatar} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : initials}
+                              </div>
+                              <div style={{ flex: 1, minWidth: 0 }}>
+                                <div style={{ fontSize: 12, fontWeight: 700, color: C.t1, lineHeight: 1.2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{resolvedName}</div>
+                                <div style={{ display: "flex", alignItems: "center", gap: 5, marginTop: 3, flexWrap: "wrap" }}>
+                                  {isGymPost && p.post_type
+                                    ? (() => { const pt = POST_TYPE_STYLES[p.post_type] || POST_TYPE_STYLES.update; return (<span style={{ fontSize: 9, fontWeight: 700, padding: "1px 6px", borderRadius: 4, background: pt.bg, border: `1px solid ${pt.border}`, color: pt.color, flexShrink: 0 }}>{pt.label}</span>); })()
+                                    : <MemberStatusBadge memberId={p.member_id} checkIns={checkIns} />
+                                  }
+                                  {postedAt && <span style={{ fontSize: 10, color: C.t3 }}>{postedAt}</span>}
                                 </div>
-                                {postedAt && <div style={{ fontSize: 11, color: C.t3, marginTop: 2 }}>{postedAt}</div>}
-                              </>
-                            ) : (
-                              <>
-                                <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                                  <div style={{ fontSize: 13, fontWeight: 700, color: C.t1, lineHeight: 1.2 }}>{resolvedName}</div>
-                                  <MemberStatusBadge memberId={p.member_id} checkIns={checkIns} />
-                                </div>
-                                {postedAt && <div style={{ fontSize: 11, color: C.t3, marginTop: 2 }}>{postedAt}</div>}
-                              </>
+                              </div>
+                            </div>
+                            {p.content && (
+                              <div style={{ fontSize: 11.5, color: C.t2, lineHeight: 1.5, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
+                                {p.content}
+                              </div>
+                            )}
+                            {reactionCount > 0 && (
+                              <button onClick={() => setReactionsPost(p)} style={{ marginTop: "auto", display: "flex", alignItems: "center", gap: 0, background: "none", border: "none", cursor: "pointer", padding: 0 }}>
+                                {Object.entries(p.reactions || {}).slice(0, 3).map(([uid, variant], i) => (
+                                  <div key={uid} style={{ position: "relative", width: 22, height: 22, marginLeft: i === 0 ? 0 : -7, zIndex: 3 - i, flexShrink: 0 }}>
+                                    {variant === "sunglasses" ? (
+                                      <div style={{ position: "relative", width: "100%", height: "100%" }}>
+                                        <img src={STREAK_ICON_URL} alt="react" style={{ width: "100%", height: "100%", objectFit: "contain" }} />
+                                        <svg style={{ position: "absolute", inset: 0, width: "100%", height: "100%", pointerEvents: "none" }} viewBox="0 0 64 64">
+                                          <circle cx="20" cy="24" r="6" fill="none" stroke="black" strokeWidth="1.5"/>
+                                          <circle cx="44" cy="24" r="6" fill="none" stroke="black" strokeWidth="1.5"/>
+                                          <line x1="26" y1="24" x2="38" y2="24" stroke="black" strokeWidth="1.5"/>
+                                        </svg>
+                                      </div>
+                                    ) : (
+                                      <img src={getStreakIconUrl(variant)} alt="react" style={{ width: "100%", height: "100%", objectFit: "contain" }} />
+                                    )}
+                                  </div>
+                                ))}
+                                {reactionCount > 3 && <span style={{ fontSize: 10, fontWeight: 700, color: C.t2, marginLeft: 4 }}>+{reactionCount - 3}</span>}
+                              </button>
                             )}
                           </div>
+                          <QuickActions post={p} resolvedName={resolvedName} memberId={p.member_id} gym={gym} currentUser={currentUser} onDeletePost={onDeletePost} isGymPost={isGymPost} onPostEdited={onUpdatePost} compact />
                         </div>
-                        {p.content && (
-                          <div style={{ fontSize: 12.5, color: C.t2, lineHeight: 1.5, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
-                            {p.content}
-                          </div>
-                        )}
-                        {reactionCount > 0 && (
-                          <button onClick={() => setReactionsPost(p)} style={{ marginTop: "auto", display: "flex", alignItems: "center", gap: 0, background: "none", border: "none", cursor: "pointer", padding: 0 }}>
-                            {Object.entries(p.reactions || {}).slice(0, 5).map(([uid, variant], i) => (
-                              <div key={uid} style={{ position: "relative", width: 31, height: 31, marginLeft: i === 0 ? 0 : -10, zIndex: 5 - i, flexShrink: 0 }}>
-                                {variant === "sunglasses" ? (
-                                  <div style={{ position: "relative", width: "100%", height: "100%" }}>
-                                    <img src={STREAK_ICON_URL} alt="react" style={{ width: "100%", height: "100%", objectFit: "contain" }} />
-                                    <svg style={{ position: "absolute", inset: 0, width: "100%", height: "100%", pointerEvents: "none" }} viewBox="0 0 64 64">
-                                      <circle cx="20" cy="24" r="6" fill="none" stroke="black" strokeWidth="1.5"/>
-                                      <circle cx="44" cy="24" r="6" fill="none" stroke="black" strokeWidth="1.5"/>
-                                      <line x1="26" y1="24" x2="38" y2="24" stroke="black" strokeWidth="1.5"/>
-                                    </svg>
-                                  </div>
-                                ) : (
-                                  <img src={getStreakIconUrl(variant)} alt="react" style={{ width: "100%", height: "100%", objectFit: "contain" }} />
-                                )}
-                              </div>
-                            ))}
-                            {reactionCount > 5 && <span style={{ fontSize: 11, fontWeight: 700, color: C.t2, marginLeft: 5 }}>+{reactionCount - 5}</span>}
-                          </button>
-                        )}
                       </div>
-                      <QuickActions post={p} resolvedName={resolvedName} memberId={p.member_id} gym={gym} currentUser={currentUser} onDeletePost={onDeletePost} isGymPost={isGymPost} onPostEdited={onUpdatePost} />
-                    </div>
-                  );
-                })
+                    );
+                  })}
+                  </div>
+                )
               }
             </>
           )}
