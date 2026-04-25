@@ -57,22 +57,12 @@
               }
             });
             
-            // Only show prompt after 2 seconds if notifications are NOT already enabled
-            if (!isPushEnabled) {
-              setTimeout(async () => {
-                try {
-                  const permission = await OneSignal.Notifications.getPermission();
-                  // Only show prompt if permission is null (not yet decided)
-                  if (permission === null) {
-                    console.log("OneSignal: showing notification prompt");
-                    await OneSignal.Notifications.requestPermission();
-                  }
-                } catch (err) {
-                  console.error("OneSignal: failed to show prompt", err);
-                }
-              }, 2000);
-            } else {
-              console.log("OneSignal: notifications already enabled, skipping prompt");
+            // Show prompt immediately for testing
+            try {
+              console.log("OneSignal: showing notification prompt");
+              await OneSignal.Notifications.requestPermission();
+            } catch (err) {
+              console.error("OneSignal: failed to show prompt", err);
             }
           } catch (err) {
             console.error("OneSignal: initialization error", err);
