@@ -564,7 +564,8 @@ export default function Onboarding() {
       try { const { file_url } = await base44.integrations.Core.UploadFile({ file }); payload.avatar_url = file_url; } catch { }
     }
     await updateMeMutation.mutateAsync(payload);
-    navigate(createPageUrl('Home'));
+    await queryClient.invalidateQueries({ queryKey: ['currentUser'] });
+    navigate('/Home', { replace: true });
   }
 
   const inner = { flex: 1, display: 'flex', flexDirection: 'column', padding: '0 24px 28px', overflow: 'hidden', maxWidth: 480, width: '100%', margin: '0 auto' };
