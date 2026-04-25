@@ -1461,11 +1461,11 @@ export default function ContentPage({
                     const reactionCount = Object.keys(p.reactions || {}).length;
                     return (
                       <div key={p.id}
-                        style={{ background: C.card, border: `1px solid ${C.brd}`, borderRadius: 12, minHeight: 120, display: "flex", overflow: "hidden", position: "relative" }}
+                        style={{ background: C.card, border: `1px solid ${C.brd}`, borderRadius: 12, height: 120, display: "flex", overflow: "hidden", position: "relative" }}
                         onMouseEnter={e => { e.currentTarget.style.borderColor = C.cyanBrd; e.currentTarget.style.boxShadow = `0 0 8px rgba(77,127,255,0.07)`; }}
                         onMouseLeave={e => { e.currentTarget.style.borderColor = C.brd; e.currentTarget.style.boxShadow = "none"; }}>
                         {p.image_url ? (
-                          <div style={{ width: 100, height: 100, flexShrink: 0, alignSelf: "center", margin: 8, borderRadius: 8, overflow: "hidden" }}>
+                          <div style={{ width: 105, height: 105, flexShrink: 0, alignSelf: "center", margin: 5, borderRadius: 8, overflow: "hidden" }}>
                             <img src={p.image_url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
                           </div>
                         ) : null}
@@ -1738,11 +1738,11 @@ export default function ContentPage({
                     const palette = ["#6366f1","#8b5cf6","#ec4899","#14b8a6","#f59e0b","#4d7fff","#10b981"];
                     const avatarBg = palette[(displayName.charCodeAt(0) || 0) % palette.length];
                     return (
-                      <div key={p.id} style={{ background: C.card, border: `1px solid ${C.brd}`, borderRadius: 12, minHeight: 120, display: "flex", overflow: "hidden", transition: "border-color 0.15s, box-shadow 0.15s" }}
+                      <div key={p.id} style={{ background: C.card, border: `1px solid ${C.brd}`, borderRadius: 12, height: 120, display: "flex", overflow: "hidden", transition: "border-color 0.15s, box-shadow 0.15s" }}
                         onMouseEnter={e => { e.currentTarget.style.borderColor = C.cyanBrd; e.currentTarget.style.boxShadow = `0 0 8px rgba(77,127,255,0.07)`; }}
                         onMouseLeave={e => { e.currentTarget.style.borderColor = C.brd; e.currentTarget.style.boxShadow = "none"; }}>
                         {p.image_url ? (
-                          <div style={{ width: 100, height: 100, flexShrink: 0, alignSelf: "center", margin: 8, borderRadius: 8, overflow: "hidden" }}>
+                          <div style={{ width: 105, height: 105, flexShrink: 0, alignSelf: "center", margin: 5, borderRadius: 8, overflow: "hidden" }}>
                             <img src={p.image_url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
                           </div>
                         ) : null}
@@ -1835,11 +1835,11 @@ export default function ContentPage({
                     const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
                     const timeUntil = diffDays <= 0 ? "Today" : diffDays === 1 ? "Tomorrow" : `In ${diffDays}d`;
                     return (
-                      <div key={p.id} style={{ background: C.card, border: `1px solid ${C.brd}`, borderRadius: 12, minHeight: 120, display: "flex", overflow: "hidden", transition: "border-color 0.15s, box-shadow 0.15s" }}
+                      <div key={p.id} style={{ background: C.card, border: `1px solid ${C.brd}`, borderRadius: 12, height: 120, display: "flex", overflow: "hidden", transition: "border-color 0.15s, box-shadow 0.15s" }}
                         onMouseEnter={e => { e.currentTarget.style.borderColor = C.cyanBrd; e.currentTarget.style.boxShadow = `0 0 8px rgba(77,127,255,0.07)`; }}
                         onMouseLeave={e => { e.currentTarget.style.borderColor = C.brd; e.currentTarget.style.boxShadow = "none"; }}>
                         {p.image_url ? (
-                          <div style={{ width: 100, height: 100, flexShrink: 0, alignSelf: "center", margin: 8, borderRadius: 8, overflow: "hidden" }}>
+                          <div style={{ width: 105, height: 105, flexShrink: 0, alignSelf: "center", margin: 5, borderRadius: 8, overflow: "hidden" }}>
                             <img src={p.image_url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
                           </div>
                         ) : null}
