@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback, useMemo } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import {
   Plus, Flame, Check, Calendar, Clock, Users, MapPin,
   ArrowUpRight, ArrowDownRight, ChevronDown, ChevronLeft, ChevronRight,
@@ -550,22 +550,24 @@ function NotificationTicker({ posts, events, polls, checkIns, gymId }) {
       (!gymId || p.gym_id === gymId) &&
       isRecent(p.created_date || p.created_at)
     );
-    if (recentPosts.length === 1) notifs.push("1 member posted to the community");
-    else if (recentPosts.length > 1) notifs.push(`${recentPosts.length} members posted to the community`);
+    if (recentPosts.length === 1) notifs.push("1 member just posted to the community");
+    else if (recentPosts.length > 1) notifs.push(`${recentPosts.length} members just posted to the community`);
 
     // Gym announcements / posts with type
     const recentGymPosts = posts.filter(p =>
       !p.is_hidden && p.post_type && (!gymId || p.gym_id === gymId) &&
       isRecent(p.created_date || p.created_at)
     );
-    if (recentGymPosts.length > 0) notifs.push(`${recentGymPosts.length} new gym announcement${recentGymPosts.length > 1 ? "s" : ""} posted`);
+    if (recentGymPosts.length === 1) notifs.push("1 new gym announcement just posted");
+    else if (recentGymPosts.length > 1) notifs.push(`${recentGymPosts.length} new gym announcements just posted`);
 
     // Event joins
     events.forEach(ev => {
       if (!ev.title) return;
       const count = (ev.participants || []).length;
       if (count > 0 && isRecent(ev.updated_date || ev.updated_at)) {
-        notifs.push(`${count} member${count !== 1 ? "s" : ""} joined "${ev.title}"`);
+        const label = ev.title.length > 34 ? ev.title.slice(0, 32) + "…" : ev.title;
+        notifs.push(`${count} member${count !== 1 ? "s" : ""} just joined ${label}`);
       }
     });
 
@@ -575,8 +577,8 @@ function NotificationTicker({ posts, events, polls, checkIns, gymId }) {
       if (!q) return;
       const count = (poll.voters || []).length;
       if (count > 0 && isRecent(poll.updated_date || poll.updated_at)) {
-        const label = q.length > 38 ? q.slice(0, 36) + "…" : q;
-        notifs.push(`${count} member${count !== 1 ? "s" : ""} responded to "${label}"`);
+        const label = q.length > 34 ? q.slice(0, 32) + "…" : q;
+        notifs.push(`${count} member${count !== 1 ? "s" : ""} just responded to ${label}`);
       }
     });
 
@@ -585,16 +587,14 @@ function NotificationTicker({ posts, events, polls, checkIns, gymId }) {
       (!gymId || c.gym_id === gymId) &&
       isRecent(c.check_in_date || c.created_date || c.created_at)
     );
-    if (recentCI.length === 1) notifs.push("1 member checked in");
-    else if (recentCI.length > 1) notifs.push(`${recentCI.length} members checked in`);
+    if (recentCI.length === 1) notifs.push("1 member just checked in");
+    else if (recentCI.length > 1) notifs.push(`${recentCI.length} members just checked in`);
 
     return notifs;
   }, [posts, events, polls, checkIns, gymId]);
 
-  const [index, setIndex]   = useState(0);
+  const [index,   setIndex]   = useState(0);
   const [animKey, setAnimKey] = useState(0);
-
-  // Clamp index if notification list shrinks
   const safeIndex = notifications.length > 0 ? index % notifications.length : 0;
 
   useEffect(() => {
@@ -615,47 +615,40 @@ function NotificationTicker({ posts, events, polls, checkIns, gymId }) {
           from { transform: translateX(28px); opacity: 0; }
           to   { transform: translateX(0);    opacity: 1; }
         }
-        @keyframes notifDotPulse {
-          0%, 100% { opacity: 1;   transform: scale(1);   }
-          50%      { opacity: 0.35; transform: scale(0.65); }
-        }
-        .notif-dot { animation: notifDotPulse 2.2s ease-in-out infinite; }
         .notif-text { animation: notifSlideIn 0.48s cubic-bezier(0.22,1,0.36,1) forwards; }
       `}</style>
       <div style={{
-        flex: 1, minWidth: 0, height: 34,
+        /* fixed width ~70% of the former flex:1 space, truly centered between heading and button */
+        width: "clamp(180px, 42%, 500px)",
+        height: 37,                          /* 34px × 1.10 ≈ 37px */
         background: "rgba(77,127,255,0.11)",
-        border: "1px solid rgba(77,127,255,0.26)",
+        border: "none",                      /* no outline */
         borderRadius: 8,
         overflow: "hidden",
         display: "flex",
         alignItems: "center",
-        gap: 8,
-        padding: "0 12px",
+        justifyContent: "center",            /* centre the text */
+        padding: "0 14px",
+        flexShrink: 0,
       }}>
-        {/* pulsing live dot */}
-        <div className="notif-dot" style={{ width: 6, height: 6, borderRadius: "50%", background: C.cyan, flexShrink: 0 }} />
-
-        {/* sliding notification text */}
         <span
           key={animKey}
           className="notif-text"
           style={{
-            flex: 1, minWidth: 0,
             fontSize: 11.5, fontWeight: 600, color: "#93c5fd",
             fontFamily: FONT, whiteSpace: "nowrap",
             overflow: "hidden", textOverflow: "ellipsis",
+            textAlign: "center",
             display: "block",
+            width: "100%",
           }}
         >
           {notifications[safeIndex]}
         </span>
-
-        {/* counter badge */}
         {notifications.length > 1 && (
           <span style={{
-            fontSize: 9, fontWeight: 700, color: "rgba(147,197,253,0.45)",
-            fontFamily: FONT, flexShrink: 0, letterSpacing: "0.04em",
+            fontSize: 9, fontWeight: 700, color: "rgba(147,197,253,0.38)",
+            fontFamily: FONT, flexShrink: 0, marginLeft: 8, letterSpacing: "0.04em",
           }}>
             {safeIndex + 1}/{notifications.length}
           </span>
@@ -1378,13 +1371,18 @@ export default function ContentPage({
       <div style={{ flex: 1, overflowY: "auto", minWidth: 0, ...(isMobile ? { paddingBottom: 80 } : {}) }}>
 
         {!isMobile && (
-          <div style={{ padding: "4px 16px 0 4px", display: "flex", alignItems: "center", gap: 12 }}>
+          <div style={{ padding: "4px 16px 0 4px", display: "flex", alignItems: "center", justifyContent: "space-between", position: "relative" }}>
             <h1 style={{ fontSize: 22, fontWeight: 800, color: C.t1, margin: 0, letterSpacing: "-0.03em", lineHeight: 1.2, flexShrink: 0 }}>
               Content <span style={{ color: C.cyan }}>Hub</span>
             </h1>
-            <NotificationTicker
-              posts={posts} events={events} polls={polls} checkIns={checkIns} gymId={gymId}
-            />
+            {/* Ticker sits absolutely centred — button stays pinned right whether or not it renders */}
+            <div style={{ position: "absolute", left: "50%", transform: "translateX(-50%)", display: "flex", justifyContent: "center", pointerEvents: "none" }}>
+              <div style={{ pointerEvents: "auto" }}>
+                <NotificationTicker
+                  posts={posts} events={events} polls={polls} checkIns={checkIns} gymId={gymId}
+                />
+              </div>
+            </div>
             <button
               onClick={() => tabAction && openModal?.(tabAction.modal)}
               style={{ display: "flex", alignItems: "center", gap: 6, padding: "9px 18px", borderRadius: 9, fontSize: 12.5, fontWeight: 700, cursor: "pointer", fontFamily: FONT, transition: "opacity 0.15s", visibility: tabAction ? "visible" : "hidden", pointerEvents: tabAction ? "auto" : "none", flexShrink: 0, ...GRAD_BTN }}
