@@ -47,34 +47,24 @@ export default function NotificationSettingsContent() {
 
   return (
     <div className="space-y-4 pb-20">
-      {/* Enable Browser Notifications */}
-      <Card className="bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-white/10 p-4 shadow-2xl shadow-black/20">
-        <div className="p-4 bg-white/5 border border-white/10 rounded-2xl space-y-3">
+      {/* Turn On Notifications Button */}
+      <Card className="bg-gradient-to-br from-blue-900/30 via-slate-900/60 to-slate-950/70 backdrop-blur-xl border border-blue-500/30 p-4 shadow-2xl shadow-blue-900/20">
+        <button
+          onClick={handleRequestPermission}
+          className="w-full flex items-center justify-between p-4 rounded-xl bg-blue-600 hover:bg-blue-500 active:scale-95 text-white font-bold transition-all"
+        >
           <div className="flex items-center gap-3">
-            <BellRing className="w-5 h-5 text-blue-400 flex-shrink-0" />
-            <div>
-              <Label className="text-sm font-bold text-white block">Browser Notifications</Label>
-              <p className="text-xs text-slate-400">Allow CoStride to send you push notifications</p>
-            </div>
+            <BellRing className="w-6 h-6" />
+            <span>Turn On Notifications</span>
           </div>
-          {notifStatus === 'granted' ? (
-            <div className="flex items-center gap-2 text-green-400 text-sm font-semibold">
-              <CheckCircle2 className="w-4 h-4" />
-              Notifications enabled!
-            </div>
-          ) : (
-            <button
-              onClick={handleRequestPermission}
-              className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-blue-600 hover:bg-blue-500 active:bg-blue-700 text-white text-sm font-bold transition-colors"
-            >
-              <BellRing className="w-4 h-4" />
-              Turn On Notifications
-            </button>
-          )}
-          {notifStatus === 'denied' && (
-            <p className="text-xs text-red-400">Permission denied. Please enable notifications in your browser settings.</p>
-          )}
-        </div>
+          <CheckCircle2 className="w-5 h-5" opacity={notifStatus === 'granted' ? 1 : 0} />
+        </button>
+        {notifStatus === 'granted' && (
+          <p className="text-sm text-green-400 font-semibold mt-2 text-center">✓ Notifications enabled!</p>
+        )}
+        {notifStatus === 'denied' && (
+          <p className="text-sm text-red-400 mt-2 text-center">Permission denied. Check browser settings.</p>
+        )}
       </Card>
 
       {/* Push Notifications */}
