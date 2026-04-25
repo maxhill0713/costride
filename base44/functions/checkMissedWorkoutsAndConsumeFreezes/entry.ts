@@ -32,6 +32,13 @@ Deno.serve(async (req) => {
       });
     }
 
+    // Accept swap data from the client (stored in localStorage, not available server-side)
+    let restSwap = null;
+    try {
+      const body = await req.json();
+      restSwap = body?.restSwap || null; // { fromDay, toDay } or null
+    } catch {}
+
     let missedCount = 0;
     let checkDate   = new Date();
     checkDate.setDate(checkDate.getDate() - 1);
@@ -41,7 +48,14 @@ Deno.serve(async (req) => {
       const dayOfWeek    = checkDate.getDay();
       const adjustedDay  = dayOfWeek === 0 ? 7 : dayOfWeek;
 
-      if (trainingDays.includes(adjustedDay)) {
+      // Apply rest swap: fromDay becomes a rest day, toDay becomes a training day
+      let isTrainingDay = trainingDays.includes(adjustedDay);
+      if (restSwap) {
+        if (adjustedDay === restSwap.fromDay) isTrainingDay = false;
+        if (adjustedDay === restSwap.toDay)   isTrainingDay = true;
+      }
+
+      if (isTrainingDay) {
         const logs = await base44.entities.WorkoutLog.filter({
           user_id:        user.id,
           completed_date: dateStr,

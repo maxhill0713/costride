@@ -356,7 +356,7 @@ export default function Home() {
 
     const checkMissedWorkouts = async () => {
       try {
-        const result = await base44.functions.invoke('checkMissedWorkoutsAndConsumeFreezes', {});
+        const result = await base44.functions.invoke('checkMissedWorkoutsAndConsumeFreezes', { restSwap: getRestSwap() });
         if (result.data?.shouldShowAnimation) {
           setFreezeAnimationData({
             freezesLostCount: result.data.freezesLostCount,
@@ -705,7 +705,15 @@ export default function Home() {
   })();
 
   const workoutLoggedToday = weeklyWorkoutLogs.some(log => log.completed_date === effectiveToday) || justLoggedDay === todayDowAdjusted;
-  const todayIsRestDay = !(currentUser?.training_days || []).includes(todayDowAdjusted);
+  // A day is a rest day if: not in training_days, OR it was swapped away (fromDay), UNLESS it was swapped to (toDay).
+  const restSwapForToday = getRestSwap();
+  const todaySwappedToRest = restSwapForToday && restSwapForToday.fromDay === todayDowAdjusted;
+  const todaySwappedToTraining = restSwapForToday && restSwapForToday.toDay === todayDowAdjusted;
+  const todayIsRestDay = todaySwappedToRest
+    ? true
+    : todaySwappedToTraining
+      ? false
+      : !(currentUser?.training_days || []).includes(todayDowAdjusted);
   const showCheckInButton = !todayIsRestDay || workoutOverrideDay !== null;
 
   const friendPosts = useMemo(() => allPosts.filter((post) =>
