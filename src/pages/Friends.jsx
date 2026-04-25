@@ -798,7 +798,7 @@ export default function Friends() {
                               })()}
                             </div>
                             <div className="flex-1 min-w-0">
-                              <p className="font-semibold text-white text-xs truncate">{currentName}</p>
+                              <p className="font-semibold text-white text-xs truncate">{currentName || 'Unknown'}</p>
                             </div>
                           </Link>
                           <Button
