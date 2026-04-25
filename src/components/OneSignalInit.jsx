@@ -1,8 +1,8 @@
 import { useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 
-// OneSignal App ID — must match the secret ONESIGNAL_APP_ID
-const ONESIGNAL_APP_ID = import.meta.env.VITE_ONESIGNAL_APP_ID || '';
+// OneSignal App ID — this is a public client-side key, safe to expose in frontend
+const ONESIGNAL_APP_ID = '9b5b68c2-c473-49eb-b74e-eac55368db3b';
 
 /**
  * Initialises OneSignal and registers the current user's device token.
