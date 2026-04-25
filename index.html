@@ -40,6 +40,9 @@
             }
           }
         });
+        
+        // Request permission on page load (will only show if not already answered)
+        await OneSignal.Notifications.requestPermission();
       });
     </script>
   </head>
