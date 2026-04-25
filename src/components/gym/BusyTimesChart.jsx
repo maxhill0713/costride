@@ -29,13 +29,6 @@ const BAR_STYLES = {
   empty:  { background: 'rgba(255,255,255,0.05)' },
 };
 
-const LEGEND = [
-  { style: { background: 'rgba(130,160,255,0.3)' }, label: 'Quiet' },
-  { style: { background: 'linear-gradient(to right, rgba(120,80,240,0.65), rgba(160,120,255,0.6))' }, label: 'Active' },
-  { style: { background: 'linear-gradient(to right, rgba(180,60,200,0.75), rgba(220,100,255,0.7))' }, label: 'High energy' },
-  { style: { background: 'linear-gradient(to right, rgba(220,50,160,0.88), rgba(255,100,160,0.85))' }, label: 'Peak' },
-];
-
 export default function BusyTimesChart({ checkIns, gymId }) {
   const currentHour = new Date().getHours();
   const currentDay = new Date().getDay();
@@ -83,8 +76,6 @@ export default function BusyTimesChart({ checkIns, gymId }) {
   const openHours = visibleData.filter((d) => !d.isClosed && d.percentage > 0);
   const avg = openHours.length > 0 ? openHours.reduce((s, d) => s + d.percentage, 0) / openHours.length : 50;
 
-  const nowData = hourlyData[currentHour];
-  const nowStatus = getBusynessLabel(nowData?.percentage ?? 0, avg, nowData?.isClosed);
   const isToday = selectedDay === bestTimeDayInt;
 
   const formatHour = (h) => {
@@ -122,41 +113,28 @@ export default function BusyTimesChart({ checkIns, gymId }) {
     }}>
 
       {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12, position: 'relative' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
           <Clock style={{ width: 15, height: 15, color: '#fff', flexShrink: 0 }} />
           <span style={{ fontSize: 16, fontWeight: 900, color: '#fff', letterSpacing: '-0.01em' }}>
             Busy Times
           </span>
-          {useBestTime && (
-            <span style={{
-              fontSize: 9, fontWeight: 700, padding: '2px 6px', borderRadius: 20,
-              background: 'rgba(0,210,180,0.12)', color: 'rgba(0,220,190,0.9)',
-              border: '1px solid rgba(0,210,180,0.25)', letterSpacing: '0.04em',
-            }}>
-              LIVE
-            </span>
-          )}
         </div>
-
-        {isToday && (
-          <div style={{
-            display: 'flex', alignItems: 'center', gap: 5,
-            padding: '4px 10px', borderRadius: 20,
-            background: nowStatus.color,
-            fontSize: 11, fontWeight: 700, color: nowStatus.textColor,
-          }}>
+        {openingHours && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+            <span style={{ fontSize: 11, fontWeight: 600, color: 'rgba(160,180,220,0.7)' }}>Opening Hours</span>
             <span style={{
-              width: 6, height: 6, borderRadius: '50%', background: 'currentColor',
-              animation: 'cosBusyPulse 1.8s ease-in-out infinite', display: 'inline-block',
-            }} />
-            {nowStatus.label}
+              fontSize: 11, fontWeight: 700,
+              color: openingHours === 'Closed' ? 'rgba(248,113,113,0.85)' : 'rgba(200,220,255,0.9)',
+            }}>
+              {openingHours}
+            </span>
           </div>
         )}
       </div>
 
       {/* Day selector */}
-      <div style={{ display: 'flex', gap: 4, marginBottom: 14, position: 'relative' }}>
+      <div style={{ display: 'flex', gap: 4, marginBottom: 14 }}>
         {DAYS.map((day, idx) => {
           const active = idx === selectedDay;
           return (
@@ -262,44 +240,8 @@ export default function BusyTimesChart({ checkIns, gymId }) {
         </div>
       )}
 
-      {/* Divider */}
-      <div style={{ height: 1, background: 'rgba(255,255,255,0.055)', margin: '11px 0' }} />
-
-      {/* Opening hours */}
-      {openingHours && (
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-            <Clock style={{ width: 11, height: 11, color: 'rgba(130,160,255,0.7)', flexShrink: 0 }} />
-            <span style={{ fontSize: 11, fontWeight: 600, color: 'rgba(160,180,220,0.7)' }}>Opening Hours</span>
-          </div>
-          <span style={{
-            fontSize: 11, fontWeight: 700,
-            color: openingHours === 'Closed' ? 'rgba(248,113,113,0.85)' : 'rgba(200,220,255,0.9)',
-            background: openingHours === 'Closed' ? 'rgba(239,68,68,0.1)' : 'rgba(100,130,255,0.12)',
-            border: `1px solid ${openingHours === 'Closed' ? 'rgba(239,68,68,0.2)' : 'rgba(100,130,255,0.2)'}`,
-            borderRadius: 20, padding: '3px 10px',
-          }}>
-            {openingHours}
-          </span>
-        </div>
-      )}
-
-      {/* Legend */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, flexWrap: 'wrap' }}>
-        {LEGEND.map(({ style, label }) => (
-          <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 9.5, color: 'rgba(120,140,185,0.85)', fontWeight: 600 }}>
-            <div style={{ width: 8, height: 8, borderRadius: 2, flexShrink: 0, ...style }} />
-            {label}
-          </div>
-        ))}
-      </div>
-
       {/* Keyframes */}
       <style>{`
-        @keyframes cosBusyPulse {
-          0%,100% { opacity:1; transform:scale(1); }
-          50% { opacity:0.4; transform:scale(0.7); }
-        }
         @keyframes cosBusyPing {
           0%,100% { transform:translateX(-50%) scale(1); opacity:1; }
           50% { transform:translateX(-50%) scale(1.7); opacity:0.25; }
