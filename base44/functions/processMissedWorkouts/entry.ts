@@ -1,16 +1,12 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.21';
 
-// SECURITY FIX [HIGH]:
-// 1. Called User.list() — full platform user table scan.
-//    FIXED: Replaced with GymMembership-scoped query. Only active gym members are processed.
-// 2. No per-run size cap — added MAX_USERS_PER_RUN.
-// 3. Automation bypass pattern retained (scheduled calls are unauthenticated by design);
-//    admin check enforced for any authenticated caller.
-// 4. try/catch around per-user loop body to prevent one bad user aborting the entire run.
+// Streak logic: a streak freeze is consumed (or streak reset) ONLY if the user
+// logged ZERO workouts in the entire previous calendar week (Mon–Sun).
+// Running daily but only acts when yesterday was a Sunday (end of week).
 
 const MAX_USERS_PER_RUN = 500;
 
-function isAuthorizedAutomation(req: Request): boolean {
+function isAuthorizedAutomation(req) {
   const secret = Deno.env.get('AUTOMATION_SECRET');
   if (!secret) return true;
   return req.headers.get('X-Automation-Secret') === secret;
@@ -33,23 +29,36 @@ Deno.serve(async (req) => {
 
   const yesterday = new Date();
   yesterday.setDate(yesterday.getDate() - 1);
-  const yesterdayStr    = yesterday.toISOString().split('T')[0];
-  const rawDay          = yesterday.getDay();
-  const yesterdayDayKey = rawDay === 0 ? 7 : rawDay;
+  const yesterdayDay = yesterday.getDay(); // 0 = Sunday
 
-  console.log(`Processing missed workouts for ${yesterdayStr} (day key ${yesterdayDayKey})`);
+  // Only process at the end of the week (Sunday = day 0).
+  // If yesterday wasn't Sunday, nothing to do yet.
+  if (yesterdayDay !== 0) {
+    console.log(`Yesterday was not Sunday (day ${yesterdayDay}). Skipping weekly streak check.`);
+    return Response.json({ skipped: true, reason: 'not_end_of_week' });
+  }
 
-  // SECURITY FIX: Replaced User.list() (full platform scan) with GymMembership-scoped
-  // query. Only active gym members are processed.
+  // Calculate the Mon–Sun date range for last week (Mon = yesterday - 6, Sun = yesterday)
+  const sunday = new Date(yesterday);
+  const monday = new Date(sunday);
+  monday.setDate(monday.getDate() - 6);
+
+  const pad = (n) => String(n).padStart(2, '0');
+  const fmt = (d) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+  const weekStart = fmt(monday);
+  const weekEnd   = fmt(sunday);
+
+  console.log(`Weekly streak check for ${weekStart} → ${weekEnd}`);
+
   const activeMemberships = await base44.asServiceRole.entities.GymMembership.filter(
     { status: 'active' }, '-created_date', MAX_USERS_PER_RUN
   );
   const uniqueUserIds = [...new Set(
-    activeMemberships.map((m: Record<string, string>) => m.user_id).filter(Boolean)
+    activeMemberships.map((m) => m.user_id).filter(Boolean)
   )];
 
   if (!uniqueUserIds.length) {
-    return Response.json({ date: yesterdayStr, dayKey: yesterdayDayKey, processed: 0, freezeUsed: 0, streakReset: 0, skipped: 0 });
+    return Response.json({ weekStart, weekEnd, processed: 0, freezeUsed: 0, streakReset: 0, skipped: 0 });
   }
 
   const allUsers = await base44.asServiceRole.entities.User.filter(
@@ -60,28 +69,30 @@ Deno.serve(async (req) => {
 
   for (const user of allUsers) {
     try {
-      // Skip users who are mid-deletion or have been marked as deleted
       if (user.deleted_at) { skipped++; continue; }
 
-      const trainingDays = user.training_days || [];
-      if (!trainingDays.includes(yesterdayDayKey)) { skipped++; continue; }
-
+      // Check if the user logged at least one workout in the past week
       const logs = await base44.asServiceRole.entities.WorkoutLog.filter({
-        user_id:        user.id,
-        completed_date: yesterdayStr,
+        user_id: user.id,
+        completed_date: { $gte: weekStart, $lte: weekEnd },
       });
-      if (logs.length > 0) { skipped++; continue; }
 
-      const currentStreak  = user.current_streak  || 0;
-      const streakFreezes  = user.streak_freezes ?? 3;
+      if (logs.length > 0) {
+        // User worked out at least once — streak is safe
+        skipped++;
+        continue;
+      }
+
+      // Zero workouts this week — consume a freeze or reset streak
+      const currentStreak = user.current_streak || 0;
+      const streakFreezes = user.streak_freezes ?? 3;
 
       if (streakFreezes > 0) {
         await base44.asServiceRole.entities.User.update(user.id, { streak_freezes: streakFreezes - 1 });
-        console.log(`[${user.id}] Freeze used. Remaining: ${streakFreezes - 1}. Streak stays at ${currentStreak}.`);
+        console.log(`[${user.id}] Freeze used (missed week). Remaining: ${streakFreezes - 1}. Streak stays at ${currentStreak}.`);
         freezeUsed++;
       } else {
-        // Save previous_streak before resetting so the client-side loss animation can detect it
-        await base44.asServiceRole.entities.User.update(user.id, { 
+        await base44.asServiceRole.entities.User.update(user.id, {
           current_streak: 0,
           previous_streak: currentStreak > 0 ? currentStreak : (user.previous_streak || 0),
         });
@@ -95,5 +106,5 @@ Deno.serve(async (req) => {
   }
 
   console.log(`Done. Processed: ${processed}, Freezes used: ${freezeUsed}, Streaks reset: ${streakReset}, Skipped: ${skipped}`);
-  return Response.json({ date: yesterdayStr, dayKey: yesterdayDayKey, processed, freezeUsed, streakReset, skipped });
+  return Response.json({ weekStart, weekEnd, processed, freezeUsed, streakReset, skipped });
 });

@@ -27,18 +27,23 @@ export default function StreakVariantPicker({ isOpen, onClose, onSelect, selecte
       onClick={handleBackdropClick}>
 
       <div className="bg-slate-800/50 rounded-3xl p-6 max-w-sm w-full border border-slate-700/30 shadow-2xl backdrop-blur-xl relative z-[9999]">
-        {/* Streak Freezes — top right */}
-        <div className="absolute top-2 right-4 flex items-center gap-0.5">
-          <img
-            src="https://media.base44.com/images/public/694b637358644e1c22c8ec6b/4b125b24a_ICEP1_V2.png"
-            alt="freeze"
-            className="w-[50px] h-[50px] object-contain"
-          />
-          <span className="text-white font-bold text-[1.665rem] leading-none">{streakFreezes}</span>
+        {/* Top row: description left, freezes right */}
+        <div className="flex items-start justify-between gap-3 mb-4">
+          <p className="text-slate-300 text-[11.5px] leading-relaxed flex-1" style={{ fontWeight: 500 }}>
+            As long as you workout at least once a week, you won't lose your streak. If you do miss a week don't worry, a streak freeze will save you, so look after them!
+          </p>
+          <div className="flex items-center gap-0.5 flex-shrink-0">
+            <img
+              src="https://media.base44.com/images/public/694b637358644e1c22c8ec6b/4b125b24a_ICEP1_V2.png"
+              alt="freeze"
+              className="w-[50px] h-[50px] object-contain"
+            />
+            <span className="text-white font-bold text-[1.665rem] leading-none">{streakFreezes}</span>
+          </div>
         </div>
 
         {/* 4-column grid */}
-        <div className="grid grid-cols-4 gap-2 mt-12 pb-8">
+        <div className="grid grid-cols-4 gap-2 pb-8">
           {availableIcons.map((icon) => (
             <button
               key={icon.id}
