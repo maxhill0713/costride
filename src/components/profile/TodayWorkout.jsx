@@ -199,7 +199,18 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
       const stored = localStorage.getItem('workoutOverrideDay');
       const storedDate = localStorage.getItem('workoutOverrideDayDate');
       const todayStr = new Date().toISOString().split('T')[0];
-      if (stored && storedDate === todayStr) return parseInt(stored);
+      if (stored && storedDate === todayStr) {
+        const todayDow = new Date().getDay();
+        const todayNum = todayDow === 0 ? 7 : todayDow;
+        const storedNum = parseInt(stored);
+        // If stored value is not today's day number, it's the old format (source day key).
+        // Migrate: set workoutOverrideSourceDay = stored, workoutOverrideDay = today
+        if (storedNum !== todayNum && !localStorage.getItem('workoutOverrideSourceDay')) {
+          localStorage.setItem('workoutOverrideSourceDay', String(storedNum));
+          localStorage.setItem('workoutOverrideDay', String(todayNum));
+        }
+        return todayNum;
+      }
       return null;
     } catch {
       return null;
@@ -221,9 +232,13 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
       if (overrideDayKey === null) {
         localStorage.removeItem('workoutOverrideDay');
         localStorage.removeItem('workoutOverrideDayDate');
+        localStorage.removeItem('workoutOverrideSourceDay');
       } else {
-        localStorage.setItem('workoutOverrideDay', String(overrideDayKey));
+        // Store TODAY's day number (the day being overridden) so Home.jsx circles know which circle to change
+        localStorage.setItem('workoutOverrideDay', String(adjustedDay));
         localStorage.setItem('workoutOverrideDayDate', todayStr);
+        // Also store the source workout day key so getTodayWorkout can look up the right workout
+        localStorage.setItem('workoutOverrideSourceDay', String(overrideDayKey));
       }
     } catch {}
   }, [overrideDayKey]);
@@ -269,33 +284,36 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
     }
 
     if (overrideDayKey !== null) {
-      // First try custom_workout_types
-      const workout = currentUser.custom_workout_types[overrideDayKey];
-      if (workout && (workout.exercises || []).length > 0) {
+      // sourceDayKey is the workout's own day key (may differ from today if switching across days)
+      const sourceDayKey = (() => {
+        try {
+          const stored = localStorage.getItem('workoutOverrideSourceDay');
+          return stored ? parseInt(stored) : overrideDayKey;
+        } catch { return overrideDayKey; }
+      })();
+
+      const lookupWorkout = (key) => {
+        const w = currentUser.custom_workout_types[key];
+        if (w && (w.exercises || []).length > 0) return w;
+        const savedSplits = currentUser?.saved_splits || [];
+        const activeSplitId = currentUser?.active_split_id;
+        const activeSplit = savedSplits.find((s) => s.id === activeSplitId) || savedSplits[0];
+        const sw = activeSplit?.workouts?.[key] || activeSplit?.workouts?.[String(key)];
+        if (sw && (sw.exercises || []).length > 0) return sw;
+        for (const split of savedSplits) {
+          const fw = split.workouts?.[key] || split.workouts?.[String(key)];
+          if (fw && (fw.exercises || []).length > 0) return fw;
+        }
+        return null;
+      };
+
+      const workout = lookupWorkout(sourceDayKey);
+      if (workout) {
         return {
           name: workout.name || 'Training Day',
           exercises: workout.exercises || [],
           cardio: workout.cardio || []
         };
-      }
-      // Fallback: search saved_splits for the workout at this day
-      const activeSplitId = currentUser?.active_split_id;
-      const savedSplits = currentUser?.saved_splits || [];
-      const activeSplit = savedSplits.find((s) => s.id === activeSplitId) || savedSplits[0];
-      if (activeSplit?.workouts?.[overrideDayKey]) {
-        const sw = activeSplit.workouts[overrideDayKey];
-        return {
-          name: sw.name || 'Training Day',
-          exercises: sw.exercises || [],
-          cardio: sw.cardio || []
-        };
-      }
-      // Last fallback: any workout in saved_splits at this day key (string or number)
-      for (const split of savedSplits) {
-        const sw = split.workouts?.[overrideDayKey] || split.workouts?.[String(overrideDayKey)];
-        if (sw && (sw.exercises || []).length > 0) {
-          return { name: sw.name || 'Training Day', exercises: sw.exercises || [], cardio: sw.cardio || [] };
-        }
       }
       return null;
     }
