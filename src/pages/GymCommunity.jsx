@@ -1730,7 +1730,7 @@ export default function GymCommunity() {
             <TabsContent value="home" className="space-y-3 mt-0 w-full" asChild>
               <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.25 }} className="space-y-3">
                 <BusyTimesChart checkIns={checkIns} gymId={gymId} />
-                <UpcomingEvents gymMemberships={[{ gym_id: gymId, gym_name: gym?.name }]} currentUser={currentUser} />
+                <UpcomingEvents gymMemberships={[{ gym_id: gymId, gym_name: gym?.name }]} currentUser={currentUser} isMember={isMember} />
                 <InlineLeaderboard view={leaderboardView} setView={setLeaderboardView} checkInLeaderboardWeek={checkInLeaderboardWeek} checkInLeaderboardMonth={checkInLeaderboardMonth} checkInLeaderboardAllTime={checkInLeaderboardAllTime} streakLeaderboardWeek={streakLeaderboardWeek} streakLeaderboardMonth={streakLeaderboardMonth} streakLeaderboardAllTime={streakLeaderboardAllTime} progressLeaderboardWeek={progressLeaderboardWeek} progressLeaderboardMonth={progressLeaderboardMonth} progressLeaderboardAllTime={progressLeaderboardAllTime} />
                 {coaches.length > 0 &&
                 <div style={{ ...CARD_STYLE, borderRadius: 18, overflow: 'hidden' }}>

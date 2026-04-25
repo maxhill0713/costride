@@ -152,7 +152,7 @@ function LeaveConfirmDialog({ open, onClose, onConfirm, eventName, eventDate }) 
 
 const getStorageKey = (userId) => `joinedEventIds_${userId || 'guest'}`;
 
-export default function UpcomingEvents({ gymMemberships = [], currentUser }) {
+export default function UpcomingEvents({ gymMemberships = [], currentUser, isMember = true }) {
   const [range, setRange] = useState('week');
   const [joinedEventIds, setJoinedEventIds] = useState(() => {
     try {
@@ -294,7 +294,7 @@ export default function UpcomingEvents({ gymMemberships = [], currentUser }) {
             {formatTime(event.event_date, event.end_time)}
           </span>
         </div>
-        <JoinButton event={event} isJoined={isJoined} />
+        {isMember && <JoinButton event={event} isJoined={isJoined} />}
       </div>
     </div>
   );
