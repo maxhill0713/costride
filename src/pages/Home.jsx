@@ -1397,16 +1397,16 @@ export default function Home() {
                         const joinDayNum = joinedThisWeek ? (() => { const d = new Date(joinDate).getDay(); return d === 0 ? 7 : d; })() : null;
                         const isPast = isFutureWeek ? false : weekOffset < 0 ? true : day < todayDay;
                         const isPreJoin = joinDayNum !== null && day < joinDayNum && weekOffset === 0;
-                        const isInCurrentSplit = trainingDays.includes(day);
+                        // For past days, use the BASE training days (ignoring current-week swaps)
+                        // so that switching splits today doesn't retroactively change past day colours.
+                        const isInSplitForDay = isPast
+                          ? baseTrainingDays.includes(day)
+                          : trainingDays.includes(day);
+                        const isInCurrentSplit = isInSplitForDay;
                         // Today showing as a rest-day-override (user switched a rest day to workout) should
                         // show grey (planned) not red (missed) — treat it like a future training day
                         const isTodayRestDayOverride = isTodayCircle && restDayOverride === day;
-                        // For PAST days: never mark as missed based on the current split.
-                        // The user may have changed their split — past days should only show:
-                        //   - Blue (done) if a workout was logged
-                        //   - Green (rest) if no workout was logged (we can't know what split they had then)
-                        // Only today and future days use the current split to determine missed vs rest.
-                        const isRestDay = done ? false : isPast ? true : !isInCurrentSplit;
+                        const isRestDay = done ? false : !isInCurrentSplit;
                         const isMissed = !isRestDay && !done && !isTodayRestDayOverride && isPast && !isTodayCircle;
                         // Past rest days always show filled green; today's rest day shows filled green too.
                         // Future rest days show grey outline (not yet happened).
