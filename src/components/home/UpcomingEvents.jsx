@@ -75,8 +75,16 @@ function RangeDropdown({ value, onChange }) {
   );
 }
 
-function LeaveConfirmDialog({ open, onClose, onConfirm }) {
+function LeaveConfirmDialog({ open, onClose, onConfirm, eventName, eventDate }) {
   if (!open) return null;
+  
+  const formatEventDate = (dateStr) => {
+    const d = new Date(dateStr);
+    const day = d.getDate();
+    const month = d.toLocaleDateString('en-GB', { month: 'long' });
+    return `${day}th of ${month}`;
+  };
+  
   return (
     <>
       <div
@@ -101,21 +109,11 @@ function LeaveConfirmDialog({ open, onClose, onConfirm }) {
       }}>
         <div style={{ height: 1, background: 'linear-gradient(90deg, transparent 10%, rgba(255,255,255,0.1) 50%, transparent 90%)' }} />
         <div style={{ padding: 24, textAlign: 'center' }}>
-          <div style={{
-            width: 52, height: 52, borderRadius: 16,
-            margin: '0 auto 16px',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            background: 'rgba(248,113,113,0.12)',
-            border: '1px solid rgba(248,113,113,0.25)',
-            fontSize: 24,
-          }}>
-            📅
-          </div>
           <h3 style={{ fontSize: 18, fontWeight: 900, color: '#fff', letterSpacing: '-0.02em', margin: '0 0 8px' }}>
-            Leave Event?
+            Are you sure you want to leave <span style={{ color: '#60a5fa' }}>{eventName}</span> on the {formatEventDate(eventDate)}?
           </h3>
           <p style={{ fontSize: 13, color: 'rgba(138,138,148,0.9)', lineHeight: 1.5, margin: '0 0 24px' }}>
-            Are you sure you want to leave this event?
+            You can always join again later.
           </p>
           <div style={{ display: 'flex', gap: 10 }}>
             <button
@@ -450,6 +448,8 @@ export default function UpcomingEvents({ gymMemberships = [], currentUser }) {
           }
           setLeaveConfirmEventId(null);
         }}
+        eventName={leaveEvent?.title}
+        eventDate={leaveEvent?.event_date}
       />
     </>
   );
