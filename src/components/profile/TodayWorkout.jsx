@@ -54,6 +54,9 @@ function WorkoutSwitcherModal({ open, onClose, currentUser, activeDayKey, adjust
 
   const creditAvailable = hasRestDayCredit();
 
+  // True if today was originally a rest day but the user switched it to a workout
+  const todayWasRestDayOverridden = !trainingDays.includes(adjustedDay) && activeDayKey === adjustedDay && !restSwapActive && !creditRestActive;
+
   const todayIsTrainingDay = trainingDays.includes(adjustedDay) && !restSwapActive;
   const futureRestDaysForSwap = (!creditAvailable && todayIsTrainingDay)
     ? [1, 2, 3, 4, 5, 6, 7].filter((d) => {
@@ -94,6 +97,15 @@ function WorkoutSwitcherModal({ open, onClose, currentUser, activeDayKey, adjust
                 <p className="text-base font-black text-blue-300">Switch today back to a workout</p>
                 <p className="text-xs text-blue-500/80 mt-0.5">Your rest token will be returned</p>
               </div>
+            </button>
+          )}
+
+          {todayWasRestDayOverridden && (
+            <button
+              onClick={() => { onSelect(adjustedDay, 'revert-rest-override'); onClose(); }}
+              className="w-full text-left rounded-2xl border border-green-500/40 bg-green-500/10 hover:bg-green-500/20 transition-all duration-200 px-4 py-3 flex items-center gap-3">
+              <ArrowLeftRight className="w-4 h-4 text-green-400 flex-shrink-0" />
+              <p className="text-base font-black text-green-300">Switch back to rest day</p>
             </button>
           )}
 
@@ -1293,6 +1305,11 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
           } else if (mode === 'revert-rest-swap') {
             clearRestSwap();
             setRestSwapActive(false);
+            setOverrideDayKey(null);
+            setEditingIndex(null);
+            onOverrideDayChange?.(null);
+            window.dispatchEvent(new Event('weekSwapChanged'));
+          } else if (mode === 'revert-rest-override') {
             setOverrideDayKey(null);
             setEditingIndex(null);
             onOverrideDayChange?.(null);

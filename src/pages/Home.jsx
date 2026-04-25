@@ -25,7 +25,7 @@ import { isToday, differenceInDays, startOfWeek, startOfDay } from 'date-fns';
 import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import LocationBasedCheckInButton from '../components/gym/LocationBasedCheckInButton';
-import { getSwappedRestDay, getRestSwap, getCreditRestDay } from '../lib/weekSwaps.js';
+import { getSwappedRestDay, getRestSwap, getCreditRestDay, getRestDayOverride } from '../lib/weekSwaps.js';
 
 const sanitiseUsernameQuery = (v) =>
   v.replace(/[^a-zA-Z0-9_.\- ]/g, '').slice(0, 30);
@@ -1294,6 +1294,12 @@ export default function Home() {
             // If user used credit-rest on a training day, remove it so the circle shows green (rest)
             if (creditRestDay) {
               trainingDays = trainingDays.filter(d => d !== creditRestDay);
+            }
+
+            // If user overrode a rest day to a workout, add it to trainingDays so the circle shows as a workout day
+            const restDayOverride = weekOffset === 0 ? getRestDayOverride() : null;
+            if (restDayOverride && !trainingDays.includes(restDayOverride)) {
+              trainingDays = [...trainingDays, restDayOverride];
             }
             if (trainingDays.length === 0) return null;
             const mondayBase = startOfWeek(new Date(), { weekStartsOn: 1 });

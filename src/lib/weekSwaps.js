@@ -141,3 +141,17 @@ export function recordRestSwap(fromDay, toDay) {
 export function clearRestSwap() {
   try { localStorage.removeItem(RS_KEY); } catch {}
 }
+
+// ── Override Rest Day: user switched a rest day to a workout ─────────────────
+// Reads the workoutOverrideDay + workoutOverrideDayDate set by TodayWorkout
+export function getRestDayOverride() {
+  try {
+    const stored = localStorage.getItem('workoutOverrideDay');
+    const storedDate = localStorage.getItem('workoutOverrideDayDate');
+    const todayStr = new Date().toISOString().split('T')[0];
+    if (stored && storedDate === todayStr) return parseInt(stored);
+    return null;
+  } catch {
+    return null;
+  }
+}
