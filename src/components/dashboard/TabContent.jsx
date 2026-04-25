@@ -551,7 +551,7 @@ function QuickActions({ post, resolvedName, memberId, gym, currentUser, onDelete
 
   const btnStyle = { display: "flex", alignItems: "center", gap: compact ? 5 : 8, width: "100%", padding: compact ? "5px 8px" : "7px 10px", borderRadius: 8, background: "rgba(255,255,255,0.03)", border: `1px solid ${C.brd}`, color: C.t2, fontSize: compact ? 10.5 : 12, fontWeight: 600, cursor: "pointer", fontFamily: FONT, textAlign: "left", transition: "all 0.15s" };
   const iconSize = compact ? 11 : 13;
-  const containerStyle = { width: compact ? "22.5%" : "30%", flexShrink: 0, borderLeft: `1px solid ${C.brd}`, padding: compact ? "10px 10px" : "12px 14px", display: "flex", flexDirection: "column", gap: compact ? 7 : 8, justifyContent: "flex-start" };
+  const containerStyle = { width: compact ? 180 : 240, flexShrink: 0, borderLeft: `1px solid ${C.brd}`, padding: compact ? "10px 10px" : "12px 14px", display: "flex", flexDirection: "column", gap: compact ? 7 : 8, justifyContent: "flex-start" };
 
   return (
     <>
