@@ -53,6 +53,15 @@ const C = {
 };
 const FONT = "'DM Sans', 'Segoe UI', system-ui, sans-serif";
 
+// Shared gradient button style (matches Overview "New Post" button)
+const GRAD_BTN = {
+  background: "linear-gradient(to bottom, #3b82f6 0%, #2563eb 40%, #1d4ed8 100%)",
+  boxShadow: "0 2px 0 #1a3fa8, inset 0 1px 0 rgba(255,255,255,0.2)",
+  borderBottom: "2px solid #1a3fa8",
+  border: "none",
+  color: "#fff",
+};
+
 function timeAgo(dateStr) {
   if (!dateStr) return "";
   let d = new Date(dateStr);
@@ -140,7 +149,7 @@ function MessageMemberModal({ resolvedName, memberId, onClose }) {
             <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
               <button onClick={onClose} style={{ padding: "8px 16px", borderRadius: 8, background: "transparent", border: `1px solid ${C.brd}`, color: C.t2, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: FONT }}>Cancel</button>
               <button onClick={handleSend} disabled={!msg.trim() || sending}
-                style={{ padding: "8px 18px", borderRadius: 8, background: C.cyan, border: "none", color: "#fff", fontSize: 12, fontWeight: 700, cursor: msg.trim() && !sending ? "pointer" : "not-allowed", opacity: msg.trim() && !sending ? 1 : 0.55, fontFamily: FONT }}>
+                style={{ padding: "8px 18px", borderRadius: 8, color: "#fff", fontSize: 12, fontWeight: 700, cursor: msg.trim() && !sending ? "pointer" : "not-allowed", opacity: msg.trim() && !sending ? 1 : 0.55, fontFamily: FONT, ...GRAD_BTN }}>
                 {sending ? "Sending…" : "Send Message"}
               </button>
             </div>
@@ -419,7 +428,7 @@ function EditPostModal({ post, gym, onClose, onSave }) {
         <div style={{ display: "flex", gap: 8, justifyContent: "flex-end", marginTop: 4 }}>
           <button onClick={onClose} style={{ padding: "8px 16px", borderRadius: 8, background: "transparent", border: `1px solid ${C.brd}`, color: C.t2, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: FONT }}>Cancel</button>
           <button onClick={handleSave} disabled={!isDirty || !content.trim() || saving}
-            style={{ padding: "8px 20px", borderRadius: 8, background: isDirty && content.trim() ? C.cyan : C.brd, border: "none", color: isDirty && content.trim() ? "#fff" : C.t3, fontSize: 12, fontWeight: 700, cursor: isDirty && content.trim() && !saving ? "pointer" : "not-allowed", fontFamily: FONT, transition: "all 0.15s" }}>
+            style={{ padding: "8px 20px", borderRadius: 8, fontSize: 12, fontWeight: 700, fontFamily: FONT, cursor: isDirty && content.trim() && !saving ? "pointer" : "not-allowed", opacity: isDirty && content.trim() ? 1 : 0.4, transition: "all 0.15s", ...(isDirty && content.trim() ? GRAD_BTN : { background: C.brd, border: "none", color: C.t3 }) }}>
             {saving ? "Saving…" : "Save"}
           </button>
         </div>
@@ -428,8 +437,6 @@ function EditPostModal({ post, gym, onClose, onSave }) {
   );
 }
 
-/* ─── REPEAT EVENT PICKER — moved to CreateEventModal.jsx ──── */
-function RepeatEventPicker_UNUSED() { return null; }
 function RepeatEventPicker({ events, onSelect, onClose }) {
   const [search, setSearch] = useState("");
   const filtered = (events || []).filter(ev =>
@@ -442,7 +449,6 @@ function RepeatEventPicker({ events, onSelect, onClose }) {
       onClick={e => { if (e.target === e.currentTarget) onClose(); }}
     >
       <div style={{ background: "#17171c", border: `1px solid #252530`, borderRadius: 14, width: 460, maxWidth: "92vw", maxHeight: "72vh", display: "flex", flexDirection: "column", overflow: "hidden", boxShadow: "0 32px 80px rgba(0,0,0,0.85)" }}>
-        {/* Header */}
         <div style={{ padding: "18px 20px 14px", borderBottom: `1px solid #252530`, display: "flex", alignItems: "center", justifyContent: "space-between", flexShrink: 0 }}>
           <div>
             <div style={{ fontSize: 15, fontWeight: 800, color: "#fff", letterSpacing: "-0.02em" }}>Repeat an Event</div>
@@ -456,8 +462,6 @@ function RepeatEventPicker({ events, onSelect, onClose }) {
             <X size={15} />
           </button>
         </div>
-
-        {/* Search */}
         <div style={{ padding: "12px 20px", borderBottom: `1px solid #252530`, flexShrink: 0 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 9, background: "#1f1f26", border: `1px solid #252530`, borderRadius: 9, padding: "8px 12px" }}>
             <Search size={13} color="#525260" />
@@ -475,8 +479,6 @@ function RepeatEventPicker({ events, onSelect, onClose }) {
             )}
           </div>
         </div>
-
-        {/* List */}
         <div style={{ overflowY: "auto", flex: 1, padding: "8px 12px 12px" }}>
           {filtered.length === 0 ? (
             <div style={{ textAlign: "center", padding: "32px 0", color: "#525260", fontSize: 12 }}>
@@ -804,9 +806,10 @@ function ListCard({ children, isMobile }) {
   );
 }
 
+// FAB uses gradient to match Overview style
 function FAB({ onClick }) {
   return (
-    <button onClick={onClick} style={{ position: "fixed", bottom: 76, right: 18, zIndex: 190, width: 52, height: 52, borderRadius: "50%", background: C.cyan, border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 0 14px rgba(77,127,255,0.28), 0 4px 10px rgba(77,127,255,0.16)" }}>
+    <button onClick={onClick} style={{ position: "fixed", bottom: 76, right: 18, zIndex: 190, width: 52, height: 52, borderRadius: "50%", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", ...GRAD_BTN, boxShadow: "0 2px 0 #1a3fa8, inset 0 1px 0 rgba(255,255,255,0.2), 0 0 14px rgba(59,130,246,0.28), 0 4px 10px rgba(59,130,246,0.16)" }}>
       <Plus size={22} color="#fff" strokeWidth={2.5} />
     </button>
   );
@@ -878,9 +881,6 @@ function SortDropdown({ value, onChange }) {
   );
 }
 
-/* ══════════════════════════════════════════════════════════════
-   MONTH DROPDOWN — no hover box, 20% narrower trigger
-══════════════════════════════════════════════════════════════ */
 const DAYS_OF_WEEK = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 const MONTH_NAMES  = ["January","February","March","April","May","June","July","August","September","October","November","December"];
 
@@ -905,7 +905,6 @@ function MonthDropdown({ viewYear, viewMonth, onSelect }) {
 
   return (
     <div ref={ref} style={{ position: "relative" }}>
-      {/* Trigger: no background box on hover, just text colour change. Width ~20% narrower (was minWidth:148, now just auto with tighter padding) */}
       <button
         onClick={() => setOpen(o => !o)}
         style={{
@@ -1150,9 +1149,6 @@ function EventsCalendar({ events, onDeleteEvent, onAddEvent, onEventEdited, onRe
   );
 }
 
-/* ══════════════════════════════════════════════════════════════
-   CREATE EVENT MODAL — extracted to CreateEventModal.jsx
-══════════════════════════════════════════════════════════════ */
 export { CreateEventModal } from "./CreateEventModal";
 
 /* ─── ROOT ───────────────────────────────────────────────────────── */
@@ -1238,9 +1234,10 @@ export default function ContentPage({
             <h1 style={{ fontSize: 22, fontWeight: 800, color: C.t1, margin: 0, letterSpacing: "-0.03em", lineHeight: 1.2 }}>
               Content <span style={{ color: C.cyan }}>Hub</span>
             </h1>
+            {/* Top-right action button — gradient style */}
             <button
               onClick={() => tabAction && openModal?.(tabAction.modal)}
-              style={{ display: "flex", alignItems: "center", gap: 6, padding: "9px 18px", background: C.cyan, border: "none", borderRadius: 9, fontSize: 12.5, fontWeight: 700, color: "#fff", cursor: "pointer", fontFamily: FONT, boxShadow: "0 0 10px rgba(77,127,255,0.22), 0 2px 8px rgba(77,127,255,0.12)", transition: "opacity 0.15s", visibility: tabAction ? "visible" : "hidden", pointerEvents: tabAction ? "auto" : "none" }}
+              style={{ display: "flex", alignItems: "center", gap: 6, padding: "9px 18px", borderRadius: 9, fontSize: 12.5, fontWeight: 700, cursor: "pointer", fontFamily: FONT, transition: "opacity 0.15s", visibility: tabAction ? "visible" : "hidden", pointerEvents: tabAction ? "auto" : "none", ...GRAD_BTN }}
               onMouseEnter={e => e.currentTarget.style.opacity = "0.88"}
               onMouseLeave={e => e.currentTarget.style.opacity = "1"}>
               <Plus size={12} /> {tabAction?.label ?? "Action"}
@@ -1561,8 +1558,9 @@ export default function ContentPage({
                       </div>
                       <div style={{ width: "30%", flexShrink: 0, borderLeft: `1px solid ${C.brd}`, padding: "12px 14px", display: "flex", flexDirection: "column", gap: 8, justifyContent: "flex-start" }}>
                         <div style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.10em", color: C.t3, marginBottom: 2 }}>Quick Actions</div>
+                        {/* "Post Now" — gradient button */}
                         <button onClick={() => handlePublishDraft(p)} disabled={publishingDraftId === p.id}
-                          style={{ display: "flex", alignItems: "center", gap: 8, width: "100%", padding: "7px 10px", borderRadius: 8, background: C.cyan, border: "none", color: "#fff", fontSize: 12, fontWeight: 700, cursor: publishingDraftId === p.id ? "default" : "pointer", fontFamily: FONT, opacity: publishingDraftId === p.id ? 0.6 : 1, transition: "opacity 0.15s" }}>
+                          style={{ display: "flex", alignItems: "center", gap: 8, width: "100%", padding: "7px 10px", borderRadius: 8, fontSize: 12, fontWeight: 700, cursor: publishingDraftId === p.id ? "default" : "pointer", fontFamily: FONT, opacity: publishingDraftId === p.id ? 0.6 : 1, transition: "opacity 0.15s", justifyContent: "flex-start", ...(publishingDraftId === p.id ? { background: C.brd, border: "none", color: C.t3 } : GRAD_BTN) }}>
                           <Plus size={13} color="#fff" style={{ flexShrink: 0 }} /><span>{publishingDraftId === p.id ? "Posting…" : "Post Now"}</span>
                         </button>
                         <button onClick={() => setEditingPost(p)}
