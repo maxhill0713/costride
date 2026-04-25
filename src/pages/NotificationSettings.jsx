@@ -65,18 +65,21 @@ export default function NotificationSettings() {
   });
 
   const handleRequestPermission = async () => {
-    if (!window.OneSignal) {
+    if (!window.OneSignalDeferred) {
       console.warn('OneSignal not available');
       return;
     }
-    const granted = await window.OneSignal.Notifications.requestPermission();
-    if (granted) {
-      console.log('OneSignal push notification permission granted');
-      setNotifStatus('granted');
-    } else {
-      console.log('OneSignal push notification permission denied');
-      setNotifStatus('denied');
-    }
+    
+    window.OneSignalDeferred.push(async (OneSignal) => {
+      try {
+        await OneSignal.Notifications.requestPermission();
+        setNotifStatus('granted');
+        console.log('OneSignal permission requested');
+      } catch (err) {
+        console.error('OneSignal permission error:', err);
+        setNotifStatus('denied');
+      }
+    });
   };
 
   if (!currentUser) return <SettingsSubPageShell title="Notifications"><p style={{ color: '#475569', textAlign: 'center', paddingTop: 40 }}>Loading…</p></SettingsSubPageShell>;
