@@ -275,11 +275,11 @@ function FriendsSection({
                       ? <p className="text-center text-slate-400 text-sm py-8">No friends yet</p>
                       : friendsWithActivity.filter((friend) => {
                           const userData = userDataMap[friend.friend_id];
-                          const displayName = userData?.full_name || userData?.display_name || friend.friend_name || 'User';
+                          const displayName = userData?.full_name || friend.friend_name || 'User';
                           return displayName.toLowerCase().includes(friendsListSearchQuery.toLowerCase());
                         }).map((friend) => {
                           const userData = userDataMap[friend.friend_id];
-                          const name = userData?.full_name || userData?.display_name || friend.friend_name || 'User';
+                          const name = userData?.full_name || friend.friend_name || 'User';
                           const avatarUrl = userData?.avatar_url || userAvatarMap[friend.friend_id] || friend.friend_avatar;
                           return (
                             <div key={friend.id} className="px-2 py-1 rounded-lg bg-slate-700/40 flex items-center justify-between gap-2 relative">
@@ -350,7 +350,7 @@ function FriendsSection({
                                     : <span className="text-sm font-semibold text-white">{(user.display_name || user.full_name)?.charAt(0)?.toUpperCase()}</span>}
                                 </div>
                                 <div>
-                                  <div className="font-semibold text-white text-sm">{user.display_name || user.full_name}</div>
+                                  <div className="font-semibold text-white text-sm">{user.full_name}</div>
                                   <div className="text-xs text-slate-400">{user.username ? `@${user.username}` : ''}</div>
                                 </div>
                               </div>

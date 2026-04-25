@@ -620,7 +620,7 @@ export default function Home() {
 
   const addFriendMutation = useMutation({
     mutationFn: async (user) => {
-      await base44.entities.Friend.create({ user_id: currentUser.id, friend_id: user.id, user_name: currentUser.full_name, friend_name: user.display_name || user.full_name, friend_avatar: user.avatar_url || null, status: 'pending' });
+      await base44.entities.Friend.create({ user_id: currentUser.id, friend_id: user.id, user_name: currentUser.full_name, friend_name: user.full_name || user.display_name, friend_avatar: user.avatar_url || null, status: 'pending' });
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['sentFriendRequests'] }),
   });
