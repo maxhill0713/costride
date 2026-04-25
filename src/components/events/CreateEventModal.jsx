@@ -143,11 +143,13 @@ function EventPreview({ form, gym }) {
                   style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
                   onError={e => e.target.style.display = 'none'}
                 />
+                {/* Gradient stronger at top so title is readable */}
                 <div style={{
                   position: 'absolute', inset: 0,
-                  background: 'linear-gradient(to bottom, transparent 25%, rgba(8,10,20,0.95) 100%)',
+                  background: 'linear-gradient(to bottom, rgba(8,10,20,0.82) 0%, transparent 55%)',
                 }} />
-                <div style={{ position: 'absolute', bottom: 12, left: 12, right: 12 }}>
+                {/* Title at TOP of image */}
+                <div style={{ position: 'absolute', top: 12, left: 12, right: 12 }}>
                   <h3 style={{
                     fontSize: 15, fontWeight: 900, color: '#fff',
                     letterSpacing: '-0.02em', lineHeight: 1.25, margin: 0,
@@ -158,39 +160,19 @@ function EventPreview({ form, gym }) {
                 </div>
               </div>
               <div style={{ padding: '10px 14px 14px' }}>
-                {form.description && (
-                  <p style={{
-                    fontSize: 12.5, color: 'rgba(226,232,240,0.6)',
-                    lineHeight: 1.5, margin: '0 0 10px',
-                    display: '-webkit-box', WebkitLineClamp: 2,
-                    WebkitBoxOrient: 'vertical', overflow: 'hidden',
-                  }}>
-                    {form.description}
-                  </p>
-                )}
                 <BottomRowPreview form={form} formatTime={formatTime} />
               </div>
             </>
           ) : (
             /* WITHOUT BANNER */
-            <div style={{ padding: '16px 14px 16px' }}>
+            <div style={{ padding: '14px 14px' }}>
               <h3 style={{
                 fontSize: 14, fontWeight: 900, color: '#fff',
-                letterSpacing: '-0.02em', lineHeight: 1.3, margin: '0 0 6px',
+                letterSpacing: '-0.02em', lineHeight: 1.3, margin: '0 0 8px',
               }}>
                 {form.event_date ? `${formatDate(form.event_date)} - ` : ''}{form.title || 'Event Title'}
               </h3>
-              {form.description && (
-                <p style={{
-                  fontSize: 12.5, color: 'rgba(226,232,240,0.6)',
-                  lineHeight: 1.5, margin: '0 0 12px',
-                  display: '-webkit-box', WebkitLineClamp: 2,
-                  WebkitBoxOrient: 'vertical', overflow: 'hidden',
-                }}>
-                  {form.description}
-                </p>
-              )}
-              <BottomRowPreview form={form} formatTime={formatTime} topMargin={form.description ? 0 : 10} />
+              <BottomRowPreview form={form} formatTime={formatTime} />
             </div>
           )}
         </div>
@@ -199,13 +181,27 @@ function EventPreview({ form, gym }) {
   );
 }
 
-function BottomRowPreview({ form, formatTime, topMargin = 0 }) {
+function BottomRowPreview({ form, formatTime }) {
   return (
-    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, marginTop: topMargin }}>
-      <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.3)', fontWeight: 600 }}>
-        0 attending
-      </span>
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 5 }}>
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+      {/* Left: description + attending */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 4, minWidth: 0 }}>
+        {form.description && (
+          <p style={{
+            fontSize: 12.5, color: 'rgba(226,232,240,0.6)',
+            lineHeight: 1.5, margin: 0,
+            display: '-webkit-box', WebkitLineClamp: 2,
+            WebkitBoxOrient: 'vertical', overflow: 'hidden',
+          }}>
+            {form.description}
+          </p>
+        )}
+        <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.25)', fontWeight: 600 }}>
+          0 attending
+        </span>
+      </div>
+      {/* Right: time then join button with gap */}
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 10, flexShrink: 0 }}>
         {form.event_date && (
           <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
             <Clock style={{ width: 10, height: 10, color: 'rgba(255,255,255,0.4)' }} />
@@ -214,9 +210,8 @@ function BottomRowPreview({ form, formatTime, topMargin = 0 }) {
             </span>
           </div>
         )}
-        {/* Join button replica */}
         <div style={{
-          display: 'inline-flex', alignItems: 'center', gap: 5,
+          display: 'inline-flex', alignItems: 'center',
           padding: '7px 14px', borderRadius: 10,
           fontSize: 12, fontWeight: 800,
           background: 'linear-gradient(to bottom, #3b82f6 0%, #2563eb 40%, #1d4ed8 100%)',
