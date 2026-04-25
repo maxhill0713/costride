@@ -1398,14 +1398,18 @@ export default function Home() {
                         const isPast = isFutureWeek ? false : weekOffset < 0 ? true : day < todayDay;
                         const isPreJoin = joinDayNum !== null && day < joinDayNum && weekOffset === 0;
                         const isInCurrentSplit = trainingDays.includes(day);
-                        // For past days: use current split to distinguish missed (red) vs rest (green).
-                        // A past day is a rest day only if it was NOT in the training split.
-                        // A past day is missed (red) if it WAS in the training split but not logged.
-                        const isRestDay = done ? false : !isInCurrentSplit;
                         // Today showing as a rest-day-override (user switched a rest day to workout) should
                         // show grey (planned) not red (missed) — treat it like a future training day
                         const isTodayRestDayOverride = isTodayCircle && restDayOverride === day;
+                        // For PAST days: never mark as missed based on the current split.
+                        // The user may have changed their split — past days should only show:
+                        //   - Blue (done) if a workout was logged
+                        //   - Green (rest) if no workout was logged (we can't know what split they had then)
+                        // Only today and future days use the current split to determine missed vs rest.
+                        const isRestDay = done ? false : isPast ? true : !isInCurrentSplit;
                         const isMissed = !isRestDay && !done && !isTodayRestDayOverride && isPast && !isTodayCircle;
+                        // Past rest days always show filled green; today's rest day shows filled green too.
+                        // Future rest days show grey outline (not yet happened).
                         const isPastOrTodayRestDay = isRestDay && (isPast || isTodayCircle);
                         const size = isTodayCircle ? 49 : 40;
                         const verticalOffset = Math.round(Math.sin(i / (allDays.length - 1) * Math.PI * 2) * 11);
