@@ -57,14 +57,14 @@ export default function NotificationPermissionPrompt() {
   const handleAllow = async () => {
     setIsClosing(true);
     try {
-      const permission = await Notification.requestPermission();
-      if (permission === 'granted') {
+      if (window.OneSignal) {
+        await window.OneSignal.push(() => {
+          window.OneSignal.Slidedown.promptPush();
+        });
         localStorage.removeItem('notificationPromptDismissed');
-      } else {
-        localStorage.setItem('notificationPromptDismissed', Date.now().toString());
       }
     } catch (error) {
-      console.error('Notification permission error:', error);
+      console.error('OneSignal permission error:', error);
     }
     setTimeout(() => setVisible(false), 300);
   };
