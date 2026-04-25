@@ -53,7 +53,6 @@ const C = {
 };
 const FONT = "'DM Sans', 'Segoe UI', system-ui, sans-serif";
 
-// Flat button style — same blue, no 3D effect
 const GRAD_BTN = {
   background: "#2563eb",
   border: "none",
@@ -720,7 +719,6 @@ function RightSidebar({
     if (d >= weekCutoff && c.user_id) allActiveUserIds.add(c.user_id);
   });
 
-  // Filter to only users who have this gym as their primary gym
   const primaryGymUserIds = gym?.id
     ? new Set(memberUserRecords.filter(u => u.primary_gym_id === gym.id).map(u => u.id))
     : null;
@@ -1320,9 +1318,10 @@ export default function ContentPage({
                               </div>
                             )}
                             {reactionCount > 0 && (
+                            /* ── REACTION ICONS: 10% smaller (40px) with tighter overlap (-18px) ── */
                             <button onClick={() => setReactionsPost(p)} style={{ marginTop: "auto", display: "flex", alignItems: "center", gap: 0, background: "none", border: "none", cursor: "pointer", padding: 0 }}>
                               {Object.entries(p.reactions || {}).slice(0, 3).map(([uid, variant], i) => (
-                                <div key={uid} style={{ position: "relative", width: 44, height: 44, marginLeft: i === 0 ? 0 : -14, zIndex: 3 - i, flexShrink: 0 }}>
+                                <div key={uid} style={{ position: "relative", width: 40, height: 40, marginLeft: i === 0 ? 0 : -18, zIndex: 3 - i, flexShrink: 0 }}>
                                   {variant === "sunglasses" ? (
                                     <div style={{ position: "relative", width: "100%", height: "100%" }}>
                                       <img src={STREAK_ICON_URL} alt="react" style={{ width: "100%", height: "100%", objectFit: "contain" }} />
@@ -1436,7 +1435,6 @@ export default function ContentPage({
               if (pollSort === "created") {
                 return new Date(a.created_date || a.created_at || 0) - new Date(b.created_date || b.created_at || 0);
               }
-              // time_left: least time left first (soonest ending first); polls with no end_date go last
               const aMs = a.end_date ? pollEndMs(a) : Infinity;
               const bMs = b.end_date ? pollEndMs(b) : Infinity;
               return aMs - bMs;
@@ -1556,58 +1554,72 @@ export default function ContentPage({
             return (
               <>
                 <div style={{ fontSize: 12, fontWeight: 500, color: C.t2, marginBottom: 10 }}>{drafts.length} draft{drafts.length !== 1 ? "s" : ""}</div>
-                {drafts.map(p => {
-                  const pt = POST_TYPE_STYLES[p.post_type] || POST_TYPE_STYLES.update;
-                  const isGymPost = !!p.post_type;
-                  const displayName = isGymPost ? gymName : (p.member_name || gymName);
-                  const displayAvatar = isGymPost ? gymAvatar : (avatarMap[p.member_id] || p.member_avatar || gymAvatar);
-                  const palette = ["#6366f1","#8b5cf6","#ec4899","#14b8a6","#f59e0b","#4d7fff","#10b981"];
-                  const avatarBg = palette[(displayName.charCodeAt(0) || 0) % palette.length];
-                  return (
-                    <div key={p.id} style={{ background: C.card, border: `1px solid ${C.brd}`, borderRadius: 12, marginBottom: 10, minHeight: 140, display: "flex", overflow: "hidden", transition: "border-color 0.15s, box-shadow 0.15s" }}
-                      onMouseEnter={e => { e.currentTarget.style.borderColor = C.cyanBrd; e.currentTarget.style.boxShadow = `0 0 8px rgba(77,127,255,0.07)`; }}
-                      onMouseLeave={e => { e.currentTarget.style.borderColor = C.brd; e.currentTarget.style.boxShadow = "none"; }}>
-                      {p.image_url ? (<div style={{ width: 160, height: 160, flexShrink: 0, alignSelf: "center", margin: 8, borderRadius: 10, overflow: "hidden" }}><img src={p.image_url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} /></div>) : null}
-                      <div style={{ flex: 1, minWidth: 0, padding: "11px 14px 11px 10px", display: "flex", flexDirection: "column", gap: 6 }}>
-                        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                          <div style={{ width: 30, height: 30, borderRadius: "50%", flexShrink: 0, background: avatarBg, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 800, color: "#fff", overflow: "hidden" }}>
-                            {displayAvatar ? <img src={displayAvatar} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : displayName.split(" ").map(w => w[0]).join("").toUpperCase().slice(0, 2) || "?"}
+                {/* ── 2-per-row grid, matching Community Feed layout ── */}
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+                  {drafts.map(p => {
+                    const pt = POST_TYPE_STYLES[p.post_type] || POST_TYPE_STYLES.update;
+                    const isGymPost = !!p.post_type;
+                    const displayName = isGymPost ? gymName : (p.member_name || gymName);
+                    const displayAvatar = isGymPost ? gymAvatar : (avatarMap[p.member_id] || p.member_avatar || gymAvatar);
+                    const palette = ["#6366f1","#8b5cf6","#ec4899","#14b8a6","#f59e0b","#4d7fff","#10b981"];
+                    const avatarBg = palette[(displayName.charCodeAt(0) || 0) % palette.length];
+                    return (
+                      <div key={p.id} style={{ background: C.card, border: `1px solid ${C.brd}`, borderRadius: 12, minHeight: 120, display: "flex", overflow: "hidden", transition: "border-color 0.15s, box-shadow 0.15s" }}
+                        onMouseEnter={e => { e.currentTarget.style.borderColor = C.cyanBrd; e.currentTarget.style.boxShadow = `0 0 8px rgba(77,127,255,0.07)`; }}
+                        onMouseLeave={e => { e.currentTarget.style.borderColor = C.brd; e.currentTarget.style.boxShadow = "none"; }}>
+                        {p.image_url ? (
+                          <div style={{ width: 100, height: 100, flexShrink: 0, alignSelf: "center", margin: 8, borderRadius: 8, overflow: "hidden" }}>
+                            <img src={p.image_url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
                           </div>
-                          <div style={{ flex: 1, minWidth: 0 }}>
-                            <div style={{ display: "flex", alignItems: "center", gap: 7, flexWrap: "wrap" }}>
-                              <div style={{ fontSize: 13, fontWeight: 700, color: C.t1 }}>{displayName}</div>
-                              {p.post_type && (<span style={{ fontSize: 9.5, fontWeight: 700, padding: "1px 7px", borderRadius: 5, background: pt.bg, border: `1px solid ${pt.border}`, color: pt.color }}>{pt.label}</span>)}
-                              <span style={{ fontSize: 9.5, fontWeight: 700, padding: "1px 7px", borderRadius: 5, background: "rgba(245,158,11,0.12)", border: "1px solid rgba(245,158,11,0.28)", color: C.amber }}>Draft</span>
+                        ) : null}
+                        <div style={{ flex: 1, display: "flex", overflow: "hidden" }}>
+                          <div style={{ flex: 1, minWidth: 0, padding: "10px 10px 10px 10px", display: "flex", flexDirection: "column", gap: 5 }}>
+                            <div style={{ display: "flex", alignItems: "flex-start", gap: 7 }}>
+                              <div style={{ width: 26, height: 26, borderRadius: "50%", flexShrink: 0, background: avatarBg, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 10, fontWeight: 800, color: "#fff", overflow: "hidden" }}>
+                                {displayAvatar ? <img src={displayAvatar} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : displayName.split(" ").map(w => w[0]).join("").toUpperCase().slice(0, 2) || "?"}
+                              </div>
+                              <div style={{ flex: 1, minWidth: 0 }}>
+                                <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
+                                  <div style={{ fontSize: 12, fontWeight: 700, color: C.t1, lineHeight: 1.2 }}>{displayName}</div>
+                                  {p.post_type && (<span style={{ fontSize: 9, fontWeight: 700, padding: "1px 6px", borderRadius: 4, background: pt.bg, border: `1px solid ${pt.border}`, color: pt.color, flexShrink: 0 }}>{pt.label}</span>)}
+                                  <span style={{ fontSize: 9, fontWeight: 700, padding: "1px 6px", borderRadius: 4, background: "rgba(245,158,11,0.12)", border: "1px solid rgba(245,158,11,0.28)", color: C.amber, flexShrink: 0 }}>Draft</span>
+                                </div>
+                                <div style={{ fontSize: 10, color: C.t3, marginTop: 2 }}>Saved {timeAgo(p.created_date)}</div>
+                              </div>
                             </div>
-                            <div style={{ fontSize: 11, color: C.t3, marginTop: 2 }}>Saved {timeAgo(p.created_date)}</div>
+                            {p.content && (
+                              <div style={{ fontSize: 11.5, color: C.t2, lineHeight: 1.5, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
+                                {p.content}
+                              </div>
+                            )}
+                          </div>
+                          {/* Quick Actions panel — same compact style as Community Feed */}
+                          <div style={{ width: 100, flexShrink: 0, borderLeft: `1px solid ${C.brd}`, padding: "10px 8px", display: "flex", flexDirection: "column", gap: 7, justifyContent: "flex-start" }}>
+                            <div style={{ fontSize: 9, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.10em", color: C.t3, marginBottom: 2 }}>Actions</div>
+                            <button onClick={() => handlePublishDraft(p)} disabled={publishingDraftId === p.id}
+                              style={{ display: "flex", alignItems: "center", gap: 5, width: "100%", padding: "5px 8px", borderRadius: 8, fontSize: 10.5, fontWeight: 700, cursor: publishingDraftId === p.id ? "default" : "pointer", fontFamily: FONT, opacity: publishingDraftId === p.id ? 0.6 : 1, transition: "opacity 0.15s", ...(publishingDraftId === p.id ? { background: C.brd, border: "none", color: C.t3 } : GRAD_BTN) }}>
+                              <Plus size={11} color="#fff" style={{ flexShrink: 0 }} /><span>{publishingDraftId === p.id ? "Posting…" : "Post Now"}</span>
+                            </button>
+                            <button onClick={() => setEditingPost(p)}
+                              style={{ display: "flex", alignItems: "center", gap: 5, width: "100%", padding: "5px 8px", borderRadius: 8, background: "rgba(255,255,255,0.03)", border: `1px solid ${C.brd}`, color: C.t2, fontSize: 10.5, fontWeight: 600, cursor: "pointer", fontFamily: FONT, textAlign: "left", transition: "all 0.15s" }}
+                              onMouseEnter={e => { e.currentTarget.style.borderColor = C.cyanBrd; e.currentTarget.style.color = C.t1; e.currentTarget.style.background = C.cyanDim; }}
+                              onMouseLeave={e => { e.currentTarget.style.borderColor = C.brd; e.currentTarget.style.color = C.t2; e.currentTarget.style.background = "rgba(255,255,255,0.03)"; }}>
+                              <Pencil size={11} color="currentColor" style={{ flexShrink: 0 }} /><span>Edit</span>
+                            </button>
+                            {onDeletePost && (
+                              <button onClick={() => onDeletePost(p.id)}
+                                style={{ display: "flex", alignItems: "center", gap: 5, width: "100%", padding: "5px 8px", borderRadius: 8, background: "rgba(255,255,255,0.03)", border: `1px solid ${C.brd}`, color: C.t2, fontSize: 10.5, fontWeight: 600, cursor: "pointer", fontFamily: FONT, textAlign: "left", transition: "all 0.15s" }}
+                                onMouseEnter={e => { e.currentTarget.style.borderColor = "rgba(255,77,109,0.35)"; e.currentTarget.style.color = C.red; e.currentTarget.style.background = C.redDim; }}
+                                onMouseLeave={e => { e.currentTarget.style.borderColor = C.brd; e.currentTarget.style.color = C.t2; e.currentTarget.style.background = "rgba(255,255,255,0.03)"; }}>
+                                <Trash2 size={11} color="currentColor" style={{ flexShrink: 0 }} /><span>Delete</span>
+                              </button>
+                            )}
                           </div>
                         </div>
-                        {p.content && (<div style={{ fontSize: 12.5, color: C.t2, lineHeight: 1.5, display: "-webkit-box", WebkitLineClamp: 3, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{p.content}</div>)}
                       </div>
-                      <div style={{ width: "30%", flexShrink: 0, borderLeft: `1px solid ${C.brd}`, padding: "12px 14px", display: "flex", flexDirection: "column", gap: 8, justifyContent: "flex-start" }}>
-                        <div style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.10em", color: C.t3, marginBottom: 2 }}>Quick Actions</div>
-                        <button onClick={() => handlePublishDraft(p)} disabled={publishingDraftId === p.id}
-                          style={{ display: "flex", alignItems: "center", gap: 8, width: "100%", padding: "7px 10px", borderRadius: 8, fontSize: 12, fontWeight: 700, cursor: publishingDraftId === p.id ? "default" : "pointer", fontFamily: FONT, opacity: publishingDraftId === p.id ? 0.6 : 1, transition: "opacity 0.15s", justifyContent: "flex-start", ...(publishingDraftId === p.id ? { background: C.brd, border: "none", color: C.t3 } : GRAD_BTN) }}>
-                          <Plus size={13} color="#fff" style={{ flexShrink: 0 }} /><span>{publishingDraftId === p.id ? "Posting…" : "Post Now"}</span>
-                        </button>
-                        <button onClick={() => setEditingPost(p)}
-                          style={{ display: "flex", alignItems: "center", gap: 8, width: "100%", padding: "7px 10px", borderRadius: 8, background: "rgba(255,255,255,0.03)", border: `1px solid ${C.brd}`, color: C.t2, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: FONT, textAlign: "left", transition: "all 0.15s" }}
-                          onMouseEnter={e => { e.currentTarget.style.borderColor = C.cyanBrd; e.currentTarget.style.color = C.t1; e.currentTarget.style.background = C.cyanDim; }}
-                          onMouseLeave={e => { e.currentTarget.style.borderColor = C.brd; e.currentTarget.style.color = C.t2; e.currentTarget.style.background = "rgba(255,255,255,0.03)"; }}>
-                          <Pencil size={12} color="currentColor" style={{ flexShrink: 0 }} /><span>Edit Draft</span>
-                        </button>
-                        {onDeletePost && (
-                          <button onClick={() => onDeletePost(p.id)}
-                            style={{ display: "flex", alignItems: "center", gap: 8, width: "100%", padding: "7px 10px", borderRadius: 8, background: "rgba(255,255,255,0.03)", border: `1px solid ${C.brd}`, color: C.t2, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: FONT, textAlign: "left", transition: "all 0.15s" }}
-                            onMouseEnter={e => { e.currentTarget.style.borderColor = "rgba(255,77,109,0.35)"; e.currentTarget.style.color = C.red; e.currentTarget.style.background = C.redDim; }}
-                            onMouseLeave={e => { e.currentTarget.style.borderColor = C.brd; e.currentTarget.style.color = C.t2; e.currentTarget.style.background = "rgba(255,255,255,0.03)"; }}>
-                            <Trash2 size={12} color="currentColor" style={{ flexShrink: 0 }} /><span>Delete Draft</span>
-                          </button>
-                        )}
-                      </div>
-                    </div>
-                  );
-                })}
+                    );
+                  })}
+                </div>
               </>
             );
           })()}
@@ -1634,62 +1646,76 @@ export default function ContentPage({
                   <div style={{ fontSize: 12, fontWeight: 500, color: C.t2 }}>{scheduled.length} scheduled post{scheduled.length !== 1 ? "s" : ""}</div>
                   <SortDropdown value={scheduledSort} onChange={setScheduledSort} />
                 </div>
-                {scheduled.map(p => {
-                  const pt = POST_TYPE_STYLES[p.post_type] || POST_TYPE_STYLES.update;
-                  const isGymPost = !!p.post_type;
-                  const displayName = isGymPost ? gymName : (p.member_name || gymName);
-                  const displayAvatar = isGymPost ? gymAvatar : (avatarMap[p.member_id] || p.member_avatar || gymAvatar);
-                  const palette = ["#6366f1","#8b5cf6","#ec4899","#14b8a6","#f59e0b","#4d7fff","#10b981"];
-                  const avatarBg = palette[(displayName.charCodeAt(0) || 0) % palette.length];
-                  const schedDate = new Date(p.scheduled_date);
-                  const schedLabel = schedDate.toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short" }) + " at " + schedDate.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" });
-                  const diffMs = schedDate.getTime() - nowMs;
-                  const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
-                  const timeUntil = diffDays <= 0 ? "Today" : diffDays === 1 ? "Tomorrow" : `In ${diffDays} days`;
-                  return (
-                    <div key={p.id} style={{ background: C.card, border: `1px solid ${C.brd}`, borderRadius: 12, marginBottom: 10, minHeight: 140, display: "flex", overflow: "hidden", transition: "border-color 0.15s, box-shadow 0.15s" }}
-                      onMouseEnter={e => { e.currentTarget.style.borderColor = C.cyanBrd; e.currentTarget.style.boxShadow = `0 0 8px rgba(77,127,255,0.07)`; }}
-                      onMouseLeave={e => { e.currentTarget.style.borderColor = C.brd; e.currentTarget.style.boxShadow = "none"; }}>
-                      {p.image_url ? (<div style={{ width: 160, height: 160, flexShrink: 0, alignSelf: "center", margin: 8, borderRadius: 10, overflow: "hidden" }}><img src={p.image_url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} /></div>) : null}
-                      <div style={{ flex: 1, minWidth: 0, padding: "11px 14px 11px 10px", display: "flex", flexDirection: "column", gap: 6 }}>
-                        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                          <div style={{ width: 30, height: 30, borderRadius: "50%", flexShrink: 0, background: avatarBg, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 800, color: "#fff", overflow: "hidden" }}>
-                            {displayAvatar ? <img src={displayAvatar} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : displayName.split(" ").map(w => w[0]).join("").toUpperCase().slice(0, 2) || "?"}
+                {/* ── 2-per-row grid, matching Community Feed layout ── */}
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+                  {scheduled.map(p => {
+                    const pt = POST_TYPE_STYLES[p.post_type] || POST_TYPE_STYLES.update;
+                    const isGymPost = !!p.post_type;
+                    const displayName = isGymPost ? gymName : (p.member_name || gymName);
+                    const displayAvatar = isGymPost ? gymAvatar : (avatarMap[p.member_id] || p.member_avatar || gymAvatar);
+                    const palette = ["#6366f1","#8b5cf6","#ec4899","#14b8a6","#f59e0b","#4d7fff","#10b981"];
+                    const avatarBg = palette[(displayName.charCodeAt(0) || 0) % palette.length];
+                    const schedDate = new Date(p.scheduled_date);
+                    const schedLabel = schedDate.toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short" }) + " at " + schedDate.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" });
+                    const diffMs = schedDate.getTime() - nowMs;
+                    const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+                    const timeUntil = diffDays <= 0 ? "Today" : diffDays === 1 ? "Tomorrow" : `In ${diffDays}d`;
+                    return (
+                      <div key={p.id} style={{ background: C.card, border: `1px solid ${C.brd}`, borderRadius: 12, minHeight: 120, display: "flex", overflow: "hidden", transition: "border-color 0.15s, box-shadow 0.15s" }}
+                        onMouseEnter={e => { e.currentTarget.style.borderColor = C.cyanBrd; e.currentTarget.style.boxShadow = `0 0 8px rgba(77,127,255,0.07)`; }}
+                        onMouseLeave={e => { e.currentTarget.style.borderColor = C.brd; e.currentTarget.style.boxShadow = "none"; }}>
+                        {p.image_url ? (
+                          <div style={{ width: 100, height: 100, flexShrink: 0, alignSelf: "center", margin: 8, borderRadius: 8, overflow: "hidden" }}>
+                            <img src={p.image_url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
                           </div>
-                          <div style={{ flex: 1, minWidth: 0 }}>
-                            <div style={{ display: "flex", alignItems: "center", gap: 7, flexWrap: "wrap" }}>
-                              <div style={{ fontSize: 13, fontWeight: 700, color: C.t1 }}>{displayName}</div>
-                              {p.post_type && <span style={{ fontSize: 9.5, fontWeight: 700, padding: "1px 7px", borderRadius: 5, background: pt.bg, border: `1px solid ${pt.border}`, color: pt.color }}>{pt.label}</span>}
+                        ) : null}
+                        <div style={{ flex: 1, display: "flex", overflow: "hidden" }}>
+                          <div style={{ flex: 1, minWidth: 0, padding: "10px 10px 10px 10px", display: "flex", flexDirection: "column", gap: 5 }}>
+                            <div style={{ display: "flex", alignItems: "flex-start", gap: 7 }}>
+                              <div style={{ width: 26, height: 26, borderRadius: "50%", flexShrink: 0, background: avatarBg, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 10, fontWeight: 800, color: "#fff", overflow: "hidden" }}>
+                                {displayAvatar ? <img src={displayAvatar} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : displayName.split(" ").map(w => w[0]).join("").toUpperCase().slice(0, 2) || "?"}
+                              </div>
+                              <div style={{ flex: 1, minWidth: 0 }}>
+                                <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
+                                  <div style={{ fontSize: 12, fontWeight: 700, color: C.t1, lineHeight: 1.2 }}>{displayName}</div>
+                                  {p.post_type && <span style={{ fontSize: 9, fontWeight: 700, padding: "1px 6px", borderRadius: 4, background: pt.bg, border: `1px solid ${pt.border}`, color: pt.color, flexShrink: 0 }}>{pt.label}</span>}
+                                </div>
+                                <div style={{ display: "flex", alignItems: "center", gap: 5, marginTop: 2 }}>
+                                  <Clock size={10} color={C.cyan} />
+                                  <span style={{ fontSize: 10, color: C.cyan, fontWeight: 700 }}>{schedLabel}</span>
+                                </div>
+                                <div style={{ fontSize: 10, color: C.t3, marginTop: 1 }}>{timeUntil}</div>
+                              </div>
                             </div>
-                            <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 2 }}>
-                              <Clock size={10} color={C.cyan} />
-                              <span style={{ fontSize: 11, color: C.cyan, fontWeight: 700 }}>{schedLabel}</span>
-                              <span style={{ fontSize: 10, color: C.t3 }}>· {timeUntil}</span>
-                            </div>
+                            {p.content && (
+                              <div style={{ fontSize: 11.5, color: C.t2, lineHeight: 1.5, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
+                                {p.content}
+                              </div>
+                            )}
+                          </div>
+                          {/* Quick Actions panel — same compact style as Community Feed */}
+                          <div style={{ width: 100, flexShrink: 0, borderLeft: `1px solid ${C.brd}`, padding: "10px 8px", display: "flex", flexDirection: "column", gap: 7, justifyContent: "flex-start" }}>
+                            <div style={{ fontSize: 9, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.10em", color: C.t3, marginBottom: 2 }}>Actions</div>
+                            <button onClick={() => setEditingPost(p)}
+                              style={{ display: "flex", alignItems: "center", gap: 5, width: "100%", padding: "5px 8px", borderRadius: 8, background: "rgba(255,255,255,0.03)", border: `1px solid ${C.brd}`, color: C.t2, fontSize: 10.5, fontWeight: 600, cursor: "pointer", fontFamily: FONT, textAlign: "left", transition: "all 0.15s" }}
+                              onMouseEnter={e => { e.currentTarget.style.borderColor = C.cyanBrd; e.currentTarget.style.color = C.t1; e.currentTarget.style.background = C.cyanDim; }}
+                              onMouseLeave={e => { e.currentTarget.style.borderColor = C.brd; e.currentTarget.style.color = C.t2; e.currentTarget.style.background = "rgba(255,255,255,0.03)"; }}>
+                              <Pencil size={11} color="currentColor" style={{ flexShrink: 0 }} /><span>Edit</span>
+                            </button>
+                            {onDeletePost && (
+                              <button onClick={() => onDeletePost(p.id)}
+                                style={{ display: "flex", alignItems: "center", gap: 5, width: "100%", padding: "5px 8px", borderRadius: 8, background: "rgba(255,255,255,0.03)", border: `1px solid ${C.brd}`, color: C.t2, fontSize: 10.5, fontWeight: 600, cursor: "pointer", fontFamily: FONT, textAlign: "left", transition: "all 0.15s" }}
+                                onMouseEnter={e => { e.currentTarget.style.borderColor = "rgba(255,77,109,0.35)"; e.currentTarget.style.color = C.red; e.currentTarget.style.background = C.redDim; }}
+                                onMouseLeave={e => { e.currentTarget.style.borderColor = C.brd; e.currentTarget.style.color = C.t2; e.currentTarget.style.background = "rgba(255,255,255,0.03)"; }}>
+                                <Trash2 size={11} color="currentColor" style={{ flexShrink: 0 }} /><span>Cancel</span>
+                              </button>
+                            )}
                           </div>
                         </div>
-                        {p.content && (<div style={{ fontSize: 12.5, color: C.t2, lineHeight: 1.5, display: "-webkit-box", WebkitLineClamp: 3, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{p.content}</div>)}
                       </div>
-                      <div style={{ width: "30%", flexShrink: 0, borderLeft: `1px solid ${C.brd}`, padding: "12px 14px", display: "flex", flexDirection: "column", gap: 8, justifyContent: "flex-start" }}>
-                        <div style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.10em", color: C.t3, marginBottom: 2 }}>Quick Actions</div>
-                        <button onClick={() => setEditingPost(p)}
-                          style={{ display: "flex", alignItems: "center", gap: 8, width: "100%", padding: "7px 10px", borderRadius: 8, background: "rgba(255,255,255,0.03)", border: `1px solid ${C.brd}`, color: C.t2, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: FONT, textAlign: "left", transition: "all 0.15s" }}
-                          onMouseEnter={e => { e.currentTarget.style.borderColor = C.cyanBrd; e.currentTarget.style.color = C.t1; e.currentTarget.style.background = C.cyanDim; }}
-                          onMouseLeave={e => { e.currentTarget.style.borderColor = C.brd; e.currentTarget.style.color = C.t2; e.currentTarget.style.background = "rgba(255,255,255,0.03)"; }}>
-                          <Pencil size={12} color="currentColor" style={{ flexShrink: 0 }} /><span>Edit Post</span>
-                        </button>
-                        {onDeletePost && (
-                          <button onClick={() => onDeletePost(p.id)}
-                            style={{ display: "flex", alignItems: "center", gap: 8, width: "100%", padding: "7px 10px", borderRadius: 8, background: "rgba(255,255,255,0.03)", border: `1px solid ${C.brd}`, color: C.t2, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: FONT, textAlign: "left", transition: "all 0.15s" }}
-                            onMouseEnter={e => { e.currentTarget.style.borderColor = "rgba(255,77,109,0.35)"; e.currentTarget.style.color = C.red; e.currentTarget.style.background = C.redDim; }}
-                            onMouseLeave={e => { e.currentTarget.style.borderColor = C.brd; e.currentTarget.style.color = C.t2; e.currentTarget.style.background = "rgba(255,255,255,0.03)"; }}>
-                            <Trash2 size={12} color="currentColor" style={{ flexShrink: 0 }} /><span>Cancel Schedule</span>
-                          </button>
-                        )}
-                      </div>
-                    </div>
-                  );
-                })}
+                    );
+                  })}
+                </div>
               </>
             );
           })()}
