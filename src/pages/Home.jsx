@@ -177,9 +177,26 @@ export default function Home() {
     catch { return new Set(); }
   });
   const [friendsModalViewed, setFriendsModalViewed] = useState(false);
-  const [workoutStartTime, setWorkoutStartTime] = useState(null);
+  const [workoutStartTime, setWorkoutStartTime] = useState(() => {
+    // Restore workout start time if it was set today
+    try {
+      const stored = localStorage.getItem('workoutStartTime');
+      const storedDate = localStorage.getItem('workoutStartTimeDate');
+      const todayStr = new Date().toISOString().split('T')[0];
+      if (stored && storedDate === todayStr) return parseInt(stored);
+    } catch {}
+    return null;
+  });
   const [workoutOverrideDay, setWorkoutOverrideDay] = useState(null);
-  const [optimisticCheckedIn, setOptimisticCheckedIn] = useState(false);
+  const [optimisticCheckedIn, setOptimisticCheckedIn] = useState(() => {
+    // Persist optimistic check-in state for the current day
+    try {
+      const storedDate = localStorage.getItem('optimisticCheckedInDate');
+      const todayStr = new Date().toISOString().split('T')[0];
+      return storedDate === todayStr;
+    } catch {}
+    return false;
+  });
   const [checkedInGymId, setCheckedInGymId] = useState(null);
   const [checkedInGymName, setCheckedInGymName] = useState(null);
   const [showStreakCelebration, setShowStreakCelebration] = useState(false);
@@ -549,6 +566,7 @@ export default function Home() {
   useEffect(() => {
     if (optimisticCheckedIn && userCheckIns.some(c => c.check_in_date?.startsWith(todayStr))) {
       setOptimisticCheckedIn(false);
+      localStorage.removeItem('optimisticCheckedInDate');
     }
   }, [allCheckIns, todayStr]);
 
@@ -932,6 +950,8 @@ export default function Home() {
       }
     }
     setWorkoutStartTime(null);
+    localStorage.removeItem('workoutStartTime');
+    localStorage.removeItem('workoutStartTimeDate');
     await queryClient.invalidateQueries({ queryKey: ['checkIns', currentUser?.id] });
     await queryClient.invalidateQueries({ queryKey: ['weeklyWorkoutLogs', currentUser?.id] });
     await queryClient.invalidateQueries({ queryKey: ['userChallengeParticipants', currentUser?.id] });
@@ -1181,8 +1201,13 @@ export default function Home() {
                 <LocationBasedCheckInButton
                   gyms={allMemberGyms}
                   onCheckInSuccess={(gym) => {
+                    const todayKey = new Date().toISOString().split('T')[0];
                     setOptimisticCheckedIn(true);
-                    setWorkoutStartTime(Date.now());
+                    localStorage.setItem('optimisticCheckedInDate', todayKey);
+                    const now = Date.now();
+                    setWorkoutStartTime(now);
+                    localStorage.setItem('workoutStartTime', String(now));
+                    localStorage.setItem('workoutStartTimeDate', todayKey);
                     if (gym) {
                       setCheckedInGymId(gym.id);
                       setCheckedInGymName(gym.name);
