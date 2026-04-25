@@ -459,7 +459,7 @@ function TagsList({ items, emptyText, onClick }) {
 /* ══════════════════════════════════════════════════════════════
    MAIN COMPONENT
 ══════════════════════════════════════════════════════════════ */
-export default function TabGymProfile({ gym, openModal, coaches = [], onDeleteCoach }) {
+export default function TabGymProfile({ gym, openModal, coaches = [], onDeleteCoach, checkIns = [], posts = [], allMemberships = [] }) {
   if (!gym) return (
     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 80, color: C.t3, fontSize: 13, fontFamily: FONT }}>
       No gym selected
@@ -473,12 +473,32 @@ export default function TabGymProfile({ gym, openModal, coaches = [], onDeleteCo
   const hasHero        = !!gym.image_url;
   const hasPricing     = !!gym.price;
   const hasInfo        = !!gym.name;
-  const postsWeek      = gym.posts_this_week     || 0;
-  const activeMembers  = gym.active_members_week || gym.members_count || 0;
-  const rawEngScore    = gym.engagement_score    || 0;
   const hasSocial      = !!(gym.instagram_url || gym.facebook_url || gym.twitter_url || gym.website_url);
   const hasAddress     = !!(gym.address || gym.city || gym.postcode);
 
+  // ── Real computed metrics ───────────────────────────────────
+  const MS_WEEK = 7 * 24 * 60 * 60 * 1000;
+  const weekAgo = Date.now() - MS_WEEK;
+
+  // Active members: unique users who checked in to this gym in the last 7 days
+  const recentCiUsers = new Set(
+    checkIns
+      .filter(c => c.gym_id === gym.id && new Date(c.check_in_date || c.created_date).getTime() > weekAgo)
+      .map(c => c.user_id)
+  );
+  const activeMembers = recentCiUsers.size;
+
+  // Community activity: posts + comments in last 7 days for this gym
+  const postsWeek = posts.filter(p =>
+    !p.is_hidden && p.gym_id === gym.id &&
+    new Date(p.created_date || p.created_at || 0).getTime() > weekAgo
+  ).length;
+
+  // Engagement score: % of members who were active this week
+  const totalMembers = allMemberships.length || gym.members_count || 1;
+  const rawEngScore  = Math.round((activeMembers / totalMembers) * 100);
+
+  // ── Profile scores ──────────────────────────────────────────
   const impressionScore = Math.round(([hasLogo, hasHero, galleryCount >= 3].filter(Boolean).length / 3) * 100);
   const trustScore      = Math.round(([hasInfo, hasPricing].filter(Boolean).length / 2) * 100);
   const discoveryScore  = Math.round(([hasAddress, hasSocial, coaches.length > 0].filter(Boolean).length / 3) * 100);
@@ -486,12 +506,14 @@ export default function TabGymProfile({ gym, openModal, coaches = [], onDeleteCo
   const equipmentScore  = equipmentCount >= 5 ? 100 : equipmentCount > 0 ? 50 : 0;
   const coachesScore    = coaches.length >= 2 ? 100 : coaches.length > 0 ? 60 : 0;
 
-  const communityScore = gym.community_strength || Math.round((impressionScore + trustScore + discoveryScore) / 3);
+  // Community strength: blend of profile completeness + real engagement
+  const profileScore   = Math.round((impressionScore + trustScore + discoveryScore) / 3);
+  const communityScore = Math.round(profileScore * 0.6 + rawEngScore * 0.4);
   const communityState = qualityState(communityScore);
   const eng            = engLabel(rawEngScore);
   const act            = actLabel(postsWeek);
 
-  const actSecondary = postsWeek === 0 ? 'No posts this week' : `${postsWeek}+ posts and comments this week.`;
+  const actSecondary = postsWeek === 0 ? 'No posts this week' : `${postsWeek} post${postsWeek !== 1 ? 's' : ''} this week.`;
 
   const insight = buildInsight({ communityScore, engScore: rawEngScore, postsWeek, hasLogo, hasHero, galleryCount, amenitiesCount, price: hasPricing });
 

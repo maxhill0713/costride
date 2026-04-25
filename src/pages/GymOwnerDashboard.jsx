@@ -566,7 +566,7 @@ export default function GymOwnerDashboard() {
     } else if (item.id === 'engagement') {
       content = <TabEngagement selectedGym={selectedGym} allMemberships={effectiveMemberships} atRisk={atRisk} totalMembers={totalMembers} />;
     } else if (item.id === 'gymprofile') {
-      content = <TabGymProfile gym={selectedGym} openModal={openModal} coaches={coaches} />;
+      content = <TabGymProfile gym={selectedGym} openModal={openModal} coaches={coaches} checkIns={checkIns} posts={posts} allMemberships={effectiveMemberships} />;
     } else if (item.id === 'actions') {
       content = <TabActions />;
     }
