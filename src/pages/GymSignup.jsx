@@ -290,7 +290,7 @@ export default function GymSignup() {
     } catch { applyPlace(place); }
   };
 
-  const applyPlace = (place) => setFormData(p => ({ ...p, name: place.name, google_place_id: place.place_id, latitude: place.latitude, longitude: place.longitude, address: place.address || '', city: place.city || '', postcode: place.postcode || '' }));
+  const applyPlace = (place) => setFormData(p => ({ ...p, name: place.name, google_place_id: place.place_id, latitude: place.latitude, longitude: place.longitude, address: place.address || '', city: place.city || '', postcode: place.postcode || '', photo_url: place.photo_url || null }));
 
   const claimGhost = () => {
     if (!ghostGym) return;
@@ -354,6 +354,7 @@ export default function GymSignup() {
           amenities:      data.amenities      || [],
           equipment:      data.equipment      || [],
           specializes_in: data.specializes_in || [],
+          ...(data.photo_url ? { photo_url: data.photo_url } : {}),
         },
         claimGymId: data.claimingGymId || null,
       });
