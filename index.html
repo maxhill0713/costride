@@ -29,15 +29,8 @@
         // Listen for permission changes
         OneSignal.Notifications.addEventListener("permission_change", async (change) => {
           if (change.permission === "granted") {
-            try {
-              const user = await window.base44?.auth?.me();
-              if (user?.id) {
-                await OneSignal.login(user.id);
-                console.log("OneSignal: User successfully synced with ID:", user.id);
-              }
-            } catch (error) {
-              console.error("OneSignal: Failed to sync user:", error.message);
-            }
+            // Dispatch a custom event that the app can listen to
+            window.dispatchEvent(new CustomEvent('onesignalPermissionGranted'));
           }
         });
         

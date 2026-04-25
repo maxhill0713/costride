@@ -43,6 +43,15 @@ export default function OneSignalInit() {
           console.log('OneSignal: linked device to user', user.id);
         }
 
+        // Listen for permission grant event from index.html
+        window.addEventListener('onesignalPermissionGranted', async () => {
+          const currentUser = await base44.auth.me().catch(() => null);
+          if (currentUser?.id) {
+            await OneSignal.login(currentUser.id);
+            console.log('OneSignal: user logged in after permission granted', currentUser.id);
+          }
+        });
+
         // Handle notification clicks
         OneSignal.Notifications.addEventListener('click', (event) => {
           console.log('Notification clicked:', event.notification);
