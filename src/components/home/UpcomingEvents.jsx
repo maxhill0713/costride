@@ -267,10 +267,10 @@ export default function UpcomingEvents({ gymMemberships = [], currentUser }) {
     </button>
   );
 
-  // Bottom row: description+time on left, join button on right
+  // Bottom row: description on left, time+join button stacked on right
   const BottomRow = ({ event, isJoined }) => (
     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
-      {/* Left: description (if any) + time stacked */}
+      {/* Left: description + attending count */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 4, minWidth: 0 }}>
         {event.description && (
           <p style={{
@@ -282,18 +282,20 @@ export default function UpcomingEvents({ gymMemberships = [], currentUser }) {
             {event.description}
           </p>
         )}
+        <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.25)', fontWeight: 600 }}>
+          {event.attendees || 0} attending
+        </span>
+      </div>
+      {/* Right: time then join button with gap */}
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 10, flexShrink: 0 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-          <Clock style={{ width: 10, height: 10, color: 'rgba(255,255,255,0.4)', flexShrink: 0 }} />
+          <Clock style={{ width: 10, height: 10, color: 'rgba(255,255,255,0.4)' }} />
           <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.45)', fontWeight: 600 }}>
             {formatTime(event.event_date, event.end_time)}
           </span>
-          <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.25)', fontWeight: 600, marginLeft: 6 }}>
-            {event.attendees || 0} attending
-          </span>
         </div>
+        <JoinButton event={event} isJoined={isJoined} />
       </div>
-      {/* Right: join button */}
-      <JoinButton event={event} isJoined={isJoined} />
     </div>
   );
 
