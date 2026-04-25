@@ -25,7 +25,6 @@ import { isToday, differenceInDays, startOfWeek, startOfDay } from 'date-fns';
 import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import LocationBasedCheckInButton from '../components/gym/LocationBasedCheckInButton';
-import NotificationPermissionPrompt from '../components/NotificationPermissionPrompt';
 import { getSwappedRestDay, getRestSwap, getCreditRestDay, getRestDayOverride } from '../lib/weekSwaps.js';
 
 const sanitiseUsernameQuery = (v) =>
@@ -1147,7 +1146,6 @@ export default function Home() {
 
   return (
     <PullToRefresh onRefresh={triggerRefresh}>
-      <NotificationPermissionPrompt />
       <div className="min-h-screen bg-gradient-to-br from-slate-950 via-blue-950 to-slate-950">
         <div style={{ position: 'fixed', inset: 0, zIndex: -1, background: 'linear-gradient(to bottom right, #02040a, #0d2360, #02040a)' }} />
         <div
