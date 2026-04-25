@@ -1,5 +1,4 @@
 Deno.serve(async (req) => {
-  // Only handle GET requests to this endpoint
   if (req.method !== 'GET') {
     return Response.json({ error: 'Method not allowed' }, { status: 405 });
   }
@@ -9,8 +8,9 @@ Deno.serve(async (req) => {
   return new Response(content, {
     status: 200,
     headers: {
-      'Content-Type': 'application/javascript',
-      'Cache-Control': 'public, max-age=31536000', // Cache for 1 year
+      'Content-Type': 'application/javascript; charset=utf-8',
+      'Service-Worker-Allowed': '/',
+      'Cache-Control': 'no-cache, no-store, must-revalidate',
     },
   });
 });
