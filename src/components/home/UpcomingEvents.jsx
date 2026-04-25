@@ -335,22 +335,14 @@ export default function UpcomingEvents({ gymMemberships = [], currentUser }) {
                         position: 'absolute', inset: 0,
                         background: 'linear-gradient(to bottom, transparent 25%, rgba(8,10,20,0.95) 100%)',
                       }} />
-                      {/* Date — top left */}
-                      <div style={{
-                        position: 'absolute', top: 10, left: 12,
-                        fontSize: 13, fontWeight: 700, color: '#fff',
-                        textShadow: '0 1px 4px rgba(0,0,0,0.8)',
-                      }}>
-                        {formatDate(event.event_date)}
-                      </div>
-                      {/* Title — overlaid at bottom of image, just below date */}
+                      {/* Date and Title — overlaid at bottom of image */}
                       <div style={{ position: 'absolute', bottom: 12, left: 12, right: 12 }}>
                         <h3 style={{
                           fontSize: 15, fontWeight: 900, color: '#fff',
                           letterSpacing: '-0.02em', lineHeight: 1.25, margin: 0,
                           textShadow: '0 1px 6px rgba(0,0,0,0.6)',
                         }}>
-                          {event.title}
+                          {formatDate(event.event_date)} - {event.title}
                         </h3>
                       </div>
                     </div>
@@ -375,16 +367,12 @@ export default function UpcomingEvents({ gymMemberships = [], currentUser }) {
                 {/* ── WITHOUT BANNER IMAGE ── */}
                 {!event.image_url && (
                   <div style={{ padding: '16px 14px 16px' }}>
-                    {/* Date */}
-                    <span style={{ fontSize: 13, fontWeight: 700, color: '#fff', display: 'block', marginBottom: 5 }}>
-                      {formatDate(event.event_date)}
-                    </span>
-                    {/* Title */}
+                    {/* Date and Title */}
                     <h3 style={{
                       fontSize: 14, fontWeight: 900, color: '#fff',
                       letterSpacing: '-0.02em', lineHeight: 1.3, margin: '0 0 6px',
                     }}>
-                      {event.title}
+                      {formatDate(event.event_date)} - {event.title}
                     </h3>
                     {/* Description */}
                     {event.description && (
