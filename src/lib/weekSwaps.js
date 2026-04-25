@@ -94,6 +94,19 @@ export function recordCreditRestDay(dayNum) {
   } catch {}
 }
 
+// Call when user reverts a credit-rest day back to a training day.
+// Restores the unused credit so it can be used again.
+export function clearCreditRestDay() {
+  try {
+    localStorage.removeItem(CR_KEY);
+    // Also restore the credit so the token is available again
+    const current = getWeekSwaps();
+    if (current) {
+      save({ ...current, usedRestDayCredit: false });
+    }
+  } catch {}
+}
+
 // ── Rest Swap: move today's workout to a future rest day ──────────────────────
 // Key stored separately so it doesn't interfere with the rest-day credit system
 const RS_KEY = 'restSwap';

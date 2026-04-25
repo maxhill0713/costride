@@ -25,7 +25,7 @@ import { isToday, differenceInDays, startOfWeek, startOfDay } from 'date-fns';
 import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import LocationBasedCheckInButton from '../components/gym/LocationBasedCheckInButton';
-import { getSwappedRestDay, getRestSwap } from '../lib/weekSwaps.js';
+import { getSwappedRestDay, getRestSwap, getCreditRestDay } from '../lib/weekSwaps.js';
 
 const sanitiseUsernameQuery = (v) =>
   v.replace(/[^a-zA-Z0-9_.\- ]/g, '').slice(0, 30);
@@ -729,14 +729,18 @@ export default function Home() {
 
   const workoutLoggedToday = weeklyWorkoutLogs.some(log => log.completed_date === effectiveToday) || justLoggedDay === todayDowAdjusted;
   // A day is a rest day if: not in training_days, OR it was swapped away (fromDay), UNLESS it was swapped to (toDay).
+  // Also a rest day if the user used their credit-rest token on today.
   const restSwapForToday = getRestSwap();
   const todaySwappedToRest = restSwapForToday && restSwapForToday.fromDay === todayDowAdjusted;
   const todaySwappedToTraining = restSwapForToday && restSwapForToday.toDay === todayDowAdjusted;
-  const todayIsRestDay = todaySwappedToRest
+  const todayCreditRest = getCreditRestDay() === todayDowAdjusted;
+  const todayIsRestDay = todayCreditRest
     ? true
-    : todaySwappedToTraining
-      ? false
-      : !(currentUser?.training_days || []).includes(todayDowAdjusted);
+    : todaySwappedToRest
+      ? true
+      : todaySwappedToTraining
+        ? false
+        : !(currentUser?.training_days || []).includes(todayDowAdjusted);
   const showCheckInButton = !todayIsRestDay || workoutOverrideDay !== null;
 
   const friendPosts = useMemo(() => allPosts.filter((post) =>
@@ -1274,6 +1278,7 @@ export default function Home() {
             const baseTrainingDays = (currentUser?.training_days || []).filter((d) => d >= 1 && d <= 7);
             const swappedRestDay = weekOffset === 0 ? getSwappedRestDay() : null;
             const restSwap = weekOffset === 0 ? getRestSwap() : null;
+            const creditRestDay = weekOffset === 0 ? getCreditRestDay() : null;
 
             let trainingDays = swappedRestDay && !baseTrainingDays.includes(swappedRestDay)
               ? [...baseTrainingDays, swappedRestDay]
@@ -1284,6 +1289,11 @@ export default function Home() {
               if (!trainingDays.includes(restSwap.toDay)) {
                 trainingDays = [...trainingDays, restSwap.toDay];
               }
+            }
+
+            // If user used credit-rest on a training day, remove it so the circle shows green (rest)
+            if (creditRestDay) {
+              trainingDays = trainingDays.filter(d => d !== creditRestDay);
             }
             if (trainingDays.length === 0) return null;
             const mondayBase = startOfWeek(new Date(), { weekStartsOn: 1 });

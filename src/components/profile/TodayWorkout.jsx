@@ -15,12 +15,12 @@ import HomeSummaryModal from '../home/WorkoutSummaryModal.jsx';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 
 import { useTimer } from '../TimerContext';
-import { recordTrainedOnRestDay, useRestDayCredit as applyRestDayCredit, hasRestDayCredit, recordRestSwap, getRestSwap, clearRestSwap, recordCreditRestDay, getCreditRestDay } from '../../lib/weekSwaps.js';
+import { recordTrainedOnRestDay, useRestDayCredit as applyRestDayCredit, hasRestDayCredit, recordRestSwap, getRestSwap, clearRestSwap, recordCreditRestDay, getCreditRestDay, clearCreditRestDay } from '../../lib/weekSwaps.js';
 
 const DAY_NAMES_FULL = ['', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 
 // ── Workout Switcher Modal ───────────────────────────────────────────────────
-function WorkoutSwitcherModal({ open, onClose, currentUser, activeDayKey, adjustedDay, onSelect, restSwapActive }) {
+function WorkoutSwitcherModal({ open, onClose, currentUser, activeDayKey, adjustedDay, onSelect, restSwapActive, creditRestActive }) {
   if (!open) return null;
 
   const workoutTypes = currentUser?.custom_workout_types || {};
@@ -85,7 +85,19 @@ function WorkoutSwitcherModal({ open, onClose, currentUser, activeDayKey, adjust
             </button>
           )}
 
-          {!restSwapActive && creditAvailable && todayIsTrainingDay && (
+          {creditRestActive && (
+            <button
+              onClick={() => { onSelect(adjustedDay, 'revert-credit-rest'); onClose(); }}
+              className="w-full text-left rounded-2xl border border-blue-500/40 bg-blue-500/10 hover:bg-blue-500/20 transition-all duration-200 px-4 py-3 flex items-center gap-3">
+              <ArrowLeftRight className="w-4 h-4 text-blue-400 flex-shrink-0" />
+              <div>
+                <p className="text-base font-black text-blue-300">Switch today back to a workout</p>
+                <p className="text-xs text-blue-500/80 mt-0.5">Your rest token will be returned</p>
+              </div>
+            </button>
+          )}
+
+          {!restSwapActive && !creditRestActive && creditAvailable && todayIsTrainingDay && (
             <>
               <button
                 onClick={() => { onSelect(adjustedDay, 'use-credit-rest'); onClose(); }}
@@ -1252,8 +1264,16 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
         activeDayKey={activeDayKey}
         adjustedDay={adjustedDay}
         restSwapActive={restSwapActive}
+        creditRestActive={creditRestActive}
         onSelect={(dayKey, mode) => {
-          if (mode === 'use-credit-rest') {
+          if (mode === 'revert-credit-rest') {
+            clearCreditRestDay();
+            setCreditRestActive(false);
+            setOverrideDayKey(null);
+            setEditingIndex(null);
+            onOverrideDayChange?.(null);
+            window.dispatchEvent(new Event('weekSwapChanged'));
+          } else if (mode === 'use-credit-rest') {
             recordCreditRestDay(adjustedDay);
             setCreditRestActive(true);
             setOverrideDayKey(null);
