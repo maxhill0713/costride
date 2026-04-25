@@ -72,7 +72,8 @@ function WorkoutSwitcherModal({ open, onClose, currentUser, activeDayKey, adjust
   const todayWasRestDayOverridden = !trainingDays.includes(adjustedDay) && hasRestDayOverride && !restSwapActive && !creditRestActive;
 
   const todayIsTrainingDay = trainingDays.includes(adjustedDay) && !restSwapActive;
-  const futureRestDaysForSwap = (!creditAvailable && todayIsTrainingDay)
+  const hasExistingRestSwap = !!getRestSwap();
+  const futureRestDaysForSwap = (!creditAvailable && todayIsTrainingDay && !hasExistingRestSwap)
     ? [1, 2, 3, 4, 5, 6, 7].filter((d) => {
         if (trainingDays.includes(d)) return false;
         if (d <= adjustedDay) return false;
