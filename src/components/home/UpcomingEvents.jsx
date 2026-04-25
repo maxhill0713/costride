@@ -216,7 +216,7 @@ export default function UpcomingEvents({ gymMemberships = [], currentUser }) {
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['upcomingEvents'] }); },
   });
 
-  if (gymIds.length === 0 || events.length === 0) return null;
+  if (gymIds.length === 0) return null;
 
   const formatDate = (dateStr) => {
     const d = new Date(dateStr);
@@ -268,18 +268,16 @@ export default function UpcomingEvents({ gymMemberships = [], currentUser }) {
     </button>
   );
 
-  // Shared bottom row: attendees + time + button
+  // Shared bottom row: attendees + time above button
   const BottomRow = ({ event, isJoined, topMargin = 0 }) => (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: topMargin }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
-        <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.3)', fontWeight: 600 }}>
-          {event.attendees || 0} attending
-        </span>
-      </div>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, marginTop: topMargin }}>
+      <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.3)', fontWeight: 600 }}>
+        {event.attendees || 0} attending
+      </span>
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 5 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
           <Clock style={{ width: 10, height: 10, color: 'rgba(255,255,255,0.4)' }} />
-          <span style={{ fontSize: 13, color: 'rgba(255,255,255,0.45)', fontWeight: 600 }}>
+          <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.45)', fontWeight: 600 }}>
             {formatTime(event.event_date, event.end_time)}
           </span>
         </div>
@@ -305,6 +303,15 @@ export default function UpcomingEvents({ gymMemberships = [], currentUser }) {
           </div>
           <RangeDropdown value={range} onChange={setRange} />
         </div>
+
+        {/* Empty state */}
+        {events.length === 0 && (
+          <div style={{ padding: '28px 16px', textAlign: 'center' }}>
+            <span style={{ fontSize: 13, color: 'rgba(255,255,255,0.35)', fontWeight: 500 }}>
+              There are no upcoming events
+            </span>
+          </div>
+        )}
 
         {/* Events list */}
         <div style={{ display: 'flex', flexDirection: 'column' }}>
