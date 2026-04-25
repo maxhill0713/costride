@@ -124,6 +124,14 @@ export function getRestSwap() {
       localStorage.removeItem(RS_KEY);
       return null;
     }
+    // If the fromDay (the day that was swapped to rest) is now in the past, the swap
+    // has already happened — clear it so it no longer affects the current day
+    const todayDow = new Date().getDay();
+    const todayNum = todayDow === 0 ? 7 : todayDow;
+    if (data.fromDay < todayNum) {
+      localStorage.removeItem(RS_KEY);
+      return null;
+    }
     return data; // { week, fromDay, toDay }
   } catch {
     return null;
