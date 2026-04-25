@@ -318,12 +318,12 @@ export default function EventDetailPopup({ event, onClose, onDelete, onEditSaved
                 {attendeeAvatars.length > 0 && (
                   <div style={{ display: "flex", alignItems: "center" }}>
                     {attendeeAvatars.map((u, i) => (
-                      <div key={u.id} style={{ width: 22, height: 22, borderRadius: "50%", border: `2px solid ${C.card}`, overflow: "hidden", background: C.brd, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 8, fontWeight: 800, color: C.t1, marginLeft: i === 0 ? 0 : -7, zIndex: attendeeAvatars.length - i, flexShrink: 0 }}>
+                      <div key={u.id} style={{ width: 29, height: 29, borderRadius: "50%", border: `2px solid ${C.card}`, overflow: "hidden", background: C.brd, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 10, fontWeight: 800, color: C.t1, marginLeft: i === 0 ? 0 : -9, zIndex: attendeeAvatars.length - i, flexShrink: 0 }}>
                         {u.avatar ? <img src={u.avatar} alt={u.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : ini(u.name)}
                       </div>
                     ))}
                     {extraCount > 0 && (
-                      <div style={{ width: 22, height: 22, borderRadius: "50%", border: `2px solid ${C.card}`, background: C.brd, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 8, fontWeight: 800, color: C.t2, marginLeft: -7, flexShrink: 0 }}>
+                      <div style={{ width: 29, height: 29, borderRadius: "50%", border: `2px solid ${C.card}`, background: C.brd, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 10, fontWeight: 800, color: C.t2, marginLeft: -9, flexShrink: 0 }}>
                         +{extraCount}
                       </div>
                     )}
