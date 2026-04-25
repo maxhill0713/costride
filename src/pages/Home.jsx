@@ -25,7 +25,6 @@ import { isToday, differenceInDays, startOfWeek, startOfDay } from 'date-fns';
 import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import LocationBasedCheckInButton from '../components/gym/LocationBasedCheckInButton';
-import UpcomingEvents from '../components/home/UpcomingEvents';
 import { getSwappedRestDay, getRestSwap, getCreditRestDay, getRestDayOverride } from '../lib/weekSwaps.js';
 
 const sanitiseUsernameQuery = (v) =>
@@ -1667,10 +1666,6 @@ export default function Home() {
           })()}
 
           {memberGym?.id && <QuoteCarousel />}
-
-          {memberGym?.id && gymMemberships.length > 0 && (
-            <UpcomingEvents gymMemberships={gymMemberships} currentUser={currentUser} />
-          )}
 
           {socialFeedItems.length > 0 && (
             <div className="space-y-3 mt-4">
