@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { ChevronLeft, ChevronRight, X, Calendar } from "lucide-react";
+import { ChevronLeft, ChevronRight, X } from "lucide-react";
 import EventDetailPopup from "./EventDetailPopup";
 import ClassDetailPopup from "./ClassDetailPopup";
 
@@ -13,7 +13,6 @@ const DAYS_OF_WEEK = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 const MONTH_NAMES = ["January","February","March","April","May","June","July","August","September","October","November","December"];
 const DAY_NAME_TO_DOW = { Sunday:0, Monday:1, Tuesday:2, Wednesday:3, Thursday:4, Friday:5, Saturday:6 };
 
-// Convert any 6-digit hex to rgba string
 function hexToRgba(hex, alpha) {
   const h = hex.replace("#", "");
   const r = parseInt(h.substring(0, 2), 16);
@@ -61,67 +60,165 @@ function MonthDropdown({ viewYear, viewMonth, onSelect }) {
   );
 }
 
-// Day detail modal — shows all events + classes for a date in time order
+// ── 24-hour timeline day modal ───────────────────────────────────────────────
 function DayDetailModal({ cell, dateLabel, onClose, onSelectEvent, onSelectClass }) {
-  // Build a unified list sorted by time
+  const TOTAL_MINUTES = 24 * 60;
+  const TIMELINE_HEIGHT = 1440; // px — 1px per minute
+
+  // Build items with minute offsets
   const items = [];
   (cell.events || []).forEach(ev => {
     const d = new Date(ev.event_date);
-    const timeStr = d.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" });
-    items.push({ type: "event", data: ev, timeStr, sortKey: d.getTime() });
+    const startMin = d.getHours() * 60 + d.getMinutes();
+    // Default duration 60 min unless specified
+    const durationMin = ev.duration_minutes || 60;
+    items.push({ type: "event", data: ev, startMin, durationMin, color: C.cyan });
   });
   (cell.classes || []).forEach(cls => {
     const t = cls._scheduleTime || "00:00";
     const [h, m] = t.split(":").map(Number);
-    items.push({ type: "class", data: cls, timeStr: t, sortKey: h * 60 + (m || 0) });
+    const startMin = (h || 0) * 60 + (m || 0);
+    const durationMin = cls.duration_minutes || 60;
+    const rawColor = (cls.color && cls.color.startsWith("#") && cls.color.length >= 7) ? cls.color : "#a855f7";
+    items.push({ type: "class", data: cls, startMin, durationMin, color: rawColor });
   });
-  items.sort((a, b) => a.sortKey - b.sortKey);
+  items.sort((a, b) => a.startMin - b.startMin);
+
+  // Detect overlaps and assign columns
+  // Simple greedy column assignment
+  const columns = [];
+  const itemsWithCol = items.map(item => {
+    let col = 0;
+    while (true) {
+      const colItems = columns[col] || [];
+      const overlaps = colItems.some(ci => ci.startMin < item.startMin + item.durationMin && ci.startMin + ci.durationMin > item.startMin);
+      if (!overlaps) {
+        if (!columns[col]) columns[col] = [];
+        columns[col].push(item);
+        return { ...item, col };
+      }
+      col++;
+    }
+  });
+  const numCols = Math.max(1, ...itemsWithCol.map(i => i.col + 1));
+
+  const HOUR_LABEL_W = 36;
+  const SCROLL_CONTAINER_HEIGHT = 480;
+
+  // Scroll to first event or 7am on open
+  const scrollRef = useRef(null);
+  useEffect(() => {
+    if (scrollRef.current) {
+      const firstItem = items[0];
+      const targetMin = firstItem ? Math.max(0, firstItem.startMin - 60) : 7 * 60;
+      scrollRef.current.scrollTop = (targetMin / TOTAL_MINUTES) * TIMELINE_HEIGHT;
+    }
+  }, []);
 
   return (
     <div
       onClick={e => { if (e.target === e.currentTarget) onClose(); }}
       style={{ position: "fixed", inset: 0, zIndex: 500, background: "rgba(0,0,0,0.72)", display: "flex", alignItems: "center", justifyContent: "center", backdropFilter: "blur(4px)" }}>
-      <div style={{ background: "#17171c", border: `1px solid ${C.brd}`, borderRadius: 14, width: 360, maxWidth: "92vw", maxHeight: "70vh", display: "flex", flexDirection: "column", boxShadow: "0 24px 60px rgba(0,0,0,0.8)" }}>
-        {/* Header */}
+      <div style={{ background: "#17171c", border: `1px solid ${C.brd}`, borderRadius: 14, width: 400, maxWidth: "94vw", display: "flex", flexDirection: "column", boxShadow: "0 24px 60px rgba(0,0,0,0.8)", maxHeight: "88vh" }}>
+        {/* Header — no icon */}
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 18px 12px", borderBottom: `1px solid ${C.brd}`, flexShrink: 0 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 9 }}>
-            <Calendar size={14} color={C.cyan} />
-            <span style={{ fontSize: 14, fontWeight: 800, color: C.t1, letterSpacing: "-0.01em" }}>{dateLabel}</span>
-          </div>
+          <span style={{ fontSize: 14, fontWeight: 800, color: C.t1, letterSpacing: "-0.01em" }}>{dateLabel}</span>
           <button onClick={onClose} style={{ background: "none", border: "none", color: C.t3, cursor: "pointer", display: "flex", alignItems: "center", padding: 2 }}
             onMouseEnter={e => e.currentTarget.style.color = C.t1}
             onMouseLeave={e => e.currentTarget.style.color = C.t3}>
             <X size={15} />
           </button>
         </div>
-        {/* List */}
-        <div style={{ overflowY: "auto", padding: "10px 18px 16px", display: "flex", flexDirection: "column", gap: 8 }}>
-          {items.length === 0 ? (
-            <div style={{ fontSize: 12, color: C.t3, textAlign: "center", padding: "20px 0" }}>No events or classes this day</div>
-          ) : items.map((item, i) => {
-            const isEvent = item.type === "event";
-            const color = isEvent ? C.cyan : (item.data.color || "#a855f7");
-            const bg = hexToRgba(color.startsWith("#") ? color : "#4d7fff", 0.1);
-            const brd = hexToRgba(color.startsWith("#") ? color : "#4d7fff", 0.28);
-            return (
-              <button key={i}
-                onClick={() => { onClose(); if (isEvent) onSelectEvent(item.data); else onSelectClass(item.data); }}
-                style={{ display: "flex", alignItems: "center", gap: 10, padding: "9px 12px", borderRadius: 9, background: bg, border: `1px solid ${brd}`, cursor: "pointer", textAlign: "left", fontFamily: FONT, transition: "opacity 0.12s" }}
-                onMouseEnter={e => e.currentTarget.style.opacity = "0.8"}
-                onMouseLeave={e => e.currentTarget.style.opacity = "1"}>
-                <span style={{ fontSize: 10.5, fontWeight: 700, color, minWidth: 38, flexShrink: 0 }}>{item.timeStr}</span>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontSize: 12, fontWeight: 700, color: C.t1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                    {isEvent ? item.data.title : item.data.name}
-                  </div>
-                  <div style={{ fontSize: 10, color: C.t2, marginTop: 1 }}>{isEvent ? "Event" : `Class · ${item.data.instructor || ""}`}</div>
+
+        {/* 24-hour timeline */}
+        <div ref={scrollRef} style={{ overflowY: "auto", flexShrink: 1, position: "relative" }}>
+          <div style={{ position: "relative", height: TIMELINE_HEIGHT, display: "flex" }}>
+            {/* Hour labels + grid lines */}
+            <div style={{ width: HOUR_LABEL_W, flexShrink: 0, position: "relative" }}>
+              {Array.from({ length: 25 }, (_, h) => (
+                <div key={h} style={{
+                  position: "absolute",
+                  top: (h / 24) * TIMELINE_HEIGHT - 7,
+                  left: 0, width: HOUR_LABEL_W,
+                  textAlign: "right", paddingRight: 8,
+                  fontSize: 9.5, fontWeight: 600, color: C.t3, lineHeight: 1,
+                  userSelect: "none",
+                }}>
+                  {String(h).padStart(2, "0")}
                 </div>
-                <span style={{ fontSize: 9, fontWeight: 700, color, background: hexToRgba(color.startsWith("#") ? color : "#4d7fff", 0.15), border: `1px solid ${brd}`, borderRadius: 4, padding: "2px 6px", flexShrink: 0, textTransform: "uppercase", letterSpacing: "0.05em" }}>
-                  {isEvent ? "Event" : "Class"}
-                </span>
-              </button>
-            );
-          })}
+              ))}
+            </div>
+
+            {/* Grid + events area */}
+            <div style={{ flex: 1, position: "relative", marginRight: 10 }}>
+              {/* Hour grid lines */}
+              {Array.from({ length: 25 }, (_, h) => (
+                <div key={h} style={{
+                  position: "absolute",
+                  top: (h / 24) * TIMELINE_HEIGHT,
+                  left: 0, right: 0,
+                  height: 1,
+                  background: h === 0 || h === 24 ? C.brd2 : "rgba(255,255,255,0.05)",
+                }} />
+              ))}
+              {/* Half-hour grid lines */}
+              {Array.from({ length: 24 }, (_, h) => (
+                <div key={`h-${h}`} style={{
+                  position: "absolute",
+                  top: ((h + 0.5) / 24) * TIMELINE_HEIGHT,
+                  left: 0, right: 0,
+                  height: 1,
+                  background: "rgba(255,255,255,0.025)",
+                }} />
+              ))}
+
+              {/* Event / class blocks */}
+              {itemsWithCol.map((item, i) => {
+                const top = (item.startMin / TOTAL_MINUTES) * TIMELINE_HEIGHT;
+                const height = Math.max(20, (item.durationMin / TOTAL_MINUTES) * TIMELINE_HEIGHT);
+                const colW = 1 / numCols;
+                const left = `${item.col * colW * 100}%`;
+                const width = `calc(${colW * 100}% - 4px)`;
+                const color = item.color;
+                const bg = hexToRgba(color, 0.15);
+                const brd = hexToRgba(color, 0.4);
+                const label = item.type === "event" ? item.data.title : item.data.name;
+                const sublabel = item.type === "class" ? (item.data.instructor || "") : "";
+                const timeStr = `${String(Math.floor(item.startMin / 60)).padStart(2, "0")}:${String(item.startMin % 60).padStart(2, "0")}`;
+
+                return (
+                  <button key={i}
+                    onClick={() => { onClose(); if (item.type === "event") onSelectEvent(item.data); else onSelectClass(item.data); }}
+                    style={{
+                      position: "absolute",
+                      top, left, width, height,
+                      background: bg,
+                      border: `1px solid ${brd}`,
+                      borderLeft: `3px solid ${color}`,
+                      borderRadius: 5,
+                      padding: "3px 6px",
+                      cursor: "pointer",
+                      textAlign: "left",
+                      fontFamily: FONT,
+                      overflow: "hidden",
+                      display: "flex",
+                      flexDirection: "column",
+                      justifyContent: "flex-start",
+                      gap: 1,
+                      transition: "opacity 0.12s",
+                      boxSizing: "border-box",
+                    }}
+                    onMouseEnter={e => e.currentTarget.style.opacity = "0.8"}
+                    onMouseLeave={e => e.currentTarget.style.opacity = "1"}>
+                    <div style={{ fontSize: 10, fontWeight: 700, color: C.t1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", lineHeight: 1.2 }}>{label}</div>
+                    {height > 28 && (
+                      <div style={{ fontSize: 9, color, fontWeight: 600, lineHeight: 1.1 }}>{timeStr}{sublabel ? ` · ${sublabel}` : ""}</div>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -136,7 +233,7 @@ export default function EventsCalendar({ events, classes = [], onDeleteEvent, on
   const [viewMonth, setViewMonth] = useState(today.getMonth());
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [selectedClass, setSelectedClass] = useState(null);
-  const [selectedDayCell, setSelectedDayCell] = useState(null); // for day detail modal
+  const [selectedDayCell, setSelectedDayCell] = useState(null);
   const [slideDir, setSlideDir] = useState(null);
   const [animating, setAnimating] = useState(false);
   const timeoutRef = useRef(null);
@@ -178,7 +275,6 @@ export default function EventsCalendar({ events, classes = [], onDeleteEvent, on
       if (s.date) {
         const dateKey = s.date.length > 10 ? s.date.slice(0, 10) : s.date;
         if (s.weekly) {
-          // Weekly class: repeat on matching day from this date forward
           const startDate = new Date(dateKey + "T00:00:00");
           const effectiveStart = startDate >= todayMidnight ? startDate : todayMidnight;
           const targetDow = DAY_NAME_TO_DOW[s.day];
@@ -192,12 +288,10 @@ export default function EventsCalendar({ events, classes = [], onDeleteEvent, on
             }
           }
         } else {
-          // One-off class: only show on the exact date
           if (!classesByDay[dateKey]) classesByDay[dateKey] = [];
           classesByDay[dateKey].push({ ...cls, _scheduleTime: s.time });
         }
       } else if (s.day) {
-        // No date set — treat as recurring weekly by day name (fallback for old data)
         const targetDow = DAY_NAME_TO_DOW[s.day];
         if (targetDow === undefined) return;
         for (let d = 1; d <= daysInView; d++) {
@@ -257,13 +351,13 @@ export default function EventsCalendar({ events, classes = [], onDeleteEvent, on
 
   const totalClasses = Object.values(classesByDay).flat().length;
 
-  // Pill height ~10% shorter: padding 2px 6px (was 3px 6px), lineHeight 1.2 (was 1.35)
+  // Pills: 5% shorter line-height (1.14 vs 1.2)
   const pillStyle = {
     display: "block", width: "100%", textAlign: "left",
     padding: "2px 5px", borderRadius: 4,
     cursor: "pointer", fontFamily: FONT,
     overflow: "hidden", whiteSpace: "nowrap", textOverflow: "ellipsis",
-    fontSize: 10, fontWeight: 600, lineHeight: "1.2",
+    fontSize: 10, fontWeight: 600, lineHeight: "1.14",
     boxSizing: "border-box",
   };
 
@@ -323,22 +417,25 @@ export default function EventsCalendar({ events, classes = [], onDeleteEvent, on
                   borderRight: isLastCol ? "none" : `1px solid ${C.brd}`,
                   borderBottom: isLastRow ? "none" : `1px solid ${C.brd}`,
                   background: cell.isToday ? "rgba(77,127,255,0.06)" : cell.isOtherMonth ? "rgba(255,255,255,0.012)" : "transparent",
-                  transition: "background 0.12s", height: 96, boxSizing: "border-box",
+                  transition: "background 0.12s",
+                  // 10% taller: 96 → 106px
+                  height: 106,
+                  boxSizing: "border-box",
                   overflow: "hidden",
                   opacity: cell.isOtherMonth ? 0.4 : 1,
                 }}>
-                <div style={{ width: 22, height: 22, display: "flex", alignItems: "center", justifyContent: "center", borderRadius: "50%", background: cell.isToday ? C.cyan : "transparent", marginBottom: 4, fontSize: 11.5, fontWeight: cell.isToday ? 800 : cell.isOtherMonth ? 400 : 500, color: cell.isToday ? "#fff" : cell.isOtherMonth ? C.t3 : C.t2, lineHeight: 1, flexShrink: 0 }}>
+                <div style={{ width: 22, height: 22, display: "flex", alignItems: "center", justifyContent: "center", borderRadius: "50%", background: cell.isToday ? C.cyan : "transparent", marginBottom: 3, fontSize: 11.5, fontWeight: cell.isToday ? 800 : cell.isOtherMonth ? 400 : 500, color: cell.isToday ? "#fff" : cell.isOtherMonth ? C.t3 : C.t2, lineHeight: 1, flexShrink: 0 }}>
                   {cell.dayNum}
                 </div>
                 <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
-                  {/* Events */}
-                  {cell.events.slice(0, 3).map(ev => (
+                  {/* Events — up to 4 total rows combined */}
+                  {cell.events.slice(0, 4).map(ev => (
                     <div key={ev.id} style={{ ...pillStyle, background: cell.isOtherMonth ? "rgba(77,127,255,0.06)" : C.cyanDim, border: `1px solid ${cell.isOtherMonth ? "rgba(77,127,255,0.12)" : C.cyanBrd}`, color: cell.isOtherMonth ? "rgba(77,127,255,0.5)" : C.cyan }}>
                       {ev.title}
                     </div>
                   ))}
-                  {/* Classes — use cls.color, dimmed on other-month cells */}
-                  {(cell.classes || []).slice(0, 2).map((cls, ci) => {
+                  {/* Classes */}
+                  {(cell.classes || []).slice(0, Math.max(0, 4 - cell.events.slice(0, 4).length)).map((cls, ci) => {
                     const rawColor = (cls.color && cls.color.startsWith("#") && cls.color.length >= 7) ? cls.color : "#a855f7";
                     const bgAlpha  = cell.isOtherMonth ? 0.06 : 0.15;
                     const brdAlpha = cell.isOtherMonth ? 0.15 : 0.4;
@@ -350,8 +447,8 @@ export default function EventsCalendar({ events, classes = [], onDeleteEvent, on
                     );
                   })}
                   {/* Overflow indicator */}
-                  {(cell.events.length + (cell.classes || []).length) > 5 && (
-                    <div style={{ fontSize: 9.5, color: C.t3, fontWeight: 600, paddingLeft: 4, marginTop: 1 }}>+{cell.events.length + (cell.classes || []).length - 5} more</div>
+                  {(cell.events.length + (cell.classes || []).length) > 4 && (
+                    <div style={{ fontSize: 9.5, color: C.t3, fontWeight: 600, paddingLeft: 4, marginTop: 1 }}>+{cell.events.length + (cell.classes || []).length - 4} more</div>
                   )}
                 </div>
               </div>
@@ -360,27 +457,7 @@ export default function EventsCalendar({ events, classes = [], onDeleteEvent, on
         </div>
       </div>
 
-      <div style={{ display: "flex", alignItems: "center", gap: 12, marginTop: 12, paddingLeft: 2, flexWrap: "wrap" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
-          <div style={{ width: 10, height: 10, borderRadius: 3, background: C.cyanDim, border: `1px solid ${C.cyanBrd}` }} />
-          <span style={{ fontSize: 10.5, color: C.t3 }}>Event</span>
-        </div>
-        <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
-          <div style={{ display: "flex", gap: 2 }}>
-            {["#a855f7","#4d7fff","#22c55e","#f59e0b"].map(col => (
-              <div key={col} style={{ width: 7, height: 10, borderRadius: 2, background: hexToRgba(col, 0.2), border: `1px solid ${hexToRgba(col, 0.4)}` }} />
-            ))}
-          </div>
-          <span style={{ fontSize: 10.5, color: C.t3 }}>Class</span>
-        </div>
-        <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
-          <div style={{ width: 10, height: 10, borderRadius: "50%", background: C.cyan }} />
-          <span style={{ fontSize: 10.5, color: C.t3 }}>Today</span>
-        </div>
-        <span style={{ fontSize: 10.5, color: C.t3 }}>· Click any day to see details</span>
-      </div>
-
-      {/* Day detail modal */}
+      {/* Day detail modal — 24h timeline */}
       {selectedDayCell && (
         <DayDetailModal
           cell={selectedDayCell}
