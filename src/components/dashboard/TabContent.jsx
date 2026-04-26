@@ -292,6 +292,7 @@ import EventDetailPopup from "./EventDetailPopup";
 import CreateClassModal from "./CreateClassModal";
 import ClassDetailPopup from "./ClassDetailPopup";
 import EventsCalendar from "./EventsCalendar";
+import PostPreviewModal from "./PostPreviewModal";
 
 function RemovePollModal({ poll, onConfirm, onClose }) {
   const [removing, setRemoving] = useState(false);
@@ -1079,6 +1080,7 @@ export default function ContentPage({
   const [feedFilter, setFeedFilter] = useState("all");
   const [showCreateClass, setShowCreateClass] = useState(false);
   const [creatingClass, setCreatingClass] = useState(false);
+  const [previewPost, setPreviewPost] = useState(null);
 
   const createItems = [
     { label: "📝 New Post",      action: () => { openModal?.("post");      setShowMenu(false); setTab("Community Feed"); } },
@@ -1228,7 +1230,8 @@ export default function ContentPage({
                     const reactionCount = Object.keys(p.reactions || {}).length;
                     return (
                       <div key={p.id}
-                        style={{ background: C.card, border: `1px solid ${C.brd}`, borderRadius: 12, height: 138, display: "flex", overflow: "hidden", position: "relative" }}
+                        onClick={() => setPreviewPost(p)}
+                        style={{ background: C.card, border: `1px solid ${C.brd}`, borderRadius: 12, height: 138, display: "flex", overflow: "hidden", position: "relative", cursor: "pointer" }}
                         onMouseEnter={e => { e.currentTarget.style.borderColor = C.cyanBrd; e.currentTarget.style.boxShadow = `0 0 8px rgba(77,127,255,0.07)`; }}
                         onMouseLeave={e => { e.currentTarget.style.borderColor = C.brd; e.currentTarget.style.boxShadow = "none"; }}>
                         {p.image_url ? (
@@ -1281,7 +1284,9 @@ export default function ContentPage({
                             </button>
                             )}
                           </div>
-                          <QuickActions post={p} resolvedName={resolvedName} memberId={p.member_id} gym={gym} currentUser={currentUser} onDeletePost={onDeletePost} isGymPost={isGymPost} onPostEdited={onUpdatePost} compact />
+                          <div onClick={e => e.stopPropagation()}>
+                            <QuickActions post={p} resolvedName={resolvedName} memberId={p.member_id} gym={gym} currentUser={currentUser} onDeletePost={onDeletePost} isGymPost={isGymPost} onPostEdited={onUpdatePost} compact />
+                          </div>
                         </div>
                       </div>
                     );
@@ -1704,6 +1709,15 @@ export default function ContentPage({
       {editingPost && <EditPostModal post={editingPost} gym={gym} onClose={() => setEditingPost(null)} onSave={() => { setEditingPost(null); onUpdatePost?.(); }} />}
       <CreateClassModal open={showCreateClass} onClose={() => setShowCreateClass(false)} gym={gym} isLoading={creatingClass}
         onSave={async (data) => { setCreatingClass(true); try { await onCreateClass?.(data); setShowCreateClass(false); } finally { setCreatingClass(false); } }} />
+      {previewPost && (
+        <PostPreviewModal
+          post={previewPost}
+          gym={gym}
+          avatarMap={avatarMap}
+          nameMap={nameMap}
+          onClose={() => setPreviewPost(null)}
+        />
+      )}
     </div>
   );
 }
