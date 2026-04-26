@@ -66,6 +66,14 @@
         "all_levels"
       ],
       "description": "Difficulty level"
+    },
+    "attendee_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": [],
+      "description": "Array of user IDs who have joined this class"
     }
   },
   "required": [
@@ -131,6 +139,17 @@
           },
           "user_condition": {
             "account_type": "gym_owner"
+          }
+        },
+        {
+          "data.gym_id": {
+            "$in": {
+              "$map": {
+                "input": "{{user.gymMemberships}}",
+                "as": "m",
+                "in": "$$m.data.gym_id"
+              }
+            }
           }
         },
         {

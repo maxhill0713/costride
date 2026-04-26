@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { ChevronLeft, ChevronRight, X } from "lucide-react";
+import { ChevronLeft, ChevronRight, X, ChevronRight as ChevronRightIcon } from "lucide-react";
 import EventDetailPopup from "./EventDetailPopup";
 import ClassDetailPopup from "./ClassDetailPopup";
 
@@ -229,31 +229,42 @@ function DayDetailModal({ cell, dateLabel, onClose, onSelectEvent, onSelectClass
                 const leftAccent = item.type === "event" ? "rgba(77,127,255,0.7)" : hexToRgba(color, 0.55);
                 const label = item.type === "event" ? item.data.title : item.data.name;
                 const sublabel = item.type === "class" ? (item.data.instructor || "") : "";
+                const attendeeCount = item.type === "class" ? (item.data.attendee_ids || []).length : null;
                 const timeStr = `${String(Math.floor(item.startMin / 60)).padStart(2, "0")}:${String(item.startMin % 60).padStart(2, "0")}`;
                 return (
                   <button key={i}
-                    onClick={() => { onClose(); if (item.type === "event") onSelectEvent(item.data); else onSelectClass(item.data); }}
+                    onClick={() => { if (item.type === "event") onSelectEvent(item.data); else onSelectClass(item.data); }}
                     style={{
                       position: "absolute", top, left, width, height,
                       background: bg, border: `1px solid ${brd}`, borderLeft: `3px solid ${leftAccent}`,
-                      borderRadius: 5, padding: "3px 6px", cursor: "pointer",
+                      borderRadius: 5, padding: "3px 6px 3px 5px", cursor: "pointer",
                       textAlign: "left", fontFamily: FONT, overflow: "hidden",
                       display: "flex", flexDirection: "column", justifyContent: "flex-start", gap: 1,
                       transition: "opacity 0.12s", boxSizing: "border-box",
                     }}
                     onMouseEnter={e => e.currentTarget.style.opacity = "0.8"}
                     onMouseLeave={e => e.currentTarget.style.opacity = "1"}>
-                    {/* Title row with time top-right */}
-                    <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 4 }}>
+                    {/* Title row with time + chevron */}
+                    <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 2 }}>
                       <div style={{ fontSize: 11.5, fontWeight: 700, color: C.t1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", lineHeight: 1.2, flex: 1, minWidth: 0 }}>{label}</div>
-                      {height > 20 && (
-                        <div style={{ fontSize: 9.5, color: C.t1, fontWeight: 500, lineHeight: 1.2, whiteSpace: "nowrap", flexShrink: 0, opacity: 0.75 }}>
-                          {timeStr}–{`${String(Math.floor((item.startMin + item.durationMin) / 60) % 24).padStart(2, "0")}:${String((item.startMin + item.durationMin) % 60).padStart(2, "0")}`}
-                        </div>
-                      )}
+                      <div style={{ display: "flex", alignItems: "center", gap: 2, flexShrink: 0 }}>
+                        {height > 20 && (
+                          <div style={{ fontSize: 9.5, color: C.t1, fontWeight: 500, lineHeight: 1.2, whiteSpace: "nowrap", opacity: 0.75 }}>
+                            {timeStr}–{`${String(Math.floor((item.startMin + item.durationMin) / 60) % 24).padStart(2, "0")}:${String((item.startMin + item.durationMin) % 60).padStart(2, "0")}`}
+                          </div>
+                        )}
+                        <ChevronRight size={10} color="rgba(255,255,255,0.45)" style={{ flexShrink: 0 }} />
+                      </div>
                     </div>
                     {height > 32 && sublabel && (
-                      <div style={{ fontSize: 10.5, color: C.t1, fontWeight: 600, lineHeight: 1.2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>Coach — {sublabel}</div>
+                      <div style={{ fontSize: 10.5, color: C.t1, fontWeight: 600, lineHeight: 1.2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                        Coach — {sublabel}{attendeeCount > 0 ? ` · ${attendeeCount} attending` : ""}
+                      </div>
+                    )}
+                    {height > 32 && !sublabel && attendeeCount > 0 && (
+                      <div style={{ fontSize: 10, color: "rgba(255,255,255,0.5)", fontWeight: 600, lineHeight: 1.2 }}>
+                        {attendeeCount} attending
+                      </div>
                     )}
                   </button>
                 );
@@ -272,6 +283,7 @@ export default function EventsCalendar({ events, classes = [], onDeleteEvent, on
 
   const [viewYear, setViewYear] = useState(today.getFullYear());
   const [viewMonth, setViewMonth] = useState(today.getMonth());
+  // selectedEvent / selectedClass are now shown ON TOP of the day modal (not replacing it)
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [selectedClass, setSelectedClass] = useState(null);
   const [selectedDayCell, setSelectedDayCell] = useState(null);
@@ -504,19 +516,24 @@ export default function EventsCalendar({ events, classes = [], onDeleteEvent, on
           cell={selectedDayCell}
           dateLabel={new Date(selectedDayCell.cellYear, selectedDayCell.cellMonth, selectedDayCell.cellDay).toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}
           onClose={() => setSelectedDayCell(null)}
-          onSelectEvent={ev => { setSelectedDayCell(null); setSelectedEvent(ev); }}
-          onSelectClass={cls => { setSelectedDayCell(null); setSelectedClass(cls); }}
+          onSelectEvent={ev => setSelectedEvent(ev)}
+          onSelectClass={cls => setSelectedClass(cls)}
         />
       )}
 
+      {/* Event/class detail popups stacked ON TOP of the day modal — closing them returns to day modal */}
       {selectedEvent && (
-        <EventDetailPopup event={selectedEvent} onClose={() => setSelectedEvent(null)}
-          onDelete={async (id) => { await onDeleteEvent?.(id); setSelectedEvent(null); }}
-          onEditSaved={() => { setSelectedEvent(null); onEventEdited?.(); }} />
+        <div style={{ position: "fixed", inset: 0, zIndex: 600, display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <EventDetailPopup event={selectedEvent} onClose={() => setSelectedEvent(null)}
+            onDelete={async (id) => { await onDeleteEvent?.(id); setSelectedEvent(null); }}
+            onEditSaved={() => { setSelectedEvent(null); onEventEdited?.(); }} />
+        </div>
       )}
       {selectedClass && (
-        <ClassDetailPopup gymClass={selectedClass} onClose={() => setSelectedClass(null)}
-          onDelete={async (id) => { await onDeleteClass?.(id); setSelectedClass(null); }} />
+        <div style={{ position: "fixed", inset: 0, zIndex: 600, display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <ClassDetailPopup gymClass={selectedClass} onClose={() => setSelectedClass(null)}
+            onDelete={async (id) => { await onDeleteClass?.(id); setSelectedClass(null); }} />
+        </div>
       )}
     </>
   );

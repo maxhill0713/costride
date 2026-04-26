@@ -869,7 +869,7 @@ function PremiumClassCard({ gymClass, isOwner, onDelete, onBook, booked, onClick
 // • "Today's Sessions" → "Today's Classes"
 // • activeDay is now an offset (0=today, 1=tomorrow …) matching the new ClassDateHeader
 // • Type filter buttons (All / Yoga / HIIT / …) completely removed
-function ClassesTabContent({ classes, showOwnerControls, onManage, onDelete }) {
+function ClassesTabContent({ classes, showOwnerControls, onManage, onDelete, currentUser }) {
   const today = new Date();
 
   const [activeDay, setActiveDay] = useState(0); // 0 = today
@@ -1000,7 +1000,9 @@ function ClassesTabContent({ classes, showOwnerControls, onManage, onDelete }) {
         onClose={() => setSelectedClass(null)}
         booked={selectedClass ? bookedIds.has(selectedClass.id) : false}
         onBook={handleBook}
-        isOwner={showOwnerControls} />
+        isOwner={showOwnerControls}
+        currentUser={currentUser} />
+
     </motion.div>);
 }
 
@@ -1815,7 +1817,8 @@ export default function GymCommunity() {
                 classes={classes}
                 showOwnerControls={showOwnerControls}
                 onManage={() => setShowManageClasses(true)}
-                onDelete={(id) => deleteClassMutation.mutate(id)} />
+                onDelete={(id) => deleteClassMutation.mutate(id)}
+                currentUser={currentUser} />
               }
             </TabsContent>
 

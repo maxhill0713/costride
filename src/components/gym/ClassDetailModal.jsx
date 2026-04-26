@@ -617,6 +617,7 @@ export default function ClassDetailModal({
   onBook,
   isOwner = false,
   friendsBooked = [],
+  currentUser: currentUserProp = null,
 }) {
   const [booked, setBooked]             = useState(initBooked);
   const [waitlist, setWaitlist]         = useState(false);
@@ -631,10 +632,58 @@ export default function ClassDetailModal({
   const [tab, setTab]                   = useState('details');
   const [selectedSession, setSelectedSession] = useState(null);
   const [showCoachProfile, setShowCoachProfile] = useState(false);
+  const [showLeaveConfirm, setShowLeaveConfirm] = useState(false);
+  const [joinLoading, setJoinLoading]   = useState(false);
+  const [liveAttendeeIds, setLiveAttendeeIds] = useState(null);
 
-  useEffect(() => { setBooked(initBooked); }, [initBooked]);
+  // Resolve current user
+  const [resolvedUser, setResolvedUser] = useState(currentUserProp);
+  useEffect(() => {
+    if (currentUserProp) { setResolvedUser(currentUserProp); return; }
+    import('@/api/base44Client').then(({ base44 }) => {
+      base44.auth.me().then(u => setResolvedUser(u)).catch(() => {});
+    });
+  }, [currentUserProp]);
+
+  // Sync live attendee_ids from the class record when opened
+  useEffect(() => {
+    if (!open || !gymClass?.id) return;
+    setLiveAttendeeIds(gymClass.attendee_ids || []);
+  }, [open, gymClass?.id]);
+
+  const attendeeIds = liveAttendeeIds ?? (gymClass?.attendee_ids || []);
+  const isJoined = resolvedUser ? attendeeIds.includes(resolvedUser.id) : false;
+
+  // Keep legacy booked state in sync with real join state
+  useEffect(() => { setBooked(initBooked || isJoined); }, [initBooked, isJoined]);
+
   useEffect(() => { injectCSS(); }, []);
-  useEffect(() => { if (!open) setSelectedSession(null); }, [open]);
+  useEffect(() => { if (!open) { setSelectedSession(null); setShowLeaveConfirm(false); } }, [open]);
+
+  const handleJoinLeave = async () => {
+    if (!resolvedUser || !gymClass?.id) return;
+    const { base44 } = await import('@/api/base44Client');
+    setJoinLoading(true);
+    try {
+      const currentIds = [...attendeeIds];
+      let newIds;
+      if (isJoined) {
+        newIds = currentIds.filter(id => id !== resolvedUser.id);
+      } else {
+        newIds = [...currentIds, resolvedUser.id];
+      }
+      await base44.entities.GymClass.update(gymClass.id, { attendee_ids: newIds });
+      setLiveAttendeeIds(newIds);
+      setBooked(!isJoined);
+      onBook && onBook(gymClass.id);
+      showToast(isJoined ? 'Left class' : 'Joined! See you there 🎉');
+    } catch (e) {
+      showToast('Something went wrong');
+    } finally {
+      setJoinLoading(false);
+      setShowLeaveConfirm(false);
+    }
+  };
 
   if (!gymClass) return null;
 
@@ -675,49 +724,24 @@ export default function ClassDetailModal({
   const showToast = (msg) => { setToast(msg); setTimeout(() => setToast(''), 2300); };
 
   const handleBook = () => {
-    const targetSession = selectedSession;
-
-    if (full && !booked && !waitlist && !targetSession) {
-      setWaitlist(true);
-      showToast("Added to waitlist — you'll be notified!");
+    // If already joined, show leave confirmation
+    if (isJoined) {
+      setShowLeaveConfirm(true);
       return;
     }
-    if (!targetSession && !booked && !waitlist) {
-      setTab('schedule');
-      showToast('Select a time slot first 👆');
-      return;
-    }
-
-    setBookAnim(true);
-    setTimeout(() => {
-      const nb = !booked;
-      setBooked(nb);
-      if (nb) setWaitlist(false);
-      setBookAnim(false);
-      onBook && onBook(gymClass.id);
-      if (nb) {
-        const label = targetSession
-          ? `Booked for ${targetSession.dayShort} ${targetSession.timeLabel.split(' –')[0]} 🎉`
-          : 'Booked! See you there 🎉';
-        showToast(label);
-      }
-    }, 280);
+    // Join directly
+    handleJoinLeave();
   };
 
   const ctaLabel = (() => {
-    if (bookAnim) return '…';
-    if (booked)   return '✓ Booked — Tap to Cancel';
+    if (joinLoading) return '…';
+    if (isJoined)   return '✓ Joined — Tap to Leave';
     if (waitlist) return '⏳ On Waitlist — Tap to Leave';
-    if (selectedSession) {
-      const time = selectedSession.timeLabel.split(' –')[0];
-      return `Book for ${selectedSession.dayShort} ${time}`;
-    }
-    if (tab === 'schedule' && upcomingSessions.length > 0) return 'Select a Time Slot';
-    return 'Book Now';
+    return 'Join Class';
   })();
 
-  const ctaDisabled = !booked && !waitlist && !selectedSession && tab === 'schedule';
-  const ctaActive   = booked || waitlist || !!selectedSession;
+  const ctaDisabled = false;
+  const ctaActive   = isJoined || waitlist;
 
   const ratCounts = [5, 4, 3, 2, 1].map(s => ({
     s, n: REVIEWS.filter(r => r.rating === s).length,
@@ -1160,75 +1184,26 @@ export default function ClassDetailModal({
               {!isOwner && (
                 <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.18, type: 'spring', stiffness: 200, damping: 28 }}
                   style={{ flexShrink: 0, padding: '12px 18px 34px', background: 'linear-gradient(to top,#060810 55%,transparent)', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
-
-                  <AnimatePresence>
-                    {!selectedSession && !booked && !waitlist && tab === 'schedule' && upcomingSessions.length > 0 && (
-                      <motion.div
-                        key="nudge"
-                        initial={{ opacity: 0, y: 4 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: 4 }}
-                        style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 10, fontSize: 11.5, color: 'rgba(255,255,255,0.38)', fontWeight: 600 }}>
-                        <Info style={{ width: 12, height: 12, flexShrink: 0 }} />
-                        Tap a session above to select your time slot
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-
-                  {selectedSession && selectedSession.spots !== null && !selectedSession.full && (
-                    <motion.div
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
-                      <Bar
-                        pct={selectedSession.cap ? Math.min(100, Math.round(((selectedSession.cap - selectedSession.spots) / selectedSession.cap) * 100)) : pct || 0}
-                        color={selectedSession.hot ? 'linear-gradient(90deg,#d97706,#fbbf24)' : barColor}
-                        anim={false} h={4}
-                      />
-                      <span style={{ fontSize: 11, fontWeight: 700, color: selectedSession.hot ? '#fbbf24' : 'rgba(255,255,255,0.32)', whiteSpace: 'nowrap', flexShrink: 0 }}>
-                        {selectedSession.spots} spot{selectedSession.spots === 1 ? '' : 's'} left
-                      </span>
-                    </motion.div>
-                  )}
-
                   <button
                     onClick={handleBook}
-                    disabled={ctaDisabled && !booked && !waitlist}
+                    disabled={joinLoading}
                     style={{
                       width: '100%', padding: '16px', borderRadius: 18,
-                      fontSize: 15, fontWeight: 900, cursor: ctaDisabled ? 'default' : 'pointer',
+                      fontSize: 15, fontWeight: 900, cursor: joinLoading ? 'default' : 'pointer',
                       border: 'none', letterSpacing: '-0.01em',
                       position: 'relative', overflow: 'hidden',
-                      background: booked
+                      background: isJoined
                         ? 'linear-gradient(135deg,rgba(16,185,129,0.25),rgba(5,150,105,0.2))'
-                        : waitlist
-                          ? 'linear-gradient(135deg,rgba(251,191,36,0.2),rgba(217,119,6,0.15))'
-                          : (selectedSession || tab !== 'schedule')
-                            ? 'linear-gradient(135deg,#2563eb,#1d4ed8)'
-                            : 'rgba(255,255,255,0.05)',
-                      color: booked
-                        ? '#34d399'
-                        : waitlist
-                          ? '#fbbf24'
-                          : (selectedSession || tab !== 'schedule')
-                            ? '#fff'
-                            : 'rgba(255,255,255,0.22)',
-                      boxShadow: booked
+                        : 'linear-gradient(135deg,#2563eb,#1d4ed8)',
+                      color: isJoined ? '#34d399' : '#fff',
+                      boxShadow: isJoined
                         ? '0 4px 20px rgba(16,185,129,0.25),inset 0 1px 0 rgba(255,255,255,0.1)'
-                        : waitlist
-                          ? '0 4px 20px rgba(251,191,36,0.2)'
-                          : (selectedSession || tab !== 'schedule')
-                            ? '0 6px 28px rgba(37,99,235,0.5),inset 0 1px 0 rgba(255,255,255,0.2)'
-                            : 'none',
-                      outline: booked
-                        ? '1px solid rgba(52,211,153,0.3)'
-                        : waitlist
-                          ? '1px solid rgba(251,191,36,0.3)'
-                          : 'none',
-                      transform: bookAnim ? 'scale(0.96) translateY(2px)' : 'scale(1) translateY(0)',
-                      transition: 'transform 0.18s cubic-bezier(0.34,1.5,0.64,1),background 0.3s ease,box-shadow 0.3s ease,color 0.3s ease',
+                        : '0 6px 28px rgba(37,99,235,0.5),inset 0 1px 0 rgba(255,255,255,0.2)',
+                      outline: isJoined ? '1px solid rgba(52,211,153,0.3)' : 'none',
+                      opacity: joinLoading ? 0.7 : 1,
+                      transition: 'background 0.3s ease,box-shadow 0.3s ease,color 0.3s ease',
                     }}>
-                    {(selectedSession || tab !== 'schedule') && !booked && !waitlist && (
+                    {!isJoined && (
                       <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', borderRadius: 'inherit' }}>
                         <div style={{ position: 'absolute', top: 0, bottom: 0, width: '40%', background: 'linear-gradient(90deg,transparent,rgba(255,255,255,0.1),transparent)', animation: 'cdm-shimmer 4s cubic-bezier(0.4,0,0.6,1) infinite 2s' }} />
                       </div>
@@ -1237,6 +1212,37 @@ export default function ClassDetailModal({
                   </button>
                 </motion.div>
               )}
+
+              {/* Leave confirmation modal */}
+              <AnimatePresence>
+                {showLeaveConfirm && (
+                  <>
+                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                      onClick={() => setShowLeaveConfirm(false)}
+                      style={{ position: 'fixed', inset: 0, zIndex: 10400, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)' }} />
+                    <motion.div initial={{ scale: 0.9, opacity: 0, y: 20 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.9, opacity: 0, y: 20 }}
+                      transition={{ type: 'spring', stiffness: 300, damping: 28 }}
+                      style={{ position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', zIndex: 10401, width: 320, maxWidth: '90vw',
+                        background: 'linear-gradient(160deg,#0d1232 0%,#060810 100%)',
+                        border: '1px solid rgba(248,113,113,0.25)', borderRadius: 20, padding: '24px 22px 20px' }}>
+                      <div style={{ fontSize: 15, fontWeight: 800, color: '#fff', marginBottom: 8 }}>Leave this class?</div>
+                      <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.5)', lineHeight: 1.55, marginBottom: 20 }}>
+                        You'll be removed from <strong style={{ color: '#fff' }}>{className}</strong>. You can rejoin at any time.
+                      </div>
+                      <div style={{ display: 'flex', gap: 10 }}>
+                        <button onClick={() => setShowLeaveConfirm(false)}
+                          style={{ flex: 1, padding: '11px', borderRadius: 12, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.6)', fontSize: 13, fontWeight: 700, cursor: 'pointer' }}>
+                          Cancel
+                        </button>
+                        <button onClick={handleJoinLeave} disabled={joinLoading}
+                          style={{ flex: 1, padding: '11px', borderRadius: 12, background: 'rgba(239,68,68,0.2)', border: '1px solid rgba(248,113,113,0.3)', color: '#f87171', fontSize: 13, fontWeight: 700, cursor: 'pointer', opacity: joinLoading ? 0.7 : 1 }}>
+                          {joinLoading ? 'Leaving…' : 'Leave Class'}
+                        </button>
+                      </div>
+                    </motion.div>
+                  </>
+                )}
+              </AnimatePresence>
             </motion.div>
           </>
         )}

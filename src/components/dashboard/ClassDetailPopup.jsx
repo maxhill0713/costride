@@ -2,8 +2,9 @@
  * ClassDetailPopup — purple-themed popup for class details on calendar.
  * Delete uses a proper overlay confirmation modal matching RemovePostModal style.
  */
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { X, Dumbbell, Clock, Users, Trash2 } from 'lucide-react';
+import { base44 } from '@/api/base44Client';
 
 const C = {
   bg: '#0d0d11', card: '#1f1f26', brd: '#252530', t1: '#ffffff', t2: '#9898a6', t3: '#525260',
@@ -52,13 +53,21 @@ function RemoveClassModal({ gymClass, onConfirm, onClose }) {
 
 export default function ClassDetailPopup({ gymClass, onClose, onDelete }) {
   const [showRemoveModal, setShowRemoveModal] = useState(false);
+  const [liveAttendeeCount, setLiveAttendeeCount] = useState((gymClass.attendee_ids || []).length);
+
+  useEffect(() => {
+    if (!gymClass?.id) return;
+    base44.entities.GymClass.filter({ id: gymClass.id }).then(res => {
+      if (res?.[0]?.attendee_ids !== undefined) setLiveAttendeeCount((res[0].attendee_ids || []).length);
+    }).catch(() => {});
+  }, [gymClass?.id]);
 
   const schedule = (gymClass.schedule || []).filter(s => s.day && s.time);
 
   return (
     <>
       <div onClick={e => e.target === e.currentTarget && onClose()}
-        style={{ position: 'fixed', inset: 0, zIndex: 10000, background: 'rgba(0,0,0,0.72)', backdropFilter: 'blur(6px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20, fontFamily: FONT }}>
+        style={{ position: 'fixed', inset: 0, zIndex: 10000, background: 'rgba(0,0,0,0.55)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20, fontFamily: FONT }}>
         <div style={{ background: C.bg, border: `1px solid ${C.brd}`, borderRadius: 16, width: 460, maxWidth: '94vw', maxHeight: '85vh', display: 'flex', flexDirection: 'column', overflow: 'hidden', boxShadow: '0 32px 80px rgba(0,0,0,0.85)', animation: 'detail-in 0.2s ease' }}>
           <style>{`@keyframes detail-in { from{opacity:0;transform:scale(0.97) translateY(8px)} to{opacity:1;transform:scale(1) translateY(0)} }`}</style>
 
@@ -74,6 +83,12 @@ export default function ClassDetailPopup({ gymClass, onClose, onDelete }) {
               <div>
                 <div style={{ fontSize: 17, fontWeight: 800, color: C.t1, letterSpacing: '-0.02em', lineHeight: 1.2 }}>{gymClass.name}</div>
                 {gymClass.instructor && <div style={{ fontSize: 12, color: C.purple, fontWeight: 600, marginTop: 2 }}>with {gymClass.instructor}</div>}
+              {liveAttendeeCount > 0 && (
+                <div style={{ fontSize: 11, color: C.t2, fontWeight: 600, marginTop: 3, display: 'flex', alignItems: 'center', gap: 4 }}>
+                  <Users size={10} color={C.t3} />
+                  {liveAttendeeCount} attending
+                </div>
+              )}
               </div>
             </div>
             <button onClick={onClose} style={{ width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'transparent', border: 'none', cursor: 'pointer', color: C.t3, flexShrink: 0 }}
