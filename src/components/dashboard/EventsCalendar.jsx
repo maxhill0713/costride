@@ -191,11 +191,9 @@ export default function EventsCalendar({ events, classes = [], onDeleteEvent, on
             }
           }
         } else {
-          const classDate = new Date(dateKey + "T00:00:00");
-          if (classDate >= todayMidnight) {
-            if (!classesByDay[dateKey]) classesByDay[dateKey] = [];
-            classesByDay[dateKey].push({ ...cls, _scheduleTime: s.time });
-          }
+          // Non-weekly: always show on the exact date, no past-date filter
+          if (!classesByDay[dateKey]) classesByDay[dateKey] = [];
+          classesByDay[dateKey].push({ ...cls, _scheduleTime: s.time });
         }
       }
     });
