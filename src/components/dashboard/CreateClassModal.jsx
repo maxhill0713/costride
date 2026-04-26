@@ -208,9 +208,8 @@ export default function CreateClassModal({ open, onClose, onSave, gym, isLoading
           <div style={{ flexShrink: 0, padding: isMobile ? '0 16px' : '16px 20px', background: C.surface, borderBottom: `1px solid ${C.brd}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             {isMobile && <div style={{ position: 'absolute', top: 10, left: '50%', transform: 'translateX(-50%)', width: 36, height: 4, borderRadius: 2, background: C.brd2 }} />}
             <div style={{ display: 'flex', alignItems: 'center', gap: 11, ...(isMobile ? { paddingTop: 22 } : {}) }}>
-              <div style={{ width: 32, height: 32, borderRadius: 9, background: C.purpleDim, border: `1px solid ${C.purpleBrd}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                <Calendar size={14} color="#ffffff" />
-              </div>
+              {/* Standalone calendar icon, no box */}
+              <Calendar size={22} color="#ffffff" strokeWidth={1.75} />
               <div style={{ fontSize: 18, fontWeight: 700, color: C.t1, letterSpacing: '-0.02em' }}>Create Class</div>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
