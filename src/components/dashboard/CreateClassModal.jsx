@@ -137,12 +137,12 @@ export default function CreateClassModal({ open, onClose, onSave, gym, isLoading
   const handleSubmit = (e) => {
     e?.preventDefault();
     if (!canSubmit) return;
-    const schedule = form.weekly ? [{ day: form.day, time: form.time }] : [];
+    // Always store the day/time; weekly flag controls repeat behaviour in calendar
     const payload = {
       ...form,
       duration_minutes: Number(form.duration_minutes),
       max_capacity: Number(form.max_capacity),
-      schedule,
+      schedule: [{ day: form.day, time: form.time }],
       gym_id: gym?.id,
       gym_name: gym?.name,
     };
