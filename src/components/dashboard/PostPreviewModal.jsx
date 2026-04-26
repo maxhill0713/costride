@@ -6,6 +6,7 @@
 import { useState, useRef, useEffect } from "react";
 import { X, ChevronDown, ChevronUp } from "lucide-react";
 import { ReactionsModal } from "./TabContent";
+import { base44 } from "@/api/base44Client";
 
 const STREAK_ICON_URL = "https://media.base44.com/images/public/694b637358644e1c22c8ec6b/5688f98be_Pose1_V2.png";
 const SPARTAN_ICON_URL = "https://media.base44.com/images/public/694b637358644e1c22c8ec6b/a72ee034d_spartan.png";
@@ -220,6 +221,17 @@ function WorkoutSwipePanel({ post }) {
 
 export default function PostPreviewModal({ post, gym, avatarMap = {}, nameMap = {}, onClose }) {
   const [showReactions, setShowReactions] = useState(false);
+  const [authorStreak, setAuthorStreak] = useState(null);
+
+  useEffect(() => {
+    if (!post?.member_id || post.post_type) return;
+    base44.functions.invoke("getUserAvatars", { userIds: [post.member_id] })
+      .then(res => {
+        const userData = res.data?.avatars?.[post.member_id];
+        if (userData?.current_streak != null) setAuthorStreak(userData.current_streak);
+      })
+      .catch(() => {});
+  }, [post?.member_id]);
 
   if (!post) return null;
 
@@ -341,7 +353,7 @@ export default function PostPreviewModal({ post, gym, avatarMap = {}, nameMap = 
                   </div>
                   <div style={{ width: 1, alignSelf: "stretch", background: "rgba(255,255,255,0.10)" }} />
                   <div style={{ display: "flex", flexDirection: "column", alignItems: "center", flex: 1 }}>
-                    <span style={{ fontSize: 14, fontWeight: 900, color: "#fff", lineHeight: 1 }}>—</span>
+                    <span style={{ fontSize: 14, fontWeight: 900, color: "#fff", lineHeight: 1 }}>{authorStreak ?? "—"}</span>
                     <span style={{ fontSize: 10, fontWeight: 600, color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.08em", marginTop: 2 }}>Streak</span>
                   </div>
                 </div>

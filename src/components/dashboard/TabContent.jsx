@@ -1715,6 +1715,7 @@ export default function ContentPage({
           gym={gym}
           avatarMap={avatarMap}
           nameMap={nameMap}
+          currentUser={currentUser}
           onClose={() => setPreviewPost(null)}
         />
       )}
