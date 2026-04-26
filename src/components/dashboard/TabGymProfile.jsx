@@ -92,22 +92,31 @@ function StatCell({ label, value, color, onClick, borderRight }) {
 }
 
 /* ─── PROFILE ITEM CARD ──────────────────────────────────────── */
-function ItemCard({ title, score, microcopy, onClick, children }) {
+function ItemCard({ title, score, microcopy, onClick, children, flex }) {
+  const [hovered, setHovered] = useState(false);
   return (
     <div
       onClick={onClick}
-      style={{ background: C.card, border: `1px solid ${C.brd}`, borderRadius: 10, overflow: 'hidden', display: 'flex', flexDirection: 'column', cursor: onClick ? 'pointer' : 'default', transition: 'border-color 0.15s, box-shadow 0.15s' }}
-      onMouseEnter={e => { if (onClick) { e.currentTarget.style.borderColor = C.cyanBrd; e.currentTarget.style.boxShadow = '0 0 8px rgba(77,127,255,0.07)'; }}}
-      onMouseLeave={e => { e.currentTarget.style.borderColor = C.brd; e.currentTarget.style.boxShadow = 'none'; }}
+      style={{
+        background: C.card,
+        border: `1px solid ${hovered && onClick ? C.cyanBrd : C.brd}`,
+        borderRadius: 10, overflow: 'hidden', display: 'flex', flexDirection: 'column',
+        cursor: onClick ? 'pointer' : 'default',
+        boxShadow: hovered && onClick ? '0 0 8px rgba(77,127,255,0.07)' : 'none',
+        transition: 'border-color 0.15s, box-shadow 0.15s',
+        ...(flex ? { flex } : {}),
+      }}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
     >
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '11px 14px', flexShrink: 0 }}>
-        <div>
+        <div style={{ minWidth: 0, flex: 1, marginRight: 8 }}>
           <div style={{ fontSize: 12.5, fontWeight: 700, color: C.t1 }}>{title}</div>
           {microcopy && <div style={{ fontSize: 10.5, color: C.t3, marginTop: 2 }}>{microcopy}</div>}
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 7, flexShrink: 0 }}>
           <StatusBadge score={score} />
-          {onClick && <Pencil style={{ width: 10, height: 10, color: C.t3, flexShrink: 0 }} />}
+          {onClick && <Pencil style={{ width: 10, height: 10, color: hovered ? C.cyan : 'transparent', flexShrink: 0, transition: 'color 0.15s' }} />}
         </div>
       </div>
       <div style={{ flex: 1 }}>{children}</div>
@@ -178,32 +187,51 @@ function CoverVisual({ imageUrl }) {
   );
 }
 
-function GalleryVisual({ gallery }) {
-  const photos = (gallery || []).slice(0, 9).map(g => g.url || g);
+function GalleryVisual({ gallery, onAdd }) {
+  const photos = (gallery || []).slice(0, 8).map(g => g.url || g);
+  const needsMore = photos.length < 5;
+
   if (photos.length === 0) {
     return (
-      <div style={{ height: 150, borderTop: `1px solid ${C.brd}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: 6, background: 'rgba(255,255,255,0.02)' }}>
+      <div style={{ height: 148, borderTop: `1px solid ${C.brd}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: 6, background: 'rgba(255,255,255,0.015)' }}>
         <Image style={{ width: 22, height: 22, color: C.t3 }} />
-        <span style={{ fontSize: 11, color: C.t3 }}>No photos yet</span>
+        <span style={{ fontSize: 11, color: C.t3 }}>No photos yet — add some to showcase your space</span>
       </div>
     );
   }
+
+  /* Build tile list: real photos + 1 "add more" tile if < 5 */
+  const tiles = [...photos];
+  if (needsMore) tiles.push('__add__');
+
+  /* Clamp to 6 display slots max */
+  const display = tiles.slice(0, 6);
+  const overflow = photos.length > 6 ? photos.length - 6 : 0;
+
   return (
-    <div style={{ height: 150, borderTop: `1px solid ${C.brd}`, overflow: 'hidden', position: 'relative' }}>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 2, height: '100%' }}>
-        {Array.from({ length: 6 }, (_, i) => (
-          <div key={i} style={{ overflow: 'hidden', background: C.card2 }}>
-            {photos[i]
-              ? <img src={photos[i]} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-              : <div style={{ width: '100%', height: '100%', background: 'rgba(255,255,255,0.03)' }} />}
-          </div>
-        ))}
+    <div style={{ height: 148, borderTop: `1px solid ${C.brd}`, overflow: 'hidden', position: 'relative' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: `repeat(${Math.min(display.length, 3)}, 1fr)`, gridTemplateRows: display.length > 3 ? '1fr 1fr' : '1fr', gap: 2, height: '100%' }}>
+        {display.map((src, i) => {
+          if (src === '__add__') {
+            return (
+              <div key="add" style={{ background: 'rgba(77,127,255,0.06)', border: `1px dashed rgba(77,127,255,0.22)`, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 4 }}>
+                <Plus style={{ width: 14, height: 14, color: 'rgba(77,127,255,0.5)' }} />
+                <span style={{ fontSize: 9.5, color: 'rgba(77,127,255,0.5)', fontWeight: 600 }}>Add photos</span>
+              </div>
+            );
+          }
+          return (
+            <div key={i} style={{ overflow: 'hidden', background: C.card2, position: 'relative' }}>
+              <img src={src} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+              {i === 5 && overflow > 0 && (
+                <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.55)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 700, color: '#fff' }}>
+                  +{overflow}
+                </div>
+              )}
+            </div>
+          );
+        })}
       </div>
-      {photos.length > 6 && (
-        <div style={{ position: 'absolute', bottom: 8, right: 8, fontSize: 10, fontWeight: 700, color: '#fff', background: 'rgba(0,0,0,0.7)', padding: '3px 8px', borderRadius: 5 }}>
-          +{photos.length - 6} more
-        </div>
-      )}
     </div>
   );
 }
@@ -256,20 +284,36 @@ function SocialVisual({ gym }) {
     { key: 'website_url',   Icon: Globe,     label: 'Website',   color: C.cyan    },
   ];
   const present = links.filter(l => gym[l.key]);
+  const missing = links.filter(l => !gym[l.key]);
+
   return (
-    <div style={{ padding: '10px 14px 14px', borderTop: `1px solid ${C.brd}`, display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-      {present.length > 0 ? present.map(l => (
-        <a key={l.key} href={gym[l.key]} target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none' }}>
-          <div
-            style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '6px 11px', borderRadius: 7, background: C.card2, border: `1px solid ${C.brd}`, cursor: 'pointer', transition: 'border-color 0.15s' }}
-            onMouseEnter={e => e.currentTarget.style.borderColor = C.brd2}
-            onMouseLeave={e => e.currentTarget.style.borderColor = C.brd}
-          >
-            <l.Icon style={{ width: 12, height: 12, color: l.color }} />
-            <span style={{ fontSize: 11.5, fontWeight: 600, color: C.t2 }}>{l.label}</span>
-          </div>
-        </a>
-      )) : <span style={{ fontSize: 11, color: C.t3 }}>No social links added yet.</span>}
+    <div style={{ padding: '10px 14px 14px', borderTop: `1px solid ${C.brd}` }}>
+      {/* Connected links */}
+      {present.length > 0 && (
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 7, marginBottom: missing.length > 0 ? 10 : 0 }}>
+          {present.map(l => (
+            <a key={l.key} href={gym[l.key]} target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '5px 11px', borderRadius: 7, background: C.card2, border: `1px solid ${C.brd}`, cursor: 'pointer', transition: 'border-color 0.15s' }}
+                onMouseEnter={e => e.currentTarget.style.borderColor = C.brd2}
+                onMouseLeave={e => e.currentTarget.style.borderColor = C.brd}>
+                <l.Icon style={{ width: 12, height: 12, color: l.color }} />
+                <span style={{ fontSize: 11.5, fontWeight: 600, color: C.t2 }}>{l.label}</span>
+              </div>
+            </a>
+          ))}
+        </div>
+      )}
+      {/* Missing networks — shown as muted chips */}
+      {missing.length > 0 && (
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 7 }}>
+          {missing.map(l => (
+            <div key={l.key} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '5px 11px', borderRadius: 7, background: 'rgba(255,255,255,0.025)', border: `1px dashed ${C.brd}`, opacity: 0.6 }}>
+              <l.Icon style={{ width: 12, height: 12, color: C.t3 }} />
+              <span style={{ fontSize: 11.5, fontWeight: 500, color: C.t3 }}>{l.label}</span>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
@@ -277,35 +321,43 @@ function SocialVisual({ gym }) {
 function CoachesVisual({ coaches, onManage }) {
   const ini = (n = '') => (n || '?').split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
   return (
-    <div style={{ borderTop: `1px solid ${C.brd}`, padding: '12px 14px 14px' }}>
-      {coaches.length === 0 ? (
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, padding: '14px 0' }}>
-          <GraduationCap style={{ width: 20, height: 20, color: C.t3 }} />
-          <span style={{ fontSize: 11, color: C.t3 }}>No coaches added yet.</span>
-          <button onClick={onManage} style={{ padding: '6px 14px', borderRadius: 7, fontSize: 11.5, fontWeight: 700, fontFamily: FONT, cursor: 'pointer', boxShadow: SHADOW, ...GRAD_BTN }}>
-            + Add Coach
-          </button>
-        </div>
-      ) : (
-        <div style={{ display: 'flex', gap: 10, overflowX: 'auto', paddingBottom: 4, scrollbarWidth: 'none' }}>
-          {coaches.map(coach => (
-            <div key={coach.id} style={{ flexShrink: 0, width: 90, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5, padding: '8px 6px', borderRadius: 9, background: C.card2, border: `1px solid ${C.brd}` }}>
-              <div style={{ width: 46, height: 46, borderRadius: '50%', overflow: 'hidden', border: `2px solid ${C.brd2}`, background: C.brd, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 800, color: C.cyan }}>
-                {coach.avatar_url ? <img src={coach.avatar_url} alt={coach.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : ini(coach.name)}
-              </div>
-              <div style={{ fontSize: 10.5, fontWeight: 700, color: C.t1, textAlign: 'center', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', width: '100%', paddingInline: 4 }}>{coach.name}</div>
-              {coach.rating && <div style={{ fontSize: 10, fontWeight: 700, color: C.amber, display: 'flex', alignItems: 'center', gap: 2 }}><Star style={{ width: 9, height: 9 }} /> {coach.rating}</div>}
+    <div style={{ borderTop: `1px solid ${C.brd}`, padding: '10px 14px 12px' }}>
+      <div style={{ display: 'flex', gap: 8, alignItems: 'center', overflowX: 'auto', scrollbarWidth: 'none' }}>
+        {coaches.map(coach => (
+          <div key={coach.id} style={{ flexShrink: 0, display: 'flex', alignItems: 'center', gap: 8, padding: '7px 10px', borderRadius: 8, background: C.card2, border: `1px solid ${C.brd}` }}>
+            <div style={{ width: 30, height: 30, borderRadius: '50%', flexShrink: 0, overflow: 'hidden', border: `1.5px solid ${C.brd2}`, background: C.brd, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 800, color: C.cyan }}>
+              {coach.avatar_url ? <img src={coach.avatar_url} alt={coach.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : ini(coach.name)}
             </div>
-          ))}
-          <div onClick={onManage} style={{ flexShrink: 0, width: 90, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 5, padding: '8px 6px', borderRadius: 9, border: `1px dashed ${C.brd2}`, cursor: 'pointer', transition: 'border-color 0.15s' }}
-            onMouseEnter={e => e.currentTarget.style.borderColor = C.cyanBrd}
-            onMouseLeave={e => e.currentTarget.style.borderColor = C.brd2}
-          >
-            <UserPlus style={{ width: 16, height: 16, color: C.t3 }} />
-            <span style={{ fontSize: 10, color: C.t3, textAlign: 'center' }}>Add coach</span>
+            <div>
+              <div style={{ fontSize: 12, fontWeight: 700, color: C.t1, whiteSpace: 'nowrap' }}>{coach.name}</div>
+              {(coach.specialties?.length > 0 || coach.rating) && (
+                <div style={{ fontSize: 10.5, color: C.t3, marginTop: 1, display: 'flex', alignItems: 'center', gap: 5 }}>
+                  {coach.specialties?.[0] && <span>{coach.specialties[0]}</span>}
+                  {coach.rating && <span style={{ color: C.amber, display: 'flex', alignItems: 'center', gap: 2 }}><Star style={{ width: 9, height: 9 }} />{coach.rating}</span>}
+                </div>
+              )}
+            </div>
           </div>
-        </div>
-      )}
+        ))}
+        {coaches.length === 0 ? (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, flex: 1 }}>
+            <div style={{ width: 30, height: 30, borderRadius: '50%', background: 'rgba(255,255,255,0.04)', border: `1.5px dashed ${C.brd2}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+              <GraduationCap style={{ width: 14, height: 14, color: C.t3 }} />
+            </div>
+            <span style={{ fontSize: 11.5, color: C.t3 }}>No coaches added yet</span>
+            <button onClick={onManage} style={{ marginLeft: 'auto', padding: '5px 12px', borderRadius: 7, fontSize: 11, fontWeight: 700, fontFamily: FONT, cursor: 'pointer', flexShrink: 0, ...GRAD_BTN }}>
+              + Add
+            </button>
+          </div>
+        ) : (
+          <div onClick={onManage} style={{ flexShrink: 0, display: 'flex', alignItems: 'center', gap: 6, padding: '7px 10px', borderRadius: 8, border: `1px dashed ${C.brd2}`, cursor: 'pointer', transition: 'border-color 0.15s, background 0.15s' }}
+            onMouseEnter={e => { e.currentTarget.style.borderColor = C.cyanBrd; e.currentTarget.style.background = C.cyanDim; }}
+            onMouseLeave={e => { e.currentTarget.style.borderColor = C.brd2; e.currentTarget.style.background = 'transparent'; }}>
+            <UserPlus style={{ width: 13, height: 13, color: C.t3 }} />
+            <span style={{ fontSize: 11, color: C.t3, whiteSpace: 'nowrap' }}>Add coach</span>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
@@ -546,11 +598,11 @@ export default function TabGymProfile({ gym, openModal, coaches = [], onDeleteCo
           </div>
 
           {/* ── 2-col grid: First Impression + Discovery ───── */}
-          <div style={{ display: 'grid', gridTemplateColumns: '55% 1fr', gap: 9, marginBottom: 9 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '55% 1fr', gap: 9, marginBottom: 9, alignItems: 'stretch' }}>
 
             {/* LEFT: First Impression */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: 9 }}>
-              <div style={{ fontSize: 12, fontWeight: 500, color: C.t2, marginBottom: 1 }}>
+              <div style={{ fontSize: 12, fontWeight: 500, color: C.t2 }}>
                 First Impression <span style={{ color: C.t3, fontWeight: 400 }}>— What a member sees when they find your gym</span>
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 9 }}>
@@ -565,8 +617,8 @@ export default function TabGymProfile({ gym, openModal, coaches = [], onDeleteCo
                   <CoverVisual imageUrl={gym.image_url} />
                 </ItemCard>
               </div>
-              <ItemCard title="Photo Gallery" score={galleryScore}
-                microcopy={galleryCount >= 5 ? `Rich gallery with ${galleryCount}+ photos.` : galleryCount > 0 ? `${galleryCount} photos — more variety builds confidence.` : "No gallery. Members can't visualise the space."}
+              <ItemCard title="Photo Gallery" score={galleryScore} flex={1}
+                microcopy={galleryCount >= 5 ? `Rich gallery with ${galleryCount}+ photos.` : galleryCount > 0 ? `${galleryCount} photos — add ${5 - galleryCount} more for full score.` : "No gallery. Members can't visualise the space."}
                 onClick={() => openModal('photos')}>
                 <GalleryVisual gallery={gym.gallery} />
               </ItemCard>
@@ -574,7 +626,7 @@ export default function TabGymProfile({ gym, openModal, coaches = [], onDeleteCo
 
             {/* RIGHT: Discovery */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: 9 }}>
-              <div style={{ fontSize: 12, fontWeight: 500, color: C.t2, marginBottom: 1 }}>
+              <div style={{ fontSize: 12, fontWeight: 500, color: C.t2 }}>
                 Discovery <span style={{ color: C.t3, fontWeight: 400 }}>— What makes your gym distinct and searchable</span>
               </div>
               <ItemCard title="Location & Hours" score={mapScore}
@@ -587,7 +639,7 @@ export default function TabGymProfile({ gym, openModal, coaches = [], onDeleteCo
                 onClick={() => openModal('editInfo')}>
                 <SocialVisual gym={gym} />
               </ItemCard>
-              <ItemCard title="Coaches & Staff" score={coachesScore}
+              <ItemCard title="Coaches & Staff" score={coachesScore} flex={1}
                 microcopy={coaches.length > 0 ? `${coaches.length} coach${coaches.length !== 1 ? 'es' : ''} on your team.` : 'Add coaches to showcase your team.'}
                 onClick={() => openModal('coaches')}>
                 <CoachesVisual coaches={coaches} onManage={() => openModal('coaches')} />
