@@ -478,16 +478,7 @@ const ALL_TIPS = [
     detail: `Go to Actions → Edit Pricing and add your monthly membership cost. Even a range (e.g. "£30–£55/month") builds confidence. Members who can see pricing before visiting are 2× more likely to book a visit. If you offer multiple tiers (monthly, annual, student), list them all — it signals transparency and professionalism.`,
     relevantIf: (gym) => !gym.price,
   },
-  {
-    id: 't6',
-    icon: Globe,
-    color: '#60a5fa',
-    category: 'Discovery',
-    title: 'Link your social media to boost discoverability',
-    summary: 'Gyms with social links receive 40% more profile views from organic discovery.',
-    detail: `Add your Instagram, Facebook, or website link via Edit Basic Info. Instagram is the highest-impact link — potential members often browse your feed before deciding. Make sure your social profiles are active and public. A direct link from your CoStride profile to a well-maintained Instagram page dramatically increases perceived credibility.`,
-    relevantIf: (gym) => !(gym.instagram_url || gym.facebook_url || gym.website_url),
-  },
+
   {
     id: 't7',
     icon: Star,
@@ -510,7 +501,7 @@ const ALL_TIPS = [
   },
 ];
 
-const TIP_BASE_SCORES = { t1: 70, t2: 80, t3: 65, t4: 75, t5: 90, t6: 60, t7: 55, t8: 70 };
+const TIP_BASE_SCORES = { t1: 70, t2: 80, t3: 65, t4: 75, t5: 90, t7: 55, t8: 70 };
 
 function TipsPanel({ communityScore, impressionScore, trustScore, discoveryScore, gym, activeMembers, totalMembers, postsWeek }) {
   const [expanded, setExpanded] = useState(false);
@@ -627,7 +618,6 @@ function ProfileSidebar({ communityScore, impressionScore, trustScore, discovery
     { label: 'Cover image',           done: !!gym.image_url,   action: () => openModal('heroPhoto'), impact: 6  },
     { label: 'Gallery photos (5+)',   done: galleryCount >= 5,  action: () => openModal('photos'),   impact: galleryCount === 0 ? 10 : 5 },
     { label: 'Address & location',    done: !!(gym.address || gym.city), action: () => openModal('editInfo'), impact: 7 },
-    { label: 'Social media links',    done: !!(gym.instagram_url || gym.facebook_url || gym.website_url), action: () => openModal('editInfo'), impact: !!(gym.instagram_url || gym.facebook_url || gym.website_url) ? 3 : 4 },
     { label: 'Membership pricing',    done: !!gym.price,       action: () => openModal('pricing'),   impact: 12 },
     { label: 'Amenities listed',      done: (gym.amenities?.length || 0) > 0, action: () => openModal('amenities'), impact: 5 },
     { label: 'Equipment listed',      done: (gym.equipment?.length || 0) > 0, action: () => openModal('equipment'), impact: 5 },
@@ -898,11 +888,6 @@ export default function TabGymProfile({ gym, openModal, coaches = [], onDeleteCo
                 microcopy="Address, hours, and location data."
                 onClick={() => openModal('editInfo')}>
                 <MapVisual gym={gym} />
-              </ItemCard>
-              <ItemCard title="Social Media Links" score={socialScore}
-                microcopy={hasSocial ? 'Social presence increases discoverability.' : 'No social links. Reduces visibility and trust.'}
-                onClick={() => openModal('editInfo')}>
-                <SocialVisual gym={gym} />
               </ItemCard>
               <ItemCard title="Coaches & Staff" score={coachesScore} flex={1}
                 microcopy={coaches.length > 0 ? `${coaches.length} coach${coaches.length !== 1 ? 'es' : ''} on your team.` : 'Add coaches to showcase your team.'}
