@@ -568,7 +568,26 @@ export default function GymOwnerDashboard() {
     } else if (item.id === 'gymprofile') {
       content = <TabGymProfile gym={selectedGym} openModal={openModal} coaches={coaches} checkIns={checkIns} posts={posts} allMemberships={effectiveMemberships} />;
     } else if (item.id === 'actions') {
-      content = <TabActions />;
+      content = <TabActions
+        allMemberships={effectiveMemberships}
+        checkIns={checkIns}
+        classes={classes}
+        challenges={challenges}
+        polls={polls}
+        posts={posts}
+        events={events}
+        atRisk={atRisk}
+        atRiskMembersList={atRiskMembersList}
+        memberLastCheckIn={memberLastCheckIn}
+        totalMembers={totalMembers}
+        activeThisWeek={activeThisWeek}
+        monthChangePct={monthChangePct}
+        selectedGym={selectedGym}
+        openModal={openModal}
+        setTab={setTab}
+        avatarMap={avatarMapFull}
+        nameMap={memberNameMap}
+      />;
     }
     return { id: item.id, content };
   }).filter((p) => p.content !== null);
