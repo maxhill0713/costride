@@ -170,7 +170,7 @@ function WorkoutSwipePanel({ post }) {
             alt="workout"
             style={{ position: "absolute", left: 0, right: 0, width: "100%", height: "130%", top: "-15%", objectFit: "cover", objectPosition: "center center" }}
           />
-          {/* Arrow hint — visible when on image panel */}
+          {/* Arrow hint — right arrow when on image, left arrow when on summary */}
           {slide === 0 && (
             <button
               onClick={() => setSlide(1)}
@@ -179,8 +179,7 @@ function WorkoutSwipePanel({ post }) {
                 width: 36, height: 36, borderRadius: "50%",
                 background: "rgba(255,255,255,0.18)", border: "1px solid rgba(255,255,255,0.35)",
                 display: "flex", alignItems: "center", justifyContent: "center",
-                cursor: "pointer", backdropFilter: "blur(6px)",
-                transition: "all 0.2s",
+                cursor: "pointer", backdropFilter: "blur(6px)", transition: "all 0.2s",
               }}
               onMouseEnter={e => { e.currentTarget.style.background = "rgba(255,255,255,0.3)"; }}
               onMouseLeave={e => { e.currentTarget.style.background = "rgba(255,255,255,0.18)"; }}
@@ -192,8 +191,27 @@ function WorkoutSwipePanel({ post }) {
           )}
         </div>
         {/* Right panel — exercise summary */}
-        <div style={{ position: "absolute", top: 0, height: "100%", left: "48.5%", width: "45%", overflow: "hidden" }}>
+        <div style={{ position: "absolute", top: 0, height: "100%", left: "48.5%", width: "45%", overflow: "hidden", position: "relative" }}>
           {exerciseSummaryJSX}
+          {/* Back arrow — only visible when on summary panel */}
+          {slide === 1 && (
+            <button
+              onClick={() => setSlide(0)}
+              style={{
+                position: "absolute", left: 6, top: "50%", transform: "translateY(-50%)",
+                width: 32, height: 32, borderRadius: "50%",
+                background: "rgba(0,0,0,0.45)", border: "1px solid rgba(255,255,255,0.2)",
+                display: "flex", alignItems: "center", justifyContent: "center",
+                cursor: "pointer", backdropFilter: "blur(6px)", transition: "all 0.2s", zIndex: 10,
+              }}
+              onMouseEnter={e => { e.currentTarget.style.background = "rgba(0,0,0,0.65)"; }}
+              onMouseLeave={e => { e.currentTarget.style.background = "rgba(0,0,0,0.45)"; }}
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="15 18 9 12 15 6" />
+              </svg>
+            </button>
+          )}
         </div>
       </div>
     </div>
@@ -323,8 +341,8 @@ export default function PostPreviewModal({ post, gym, avatarMap = {}, nameMap = 
                   </div>
                   <div style={{ width: 1, alignSelf: "stretch", background: "rgba(255,255,255,0.10)" }} />
                   <div style={{ display: "flex", flexDirection: "column", alignItems: "center", flex: 1 }}>
-                    <span style={{ fontSize: 14, fontWeight: 900, color: "#fff", lineHeight: 1 }}>{post.workout_volume || "—"}</span>
-                    <span style={{ fontSize: 10, fontWeight: 600, color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.08em", marginTop: 2 }}>Volume</span>
+                    <span style={{ fontSize: 14, fontWeight: 900, color: "#fff", lineHeight: 1 }}>—</span>
+                    <span style={{ fontSize: 10, fontWeight: 600, color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.08em", marginTop: 2 }}>Streak</span>
                   </div>
                 </div>
               </div>
