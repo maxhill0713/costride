@@ -94,27 +94,39 @@ export default function EventsCalendar({ events, classes = [], onDeleteEvent, on
   const daysInView = new Date(viewYear, viewMonth + 1, 0).getDate();
   (classes || []).forEach(cls => {
     (cls.schedule || []).forEach(s => {
-      // Skip entries with no date
-      if (!s.date) return;
-      // Normalise: strip any time component so key is always YYYY-MM-DD
-      const dateKey = s.date.length > 10 ? s.date.slice(0, 10) : s.date;
-      if (s.weekly === true) {
-        // Weekly repeating: show on matching weekday ON OR AFTER the start date
-        const startDate = new Date(dateKey + 'T00:00:00');
+      if (s.date) {
+        // New format — has a specific date
+        const dateKey = s.date.length > 10 ? s.date.slice(0, 10) : s.date;
+        if (s.weekly === true) {
+          // Weekly repeating: show on matching weekday ON OR AFTER the start date
+          const startDate = new Date(dateKey + 'T00:00:00');
+          const targetDow = DAY_NAME_TO_DOW[s.day];
+          if (targetDow === undefined) return;
+          for (let d = 1; d <= daysInView; d++) {
+            const cellDate = new Date(viewYear, viewMonth, d);
+            if (cellDate.getDay() === targetDow && cellDate >= startDate) {
+              const key = `${viewYear}-${String(viewMonth+1).padStart(2,"0")}-${String(d).padStart(2,"0")}`;
+              if (!classesByDay[key]) classesByDay[key] = [];
+              classesByDay[key].push({ ...cls, _scheduleTime: s.time });
+            }
+          }
+        } else {
+          // One-off: show only on the specific date
+          if (!classesByDay[dateKey]) classesByDay[dateKey] = [];
+          classesByDay[dateKey].push({ ...cls, _scheduleTime: s.time });
+        }
+      } else if (s.day) {
+        // Legacy format (ManageClassesModal) — day name only, treat as weekly
         const targetDow = DAY_NAME_TO_DOW[s.day];
         if (targetDow === undefined) return;
         for (let d = 1; d <= daysInView; d++) {
           const cellDate = new Date(viewYear, viewMonth, d);
-          if (cellDate.getDay() === targetDow && cellDate >= startDate) {
+          if (cellDate.getDay() === targetDow) {
             const key = `${viewYear}-${String(viewMonth+1).padStart(2,"0")}-${String(d).padStart(2,"0")}`;
             if (!classesByDay[key]) classesByDay[key] = [];
             classesByDay[key].push({ ...cls, _scheduleTime: s.time });
           }
         }
-      } else {
-        // One-off: show only on the specific date
-        if (!classesByDay[dateKey]) classesByDay[dateKey] = [];
-        classesByDay[dateKey].push({ ...cls, _scheduleTime: s.time });
       }
     });
   });
