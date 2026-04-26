@@ -48,7 +48,8 @@ function Inp({ value, onChange, placeholder, type = 'text', disabled, Icon, min 
       <input type={type} value={value} onChange={onChange} placeholder={placeholder} disabled={disabled} min={min}
         onFocus={e => { setFocus(true); e.target.style.borderColor = `${C.purple}55`; e.target.style.background = C.inset; }}
         onBlur={e => { setFocus(false); e.target.style.borderColor = C.brd; e.target.style.background = C.card; }}
-        style={{ ...baseInp, paddingLeft: Icon ? 32 : 12, opacity: disabled ? 0.45 : 1, cursor: disabled ? 'not-allowed' : 'text' }}
+        style={{ ...baseInp, paddingLeft: Icon ? 32 : 12, opacity: disabled ? 0.45 : 1, cursor: disabled ? 'not-allowed' : 'text',
+          ...(type === 'number' ? { MozAppearance: 'textfield' } : {}) }}
       />
     </div>
   );
@@ -180,6 +181,9 @@ export default function CreateClassModal({ open, onClose, onSave, gym, isLoading
         .cls-cancel:hover { border-color:${C.brdHover}; color:${C.t1}; }
         .cls-sel-wrap { position:relative; }
         .cls-sel-wrap::after { content:''; position:absolute; right:10px; top:50%; transform:translateY(-50%); width:0; height:0; border-left:4px solid transparent; border-right:4px solid transparent; border-top:5px solid ${C.t3}; pointer-events:none; }
+        input[type=number]::-webkit-inner-spin-button,
+        input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+        input[type=number] { -moz-appearance: textfield; }
       `}</style>
 
       <div onClick={e => e.target === e.currentTarget && handleClose()}
@@ -230,11 +234,11 @@ export default function CreateClassModal({ open, onClose, onSave, gym, isLoading
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12 }}>
                   <div>
                     <SL required>Duration (min)</SL>
-                    <Inp type="number" value={form.duration_minutes} onChange={e => set('duration_minutes', e.target.value)} placeholder="60" min="1" Icon={Clock} />
+                    <Inp type="number" value={form.duration_minutes} onChange={e => set('duration_minutes', e.target.value)} placeholder="" min="1" Icon={Clock} />
                   </div>
                   <div>
                     <SL required>Max Capacity</SL>
-                    <Inp type="number" value={form.max_capacity} onChange={e => set('max_capacity', e.target.value)} placeholder="20" min="1" Icon={Users} />
+                    <Inp type="number" value={form.max_capacity} onChange={e => set('max_capacity', e.target.value)} placeholder="" min="1" Icon={Users} />
                   </div>
                   <div>
                     <SL>Difficulty</SL>
