@@ -1,7 +1,6 @@
 /**
  * CreatePollModal — Content Hub design system
- * Blue #60a5fa · DM Sans · #0d0d11 / #17171c / #1f1f26
- * Preview panel: 360px (was 300px), matches actual FeedPollCard dark style
+ * Submit button updated to #2563eb to match ContentPage "New Post" button.
  */
 import React, { useState, useEffect } from 'react';
 import {
@@ -10,19 +9,11 @@ import {
   Clock, Send,
 } from 'lucide-react';
 
-/* ─── TOKENS ─────────────────────────────────────────────────── */
 const C = {
-  bg:       '#0d0d11',
-  surface:  '#17171c',
-  card:     '#1f1f26',
-  inset:    '#13131a',
-  brd:      '#252530',
-  brd2:     '#2e2e3a',
-  brdHover: '#3a3a48',
-  t1:       '#ffffff',
-  t2:       '#9898a6',
-  t3:       '#525260',
-  blue:     '#60a5fa', blueDim:   'rgba(96,165,250,0.07)',  blueBrd:   'rgba(96,165,250,0.18)',
+  bg:       '#0d0d11', surface:  '#17171c', card:     '#1f1f26', inset:    '#13131a',
+  brd:      '#252530', brd2:     '#2e2e3a', brdHover: '#3a3a48',
+  t1:       '#ffffff', t2:       '#9898a6', t3:       '#525260',
+  blue:     '#2563eb', blueDim:  'rgba(37,99,235,0.07)',  blueBrd:  'rgba(37,99,235,0.18)',
   red:    '#ff4d6d', redDim:    'rgba(255,77,109,0.08)',  redBrd:    'rgba(255,77,109,0.20)',
   amber:  '#f59e0b', amberDim:  'rgba(245,158,11,0.08)', amberBrd:  'rgba(245,158,11,0.20)',
   green:  '#22c55e', greenDim:  'rgba(34,197,94,0.08)',  greenBrd:  'rgba(34,197,94,0.20)',
@@ -31,7 +22,6 @@ const C = {
 const FONT = "'DM Sans','Inter',system-ui,sans-serif";
 const MONO = { fontVariantNumeric: 'tabular-nums' };
 
-/* ─── DATA ───────────────────────────────────────────────────── */
 const CATEGORIES = [
   { value: 'equipment_replacement', label: 'Equipment', badgeLabel: 'Equipment Poll', color: C.amber,  dim: C.amberDim,  border: C.amberBrd  },
   { value: 'favorite_equipment',    label: 'Fav. Kit',  badgeLabel: 'Fav. Kit Poll',  color: C.blue,   dim: C.blueDim,   border: C.blueBrd   },
@@ -43,71 +33,40 @@ const CATEGORIES = [
 
 const catFor = val => CATEGORIES.find(c => c.value === val) || null;
 
-/* ─── MOBILE HOOK ────────────────────────────────────────────── */
 function useIsMobile() {
-  const [isMobile, setIsMobile] = useState(
-    typeof window !== 'undefined' ? window.innerWidth < 768 : false
-  );
-  useEffect(() => {
-    const h = () => setIsMobile(window.innerWidth < 768);
-    window.addEventListener('resize', h);
-    return () => window.removeEventListener('resize', h);
-  }, []);
+  const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' ? window.innerWidth < 768 : false);
+  useEffect(() => { const h = () => setIsMobile(window.innerWidth < 768); window.addEventListener('resize', h); return () => window.removeEventListener('resize', h); }, []);
   return isMobile;
 }
 
-/* ─── TIME REMAINING BADGE (mirrors FeedPollCard) ────────────── */
 function TimeRemainingBadge({ endDate }) {
   const [label, setLabel] = useState('');
   const [isUrgent, setIsUrgent] = useState(false);
-
   useEffect(() => {
     if (!endDate) { setLabel(''); return; }
-
     const compute = () => {
-      // treat end_date as end-of-day UTC (same as FeedPollCard)
       const endMs = new Date(endDate).getTime() + 24 * 60 * 60 * 1000 - 1;
       const diffMs = endMs - Date.now();
       if (diffMs <= 0) { setLabel('Ended'); setIsUrgent(false); return; }
       const diffHours = diffMs / (1000 * 60 * 60);
-      const urgent = diffHours < 24;
-      setIsUrgent(urgent);
+      setIsUrgent(diffHours < 24);
       if (diffHours < 24) setLabel(`${Math.round(diffHours)}h left`);
       else setLabel(`${Math.round(diffMs / (1000 * 60 * 60 * 24))}d left`);
     };
-
     compute();
     const id = setInterval(compute, 30000);
     return () => clearInterval(id);
   }, [endDate]);
-
   if (!label) return null;
-
   return (
-    <div style={{
-      display: 'flex', alignItems: 'center', gap: 4,
-      padding: '2px 7px', borderRadius: 6,
-      background: isUrgent ? 'rgba(255,77,109,0.15)' : 'rgba(77,127,255,0.12)',
-      border: `1px solid ${isUrgent ? 'rgba(255,77,109,0.35)' : 'rgba(77,127,255,0.3)'}`,
-      color: isUrgent ? '#ff6b85' : '#60a5fa',
-      fontSize: 10, fontWeight: 700,
-      flexShrink: 0,
-    }}>
-      <Clock size={9} color="currentColor" />
-      {label}
+    <div style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '2px 7px', borderRadius: 6, background: isUrgent ? 'rgba(255,77,109,0.15)' : 'rgba(37,99,235,0.12)', border: `1px solid ${isUrgent ? 'rgba(255,77,109,0.35)' : 'rgba(37,99,235,0.3)'}`, color: isUrgent ? '#ff6b85' : C.blue, fontSize: 10, fontWeight: 700, flexShrink: 0 }}>
+      <Clock size={9} color="currentColor" />{label}
     </div>
   );
 }
 
-/* ─── SHARED INPUT BASE ──────────────────────────────────────── */
-const baseInp = {
-  width: '100%', boxSizing: 'border-box', padding: '9px 12px',
-  borderRadius: 9, background: C.card, border: `1px solid ${C.brd}`,
-  color: C.t1, fontSize: 12.5, fontWeight: 500, outline: 'none',
-  fontFamily: FONT, transition: 'border-color 0.15s, background 0.15s',
-};
+const baseInp = { width: '100%', boxSizing: 'border-box', padding: '9px 12px', borderRadius: 9, background: C.card, border: `1px solid ${C.brd}`, color: C.t1, fontSize: 12.5, fontWeight: 500, outline: 'none', fontFamily: FONT, transition: 'border-color 0.15s, background 0.15s' };
 
-/* ─── DESKTOP PRIMITIVES ─────────────────────────────────────── */
 function SL({ children, required }) {
   return (
     <div style={{ fontSize: 10, fontWeight: 600, color: C.t3, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 8, display: 'flex', alignItems: 'center', gap: 4 }}>
@@ -120,33 +79,24 @@ function Inp({ value, onChange, placeholder, Icon, accentColor = C.blue }) {
   const [focus, setFocus] = useState(false);
   return (
     <div style={{ position: 'relative' }}>
-      {Icon && (
-        <div style={{ position: 'absolute', left: 11, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }}>
-          <Icon size={12} color={focus ? accentColor : C.t3} style={{ transition: 'color 0.15s' }} />
-        </div>
-      )}
-      <input
-        value={value} onChange={onChange} placeholder={placeholder}
+      {Icon && <div style={{ position: 'absolute', left: 11, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }}><Icon size={12} color={focus ? accentColor : C.t3} style={{ transition: 'color 0.15s' }} /></div>}
+      <input value={value} onChange={onChange} placeholder={placeholder}
         onFocus={e => { setFocus(true); e.target.style.borderColor = `${accentColor}38`; e.target.style.background = C.inset; }}
-        onBlur={e =>  { setFocus(false); e.target.style.borderColor = C.brd; e.target.style.background = C.card; }}
-        style={{ ...baseInp, paddingLeft: Icon ? 32 : 12 }}
-      />
+        onBlur={e  => { setFocus(false); e.target.style.borderColor = C.brd; e.target.style.background = C.card; }}
+        style={{ ...baseInp, paddingLeft: Icon ? 32 : 12 }} />
     </div>
   );
 }
 
 function Textarea({ value, onChange, placeholder, rows = 2, accentColor = C.blue }) {
   return (
-    <textarea
-      value={value} onChange={onChange} placeholder={placeholder} rows={rows}
+    <textarea value={value} onChange={onChange} placeholder={placeholder} rows={rows}
       onFocus={e => { e.target.style.borderColor = `${accentColor}38`; e.target.style.background = C.inset; }}
-      onBlur={e =>  { e.target.style.borderColor = C.brd; e.target.style.background = C.card; }}
-      style={{ ...baseInp, resize: 'none', lineHeight: 1.7, padding: '11px 13px' }}
-    />
+      onBlur={e  => { e.target.style.borderColor = C.brd; e.target.style.background = C.card; }}
+      style={{ ...baseInp, resize: 'none', lineHeight: 1.7, padding: '11px 13px' }} />
   );
 }
 
-/* ─── DESKTOP: CATEGORY TABS ─────────────────────────────────── */
 function CategoryTabs({ value, onChange }) {
   return (
     <div style={{ display: 'flex', gap: 0, borderBottom: `1px solid ${C.brd}`, marginLeft: -2, overflowX: 'auto' }}>
@@ -156,8 +106,7 @@ function CategoryTabs({ value, onChange }) {
           <button key={cat.value} onClick={() => onChange(cat.value)} type="button"
             style={{ padding: '8px 13px', background: 'none', border: 'none', borderBottom: active ? `2px solid ${cat.color}` : '2px solid transparent', color: active ? C.t1 : C.t2, fontSize: 12.5, fontWeight: active ? 700 : 500, cursor: 'pointer', fontFamily: FONT, whiteSpace: 'nowrap', transition: 'color 0.15s, border-color 0.15s', marginBottom: -1 }}
             onMouseEnter={e => { if (!active) e.currentTarget.style.color = C.t1; }}
-            onMouseLeave={e => { if (!active) e.currentTarget.style.color = C.t2; }}
-          >
+            onMouseLeave={e => { if (!active) e.currentTarget.style.color = C.t2; }}>
             {cat.label}
           </button>
         );
@@ -166,13 +115,11 @@ function CategoryTabs({ value, onChange }) {
   );
 }
 
-/* ─── POLL PREVIEW CARD — matches actual PostCard dark style ── */
 function PollPreview({ title, description, category, options, gym, endDate }) {
   const cat = catFor(category);
   const accent = cat?.color || C.blue;
   const validOpts = options.filter(o => o.trim());
   const hasContent = title || validOpts.length > 0;
-
   const gymName = gym?.name || 'Your Gym';
   const gymAvatar = gym?.logo_url || gym?.image_url || null;
   const gymInitial = gymName.charAt(0).toUpperCase();
@@ -183,21 +130,9 @@ function PollPreview({ title, description, category, options, gym, endDate }) {
         <Eye size={11} color={C.t3} />
         <span style={{ fontSize: 9.5, fontWeight: 600, color: C.t3, textTransform: 'uppercase', letterSpacing: '0.09em' }}>Live Preview</span>
       </div>
-
-      {/* Outer card */}
-      <div style={{
-        borderRadius: 16,
-        overflow: 'hidden',
-        background: 'linear-gradient(135deg, rgba(16,19,40,0.96) 0%, rgba(6,8,18,0.99) 100%)',
-        border: '1px solid rgba(255,255,255,0.07)',
-        backdropFilter: 'blur(20px)',
-        WebkitBackdropFilter: 'blur(20px)',
-        boxShadow: '0 32px 80px rgba(0,0,0,0.5)',
-        position: 'relative',
-      }}>
+      <div style={{ borderRadius: 16, overflow: 'hidden', background: 'linear-gradient(135deg, rgba(16,19,40,0.96) 0%, rgba(6,8,18,0.99) 100%)', border: '1px solid rgba(255,255,255,0.07)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', boxShadow: '0 32px 80px rgba(0,0,0,0.5)', position: 'relative' }}>
         <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 1, background: 'linear-gradient(90deg, transparent 10%, rgba(255,255,255,0.1) 50%, transparent 90%)', pointerEvents: 'none', zIndex: 1 }} />
         <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', borderRadius: 16, background: 'radial-gradient(ellipse at 25% 35%, rgba(99,102,241,0.12) 0%, transparent 60%)' }} />
-
         {!hasContent ? (
           <div style={{ padding: '36px 20px', textAlign: 'center', position: 'relative', zIndex: 2 }}>
             <BarChart2 size={24} color={`${accent}35`} style={{ margin: '0 auto 10px', display: 'block' }} />
@@ -205,60 +140,30 @@ function PollPreview({ title, description, category, options, gym, endDate }) {
           </div>
         ) : (
           <div style={{ position: 'relative', zIndex: 2 }}>
-            {/* Header row */}
             <div style={{ padding: '14px 16px 0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                 <div style={{ width: 36, height: 36, borderRadius: '50%', background: '#0f172a', overflow: 'hidden', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid rgba(255,255,255,0.08)' }}>
-                  {gymAvatar
-                    ? <img src={gymAvatar} alt={gymName} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                    : <span style={{ fontSize: 13, fontWeight: 800, color: '#fff' }}>{gymInitial}</span>}
+                  {gymAvatar ? <img src={gymAvatar} alt={gymName} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <span style={{ fontSize: 13, fontWeight: 800, color: '#fff' }}>{gymInitial}</span>}
                 </div>
-                {/* ── NAME + BADGE BELOW ── */}
                 <div>
                   <div style={{ fontSize: 13, fontWeight: 700, color: '#fff', lineHeight: 1.2 }}>{gymName}</div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 3 }}>
-                    <span style={{
-                      fontSize: 9, fontWeight: 700, padding: '1px 7px', borderRadius: 5,
-                      background: cat?.dim || C.blueDim,
-                      border: `1px solid ${cat?.border || C.blueBrd}`,
-                      color: cat?.color || C.blue,
-                      display: 'inline-flex', alignItems: 'center', gap: 4, flexShrink: 0,
-                    }}>
-                      <BarChart2 size={9} />
-                      {cat?.badgeLabel || 'Poll'}
+                    <span style={{ fontSize: 9, fontWeight: 700, padding: '1px 7px', borderRadius: 5, background: cat?.dim || C.blueDim, border: `1px solid ${cat?.border || C.blueBrd}`, color: cat?.color || C.blue, display: 'inline-flex', alignItems: 'center', gap: 4, flexShrink: 0 }}>
+                      <BarChart2 size={9} />{cat?.badgeLabel || 'Poll'}
                     </span>
                     <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)' }}>Just now</div>
                   </div>
                 </div>
               </div>
-
-              {/* ── TIME REMAINING BADGE (replaces 3-dots) ── */}
               <TimeRemainingBadge endDate={endDate} />
             </div>
-
-            {/* Poll question */}
-            <div style={{ padding: '12px 16px 0', fontSize: 14, fontWeight: 700, color: '#fff', lineHeight: 1.35 }}>
-              {title || 'Poll question'}
-            </div>
-
-            {/* Description */}
-            {description && (
-              <div style={{ padding: '6px 16px 0', fontSize: 12, color: 'rgba(148,163,184,0.75)', lineHeight: 1.6, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
-                {description}
-              </div>
-            )}
-
-            {/* Options */}
+            <div style={{ padding: '12px 16px 0', fontSize: 14, fontWeight: 700, color: '#fff', lineHeight: 1.35 }}>{title || 'Poll question'}</div>
+            {description && <div style={{ padding: '6px 16px 0', fontSize: 12, color: 'rgba(148,163,184,0.75)', lineHeight: 1.6, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{description}</div>}
             <div style={{ padding: '12px 16px 14px' }}>
               {validOpts.length > 0 ? (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                   {validOpts.map((opt, i) => (
-                    <div key={i} style={{
-                      borderRadius: 10,
-                      border: '1px solid rgba(255,255,255,0.08)',
-                      background: 'rgba(255,255,255,0.04)',
-                      padding: '9px 13px',
-                    }}>
+                    <div key={i} style={{ borderRadius: 10, border: '1px solid rgba(255,255,255,0.08)', background: 'rgba(255,255,255,0.04)', padding: '9px 13px' }}>
                       <span style={{ fontSize: 13, fontWeight: 600, color: 'rgba(255,255,255,0.8)' }}>{opt}</span>
                     </div>
                   ))}
@@ -269,8 +174,6 @@ function PollPreview({ title, description, category, options, gym, endDate }) {
                 </div>
               )}
             </div>
-
-            {/* Action bar — streak icon and share arrow removed */}
           </div>
         )}
       </div>
@@ -278,42 +181,17 @@ function PollPreview({ title, description, category, options, gym, endDate }) {
   );
 }
 
-/* ══════════════════════════════════════════════════════════════
-   MOBILE-ONLY COMPONENTS
-══════════════════════════════════════════════════════════════ */
-
 function MobilePollPreviewSheet({ open, onClose, title, description, category, options, gym, endDate }) {
   const [visible, setVisible] = useState(false);
-
   useEffect(() => {
-    if (open) {
-      const id = requestAnimationFrame(() => requestAnimationFrame(() => setVisible(true)));
-      return () => cancelAnimationFrame(id);
-    } else {
-      setVisible(false);
-    }
+    if (open) { const id = requestAnimationFrame(() => requestAnimationFrame(() => setVisible(true))); return () => cancelAnimationFrame(id); }
+    else setVisible(false);
   }, [open]);
-
   if (!open) return null;
-
   return (
     <div style={{ position: 'fixed', inset: 0, zIndex: 700, fontFamily: FONT }}>
-      <div
-        onClick={onClose}
-        style={{
-          position: 'absolute', inset: 0,
-          background: 'rgba(0,0,0,0.72)', backdropFilter: 'blur(6px)',
-          opacity: visible ? 1 : 0, transition: 'opacity 0.28s ease',
-        }}
-      />
-      <div style={{
-        position: 'absolute', bottom: 0, left: 0, right: 0,
-        background: C.surface, borderRadius: '22px 22px 0 0',
-        border: `1px solid ${C.brd}`, borderBottom: 'none',
-        maxHeight: '88vh', display: 'flex', flexDirection: 'column',
-        transform: `translateY(${visible ? '0' : '100%'})`,
-        transition: 'transform 0.38s cubic-bezier(0.32, 0.72, 0, 1)',
-      }}>
+      <div onClick={onClose} style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.72)', backdropFilter: 'blur(6px)', opacity: visible ? 1 : 0, transition: 'opacity 0.28s ease' }} />
+      <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, background: C.surface, borderRadius: '22px 22px 0 0', border: `1px solid ${C.brd}`, borderBottom: 'none', maxHeight: '88vh', display: 'flex', flexDirection: 'column', transform: `translateY(${visible ? '0' : '100%'})`, transition: 'transform 0.38s cubic-bezier(0.32, 0.72, 0, 1)' }}>
         <div style={{ padding: '14px 0 6px', display: 'flex', justifyContent: 'center', flexShrink: 0 }}>
           <div style={{ width: 40, height: 4, borderRadius: 2, background: C.brd2 }} />
         </div>
@@ -332,11 +210,11 @@ function MobilePollPreviewSheet({ open, onClose, title, description, category, o
 }
 
 function MobileCreatePollModal({ open, onClose, onSave, isLoading, gym }) {
-  const [title,       setTitle]       = useState('');
-  const [category,    setCategory]    = useState('');
-  const [options,     setOptions]     = useState(['', '']);
+  const [title, setTitle] = useState('');
+  const [category, setCategory] = useState('');
+  const [options, setOptions] = useState(['', '']);
   const [description, setDescription] = useState('');
-  const [endDate,     setEndDate]     = useState('');
+  const [endDate, setEndDate] = useState('');
   const [previewOpen, setPreviewOpen] = useState(false);
 
   const validOpts = options.filter(o => o.trim());
@@ -350,11 +228,7 @@ function MobileCreatePollModal({ open, onClose, onSave, isLoading, gym }) {
 
   const handleSubmit = () => {
     if (!canSave) return;
-    onSave({
-      title: title.trim(), description: description.trim(), category,
-      end_date: endDate,
-      options: validOpts.map(text => ({ id: Math.random().toString(36).substr(2, 9), text, votes: 0 })),
-    });
+    onSave({ title: title.trim(), description: description.trim(), category, end_date: endDate, options: validOpts.map(text => ({ id: Math.random().toString(36).substr(2, 9), text, votes: 0 })) });
     setTitle(''); setDescription(''); setCategory(''); setOptions(['', '']); setEndDate('');
   };
 
@@ -365,10 +239,8 @@ function MobileCreatePollModal({ open, onClose, onSave, isLoading, gym }) {
 
   const [visible, setVisible] = useState(false);
   useEffect(() => {
-    if (open) {
-      const id = requestAnimationFrame(() => requestAnimationFrame(() => setVisible(true)));
-      return () => cancelAnimationFrame(id);
-    } else { setVisible(false); }
+    if (open) { const id = requestAnimationFrame(() => requestAnimationFrame(() => setVisible(true))); return () => cancelAnimationFrame(id); }
+    else setVisible(false);
   }, [open]);
 
   if (!open) return null;
@@ -381,25 +253,14 @@ function MobileCreatePollModal({ open, onClose, onSave, isLoading, gym }) {
         .pl-cats-scroll::-webkit-scrollbar   { display: none }
         .pl-mobile-opt::placeholder { color: ${C.t3}; }
       `}</style>
-
-      <div style={{
-        position: 'fixed', inset: 0, zIndex: 9999,
-        background: C.bg, fontFamily: FONT,
-        display: 'flex', flexDirection: 'column',
-        transform: `translateY(${visible ? '0' : '100%'})`,
-        transition: 'transform 0.38s cubic-bezier(0.32, 0.72, 0, 1)',
-      }}>
-
-        {/* HEADER */}
+      <div style={{ position: 'fixed', inset: 0, zIndex: 9999, background: C.bg, fontFamily: FONT, display: 'flex', flexDirection: 'column', transform: `translateY(${visible ? '0' : '100%'})`, transition: 'transform 0.38s cubic-bezier(0.32, 0.72, 0, 1)' }}>
         <div style={{ flexShrink: 0, background: C.surface, borderBottom: `1px solid ${C.brd}` }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 16px 12px' }}>
             <button onClick={handleClose} style={{ width: 38, height: 38, borderRadius: 10, background: C.card, border: `1px solid ${C.brd}`, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0 }}>
               <ChevronLeft size={18} color={C.t2} />
             </button>
             <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontSize: 17, fontWeight: 700, color: C.t1, letterSpacing: '-0.02em' }}>
-                Create <span style={{ color: accent }}>Poll</span>
-              </div>
+              <div style={{ fontSize: 17, fontWeight: 700, color: C.t1, letterSpacing: '-0.02em' }}>Create <span style={{ color: accent }}>Poll</span></div>
             </div>
             <button onClick={() => setPreviewOpen(true)} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 12px', borderRadius: 9, background: C.blueDim, border: `1px solid ${C.blueBrd}`, color: C.blue, fontSize: 12.5, fontWeight: 700, cursor: 'pointer', fontFamily: FONT, flexShrink: 0 }}>
               <Eye size={13} /> Preview
@@ -417,24 +278,17 @@ function MobileCreatePollModal({ open, onClose, onSave, isLoading, gym }) {
             })}
           </div>
         </div>
-
-        {/* SCROLLABLE FORM */}
         <div className="pl-mobile-scroll" style={{ flex: 1, overflowY: 'auto', padding: '20px 16px', display: 'flex', flexDirection: 'column', gap: 24 }}>
           <div>
-            <div style={{ fontSize: 11, fontWeight: 600, color: C.t3, textTransform: 'uppercase', letterSpacing: '0.09em', marginBottom: 10, display: 'flex', alignItems: 'center', gap: 4 }}>
-              Question <span style={{ color: C.red }}>*</span>
-            </div>
+            <div style={{ fontSize: 11, fontWeight: 600, color: C.t3, textTransform: 'uppercase', letterSpacing: '0.09em', marginBottom: 10, display: 'flex', alignItems: 'center', gap: 4 }}>Question <span style={{ color: C.red }}>*</span></div>
             <div style={{ position: 'relative' }}>
-              <div style={{ position: 'absolute', left: 13, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }}>
-                <MessageSquare size={15} color={C.t3} />
-              </div>
+              <div style={{ position: 'absolute', left: 13, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }}><MessageSquare size={15} color={C.t3} /></div>
               <input value={title} onChange={e => setTitle(e.target.value)} placeholder="e.g. Which equipment should we replace first?"
                 onFocus={e => { e.target.style.borderColor = `${accent}40`; e.target.style.background = C.inset; }}
                 onBlur={e =>  { e.target.style.borderColor = C.brd; e.target.style.background = C.card; }}
                 style={{ ...baseInp, paddingLeft: 40, paddingTop: 13, paddingBottom: 13, fontSize: 14, borderRadius: 12 }} />
             </div>
           </div>
-
           <div>
             <div style={{ fontSize: 11, fontWeight: 600, color: C.t3, textTransform: 'uppercase', letterSpacing: '0.09em', marginBottom: 10 }}>Additional Context</div>
             <textarea value={description} onChange={e => setDescription(e.target.value)} placeholder="Add any helpful context or background for members…" rows={3}
@@ -442,30 +296,19 @@ function MobileCreatePollModal({ open, onClose, onSave, isLoading, gym }) {
               onBlur={e =>  { e.target.style.borderColor = C.brd; e.target.style.background = C.card; }}
               style={{ ...baseInp, resize: 'none', lineHeight: 1.7, padding: '13px 14px', fontSize: 14, borderRadius: 12 }} />
           </div>
-
           <div>
-            <div style={{ fontSize: 11, fontWeight: 600, color: C.t3, textTransform: 'uppercase', letterSpacing: '0.09em', marginBottom: 10, display: 'flex', alignItems: 'center', gap: 4 }}>
-              Poll End Date <span style={{ color: C.red }}>*</span>
-            </div>
+            <div style={{ fontSize: 11, fontWeight: 600, color: C.t3, textTransform: 'uppercase', letterSpacing: '0.09em', marginBottom: 10, display: 'flex', alignItems: 'center', gap: 4 }}>Poll End Date <span style={{ color: C.red }}>*</span></div>
             <div style={{ position: 'relative' }}>
-              <div style={{ position: 'absolute', left: 13, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }}>
-                <Calendar size={15} color={endDate ? accent : C.t3} />
-              </div>
-              <input
-                type="date" value={endDate} onChange={e => setEndDate(e.target.value)}
-                min={new Date().toISOString().split('T')[0]}
+              <div style={{ position: 'absolute', left: 13, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }}><Calendar size={15} color={endDate ? accent : C.t3} /></div>
+              <input type="date" value={endDate} onChange={e => setEndDate(e.target.value)} min={new Date().toISOString().split('T')[0]}
                 onFocus={e => { e.target.style.borderColor = `${accent}40`; e.target.style.background = C.inset; }}
                 onBlur={e =>  { e.target.style.borderColor = C.brd; e.target.style.background = C.card; }}
-                style={{ ...baseInp, paddingLeft: 42, paddingTop: 13, paddingBottom: 13, fontSize: 14, borderRadius: 12, colorScheme: 'dark' }}
-              />
+                style={{ ...baseInp, paddingLeft: 42, paddingTop: 13, paddingBottom: 13, fontSize: 14, borderRadius: 12, colorScheme: 'dark' }} />
             </div>
           </div>
-
           <div>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-              <div style={{ fontSize: 11, fontWeight: 600, color: C.t3, textTransform: 'uppercase', letterSpacing: '0.09em', display: 'flex', alignItems: 'center', gap: 4 }}>
-                Answer Options <span style={{ color: C.red }}>*</span>
-              </div>
+              <div style={{ fontSize: 11, fontWeight: 600, color: C.t3, textTransform: 'uppercase', letterSpacing: '0.09em', display: 'flex', alignItems: 'center', gap: 4 }}>Answer Options <span style={{ color: C.red }}>*</span></div>
               <span style={{ fontSize: 11, fontWeight: 700, color: validOpts.length >= 2 ? C.green : C.t3, ...MONO }}>{validOpts.length}/{options.length} filled</span>
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
@@ -479,7 +322,7 @@ function MobileCreatePollModal({ open, onClose, onSave, isLoading, gym }) {
                     onBlur={e =>  { e.target.style.borderColor = C.brd; e.target.style.background = C.card; }}
                     style={{ ...baseInp, flex: 1, paddingTop: 13, paddingBottom: 13, fontSize: 14, borderRadius: 11 }} />
                   {options.length > 2 && (
-                    <button type="button" onClick={() => removeOption(idx)} style={{ flexShrink: 0, width: 40, height: 40, borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', background: C.redDim, border: `1.5px solid ${C.redBrd}`, cursor: 'pointer', transition: 'all 0.12s' }}>
+                    <button type="button" onClick={() => removeOption(idx)} style={{ flexShrink: 0, width: 40, height: 40, borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', background: C.redDim, border: `1.5px solid ${C.redBrd}`, cursor: 'pointer' }}>
                       <Trash2 size={15} color={C.red} />
                     </button>
                   )}
@@ -494,31 +337,24 @@ function MobileCreatePollModal({ open, onClose, onSave, isLoading, gym }) {
           </div>
           <div style={{ height: 8 }} />
         </div>
-
-        {/* STICKY FOOTER */}
         <div style={{ flexShrink: 0, padding: '14px 16px', paddingBottom: 'calc(14px + env(safe-area-inset-bottom, 0px))', borderTop: `1px solid ${C.brd}`, background: C.surface, display: 'flex', flexDirection: 'column', gap: 10 }}>
-          <button onClick={handleSubmit} disabled={!canSave} style={{ width: '100%', padding: '15px', borderRadius: 14, border: 'none', fontFamily: FONT, fontSize: 15, fontWeight: 800, background: canSave ? C.blue : C.brd2, color: canSave ? '#fff' : C.t3, cursor: canSave ? 'pointer' : 'default', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, boxShadow: canSave ? `0 0 28px ${C.blue}40` : 'none', opacity: canSave ? 1 : 0.45, transition: 'all 0.2s' }}>
-            {isLoading
-              ? <><div style={{ width: 14, height: 14, border: '2.5px solid rgba(255,255,255,0.25)', borderTop: '2.5px solid #fff', borderRadius: '50%', animation: 'pl-spin 0.7s linear infinite' }} /> Creating…</>
-              : 'Post'}
+          <button onClick={handleSubmit} disabled={!canSave}
+            style={{ width: '100%', padding: '15px', borderRadius: 14, border: 'none', fontFamily: FONT, fontSize: 15, fontWeight: 800, background: canSave ? '#2563eb' : C.brd2, color: canSave ? '#fff' : C.t3, cursor: canSave ? 'pointer' : 'default', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, boxShadow: canSave ? '0 4px 14px rgba(37,99,235,0.45)' : 'none', opacity: canSave ? 1 : 0.45, transition: 'all 0.2s' }}>
+            {isLoading ? <><div style={{ width: 14, height: 14, border: '2.5px solid rgba(255,255,255,0.25)', borderTop: '2.5px solid #fff', borderRadius: '50%', animation: 'pl-spin 0.7s linear infinite' }} /> Creating…</> : 'Post'}
           </button>
         </div>
       </div>
-
       <MobilePollPreviewSheet open={previewOpen} onClose={() => setPreviewOpen(false)} title={title} description={description} category={category} options={options} gym={gym} endDate={endDate} />
     </>
   );
 }
 
-/* ══════════════════════════════════════════════════════════════
-   DESKTOP MODAL
-══════════════════════════════════════════════════════════════ */
 function DesktopCreatePollModal({ open, onClose, onSave, isLoading, gym }) {
-  const [title,       setTitle]       = useState('');
-  const [category,    setCategory]    = useState('');
-  const [options,     setOptions]     = useState(['', '']);
+  const [title, setTitle] = useState('');
+  const [category, setCategory] = useState('');
+  const [options, setOptions] = useState(['', '']);
   const [description, setDescription] = useState('');
-  const [endDate,     setEndDate]     = useState('');
+  const [endDate, setEndDate] = useState('');
 
   const validOpts = options.filter(o => o.trim());
   const canSave   = title.trim() && validOpts.length >= 2 && endDate && !isLoading;
@@ -531,11 +367,7 @@ function DesktopCreatePollModal({ open, onClose, onSave, isLoading, gym }) {
 
   const handleSubmit = () => {
     if (!canSave) return;
-    onSave({
-      title: title.trim(), description: description.trim(), category,
-      end_date: endDate,
-      options: validOpts.map(text => ({ id: Math.random().toString(36).substr(2, 9), text, votes: 0 })),
-    });
+    onSave({ title: title.trim(), description: description.trim(), category, end_date: endDate, options: validOpts.map(text => ({ id: Math.random().toString(36).substr(2, 9), text, votes: 0 })) });
     setTitle(''); setDescription(''); setCategory(''); setOptions(['', '']); setEndDate('');
   };
 
@@ -560,12 +392,8 @@ function DesktopCreatePollModal({ open, onClose, onSave, isLoading, gym }) {
         .pl-opt { width:100%; box-sizing:border-box; padding:9px 12px; border-radius:9px; background:${C.card}; border:1px solid ${C.brd}; color:${C.t1}; font-size:12px; font-weight:500; outline:none; font-family:${FONT}; transition:border-color 0.15s, background 0.15s; }
         .pl-opt::placeholder { color:${C.t3}; }
       `}</style>
-
-      <div
-        onClick={e => e.target === e.currentTarget && handleClose()}
-        style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.82)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20, animation: 'pl-fade 0.15s ease', fontFamily: FONT }}
-      >
-        <div style={{ width: '100%', maxWidth: 920, maxHeight: '92vh', display: 'flex', flexDirection: 'column', background: C.bg, border: `1px solid ${C.brd}`, borderRadius: 14, overflow: 'hidden', boxShadow: `0 40px 100px rgba(0,0,0,0.85), 0 0 0 1px rgba(96,165,250,0.04)`, animation: 'pl-in 0.24s cubic-bezier(0.16,1,0.3,1)', WebkitFontSmoothing: 'antialiased' }}>
+      <div onClick={e => e.target === e.currentTarget && handleClose()} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.82)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20, animation: 'pl-fade 0.15s ease', fontFamily: FONT }}>
+        <div style={{ width: '100%', maxWidth: 920, maxHeight: '92vh', display: 'flex', flexDirection: 'column', background: C.bg, border: `1px solid ${C.brd}`, borderRadius: 14, overflow: 'hidden', boxShadow: '0 40px 100px rgba(0,0,0,0.85), 0 0 0 1px rgba(37,99,235,0.04)', animation: 'pl-in 0.24s cubic-bezier(0.16,1,0.3,1)', WebkitFontSmoothing: 'antialiased' }}>
 
           {/* HEADER */}
           <div style={{ flexShrink: 0, padding: '0 20px', background: C.surface, borderBottom: `1px solid ${C.brd}`, position: 'relative' }}>
@@ -574,13 +402,10 @@ function DesktopCreatePollModal({ open, onClose, onSave, isLoading, gym }) {
                 <div style={{ width: 32, height: 32, borderRadius: 9, background: cat?.dim || C.blueDim, border: `1px solid ${cat?.border || C.blueBrd}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'all 0.2s' }}>
                   <BarChart2 size={14} color={cat?.color || C.blue} />
                 </div>
-                <div style={{ fontSize: 18, fontWeight: 700, color: C.t1, letterSpacing: '-0.02em', lineHeight: 1.2 }}>
-                  Create Poll
-                </div>
+                <div style={{ fontSize: 18, fontWeight: 700, color: C.t1, letterSpacing: '-0.02em', lineHeight: 1.2 }}>Create Poll</div>
               </div>
               <button onClick={handleClose} style={{ width: 30, height: 30, borderRadius: 7, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'transparent', border: 'none', cursor: 'pointer', color: C.t3, flexShrink: 0, transition: 'color 0.15s' }}
-                onMouseEnter={e => { e.currentTarget.style.color = C.t1; }}
-                onMouseLeave={e => { e.currentTarget.style.color = C.t3; }}>
+                onMouseEnter={e => { e.currentTarget.style.color = C.t1; }} onMouseLeave={e => { e.currentTarget.style.color = C.t3; }}>
                 <X size={16} />
               </button>
             </div>
@@ -591,29 +416,17 @@ function DesktopCreatePollModal({ open, onClose, onSave, isLoading, gym }) {
 
           {/* BODY */}
           <div style={{ flex: 1, display: 'grid', gridTemplateColumns: '1fr 360px', minHeight: 0, overflow: 'hidden' }}>
-            {/* Form column */}
             <div className="pl-scroll" style={{ padding: '18px 20px', borderRight: `1px solid ${C.brd}`, display: 'flex', flexDirection: 'column', gap: 18, overflowY: 'auto', background: C.bg }}>
-              <div>
-                <SL required>Question</SL>
-                <Inp value={title} onChange={e => setTitle(e.target.value)} placeholder="e.g. Which equipment should we replace first?" Icon={MessageSquare} accentColor={accent} />
-              </div>
-              <div>
-                <SL>Additional Context</SL>
-                <Textarea value={description} onChange={e => setDescription(e.target.value)} placeholder="Add any helpful context or background for members…" rows={2} accentColor={accent} />
-              </div>
+              <div><SL required>Question</SL><Inp value={title} onChange={e => setTitle(e.target.value)} placeholder="e.g. Which equipment should we replace first?" Icon={MessageSquare} accentColor={accent} /></div>
+              <div><SL>Additional Context</SL><Textarea value={description} onChange={e => setDescription(e.target.value)} placeholder="Add any helpful context or background for members…" rows={2} accentColor={accent} /></div>
               <div>
                 <SL required>Poll End Date</SL>
                 <div style={{ position: 'relative' }}>
-                  <div style={{ position: 'absolute', left: 11, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }}>
-                    <Calendar size={12} color={endDate ? accent : C.t3} style={{ transition: 'color 0.15s' }} />
-                  </div>
-                  <input
-                    type="date" value={endDate} onChange={e => setEndDate(e.target.value)}
-                    min={new Date().toISOString().split('T')[0]}
+                  <div style={{ position: 'absolute', left: 11, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }}><Calendar size={12} color={endDate ? accent : C.t3} style={{ transition: 'color 0.15s' }} /></div>
+                  <input type="date" value={endDate} onChange={e => setEndDate(e.target.value)} min={new Date().toISOString().split('T')[0]}
                     onFocus={e => { e.target.style.borderColor = `${accent}38`; e.target.style.background = C.inset; }}
-                    onBlur={e =>  { e.target.style.borderColor = C.brd; e.target.style.background = C.card; }}
-                    style={{ ...baseInp, paddingLeft: 32, colorScheme: 'dark' }}
-                  />
+                    onBlur={e  => { e.target.style.borderColor = C.brd; e.target.style.background = C.card; }}
+                    style={{ ...baseInp, paddingLeft: 32, colorScheme: 'dark' }} />
                 </div>
               </div>
               <div>
@@ -631,8 +444,7 @@ function DesktopCreatePollModal({ open, onClose, onSave, isLoading, gym }) {
                         onFocus={e => { e.target.style.borderColor = `${accent}38`; e.target.style.background = C.inset; }}
                         onBlur={e =>  { e.target.style.borderColor = C.brd; e.target.style.background = C.card; }} />
                       {options.length > 2 && (
-                        <button type="button" onClick={() => removeOption(idx)}
-                          style={{ flexShrink: 0, width: 28, height: 28, borderRadius: 7, display: 'flex', alignItems: 'center', justifyContent: 'center', background: C.redDim, border: `1px solid ${C.redBrd}`, cursor: 'pointer', transition: 'all 0.12s' }}
+                        <button type="button" onClick={() => removeOption(idx)} style={{ flexShrink: 0, width: 28, height: 28, borderRadius: 7, display: 'flex', alignItems: 'center', justifyContent: 'center', background: C.redDim, border: `1px solid ${C.redBrd}`, cursor: 'pointer', transition: 'all 0.12s' }}
                           onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,77,109,0.16)'}
                           onMouseLeave={e => e.currentTarget.style.background = C.redDim}>
                           <Trash2 size={11} color={C.red} />
@@ -651,8 +463,6 @@ function DesktopCreatePollModal({ open, onClose, onSave, isLoading, gym }) {
                 )}
               </div>
             </div>
-
-            {/* Preview column */}
             <div className="pl-scroll" style={{ padding: '18px 16px', background: '#0d0d11', overflowY: 'auto', borderLeft: `1px solid ${C.brd}` }}>
               <PollPreview title={title} description={description} category={category} options={options} gym={gym} endDate={endDate} />
             </div>
@@ -663,12 +473,10 @@ function DesktopCreatePollModal({ open, onClose, onSave, isLoading, gym }) {
             <div style={{ flex: 1 }} />
             <button className="pl-cancel" onClick={handleClose} type="button">Cancel</button>
             <button onClick={handleSubmit} disabled={!canSave} type="button"
-              style={{ padding: '9px 22px', borderRadius: 8, border: 'none', fontFamily: FONT, fontSize: 13, fontWeight: 700, letterSpacing: '-0.01em', background: canSave ? C.blue : C.brd2, color: canSave ? '#fff' : C.t3, cursor: canSave ? 'pointer' : 'default', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', boxShadow: canSave ? `0 0 24px ${C.blue}40` : 'none', opacity: canSave ? 1 : 0.4, minWidth: 100, transition: 'opacity 0.15s, box-shadow 0.15s' }}
+              style={{ padding: '9px 22px', borderRadius: 8, border: 'none', fontFamily: FONT, fontSize: 13, fontWeight: 700, letterSpacing: '-0.01em', background: canSave ? '#2563eb' : C.brd2, color: canSave ? '#fff' : C.t3, cursor: canSave ? 'pointer' : 'default', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', boxShadow: canSave ? '0 4px 14px rgba(37,99,235,0.45)' : 'none', opacity: canSave ? 1 : 0.4, minWidth: 100, transition: 'opacity 0.15s, box-shadow 0.15s' }}
               onMouseEnter={e => { if (canSave) e.currentTarget.style.opacity = '0.88'; }}
               onMouseLeave={e => { if (canSave) e.currentTarget.style.opacity = '1'; }}>
-              {isLoading
-                ? <><div style={{ width: 12, height: 12, border: '2px solid rgba(255,255,255,0.2)', borderTop: '2px solid #fff', borderRadius: '50%', animation: 'pl-spin 0.7s linear infinite' }} /> Creating…</>
-                : 'Post'}
+              {isLoading ? <><div style={{ width: 12, height: 12, border: '2px solid rgba(255,255,255,0.2)', borderTop: '2px solid #fff', borderRadius: '50%', animation: 'pl-spin 0.7s linear infinite' }} /> Creating…</> : 'Post'}
             </button>
           </div>
         </div>
@@ -677,13 +485,8 @@ function DesktopCreatePollModal({ open, onClose, onSave, isLoading, gym }) {
   );
 }
 
-/* ══════════════════════════════════════════════════════════════
-   ROOT EXPORT
-══════════════════════════════════════════════════════════════ */
 export default function CreatePollModal({ open, onClose, onSave, isLoading, gym }) {
   const isMobile = useIsMobile();
-  if (isMobile) {
-    return <MobileCreatePollModal open={open} onClose={onClose} onSave={onSave} isLoading={isLoading} gym={gym} />;
-  }
+  if (isMobile) return <MobileCreatePollModal open={open} onClose={onClose} onSave={onSave} isLoading={isLoading} gym={gym} />;
   return <DesktopCreatePollModal open={open} onClose={onClose} onSave={onSave} isLoading={isLoading} gym={gym} />;
 }
