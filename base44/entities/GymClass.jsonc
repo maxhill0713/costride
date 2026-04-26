@@ -22,6 +22,10 @@
       "type": "string",
       "description": "Instructor name"
     },
+    "color": {
+      "type": "string",
+      "description": "Display color hex code"
+    },
     "schedule": {
       "type": "array",
       "items": {
@@ -32,6 +36,14 @@
           },
           "time": {
             "type": "string"
+          },
+          "date": {
+            "type": "string",
+            "description": "Specific date for this class (YYYY-MM-DD)"
+          },
+          "weekly": {
+            "type": "boolean",
+            "description": "Whether this class repeats weekly"
           }
         }
       },
