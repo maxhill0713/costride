@@ -339,7 +339,7 @@ function MobileCreatePollModal({ open, onClose, onSave, isLoading, gym }) {
         </div>
         <div style={{ flexShrink: 0, padding: '14px 16px', paddingBottom: 'calc(14px + env(safe-area-inset-bottom, 0px))', borderTop: `1px solid ${C.brd}`, background: C.surface, display: 'flex', flexDirection: 'column', gap: 10 }}>
           <button onClick={handleSubmit} disabled={!canSave}
-            style={{ width: '100%', padding: '15px', borderRadius: 14, border: 'none', fontFamily: FONT, fontSize: 15, fontWeight: 800, background: canSave ? '#2563eb' : C.brd2, color: canSave ? '#fff' : C.t3, cursor: canSave ? 'pointer' : 'default', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, boxShadow: canSave ? '0 4px 14px rgba(37,99,235,0.45)' : 'none', opacity: canSave ? 1 : 0.45, transition: 'all 0.2s' }}>
+            style={{ width: '100%', padding: '15px', borderRadius: 14, border: 'none', fontFamily: FONT, fontSize: 15, fontWeight: 800, background: canSave ? '#2563eb' : C.brd2, color: canSave ? '#fff' : C.t3, cursor: canSave ? 'pointer' : 'default', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, boxShadow: 'none', opacity: 1, transition: 'all 0.2s' }}>
             {isLoading ? <><div style={{ width: 14, height: 14, border: '2.5px solid rgba(255,255,255,0.25)', borderTop: '2.5px solid #fff', borderRadius: '50%', animation: 'pl-spin 0.7s linear infinite' }} /> Creating…</> : 'Post'}
           </button>
         </div>
@@ -473,7 +473,7 @@ function DesktopCreatePollModal({ open, onClose, onSave, isLoading, gym }) {
             <div style={{ flex: 1 }} />
             <button className="pl-cancel" onClick={handleClose} type="button">Cancel</button>
             <button onClick={handleSubmit} disabled={!canSave} type="button"
-              style={{ padding: '9px 22px', borderRadius: 8, border: 'none', fontFamily: FONT, fontSize: 13, fontWeight: 700, letterSpacing: '-0.01em', background: canSave ? '#2563eb' : C.brd2, color: canSave ? '#fff' : C.t3, cursor: canSave ? 'pointer' : 'default', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', boxShadow: canSave ? '0 4px 14px rgba(37,99,235,0.45)' : 'none', opacity: canSave ? 1 : 0.4, minWidth: 100, transition: 'opacity 0.15s, box-shadow 0.15s' }}
+              style={{ padding: '9px 22px', borderRadius: 8, border: 'none', fontFamily: FONT, fontSize: 13, fontWeight: 700, letterSpacing: '-0.01em', background: canSave ? '#2563eb' : C.brd2, color: canSave ? '#fff' : C.t3, cursor: canSave ? 'pointer' : 'default', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', boxShadow: 'none', opacity: 1, minWidth: 100, transition: 'opacity 0.15s' }}
               onMouseEnter={e => { if (canSave) e.currentTarget.style.opacity = '0.88'; }}
               onMouseLeave={e => { if (canSave) e.currentTarget.style.opacity = '1'; }}>
               {isLoading ? <><div style={{ width: 12, height: 12, border: '2px solid rgba(255,255,255,0.2)', borderTop: '2px solid #fff', borderRadius: '50%', animation: 'pl-spin 0.7s linear infinite' }} /> Creating…</> : 'Post'}
