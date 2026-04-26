@@ -131,10 +131,10 @@ export default function ClassDetailPopup({ gymClass, onClose, onDelete }) {
             <button onClick={onClose} style={{ padding: '7px 16px', borderRadius: 8, background: 'transparent', border: `1px solid ${C.brd}`, color: C.t2, fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: FONT }}>Close</button>
             {onDelete && (
               <button onClick={() => setShowRemoveModal(true)}
-                style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '7px 14px', borderRadius: 8, background: C.redDim, border: '1px solid rgba(255,77,109,0.3)', color: C.red, fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: FONT, transition: 'background 0.15s' }}
-                onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,77,109,0.18)'}
-                onMouseLeave={e => e.currentTarget.style.background = C.redDim}>
-                <Trash2 size={12} /> Remove Class
+                style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '7px 14px', borderRadius: 8, background: 'rgba(255,255,255,0.03)', border: `1px solid ${C.brd}`, color: C.t2, fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: FONT, transition: 'all 0.15s' }}
+                onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(255,77,109,0.35)'; e.currentTarget.style.color = C.red; e.currentTarget.style.background = C.redDim; }}
+                onMouseLeave={e => { e.currentTarget.style.borderColor = C.brd; e.currentTarget.style.color = C.t2; e.currentTarget.style.background = 'rgba(255,255,255,0.03)'; }}>
+                <Trash2 size={12} color="currentColor" /> Remove Class
               </button>
             )}
           </div>
