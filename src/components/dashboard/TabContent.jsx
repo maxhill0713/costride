@@ -83,13 +83,17 @@ const POST_TYPE_STYLES = {
   member_spotlight: { label: "Member Spotlight", color: "#60a5fa", bg: "rgba(96,165,250,0.12)",  border: "rgba(96,165,250,0.28)"  },
 };
 
-const VISIBLE_TABS = ["Community Feed", "Events", "Challenges", "Polls", "Drafts", "Scheduled"];
+const VISIBLE_TABS = ["Events", "Community Feed", "Challenges", "Polls", "Drafts", "Scheduled"];
 
 const TAB_ACTION = {
   "Community Feed": { label: "New Post",        modal: "post"      },
   "Events":         { label: "Add Event",       modal: "event"     },
   "Challenges":     { label: "New Challenge",   modal: "challenge" },
   "Polls":          { label: "New Poll",        modal: "poll"      },
+};
+
+const TAB_DISPLAY_LABEL = {
+  "Events": "Classes & Events",
 };
 
 function DeleteBtn({ onClick }) {
@@ -758,7 +762,7 @@ function Tabs({ active, setActive, isMobile }) {
         {VISIBLE_TABS.map(tab => (
           <button key={tab} data-active={active === tab} onClick={() => setActive(tab)}
             style={{ padding: isMobile ? "10px 16px" : "7px 14px", fontSize: 12.5, background: "transparent", border: "none", borderBottom: `2px solid ${active === tab ? C.cyan : "transparent"}`, color: active === tab ? C.t1 : C.t2, fontWeight: active === tab ? 700 : 400, cursor: "pointer", marginBottom: -1, fontFamily: FONT, transition: "color 0.15s", whiteSpace: "nowrap", flexShrink: 0, minHeight: 44, textShadow: "none" }}>
-            {tab}
+            {TAB_DISPLAY_LABEL[tab] || tab}
           </button>
         ))}
       </div>
@@ -1310,7 +1314,7 @@ export default function ContentPage({
   avatarMap = {}, nameMap = {}, currentUser = null, gym = null, memberCount = 0, memberUserRecords = [],
 }) {
   const isMobile = useIsMobile();
-  const [tab,              setTab]              = useState("Community Feed");
+  const [tab,              setTab]              = useState("Events");
   const [showMenu,         setShowMenu]         = useState(false);
   const [pollToRemove,     setPollToRemove]     = useState(null);
   const [challengeToRemove,setChallengeToRemove]= useState(null);
