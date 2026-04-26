@@ -210,13 +210,29 @@ function GalleryVisual({ gallery }) {
 
 function MapVisual({ gym }) {
   const hasAddress = gym.address || gym.city || gym.postcode;
-  const query = encodeURIComponent([gym.name, gym.address, gym.city, gym.postcode].filter(Boolean).join(', '));
+
+  /* Deduplicate address parts — gym.address often already contains city/postcode */
+  function buildAddress(parts) {
+    const seen = new Set();
+    return parts.filter(Boolean).filter(p => {
+      const key = p.trim().toLowerCase();
+      if (seen.has(key)) return false;
+      // Skip a part if it's already fully contained in an earlier part
+      for (const s of seen) { if (s.includes(key) || key.includes(s)) return false; }
+      seen.add(key);
+      return true;
+    }).join(', ');
+  }
+
+  const displayAddress = buildAddress([gym.address, gym.city, gym.postcode]);
+  const query = encodeURIComponent([gym.name, gym.address].filter(Boolean).join(', '));
+
   return (
     <div style={{ borderTop: `1px solid ${C.brd}` }}>
       {hasAddress && (
         <div style={{ padding: '8px 14px', display: 'flex', alignItems: 'center', gap: 6 }}>
           <MapPin style={{ width: 11, height: 11, color: C.t3, flexShrink: 0 }} />
-          <span style={{ fontSize: 11, color: C.t2 }}>{[gym.address, gym.city, gym.postcode].filter(Boolean).join(', ')}</span>
+          <span style={{ fontSize: 11, color: C.t2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{displayAddress}</span>
         </div>
       )}
       <div style={{ height: 130, overflow: 'hidden', position: 'relative', margin: '0 14px 14px', borderRadius: 8, background: C.card2, border: `1px solid ${C.brd}` }}>
@@ -366,7 +382,7 @@ function ProfileSidebar({ communityScore, impressionScore, trustScore, discovery
   const doneCount = checks.filter(c => c.done).length;
 
   return (
-    <div style={{ width: 244, flexShrink: 0, background: C.sidebar, borderLeft: `1px solid ${C.brd}`, display: 'flex', flexDirection: 'column', fontFamily: FONT, alignSelf: 'flex-start' }}>
+    <div style={{ width: 244, flexShrink: 0, background: C.sidebar, borderLeft: `1px solid ${C.brd}`, display: 'flex', flexDirection: 'column', fontFamily: FONT, position: 'sticky', top: 0, maxHeight: '100vh', overflowY: 'auto', scrollbarWidth: 'none' }}>
 
       {/* Header */}
       <div style={{ padding: '16px 16px 12px', borderBottom: `1px solid ${C.brd}` }}>
