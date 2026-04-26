@@ -92,6 +92,8 @@ const TAB_ACTION = {
   "Polls":          { label: "New Poll",        modal: "poll"      },
 };
 
+
+
 const TAB_DISPLAY_LABEL = {
   "Events": "Classes & Events",
 };
@@ -1221,15 +1223,9 @@ function EventsCalendar({ events, classes = [], onDeleteEvent, onAddEvent, onAdd
       `}</style>
 
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-          <span style={{ fontSize: 12, fontWeight: 500, color: C.t2 }}>
-            {totalEvents} event{totalEvents !== 1 ? "s" : ""} · {classes.length} class{classes.length !== 1 ? "es" : ""} this month
-          </span>
-          <button onClick={onAddClass}
-            style={{ display: "flex", alignItems: "center", gap: 5, padding: "5px 12px", borderRadius: 7, background: "rgba(168,85,247,0.1)", border: "1px solid rgba(168,85,247,0.28)", color: "#a855f7", fontSize: 11.5, fontWeight: 700, cursor: "pointer", fontFamily: FONT }}>
-            + Add Class
-          </button>
-        </div>
+        <span style={{ fontSize: 12, fontWeight: 500, color: C.t2 }}>
+          {totalEvents} event{totalEvents !== 1 ? "s" : ""} · {classes.length} class{classes.length !== 1 ? "es" : ""} this month
+        </span>
         <div style={{ display: "flex", alignItems: "center", gap: 0 }}>
           <button
             onClick={() => navigate(-1)}
@@ -1447,13 +1443,22 @@ export default function ContentPage({
                 />
               </div>
             </div>
-            <button
-              onClick={() => tabAction && openModal?.(tabAction.modal)}
-              style={{ display: "flex", alignItems: "center", gap: 6, padding: "9px 18px", borderRadius: 9, fontSize: 12.5, fontWeight: 700, cursor: "pointer", fontFamily: FONT, transition: "opacity 0.15s", visibility: tabAction ? "visible" : "hidden", pointerEvents: tabAction ? "auto" : "none", flexShrink: 0, ...GRAD_BTN }}
-              onMouseEnter={e => e.currentTarget.style.opacity = "0.88"}
-              onMouseLeave={e => e.currentTarget.style.opacity = "1"}>
-              <Plus size={12} /> {tabAction?.label ?? "Action"}
-            </button>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
+              {tab === "Events" && (
+                <button onClick={() => setShowCreateClass(true)}
+                  style={{ display: "flex", alignItems: "center", gap: 6, padding: "9px 18px", borderRadius: 9, fontSize: 12.5, fontWeight: 700, cursor: "pointer", fontFamily: FONT, background: "#7c3aed", border: "none", color: "#fff" }}
+                  onMouseEnter={e => e.currentTarget.style.opacity = "0.88"}
+                  onMouseLeave={e => e.currentTarget.style.opacity = "1"}>
+                  <Plus size={12} /> Add Class
+                </button>
+              )}
+              <button onClick={() => tabAction && openModal?.(tabAction.modal)}
+                style={{ display: "flex", alignItems: "center", gap: 6, padding: "9px 18px", borderRadius: 9, fontSize: 12.5, fontWeight: 700, cursor: "pointer", fontFamily: FONT, visibility: tabAction ? "visible" : "hidden", pointerEvents: tabAction ? "auto" : "none", ...GRAD_BTN }}
+                onMouseEnter={e => e.currentTarget.style.opacity = "0.88"}
+                onMouseLeave={e => e.currentTarget.style.opacity = "1"}>
+                <Plus size={12} /> {tabAction?.label ?? "Action"}
+              </button>
+            </div>
           </div>
         )}
 
@@ -1986,6 +1991,8 @@ export default function ContentPage({
       {challengeToRemove && <RemoveChallengeModal challenge={challengeToRemove} onConfirm={async (id) => { await onDeleteChallenge?.(id); setChallengeToRemove(null); }} onClose={() => setChallengeToRemove(null)} />}
       {reactionsPost && <ReactionsModal reactions={reactionsPost.reactions || {}} onClose={() => setReactionsPost(null)} />}
       {editingPost && <EditPostModal post={editingPost} gym={gym} onClose={() => setEditingPost(null)} onSave={() => { setEditingPost(null); onUpdatePost?.(); }} />}
+      <CreateClassModal open={showCreateClass} onClose={() => setShowCreateClass(false)} gym={gym} isLoading={creatingClass}
+        onSave={async (data) => { setCreatingClass(true); try { await onCreateClass?.(data); setShowCreateClass(false); } finally { setCreatingClass(false); } }} />
     </div>
   );
 }
