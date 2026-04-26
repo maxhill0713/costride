@@ -243,7 +243,7 @@ export default function EventsCalendar({ events, classes = [], onDeleteEvent, on
       dayNum: cellDay, key,
       cellYear, cellMonth, cellDay,
       events: eventsByDay[key] || [],
-      classes: isOtherMonth ? [] : (classesByDay[key] || []),
+      classes: classesByDay[key] || [],
       isToday: key === todayKey,
       isOtherMonth,
     });
@@ -323,8 +323,9 @@ export default function EventsCalendar({ events, classes = [], onDeleteEvent, on
                   borderRight: isLastCol ? "none" : `1px solid ${C.brd}`,
                   borderBottom: isLastRow ? "none" : `1px solid ${C.brd}`,
                   background: cell.isToday ? "rgba(77,127,255,0.06)" : cell.isOtherMonth ? "rgba(255,255,255,0.012)" : "transparent",
-                  transition: "background 0.12s", minHeight: 90, boxSizing: "border-box",
-                  opacity: cell.isOtherMonth ? 0.45 : 1,
+                  transition: "background 0.12s", height: 96, boxSizing: "border-box",
+                  overflow: "hidden",
+                  opacity: cell.isOtherMonth ? 0.4 : 1,
                 }}>
                 <div style={{ width: 22, height: 22, display: "flex", alignItems: "center", justifyContent: "center", borderRadius: "50%", background: cell.isToday ? C.cyan : "transparent", marginBottom: 4, fontSize: 11.5, fontWeight: cell.isToday ? 800 : cell.isOtherMonth ? 400 : 500, color: cell.isToday ? "#fff" : cell.isOtherMonth ? C.t3 : C.t2, lineHeight: 1, flexShrink: 0 }}>
                   {cell.dayNum}
@@ -336,13 +337,14 @@ export default function EventsCalendar({ events, classes = [], onDeleteEvent, on
                       {ev.title}
                     </div>
                   ))}
-                  {/* Classes — use hexToRgba for correct colour rendering */}
+                  {/* Classes — use cls.color, dimmed on other-month cells */}
                   {(cell.classes || []).slice(0, 2).map((cls, ci) => {
                     const rawColor = (cls.color && cls.color.startsWith("#") && cls.color.length >= 7) ? cls.color : "#a855f7";
-                    const bgColor = hexToRgba(rawColor, 0.15);
-                    const brdColor = hexToRgba(rawColor, 0.4);
+                    const bgAlpha  = cell.isOtherMonth ? 0.06 : 0.15;
+                    const brdAlpha = cell.isOtherMonth ? 0.15 : 0.4;
+                    const txtColor = cell.isOtherMonth ? hexToRgba(rawColor, 0.45) : rawColor;
                     return (
-                      <div key={`cls-${cls.id}-${ci}`} style={{ ...pillStyle, background: bgColor, border: `1px solid ${brdColor}`, color: rawColor }}>
+                      <div key={`cls-${cls.id}-${ci}`} style={{ ...pillStyle, background: hexToRgba(rawColor, bgAlpha), border: `1px solid ${hexToRgba(rawColor, brdAlpha)}`, color: txtColor }}>
                         {cls.name}
                       </div>
                     );
