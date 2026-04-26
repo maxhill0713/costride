@@ -97,7 +97,7 @@ export default function EventsCalendar({ events, classes = [], onDeleteEvent, on
       if (s.date) {
         // New format — has a specific date
         const dateKey = s.date.length > 10 ? s.date.slice(0, 10) : s.date;
-        if (s.weekly === true) {
+        if (s.weekly) {
           // Weekly repeating: show on matching weekday ON OR AFTER the start date
           const startDate = new Date(dateKey + 'T00:00:00');
           const targetDow = DAY_NAME_TO_DOW[s.day];
@@ -115,8 +115,8 @@ export default function EventsCalendar({ events, classes = [], onDeleteEvent, on
           if (!classesByDay[dateKey]) classesByDay[dateKey] = [];
           classesByDay[dateKey].push({ ...cls, _scheduleTime: s.time });
         }
-      } else if (s.day) {
-        // Legacy format (ManageClassesModal) — day name only, treat as weekly
+      } else if (s.day && !s.date) {
+        // Legacy format — day name only (no date), treat as weekly
         const targetDow = DAY_NAME_TO_DOW[s.day];
         if (targetDow === undefined) return;
         for (let d = 1; d <= daysInView; d++) {
