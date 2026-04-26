@@ -287,6 +287,8 @@ function RemovePostModal({ post, resolvedName, onConfirm, onClose }) {
 }
 
 import EventDetailPopup from "./EventDetailPopup";
+import CreateClassModal from "./CreateClassModal";
+import ClassDetailPopup from "./ClassDetailPopup";
 
 function RemovePollModal({ poll, onConfirm, onClose }) {
   const [removing, setRemoving] = useState(false);
@@ -1093,11 +1095,12 @@ function MonthDropdown({ viewYear, viewMonth, onSelect }) {
   );
 }
 
-function EventsCalendar({ events, onDeleteEvent, onAddEvent, onEventEdited, onRepeatEvent }) {
+function EventsCalendar({ events, classes = [], onDeleteEvent, onAddEvent, onAddClass, onEventEdited, onDeleteClass }) {
   const today = new Date();
   const [viewYear,  setViewYear]  = useState(today.getFullYear());
   const [viewMonth, setViewMonth] = useState(today.getMonth());
   const [selectedEvent, setSelectedEvent] = useState(null);
+  const [selectedClass, setSelectedClass] = useState(null);
 
   const [slideDir, setSlideDir]   = useState(null);
   const [animating, setAnimating] = useState(false);
@@ -1135,6 +1138,26 @@ function EventsCalendar({ events, onDeleteEvent, onAddEvent, onEventEdited, onRe
     eventsByDay[key].push(ev);
   });
 
+  // Build classes by day — classes repeat weekly based on schedule
+  const classesByDay = {};
+  const daysInView = new Date(viewYear, viewMonth + 1, 0).getDate();
+  const DAY_NAME_TO_DOW = { Sunday:0, Monday:1, Tuesday:2, Wednesday:3, Thursday:4, Friday:5, Saturday:6 };
+  (classes || []).forEach(cls => {
+    (cls.schedule || []).forEach(s => {
+      if (!s.day) return;
+      const targetDow = DAY_NAME_TO_DOW[s.day];
+      if (targetDow === undefined) return;
+      for (let d = 1; d <= daysInView; d++) {
+        const date = new Date(viewYear, viewMonth, d);
+        if (date.getDay() === targetDow) {
+          const key = `${viewYear}-${String(viewMonth+1).padStart(2,"0")}-${String(d).padStart(2,"0")}`;
+          if (!classesByDay[key]) classesByDay[key] = [];
+          classesByDay[key].push({ ...cls, _scheduleTime: s.time });
+        }
+      }
+    });
+  });
+
   const firstOfMonth = new Date(viewYear, viewMonth, 1);
   const startDow     = (firstOfMonth.getDay() + 6) % 7;
   const daysInMonth  = new Date(viewYear, viewMonth + 1, 0).getDate();
@@ -1168,6 +1191,7 @@ function EventsCalendar({ events, onDeleteEvent, onAddEvent, onEventEdited, onRe
       dayNum: cellDay,
       key,
       events: eventsByDay[key] || [],
+      classes: isOtherMonth ? [] : (classesByDay[key] || []),
       isToday: key === todayKey,
       isOtherMonth,
     });
@@ -1197,10 +1221,14 @@ function EventsCalendar({ events, onDeleteEvent, onAddEvent, onEventEdited, onRe
       `}</style>
 
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
-        <div>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
           <span style={{ fontSize: 12, fontWeight: 500, color: C.t2 }}>
-            {totalEvents} event{totalEvents !== 1 ? "s" : ""} planned this month
+            {totalEvents} event{totalEvents !== 1 ? "s" : ""} · {classes.length} class{classes.length !== 1 ? "es" : ""} this month
           </span>
+          <button onClick={onAddClass}
+            style={{ display: "flex", alignItems: "center", gap: 5, padding: "5px 12px", borderRadius: 7, background: "rgba(168,85,247,0.1)", border: "1px solid rgba(168,85,247,0.28)", color: "#a855f7", fontSize: 11.5, fontWeight: 700, cursor: "pointer", fontFamily: FONT }}>
+            + Add Class
+          </button>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 0 }}>
           <button
@@ -1259,7 +1287,7 @@ function EventsCalendar({ events, onDeleteEvent, onAddEvent, onEventEdited, onRe
                   {cell.dayNum}
                 </div>
                 <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
-                  {cell.events.slice(0, 4).map(ev => (
+                  {cell.events.slice(0, 3).map(ev => (
                     <button
                       key={ev.id}
                       className="cal-event-pill"
@@ -1268,8 +1296,18 @@ function EventsCalendar({ events, onDeleteEvent, onAddEvent, onEventEdited, onRe
                       {ev.title}
                     </button>
                   ))}
-                  {cell.events.length > 4 && (
-                    <div style={{ fontSize: 10, color: C.t3, fontWeight: 600, paddingLeft: 6, marginTop: 1 }}>+{cell.events.length - 4} more</div>
+                  {(cell.classes || []).slice(0, 2).map((cls, ci) => (
+                    <button
+                      key={`cls-${cls.id}-${ci}`}
+                      onClick={() => setSelectedClass(cls)}
+                      style={{ display: "block", width: "100%", textAlign: "left", padding: "3px 6px", borderRadius: 5, background: "rgba(168,85,247,0.14)", border: "1px solid rgba(168,85,247,0.32)", cursor: "pointer", fontFamily: FONT, overflow: "hidden", whiteSpace: "normal", wordBreak: "break-word", fontSize: 10.5, fontWeight: 600, color: "#a855f7", lineHeight: 1.35, boxSizing: "border-box", transition: "background 0.12s, border-color 0.12s" }}
+                      onMouseEnter={e => { e.currentTarget.style.background = "rgba(168,85,247,0.25)"; e.currentTarget.style.borderColor = "rgba(168,85,247,0.55)"; }}
+                      onMouseLeave={e => { e.currentTarget.style.background = "rgba(168,85,247,0.14)"; e.currentTarget.style.borderColor = "rgba(168,85,247,0.32)"; }}>
+                      {cls.name}{cls._scheduleTime ? ` · ${cls._scheduleTime}` : ''}
+                    </button>
+                  ))}
+                  {(cell.events.length + (cell.classes || []).length) > 5 && (
+                    <div style={{ fontSize: 10, color: C.t3, fontWeight: 600, paddingLeft: 6, marginTop: 1 }}>+{cell.events.length + (cell.classes || []).length - 5} more</div>
                   )}
                 </div>
               </div>
@@ -1278,18 +1316,18 @@ function EventsCalendar({ events, onDeleteEvent, onAddEvent, onEventEdited, onRe
         </div>
       </div>
 
-      <div style={{ display: "flex", alignItems: "center", gap: 12, marginTop: 12, paddingLeft: 2 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 12, marginTop: 12, paddingLeft: 2, flexWrap: "wrap" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
           <div style={{ width: 10, height: 10, borderRadius: 3, background: C.cyanDim, border: `1px solid ${C.cyanBrd}` }} />
-          <span style={{ fontSize: 10.5, color: C.t3 }}>Scheduled event — click for details</span>
+          <span style={{ fontSize: 10.5, color: C.t3 }}>Event — click for details</span>
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
+          <div style={{ width: 10, height: 10, borderRadius: 3, background: "rgba(168,85,247,0.14)", border: "1px solid rgba(168,85,247,0.32)" }} />
+          <span style={{ fontSize: 10.5, color: C.t3 }}>Class — click for details</span>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
           <div style={{ width: 10, height: 10, borderRadius: "50%", background: C.cyan }} />
           <span style={{ fontSize: 10.5, color: C.t3 }}>Today</span>
-        </div>
-        <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
-          <div style={{ width: 10, height: 10, borderRadius: 3, background: "rgba(77,127,255,0.06)", border: "1px solid rgba(77,127,255,0.12)", opacity: 0.6 }} />
-          <span style={{ fontSize: 10.5, color: C.t3 }}>Adjacent month (faded)</span>
         </div>
       </div>
 
@@ -1301,6 +1339,13 @@ function EventsCalendar({ events, onDeleteEvent, onAddEvent, onEventEdited, onRe
           onEditSaved={() => { setSelectedEvent(null); onEventEdited?.(); }}
         />
       )}
+      {selectedClass && (
+        <ClassDetailPopup
+          gymClass={selectedClass}
+          onClose={() => setSelectedClass(null)}
+          onDelete={async (id) => { await onDeleteClass?.(id); setSelectedClass(null); }}
+        />
+      )}
     </>
   );
 }
@@ -1309,8 +1354,8 @@ export { CreateEventModal } from "./CreateEventModal";
 
 /* ─── ROOT ───────────────────────────────────────────────────────── */
 export default function ContentPage({
-  events = [], challenges = [], polls = [], posts = [], checkIns = [],
-  openModal, onDeleteEvent, onDeleteChallenge, onDeletePost, onDeletePoll, onUpdatePost, onUpdateEvent,
+  events = [], challenges = [], polls = [], posts = [], checkIns = [], classes = [],
+  openModal, onDeleteEvent, onDeleteChallenge, onDeletePost, onDeletePoll, onUpdatePost, onUpdateEvent, onDeleteClass, onCreateClass,
   avatarMap = {}, nameMap = {}, currentUser = null, gym = null, memberCount = 0, memberUserRecords = [],
 }) {
   const isMobile = useIsMobile();
@@ -1325,6 +1370,8 @@ export default function ContentPage({
   const [scheduledSort, setScheduledSort] = useState("planned");
   const [pollSort, setPollSort] = useState("created");
   const [feedFilter, setFeedFilter] = useState("all");
+  const [showCreateClass, setShowCreateClass] = useState(false);
+  const [creatingClass, setCreatingClass] = useState(false);
 
   const createItems = [
     { label: "📝 New Post",      action: () => { openModal?.("post");      setShowMenu(false); setTab("Community Feed"); } },
@@ -1533,9 +1580,12 @@ export default function ContentPage({
           {tab === "Events" && (
             <EventsCalendar
               events={events}
+              classes={classes}
               onDeleteEvent={onDeleteEvent}
               onAddEvent={() => openModal?.("event")}
+              onAddClass={() => setShowCreateClass(true)}
               onEventEdited={onUpdateEvent}
+              onDeleteClass={onDeleteClass}
             />
           )}
 
