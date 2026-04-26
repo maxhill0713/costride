@@ -16,8 +16,10 @@ const C = {
 };
 const FONT = "'DM Sans','Inter',system-ui,sans-serif";
 
-const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 const DIFFICULTIES = ['beginner', 'intermediate', 'advanced', 'all_levels'];
+
+// Get today's date in YYYY-MM-DD for min date validation
+const todayStr = () => new Date().toISOString().split('T')[0];
 
 const baseInp = {
   width: '100%', boxSizing: 'border-box', padding: '9px 12px',
@@ -106,12 +108,12 @@ function ClassPreview({ form }) {
           </div>
         )}
       </div>
-      {form.day && form.time && (
+      {form.date && form.time && (
         <div style={{ marginTop: 10, paddingTop: 10, borderTop: '1px solid rgba(168,85,247,0.15)' }}>
           <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.5)', display: 'flex', alignItems: 'center', gap: 5 }}>
-            <span style={{ color: C.purple, fontWeight: 600 }}>{form.day}</span>
+            <span style={{ color: C.purple, fontWeight: 600 }}>{new Date(form.date + 'T12:00:00').toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'short' })}</span>
             <span>at {form.time}</span>
-            {form.weekly && <span style={{ color: C.purple, fontWeight: 600 }}>· Weekly</span>}
+            {form.weekly && <span style={{ color: C.purple, fontWeight: 600 }}>· Repeats weekly</span>}
           </div>
         </div>
       )}
@@ -120,7 +122,7 @@ function ClassPreview({ form }) {
 }
 
 export default function CreateClassModal({ open, onClose, onSave, gym, isLoading }) {
-  const emptyForm = { name: '', description: '', instructor: '', duration_minutes: '', max_capacity: '', difficulty: 'all_levels', day: '', time: '', weekly: false };
+  const emptyForm = { name: '', description: '', instructor: '', duration_minutes: '', max_capacity: '', difficulty: 'all_levels', date: '', time: '', weekly: false };
   const [form, setForm] = useState(emptyForm);
   const [showPreview, setShowPreview] = useState(false);
 
@@ -132,17 +134,18 @@ export default function CreateClassModal({ open, onClose, onSave, gym, isLoading
   }, []);
 
   const set = (k, v) => setForm(f => ({ ...f, [k]: v }));
-  const canSubmit = form.name.trim() && form.instructor.trim() && form.duration_minutes && form.max_capacity && form.day && form.time && !isLoading;
+  const canSubmit = form.name.trim() && form.instructor.trim() && form.duration_minutes && form.max_capacity && form.date && form.time && !isLoading;
 
   const handleSubmit = (e) => {
     e?.preventDefault();
     if (!canSubmit) return;
-    // Always store the day/time; weekly flag controls repeat behaviour in calendar
+    const dayName = new Date(form.date + 'T12:00:00').toLocaleDateString('en-GB', { weekday: 'long' });
     const payload = {
       ...form,
       duration_minutes: Number(form.duration_minutes),
       max_capacity: Number(form.max_capacity),
-      schedule: [{ day: form.day, time: form.time }],
+      // Store both the specific date and the day name (used for weekly repeat)
+      schedule: [{ day: dayName, time: form.time, date: form.date, weekly: form.weekly }],
       gym_id: gym?.id,
       gym_name: gym?.name,
     };
@@ -248,11 +251,8 @@ export default function CreateClassModal({ open, onClose, onSave, gym, isLoading
                 <div>
                   <SL required>Date and Time</SL>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <div className="cls-sel-wrap" style={{ flex: 1 }}>
-                      <select value={form.day} onChange={e => set('day', e.target.value)} style={{ ...selectStyle, fontSize: 14 }}>
-                        <option value="">Select day</option>
-                        {DAYS.map(d => <option key={d} value={d}>{d}</option>)}
-                      </select>
+                    <div style={{ flex: 1 }}>
+                      <Inp type="date" value={form.date} onChange={e => set('date', e.target.value)} min={todayStr()} />
                     </div>
                     <div style={{ flex: 1 }}>
                       <Inp type="time" value={form.time} onChange={e => set('time', e.target.value)} />
