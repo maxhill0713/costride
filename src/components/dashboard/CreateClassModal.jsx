@@ -73,7 +73,6 @@ function ClassPreview({ form }) {
       </div>
     );
   }
-  const schedule = form.schedule.filter(s => s.day && s.time);
   return (
     <div style={{ background: 'linear-gradient(135deg, rgba(168,85,247,0.12) 0%, rgba(8,10,20,0.96) 100%)', border: '1px solid rgba(168,85,247,0.2)', borderRadius: 18, overflow: 'hidden', padding: '14px' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 9, marginBottom: 10 }}>
@@ -107,14 +106,13 @@ function ClassPreview({ form }) {
           </div>
         )}
       </div>
-      {schedule.length > 0 && (
+      {form.day && form.time && (
         <div style={{ marginTop: 10, paddingTop: 10, borderTop: '1px solid rgba(168,85,247,0.15)' }}>
-          {schedule.map((s, i) => (
-            <div key={i} style={{ fontSize: 11, color: 'rgba(255,255,255,0.5)', display: 'flex', alignItems: 'center', gap: 5, marginTop: i > 0 ? 3 : 0 }}>
-              <span style={{ color: C.purple, fontWeight: 600 }}>{s.day}</span>
-              <span>at {s.time}</span>
-            </div>
-          ))}
+          <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.5)', display: 'flex', alignItems: 'center', gap: 5 }}>
+            <span style={{ color: C.purple, fontWeight: 600 }}>{form.day}</span>
+            <span>at {form.time}</span>
+            {form.weekly && <span style={{ color: C.purple, fontWeight: 600 }}>· Weekly</span>}
+          </div>
         </div>
       )}
     </div>
@@ -122,11 +120,9 @@ function ClassPreview({ form }) {
 }
 
 export default function CreateClassModal({ open, onClose, onSave, gym, isLoading }) {
-  const emptyForm = { name: '', description: '', instructor: '', duration_minutes: '', max_capacity: '', difficulty: 'all_levels', schedule: [{ day: '', time: '' }] };
+  const emptyForm = { name: '', description: '', instructor: '', duration_minutes: '', max_capacity: '', difficulty: 'all_levels', day: '', time: '', weekly: false };
   const [form, setForm] = useState(emptyForm);
-  const [uploading, setUploading] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
-  const fileRef = useRef();
 
   const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' ? window.innerWidth <= 768 : false);
   useEffect(() => {
@@ -136,24 +132,17 @@ export default function CreateClassModal({ open, onClose, onSave, gym, isLoading
   }, []);
 
   const set = (k, v) => setForm(f => ({ ...f, [k]: v }));
-  const canSubmit = form.name.trim() && form.instructor.trim() && !isLoading;
-
-  const addScheduleRow = () => setForm(f => ({ ...f, schedule: [...f.schedule, { day: '', time: '' }] }));
-  const removeScheduleRow = (i) => setForm(f => ({ ...f, schedule: f.schedule.filter((_, idx) => idx !== i) }));
-  const updateSchedule = (i, key, val) => setForm(f => {
-    const s = [...f.schedule];
-    s[i] = { ...s[i], [key]: val };
-    return { ...f, schedule: s };
-  });
+  const canSubmit = form.name.trim() && form.instructor.trim() && form.duration_minutes && form.max_capacity && form.day && form.time && !isLoading;
 
   const handleSubmit = (e) => {
     e?.preventDefault();
     if (!canSubmit) return;
+    const schedule = form.weekly ? [{ day: form.day, time: form.time }] : [];
     const payload = {
       ...form,
-      duration_minutes: form.duration_minutes ? Number(form.duration_minutes) : undefined,
-      max_capacity: form.max_capacity ? Number(form.max_capacity) : undefined,
-      schedule: form.schedule.filter(s => s.day && s.time),
+      duration_minutes: Number(form.duration_minutes),
+      max_capacity: Number(form.max_capacity),
+      schedule,
       gym_id: gym?.id,
       gym_name: gym?.name,
     };
@@ -238,11 +227,11 @@ export default function CreateClassModal({ open, onClose, onSave, gym, isLoading
 
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12 }}>
                   <div>
-                    <SL>Duration (min)</SL>
+                    <SL required>Duration (min)</SL>
                     <Inp type="number" value={form.duration_minutes} onChange={e => set('duration_minutes', e.target.value)} placeholder="60" min="1" Icon={Clock} />
                   </div>
                   <div>
-                    <SL>Max Capacity</SL>
+                    <SL required>Max Capacity</SL>
                     <Inp type="number" value={form.max_capacity} onChange={e => set('max_capacity', e.target.value)} placeholder="20" min="1" Icon={Users} />
                   </div>
                   <div>
@@ -255,33 +244,31 @@ export default function CreateClassModal({ open, onClose, onSave, gym, isLoading
                   </div>
                 </div>
 
-                {/* Schedule */}
+                {/* Date & Time */}
                 <div>
-                  <SL>Weekly Schedule</SL>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                    {form.schedule.map((s, i) => (
-                      <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                        <div className="cls-sel-wrap" style={{ flex: 1 }}>
-                          <select value={s.day} onChange={e => updateSchedule(i, 'day', e.target.value)} style={{ ...selectStyle, fontSize: 14 }}>
-                            <option value="">Select day</option>
-                            {DAYS.map(d => <option key={d} value={d}>{d}</option>)}
-                          </select>
-                        </div>
-                        <Inp type="time" value={s.time} onChange={e => updateSchedule(i, 'time', e.target.value)} />
-                        {form.schedule.length > 1 && (
-                          <button type="button" onClick={() => removeScheduleRow(i)} style={{ width: 32, height: 32, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'transparent', border: `1px solid ${C.brd}`, borderRadius: 7, cursor: 'pointer', color: C.t3 }}
-                            onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(255,77,109,0.35)'; e.currentTarget.style.color = C.red; }}
-                            onMouseLeave={e => { e.currentTarget.style.borderColor = C.brd; e.currentTarget.style.color = C.t3; }}>
-                            <X size={12} />
-                          </button>
-                        )}
-                      </div>
-                    ))}
-                    <button type="button" onClick={addScheduleRow}
-                      style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '7px 12px', borderRadius: 8, border: `1px dashed ${C.purpleBrd}`, background: C.purpleDim, color: C.purple, fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: FONT, alignSelf: 'flex-start' }}>
-                      + Add another time slot
-                    </button>
+                  <SL required>Date and Time</SL>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <div className="cls-sel-wrap" style={{ flex: 1 }}>
+                      <select value={form.day} onChange={e => set('day', e.target.value)} style={{ ...selectStyle, fontSize: 14 }}>
+                        <option value="">Select day</option>
+                        {DAYS.map(d => <option key={d} value={d}>{d}</option>)}
+                      </select>
+                    </div>
+                    <div style={{ flex: 1 }}>
+                      <Inp type="time" value={form.time} onChange={e => set('time', e.target.value)} />
+                    </div>
                   </div>
+                  {/* Make weekly checkbox */}
+                  <label style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 12, cursor: 'pointer', userSelect: 'none' }}>
+                    <div onClick={() => set('weekly', !form.weekly)}
+                      style={{ width: 18, height: 18, borderRadius: 5, border: `2px solid ${form.weekly ? C.purple : C.brd}`, background: form.weekly ? C.purple : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'all 0.15s', cursor: 'pointer' }}>
+                      {form.weekly && <svg width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4L3.5 6.5L9 1" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>}
+                    </div>
+                    <div>
+                      <div style={{ fontSize: 13, fontWeight: 600, color: C.t1 }}>Make class weekly</div>
+                      <div style={{ fontSize: 11, color: C.t3, marginTop: 1 }}>This class will repeat every week on the same day and time</div>
+                    </div>
+                  </label>
                 </div>
 
               </div>
