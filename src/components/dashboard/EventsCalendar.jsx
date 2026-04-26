@@ -178,6 +178,7 @@ export default function EventsCalendar({ events, classes = [], onDeleteEvent, on
       if (s.date) {
         const dateKey = s.date.length > 10 ? s.date.slice(0, 10) : s.date;
         if (s.weekly) {
+          // Weekly class: repeat on matching day from this date forward
           const startDate = new Date(dateKey + "T00:00:00");
           const effectiveStart = startDate >= todayMidnight ? startDate : todayMidnight;
           const targetDow = DAY_NAME_TO_DOW[s.day];
@@ -191,12 +192,12 @@ export default function EventsCalendar({ events, classes = [], onDeleteEvent, on
             }
           }
         } else {
-          // Non-weekly: always show on the exact date, no past-date filter
+          // One-off class: only show on the exact date
           if (!classesByDay[dateKey]) classesByDay[dateKey] = [];
           classesByDay[dateKey].push({ ...cls, _scheduleTime: s.time });
         }
       } else if (s.day) {
-        // No date set — treat as recurring weekly by day name
+        // No date set — treat as recurring weekly by day name (fallback for old data)
         const targetDow = DAY_NAME_TO_DOW[s.day];
         if (targetDow === undefined) return;
         for (let d = 1; d <= daysInView; d++) {
