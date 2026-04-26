@@ -125,7 +125,7 @@ function FullSection({ title, subtitle, score, defaultOpen = true, children }) {
   const [open, setOpen] = useState(defaultOpen);
   const s = qualityState(score);
   return (
-    <div style={{ background: C.card, border: `1px solid ${score < 40 ? C.redBrd : C.brd}`, borderRadius: 10, overflow: 'hidden', marginBottom: 9, transition: 'border-color 0.15s' }}>
+    <div style={{ background: C.card, border: `1px solid ${C.brd}`, borderRadius: 10, overflow: 'hidden', marginBottom: 9 }}>
       <button
         onClick={() => setOpen(o => !o)}
         style={{ width: '100%', display: 'flex', alignItems: 'center', padding: '12px 16px', background: 'transparent', border: 'none', borderBottom: open ? `1px solid ${C.brd}` : 'none', cursor: 'pointer', gap: 10, textAlign: 'left', fontFamily: FONT, transition: 'background 0.12s' }}
