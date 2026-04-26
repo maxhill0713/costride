@@ -60,17 +60,17 @@ function MonthDropdown({ viewYear, viewMonth, onSelect }) {
   );
 }
 
-// ── 24-hour timeline day modal ───────────────────────────────────────────────
+// ── Windowed timeline day modal ──────────────────────────────────────────────
 function DayDetailModal({ cell, dateLabel, onClose, onSelectEvent, onSelectClass }) {
-  const TOTAL_MINUTES = 24 * 60;
-  const TIMELINE_HEIGHT = 1440; // px — 1px per minute
+  // px per minute — 1px was the base, reduced 20% → 0.8px/min
+  const PX_PER_MIN = 0.8;
+  const PADDING_MIN = 30; // 30-min buffer above and below
 
-  // Build items with minute offsets
+  // Build items
   const items = [];
   (cell.events || []).forEach(ev => {
     const d = new Date(ev.event_date);
     const startMin = d.getHours() * 60 + d.getMinutes();
-    // Default duration 60 min unless specified
     const durationMin = ev.duration_minutes || 60;
     items.push({ type: "event", data: ev, startMin, durationMin, color: C.cyan });
   });
@@ -84,8 +84,21 @@ function DayDetailModal({ cell, dateLabel, onClose, onSelectEvent, onSelectClass
   });
   items.sort((a, b) => a.startMin - b.startMin);
 
-  // Detect overlaps and assign columns
-  // Simple greedy column assignment
+  // Window bounds — clamp to [0, 1440]
+  const earliestStart = items.length > 0 ? Math.min(...items.map(i => i.startMin)) : 7 * 60;
+  const latestEnd     = items.length > 0 ? Math.max(...items.map(i => i.startMin + i.durationMin)) : 8 * 60;
+  const windowStart = Math.max(0, earliestStart - PADDING_MIN);
+  const windowEnd   = Math.min(24 * 60, latestEnd + PADDING_MIN);
+  const windowMin   = windowEnd - windowStart;
+  const TIMELINE_HEIGHT = Math.round(windowMin * PX_PER_MIN);
+
+  // Which hour labels fall inside the window
+  const firstHour = Math.floor(windowStart / 60);
+  const lastHour  = Math.ceil(windowEnd / 60);
+  const hourLabels = [];
+  for (let h = firstHour; h <= lastHour; h++) hourLabels.push(h);
+
+  // Greedy column assignment
   const columns = [];
   const itemsWithCol = items.map(item => {
     let col = 0;
@@ -103,24 +116,16 @@ function DayDetailModal({ cell, dateLabel, onClose, onSelectEvent, onSelectClass
   const numCols = Math.max(1, ...itemsWithCol.map(i => i.col + 1));
 
   const HOUR_LABEL_W = 36;
-  const SCROLL_CONTAINER_HEIGHT = 480;
 
-  // Scroll to first event or 7am on open
-  const scrollRef = useRef(null);
-  useEffect(() => {
-    if (scrollRef.current) {
-      const firstItem = items[0];
-      const targetMin = firstItem ? Math.max(0, firstItem.startMin - 60) : 7 * 60;
-      scrollRef.current.scrollTop = (targetMin / TOTAL_MINUTES) * TIMELINE_HEIGHT;
-    }
-  }, []);
+  // Helper: convert absolute minutes → px offset within the window
+  const minToPx = (min) => Math.round((min - windowStart) * PX_PER_MIN);
 
   return (
     <div
       onClick={e => { if (e.target === e.currentTarget) onClose(); }}
       style={{ position: "fixed", inset: 0, zIndex: 500, background: "rgba(0,0,0,0.72)", display: "flex", alignItems: "center", justifyContent: "center", backdropFilter: "blur(4px)" }}>
       <div style={{ background: "#17171c", border: `1px solid ${C.brd}`, borderRadius: 14, width: 400, maxWidth: "94vw", display: "flex", flexDirection: "column", boxShadow: "0 24px 60px rgba(0,0,0,0.8)", maxHeight: "88vh" }}>
-        {/* Header — no icon */}
+        {/* Header */}
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 18px 12px", borderBottom: `1px solid ${C.brd}`, flexShrink: 0 }}>
           <span style={{ fontSize: 14, fontWeight: 800, color: C.t1, letterSpacing: "-0.01em" }}>{dateLabel}</span>
           <button onClick={onClose} style={{ background: "none", border: "none", color: C.t3, cursor: "pointer", display: "flex", alignItems: "center", padding: 2 }}
@@ -130,52 +135,63 @@ function DayDetailModal({ cell, dateLabel, onClose, onSelectEvent, onSelectClass
           </button>
         </div>
 
-        {/* 24-hour timeline */}
-        <div ref={scrollRef} style={{ overflowY: "auto", flexShrink: 1, position: "relative" }}>
+        {/* Timeline — scrollable only if taller than viewport budget */}
+        <div style={{ overflowY: "auto", flexShrink: 1, padding: "10px 10px 14px 0" }}>
           <div style={{ position: "relative", height: TIMELINE_HEIGHT, display: "flex" }}>
-            {/* Hour labels + grid lines */}
+
+            {/* Hour labels */}
             <div style={{ width: HOUR_LABEL_W, flexShrink: 0, position: "relative" }}>
-              {Array.from({ length: 25 }, (_, h) => (
-                <div key={h} style={{
-                  position: "absolute",
-                  top: (h / 24) * TIMELINE_HEIGHT - 7,
-                  left: 0, width: HOUR_LABEL_W,
-                  textAlign: "right", paddingRight: 8,
-                  fontSize: 9.5, fontWeight: 600, color: C.t3, lineHeight: 1,
-                  userSelect: "none",
-                }}>
-                  {String(h).padStart(2, "0")}
-                </div>
-              ))}
+              {hourLabels.map(h => {
+                const absMin = h * 60;
+                if (absMin < windowStart || absMin > windowEnd) return null;
+                return (
+                  <div key={h} style={{
+                    position: "absolute",
+                    top: minToPx(absMin) - 7,
+                    left: 0, width: HOUR_LABEL_W,
+                    textAlign: "right", paddingRight: 8,
+                    fontSize: 9.5, fontWeight: 600, color: C.t3, lineHeight: 1,
+                    userSelect: "none",
+                  }}>
+                    {String(h).padStart(2, "0")}:00
+                  </div>
+                );
+              })}
             </div>
 
-            {/* Grid + events area */}
+            {/* Grid + blocks */}
             <div style={{ flex: 1, position: "relative", marginRight: 10 }}>
-              {/* Hour grid lines */}
-              {Array.from({ length: 25 }, (_, h) => (
-                <div key={h} style={{
-                  position: "absolute",
-                  top: (h / 24) * TIMELINE_HEIGHT,
-                  left: 0, right: 0,
-                  height: 1,
-                  background: h === 0 || h === 24 ? C.brd2 : "rgba(255,255,255,0.05)",
-                }} />
-              ))}
-              {/* Half-hour grid lines */}
-              {Array.from({ length: 24 }, (_, h) => (
-                <div key={`h-${h}`} style={{
-                  position: "absolute",
-                  top: ((h + 0.5) / 24) * TIMELINE_HEIGHT,
-                  left: 0, right: 0,
-                  height: 1,
-                  background: "rgba(255,255,255,0.025)",
-                }} />
-              ))}
+              {/* Hour lines */}
+              {hourLabels.map(h => {
+                const absMin = h * 60;
+                if (absMin < windowStart || absMin > windowEnd) return null;
+                return (
+                  <div key={h} style={{
+                    position: "absolute",
+                    top: minToPx(absMin),
+                    left: 0, right: 0, height: 1,
+                    background: "rgba(255,255,255,0.07)",
+                  }} />
+                );
+              })}
+              {/* Half-hour lines */}
+              {hourLabels.map(h => {
+                const absMin = h * 60 + 30;
+                if (absMin <= windowStart || absMin >= windowEnd) return null;
+                return (
+                  <div key={`hh-${h}`} style={{
+                    position: "absolute",
+                    top: minToPx(absMin),
+                    left: 0, right: 0, height: 1,
+                    background: "rgba(255,255,255,0.03)",
+                  }} />
+                );
+              })}
 
               {/* Event / class blocks */}
               {itemsWithCol.map((item, i) => {
-                const top = (item.startMin / TOTAL_MINUTES) * TIMELINE_HEIGHT;
-                const height = Math.max(20, (item.durationMin / TOTAL_MINUTES) * TIMELINE_HEIGHT);
+                const top = minToPx(item.startMin);
+                const height = Math.max(18, Math.round(item.durationMin * PX_PER_MIN));
                 const colW = 1 / numCols;
                 const left = `${item.col * colW * 100}%`;
                 const width = `calc(${colW * 100}% - 4px)`;
@@ -211,7 +227,7 @@ function DayDetailModal({ cell, dateLabel, onClose, onSelectEvent, onSelectClass
                     onMouseEnter={e => e.currentTarget.style.opacity = "0.8"}
                     onMouseLeave={e => e.currentTarget.style.opacity = "1"}>
                     <div style={{ fontSize: 10, fontWeight: 700, color: C.t1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", lineHeight: 1.2 }}>{label}</div>
-                    {height > 28 && (
+                    {height > 26 && (
                       <div style={{ fontSize: 9, color, fontWeight: 600, lineHeight: 1.1 }}>{timeStr}{sublabel ? ` · ${sublabel}` : ""}</div>
                     )}
                   </button>
