@@ -69,7 +69,7 @@ function ExerciseRow({ ex, idx }) {
 function WorkoutSwipePanel({ post }) {
   const exercises = post.workout_exercises || [];
   const PREVIEW_COUNT = 8;
-  const PANEL_HEIGHT = "min(85.8vw, 380px)";
+  const PANEL_HEIGHT = "min(85.8vw, 420px)";
 
   const [slide, setSlide] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
@@ -271,7 +271,7 @@ export default function PostPreviewModal({ post, gym, avatarMap = {}, nameMap = 
       >
         <div
           style={{
-            width: "100%", maxWidth: 600, maxHeight: "96vh",
+            width: "100%", maxWidth: 480, maxHeight: "98vh",
             display: "flex", flexDirection: "column",
             borderRadius: 24, overflow: "hidden",
             background: "linear-gradient(135deg, rgba(16,19,40,0.97) 0%, rgba(6,8,18,0.99) 100%)",
