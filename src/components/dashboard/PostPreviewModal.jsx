@@ -271,7 +271,7 @@ export default function PostPreviewModal({ post, gym, avatarMap = {}, nameMap = 
       >
         <div
           style={{
-            width: "100%", maxWidth: 600, maxHeight: "94vh",
+            width: "100%", maxWidth: 600, maxHeight: "96vh",
             display: "flex", flexDirection: "column",
             borderRadius: 24, overflow: "hidden",
             background: "linear-gradient(135deg, rgba(16,19,40,0.97) 0%, rgba(6,8,18,0.99) 100%)",
