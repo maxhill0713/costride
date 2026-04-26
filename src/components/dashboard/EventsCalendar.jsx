@@ -54,6 +54,9 @@ function MonthDropdown({ viewYear, viewMonth, onSelect }) {
 
 export default function EventsCalendar({ events, classes = [], onDeleteEvent, onAddEvent, onAddClass, onEventEdited, onDeleteClass }) {
   const today = new Date();
+  // Normalise today to midnight for date comparisons
+  const todayMidnight = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+
   const [viewYear, setViewYear] = useState(today.getFullYear());
   const [viewMonth, setViewMonth] = useState(today.getMonth());
   const [selectedEvent, setSelectedEvent] = useState(null);
@@ -80,6 +83,7 @@ export default function EventsCalendar({ events, classes = [], onDeleteEvent, on
 
   useEffect(() => () => clearTimeout(timeoutRef.current), []);
 
+  // ── Events by day ────────────────────────────────────────────────
   const eventsByDay = {};
   events.forEach(ev => {
     if (!ev.event_date) return;
@@ -89,39 +93,48 @@ export default function EventsCalendar({ events, classes = [], onDeleteEvent, on
     eventsByDay[key].push(ev);
   });
 
-  // Build classes by day — respects one-off vs weekly
-  const classesByDay = {};
+  // ── Classes by day ───────────────────────────────────────────────
+  // Rules:
+  //   one-off  (weekly === false): show ONLY on the specific s.date
+  //   weekly   (weekly === true):  show on matching DOW, on/after s.date, and on/after today
+  //   legacy   (no s.date):       show on matching DOW on/after today only
   const daysInView = new Date(viewYear, viewMonth + 1, 0).getDate();
+  const classesByDay = {};
+
   (classes || []).forEach(cls => {
     (cls.schedule || []).forEach(s => {
       if (s.date) {
-        // New format — has a specific date
         const dateKey = s.date.length > 10 ? s.date.slice(0, 10) : s.date;
+
         if (s.weekly) {
-          // Weekly repeating: show on matching weekday ON OR AFTER the start date
-          const startDate = new Date(dateKey + 'T00:00:00');
+          // Weekly: repeat on the same DOW starting from max(s.date, today)
+          const startDate = new Date(dateKey + "T00:00:00");
+          const effectiveStart = startDate >= todayMidnight ? startDate : todayMidnight;
           const targetDow = DAY_NAME_TO_DOW[s.day];
           if (targetDow === undefined) return;
           for (let d = 1; d <= daysInView; d++) {
             const cellDate = new Date(viewYear, viewMonth, d);
-            if (cellDate.getDay() === targetDow && cellDate >= startDate) {
+            if (cellDate.getDay() === targetDow && cellDate >= effectiveStart) {
               const key = `${viewYear}-${String(viewMonth+1).padStart(2,"0")}-${String(d).padStart(2,"0")}`;
               if (!classesByDay[key]) classesByDay[key] = [];
               classesByDay[key].push({ ...cls, _scheduleTime: s.time });
             }
           }
         } else {
-          // One-off: show only on the specific date
-          if (!classesByDay[dateKey]) classesByDay[dateKey] = [];
-          classesByDay[dateKey].push({ ...cls, _scheduleTime: s.time });
+          // One-off: show only on the specific date, and only if it's today or future
+          const classDate = new Date(dateKey + "T00:00:00");
+          if (classDate >= todayMidnight) {
+            if (!classesByDay[dateKey]) classesByDay[dateKey] = [];
+            classesByDay[dateKey].push({ ...cls, _scheduleTime: s.time });
+          }
         }
       } else if (s.day && !s.date) {
-        // Legacy format — day name only (no date), treat as weekly
+        // Legacy format (day name only): weekly from today onwards
         const targetDow = DAY_NAME_TO_DOW[s.day];
         if (targetDow === undefined) return;
         for (let d = 1; d <= daysInView; d++) {
           const cellDate = new Date(viewYear, viewMonth, d);
-          if (cellDate.getDay() === targetDow) {
+          if (cellDate.getDay() === targetDow && cellDate >= todayMidnight) {
             const key = `${viewYear}-${String(viewMonth+1).padStart(2,"0")}-${String(d).padStart(2,"0")}`;
             if (!classesByDay[key]) classesByDay[key] = [];
             classesByDay[key].push({ ...cls, _scheduleTime: s.time });
@@ -131,6 +144,7 @@ export default function EventsCalendar({ events, classes = [], onDeleteEvent, on
     });
   });
 
+  // ── Build calendar cells ─────────────────────────────────────────
   const firstOfMonth = new Date(viewYear, viewMonth, 1);
   const startDow = (firstOfMonth.getDay() + 6) % 7;
   const daysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate();
@@ -172,7 +186,6 @@ export default function EventsCalendar({ events, classes = [], onDeleteEvent, on
     return d.getFullYear() === viewYear && d.getMonth() === viewMonth;
   }).length;
 
-  // Count classes visible in this month's view
   const totalClasses = Object.values(classesByDay).flat().length;
 
   return (
