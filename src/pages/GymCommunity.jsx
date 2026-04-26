@@ -457,7 +457,6 @@ function GymActivityFeed({ checkIns, memberAvatarMap, memberNameMap = {}, workou
     const isGymPost = !!p.post_type;
     const postUserName = isGymPost ? (p.gym_name || p.member_name || 'Gym') : resolveName(p.member_id, p.member_name);
     const postUserId = isGymPost ? `gym_post_${p.gym_id || p.member_id}` : p.member_id;
-    // Only set gymAvatar for gym posts; leave undefined for member posts so memberAvatarMap is used
     const feedItem = { type: 'post', id: `post-${p.id}`, userId: postUserId, userName: postUserName, isGymPost, date: p.created_date, data: p };
     if (isGymPost) feedItem.gymAvatar = p.member_avatar || null;
     all.push(feedItem);
@@ -552,53 +551,72 @@ function btn3D(active, activeProps, inactiveProps) {
   };
 }
 
+// ─── UPDATED: ClassDateHeader ───────────────────────────────────────────────
+// • Today is always the first day shown; the row then shows the next 6 days
+// • No horizontal scrolling — all 7 days spread evenly across the full width
+// • Day boxes are ~5% narrower (achieved via padding reduction)
 function ClassDateHeader({ activeDay, setActiveDay, activeSlot, setActiveSlot }) {
   const today = new Date();
-  const todayIdx = today.getDay() === 0 ? 6 : today.getDay() - 1;
-  const monday = new Date(today);
-  monday.setDate(today.getDate() - todayIdx);
 
+  // Build 7 days starting from today
   const days = Array.from({ length: 7 }, (_, i) => {
-    const d = new Date(monday);
-    d.setDate(monday.getDate() + i);
-    return { idx: i, label: DAY_LABELS[i], num: d.getDate(), isToday: i === todayIdx };
+    const d = new Date(today);
+    d.setDate(today.getDate() + i);
+    // Get Mon=0 … Sun=6 index for matching against DAY_LABELS
+    const jsDay = d.getDay(); // 0=Sun,1=Mon,...,6=Sat
+    const dayIdx = jsDay === 0 ? 6 : jsDay - 1; // convert to Mon=0…Sun=6
+    return {
+      offset: i,           // 0 = today, 1 = tomorrow, etc.
+      dayIdx,              // used to match schedule days
+      label: DAY_LABELS[dayIdx],
+      num: d.getDate(),
+      isToday: i === 0,
+      date: d,
+    };
   });
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-      <div style={{ display: 'flex', gap: 6, overflowX: 'auto', scrollbarWidth: 'none' }}>
+      {/* Day selector — no overflow scroll, spread evenly */}
+      <div style={{ display: 'flex', gap: 5 }}>
         {days.map((d) => {
-          const active = activeDay === d.idx;
+          const active = activeDay === d.offset;
           const b = btn3D(
             active,
             {
-              minWidth: 48, padding: '8px 4px', borderRadius: 13, cursor: 'pointer',
+              flex: 1,
+              padding: '7px 2px',
+              borderRadius: 13, cursor: 'pointer',
               background: 'linear-gradient(to bottom, #3b82f6, #2563eb, #1d4ed8)',
               border: '1px solid transparent',
               borderBottom: '3px solid #1a3fa8',
               boxShadow: '0 2px 0 rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.2), 0 6px 20px rgba(37,99,235,0.35)',
               color: '#fff',
               transition: 'transform 0.08s ease, box-shadow 0.08s ease, border-bottom 0.08s ease',
-              display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2
+              display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2,
+              minWidth: 0,
             },
             {
-              minWidth: 48, padding: '8px 4px', borderRadius: 13, cursor: 'pointer',
+              flex: 1,
+              padding: '7px 2px',
+              borderRadius: 13, cursor: 'pointer',
               background: d.isToday ? 'rgba(37,99,235,0.12)' : 'rgba(20,28,60,0.8)',
               border: `1px solid ${d.isToday ? 'rgba(59,130,246,0.35)' : 'rgba(255,255,255,0.09)'}`,
               borderBottom: '3px solid rgba(0,0,0,0.5)',
               boxShadow: '0 2px 0 rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.07)',
               color: d.isToday ? 'rgba(147,197,253,0.9)' : 'rgba(255,255,255,0.45)',
               transition: 'transform 0.08s ease, box-shadow 0.08s ease, border-bottom 0.08s ease',
-              display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2
+              display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2,
+              minWidth: 0,
             }
           );
           return (
-            <button key={d.idx} onClick={() => setActiveDay(d.idx)} {...b}>
-              <span style={{ fontSize: 9, fontWeight: 800, letterSpacing: '0.06em', textTransform: 'uppercase',
+            <button key={d.offset} onClick={() => setActiveDay(d.offset)} {...b}>
+              <span style={{ fontSize: 8.5, fontWeight: 800, letterSpacing: '0.05em', textTransform: 'uppercase',
                 color: active ? 'rgba(255,255,255,0.7)' : d.isToday ? 'rgba(147,197,253,0.75)' : 'rgba(255,255,255,0.35)' }}>
                 {d.label}
               </span>
-              <span style={{ fontSize: 19, fontWeight: 900, letterSpacing: '-0.04em', lineHeight: 1 }}>
+              <span style={{ fontSize: 17, fontWeight: 900, letterSpacing: '-0.04em', lineHeight: 1 }}>
                 {d.num}
               </span>
               {d.isToday && !active &&
@@ -608,6 +626,7 @@ function ClassDateHeader({ activeDay, setActiveDay, activeSlot, setActiveSlot })
         })}
       </div>
 
+      {/* Time-slot filters */}
       <div style={{ display: 'flex', gap: 8 }}>
         {TIME_SLOTS.map((slot) => {
           const active = activeSlot === slot;
@@ -845,15 +864,16 @@ function PremiumClassCard({ gymClass, isOwner, onDelete, onBook, booked, onClick
     </div>);
 }
 
+// ─── UPDATED: ClassesTabContent ──────────────────────────────────────────────
+// • Removed "Classes" label above the title
+// • "Today's Sessions" → "Today's Classes"
+// • activeDay is now an offset (0=today, 1=tomorrow …) matching the new ClassDateHeader
+// • Type filter buttons (All / Yoga / HIIT / …) completely removed
 function ClassesTabContent({ classes, showOwnerControls, onManage, onDelete }) {
   const today = new Date();
-  const todayIdx = today.getDay() === 0 ? 6 : today.getDay() - 1;
-  const monday = new Date(today);
-  monday.setDate(today.getDate() - todayIdx);
 
-  const [activeDay, setActiveDay] = useState(todayIdx);
+  const [activeDay, setActiveDay] = useState(0); // 0 = today
   const [activeSlot, setActiveSlot] = useState(null);
-  const [activeType, setActiveType] = useState('all');
   const [bookedIds, setBookedIds] = useState(new Set());
   const [selectedClass, setSelectedClass] = useState(null);
 
@@ -861,31 +881,27 @@ function ClassesTabContent({ classes, showOwnerControls, onManage, onDelete }) {
     const n = new Set(prev);n.has(id) ? n.delete(id) : n.add(id);return n;
   });
 
+  // Build the active date from today + offset
+  const activeDate = new Date(today);
+  activeDate.setDate(today.getDate() + activeDay);
+  const jsDay = activeDate.getDay(); // 0=Sun … 6=Sat
+  const activeDayIdx = jsDay === 0 ? 6 : jsDay - 1; // Mon=0 … Sun=6
+  const activeDayName = DAY_LABELS[activeDayIdx];
+  const isToday = activeDay === 0;
+
   const withTime = React.useMemo(() =>
   classes.map((c, i) => ({ ...c, _time: getMockTime(c, i), _slot: getTimeSlot(getMockTime(c, i)) })),
   [classes]
   );
 
-  const dayName = DAY_LABELS[activeDay];
-  const isToday = activeDay === todayIdx;
-
   const filtered = React.useMemo(() => {
     let list = withTime.filter((c) => {
       const d = getScheduleDays(c);
-      return d.length === 0 || d.includes(dayName);
+      return d.length === 0 || d.includes(activeDayName);
     });
     if (activeSlot) list = list.filter((c) => c._slot === activeSlot);
-    if (activeType !== 'all') list = list.filter((c) => getClassType(c) === activeType);
     return list.sort((a, b) => a._time.localeCompare(b._time));
-  }, [withTime, dayName, activeSlot, activeType]);
-
-  const typeOptions = [
-  { id: 'all', label: 'All', emoji: '✨' },
-  ...Array.from(new Set(classes.map(getClassType))).
-  map((t) => ({ id: t, label: CLASS_TYPE_CONFIG[t]?.label || t, emoji: CLASS_TYPE_CONFIG[t]?.emoji || '🎯' }))];
-
-  const activeDate = new Date(monday);
-  activeDate.setDate(monday.getDate() + activeDay);
+  }, [withTime, activeDayName, activeSlot]);
 
   if (classes.length === 0) return (
     <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.25 }}>
@@ -905,12 +921,11 @@ function ClassesTabContent({ classes, showOwnerControls, onManage, onDelete }) {
     <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.25 }}
     style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
 
+      {/* Header — "Classes" label removed; title is now "Today's Classes" */}
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
         <div>
-          <div style={{ fontSize: 11, fontWeight: 800, color: 'rgba(255,255,255,0.28)',
-            letterSpacing: '0.15em', textTransform: 'uppercase', marginBottom: 4 }}>Classes</div>
           <div style={{ fontSize: 24, fontWeight: 900, color: '#fff', letterSpacing: '-0.04em', lineHeight: 1 }}>
-            {isToday ? "Today's Sessions" : `${dayName}'s Sessions`}
+            {isToday ? "Today's Classes" : `${activeDayName}'s Classes`}
           </div>
           <div style={{ fontSize: 11.5, color: 'rgba(255,255,255,0.28)', fontWeight: 600, marginTop: 4 }}>
             {activeDate.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
@@ -939,31 +954,7 @@ function ClassesTabContent({ classes, showOwnerControls, onManage, onDelete }) {
         activeDay={activeDay} setActiveDay={setActiveDay}
         activeSlot={activeSlot} setActiveSlot={setActiveSlot} />
 
-      {typeOptions.length > 2 &&
-      <div style={{ display: 'flex', gap: 6, overflowX: 'auto', scrollbarWidth: 'none' }}>
-          {typeOptions.map((f) => {
-          const active = activeType === f.id;
-          const cfg2 = CLASS_TYPE_CONFIG[f.id] || {};
-          return (
-            <button key={f.id} onClick={() => setActiveType(f.id)}
-            onMouseDown={(e) => {e.currentTarget.style.transform = 'translateY(2px)';e.currentTarget.style.boxShadow = 'none';e.currentTarget.style.borderBottom = '1px solid rgba(0,0,0,0.4)';}}
-            onMouseUp={(e) => {e.currentTarget.style.transform = '';e.currentTarget.style.boxShadow = '';e.currentTarget.style.borderBottom = '';}}
-            onMouseLeave={(e) => {e.currentTarget.style.transform = '';e.currentTarget.style.boxShadow = '';e.currentTarget.style.borderBottom = '';}}
-            onTouchStart={(e) => {e.currentTarget.style.transform = 'translateY(2px)';e.currentTarget.style.boxShadow = 'none';e.currentTarget.style.borderBottom = '1px solid rgba(0,0,0,0.4)';}}
-            onTouchEnd={(e) => {e.currentTarget.style.transform = '';e.currentTarget.style.boxShadow = '';e.currentTarget.style.borderBottom = '';}}
-            style={{ flexShrink: 0, display: 'flex', alignItems: 'center', gap: 5,
-              padding: '6px 13px', borderRadius: 99, fontSize: 11.5, fontWeight: 700, cursor: 'pointer',
-              border: `1px solid ${active ? cfg2.border || 'rgba(59,130,246,0.5)' : 'rgba(255,255,255,0.09)'}`,
-              borderBottom: active ? `3px solid ${cfg2.border || 'rgba(37,99,235,0.6)'}` : '3px solid rgba(0,0,0,0.5)',
-              background: active ? cfg2.bg || 'rgba(37,99,235,0.15)' : 'rgba(20,28,60,0.8)',
-              boxShadow: active ? '0 2px 0 rgba(0,0,0,0.4),inset 0 1px 0 rgba(255,255,255,0.12)' : '0 2px 0 rgba(0,0,0,0.35),inset 0 1px 0 rgba(255,255,255,0.06)',
-              color: active ? cfg2.color || '#60a5fa' : 'rgba(255,255,255,0.42)',
-              transition: 'transform 0.08s ease,box-shadow 0.08s ease,border-bottom 0.08s ease' }}>
-                <span style={{ fontSize: 12 }}>{f.emoji}</span>{f.label}
-              </button>);
-        })}
-        </div>
-      }
+      {/* Type filter buttons removed entirely */}
 
       {filtered.length > 0 &&
       <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.2)', fontWeight: 600, marginTop: -4 }}>
@@ -998,12 +989,6 @@ function ClassesTabContent({ classes, showOwnerControls, onManage, onDelete }) {
           style={{ fontSize: 12, fontWeight: 700, color: 'rgba(255,255,255,0.45)',
             background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.09)',
             borderRadius: 10, padding: '7px 16px', cursor: 'pointer' }}>All times</button>
-          }
-            {activeType !== 'all' &&
-          <button onClick={() => setActiveType('all')}
-          style={{ fontSize: 12, fontWeight: 700, color: '#60a5fa',
-            background: 'rgba(37,99,235,0.1)', border: '1px solid rgba(59,130,246,0.25)',
-            borderRadius: 10, padding: '7px 16px', cursor: 'pointer' }}>Clear filter</button>
           }
           </div>
         </div>
@@ -1045,7 +1030,6 @@ function LeaderboardSection({ view, setView, checkInLeaderboard, streakLeaderboa
   const podium   = list.slice(0, 3);
   const restList = list.slice(3, 10);
 
-  // ── Timeframe button — matches challenges page 3D pill style ──
   const tfBtn = (active, colorClass) => {
     const configs = {
       week:  { from: '#a78bfa', via: '#8b5cf6', to: '#7c3aed', shadow: '#5b21b6', glow: 'rgba(120,40,220,0.4)' },
@@ -1070,7 +1054,6 @@ function LeaderboardSection({ view, setView, checkInLeaderboard, streakLeaderboa
     };
   };
 
-  // ── Category tab button — matches challenges page 3D pill style ──
   const tabBtn = (active, accentRgb, accent) => {
     const colorMap = {
       '16,185,129':  { from: '#34d399', via: '#10b981', to: '#059669', shadow: '#065f46', glow: 'rgba(16,185,129,0.4)' },
@@ -1109,7 +1092,6 @@ function LeaderboardSection({ view, setView, checkInLeaderboard, streakLeaderboa
     { rank: 3, color: '#E8904A', bg: 'rgba(232,144,74,0.07)', border: 'rgba(232,144,74,0.28)',  ring: 'rgba(232,144,74,0.55)', label: '🥉', shadow: 'rgba(232,144,74,0.15)' },
   ];
 
-  /* ── COLLAPSED card ── */
   if (!open) return (
     <button
       onClick={() => setOpen(true)}
@@ -1169,7 +1151,6 @@ function LeaderboardSection({ view, setView, checkInLeaderboard, streakLeaderboa
     </button>
   );
 
-  /* ── EXPANDED full-screen panel ── */
   return (
     <div style={{
       position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
@@ -1180,13 +1161,11 @@ function LeaderboardSection({ view, setView, checkInLeaderboard, streakLeaderboa
     }}>
       <style>{LBOARD_ANIM}</style>
 
-      {/* ── Header ── */}
       <div style={{
         flexShrink: 0, padding: '14px 16px 0',
         borderBottom: '1px solid rgba(255,255,255,0.06)',
         position: 'relative',
       }}>
-        {/* Back button */}
         <button
           onClick={() => setOpen(false)}
           {...press3d}
@@ -1204,14 +1183,12 @@ function LeaderboardSection({ view, setView, checkInLeaderboard, streakLeaderboa
           <ChevronLeft style={{ width: 17, height: 17, color: 'rgba(255,255,255,0.7)' }} />
         </button>
 
-        {/* ── CHANGED: removed "Community Rankings" subtitle, title is now "Community Leaderboard" ── */}
         <div style={{ textAlign: 'center', paddingBottom: 12 }}>
           <h2 style={{ fontSize: 22, fontWeight: 900, color: '#fff', margin: 0, letterSpacing: '-0.04em' }}>
             Community Leaderboard
           </h2>
         </div>
 
-        {/* ── CHANGED: Timeframe pills — now match challenges page 3D style ── */}
         <div style={{ display: 'flex', gap: 8, marginBottom: 10 }}>
           {[['week','This Week'],['month','Month'],['all','All Time']].map(([tf, label]) => (
             <button key={tf} onClick={() => setTimeframe(tf)} style={tfBtn(timeframe === tf, tf)} {...press3d}>
@@ -1220,7 +1197,6 @@ function LeaderboardSection({ view, setView, checkInLeaderboard, streakLeaderboa
           ))}
         </div>
 
-        {/* ── CHANGED: Category tabs — now match challenges page 3D style ── */}
         <div style={{ display: 'flex', gap: 8, paddingBottom: 12 }}>
           {tabs.map(({ id, label, icon: Icon, accent, accentRgb }) => (
             <button key={id} onClick={() => setView(id)}
@@ -1232,7 +1208,6 @@ function LeaderboardSection({ view, setView, checkInLeaderboard, streakLeaderboa
         </div>
       </div>
 
-      {/* ── Scrollable body ── */}
       <div style={{ flex: 1, overflowY: 'auto', WebkitOverflowScrolling: 'touch' }}>
         {list.length === 0 ? (
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: 260, gap: 14 }}>
@@ -1244,7 +1219,6 @@ function LeaderboardSection({ view, setView, checkInLeaderboard, streakLeaderboa
           </div>
         ) : (
           <>
-            {/* ── Podium ── */}
             <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'center', gap: 8, padding: '20px 16px 8px' }}>
               {[
                 { data: podium[1], pcIdx: 1, order: 0, heightBoost: 0  },
@@ -1309,7 +1283,6 @@ function LeaderboardSection({ view, setView, checkInLeaderboard, streakLeaderboa
               })}
             </div>
 
-            {/* ── Rows 4–10 ── */}
             {restList.length > 0 &&
               <div style={{ display: 'flex', flexDirection: 'column', gap: 4, padding: '4px 12px 20px' }}>
                 {restList.map((m, i) => {
@@ -1322,7 +1295,6 @@ function LeaderboardSection({ view, setView, checkInLeaderboard, streakLeaderboa
                       display: 'flex', alignItems: 'center', gap: 10,
                       animation: `lb-row-in 0.26s ease ${(i + 3) * 0.04}s both`,
                     }}>
-                      {/* ── CHANGED: rank number — no box, just plain text ── */}
                       <div style={{
                         width: 28, flexShrink: 0,
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -1331,7 +1303,6 @@ function LeaderboardSection({ view, setView, checkInLeaderboard, streakLeaderboa
                       }}>
                         {globalRank}
                       </div>
-                      {/* avatar */}
                       <div style={{
                         width: 36, height: 36, borderRadius: '50%', flexShrink: 0,
                         overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -1344,7 +1315,6 @@ function LeaderboardSection({ view, setView, checkInLeaderboard, streakLeaderboa
                           ? <img src={m.userAvatar} alt={m.userName} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                           : initials(m.userName)}
                       </div>
-                      {/* ── CHANGED: name only — progress bar removed ── */}
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <p style={{
                           fontSize: 13, fontWeight: 700, color: `rgba(255,255,255,${opacity * 0.92})`,
@@ -1353,7 +1323,6 @@ function LeaderboardSection({ view, setView, checkInLeaderboard, streakLeaderboa
                           {m.userName || '—'}
                         </p>
                       </div>
-                      {/* score pill */}
                       <div style={{
                         flexShrink: 0, padding: '4px 10px', borderRadius: 8,
                         background: `rgba(${current.accentRgb},0.1)`,
@@ -1875,7 +1844,6 @@ export default function GymCommunity() {
                 }
                 <SuggestedFriendsCard checkIns={checkIns} currentUser={currentUser} memberAvatarMap={memberAvatarMap} />
 
-                {/* Live Polls section */}
                 {(() => {
                   const livePolls = polls.filter(p => {
                     if (!p.end_date) return true;
