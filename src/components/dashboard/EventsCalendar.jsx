@@ -60,11 +60,14 @@ function MonthDropdown({ viewYear, viewMonth, onSelect }) {
   );
 }
 
-// ── Windowed timeline day modal ──────────────────────────────────────────────
+// ── Day detail modal — fixed-height scroll, 9–17 core always visible ─────────
 function DayDetailModal({ cell, dateLabel, onClose, onSelectEvent, onSelectClass }) {
-  // px per minute — 1px was the base, reduced 20% → 0.8px/min
-  const PX_PER_MIN = 0.8;
-  const PADDING_MIN = 30; // 30-min buffer above and below
+  const PX_PER_MIN = 0.8;   // 0.8px per minute
+  const PADDING_MIN = 30;   // 30-min buffer around content
+  const CORE_START  = 9 * 60;   // 09:00
+  const CORE_END    = 17 * 60;  // 17:00
+  // Fixed visible height = 8 hours of core × PX_PER_MIN + padding top/bottom
+  const VISIBLE_H   = Math.round((CORE_END - CORE_START) * PX_PER_MIN) + 20;
 
   // Build items
   const items = [];
@@ -84,27 +87,34 @@ function DayDetailModal({ cell, dateLabel, onClose, onSelectEvent, onSelectClass
   });
   items.sort((a, b) => a.startMin - b.startMin);
 
-  // Window bounds — clamp to [0, 1440]
-  const earliestStart = items.length > 0 ? Math.min(...items.map(i => i.startMin)) : 7 * 60;
-  const latestEnd     = items.length > 0 ? Math.max(...items.map(i => i.startMin + i.durationMin)) : 8 * 60;
-  const windowStart = Math.max(0, earliestStart - PADDING_MIN);
-  const windowEnd   = Math.min(24 * 60, latestEnd + PADDING_MIN);
-  const windowMin   = windowEnd - windowStart;
-  const TIMELINE_HEIGHT = Math.round(windowMin * PX_PER_MIN);
+  // Window: always at least 09:00–17:00, expand to fit any items + padding
+  const earliestStart = items.length > 0 ? Math.min(...items.map(i => i.startMin)) : CORE_START;
+  const latestEnd     = items.length > 0 ? Math.max(...items.map(i => i.startMin + i.durationMin)) : CORE_END;
+  const windowStart = Math.max(0,        Math.min(earliestStart - PADDING_MIN, CORE_START));
+  const windowEnd   = Math.min(24 * 60,  Math.max(latestEnd + PADDING_MIN,    CORE_END));
+  const TIMELINE_H  = Math.round((windowEnd - windowStart) * PX_PER_MIN);
 
-  // Which hour labels fall inside the window
-  const firstHour = Math.floor(windowStart / 60);
-  const lastHour  = Math.ceil(windowEnd / 60);
+  // Hour labels within window
   const hourLabels = [];
-  for (let h = firstHour; h <= lastHour; h++) hourLabels.push(h);
+  for (let h = Math.floor(windowStart / 60); h <= Math.ceil(windowEnd / 60); h++) hourLabels.push(h);
 
-  // Greedy column assignment
+  // Scroll to 9am (core top) on mount
+  const scrollRef = useRef(null);
+  useEffect(() => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollTop = Math.round((CORE_START - windowStart) * PX_PER_MIN) - 10;
+    }
+  }, []);
+
+  // Greedy column assignment for overlaps
   const columns = [];
   const itemsWithCol = items.map(item => {
     let col = 0;
     while (true) {
       const colItems = columns[col] || [];
-      const overlaps = colItems.some(ci => ci.startMin < item.startMin + item.durationMin && ci.startMin + ci.durationMin > item.startMin);
+      const overlaps = colItems.some(ci =>
+        ci.startMin < item.startMin + item.durationMin && ci.startMin + ci.durationMin > item.startMin
+      );
       if (!overlaps) {
         if (!columns[col]) columns[col] = [];
         columns[col].push(item);
@@ -115,16 +125,19 @@ function DayDetailModal({ cell, dateLabel, onClose, onSelectEvent, onSelectClass
   });
   const numCols = Math.max(1, ...itemsWithCol.map(i => i.col + 1));
 
-  const HOUR_LABEL_W = 36;
-
-  // Helper: convert absolute minutes → px offset within the window
+  const HOUR_LABEL_W = 40;
   const minToPx = (min) => Math.round((min - windowStart) * PX_PER_MIN);
+
+  // 9–5 highlight band
+  const coreTop    = minToPx(CORE_START);
+  const coreBottom = minToPx(CORE_END);
 
   return (
     <div
       onClick={e => { if (e.target === e.currentTarget) onClose(); }}
-      style={{ position: "fixed", inset: 0, zIndex: 500, background: "rgba(0,0,0,0.72)", display: "flex", alignItems: "flex-start", justifyContent: "center", paddingTop: "4vh", paddingBottom: "4vh", overflowY: "auto", backdropFilter: "blur(4px)" }}>
+      style={{ position: "fixed", inset: 0, zIndex: 500, background: "rgba(0,0,0,0.72)", display: "flex", alignItems: "center", justifyContent: "center", backdropFilter: "blur(4px)" }}>
       <div style={{ background: "#17171c", border: `1px solid ${C.brd}`, borderRadius: 14, width: 400, maxWidth: "94vw", display: "flex", flexDirection: "column", boxShadow: "0 24px 60px rgba(0,0,0,0.8)" }}>
+
         {/* Header */}
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 18px 12px", borderBottom: `1px solid ${C.brd}`, flexShrink: 0 }}>
           <span style={{ fontSize: 14, fontWeight: 800, color: C.t1, letterSpacing: "-0.01em" }}>{dateLabel}</span>
@@ -135,9 +148,9 @@ function DayDetailModal({ cell, dateLabel, onClose, onSelectEvent, onSelectClass
           </button>
         </div>
 
-        {/* Timeline — scrollable only if taller than viewport budget */}
-        <div style={{ overflowY: "visible", padding: "10px 10px 14px 0" }}>
-          <div style={{ position: "relative", height: TIMELINE_HEIGHT, display: "flex" }}>
+        {/* Fixed-height scroll container — always shows the 9–5 band */}
+        <div ref={scrollRef} style={{ height: VISIBLE_H, overflowY: "auto", padding: "0 10px 0 0" }}>
+          <div style={{ position: "relative", height: TIMELINE_H, display: "flex" }}>
 
             {/* Hour labels */}
             <div style={{ width: HOUR_LABEL_W, flexShrink: 0, position: "relative" }}>
@@ -150,8 +163,9 @@ function DayDetailModal({ cell, dateLabel, onClose, onSelectEvent, onSelectClass
                     top: minToPx(absMin) - 7,
                     left: 0, width: HOUR_LABEL_W,
                     textAlign: "right", paddingRight: 8,
-                    fontSize: 9.5, fontWeight: 600, color: C.t3, lineHeight: 1,
-                    userSelect: "none",
+                    fontSize: 9.5, fontWeight: 600,
+                    color: (absMin >= CORE_START && absMin <= CORE_END) ? C.t2 : C.t3,
+                    lineHeight: 1, userSelect: "none",
                   }}>
                     {String(h).padStart(2, "0")}:00
                   </div>
@@ -159,16 +173,27 @@ function DayDetailModal({ cell, dateLabel, onClose, onSelectEvent, onSelectClass
               })}
             </div>
 
-            {/* Grid + blocks */}
-            <div style={{ flex: 1, position: "relative", marginRight: 10 }}>
+            {/* Grid area */}
+            <div style={{ flex: 1, position: "relative", marginRight: 4 }}>
+
+              {/* 9–5 core band — slightly lighter background */}
+              <div style={{
+                position: "absolute",
+                top: coreTop, left: 0, right: 0,
+                height: coreBottom - coreTop,
+                background: "rgba(255,255,255,0.018)",
+                borderTop: `1px solid rgba(255,255,255,0.06)`,
+                borderBottom: `1px solid rgba(255,255,255,0.06)`,
+                pointerEvents: "none",
+              }} />
+
               {/* Hour lines */}
               {hourLabels.map(h => {
                 const absMin = h * 60;
                 if (absMin < windowStart || absMin > windowEnd) return null;
                 return (
                   <div key={h} style={{
-                    position: "absolute",
-                    top: minToPx(absMin),
+                    position: "absolute", top: minToPx(absMin),
                     left: 0, right: 0, height: 1,
                     background: "rgba(255,255,255,0.07)",
                   }} />
@@ -180,13 +205,23 @@ function DayDetailModal({ cell, dateLabel, onClose, onSelectEvent, onSelectClass
                 if (absMin <= windowStart || absMin >= windowEnd) return null;
                 return (
                   <div key={`hh-${h}`} style={{
-                    position: "absolute",
-                    top: minToPx(absMin),
+                    position: "absolute", top: minToPx(absMin),
                     left: 0, right: 0, height: 1,
                     background: "rgba(255,255,255,0.03)",
                   }} />
                 );
               })}
+
+              {/* Empty state hint */}
+              {items.length === 0 && (
+                <div style={{
+                  position: "absolute",
+                  top: coreTop + (coreBottom - coreTop) / 2 - 10,
+                  left: 0, right: 0,
+                  textAlign: "center",
+                  fontSize: 11, color: C.t3, fontFamily: FONT,
+                }}>No events scheduled</div>
+              )}
 
               {/* Event / class blocks */}
               {itemsWithCol.map((item, i) => {
@@ -201,28 +236,16 @@ function DayDetailModal({ cell, dateLabel, onClose, onSelectEvent, onSelectClass
                 const label = item.type === "event" ? item.data.title : item.data.name;
                 const sublabel = item.type === "class" ? (item.data.instructor || "") : "";
                 const timeStr = `${String(Math.floor(item.startMin / 60)).padStart(2, "0")}:${String(item.startMin % 60).padStart(2, "0")}`;
-
                 return (
                   <button key={i}
                     onClick={() => { onClose(); if (item.type === "event") onSelectEvent(item.data); else onSelectClass(item.data); }}
                     style={{
-                      position: "absolute",
-                      top, left, width, height,
-                      background: bg,
-                      border: `1px solid ${brd}`,
-                      borderLeft: `3px solid ${color}`,
-                      borderRadius: 5,
-                      padding: "3px 6px",
-                      cursor: "pointer",
-                      textAlign: "left",
-                      fontFamily: FONT,
-                      overflow: "hidden",
-                      display: "flex",
-                      flexDirection: "column",
-                      justifyContent: "flex-start",
-                      gap: 1,
-                      transition: "opacity 0.12s",
-                      boxSizing: "border-box",
+                      position: "absolute", top, left, width, height,
+                      background: bg, border: `1px solid ${brd}`, borderLeft: `3px solid ${color}`,
+                      borderRadius: 5, padding: "3px 6px", cursor: "pointer",
+                      textAlign: "left", fontFamily: FONT, overflow: "hidden",
+                      display: "flex", flexDirection: "column", justifyContent: "flex-start", gap: 1,
+                      transition: "opacity 0.12s", boxSizing: "border-box",
                     }}
                     onMouseEnter={e => e.currentTarget.style.opacity = "0.8"}
                     onMouseLeave={e => e.currentTarget.style.opacity = "1"}>
@@ -427,7 +450,7 @@ export default function EventsCalendar({ events, classes = [], onDeleteEvent, on
             const hasItems = cell.events.length > 0 || (cell.classes || []).length > 0;
             return (
               <div key={cell.key} className="cal-cell"
-                onClick={() => !cell.isOtherMonth && hasItems && setSelectedDayCell(cell)}
+                onClick={() => !cell.isOtherMonth && setSelectedDayCell(cell)}
                 style={{
                   padding: "8px 7px 8px",
                   borderRight: isLastCol ? "none" : `1px solid ${C.brd}`,
