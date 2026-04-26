@@ -94,9 +94,9 @@ export default function EventsCalendar({ events, classes = [], onDeleteEvent, on
   const daysInView = new Date(viewYear, viewMonth + 1, 0).getDate();
   (classes || []).forEach(cls => {
     (cls.schedule || []).forEach(s => {
-      if (!s.day) return;
-      if (s.date && s.weekly) {
-        // Weekly repeating: show on every matching weekday ON OR AFTER the start date
+      if (!s.date) return; // skip any legacy entries with no date
+      if (s.weekly === true) {
+        // Weekly repeating: show on matching weekday ON OR AFTER the start date
         const startDate = new Date(s.date + 'T00:00:00');
         const targetDow = DAY_NAME_TO_DOW[s.day];
         if (targetDow === undefined) return;
@@ -108,22 +108,10 @@ export default function EventsCalendar({ events, classes = [], onDeleteEvent, on
             classesByDay[key].push({ ...cls, _scheduleTime: s.time });
           }
         }
-      } else if (s.date) {
+      } else {
         // One-off: show only on the specific date
         if (!classesByDay[s.date]) classesByDay[s.date] = [];
         classesByDay[s.date].push({ ...cls, _scheduleTime: s.time });
-      } else {
-        // Legacy data (no date stored): repeat on day name
-        const targetDow = DAY_NAME_TO_DOW[s.day];
-        if (targetDow === undefined) return;
-        for (let d = 1; d <= daysInView; d++) {
-          const cellDate = new Date(viewYear, viewMonth, d);
-          if (cellDate.getDay() === targetDow) {
-            const key = `${viewYear}-${String(viewMonth+1).padStart(2,"0")}-${String(d).padStart(2,"0")}`;
-            if (!classesByDay[key]) classesByDay[key] = [];
-            classesByDay[key].push({ ...cls, _scheduleTime: s.time });
-          }
-        }
       }
     });
   });
