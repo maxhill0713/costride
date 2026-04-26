@@ -205,7 +205,7 @@ export default function CreateEventModal({ open, onClose, onSave, gym, isLoading
     color: canSubmit ? '#fff' : C.t3,
     cursor: canSubmit ? 'pointer' : 'default',
     display: 'inline-flex', alignItems: 'center', gap: 7,
-    boxShadow: canSubmit ? '0 4px 12px rgba(37,99,235,0.4)' : 'none',
+    boxShadow: 'none',
     opacity: canSubmit ? 1 : 0.4,
     minWidth: 100, justifyContent: 'center',
     transition: 'opacity 0.15s, box-shadow 0.15s',
@@ -330,7 +330,7 @@ export default function CreateEventModal({ open, onClose, onSave, gym, isLoading
             {isMobile ? (
               <>
                 <button type="submit" onClick={handleSubmit} disabled={!canSubmit}
-                  style={{ width: '100%', height: 50, borderRadius: 12, border: 'none', fontFamily: FONT, fontSize: 15, fontWeight: 800, letterSpacing: '-0.01em', background: canSubmit ? '#2563eb' : C.brd2, color: canSubmit ? '#fff' : C.t3, cursor: canSubmit ? 'pointer' : 'default', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 8, boxShadow: canSubmit ? '0 4px 12px rgba(37,99,235,0.4)' : 'none', opacity: canSubmit ? 1 : 0.4, WebkitTapHighlightColor: 'transparent' }}>
+                  style={{ width: '100%', height: 50, borderRadius: 12, border: 'none', fontFamily: FONT, fontSize: 15, fontWeight: 800, letterSpacing: '-0.01em', background: canSubmit ? '#2563eb' : C.brd2, color: canSubmit ? '#fff' : C.t3, cursor: canSubmit ? 'pointer' : 'default', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 8, boxShadow: 'none', opacity: canSubmit ? 1 : 0.4, WebkitTapHighlightColor: 'transparent' }}>
                   {isLoading ? <><div style={{ width: 14, height: 14, border: '2px solid rgba(255,255,255,0.2)', borderTop: '2px solid #fff', borderRadius: '50%', animation: 'ev-spin 0.7s linear infinite' }} /> Creating…</> : 'Create'}
                 </button>
                 <button type="button" onClick={handleClose} style={{ background: 'none', border: 'none', color: C.t3, fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: FONT, padding: '6px 0', textAlign: 'center' }}>Cancel</button>
