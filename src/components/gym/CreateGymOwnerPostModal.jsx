@@ -1,8 +1,8 @@
 /**
  * CreateGymOwnerPostModal — Content Hub design system
  * Mobile-first responsive: adapts on ≤768px, desktop layout unchanged.
- * Blue #60a5fa · DM Sans · #0d0d11 bg / #17171c surface / #1f1f26 card
- * Preview panel: 360px (was 300px, +20%), matches actual PostCard dark style
+ * Blue #2563eb · DM Sans · #0d0d11 bg / #17171c surface / #1f1f26 card
+ * Preview panel: 360px, matches actual PostCard dark style
  */
 import React, { useState, useRef, useCallback, useEffect } from 'react';
 import {
@@ -24,7 +24,7 @@ const C = {
   red:       '#ff4d6d', redDim:    'rgba(255,77,109,0.08)',  redBrd:    'rgba(255,77,109,0.20)',
   amber:     '#f59e0b', amberDim:  'rgba(245,158,11,0.08)',  amberBrd:  'rgba(245,158,11,0.20)',
   green:     '#22c55e', greenDim:  'rgba(34,197,94,0.08)',   greenBrd:  'rgba(34,197,94,0.20)',
-  blue:      '#60a5fa', blueDim:   'rgba(96,165,250,0.08)',  blueBrd:   'rgba(96,165,250,0.20)',
+  blue:      '#2563eb', blueDim:   'rgba(37,99,235,0.08)',   blueBrd:   'rgba(37,99,235,0.20)',
   purple:    '#a78bfa', purpleDim: 'rgba(167,139,250,0.08)', purpleBrd: 'rgba(167,139,250,0.20)',
 };
 const FONT = "'DM Sans','Inter',system-ui,sans-serif";
@@ -92,7 +92,7 @@ function Toggle({ value, onChange, color = C.blue, label, sub }) {
   );
 }
 
-/* ─── LIVE PREVIEW — matches actual PostCard dark style ──────── */
+/* ─── LIVE PREVIEW ───────────────────────────────────────────── */
 function PostPreview({ postType, content, imageUrl, tags, callToAction, isPinned, scheduledDate, gym }) {
   const type  = POST_TYPES.find(t => t.value === postType) || POST_TYPES[0];
   const empty = !content.trim() && !imageUrl;
@@ -108,20 +108,14 @@ function PostPreview({ postType, content, imageUrl, tags, callToAction, isPinned
         <span style={{ fontSize: 9.5, fontWeight: 600, color: C.t3, textTransform: 'uppercase', letterSpacing: '0.09em' }}>Live Preview</span>
       </div>
 
-      {/* Outer card — exact PostCard dark shell */}
       <div style={{
-        borderRadius: 16,
-        overflow: 'hidden',
+        borderRadius: 16, overflow: 'hidden',
         background: 'linear-gradient(135deg, rgba(16,19,40,0.96) 0%, rgba(6,8,18,0.99) 100%)',
         border: '1px solid rgba(255,255,255,0.07)',
-        backdropFilter: 'blur(20px)',
-        WebkitBackdropFilter: 'blur(20px)',
-        boxShadow: '0 32px 80px rgba(0,0,0,0.5)',
-        position: 'relative',
+        backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)',
+        boxShadow: '0 32px 80px rgba(0,0,0,0.5)', position: 'relative',
       }}>
-        {/* Top highlight line */}
         <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 1, background: 'linear-gradient(90deg, transparent 10%, rgba(255,255,255,0.1) 50%, transparent 90%)', pointerEvents: 'none', zIndex: 1 }} />
-        {/* Radial glow */}
         <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', borderRadius: 16, background: 'radial-gradient(ellipse at 25% 35%, rgba(99,102,241,0.12) 0%, transparent 60%)' }} />
 
         {empty ? (
@@ -131,13 +125,10 @@ function PostPreview({ postType, content, imageUrl, tags, callToAction, isPinned
           </div>
         ) : (
           <div style={{ position: 'relative', zIndex: 2 }}>
-            {/* Header */}
             <div style={{ padding: '14px 16px 0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                 <div style={{ width: 36, height: 36, borderRadius: '50%', background: '#0f172a', overflow: 'hidden', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid rgba(255,255,255,0.08)' }}>
-                  {gymAvatar
-                    ? <img src={gymAvatar} alt={gymName} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                    : <span style={{ fontSize: 13, fontWeight: 800, color: '#fff' }}>{gymInitial}</span>}
+                  {gymAvatar ? <img src={gymAvatar} alt={gymName} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <span style={{ fontSize: 13, fontWeight: 800, color: '#fff' }}>{gymInitial}</span>}
                 </div>
                 <div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6, lineHeight: 1.2 }}>
@@ -145,12 +136,7 @@ function PostPreview({ postType, content, imageUrl, tags, callToAction, isPinned
                     {isPinned && <span style={{ fontSize: 12 }}>📌</span>}
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 3 }}>
-                    {/* Type badge — exact PostCard badge */}
-                    <span style={{
-                      fontSize: 9, fontWeight: 700, padding: '1px 7px', borderRadius: 5,
-                      background: type.dim, border: `1px solid ${type.border}`, color: type.color,
-                      display: 'inline-flex', alignItems: 'center', gap: 3,
-                    }}>
+                    <span style={{ fontSize: 9, fontWeight: 700, padding: '1px 7px', borderRadius: 5, background: type.dim, border: `1px solid ${type.border}`, color: type.color, display: 'inline-flex', alignItems: 'center', gap: 3 }}>
                       <type.Icon size={8} /> {type.label}
                     </span>
                     <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)' }}>
@@ -161,22 +147,16 @@ function PostPreview({ postType, content, imageUrl, tags, callToAction, isPinned
               </div>
               <MoreHorizontal size={18} color='rgba(148,163,184,0.4)' />
             </div>
-
-            {/* Content */}
             {content && (
               <div style={{ padding: '10px 16px 0' }}>
                 <p style={{ fontSize: 13.5, color: '#e2e8f0', lineHeight: 1.7, margin: 0, whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>{content}</p>
               </div>
             )}
-
-            {/* Image */}
             {imageUrl && (
               <div style={{ width: '100%', overflow: 'hidden', maxHeight: 200, marginTop: 10 }}>
                 <img src={imageUrl} alt="" style={{ width: '100%', objectFit: 'cover', display: 'block', maxHeight: 200 }} />
               </div>
             )}
-
-            {/* Tags */}
             {tags.length > 0 && (
               <div style={{ padding: '8px 16px 0', display: 'flex', flexWrap: 'wrap', gap: 5 }}>
                 {tags.map((t, i) => (
@@ -184,16 +164,12 @@ function PostPreview({ postType, content, imageUrl, tags, callToAction, isPinned
                 ))}
               </div>
             )}
-
-            {/* CTA */}
             {callToAction.enabled && callToAction.text && (
               <div style={{ margin: '10px 16px 0', padding: '9px 12px', borderRadius: 9, background: type.dim, border: `1px solid ${type.border}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <span style={{ fontSize: 12, fontWeight: 700, color: type.color }}>{callToAction.text}</span>
                 <ArrowUpRight size={12} color={type.color} />
               </div>
             )}
-
-            {/* Action bar — matches PostCard */}
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 12px 10px', borderTop: '1px solid rgba(255,255,255,0.06)', marginTop: 10, minHeight: 44 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                 <img src={STREAK_ICON_URL} alt="react" style={{ width: 44, height: 44, objectFit: 'contain', opacity: 0.35 }} />
@@ -284,7 +260,6 @@ export default function CreateGymOwnerPostModal({ open, onClose, gym, onSuccess 
     if (!canSubmit) return;
     setSubmitting(true);
     try {
-      // If scheduled: save as hidden so it doesn't appear in feed until published
       const data = await buildPostData(isScheduled ? { is_hidden: true, is_draft: false } : { is_hidden: false, is_draft: false });
       await base44.entities.Post.create(data);
       onSuccess?.(); reset(); onClose();
@@ -306,6 +281,10 @@ export default function CreateGymOwnerPostModal({ open, onClose, gym, onSuccess 
   const handleClose = () => { reset(); onClose(); };
   if (!open) return null;
 
+  /* ── Button colour matching ContentPage "New Post" (#2563eb) ── */
+  const submitBg     = isScheduled ? C.amber : '#2563eb';
+  const submitShadow = canSubmit ? `0 4px 14px ${isScheduled ? 'rgba(245,158,11,0.4)' : 'rgba(37,99,235,0.45)'}` : 'none';
+
   return (
     <>
       <style>{`
@@ -320,7 +299,7 @@ export default function CreateGymOwnerPostModal({ open, onClose, gym, onSuccess 
           font-size:13px; line-height:1.7; outline:none; resize:none; font-family:${FONT};
           transition:border-color 0.15s, background 0.15s;
         }
-        .ch-ta:focus { border-color:${C.cyanBrd}; background:${C.inset}; }
+        .ch-ta:focus { border-color:${C.blueBrd}; background:${C.inset}; }
         .ch-ta::placeholder { color:${C.t3}; }
 
         .ch-inp {
@@ -328,7 +307,7 @@ export default function CreateGymOwnerPostModal({ open, onClose, gym, onSuccess 
           background:${C.card}; border:1px solid ${C.brd}; color:${C.t1};
           font-size:12.5px; outline:none; font-family:${FONT}; transition:border-color 0.15s;
         }
-        .ch-inp:focus { border-color:${C.cyanBrd}; }
+        .ch-inp:focus { border-color:${C.blueBrd}; }
         .ch-inp::placeholder { color:${C.t3}; }
 
         .ch-tab-active { color:${C.t1} !important; font-weight:700 !important; border-bottom:2px solid ${C.blue} !important; }
@@ -340,7 +319,7 @@ export default function CreateGymOwnerPostModal({ open, onClose, gym, onSuccess 
         .ch-tab:hover { color:${C.t1}; }
 
         .ch-cta-btn {
-          padding:9px 22px; border-radius:8px; border:none; background:${C.blue}; color:#fff;
+          padding:9px 22px; border-radius:8px; border:none; background:#2563eb; color:#fff;
           font-size:13px; font-weight:700; cursor:pointer; font-family:${FONT}; letter-spacing:-0.01em;
           display:inline-flex; align-items:center; gap:7px; transition:opacity 0.15s, box-shadow 0.15s;
         }
@@ -367,123 +346,57 @@ export default function CreateGymOwnerPostModal({ open, onClose, gym, onSuccess 
         }
       `}</style>
 
-      {/* Backdrop */}
       <div
         onClick={e => e.target === e.currentTarget && handleClose()}
-        style={{
-          position: 'fixed', inset: 0,
-          background: 'rgba(0,0,0,0.82)', backdropFilter: 'blur(8px)',
-          zIndex: 9999, display: 'flex',
-          alignItems: isMobile ? 'flex-end' : 'center',
-          justifyContent: 'center',
-          padding: isMobile ? 0 : 20,
-          animation: 'fade-in 0.15s ease', fontFamily: FONT,
-        }}
+        style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.82)', backdropFilter: 'blur(8px)', zIndex: 9999, display: 'flex', alignItems: isMobile ? 'flex-end' : 'center', justifyContent: 'center', padding: isMobile ? 0 : 20, animation: 'fade-in 0.15s ease', fontFamily: FONT }}
       >
-        {/* Shell */}
-        <div style={{
-          width: '100%',
-          maxWidth: isMobile ? '100%' : 960,
-          maxHeight: isMobile ? '96vh' : '92vh',
-          height: isMobile ? '96vh' : 'auto',
-          display: 'flex', flexDirection: 'column',
-          background: C.bg, border: isMobile ? 'none' : `1px solid ${C.brd}`,
-          borderRadius: isMobile ? '20px 20px 0 0' : 14,
-          overflow: 'hidden',
-          boxShadow: '0 40px 100px rgba(0,0,0,0.85), 0 0 0 1px rgba(96,165,250,0.05)',
-          animation: isMobile ? 'slide-up 0.3s cubic-bezier(0.32,0.72,0,1)' : 'modal-in 0.24s cubic-bezier(0.16,1,0.3,1)',
-          WebkitFontSmoothing: 'antialiased',
-        }}>
+        <div style={{ width: '100%', maxWidth: isMobile ? '100%' : 960, maxHeight: isMobile ? '96vh' : '92vh', height: isMobile ? '96vh' : 'auto', display: 'flex', flexDirection: 'column', background: C.bg, border: isMobile ? 'none' : `1px solid ${C.brd}`, borderRadius: isMobile ? '20px 20px 0 0' : 14, overflow: 'hidden', boxShadow: '0 40px 100px rgba(0,0,0,0.85), 0 0 0 1px rgba(37,99,235,0.05)', animation: isMobile ? 'slide-up 0.3s cubic-bezier(0.32,0.72,0,1)' : 'modal-in 0.24s cubic-bezier(0.16,1,0.3,1)', WebkitFontSmoothing: 'antialiased' }}>
 
           {/* HEADER */}
-          <div style={{
-            flexShrink: 0, padding: isMobile ? '0 16px' : '0 20px',
-            background: C.surface, borderBottom: `1px solid ${C.brd}`,
-            position: 'relative', overflow: 'hidden',
-          }}>
+          <div style={{ flexShrink: 0, padding: isMobile ? '0 16px' : '0 20px', background: C.surface, borderBottom: `1px solid ${C.brd}`, position: 'relative', overflow: 'hidden' }}>
             {isMobile && (
               <div style={{ display: 'flex', justifyContent: 'center', padding: '10px 0 4px' }}>
                 <div style={{ width: 36, height: 4, borderRadius: 2, background: C.brd2 }} />
               </div>
             )}
-
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: isMobile ? 4 : 16, paddingBottom: 0 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? 8 : 11 }}>
                 <div style={{ width: isMobile ? 28 : 32, height: isMobile ? 28 : 32, borderRadius: 9, background: activeType.dim, border: `1px solid ${activeType.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'all 0.2s' }}>
                   <activeType.Icon size={isMobile ? 12 : 14} color={activeType.color} />
                 </div>
-                <div style={{ fontSize: isMobile ? 16 : 18, fontWeight: 700, color: C.t1, letterSpacing: '-0.02em', lineHeight: 1.2 }}>
-                  New Post
-                </div>
+                <div style={{ fontSize: isMobile ? 16 : 18, fontWeight: 700, color: C.t1, letterSpacing: '-0.02em', lineHeight: 1.2 }}>New Post</div>
               </div>
-
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                 {isMobile && (
-                  <button
-                    onClick={() => setShowPreview(v => !v)}
-                    style={{
-                      height: 30, padding: '0 10px', borderRadius: 7, display: 'flex', alignItems: 'center', gap: 5,
-                      background: showPreview ? C.cyanDim : 'transparent',
-                      border: `1px solid ${showPreview ? C.cyanBrd : C.brd}`,
-                      cursor: 'pointer', color: showPreview ? C.blue : C.t3, fontSize: 11, fontWeight: 600, fontFamily: FONT,
-                    }}
-                  >
+                  <button onClick={() => setShowPreview(v => !v)} style={{ height: 30, padding: '0 10px', borderRadius: 7, display: 'flex', alignItems: 'center', gap: 5, background: showPreview ? C.blueDim : 'transparent', border: `1px solid ${showPreview ? C.blueBrd : C.brd}`, cursor: 'pointer', color: showPreview ? C.blue : C.t3, fontSize: 11, fontWeight: 600, fontFamily: FONT }}>
                     <Eye size={11} /> {showPreview ? 'Edit' : 'Preview'}
                   </button>
                 )}
-                <button
-                  onClick={handleClose}
-                  style={{ width: 30, height: 30, borderRadius: 7, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'transparent', border: 'none', cursor: 'pointer', color: C.t3, flexShrink: 0, transition: 'all 0.15s' }}
+                <button onClick={handleClose} style={{ width: 30, height: 30, borderRadius: 7, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'transparent', border: 'none', cursor: 'pointer', color: C.t3, flexShrink: 0, transition: 'all 0.15s' }}
                   onMouseEnter={e => { e.currentTarget.style.color = C.t1; }}
-                  onMouseLeave={e => { e.currentTarget.style.color = C.t3; }}
-                >
+                  onMouseLeave={e => { e.currentTarget.style.color = C.t3; }}>
                   <X size={16} />
                 </button>
               </div>
             </div>
-
             <div style={{ display: 'flex', marginTop: 8, gap: 0, marginLeft: -2, overflowX: isMobile ? 'auto' : 'visible', WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none' }}>
               {POST_TYPES.map(type => (
-                <button
-                  key={type.value}
-                  onClick={() => setPostType(type.value)}
-                  className={`ch-tab ${postType === type.value ? 'ch-tab-active' : ''}`}
-                  style={{ borderBottomColor: postType === type.value ? type.color : 'transparent' }}
-                >
+                <button key={type.value} onClick={() => setPostType(type.value)} className={`ch-tab ${postType === type.value ? 'ch-tab-active' : ''}`} style={{ borderBottomColor: postType === type.value ? type.color : 'transparent' }}>
                   {isMobile ? type.label.split(' ')[0] : type.label}
                 </button>
               ))}
             </div>
           </div>
 
-          {/* BODY — preview column 360px (was 300px) */}
-          <div style={{
-            flex: 1,
-            display: 'grid',
-            gridTemplateColumns: isMobile ? '1fr' : '1fr 360px',
-            minHeight: 0,
-            overflow: 'hidden',
-          }}>
+          {/* BODY */}
+          <div style={{ flex: 1, display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 360px', minHeight: 0, overflow: 'hidden' }}>
 
-            {/* FORM */}
             {(!isMobile || !showPreview) && (
-              <div style={{
-                padding: isMobile ? '12px 16px' : '13px 20px',
-                borderRight: isMobile ? 'none' : `1px solid ${C.brd}`,
-                display: 'flex', flexDirection: 'column', gap: isMobile ? 12 : 13,
-                overflowY: 'auto', background: C.bg,
-                WebkitOverflowScrolling: 'touch',
-              }}>
+              <div style={{ padding: isMobile ? '12px 16px' : '13px 20px', borderRight: isMobile ? 'none' : `1px solid ${C.brd}`, display: 'flex', flexDirection: 'column', gap: isMobile ? 12 : 13, overflowY: 'auto', background: C.bg, WebkitOverflowScrolling: 'touch' }}>
 
                 <div>
                   <SL required right={<CharRing count={content.length} max={500} />}>Content</SL>
-                  <textarea
-                    className="ch-ta"
-                    rows={4}
-                    value={content}
-                    onChange={e => setContent(e.target.value)}
-                    placeholder={activeType.placeholder}
-                  />
+                  <textarea className="ch-ta" rows={4} value={content} onChange={e => setContent(e.target.value)} placeholder={activeType.placeholder} />
                 </div>
 
                 <div>
@@ -496,17 +409,10 @@ export default function CreateGymOwnerPostModal({ open, onClose, gym, onSuccess 
                       </button>
                     </div>
                   ) : (
-                    <div
-                      onDragOver={e => { e.preventDefault(); setDragOver(true); }}
-                      onDragLeave={() => setDragOver(false)}
-                      onDrop={handleDrop}
-                      onClick={() => fileRef.current?.click()}
-                      style={{ padding: '14px 14px', borderRadius: 9, border: `1.5px dashed ${dragOver ? activeType.color + '60' : C.brd2}`, background: dragOver ? activeType.dim : C.card, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 7, cursor: 'pointer', transition: 'all 0.18s' }}
-                    >
+                    <div onDragOver={e => { e.preventDefault(); setDragOver(true); }} onDragLeave={() => setDragOver(false)} onDrop={handleDrop} onClick={() => fileRef.current?.click()}
+                      style={{ padding: '14px 14px', borderRadius: 9, border: `1.5px dashed ${dragOver ? activeType.color + '60' : C.brd2}`, background: dragOver ? activeType.dim : C.card, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 7, cursor: 'pointer', transition: 'all 0.18s' }}>
                       <div style={{ width: 36, height: 36, borderRadius: 9, background: activeType.dim, border: `1px solid ${activeType.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                        {uploading
-                          ? <div style={{ width: 14, height: 14, border: `2px solid ${activeType.color}25`, borderTop: `2px solid ${activeType.color}`, borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
-                          : <ImageIcon size={14} color={activeType.color} />}
+                        {uploading ? <div style={{ width: 14, height: 14, border: `2px solid ${activeType.color}25`, borderTop: `2px solid ${activeType.color}`, borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} /> : <ImageIcon size={14} color={activeType.color} />}
                       </div>
                       <div style={{ textAlign: 'center' }}>
                         <div style={{ fontSize: 12, fontWeight: 600, color: C.t2 }}>{uploading ? 'Uploading…' : 'Drop image or click to browse'}</div>
@@ -520,19 +426,8 @@ export default function CreateGymOwnerPostModal({ open, onClose, gym, onSuccess 
                 <div>
                   <SL>Tags <span style={{ fontSize: 9, color: C.t3, fontWeight: 400, textTransform: 'none', letterSpacing: 0 }}>({tags.length}/8)</span></SL>
                   <div style={{ display: 'flex', gap: 7 }}>
-                    <input
-                      className="ch-inp"
-                      style={{ flex: 1 }}
-                      value={newTag}
-                      onChange={e => setNewTag(e.target.value)}
-                      onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addTag(); } }}
-                      placeholder="e.g. challenge, nutrition, event"
-                    />
-                    <button
-                      onClick={addTag}
-                      disabled={!newTag.trim() || tags.length >= 8}
-                      style={{ flexShrink: 0, width: 38, height: 38, borderRadius: 9, display: 'flex', alignItems: 'center', justifyContent: 'center', background: newTag.trim() ? activeType.dim : 'transparent', border: `1px solid ${newTag.trim() ? activeType.border : C.brd}`, cursor: newTag.trim() ? 'pointer' : 'default', transition: 'all 0.15s' }}
-                    >
+                    <input className="ch-inp" style={{ flex: 1 }} value={newTag} onChange={e => setNewTag(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addTag(); } }} placeholder="e.g. challenge, nutrition, event" />
+                    <button onClick={addTag} disabled={!newTag.trim() || tags.length >= 8} style={{ flexShrink: 0, width: 38, height: 38, borderRadius: 9, display: 'flex', alignItems: 'center', justifyContent: 'center', background: newTag.trim() ? activeType.dim : 'transparent', border: `1px solid ${newTag.trim() ? activeType.border : C.brd}`, cursor: newTag.trim() ? 'pointer' : 'default', transition: 'all 0.15s' }}>
                       <Tag size={13} color={newTag.trim() ? activeType.color : C.t3} />
                     </button>
                   </div>
@@ -552,13 +447,7 @@ export default function CreateGymOwnerPostModal({ open, onClose, gym, onSuccess 
 
                 <div>
                   <SL>Call to Action</SL>
-                  <Toggle
-                    value={callToAction.enabled}
-                    onChange={v => setCallToAction({ ...callToAction, enabled: v })}
-                    color={activeType.color}
-                    label="Add a button to the post"
-                    sub="Direct members to a booking page, link or form"
-                  />
+                  <Toggle value={callToAction.enabled} onChange={v => setCallToAction({ ...callToAction, enabled: v })} color={activeType.color} label="Add a button to the post" sub="Direct members to a booking page, link or form" />
                   {callToAction.enabled && (
                     <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 9, marginTop: 9 }}>
                       <div>
@@ -594,82 +483,35 @@ export default function CreateGymOwnerPostModal({ open, onClose, gym, onSuccess 
               </div>
             )}
 
-            {/* PREVIEW panel — dark bg matching feed */}
             {(!isMobile || showPreview) && (
-              <div style={{
-                padding: isMobile ? '12px 16px' : '13px 16px',
-                background: '#0d0d11',
-                overflowY: 'auto',
-                borderLeft: isMobile ? 'none' : `1px solid ${C.brd}`,
-                WebkitOverflowScrolling: 'touch',
-              }}>
-                <PostPreview
-                  postType={postType} content={content} imageUrl={imageUrl} tags={tags}
-                  callToAction={callToAction} isPinned={isPinned} scheduledDate={scheduledDate} gym={gym}
-                />
+              <div style={{ padding: isMobile ? '12px 16px' : '13px 16px', background: '#0d0d11', overflowY: 'auto', borderLeft: isMobile ? 'none' : `1px solid ${C.brd}`, WebkitOverflowScrolling: 'touch' }}>
+                <PostPreview postType={postType} content={content} imageUrl={imageUrl} tags={tags} callToAction={callToAction} isPinned={isPinned} scheduledDate={scheduledDate} gym={gym} />
               </div>
             )}
           </div>
 
           {/* FOOTER */}
-          <div style={{
-            flexShrink: 0,
-            padding: isMobile ? '12px 16px' : '12px 20px',
-            borderTop: `1px solid ${C.brd}`,
-            display: 'flex',
-            flexDirection: isMobile ? 'column' : 'row',
-            alignItems: isMobile ? 'stretch' : 'center',
-            justifyContent: 'flex-end',
-            gap: isMobile ? 8 : 10,
-            background: C.surface,
-          }}>
+          <div style={{ flexShrink: 0, padding: isMobile ? '12px 16px' : '12px 20px', borderTop: `1px solid ${C.brd}`, display: 'flex', flexDirection: isMobile ? 'column' : 'row', alignItems: isMobile ? 'stretch' : 'center', justifyContent: 'flex-end', gap: isMobile ? 8 : 10, background: C.surface }}>
             {isMobile ? (
               <>
-                <button
-                  onClick={handleSubmit}
-                  disabled={!canSubmit}
-                  className={`ch-cta-btn${isScheduled ? ' schedule' : ''}`}
-                  style={{
-                    width: '100%', justifyContent: 'center', height: 50, fontSize: 15,
-                    opacity: canSubmit ? 1 : 0.38, cursor: canSubmit ? 'pointer' : 'default',
-                    boxShadow: canSubmit ? `0 0 24px ${isScheduled ? C.amber : C.blue}40` : 'none',
-                    borderRadius: 12,
-                  }}
-                >
-                  {submitting
-                    ? <><div style={{ width: 14, height: 14, border: '2px solid rgba(255,255,255,0.2)', borderTop: '2px solid #fff', borderRadius: '50%', animation: 'spin 0.7s linear infinite' }} /> Publishing…</>
-                    : submitLabel}
+                <button onClick={handleSubmit} disabled={!canSubmit} className={`ch-cta-btn${isScheduled ? ' schedule' : ''}`}
+                  style={{ width: '100%', justifyContent: 'center', height: 50, fontSize: 15, opacity: canSubmit ? 1 : 0.38, cursor: canSubmit ? 'pointer' : 'default', boxShadow: submitShadow, borderRadius: 12, background: submitBg }}>
+                  {submitting ? <><div style={{ width: 14, height: 14, border: '2px solid rgba(255,255,255,0.2)', borderTop: '2px solid #fff', borderRadius: '50%', animation: 'spin 0.7s linear infinite' }} /> Publishing…</> : submitLabel}
                 </button>
-                <button
-                  onClick={handleSaveDraft}
-                  disabled={!canSubmit || savingDraft}
-                  style={{ background: 'none', border: `1px solid ${C.brd2}`, borderRadius: 12, color: C.t2, fontSize: 13, fontWeight: 600, cursor: canSubmit ? 'pointer' : 'default', fontFamily: FONT, padding: '12px 0', textAlign: 'center', opacity: canSubmit ? 1 : 0.38 }}>
+                <button onClick={handleSaveDraft} disabled={!canSubmit || savingDraft} style={{ background: 'none', border: `1px solid ${C.brd2}`, borderRadius: 12, color: C.t2, fontSize: 13, fontWeight: 600, cursor: canSubmit ? 'pointer' : 'default', fontFamily: FONT, padding: '12px 0', textAlign: 'center', opacity: canSubmit ? 1 : 0.38 }}>
                   {savingDraft ? 'Saving…' : 'Save as Draft'}
                 </button>
-                <button onClick={handleClose} style={{ background: 'none', border: 'none', color: C.t3, fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: FONT, padding: '6px 0', textAlign: 'center' }}>
-                  Cancel
-                </button>
+                <button onClick={handleClose} style={{ background: 'none', border: 'none', color: C.t3, fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: FONT, padding: '6px 0', textAlign: 'center' }}>Cancel</button>
               </>
             ) : (
               <>
                 <button onClick={handleClose} className="ch-cancel">Cancel</button>
-                <button
-                  onClick={handleSaveDraft}
-                  disabled={!canSubmit || savingDraft}
-                  className="ch-cta-btn draft"
-                  style={{ opacity: canSubmit ? 1 : 0.38, cursor: canSubmit ? 'pointer' : 'default', minWidth: 90, justifyContent: 'center' }}
-                >
+                <button onClick={handleSaveDraft} disabled={!canSubmit || savingDraft} className="ch-cta-btn draft" style={{ opacity: canSubmit ? 1 : 0.38, cursor: canSubmit ? 'pointer' : 'default', minWidth: 90, justifyContent: 'center' }}>
                   {savingDraft ? 'Saving…' : 'Draft'}
                 </button>
-                <button
-                  onClick={handleSubmit}
-                  disabled={!canSubmit}
-                  className={`ch-cta-btn${isScheduled ? ' schedule' : ''}`}
-                  style={{ opacity: canSubmit ? 1 : 0.38, cursor: canSubmit ? 'pointer' : 'default', boxShadow: canSubmit ? `0 0 24px ${isScheduled ? C.amber : C.blue}40` : 'none', minWidth: 120, justifyContent: 'center' }}
-                >
-                  {submitting
-                    ? <><div style={{ width: 12, height: 12, border: '2px solid rgba(255,255,255,0.2)', borderTop: '2px solid #fff', borderRadius: '50%', animation: 'spin 0.7s linear infinite' }} /> Publishing…</>
-                    : submitLabel}
+                <button onClick={handleSubmit} disabled={!canSubmit} className={`ch-cta-btn${isScheduled ? ' schedule' : ''}`}
+                  style={{ opacity: canSubmit ? 1 : 0.38, cursor: canSubmit ? 'pointer' : 'default', boxShadow: submitShadow, minWidth: 120, justifyContent: 'center', background: submitBg }}>
+                  {submitting ? <><div style={{ width: 12, height: 12, border: '2px solid rgba(255,255,255,0.2)', borderTop: '2px solid #fff', borderRadius: '50%', animation: 'spin 0.7s linear infinite' }} /> Publishing…</> : submitLabel}
                 </button>
               </>
             )}
