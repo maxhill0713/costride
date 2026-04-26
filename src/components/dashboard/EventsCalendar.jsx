@@ -197,17 +197,6 @@ export default function EventsCalendar({ events, classes = [], onDeleteEvent, on
             classesByDay[dateKey].push({ ...cls, _scheduleTime: s.time });
           }
         }
-      } else if (s.day && !s.date) {
-        const targetDow = DAY_NAME_TO_DOW[s.day];
-        if (targetDow === undefined) return;
-        for (let d = 1; d <= daysInView; d++) {
-          const cellDate = new Date(viewYear, viewMonth, d);
-          if (cellDate.getDay() === targetDow && cellDate >= todayMidnight) {
-            const key = `${viewYear}-${String(viewMonth+1).padStart(2,"0")}-${String(d).padStart(2,"0")}`;
-            if (!classesByDay[key]) classesByDay[key] = [];
-            classesByDay[key].push({ ...cls, _scheduleTime: s.time });
-          }
-        }
       }
     });
   });
