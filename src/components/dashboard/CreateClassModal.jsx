@@ -149,7 +149,7 @@ export default function CreateClassModal({ open, onClose, onSave, gym, isLoading
   const set = (k, v) => setForm(f => ({ ...f, [k]: v }));
   const canSubmit = form.name.trim() && form.instructor.trim() && form.duration_minutes && form.max_capacity && form.date && form.time && !isLoading;
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e?.preventDefault();
     if (!canSubmit) return;
     const dayName = new Date(form.date + 'T12:00:00').toLocaleDateString('en-GB', { weekday: 'long' });
@@ -162,7 +162,7 @@ export default function CreateClassModal({ open, onClose, onSave, gym, isLoading
       gym_id: gym?.id,
       gym_name: gym?.name,
     };
-    onSave(payload);
+    await onSave(payload);
     setForm(emptyForm);
   };
 
