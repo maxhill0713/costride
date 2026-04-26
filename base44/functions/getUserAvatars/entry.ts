@@ -28,7 +28,8 @@ Deno.serve(async (req) => {
     users.forEach(user => {
       avatars[user.id] = {
         full_name: user.display_name || user.username || user.full_name || 'Unknown',
-        avatar_url: user.avatar_url || null
+        avatar_url: user.avatar_url || null,
+        current_streak: user.current_streak || 0
       };
     });
 
