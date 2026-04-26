@@ -3,7 +3,7 @@
  * Calendar preview section removed. Submit button labelled "Create".
  */
 import React, { useState, useRef, useCallback, useEffect } from 'react';
-import { X, Dumbbell, Clock, Upload, Eye, Users, ChevronDown } from 'lucide-react';
+import { X, Dumbbell, Clock, Upload, Eye, Users, ChevronDown, Calendar } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { useMutation } from '@tanstack/react-query';
 
@@ -21,16 +21,16 @@ const DIFFICULTIES = ['beginner', 'intermediate', 'advanced', 'all_levels'];
 const todayStr = new Date().toISOString().split('T')[0];
 
 const CLASS_COLORS = [
-  '#a855f7', // purple (default)
-  '#4d7fff', // blue
-  '#22c55e', // green
-  '#f59e0b', // amber
-  '#f04a68', // red/pink
-  '#14b8a6', // teal
-  '#f97316', // orange
-  '#ec4899', // hot pink
-  '#6366f1', // indigo
-  '#84cc16', // lime
+  '#a855f7',
+  '#4d7fff',
+  '#22c55e',
+  '#f59e0b',
+  '#f04a68',
+  '#14b8a6',
+  '#f97316',
+  '#ec4899',
+  '#6366f1',
+  '#84cc16',
 ];
 
 const baseInp = {
@@ -209,27 +209,9 @@ export default function CreateClassModal({ open, onClose, onSave, gym, isLoading
             {isMobile && <div style={{ position: 'absolute', top: 10, left: '50%', transform: 'translateX(-50%)', width: 36, height: 4, borderRadius: 2, background: C.brd2 }} />}
             <div style={{ display: 'flex', alignItems: 'center', gap: 11, ...(isMobile ? { paddingTop: 22 } : {}) }}>
               <div style={{ width: 32, height: 32, borderRadius: 9, background: C.purpleDim, border: `1px solid ${C.purpleBrd}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                <Dumbbell size={14} color={C.purple} />
+                <Calendar size={14} color="#ffffff" />
               </div>
               <div style={{ fontSize: 18, fontWeight: 700, color: C.t1, letterSpacing: '-0.02em' }}>Create Class</div>
-              {/* Colour picker swatches */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: 5, flexWrap: 'wrap', maxWidth: 160 }}>
-                {CLASS_COLORS.map(col => (
-                  <button
-                    key={col}
-                    type="button"
-                    onClick={() => set('color', col)}
-                    title={col}
-                    style={{
-                      width: 18, height: 18, borderRadius: 5, flexShrink: 0,
-                      background: col, border: form.color === col ? `2px solid #fff` : '2px solid transparent',
-                      cursor: 'pointer', outline: form.color === col ? `2px solid ${col}` : 'none',
-                      outlineOffset: 1, transition: 'outline 0.1s, border 0.1s',
-                      boxShadow: form.color === col ? `0 0 0 1px ${col}55` : 'none',
-                    }}
-                  />
-                ))}
-              </div>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               {isMobile && (
@@ -243,14 +225,14 @@ export default function CreateClassModal({ open, onClose, onSave, gym, isLoading
             </div>
           </div>
 
-          {/* BODY — form only on desktop (no preview panel), preview toggle on mobile */}
+          {/* BODY */}
           <form onSubmit={handleSubmit} style={{ flex: 1, minHeight: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
             {(!isMobile || !showPreview) && (
               <div className="cls-scroll" style={{ padding: isMobile ? '16px' : '20px 24px', display: 'flex', flexDirection: 'column', gap: 16, overflowY: 'auto', background: C.bg, flex: 1 }}>
 
                 <div>
                   <SL required>Class Name</SL>
-                  <Inp value={form.name} onChange={e => set('name', e.target.value)} placeholder="e.g. Morning HIIT, Yoga Flow" Icon={Dumbbell} />
+                  <Inp value={form.name} onChange={e => set('name', e.target.value)} placeholder="e.g. Morning HIIT, Yoga Flow" />
                 </div>
 
                 <div>
@@ -292,16 +274,39 @@ export default function CreateClassModal({ open, onClose, onSave, gym, isLoading
                       <Inp type="time" value={form.time} onChange={e => set('time', e.target.value)} />
                     </div>
                   </div>
-                  <label style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 12, cursor: 'pointer', userSelect: 'none' }}>
-                    <div onClick={() => set('weekly', !form.weekly)}
-                      style={{ width: 18, height: 18, borderRadius: 5, border: `2px solid ${form.weekly ? C.purple : C.brd}`, background: form.weekly ? C.purple : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'all 0.15s', cursor: 'pointer' }}>
-                      {form.weekly && <svg width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4L3.5 6.5L9 1" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>}
-                    </div>
-                    <div>
+
+                  {/* Weekly toggle + colour swatches on one row */}
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 12 }}>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer', userSelect: 'none' }}>
+                      <div onClick={() => set('weekly', !form.weekly)}
+                        style={{ width: 18, height: 18, borderRadius: 5, border: `2px solid ${form.weekly ? C.purple : C.brd}`, background: form.weekly ? C.purple : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'all 0.15s', cursor: 'pointer' }}>
+                        {form.weekly && <svg width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4L3.5 6.5L9 1" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>}
+                      </div>
                       <div style={{ fontSize: 13, fontWeight: 600, color: C.t1 }}>Make class weekly</div>
-                      <div style={{ fontSize: 11, color: C.t3, marginTop: 1 }}>This class will repeat every week on the same day and time</div>
+                    </label>
+
+                    {/* Colour swatches — all in one row, right side */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 5, flexShrink: 0 }}>
+                      {CLASS_COLORS.map(col => (
+                        <button
+                          key={col}
+                          type="button"
+                          onClick={() => set('color', col)}
+                          title={col}
+                          style={{
+                            width: 18, height: 18, borderRadius: 5, flexShrink: 0,
+                            background: col,
+                            border: form.color === col ? '2px solid #fff' : '2px solid transparent',
+                            cursor: 'pointer',
+                            outline: form.color === col ? `2px solid ${col}` : 'none',
+                            outlineOffset: 1,
+                            transition: 'outline 0.1s, border 0.1s',
+                            boxShadow: form.color === col ? `0 0 0 1px ${col}55` : 'none',
+                          }}
+                        />
+                      ))}
                     </div>
-                  </label>
+                  </div>
                 </div>
 
               </div>
