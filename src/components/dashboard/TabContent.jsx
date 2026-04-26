@@ -691,7 +691,7 @@ function QuickActions({ post, resolvedName, memberId, gym, currentUser, onDelete
     finally { setReacting(false); }
   };
 
-  const btnStyle = { display: "flex", alignItems: "center", gap: 5, width: "100%", padding: compact ? "5px 8px" : "7px 10px", borderRadius: 8, background: "rgba(255,255,255,0.03)", border: `1px solid ${C.brd}`, color: C.t2, fontSize: compact ? 10.5 : 12, fontWeight: 600, cursor: "pointer", fontFamily: FONT, textAlign: "left", transition: "all 0.15s" };
+  const btnStyle = { display: "flex", alignItems: "center", gap: 5, width: "100%", padding: compact ? "4px 8px" : "6px 10px", borderRadius: 8, background: "rgba(255,255,255,0.03)", border: `1px solid ${C.brd}`, color: C.t2, fontSize: compact ? 10.5 : 12, fontWeight: 600, cursor: "pointer", fontFamily: FONT, textAlign: "left", transition: "all 0.15s" };
   const iconSize = compact ? 11 : 13;
   const containerStyle = { width: compact ? 105 : 126, flexShrink: 0, borderLeft: `1px solid ${C.brd}`, padding: compact ? "10px 8px" : "12px 10px", display: "flex", flexDirection: "column", gap: compact ? 7 : 8, justifyContent: "flex-start" };
 
@@ -1771,18 +1771,18 @@ export default function ContentPage({
                           <div style={{ width: 116, flexShrink: 0, borderLeft: `1px solid ${C.brd}`, padding: "10px 8px", display: "flex", flexDirection: "column", gap: 7, justifyContent: "flex-start" }}>
                             <div style={{ fontSize: 9, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.10em", color: C.t3, marginBottom: 2 }}>Quick Actions</div>
                             <button onClick={() => handlePublishDraft(p)} disabled={publishingDraftId === p.id}
-                              style={{ display: "flex", alignItems: "center", gap: 5, width: "100%", padding: "5px 8px", borderRadius: 8, fontSize: 10.5, fontWeight: 700, cursor: publishingDraftId === p.id ? "default" : "pointer", fontFamily: FONT, opacity: publishingDraftId === p.id ? 0.6 : 1, transition: "opacity 0.15s", ...(publishingDraftId === p.id ? { background: C.brd, border: "none", color: C.t3 } : GRAD_BTN) }}>
+                              style={{ display: "flex", alignItems: "center", gap: 5, width: "100%", padding: "4px 8px", borderRadius: 8, fontSize: 10.5, fontWeight: 700, cursor: publishingDraftId === p.id ? "default" : "pointer", fontFamily: FONT, opacity: publishingDraftId === p.id ? 0.6 : 1, transition: "opacity 0.15s", ...(publishingDraftId === p.id ? { background: C.brd, border: "none", color: C.t3 } : GRAD_BTN) }}>
                               <Plus size={11} color="#fff" style={{ flexShrink: 0 }} /><span>{publishingDraftId === p.id ? "Posting…" : "Post Now"}</span>
                             </button>
                             <button onClick={() => setEditingPost(p)}
-                              style={{ display: "flex", alignItems: "center", gap: 5, width: "100%", padding: "5px 8px", borderRadius: 8, background: "rgba(255,255,255,0.03)", border: `1px solid ${C.brd}`, color: C.t2, fontSize: 10.5, fontWeight: 600, cursor: "pointer", fontFamily: FONT, textAlign: "left", transition: "all 0.15s" }}
+                              style={{ display: "flex", alignItems: "center", gap: 5, width: "100%", padding: "4px 8px", borderRadius: 8, background: "rgba(255,255,255,0.03)", border: `1px solid ${C.brd}`, color: C.t2, fontSize: 10.5, fontWeight: 600, cursor: "pointer", fontFamily: FONT, textAlign: "left", transition: "all 0.15s" }}
                               onMouseEnter={e => { e.currentTarget.style.borderColor = C.cyanBrd; e.currentTarget.style.color = C.t1; e.currentTarget.style.background = C.cyanDim; }}
                               onMouseLeave={e => { e.currentTarget.style.borderColor = C.brd; e.currentTarget.style.color = C.t2; e.currentTarget.style.background = "rgba(255,255,255,0.03)"; }}>
                               <Pencil size={11} color="currentColor" style={{ flexShrink: 0 }} /><span>Edit</span>
                             </button>
                             {onDeletePost && (
                               <button onClick={() => onDeletePost(p.id)}
-                                style={{ display: "flex", alignItems: "center", gap: 5, width: "100%", padding: "5px 8px", borderRadius: 8, background: "rgba(255,255,255,0.03)", border: `1px solid ${C.brd}`, color: C.t2, fontSize: 10.5, fontWeight: 600, cursor: "pointer", fontFamily: FONT, textAlign: "left", transition: "all 0.15s" }}
+                                style={{ display: "flex", alignItems: "center", gap: 5, width: "100%", padding: "4px 8px", borderRadius: 8, background: "rgba(255,255,255,0.03)", border: `1px solid ${C.brd}`, color: C.t2, fontSize: 10.5, fontWeight: 600, cursor: "pointer", fontFamily: FONT, textAlign: "left", transition: "all 0.15s" }}
                                 onMouseEnter={e => { e.currentTarget.style.borderColor = "rgba(255,77,109,0.35)"; e.currentTarget.style.color = C.red; e.currentTarget.style.background = C.redDim; }}
                                 onMouseLeave={e => { e.currentTarget.style.borderColor = C.brd; e.currentTarget.style.color = C.t2; e.currentTarget.style.background = "rgba(255,255,255,0.03)"; }}>
                                 <Trash2 size={11} color="currentColor" style={{ flexShrink: 0 }} /><span>Delete</span>
@@ -1871,14 +1871,14 @@ export default function ContentPage({
                           <div style={{ width: 105, flexShrink: 0, borderLeft: `1px solid ${C.brd}`, padding: "10px 8px", display: "flex", flexDirection: "column", gap: 7, justifyContent: "flex-start" }}>
                             <div style={{ fontSize: 9, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.10em", color: C.t3, marginBottom: 2 }}>Quick Actions</div>
                             <button onClick={() => setEditingPost(p)}
-                              style={{ display: "flex", alignItems: "center", gap: 5, width: "100%", padding: "5px 8px", borderRadius: 8, background: "rgba(255,255,255,0.03)", border: `1px solid ${C.brd}`, color: C.t2, fontSize: 10.5, fontWeight: 600, cursor: "pointer", fontFamily: FONT, textAlign: "left", transition: "all 0.15s" }}
+                              style={{ display: "flex", alignItems: "center", gap: 5, width: "100%", padding: "4px 8px", borderRadius: 8, background: "rgba(255,255,255,0.03)", border: `1px solid ${C.brd}`, color: C.t2, fontSize: 10.5, fontWeight: 600, cursor: "pointer", fontFamily: FONT, textAlign: "left", transition: "all 0.15s" }}
                               onMouseEnter={e => { e.currentTarget.style.borderColor = C.cyanBrd; e.currentTarget.style.color = C.t1; e.currentTarget.style.background = C.cyanDim; }}
                               onMouseLeave={e => { e.currentTarget.style.borderColor = C.brd; e.currentTarget.style.color = C.t2; e.currentTarget.style.background = "rgba(255,255,255,0.03)"; }}>
                               <Pencil size={11} color="currentColor" style={{ flexShrink: 0 }} /><span>Edit</span>
                             </button>
                             {onDeletePost && (
                               <button onClick={() => onDeletePost(p.id)}
-                                style={{ display: "flex", alignItems: "center", gap: 5, width: "100%", padding: "5px 8px", borderRadius: 8, background: "rgba(255,255,255,0.03)", border: `1px solid ${C.brd}`, color: C.t2, fontSize: 10.5, fontWeight: 600, cursor: "pointer", fontFamily: FONT, textAlign: "left", transition: "all 0.15s" }}
+                                style={{ display: "flex", alignItems: "center", gap: 5, width: "100%", padding: "4px 8px", borderRadius: 8, background: "rgba(255,255,255,0.03)", border: `1px solid ${C.brd}`, color: C.t2, fontSize: 10.5, fontWeight: 600, cursor: "pointer", fontFamily: FONT, textAlign: "left", transition: "all 0.15s" }}
                                 onMouseEnter={e => { e.currentTarget.style.borderColor = "rgba(255,77,109,0.35)"; e.currentTarget.style.color = C.red; e.currentTarget.style.background = C.redDim; }}
                                 onMouseLeave={e => { e.currentTarget.style.borderColor = C.brd; e.currentTarget.style.color = C.t2; e.currentTarget.style.background = "rgba(255,255,255,0.03)"; }}>
                                 <Trash2 size={11} color="currentColor" style={{ flexShrink: 0 }} /><span>Cancel</span>
