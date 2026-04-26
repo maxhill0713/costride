@@ -538,7 +538,15 @@ function RepeatEventPicker({ events, onSelect, onClose }) {
 
 /* ── NOTIFICATION TICKER ─────────────────────────────────────────── */
 function NotificationTicker({ posts, events, polls, checkIns, gymId }) {
-  const WINDOW_MS = 2 * 60 * 60 * 1000;
+  const WINDOW_MS = 60 * 60 * 1000; // 1 hour window
+
+  // Snapshot poll voter counts at first render so we can show deltas, not totals
+  const initialPollCountsRef = useRef(null);
+  if (initialPollCountsRef.current === null) {
+    const map = {};
+    polls.forEach(p => { map[p.id] = (p.voters || []).length; });
+    initialPollCountsRef.current = map;
+  }
 
   const notifications = useMemo(() => {
     const recentMs = Date.now() - WINDOW_MS;
@@ -579,10 +587,15 @@ function NotificationTicker({ posts, events, polls, checkIns, gymId }) {
     polls.forEach(poll => {
       const q = poll.question || poll.title;
       if (!q) return;
-      const count = (poll.voters || []).length;
-      if (count > 0 && isRecent(poll.updated_date || poll.updated_at)) {
+      if (!isRecent(poll.updated_date || poll.updated_at)) return;
+      const currentCount = (poll.voters || []).length;
+      // Delta = new votes since the ticker mounted; if no baseline stored, default to 1 (something just happened)
+      const initialCount = initialPollCountsRef.current?.[poll.id] ?? currentCount;
+      const newVotes = currentCount - initialCount;
+      const displayCount = newVotes > 0 ? newVotes : 1; // at least 1 since updated_date is recent
+      if (currentCount > 0) {
         const label = q.length > 34 ? q.slice(0, 32) + "…" : q;
-        notifs.push(`${count} member${count !== 1 ? "s" : ""} just responded to the ${label.toLowerCase()} poll`);
+        notifs.push(`${displayCount} member${displayCount !== 1 ? "s" : ""} just responded to the ${label.toLowerCase()} poll`);
       }
     });
 
