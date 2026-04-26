@@ -67,13 +67,8 @@ function StatusBadge({ score }) {
 }
 
 /* ─── SCORE BAR ──────────────────────────────────────────────── */
-function ScoreBar({ score }) {
-  const s = qualityState(score);
-  return (
-    <div style={{ height: 3, background: 'rgba(255,255,255,0.05)', borderRadius: 2, overflow: 'hidden' }}>
-      <div style={{ height: '100%', width: `${score}%`, background: s.color, opacity: 0.65, transition: 'width 0.6s ease', borderRadius: 2 }} />
-    </div>
-  );
+function ScoreBar() {
+  return null;
 }
 
 /* ─── METRIC STAT CARD (matches ContentPage sidebar stat cells) ─ */

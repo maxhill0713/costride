@@ -305,6 +305,31 @@ function ActionCard({ action, onDismiss }) {
   );
 }
 
+function SidebarFeedRow({ item, isLast }) {
+  const [sent, setSent] = useState(false);
+  return (
+    <div style={{ display:"flex", alignItems:"center", gap:9, padding:"9px 12px", borderBottom: isLast ? "none" : `1px solid ${C.brd}`, background: item.isNew ? `${C.cyan}08` : "transparent" }}>
+      <div style={{ width:24, height:24, borderRadius:6, flexShrink:0, background:`${item.color}10`, border:`1px solid ${item.color}22`, display:"flex", alignItems:"center", justifyContent:"center" }}>
+        <item.icon size={10} color={item.color}/>
+      </div>
+      <div style={{ flex:1, minWidth:0 }}>
+        <div style={{ fontSize:11, color:C.t2, lineHeight:1.4, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>
+          {item.member && <span style={{ fontWeight:600, color:C.t1 }}>{item.member} </span>}
+          <span style={{ color: item.type==="win" ? C.green : C.t2 }}>{item.action}</span>
+        </div>
+        <div style={{ fontSize:9.5, color:C.t3, marginTop:1 }}>{item.ago}</div>
+      </div>
+      {item.type==="win" ? (
+        <span style={{ fontSize:9, fontWeight:700, color:C.green, background:C.greenDim, border:`1px solid ${C.greenBrd}`, borderRadius:4, padding:"2px 6px", flexShrink:0, textTransform:"uppercase" }}>win</span>
+      ) : item.cta ? (
+        <button onClick={()=>setSent(true)} style={{ padding:"3px 8px", borderRadius:5, fontSize:10, fontWeight:600, cursor:"pointer", fontFamily:FONT, flexShrink:0, background: sent?C.greenDim:"rgba(255,255,255,0.03)", border:`1px solid ${sent?C.greenBrd:C.brd}`, color: sent?C.green:C.t2, transition:"all 0.2s", whiteSpace:"nowrap" }}>
+          {sent ? <Check size={8}/> : item.cta}
+        </button>
+      ) : null}
+    </div>
+  );
+}
+
 /* ─── RIGHT SIDEBAR ── mirrors ContentPage's RightSidebar structure */
 function RightSidebar({ actions }) {
   const [sentMap, setSentMap] = useState({});
@@ -371,35 +396,9 @@ function RightSidebar({ actions }) {
           <span style={{ fontSize:10, color:C.t3 }}>{FEED_ITEMS.length} events</span>
         </div>
         <div style={{ background:C.card, border:`1px solid ${C.brd}`, borderRadius:10, overflow:"hidden" }}>
-          {FEED_ITEMS.slice(0,6).map((item,i) => {
-            const [sent, setSent] = useState(false);
-            return (
-              <div key={item.id} style={{
-                display:"flex", alignItems:"center", gap:9,
-                padding:"9px 12px",
-                borderBottom: i < Math.min(FEED_ITEMS.length,6)-1 ? `1px solid ${C.brd}` : "none",
-                background: item.isNew ? `${C.cyan}08` : "transparent",
-              }}>
-                <div style={{ width:24, height:24, borderRadius:6, flexShrink:0, background:`${item.color}10`, border:`1px solid ${item.color}22`, display:"flex", alignItems:"center", justifyContent:"center" }}>
-                  <item.icon size={10} color={item.color}/>
-                </div>
-                <div style={{ flex:1, minWidth:0 }}>
-                  <div style={{ fontSize:11, color:C.t2, lineHeight:1.4, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>
-                    {item.member && <span style={{ fontWeight:600, color:C.t1 }}>{item.member} </span>}
-                    <span style={{ color: item.type==="win" ? C.green : C.t2 }}>{item.action}</span>
-                  </div>
-                  <div style={{ fontSize:9.5, color:C.t3, marginTop:1 }}>{item.ago}</div>
-                </div>
-                {item.type==="win" ? (
-                  <span style={{ fontSize:9, fontWeight:700, color:C.green, background:C.greenDim, border:`1px solid ${C.greenBrd}`, borderRadius:4, padding:"2px 6px", flexShrink:0, textTransform:"uppercase" }}>win</span>
-                ) : item.cta ? (
-                  <button onClick={()=>setSent(true)} style={{ padding:"3px 8px", borderRadius:5, fontSize:10, fontWeight:600, cursor:"pointer", fontFamily:FONT, flexShrink:0, background: sent?C.greenDim:"rgba(255,255,255,0.03)", border:`1px solid ${sent?C.greenBrd:C.brd}`, color: sent?C.green:C.t2, transition:"all 0.2s", whiteSpace:"nowrap" }}>
-                    {sent ? <Check size={8}/> : item.cta}
-                  </button>
-                ) : null}
-              </div>
-            );
-          })}
+          {FEED_ITEMS.slice(0,6).map((item,i) => (
+            <SidebarFeedRow key={item.id} item={item} isLast={i === Math.min(FEED_ITEMS.length,6)-1} />
+          ))}
         </div>
       </div>
 
