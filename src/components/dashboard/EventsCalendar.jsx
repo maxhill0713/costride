@@ -123,8 +123,8 @@ function DayDetailModal({ cell, dateLabel, onClose, onSelectEvent, onSelectClass
   return (
     <div
       onClick={e => { if (e.target === e.currentTarget) onClose(); }}
-      style={{ position: "fixed", inset: 0, zIndex: 500, background: "rgba(0,0,0,0.72)", display: "flex", alignItems: "center", justifyContent: "center", backdropFilter: "blur(4px)" }}>
-      <div style={{ background: "#17171c", border: `1px solid ${C.brd}`, borderRadius: 14, width: 400, maxWidth: "94vw", display: "flex", flexDirection: "column", boxShadow: "0 24px 60px rgba(0,0,0,0.8)", maxHeight: "96vh" }}>
+      style={{ position: "fixed", inset: 0, zIndex: 500, background: "rgba(0,0,0,0.72)", display: "flex", alignItems: "flex-start", justifyContent: "center", paddingTop: "4vh", paddingBottom: "4vh", overflowY: "auto", backdropFilter: "blur(4px)" }}>
+      <div style={{ background: "#17171c", border: `1px solid ${C.brd}`, borderRadius: 14, width: 400, maxWidth: "94vw", display: "flex", flexDirection: "column", boxShadow: "0 24px 60px rgba(0,0,0,0.8)" }}>
         {/* Header */}
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 18px 12px", borderBottom: `1px solid ${C.brd}`, flexShrink: 0 }}>
           <span style={{ fontSize: 14, fontWeight: 800, color: C.t1, letterSpacing: "-0.01em" }}>{dateLabel}</span>
@@ -136,7 +136,7 @@ function DayDetailModal({ cell, dateLabel, onClose, onSelectEvent, onSelectClass
         </div>
 
         {/* Timeline — scrollable only if taller than viewport budget */}
-        <div style={{ overflowY: "auto", flexShrink: 1, padding: "10px 10px 14px 0" }}>
+        <div style={{ overflowY: "visible", padding: "10px 10px 14px 0" }}>
           <div style={{ position: "relative", height: TIMELINE_HEIGHT, display: "flex" }}>
 
             {/* Hour labels */}
