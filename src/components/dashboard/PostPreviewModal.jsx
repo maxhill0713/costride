@@ -230,7 +230,9 @@ export default function PostPreviewModal({ post, gym, avatarMap = {}, nameMap = 
       </div>
 
       {showReactions && (
-        <ReactionsModal reactions={post.reactions || {}} onClose={() => setShowReactions(false)} />
+        <div style={{ position: "fixed", inset: 0, zIndex: 10001 }}>
+          <ReactionsModal reactions={post.reactions || {}} onClose={() => setShowReactions(false)} />
+        </div>
       )}
     </>
   );
