@@ -1,5 +1,6 @@
 /**
- * CreateClassModal — purple-themed, matches CreateEventModal structure
+ * CreateClassModal — purple-themed, matches CreateEventModal structure.
+ * Calendar preview section removed. Submit button labelled "Create".
  */
 import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { X, Dumbbell, Clock, Upload, Eye, Users, ChevronDown } from 'lucide-react';
@@ -17,8 +18,6 @@ const C = {
 const FONT = "'DM Sans','Inter',system-ui,sans-serif";
 
 const DIFFICULTIES = ['beginner', 'intermediate', 'advanced', 'all_levels'];
-
-// Get today's date in YYYY-MM-DD for min date validation
 const todayStr = new Date().toISOString().split('T')[0];
 
 const baseInp = {
@@ -144,7 +143,6 @@ export default function CreateClassModal({ open, onClose, onSave, gym, isLoading
       ...form,
       duration_minutes: Number(form.duration_minutes),
       max_capacity: Number(form.max_capacity),
-      // Store both the specific date and the day name (used for weekly repeat)
       schedule: [{ day: dayName, time: form.time, date: form.date, weekly: form.weekly }],
       gym_id: gym?.id,
       gym_name: gym?.name,
@@ -159,8 +157,10 @@ export default function CreateClassModal({ open, onClose, onSave, gym, isLoading
 
   const submitStyle = {
     padding: '9px 22px', borderRadius: 10, border: 'none', fontFamily: FONT,
-    fontSize: 13, fontWeight: 800, background: canSubmit ? C.purple : '#2a2a30',
-    color: canSubmit ? '#fff' : C.t3, cursor: canSubmit ? 'pointer' : 'default',
+    fontSize: 13, fontWeight: 800,
+    background: canSubmit ? C.purple : '#2a2a30',
+    color: canSubmit ? '#fff' : C.t3,
+    cursor: canSubmit ? 'pointer' : 'default',
     display: 'inline-flex', alignItems: 'center', gap: 7, opacity: 1,
     minWidth: 100, justifyContent: 'center', transition: 'opacity 0.15s',
   };
@@ -181,9 +181,10 @@ export default function CreateClassModal({ open, onClose, onSave, gym, isLoading
         .cls-sel-wrap { position:relative; }
         .cls-sel-wrap::after { content:''; position:absolute; right:10px; top:50%; transform:translateY(-50%); width:0; height:0; border-left:4px solid transparent; border-right:4px solid transparent; border-top:5px solid ${C.t3}; pointer-events:none; }
       `}</style>
+
       <div onClick={e => e.target === e.currentTarget && handleClose()}
         style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.82)', backdropFilter: 'blur(8px)', zIndex: 9999, display: 'flex', alignItems: isMobile ? 'flex-end' : 'center', justifyContent: 'center', padding: isMobile ? 0 : 20, animation: 'cls-fade 0.15s ease', fontFamily: FONT }}>
-        <div style={{ width: '100%', maxWidth: isMobile ? '100%' : 900, maxHeight: isMobile ? '96vh' : '90vh', height: isMobile ? '96vh' : 'auto', display: 'flex', flexDirection: 'column', background: C.bg, border: isMobile ? 'none' : `1px solid ${C.brd}`, borderRadius: isMobile ? '20px 20px 0 0' : 14, overflow: 'hidden', boxShadow: '0 40px 100px rgba(0,0,0,0.85)', animation: isMobile ? 'cls-up 0.3s cubic-bezier(0.32,0.72,0,1)' : 'cls-in 0.24s cubic-bezier(0.16,1,0.3,1)' }}>
+        <div style={{ width: '100%', maxWidth: isMobile ? '100%' : 680, maxHeight: isMobile ? '96vh' : '90vh', height: isMobile ? '96vh' : 'auto', display: 'flex', flexDirection: 'column', background: C.bg, border: isMobile ? 'none' : `1px solid ${C.brd}`, borderRadius: isMobile ? '20px 20px 0 0' : 14, overflow: 'hidden', boxShadow: '0 40px 100px rgba(0,0,0,0.85)', animation: isMobile ? 'cls-up 0.3s cubic-bezier(0.32,0.72,0,1)' : 'cls-in 0.24s cubic-bezier(0.16,1,0.3,1)' }}>
 
           {/* HEADER */}
           <div style={{ flexShrink: 0, padding: isMobile ? '0 16px' : '16px 20px', background: C.surface, borderBottom: `1px solid ${C.brd}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -206,12 +207,10 @@ export default function CreateClassModal({ open, onClose, onSave, gym, isLoading
             </div>
           </div>
 
-          {/* BODY */}
-          <form onSubmit={handleSubmit} style={{ flex: 1, display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 280px', minHeight: 0, overflow: 'hidden' }}>
-
-            {/* LEFT: form */}
+          {/* BODY — form only on desktop (no preview panel), preview toggle on mobile */}
+          <form onSubmit={handleSubmit} style={{ flex: 1, minHeight: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
             {(!isMobile || !showPreview) && (
-              <div className="cls-scroll" style={{ padding: isMobile ? '16px' : '18px 20px', borderRight: isMobile ? 'none' : `1px solid ${C.brd}`, display: 'flex', flexDirection: 'column', gap: 16, overflowY: 'auto', background: C.bg }}>
+              <div className="cls-scroll" style={{ padding: isMobile ? '16px' : '20px 24px', display: 'flex', flexDirection: 'column', gap: 16, overflowY: 'auto', background: C.bg, flex: 1 }}>
 
                 <div>
                   <SL required>Class Name</SL>
@@ -247,7 +246,6 @@ export default function CreateClassModal({ open, onClose, onSave, gym, isLoading
                   </div>
                 </div>
 
-                {/* Date & Time */}
                 <div>
                   <SL required>Date and Time</SL>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -258,7 +256,6 @@ export default function CreateClassModal({ open, onClose, onSave, gym, isLoading
                       <Inp type="time" value={form.time} onChange={e => set('time', e.target.value)} />
                     </div>
                   </div>
-                  {/* Make weekly checkbox */}
                   <label style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 12, cursor: 'pointer', userSelect: 'none' }}>
                     <div onClick={() => set('weekly', !form.weekly)}
                       style={{ width: 18, height: 18, borderRadius: 5, border: `2px solid ${form.weekly ? C.purple : C.brd}`, background: form.weekly ? C.purple : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'all 0.15s', cursor: 'pointer' }}>
@@ -274,23 +271,10 @@ export default function CreateClassModal({ open, onClose, onSave, gym, isLoading
               </div>
             )}
 
-            {/* RIGHT: preview */}
-            {(!isMobile || showPreview) && (
-              <div className="cls-scroll" style={{ padding: '18px 16px', background: C.surface, overflowY: 'auto', borderLeft: isMobile ? 'none' : `1px solid ${C.brd}` }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 12 }}>
-                  <Eye size={11} color={C.t3} />
-                  <span style={{ fontSize: 9.5, fontWeight: 600, color: C.t3, textTransform: 'uppercase', letterSpacing: '0.09em' }}>Live Preview</span>
-                </div>
+            {/* Mobile preview */}
+            {isMobile && showPreview && (
+              <div className="cls-scroll" style={{ padding: '16px', background: C.surface, overflowY: 'auto', flex: 1 }}>
                 <ClassPreview form={form} />
-                <div style={{ marginTop: 14, padding: '12px', borderRadius: 9, background: 'rgba(168,85,247,0.06)', border: `1px solid ${C.purpleBrd}` }}>
-                  <div style={{ fontSize: 10, color: C.purple, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 5 }}>On the calendar</div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
-                    <div style={{ padding: '3px 8px', borderRadius: 5, background: 'rgba(168,85,247,0.18)', border: '1px solid rgba(168,85,247,0.35)', fontSize: 11, fontWeight: 600, color: C.purple }}>
-                      {form.name || 'Class Name'}
-                    </div>
-                    <span style={{ fontSize: 10.5, color: C.t3 }}>← how it appears</span>
-                  </div>
-                </div>
               </div>
             )}
           </form>
@@ -301,7 +285,7 @@ export default function CreateClassModal({ open, onClose, onSave, gym, isLoading
               <>
                 <button type="submit" onClick={handleSubmit} disabled={!canSubmit}
                   style={{ width: '100%', height: 50, borderRadius: 12, border: 'none', fontFamily: FONT, fontSize: 15, fontWeight: 800, background: canSubmit ? C.purple : '#2a2a30', color: canSubmit ? '#fff' : C.t3, cursor: canSubmit ? 'pointer' : 'default', opacity: 1 }}>
-                  {isLoading ? 'Creating…' : 'Create Class'}
+                  {isLoading ? 'Creating…' : 'Create'}
                 </button>
                 <button type="button" onClick={handleClose} style={{ background: 'none', border: 'none', color: C.t3, fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: FONT, padding: '6px 0', textAlign: 'center' }}>Cancel</button>
               </>
@@ -311,11 +295,12 @@ export default function CreateClassModal({ open, onClose, onSave, gym, isLoading
                 <button type="submit" onClick={handleSubmit} disabled={!canSubmit} style={submitStyle}
                   onMouseEnter={e => { if (canSubmit) e.currentTarget.style.opacity = '0.88'; }}
                   onMouseLeave={e => { if (canSubmit) e.currentTarget.style.opacity = '1'; }}>
-                  {isLoading ? <><div style={{ width: 12, height: 12, border: '2px solid rgba(255,255,255,0.2)', borderTop: '2px solid #fff', borderRadius: '50%', animation: 'cls-spin 0.7s linear infinite' }} /> Creating…</> : 'Create Class'}
+                  {isLoading ? <><div style={{ width: 12, height: 12, border: '2px solid rgba(255,255,255,0.2)', borderTop: '2px solid #fff', borderRadius: '50%', animation: 'cls-spin 0.7s linear infinite' }} /> Creating…</> : 'Create'}
                 </button>
               </>
             )}
           </div>
+
         </div>
       </div>
     </>
