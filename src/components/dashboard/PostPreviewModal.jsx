@@ -97,6 +97,35 @@ export default function PostPreviewModal({ post, gym, avatarMap = {}, nameMap = 
 
           {/* Header */}
           <div style={{ padding: "16px 16px 12px", display: "flex", alignItems: "center", justifyContent: "space-between", flexShrink: 0, position: "relative", zIndex: 1 }}>
+            {/* Reactions — bottom right overlay */}
+            {reactionCount > 0 && (
+              <div style={{ position: "absolute", bottom: 12, right: 16, zIndex: 10 }}>
+                <button
+                  onClick={() => setShowReactions(true)}
+                  style={{ display: "flex", alignItems: "center", gap: 0, background: "none", border: "none", cursor: "pointer", padding: 0 }}
+                >
+                  {reactionEntries.slice(0, 4).map(([uid, variant], i) => (
+                    <div key={uid} style={{ width: 38, height: 38, marginLeft: i > 0 ? -12 : 0, zIndex: 4 - i, position: "relative", flexShrink: 0 }}>
+                      {variant === "sunglasses" ? (
+                        <div style={{ position: "relative", width: "100%", height: "100%" }}>
+                          <img src={STREAK_ICON_URL} alt="reaction" style={{ width: "100%", height: "100%", objectFit: "contain" }} />
+                          <svg style={{ position: "absolute", inset: 0, width: "100%", height: "100%", pointerEvents: "none" }} viewBox="0 0 64 64">
+                            <circle cx="20" cy="24" r="6" fill="none" stroke="black" strokeWidth="1.5"/>
+                            <circle cx="44" cy="24" r="6" fill="none" stroke="black" strokeWidth="1.5"/>
+                            <line x1="26" y1="24" x2="38" y2="24" stroke="black" strokeWidth="1.5"/>
+                          </svg>
+                        </div>
+                      ) : (
+                        <img src={getStreakIconUrl(variant)} alt="reaction" style={{ width: "100%", height: "100%", objectFit: "contain" }} />
+                      )}
+                    </div>
+                  ))}
+                  {reactionCount > 4 && (
+                    <span style={{ fontSize: 11, fontWeight: 700, color: "rgba(255,255,255,0.45)", marginLeft: 6 }}>+{reactionCount - 4}</span>
+                  )}
+                </button>
+              </div>
+            )}
             <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
               {/* Avatar */}
               <div style={{
@@ -171,35 +200,7 @@ export default function PostPreviewModal({ post, gym, avatarMap = {}, nameMap = 
               </div>
             )}
 
-            {/* Reactions — icons only, clickable to open modal */}
-            {reactionCount > 0 && (
-              <div style={{ padding: "12px 16px" }}>
-                <button
-                  onClick={() => setShowReactions(true)}
-                  style={{ display: "flex", alignItems: "center", gap: 0, background: "none", border: "none", cursor: "pointer", padding: 0 }}
-                >
-                  {reactionEntries.slice(0, 4).map(([uid, variant], i) => (
-                    <div key={uid} style={{ width: 38, height: 38, marginLeft: i > 0 ? -12 : 0, zIndex: 4 - i, position: "relative", flexShrink: 0 }}>
-                      {variant === "sunglasses" ? (
-                        <div style={{ position: "relative", width: "100%", height: "100%" }}>
-                          <img src={STREAK_ICON_URL} alt="reaction" style={{ width: "100%", height: "100%", objectFit: "contain" }} />
-                          <svg style={{ position: "absolute", inset: 0, width: "100%", height: "100%", pointerEvents: "none" }} viewBox="0 0 64 64">
-                            <circle cx="20" cy="24" r="6" fill="none" stroke="black" strokeWidth="1.5"/>
-                            <circle cx="44" cy="24" r="6" fill="none" stroke="black" strokeWidth="1.5"/>
-                            <line x1="26" y1="24" x2="38" y2="24" stroke="black" strokeWidth="1.5"/>
-                          </svg>
-                        </div>
-                      ) : (
-                        <img src={getStreakIconUrl(variant)} alt="reaction" style={{ width: "100%", height: "100%", objectFit: "contain" }} />
-                      )}
-                    </div>
-                  ))}
-                  {reactionCount > 4 && (
-                    <span style={{ fontSize: 11, fontWeight: 700, color: "rgba(255,255,255,0.45)", marginLeft: 6 }}>+{reactionCount - 4}</span>
-                  )}
-                </button>
-              </div>
-            )}
+
 
             {/* Comments preview */}
             {(post.comments || []).length > 0 && (
