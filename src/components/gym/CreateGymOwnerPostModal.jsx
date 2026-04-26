@@ -282,8 +282,8 @@ export default function CreateGymOwnerPostModal({ open, onClose, gym, onSuccess 
   if (!open) return null;
 
   /* ── Button colour matching ContentPage "New Post" (#2563eb) ── */
-  const submitBg     = isScheduled ? C.amber : '#2563eb';
-  const submitShadow = canSubmit ? `0 4px 14px ${isScheduled ? 'rgba(245,158,11,0.4)' : 'rgba(37,99,235,0.45)'}` : 'none';
+  const submitBg     = !canSubmit ? C.brd2 : isScheduled ? C.amber : '#2563eb';
+  const submitColor  = !canSubmit ? C.t3 : '#fff';
 
   return (
     <>
@@ -495,7 +495,7 @@ export default function CreateGymOwnerPostModal({ open, onClose, gym, onSuccess 
             {isMobile ? (
               <>
                 <button onClick={handleSubmit} disabled={!canSubmit} className={`ch-cta-btn${isScheduled ? ' schedule' : ''}`}
-                  style={{ width: '100%', justifyContent: 'center', height: 50, fontSize: 15, opacity: canSubmit ? 1 : 0.38, cursor: canSubmit ? 'pointer' : 'default', boxShadow: submitShadow, borderRadius: 12, background: submitBg }}>
+                  style={{ width: '100%', justifyContent: 'center', height: 50, fontSize: 15, opacity: 1, cursor: canSubmit ? 'pointer' : 'default', borderRadius: 12, background: submitBg, color: submitColor }}>
                   {submitting ? <><div style={{ width: 14, height: 14, border: '2px solid rgba(255,255,255,0.2)', borderTop: '2px solid #fff', borderRadius: '50%', animation: 'spin 0.7s linear infinite' }} /> Publishing…</> : submitLabel}
                 </button>
                 <button onClick={handleSaveDraft} disabled={!canSubmit || savingDraft} style={{ background: 'none', border: `1px solid ${C.brd2}`, borderRadius: 12, color: C.t2, fontSize: 13, fontWeight: 600, cursor: canSubmit ? 'pointer' : 'default', fontFamily: FONT, padding: '12px 0', textAlign: 'center', opacity: canSubmit ? 1 : 0.38 }}>
@@ -510,7 +510,7 @@ export default function CreateGymOwnerPostModal({ open, onClose, gym, onSuccess 
                   {savingDraft ? 'Saving…' : 'Draft'}
                 </button>
                 <button onClick={handleSubmit} disabled={!canSubmit} className={`ch-cta-btn${isScheduled ? ' schedule' : ''}`}
-                  style={{ opacity: canSubmit ? 1 : 0.38, cursor: canSubmit ? 'pointer' : 'default', boxShadow: submitShadow, minWidth: 120, justifyContent: 'center', background: submitBg }}>
+                  style={{ opacity: 1, cursor: canSubmit ? 'pointer' : 'default', minWidth: 120, justifyContent: 'center', background: submitBg, color: submitColor }}>
                   {submitting ? <><div style={{ width: 12, height: 12, border: '2px solid rgba(255,255,255,0.2)', borderTop: '2px solid #fff', borderRadius: '50%', animation: 'spin 0.7s linear infinite' }} /> Publishing…</> : submitLabel}
                 </button>
               </>
