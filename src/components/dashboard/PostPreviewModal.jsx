@@ -69,7 +69,7 @@ function ExerciseRow({ ex, idx }) {
 function WorkoutSwipePanel({ post }) {
   const exercises = post.workout_exercises || [];
   const PREVIEW_COUNT = 8;
-  const PANEL_HEIGHT = "min(85.8vw, 340px)";
+  const PANEL_HEIGHT = "min(85.8vw, 380px)";
 
   const [slide, setSlide] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
@@ -271,7 +271,7 @@ export default function PostPreviewModal({ post, gym, avatarMap = {}, nameMap = 
       >
         <div
           style={{
-            width: "100%", maxWidth: 480, maxHeight: "90vh",
+            width: "100%", maxWidth: 600, maxHeight: "94vh",
             display: "flex", flexDirection: "column",
             borderRadius: 24, overflow: "hidden",
             background: "linear-gradient(135deg, rgba(16,19,40,0.97) 0%, rgba(6,8,18,0.99) 100%)",
@@ -367,16 +367,16 @@ export default function PostPreviewModal({ post, gym, avatarMap = {}, nameMap = 
               </div>
             )}
 
+            {/* Workout caption — shown ABOVE the swipe panel, below stats */}
+            {isWorkoutPost && post.content && (
+              <div style={{ padding: "0 16px 10px", fontSize: 13, color: "rgba(255,255,255,0.7)", lineHeight: 1.65, fontWeight: 400 }}>
+                {post.content}
+              </div>
+            )}
+
             {/* Workout swipe panel (image + exercise summary) */}
             {isWorkoutPost && post.image_url && (
               <WorkoutSwipePanel post={post} />
-            )}
-
-            {/* Workout caption — shown below the swipe panel / stats */}
-            {isWorkoutPost && post.content && (
-              <div style={{ padding: "10px 16px 4px", fontSize: 13, color: "rgba(255,255,255,0.7)", lineHeight: 1.65, fontWeight: 400 }}>
-                {post.content}
-              </div>
             )}
 
             {/* Non-workout image */}
