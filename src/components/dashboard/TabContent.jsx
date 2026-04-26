@@ -87,7 +87,7 @@ const VISIBLE_TABS = ["Events", "Community Feed", "Challenges", "Polls", "Drafts
 
 const TAB_ACTION = {
   "Community Feed": { label: "New Post",        modal: "post"      },
-  "Events":         { label: "Add Event",       modal: "event"     },
+  "Events":         { label: "+ Event",         modal: "event"     },
   "Challenges":     { label: "New Challenge",   modal: "challenge" },
   "Polls":          { label: "New Poll",        modal: "poll"      },
 };
@@ -1141,20 +1141,20 @@ export default function ContentPage({
                 />
               </div>
             </div>
-            <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
               {tab === "Events" && (
                 <button onClick={() => setShowCreateClass(true)}
-                  style={{ display: "flex", alignItems: "center", gap: 6, padding: "9px 18px", borderRadius: 9, fontSize: 12.5, fontWeight: 700, cursor: "pointer", fontFamily: FONT, background: "#7c3aed", border: "none", color: "#fff" }}
+                  style={{ display: "flex", alignItems: "center", gap: 4, padding: "9px 10px", borderRadius: 9, fontSize: 12.5, fontWeight: 700, cursor: "pointer", fontFamily: FONT, background: "#7c3aed", border: "none", color: "#fff" }}
                   onMouseEnter={e => e.currentTarget.style.opacity = "0.88"}
                   onMouseLeave={e => e.currentTarget.style.opacity = "1"}>
-                  <Plus size={12} /> Add Class
+                  <Plus size={12} /> Class
                 </button>
               )}
               <button onClick={() => tabAction && openModal?.(tabAction.modal)}
-                style={{ display: "flex", alignItems: "center", gap: 6, padding: "9px 18px", borderRadius: 9, fontSize: 12.5, fontWeight: 700, cursor: "pointer", fontFamily: FONT, visibility: tabAction ? "visible" : "hidden", pointerEvents: tabAction ? "auto" : "none", ...GRAD_BTN }}
+                style={{ display: "flex", alignItems: "center", gap: 4, padding: tab === "Events" ? "9px 10px" : "9px 18px", borderRadius: 9, fontSize: 12.5, fontWeight: 700, cursor: "pointer", fontFamily: FONT, visibility: tabAction ? "visible" : "hidden", pointerEvents: tabAction ? "auto" : "none", ...GRAD_BTN }}
                 onMouseEnter={e => e.currentTarget.style.opacity = "0.88"}
                 onMouseLeave={e => e.currentTarget.style.opacity = "1"}>
-                <Plus size={12} /> {tabAction?.label ?? "Action"}
+                <Plus size={12} /> {tab === "Events" ? "Event" : (tabAction?.label ?? "Action")}
               </button>
             </div>
           </div>
