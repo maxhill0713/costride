@@ -6,7 +6,7 @@
  * Cyan color updated to match ContentPage blue: #4d7fff
  */
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import {
   Zap, UserPlus, Trophy, Flame, CheckCircle, Plus, Trash2,
   ChevronRight, AlertTriangle, Star, Gift, Clock, Send, X,
@@ -77,43 +77,218 @@ const TEMPLATES = {
   birthday:     (g,n) => `Happy Birthday, ${n}. From everyone at ${g} — we hope you have an amazing day.`,
 };
 
-/* ─── MOCK DATA ──────────────────────────────────────────────── */
-const MOCK_GYM = "Apex Fitness";
+/* ─── REAL DATA HELPERS ──────────────────────────────────────── */
+function timeAgoLabel(ms) {
+  const s = (Date.now() - ms) / 1000;
+  if (s < 60)   return "just now";
+  if (s < 3600) return `${Math.floor(s / 60)}m ago`;
+  if (s < 86400) return `${Math.floor(s / 3600)}h ago`;
+  return "Yesterday";
+}
 
-const MOCK_RULES = [
-  { id:"r1", trigger_id:"inactive_14", message:TEMPLATES.inactive_14(MOCK_GYM,"{name}"), delay_hours:1,  enabled:true,  stats:{sent:24,returned:8, rate:33,saved:480} },
-  { id:"r2", trigger_id:"new_member",  message:TEMPLATES.new_member(MOCK_GYM,"{name}"),  delay_hours:0,  enabled:true,  stats:{sent:31,returned:19,rate:61,saved:340} },
-  { id:"r3", trigger_id:"streak_7",    message:TEMPLATES.streak_7(MOCK_GYM,"{name}"),    delay_hours:0,  enabled:true,  stats:{sent:12,returned:0, rate:0, saved:0  } },
-  { id:"r4", trigger_id:"inactive_30", message:TEMPLATES.inactive_30(MOCK_GYM,"{name}"), delay_hours:6,  enabled:false, stats:{sent:7, returned:2, rate:29,saved:120} },
-  { id:"r5", trigger_id:"visits_10",   message:TEMPLATES.visits_10(MOCK_GYM,"{name}"),   delay_hours:0,  enabled:false, stats:{sent:9, returned:0, rate:0, saved:0  } },
-];
+function computeRuleStats(triggerId, checkIns, allMemberships, gymId) {
+  const now = Date.now();
+  const MS_DAY = 86400000;
+  const estMemberValue = 60; // £ per month per member
 
-const MOCK_ACTIVITY = [
-  { id:1,  type:"returned",  rule:"Inactive 14 days",  member:"Priya Sharma",    ago:"4 min ago",  isNew:true  },
-  { id:2,  type:"triggered", rule:"7-day streak",       member:"Chloe Nakamura", ago:"11 min ago", isNew:false },
-  { id:3,  type:"sent",      rule:"Inactive 14 days",   member:"Marcus Webb",    ago:"23 min ago", isNew:false },
-  { id:4,  type:"triggered", rule:"New member joined",  member:"Sam Rivera",     ago:"1 hr ago",   isNew:false },
-  { id:5,  type:"returned",  rule:"Inactive 30 days",   member:"Devon Osei",     ago:"1 hr ago",   isNew:false },
-  { id:6,  type:"sent",      rule:"New member joined",  member:"Tyler Rhodes",   ago:"2 hrs ago",  isNew:false },
-  { id:7,  type:"triggered", rule:"Inactive 7 days",    member:"Jamie Collins",  ago:"3 hrs ago",  isNew:false },
-  { id:8,  type:"returned",  rule:"Inactive 14 days",   member:"Alex Turner",    ago:"Yesterday",  isNew:false },
-  { id:9,  type:"triggered", rule:"Birthday",           member:"Jordan Kim",     ago:"Yesterday",  isNew:false },
-  { id:10, type:"sent",      rule:"50th visit",         member:"Anya Petrov",    ago:"Yesterday",  isNew:false },
-];
+  // Build last-checkin map per user
+  const lastCiByUser = {};
+  (checkIns || []).forEach(c => {
+    if (c.gym_id !== gymId) return;
+    const t = new Date(c.check_in_date || c.created_date).getTime();
+    if (!lastCiByUser[c.user_id] || t > lastCiByUser[c.user_id]) lastCiByUser[c.user_id] = t;
+  });
 
-const LIVE_EVENTS = [
-  { type:"triggered", rule:"Inactive 14 days",  member:"Chris Park"   },
-  { type:"returned",  rule:"New member joined",  member:"Sam Rivera"   },
-  { type:"sent",      rule:"7-day streak",       member:"Mei Zhang"    },
-  { type:"triggered", rule:"Inactive 7 days",    member:"Sofia Reyes"  },
-  { type:"returned",  rule:"Inactive 14 days",   member:"James Okafor" },
-];
+  // Build all checkins per user (sorted asc)
+  const cisByUser = {};
+  (checkIns || []).forEach(c => {
+    if (c.gym_id !== gymId) return;
+    if (!cisByUser[c.user_id]) cisByUser[c.user_id] = [];
+    cisByUser[c.user_id].push(new Date(c.check_in_date || c.created_date).getTime());
+  });
+  Object.values(cisByUser).forEach(arr => arr.sort((a, b) => a - b));
 
-const RECOMMENDATIONS = [
-  { id:"rec1", title:"Add a day-1 welcome message",         body:"Members who receive a same-day welcome are 30% more likely to return in week 1.", impact:"+30% 2nd-visit rate",   trigger_id:"new_member",  urgency:"high",   icon:UserPlus     },
-  { id:"rec2", title:"Catch members going quiet in week 1", body:"3 members in their first 2 weeks haven't been back. A habit-nudge on day 5 helps.", impact:"+22% week-1 retention", trigger_id:"inactive_7",  urgency:"medium", icon:AlertTriangle },
-  { id:"rec3", title:"Celebrate your milestone members",    body:"2 members are approaching their 50th visit. Recognition converts to referrals.",     impact:"3× referral rate",      trigger_id:"visits_50",   urgency:"low",    icon:Trophy        },
-];
+  // Join dates
+  const joinMap = {};
+  (allMemberships || []).forEach(m => {
+    if (m.join_date) joinMap[m.user_id] = new Date(m.join_date).getTime();
+  });
+
+  let sent = 0, returned = 0;
+
+  if (triggerId === "inactive_14" || triggerId === "inactive_7" || triggerId === "inactive_30") {
+    const days = triggerId === "inactive_7" ? 7 : triggerId === "inactive_14" ? 14 : 30;
+    const threshold = days * MS_DAY;
+    const windowEnd = now - threshold;
+    (allMemberships || []).forEach(m => {
+      const last = lastCiByUser[m.user_id];
+      if (!last) return;
+      // "sent" = member was inactive for `days` at some point in last 90 days
+      if (last < now - threshold && last > now - (threshold + 90 * MS_DAY)) {
+        sent++;
+        // "returned" = they have a check-in AFTER the inactivity
+        const cis = cisByUser[m.user_id] || [];
+        if (cis.some(t => t > last + threshold)) returned++;
+      }
+    });
+  } else if (triggerId === "new_member") {
+    // Count members who joined in last 90 days
+    const cutoff = now - 90 * MS_DAY;
+    (allMemberships || []).forEach(m => {
+      const jt = joinMap[m.user_id];
+      if (jt && jt > cutoff) {
+        sent++;
+        const cis = cisByUser[m.user_id] || [];
+        if (cis.some(t => t > jt + MS_DAY)) returned++;
+      }
+    });
+  } else if (triggerId === "visits_10" || triggerId === "visits_50" || triggerId === "visits_100") {
+    const target = triggerId === "visits_10" ? 10 : triggerId === "visits_50" ? 50 : 100;
+    (allMemberships || []).forEach(m => {
+      const cis = cisByUser[m.user_id] || [];
+      if (cis.length >= target) { sent++; if (cis.length > target) returned++; }
+    });
+  } else if (triggerId === "streak_7" || triggerId === "streak_30") {
+    const days = triggerId === "streak_7" ? 7 : 30;
+    (allMemberships || []).forEach(m => {
+      const cis = cisByUser[m.user_id] || [];
+      if (cis.length >= days) { sent++; if (cis.length > days) returned++; }
+    });
+  } else if (triggerId === "first_return") {
+    (allMemberships || []).forEach(m => {
+      const cis = cisByUser[m.user_id] || [];
+      if (cis.length >= 2) { sent++; returned++; }
+      else if (cis.length === 1) sent++;
+    });
+  }
+
+  const rate = sent > 0 ? Math.round((returned / sent) * 100) : 0;
+  const saved = returned * estMemberValue;
+  return { sent, returned, rate, saved };
+}
+
+function buildActivityFeed(checkIns, allMemberships, gymId) {
+  const now = Date.now();
+  const MS_DAY = 86400000;
+  const recent = (checkIns || [])
+    .filter(c => c.gym_id === gymId)
+    .sort((a, b) => new Date(b.check_in_date || b.created_date) - new Date(a.check_in_date || a.created_date))
+    .slice(0, 15);
+
+  const joinMap = {};
+  (allMemberships || []).forEach(m => {
+    if (m.join_date) joinMap[m.user_id] = new Date(m.join_date).getTime();
+  });
+
+  return recent.map((c, i) => {
+    const ts = new Date(c.check_in_date || c.created_date).getTime();
+    const jt = joinMap[c.user_id];
+    const isNew = jt && (ts - jt) < MS_DAY * 2;
+    const type = isNew ? "triggered" : "returned";
+    const rule = isNew ? "New member joined" : "Member check-in";
+    return {
+      id: c.id || i,
+      type,
+      rule,
+      member: c.user_name || "Member",
+      ago: timeAgoLabel(ts),
+      isNew: false,
+    };
+  });
+}
+
+function buildRecommendations(checkIns, allMemberships, gymId, existingTriggerIds) {
+  const now = Date.now();
+  const MS_DAY = 86400000;
+
+  const joinMap = {};
+  (allMemberships || []).forEach(m => {
+    if (m.join_date) joinMap[m.user_id] = new Date(m.join_date).getTime();
+  });
+
+  const lastCiByUser = {};
+  const ciCountByUser = {};
+  (checkIns || []).forEach(c => {
+    if (c.gym_id !== gymId) return;
+    const t = new Date(c.check_in_date || c.created_date).getTime();
+    if (!lastCiByUser[c.user_id] || t > lastCiByUser[c.user_id]) lastCiByUser[c.user_id] = t;
+    ciCountByUser[c.user_id] = (ciCountByUser[c.user_id] || 0) + 1;
+  });
+
+  const recs = [];
+
+  // New members inactive in first 2 weeks
+  const newInactive = (allMemberships || []).filter(m => {
+    const jt = joinMap[m.user_id];
+    if (!jt || (now - jt) > 21 * MS_DAY || (now - jt) < 5 * MS_DAY) return false;
+    const last = lastCiByUser[m.user_id];
+    return !last || (now - last) > 7 * MS_DAY;
+  });
+  if (newInactive.length > 0 && !existingTriggerIds.includes("inactive_7")) {
+    recs.push({
+      id: "rec_new_inactive",
+      title: `${newInactive.length} new member${newInactive.length !== 1 ? "s" : ""} haven't returned yet`,
+      body: `${newInactive.length} member${newInactive.length !== 1 ? "s" : ""} joined in the last 3 weeks but haven't been back. A nudge on day 5 significantly improves week-1 retention.`,
+      impact: "+20–30% week-1 retention",
+      trigger_id: "inactive_7",
+      urgency: "high",
+      icon: AlertTriangle,
+    });
+  }
+
+  // At-risk members inactive 14+ days
+  const atRisk14 = (allMemberships || []).filter(m => {
+    const last = lastCiByUser[m.user_id];
+    return last && (now - last) > 14 * MS_DAY && (now - last) < 60 * MS_DAY;
+  });
+  if (atRisk14.length > 0 && !existingTriggerIds.includes("inactive_14")) {
+    recs.push({
+      id: "rec_at_risk",
+      title: `${atRisk14.length} member${atRisk14.length !== 1 ? "s" : ""} inactive 14+ days`,
+      body: `${atRisk14.length} member${atRisk14.length !== 1 ? "s" : ""} haven't visited in over 2 weeks. Automated re-engagement at this stage has the highest win-back rate.`,
+      impact: "~30–40% re-engagement rate",
+      trigger_id: "inactive_14",
+      urgency: "high",
+      icon: AlertTriangle,
+    });
+  }
+
+  // Milestone members approaching 10th visit
+  const near10 = (allMemberships || []).filter(m => {
+    const count = ciCountByUser[m.user_id] || 0;
+    return count >= 8 && count < 10;
+  });
+  if (near10.length > 0 && !existingTriggerIds.includes("visits_10")) {
+    recs.push({
+      id: "rec_milestone10",
+      title: `${near10.length} member${near10.length !== 1 ? "s" : ""} near their 10th visit`,
+      body: `${near10.length} member${near10.length !== 1 ? "s" : ""} are close to their 10th check-in. A celebratory message at this milestone dramatically boosts long-term retention.`,
+      impact: "2× long-term retention",
+      trigger_id: "visits_10",
+      urgency: "medium",
+      icon: Trophy,
+    });
+  }
+
+  // Welcome message if not set up
+  if (!existingTriggerIds.includes("new_member")) {
+    const newLast30 = (allMemberships || []).filter(m => {
+      const jt = joinMap[m.user_id];
+      return jt && (now - jt) < 30 * MS_DAY;
+    }).length;
+    recs.push({
+      id: "rec_welcome",
+      title: "Add a day-1 welcome message",
+      body: `${newLast30 > 0 ? `${newLast30} new member${newLast30 !== 1 ? "s" : ""} joined` : "New members"} in the last 30 days. A same-day welcome message is the single highest-ROI automation.`,
+      impact: "+30% 2nd-visit rate",
+      trigger_id: "new_member",
+      urgency: "high",
+      icon: UserPlus,
+    });
+  }
+
+  return recs;
+}
 
 const TEMPLATE_PACKS = [
   { id:"tp1", label:"Win back inactive members", desc:"14-day + 30-day re-engagement", icon:RefreshCw, triggers:["inactive_14","inactive_30"] },
@@ -998,13 +1173,40 @@ function MobileAddDrawer({ gymName, existingIds, onAdd, onClose }) {
 /* ═══════════════════════════════════════════════════════════════
    ROOT
 ═══════════════════════════════════════════════════════════════ */
-export default function TabEngagement({ selectedGym }) {
-  const gymName = selectedGym?.name || MOCK_GYM;
+export default function TabEngagement({ selectedGym, allMemberships = [], checkIns = [], totalMembers = 0 }) {
+  const gymName = selectedGym?.name || "Your Gym";
+  const gymId   = selectedGym?.id;
 
-  const [rules, setRules]       = useState(MOCK_RULES);
+  // ── Seed initial rules with real computed stats ──────────────
+  const initialRules = useMemo(() => {
+    if (!gymId) return [];
+    const defaultTriggers = ["inactive_14", "new_member", "streak_7"];
+    return defaultTriggers.map((tid, i) => {
+      const stats = computeRuleStats(tid, checkIns, allMemberships, gymId);
+      return {
+        id: `default_${tid}`,
+        trigger_id: tid,
+        message: TEMPLATES[tid]?.(gymName, "{name}") || "",
+        delay_hours: tid === "inactive_14" ? 1 : 0,
+        enabled: true,
+        stats,
+      };
+    });
+  }, [gymId, gymName]); // only recompute when gym changes
+
+  const [rules, setRules]       = useState([]);
   const [showAdd, setShowAdd]   = useState(false);
-  const [activity, setActivity] = useState(MOCK_ACTIVITY);
-  const liveIdx = useRef(0);
+  const [activity, setActivity] = useState([]);
+
+  // Initialise rules with real data once gym loads
+  useEffect(() => {
+    if (gymId && rules.length === 0) setRules(initialRules);
+  }, [gymId, initialRules]);
+
+  // Build real activity feed from check-ins
+  useEffect(() => {
+    if (gymId) setActivity(buildActivityFeed(checkIns, allMemberships, gymId));
+  }, [checkIns, allMemberships, gymId]);
 
   const [isMobile, setIsMobile] = useState(
     typeof window !== "undefined" ? window.innerWidth <= 768 : false
@@ -1015,40 +1217,58 @@ export default function TabEngagement({ selectedGym }) {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  const persist = useCallback(async () => {}, []);
+  const addRule    = useCallback(r => setRules(prev => [...prev, { ...r, id: `r_${Date.now()}` }]), []);
+  const toggleRule = useCallback(id => setRules(prev => prev.map(r => r.id === id ? { ...r, enabled: !r.enabled } : r)), []);
+  const editRule   = useCallback((id, upd) => setRules(prev => prev.map(r => r.id === id ? { ...r, ...upd } : r)), []);
+  const deleteRule = useCallback(id => setRules(prev => prev.filter(r => r.id !== id)), []);
 
-  const addRule    = useCallback(r => { const u = [...rules, { ...r, id: `r_${Date.now()}` }]; setRules(u); persist(u); }, [rules, persist]);
-  const toggleRule = useCallback(id => { const u = rules.map(r => r.id === id ? { ...r, enabled: !r.enabled } : r); setRules(u); persist(u); }, [rules, persist]);
-  const editRule   = useCallback((id, upd) => { const u = rules.map(r => r.id === id ? { ...r, ...upd } : r); setRules(u); persist(u); }, [rules, persist]);
-  const deleteRule = useCallback(id => { const u = rules.filter(r => r.id !== id); setRules(u); persist(u); }, [rules, persist]);
+  const enabled     = rules.filter(r => r.enabled);
+  const paused      = rules.filter(r => !r.enabled);
+  const existingIds = rules.map(r => r.trigger_id);
 
-  useEffect(() => {
-    const timer = setInterval(() => {
-      if (liveIdx.current >= LIVE_EVENTS.length) return;
-      const ev = { ...LIVE_EVENTS[liveIdx.current++], id: Date.now(), ago: "just now", isNew: true };
-      setActivity(prev => [ev, ...prev.slice(0, 14)]);
-      setTimeout(() => setActivity(prev => prev.map(e => e.id === ev.id ? { ...e, isNew: false } : e)), 1200);
-    }, 6000);
-    return () => clearInterval(timer);
-  }, []);
+  // Real KPI totals derived from rule stats (computed from real data)
+  const totalSent  = rules.reduce((s, r) => s + (r.stats?.sent ?? 0), 0);
+  const totalRet   = rules.reduce((s, r) => s + (r.stats?.returned ?? 0), 0);
+  const totalSaved = rules.reduce((s, r) => s + (r.stats?.saved ?? 0), 0);
 
-  const enabled      = rules.filter(r => r.enabled);
-  const paused       = rules.filter(r => !r.enabled);
-  const existingIds  = rules.map(r => r.trigger_id);
-  const totalSent    = rules.reduce((s, r) => s + (r.stats?.sent ?? 0), 0);
-  const totalRet     = rules.reduce((s, r) => s + (r.stats?.returned ?? 0), 0);
-  const totalSaved   = rules.reduce((s, r) => s + (r.stats?.saved ?? 0), 0);
-  const churnPrev    = Math.floor(totalRet * 0.4);
+  // Churn prevented: members who were at-risk (14+ days inactive) but returned
+  const churnPrev = useMemo(() => {
+    if (!gymId) return 0;
+    const now = Date.now();
+    const MS_DAY = 86400000;
+    const lastCiByUser = {};
+    (checkIns || []).forEach(c => {
+      if (c.gym_id !== gymId) return;
+      const t = new Date(c.check_in_date || c.created_date).getTime();
+      if (!lastCiByUser[c.user_id]) lastCiByUser[c.user_id] = [];
+      lastCiByUser[c.user_id].push(t);
+    });
+    let count = 0;
+    Object.values(lastCiByUser).forEach(cis => {
+      const sorted = [...cis].sort((a, b) => a - b);
+      for (let i = 1; i < sorted.length; i++) {
+        const gap = sorted[i] - sorted[i - 1];
+        if (gap > 14 * MS_DAY) { count++; break; }
+      }
+    });
+    return count;
+  }, [checkIns, gymId]);
+
+  // Dynamic recommendations from real data
+  const recommendations = useMemo(
+    () => buildRecommendations(checkIns, allMemberships, gymId, existingIds),
+    [checkIns, allMemberships, gymId, existingIds.join(",")]
+  );
 
   const addFromRec = useCallback(rec => {
-    addRule({ trigger_id: rec.trigger_id, message: TEMPLATES[rec.trigger_id]?.(gymName, "{name}") || "", delay_hours: 0, enabled: true, stats: { sent:0, returned:0, rate:0, saved:0 } });
-  }, [addRule, gymName]);
+    addRule({ trigger_id: rec.trigger_id, message: TEMPLATES[rec.trigger_id]?.(gymName, "{name}") || "", delay_hours: 0, enabled: true, stats: computeRuleStats(rec.trigger_id, checkIns, allMemberships, gymId) });
+  }, [addRule, gymName, checkIns, allMemberships, gymId]);
 
   const addPack = useCallback(pack => {
     pack.triggers.filter(id => !existingIds.includes(id)).forEach(id => {
-      addRule({ trigger_id: id, message: TEMPLATES[id]?.(gymName, "{name}") || "", delay_hours: id.startsWith("inactive") ? 1 : 0, enabled: true, stats: { sent:0,returned:0,rate:0,saved:0 } });
+      addRule({ trigger_id: id, message: TEMPLATES[id]?.(gymName, "{name}") || "", delay_hours: id.startsWith("inactive") ? 1 : 0, enabled: true, stats: computeRuleStats(id, checkIns, allMemberships, gymId) });
     });
-  }, [addRule, existingIds, gymName]);
+  }, [addRule, existingIds, gymName, checkIns, allMemberships, gymId]);
 
   const hPad = isMobile ? "12px 16px" : "16px 20px";
 
@@ -1120,7 +1340,7 @@ export default function TabEngagement({ selectedGym }) {
 
         {/* ── AI recs ─────────────────────────────────────────── */}
         <div style={{ padding: isMobile ? "0 16px" : 0, marginBottom: isMobile ? 20 : 0 }}>
-          <Recommendations recs={RECOMMENDATIONS} existingIds={existingIds} onAdd={addFromRec} />
+          <Recommendations recs={recommendations} existingIds={existingIds} onAdd={addFromRec} />
         </div>
 
         {/* ── Desktop: inline add panel ───────────────────────── */}
