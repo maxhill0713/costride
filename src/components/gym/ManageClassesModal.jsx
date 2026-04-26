@@ -1,8 +1,7 @@
 import React, { useState, useRef, useCallback } from 'react';
 import {
  X, Plus, Trash2, Edit2, Clock, MapPin, Users, Dumbbell,
- ChevronDown, Upload, CheckCircle, Zap, Calendar, AlignLeft,
- ChevronLeft,
+ Upload, CheckCircle, Zap, ChevronLeft,
 } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { useMutation } from '@tanstack/react-query';
@@ -40,13 +39,13 @@ const DIFFICULTIES = [
  { value: 'all_levels', label: 'All Levels', color: T.purple },
 ];
 
-const DAYS = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
 const DAYS_SHORT = { Monday:'Mon', Tuesday:'Tue', Wednesday:'Wed', Thursday:'Thu', Friday:'Fri', Saturday:'Sat', Sunday:'Sun' };
+const todayStr = new Date().toISOString().split('T')[0];
 
 const EMPTY_FORM = {
  name: '', description: '', instructor: '', class_type: 'other',
  duration_minutes: 45, difficulty: 'all_levels',
- max_capacity: 20, location: '', schedule: [], image_url: '',
+ max_capacity: 20, location: '', date: '', time: '', weekly: false, image_url: '',
 };
 
 function typeFor(val) { return CLASS_TYPES.find(t => t.value === val) || CLASS_TYPES[CLASS_TYPES.length - 1]; }
@@ -143,60 +142,7 @@ function DifficultyPicker({ value, onChange }) {
  );
 }
 
-// Schedule builder 
-function ScheduleBuilder({ schedule, onChange }) {
- const [day, setDay] = useState('');
- const [time, setTime] = useState('');
 
- const add = () => {
- if (!day || !time) return;
- onChange([...schedule, { day, time }]);
- setDay(''); setTime('');
- };
-
- return (
- <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
- <div style={{ display: 'flex', gap: 8 }}>
- {/* Day select */}
- <div style={{ flex: 1, position: 'relative' }}>
- <select value={day} onChange={e => setDay(e.target.value)}
- onFocus={e => { e.target.style.borderColor = `${T.purple}45`; }}
- onBlur={e => { e.target.style.borderColor = 'rgba(255,255,255,0.08)'; }}
- style={{ ...baseInput, appearance: 'none', paddingRight: 32, paddingLeft: 13 }}>
- <option value="" style={{ background: '#0d1120' }}>Day</option>
- {DAYS.map(d => <option key={d} value={d} style={{ background: '#0d1120' }}>{d}</option>)}
- </select>
- <ChevronDown style={{ position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)', width: 13, height: 13, color: T.text3, pointerEvents: 'none' }} />
- </div>
- {/* Time */}
- <input type="time" value={time} onChange={e => setTime(e.target.value)}
- onFocus={e => { e.target.style.borderColor = `${T.purple}45`; }}
- onBlur={e => { e.target.style.borderColor = 'rgba(255,255,255,0.08)'; }}
- style={{ ...baseInput, width: 126, flexShrink: 0 }} />
- {/* Add */}
- <button onClick={add} disabled={!day || !time}
- style={{ flexShrink: 0, width: 40, height: 40, borderRadius: 9, display: 'flex', alignItems: 'center', justifyContent: 'center', background: day && time ? `${T.purple}14` : T.divider, border: `1px solid ${day && time ? T.purple + '35' : T.border}`, cursor: day && time ? 'pointer' : 'default', transition: 'all 0.15s' }}>
- <Plus style={{ width: 14, height: 14, color: day && time ? T.purple : T.text3 }} />
- </button>
- </div>
-
- {schedule.length > 0 && (
- <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
- {schedule.map((slot, i) => (
- <div key={i} style={{ display: 'inline-flex', alignItems: 'center', gap: 7, padding: '5px 10px', borderRadius: 8, background: `${T.purple}10`, border: `1px solid ${T.purple}25` }}>
- <span style={{ fontSize: 11, fontWeight: 800, color: T.purple }}>{DAYS_SHORT[slot.day] || slot.day}</span>
- <span style={{ fontSize: 11, fontWeight: 600, color: T.text2 }}>{formatTime(slot.time)}</span>
- <button onClick={() => onChange(schedule.filter((_, idx) => idx !== i))}
- style={{ width: 16, height: 16, borderRadius: 4, display: 'flex', alignItems: 'center', justifyContent: 'center', background: `${T.red}10`, border: `1px solid ${T.red}20`, cursor: 'pointer', padding: 0 }}>
- <X style={{ width: 9, height: 9, color: T.red }} />
- </button>
- </div>
- ))}
- </div>
- )}
- </div>
- );
-}
 
 // Image uploader 
 function ImageUploader({ value, onChange }) {
@@ -433,20 +379,24 @@ export default function ManageClassesModal({ open, onClose, classes = [], onCrea
 
  const openCreate = () => { setForm(EMPTY_FORM); setEditingClass(null); setView('form'); };
  const openEdit = (c) => {
- setForm({ name: c.name||'', description: c.description||'', instructor: c.instructor||'', class_type: c.class_type||'other', duration_minutes: c.duration_minutes||45, difficulty: c.difficulty||'all_levels', max_capacity: c.max_capacity||20, location: c.location||'', schedule: c.schedule||[], image_url: c.image_url||'' });
+ const s = (c.schedule || [])[0] || {};
+ setForm({ name: c.name||'', description: c.description||'', instructor: c.instructor||'', class_type: c.class_type||'other', duration_minutes: c.duration_minutes||45, difficulty: c.difficulty||'all_levels', max_capacity: c.max_capacity||20, location: c.location||'', date: s.date||'', time: s.time||'', weekly: s.weekly||false, image_url: c.image_url||'' });
  setEditingClass(c);
  setView('form');
  };
  const cancel = () => { setView('list'); setEditingClass(null); setForm(EMPTY_FORM); };
 
  const handleSave = () => {
- if (!form.name.trim()) return;
- if (editingClass) onUpdateClass?.(editingClass.id, form);
- else onCreateClass?.({ ...form, gym_id: gym?.id, gym_name: gym?.name });
+ if (!form.name.trim() || !form.date || !form.time) return;
+ const dayName = new Date(form.date + 'T12:00:00').toLocaleDateString('en-GB', { weekday: 'long' });
+ const schedule = [{ day: dayName, time: form.time, date: form.date, weekly: form.weekly }];
+ const payload = { name: form.name, description: form.description, instructor: form.instructor, class_type: form.class_type, duration_minutes: form.duration_minutes, difficulty: form.difficulty, max_capacity: form.max_capacity, location: form.location, image_url: form.image_url, schedule };
+ if (editingClass) onUpdateClass?.(editingClass.id, payload);
+ else onCreateClass?.({ ...payload, gym_id: gym?.id, gym_name: gym?.name });
  cancel();
  };
 
- const canSave = form.name.trim().length > 0 && !isLoading;
+ const canSave = form.name.trim().length > 0 && !!form.date && !!form.time && !isLoading;
  const activeType = typeFor(form.class_type);
 
  if (!open) return null;
@@ -584,10 +534,25 @@ export default function ManageClassesModal({ open, onClose, classes = [], onCrea
  <DifficultyPicker value={form.difficulty} onChange={v => set('difficulty', v)} />
  </Field>
 
- {/* Schedule */}
- <Field label="Schedule" hint="Add recurring time slots for this class">
- <ScheduleBuilder schedule={form.schedule} onChange={v => set('schedule', v)} />
+ {/* Date & Time */}
+ <Field label="Date" required>
+ <Inp type="date" value={form.date} onChange={e => set('date', e.target.value)} min={todayStr} accentColor={activeType.color} />
  </Field>
+
+ <Field label="Time" required>
+ <Inp type="time" value={form.time} onChange={e => set('time', e.target.value)} accentColor={activeType.color} />
+ </Field>
+
+ {/* Weekly toggle */}
+ <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px', borderRadius: 10, background: form.weekly ? `${T.purple}10` : 'rgba(255,255,255,0.02)', border: `1px solid ${form.weekly ? T.purple + '30' : T.border}`, cursor: 'pointer', transition: 'all 0.15s' }} onClick={() => set('weekly', !form.weekly)}>
+ <div style={{ width: 18, height: 18, borderRadius: 5, border: `2px solid ${form.weekly ? T.purple : 'rgba(255,255,255,0.2)'}`, background: form.weekly ? T.purple : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'all 0.15s' }}>
+ {form.weekly && <svg width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4L3.5 6.5L9 1" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>}
+ </div>
+ <div>
+ <div style={{ fontSize: 12, fontWeight: 600, color: T.text1 }}>Make class weekly</div>
+ <div style={{ fontSize: 10, color: T.text3, marginTop: 1 }}>Repeat every week on the same day and time</div>
+ </div>
+ </div>
 
  {/* Image */}
  <Field label="Class image" hint="Optional — shown on the class card">
@@ -611,7 +576,8 @@ export default function ManageClassesModal({ open, onClose, classes = [], onCrea
  <span style={{ fontSize: 11, color: T.text3 }}>
  {form.name}
  {form.instructor ? ` · ${form.instructor}` : ''}
- {form.schedule?.length ? ` · ${form.schedule.length} slot${form.schedule.length !== 1 ? 's' : ''}` : ''}
+ {form.date ? ` · ${form.date}` : ''}
+ {form.weekly ? ' · weekly' : ''}
  </span>
  </>
  ) : (

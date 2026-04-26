@@ -19,7 +19,7 @@ const FONT = "'DM Sans','Inter',system-ui,sans-serif";
 const DIFFICULTIES = ['beginner', 'intermediate', 'advanced', 'all_levels'];
 
 // Get today's date in YYYY-MM-DD for min date validation
-const todayStr = () => new Date().toISOString().split('T')[0];
+const todayStr = new Date().toISOString().split('T')[0];
 
 const baseInp = {
   width: '100%', boxSizing: 'border-box', padding: '9px 12px',
@@ -252,7 +252,7 @@ export default function CreateClassModal({ open, onClose, onSave, gym, isLoading
                   <SL required>Date and Time</SL>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                     <div style={{ flex: 1 }}>
-                      <Inp type="date" value={form.date} onChange={e => set('date', e.target.value)} min={todayStr()} />
+                      <Inp type="date" value={form.date} onChange={e => set('date', e.target.value)} min={todayStr} />
                     </div>
                     <div style={{ flex: 1 }}>
                       <Inp type="time" value={form.time} onChange={e => set('time', e.target.value)} />
