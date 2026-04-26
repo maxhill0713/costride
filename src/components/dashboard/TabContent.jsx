@@ -1059,6 +1059,7 @@ function SortDropdown({ value, onChange, options: optionsProp }) {
 
 
 export { CreateEventModal } from "./CreateEventModal";
+export { ReactionsModal };
 
 /* ─── ROOT ───────────────────────────────────────────────────────── */
 export default function ContentPage({
@@ -1262,8 +1263,7 @@ export default function ContentPage({
                               </div>
                             )}
                             {reactionCount > 0 && (
-                            /* ── REACTION ICONS: 10% smaller (40px) with tighter overlap (-18px) ── */
-                            <button onClick={() => setReactionsPost(p)} style={{ marginTop: "auto", display: "flex", alignItems: "center", gap: 0, background: "none", border: "none", cursor: "pointer", padding: 0 }}>
+                            <div style={{ marginTop: "auto", display: "flex", alignItems: "center", gap: 0 }}>
                               {Object.entries(p.reactions || {}).slice(0, 3).map(([uid, variant], i) => (
                                 <div key={uid} style={{ position: "relative", width: 40, height: 40, marginLeft: i === 0 ? 0 : -18, zIndex: 3 - i, flexShrink: 0 }}>
                                   {variant === "sunglasses" ? (
@@ -1281,7 +1281,7 @@ export default function ContentPage({
                                 </div>
                               ))}
                               {reactionCount > 3 && <span style={{ fontSize: 10, fontWeight: 700, color: C.t2, marginLeft: 4 }}>+{reactionCount - 3}</span>}
-                            </button>
+                            </div>
                             )}
                           </div>
                           <div onClick={e => e.stopPropagation()}>
