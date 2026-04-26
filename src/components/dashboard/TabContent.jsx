@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import {
   Plus, Flame, Check, Calendar, Clock, Users, MapPin,
-  ArrowUpRight, ArrowDownRight, ChevronDown, ChevronLeft, ChevronRight,
+  ArrowUpRight, ArrowDownRight, ChevronDown,
   Trophy, BarChart2, FileText, MessageCircle, Trash2, Zap, RefreshCw, Pencil, X, Upload, Search, RepeatIcon,
 } from "lucide-react";
 import {
@@ -91,6 +91,8 @@ const TAB_ACTION = {
   "Challenges":     { label: "New Challenge",   modal: "challenge" },
   "Polls":          { label: "New Poll",        modal: "poll"      },
 };
+
+
 
 const TAB_DISPLAY_LABEL = {
   "Events": "Classes & Events",
@@ -1040,273 +1042,7 @@ function SortDropdown({ value, onChange, options: optionsProp }) {
   );
 }
 
-const DAYS_OF_WEEK = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
-const MONTH_NAMES  = ["January","February","March","April","May","June","July","August","September","October","November","December"];
 
-function MonthDropdown({ viewYear, viewMonth, onSelect }) {
-  const [open, setOpen] = useState(false);
-  const ref = useRef(null);
-
-  const today = new Date();
-  const options = [];
-  for (let delta = -6; delta <= 6; delta++) {
-    const d = new Date(today.getFullYear(), today.getMonth() + delta, 1);
-    options.push({ year: d.getFullYear(), month: d.getMonth(), label: `${MONTH_NAMES[d.getMonth()]} ${d.getFullYear()}` });
-  }
-
-  useEffect(() => {
-    const handler = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
-  }, []);
-
-  const isActive = (o) => o.year === viewYear && o.month === viewMonth;
-
-  return (
-    <div ref={ref} style={{ position: "relative" }}>
-      <button
-        onClick={() => setOpen(o => !o)}
-        style={{
-          fontSize: 14, fontWeight: 700, color: C.t1, letterSpacing: "-0.01em",
-          userSelect: "none", background: "none", border: "none",
-          cursor: "pointer", fontFamily: FONT,
-          padding: "2px 4px", borderRadius: 6,
-          transition: "color 0.12s",
-        }}
-        onMouseEnter={e => e.currentTarget.style.color = C.cyan}
-        onMouseLeave={e => e.currentTarget.style.color = C.t1}
-      >
-        {MONTH_NAMES[viewMonth]} {viewYear}
-      </button>
-      {open && (
-        <div style={{ position: "absolute", top: "calc(100% + 6px)", left: "50%", transform: "translateX(-50%)", zIndex: 300, background: C.card2, border: `1px solid ${C.brd}`, borderRadius: 10, overflow: "hidden", minWidth: 160, boxShadow: "0 12px 32px rgba(0,0,0,0.65)", maxHeight: 280, overflowY: "auto" }}>
-          {options.map((o, i) => (
-            <button
-              key={i}
-              onClick={() => { onSelect(o.year, o.month); setOpen(false); }}
-              style={{ display: "block", width: "100%", textAlign: "center", padding: "9px 16px", background: isActive(o) ? C.cyanDim : "transparent", border: "none", color: isActive(o) ? C.cyan : C.t2, fontSize: 12.5, fontWeight: isActive(o) ? 700 : 500, cursor: "pointer", fontFamily: FONT, transition: "background 0.12s, color 0.12s" }}
-              onMouseEnter={e => { if (!isActive(o)) { e.currentTarget.style.background = "rgba(255,255,255,0.05)"; e.currentTarget.style.color = C.t1; } }}
-              onMouseLeave={e => { if (!isActive(o)) { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = C.t2; } }}>
-              {o.label}
-            </button>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
-
-function EventsCalendar({ events, onDeleteEvent, onAddEvent, onEventEdited, onRepeatEvent }) {
-  const today = new Date();
-  const [viewYear,  setViewYear]  = useState(today.getFullYear());
-  const [viewMonth, setViewMonth] = useState(today.getMonth());
-  const [selectedEvent, setSelectedEvent] = useState(null);
-
-  const [slideDir, setSlideDir]   = useState(null);
-  const [animating, setAnimating] = useState(false);
-  const timeoutRef = useRef(null);
-
-  const navigate = (delta) => {
-    if (animating) return;
-    setSlideDir(delta > 0 ? "left" : "right");
-    setAnimating(true);
-    timeoutRef.current = setTimeout(() => {
-      setViewMonth(m => {
-        let nm = m + delta;
-        if (nm < 0)  { setViewYear(y => y - 1); return 11; }
-        if (nm > 11) { setViewYear(y => y + 1); return 0; }
-        return nm;
-      });
-      setSlideDir(null);
-      setTimeout(() => setAnimating(false), 40);
-    }, 220);
-  };
-
-  const handleMonthSelect = (year, month) => {
-    setViewYear(year);
-    setViewMonth(month);
-  };
-
-  useEffect(() => () => clearTimeout(timeoutRef.current), []);
-
-  const eventsByDay = {};
-  events.forEach(ev => {
-    if (!ev.event_date) return;
-    const d = new Date(ev.event_date);
-    const key = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
-    if (!eventsByDay[key]) eventsByDay[key] = [];
-    eventsByDay[key].push(ev);
-  });
-
-  const firstOfMonth = new Date(viewYear, viewMonth, 1);
-  const startDow     = (firstOfMonth.getDay() + 6) % 7;
-  const daysInMonth  = new Date(viewYear, viewMonth + 1, 0).getDate();
-  const prevMonthDays = new Date(viewYear, viewMonth, 0).getDate();
-  const totalCells   = Math.ceil((startDow + daysInMonth) / 7) * 7;
-
-  const todayKey = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,"0")}-${String(today.getDate()).padStart(2,"0")}`;
-
-  const cells = [];
-  for (let i = 0; i < totalCells; i++) {
-    const dayOffset = i - startDow;
-    let cellYear = viewYear, cellMonth = viewMonth, cellDay;
-    let isOtherMonth = false;
-
-    if (dayOffset < 0) {
-      isOtherMonth = true;
-      cellDay = prevMonthDays + dayOffset + 1;
-      cellMonth = viewMonth - 1;
-      if (cellMonth < 0) { cellMonth = 11; cellYear = viewYear - 1; }
-    } else if (dayOffset >= daysInMonth) {
-      isOtherMonth = true;
-      cellDay = dayOffset - daysInMonth + 1;
-      cellMonth = viewMonth + 1;
-      if (cellMonth > 11) { cellMonth = 0; cellYear = viewYear + 1; }
-    } else {
-      cellDay = dayOffset + 1;
-    }
-
-    const key = `${cellYear}-${String(cellMonth+1).padStart(2,"0")}-${String(cellDay).padStart(2,"0")}`;
-    cells.push({
-      dayNum: cellDay,
-      key,
-      events: eventsByDay[key] || [],
-      isToday: key === todayKey,
-      isOtherMonth,
-    });
-  }
-
-  const totalEvents = events.filter(ev => {
-    if (!ev.event_date) return false;
-    const d = new Date(ev.event_date);
-    return d.getFullYear() === viewYear && d.getMonth() === viewMonth;
-  }).length;
-
-  return (
-    <>
-      <style>{`
-        @keyframes slideInFromRight  { from { opacity:0; transform:translateX(40px);  } to { opacity:1; transform:translateX(0); } }
-        @keyframes slideInFromLeft   { from { opacity:0; transform:translateX(-40px); } to { opacity:1; transform:translateX(0); } }
-        @keyframes slideOutToLeft    { from { opacity:1; transform:translateX(0);  } to { opacity:0; transform:translateX(-40px); } }
-        @keyframes slideOutToRight   { from { opacity:1; transform:translateX(0);  } to { opacity:0; transform:translateX(40px);  } }
-        .cal-grid-wrap { overflow: hidden; position: relative; }
-        .cal-grid-wrap.cal-slide-out-left  { animation: slideOutToLeft   0.22s ease forwards; }
-        .cal-grid-wrap.cal-slide-out-right { animation: slideOutToRight  0.22s ease forwards; }
-        .cal-grid-wrap.entering-left  { animation: slideInFromRight 0.22s ease forwards; }
-        .cal-grid-wrap.entering-right { animation: slideInFromLeft  0.22s ease forwards; }
-        .cal-cell:hover { background: rgba(77,127,255,0.04) !important; }
-        .cal-event-pill { transition: background 0.12s, border-color 0.12s; white-space: normal !important; word-break: break-word; }
-        .cal-event-pill:hover { background: rgba(77,127,255,0.22) !important; border-color: rgba(77,127,255,0.5) !important; }
-      `}</style>
-
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
-        <div>
-          <span style={{ fontSize: 12, fontWeight: 500, color: C.t2 }}>
-            {totalEvents} event{totalEvents !== 1 ? "s" : ""} planned this month
-          </span>
-        </div>
-        <div style={{ display: "flex", alignItems: "center", gap: 0 }}>
-          <button
-            onClick={() => navigate(-1)}
-            disabled={animating}
-            style={{ width: 26, height: 26, display: "flex", alignItems: "center", justifyContent: "center", background: "transparent", border: "none", borderRadius: 6, cursor: animating ? "default" : "pointer", color: C.t2, transition: "color 0.12s" }}
-            onMouseEnter={e => { e.currentTarget.style.color = C.t1; }}
-            onMouseLeave={e => { e.currentTarget.style.color = C.t2; }}>
-            <ChevronLeft size={16} />
-          </button>
-
-          <MonthDropdown viewYear={viewYear} viewMonth={viewMonth} onSelect={handleMonthSelect} />
-
-          <button
-            onClick={() => navigate(1)}
-            disabled={animating}
-            style={{ width: 26, height: 26, display: "flex", alignItems: "center", justifyContent: "center", background: "transparent", border: "none", borderRadius: 6, cursor: animating ? "default" : "pointer", color: C.t2, transition: "color 0.12s" }}
-            onMouseEnter={e => { e.currentTarget.style.color = C.t1; }}
-            onMouseLeave={e => { e.currentTarget.style.color = C.t2; }}>
-            <ChevronRight size={16} />
-          </button>
-        </div>
-      </div>
-
-      <div style={{ borderRadius: 12, overflow: "hidden", border: `1px solid ${C.brd}`, background: C.card }}>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", borderBottom: `1px solid ${C.brd}` }}>
-          {DAYS_OF_WEEK.map(d => (
-            <div key={d} style={{ padding: "9px 0", textAlign: "center", fontSize: 10, fontWeight: 700, color: C.t3, textTransform: "uppercase", letterSpacing: "0.08em" }}>{d}</div>
-          ))}
-        </div>
-
-        <div
-          className={`cal-grid-wrap${slideDir ? " " + (slideDir === "left" ? "cal-slide-out-left" : "cal-slide-out-right") : ""}`}
-          key={`${viewYear}-${viewMonth}`}
-          style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)" }}
-        >
-          {cells.map((cell, idx) => {
-            const isLastRow = idx >= cells.length - 7;
-            const isLastCol = (idx % 7) === 6;
-            return (
-              <div
-                key={cell.key}
-                className="cal-cell"
-                style={{
-                  padding: "8px 7px 8px",
-                  borderRight: isLastCol ? "none" : `1px solid ${C.brd}`,
-                  borderBottom: isLastRow ? "none" : `1px solid ${C.brd}`,
-                  background: cell.isToday ? "rgba(77,127,255,0.06)" : cell.isOtherMonth ? "rgba(255,255,255,0.012)" : "transparent",
-                  transition: "background 0.12s",
-                  minHeight: 100,
-                  boxSizing: "border-box",
-                  opacity: cell.isOtherMonth ? 0.45 : 1,
-                }}
-              >
-                <div style={{ width: 22, height: 22, display: "flex", alignItems: "center", justifyContent: "center", borderRadius: "50%", background: cell.isToday ? C.cyan : "transparent", marginBottom: 5, fontSize: 11.5, fontWeight: cell.isToday ? 800 : cell.isOtherMonth ? 400 : 500, color: cell.isToday ? "#fff" : cell.isOtherMonth ? C.t3 : C.t2, lineHeight: 1, flexShrink: 0 }}>
-                  {cell.dayNum}
-                </div>
-                <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
-                  {cell.events.slice(0, 4).map(ev => (
-                    <button
-                      key={ev.id}
-                      className="cal-event-pill"
-                      onClick={() => !cell.isOtherMonth && setSelectedEvent(ev)}
-                      style={{ display: "block", width: "100%", textAlign: "left", padding: "3px 6px", borderRadius: 5, background: cell.isOtherMonth ? "rgba(77,127,255,0.06)" : C.cyanDim, border: `1px solid ${cell.isOtherMonth ? "rgba(77,127,255,0.12)" : C.cyanBrd}`, cursor: cell.isOtherMonth ? "default" : "pointer", fontFamily: FONT, overflow: "hidden", whiteSpace: "normal", wordBreak: "break-word", fontSize: 10.5, fontWeight: 600, color: cell.isOtherMonth ? "rgba(77,127,255,0.5)" : C.cyan, lineHeight: 1.35, boxSizing: "border-box" }}>
-                      {ev.title}
-                    </button>
-                  ))}
-                  {cell.events.length > 4 && (
-                    <div style={{ fontSize: 10, color: C.t3, fontWeight: 600, paddingLeft: 6, marginTop: 1 }}>+{cell.events.length - 4} more</div>
-                  )}
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-
-      <div style={{ display: "flex", alignItems: "center", gap: 12, marginTop: 12, paddingLeft: 2 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
-          <div style={{ width: 10, height: 10, borderRadius: 3, background: C.cyanDim, border: `1px solid ${C.cyanBrd}` }} />
-          <span style={{ fontSize: 10.5, color: C.t3 }}>Scheduled event — click for details</span>
-        </div>
-        <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
-          <div style={{ width: 10, height: 10, borderRadius: "50%", background: C.cyan }} />
-          <span style={{ fontSize: 10.5, color: C.t3 }}>Today</span>
-        </div>
-        <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
-          <div style={{ width: 10, height: 10, borderRadius: 3, background: "rgba(77,127,255,0.06)", border: "1px solid rgba(77,127,255,0.12)", opacity: 0.6 }} />
-          <span style={{ fontSize: 10.5, color: C.t3 }}>Adjacent month (faded)</span>
-        </div>
-      </div>
-
-      {selectedEvent && (
-        <EventDetailPopup
-          event={selectedEvent}
-          onClose={() => setSelectedEvent(null)}
-          onDelete={async (id) => { await onDeleteEvent?.(id); setSelectedEvent(null); }}
-          onEditSaved={() => { setSelectedEvent(null); onEventEdited?.(); }}
-        />
-      )}
-    </>
-  );
-}
 
 export { CreateEventModal } from "./CreateEventModal";
 
@@ -1405,30 +1141,27 @@ export default function ContentPage({
                 />
               </div>
             </div>
-            <button
-              onClick={() => tabAction && openModal?.(tabAction.modal)}
-              style={{ display: "flex", alignItems: "center", gap: 6, padding: "9px 18px", borderRadius: 9, fontSize: 12.5, fontWeight: 700, cursor: "pointer", fontFamily: FONT, transition: "opacity 0.15s", visibility: tabAction ? "visible" : "hidden", pointerEvents: tabAction ? "auto" : "none", flexShrink: 0, ...GRAD_BTN }}
-              onMouseEnter={e => e.currentTarget.style.opacity = "0.88"}
-              onMouseLeave={e => e.currentTarget.style.opacity = "1"}>
-              <Plus size={12} /> {tabAction?.label ?? "Action"}
-            </button>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
+              {tab === "Events" && (
+                <button onClick={() => setShowCreateClass(true)}
+                  style={{ display: "flex", alignItems: "center", gap: 6, padding: "9px 18px", borderRadius: 9, fontSize: 12.5, fontWeight: 700, cursor: "pointer", fontFamily: FONT, background: "#7c3aed", border: "none", color: "#fff" }}
+                  onMouseEnter={e => e.currentTarget.style.opacity = "0.88"}
+                  onMouseLeave={e => e.currentTarget.style.opacity = "1"}>
+                  <Plus size={12} /> Add Class
+                </button>
+              )}
+              <button onClick={() => tabAction && openModal?.(tabAction.modal)}
+                style={{ display: "flex", alignItems: "center", gap: 6, padding: "9px 18px", borderRadius: 9, fontSize: 12.5, fontWeight: 700, cursor: "pointer", fontFamily: FONT, visibility: tabAction ? "visible" : "hidden", pointerEvents: tabAction ? "auto" : "none", ...GRAD_BTN }}
+                onMouseEnter={e => e.currentTarget.style.opacity = "0.88"}
+                onMouseLeave={e => e.currentTarget.style.opacity = "1"}>
+                <Plus size={12} /> {tabAction?.label ?? "Action"}
+              </button>
+            </div>
           </div>
         )}
 
         <div style={{ padding: isMobile ? "0 12px" : "0 4px" }}>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <Tabs active={tab} setActive={setTab} isMobile={isMobile} />
-            </div>
-            {!isMobile && tab === "Events" && (
-              <button onClick={() => setShowCreateClass(true)}
-                style={{ display: "flex", alignItems: "center", gap: 6, padding: "5px 14px", borderRadius: 8, fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: FONT, background: "#7c3aed", border: "none", color: "#fff", flexShrink: 0, marginLeft: 10, marginBottom: 1 }}
-                onMouseEnter={e => e.currentTarget.style.opacity = "0.88"}
-                onMouseLeave={e => e.currentTarget.style.opacity = "1"}>
-                <Plus size={11} /> Add Class
-              </button>
-            )}
-          </div>
+          <Tabs active={tab} setActive={setTab} isMobile={isMobile} />
         </div>
 
         <div style={{ padding: isMobile ? "8px 12px 24px" : "0 16px 32px 4px" }}>
