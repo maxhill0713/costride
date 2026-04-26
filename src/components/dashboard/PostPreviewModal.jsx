@@ -86,6 +86,7 @@ export default function PostPreviewModal({ post, gym, avatarMap = {}, nameMap = 
             border: "1px solid rgba(255,255,255,0.09)",
             boxShadow: "0 32px 80px rgba(0,0,0,0.85), 0 0 0 1px rgba(255,255,255,0.04) inset",
             animation: "postPreviewIn 0.22s cubic-bezier(0.34,1.4,0.64,1)",
+            position: "relative",
           }}
         >
           <style>{`@keyframes postPreviewIn { from { opacity:0; transform:scale(0.95) translateY(12px) } to { opacity:1; transform:scale(1) translateY(0) } }`}</style>
