@@ -1,9 +1,10 @@
 /**
  * PostPreviewModal — shows a community feed post in a centred overlay
  * styled to match the member social feed (PostCard) look.
+ * For workout posts, the image/summary panel is an exact replica of PostCard's swipe layout.
  */
-import { useState } from "react";
-import { X, ChevronRight } from "lucide-react";
+import { useState, useRef, useEffect } from "react";
+import { X, ChevronDown, ChevronUp } from "lucide-react";
 import { ReactionsModal } from "./TabContent";
 
 const STREAK_ICON_URL = "https://media.base44.com/images/public/694b637358644e1c22c8ec6b/5688f98be_Pose1_V2.png";
@@ -41,13 +42,171 @@ function formatTimeAgo(dateStr) {
   return d.toLocaleDateString("en-GB", { day: "numeric", month: "short" });
 }
 
+// ── Exact replica of PostCard's ExerciseRow ───────────────────────────────────
+function ExerciseRow({ ex, idx }) {
+  const exName = ex.name || ex.exercise_name || ex.exercise || ex.title || ex.label || ex.movement || "";
+  const displayName = exName ? exName.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase()) : `Exercise ${idx + 1}`;
+  const sets   = ex.sets   || ex.set_count   || ex.setsReps?.split("x")?.[0] || "-";
+  const reps   = ex.reps   || ex.rep_count   || ex.setsReps?.split("x")?.[1] || "-";
+  const weight = ex.weight ?? ex.weight_kg ?? ex.weight_lbs ?? "-";
+  return (
+    <div style={{ background: "rgba(255,255,255,0.05)", padding: "4px 6px 4px 6px", borderRadius: 8, border: "1px solid rgba(255,255,255,0.10)", display: "grid", gap: 2, alignItems: "center", gridTemplateColumns: "1fr 28px 10px 28px auto" }}>
+      <div style={{ fontSize: 11, fontWeight: 700, color: "#fff", lineHeight: 1.2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", marginLeft: 2 }}>{displayName}</div>
+      <div style={{ background: "rgba(255,255,255,0.10)", color: "#cbd5e1", fontSize: 11, fontWeight: 600, textAlign: "center", borderRadius: 6, display: "flex", alignItems: "center", justifyContent: "center", width: 28, padding: "2px 0", marginLeft: 2 }}>{sets}</div>
+      <div style={{ color: "#64748b", fontSize: 10, fontWeight: 700, textAlign: "center" }}>×</div>
+      <div style={{ background: "rgba(255,255,255,0.10)", color: "#cbd5e1", fontSize: 11, fontWeight: 600, textAlign: "center", borderRadius: 6, display: "flex", alignItems: "center", justifyContent: "center", width: 28, padding: "2px 0" }}>{reps}</div>
+      <div style={{ marginLeft: 6, paddingRight: 8 }}>
+        <div style={{ background: "linear-gradient(to right, rgba(29,78,216,0.9), rgba(30,58,138,0.9))", color: "#fff", padding: "2px 4px", fontSize: 11, fontWeight: 900, textAlign: "center", borderRadius: 12, minWidth: 42, boxShadow: "0 1px 4px rgba(30,58,138,0.2)" }}>
+          {weight}<span style={{ fontSize: 9, fontWeight: 700 }}>kg</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Workout swipe panel (image + summary) — exact copy of PostCard layout ──────
+function WorkoutSwipePanel({ post }) {
+  const exercises = post.workout_exercises || [];
+  const PREVIEW_COUNT = 8;
+  const PANEL_HEIGHT = "min(85.8vw, 340px)";
+
+  const [slide, setSlide] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragOffset, setDragOffset] = useState(0);
+  const [exercisesExpanded, setExercisesExpanded] = useState(false);
+  const touchStartX = useRef(null);
+  const touchStartY = useRef(null);
+  const swipePanelRef = useRef(null);
+
+  useEffect(() => {
+    const el = swipePanelRef.current;
+    if (!el) return;
+    const onMove = (e) => {
+      if (touchStartX.current === null) return;
+      const dx = Math.abs(e.touches[0].clientX - touchStartX.current);
+      const dy = Math.abs(e.touches[0].clientY - (touchStartY.current || 0));
+      if (dx > dy && dx > 5) e.preventDefault();
+    };
+    el.addEventListener("touchmove", onMove, { passive: false });
+    return () => el.removeEventListener("touchmove", onMove);
+  });
+
+  const exerciseSummaryJSX = (
+    <div style={{ width: "100%", height: "100%", display: "flex", flexDirection: "column", overflow: "hidden" }}>
+      <div style={{ padding: "8px 8px 4px", flex: 1, minHeight: 0, display: "flex", flexDirection: "column" }}>
+        {/* Column headers */}
+        <div style={{ display: "grid", gap: 2, marginBottom: 4, alignItems: "end", padding: "0 4px", flexShrink: 0, gridTemplateColumns: "1fr 28px 10px 28px auto" }}>
+          <div style={{ fontSize: 8, fontWeight: 700, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.1em" }}>Exercise</div>
+          <div style={{ fontSize: 8, fontWeight: 700, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.1em", textAlign: "center", marginLeft: -20 }}>Sets</div>
+          <div />
+          <div style={{ fontSize: 8, fontWeight: 700, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.1em", textAlign: "center", marginLeft: -22 }}>Reps</div>
+          <div style={{ fontSize: 8, fontWeight: 700, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.1em", paddingLeft: 6 }}>Weight</div>
+        </div>
+        {/* Exercise rows */}
+        <div style={{ display: "flex", flexDirection: "column", gap: 4, flex: 1, overflow: "hidden" }}>
+          {(exercisesExpanded ? exercises : exercises.slice(0, PREVIEW_COUNT)).map((ex, idx) => (
+            <ExerciseRow key={idx} ex={ex} idx={idx} />
+          ))}
+        </div>
+        {exercises.length > PREVIEW_COUNT && (
+          <button
+            onClick={() => setExercisesExpanded(v => !v)}
+            style={{ marginTop: 4, width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 4, padding: "2px 0", fontSize: 10, fontWeight: 700, color: "#64748b", background: "none", border: "none", cursor: "pointer", flexShrink: 0 }}
+          >
+            {exercisesExpanded
+              ? <><ChevronUp size={12} /> Show less</>
+              : <><ChevronDown size={12} /> +{exercises.length - PREVIEW_COUNT} more</>}
+          </button>
+        )}
+      </div>
+    </div>
+  );
+
+  return (
+    <div
+      ref={swipePanelRef}
+      style={{ position: "relative", overflow: "hidden", height: PANEL_HEIGHT }}
+      onTouchStart={(e) => {
+        touchStartX.current = e.touches[0].clientX;
+        touchStartY.current = e.touches[0].clientY;
+        setIsDragging(false);
+        setDragOffset(0);
+      }}
+      onTouchMove={(e) => {
+        if (touchStartX.current === null) return;
+        const dx = e.touches[0].clientX - touchStartX.current;
+        const dy = Math.abs(e.touches[0].clientY - (touchStartY.current || 0));
+        if (Math.abs(dx) > dy) {
+          setIsDragging(true);
+          const maxDrag = slide === 0 ? 0 : window.innerWidth * 0.92;
+          const minDrag = slide === 0 ? -window.innerWidth * 0.92 : 0;
+          setDragOffset(Math.max(minDrag, Math.min(maxDrag, dx)));
+        }
+      }}
+      onTouchEnd={(e) => {
+        if (touchStartX.current === null) return;
+        const dx = e.changedTouches[0].clientX - touchStartX.current;
+        const dy = Math.abs(e.changedTouches[0].clientY - (touchStartY.current || 0));
+        if (Math.abs(dx) > 40 && Math.abs(dx) > dy) setSlide(dx < 0 ? 1 : 0);
+        touchStartX.current = null;
+        touchStartY.current = null;
+        setIsDragging(false);
+        setDragOffset(0);
+      }}
+    >
+      <div style={{
+        position: "absolute", top: 0, height: "100%",
+        left: 0, width: "200%",
+        transform: isDragging
+          ? `translateX(calc(${slide === 0 ? "0%" : "-46%"} + ${dragOffset * 0.5}px))`
+          : slide === 0 ? "translateX(0%)" : "translateX(-46%)",
+        transition: isDragging ? "none" : "transform 0.38s cubic-bezier(0.25, 0.46, 0.45, 0.94)",
+        willChange: "transform",
+      }}>
+        {/* Left panel — image */}
+        <div style={{ position: "absolute", top: 0, height: "100%", left: "2.5%", width: "45%", borderRadius: 8, overflow: "hidden" }}>
+          <img
+            src={post.image_url}
+            alt="workout"
+            style={{ position: "absolute", left: 0, right: 0, width: "100%", height: "130%", top: "-15%", objectFit: "cover", objectPosition: "center center" }}
+          />
+          {/* Arrow hint — visible when on image panel */}
+          {slide === 0 && (
+            <button
+              onClick={() => setSlide(1)}
+              style={{
+                position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)",
+                width: 36, height: 36, borderRadius: "50%",
+                background: "rgba(255,255,255,0.18)", border: "1px solid rgba(255,255,255,0.35)",
+                display: "flex", alignItems: "center", justifyContent: "center",
+                cursor: "pointer", backdropFilter: "blur(6px)",
+                transition: "all 0.2s",
+              }}
+              onMouseEnter={e => { e.currentTarget.style.background = "rgba(255,255,255,0.3)"; }}
+              onMouseLeave={e => { e.currentTarget.style.background = "rgba(255,255,255,0.18)"; }}
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="9 18 15 12 9 6" />
+              </svg>
+            </button>
+          )}
+        </div>
+        {/* Right panel — exercise summary */}
+        <div style={{ position: "absolute", top: 0, height: "100%", left: "48.5%", width: "45%", overflow: "hidden" }}>
+          {exerciseSummaryJSX}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function PostPreviewModal({ post, gym, avatarMap = {}, nameMap = {}, onClose }) {
   const [showReactions, setShowReactions] = useState(false);
-  const [showSummary, setShowSummary] = useState(false);
 
   if (!post) return null;
 
   const isGymPost = !!post.post_type;
+  const isWorkoutPost = !!post.workout_name;
 
   const displayName = isGymPost
     ? (gym?.name || post.member_name || "Gym")
@@ -65,6 +224,8 @@ export default function PostPreviewModal({ post, gym, avatarMap = {}, nameMap = 
   const postTypeConfig = post.post_type ? POST_TYPE_CONFIG[post.post_type] : null;
   const reactionEntries = Object.entries(post.reactions || {});
   const reactionCount = reactionEntries.length;
+
+  const exercises = post.workout_exercises || [];
 
   return (
     <>
@@ -100,7 +261,6 @@ export default function PostPreviewModal({ post, gym, avatarMap = {}, nameMap = 
           {/* Header */}
           <div style={{ padding: "16px 16px 12px", display: "flex", alignItems: "center", justifyContent: "space-between", flexShrink: 0, position: "relative", zIndex: 1 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-              {/* Avatar */}
               <div style={{
                 width: 40, height: 40, borderRadius: "50%", flexShrink: 0,
                 background: avatarBg, overflow: "hidden",
@@ -128,8 +288,6 @@ export default function PostPreviewModal({ post, gym, avatarMap = {}, nameMap = 
                 </p>
               </div>
             </div>
-
-            {/* Close — no circle */}
             <button
               onClick={onClose}
               style={{
@@ -148,45 +306,50 @@ export default function PostPreviewModal({ post, gym, avatarMap = {}, nameMap = 
 
           {/* Body — scrollable */}
           <div style={{ flex: 1, overflowY: "auto", position: "relative", zIndex: 1, paddingBottom: reactionCount > 0 ? 60 : 0 }}>
-            {/* Caption */}
-            {post.content && (
+
+            {/* Workout title + stats bar (for workout posts) */}
+            {isWorkoutPost && (
+              <div style={{ padding: "0 16px 12px" }}>
+                <p style={{ fontSize: 18, fontWeight: 900, color: "#fff", letterSpacing: "-0.02em", lineHeight: 1.2, marginBottom: 10 }}>{post.workout_name}</p>
+                <div style={{ display: "flex", alignItems: "center" }}>
+                  <div style={{ display: "flex", flexDirection: "column", alignItems: "center", flex: 1 }}>
+                    <span style={{ fontSize: 14, fontWeight: 900, color: "#fff", lineHeight: 1 }}>{exercises.length > 0 ? exercises.length : "—"}</span>
+                    <span style={{ fontSize: 10, fontWeight: 600, color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.08em", marginTop: 2 }}>Exercises</span>
+                  </div>
+                  <div style={{ width: 1, alignSelf: "stretch", background: "rgba(255,255,255,0.10)" }} />
+                  <div style={{ display: "flex", flexDirection: "column", alignItems: "center", flex: 1 }}>
+                    <span style={{ fontSize: 14, fontWeight: 900, color: "#fff", lineHeight: 1 }}>{post.workout_duration || "—"}</span>
+                    <span style={{ fontSize: 10, fontWeight: 600, color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.08em", marginTop: 2 }}>Duration</span>
+                  </div>
+                  <div style={{ width: 1, alignSelf: "stretch", background: "rgba(255,255,255,0.10)" }} />
+                  <div style={{ display: "flex", flexDirection: "column", alignItems: "center", flex: 1 }}>
+                    <span style={{ fontSize: 14, fontWeight: 900, color: "#fff", lineHeight: 1 }}>{post.workout_volume || "—"}</span>
+                    <span style={{ fontSize: 10, fontWeight: 600, color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.08em", marginTop: 2 }}>Volume</span>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Caption (non-workout or workout comment) */}
+            {post.content && !isWorkoutPost && (
               <div style={{ padding: "0 16px 14px", fontSize: 14, color: "rgba(255,255,255,0.85)", lineHeight: 1.65, fontWeight: 400 }}>
                 {post.content}
               </div>
             )}
 
-            {/* Image with swipe arrow for workout posts */}
-            {post.image_url && (
-              <div style={{ width: "100%", maxHeight: 400, overflow: "hidden", position: "relative" }}>
+            {/* Workout swipe panel (image + exercise summary) */}
+            {isWorkoutPost && post.image_url && (
+              <WorkoutSwipePanel post={post} />
+            )}
+
+            {/* Non-workout image */}
+            {!isWorkoutPost && post.image_url && (
+              <div style={{ width: "100%", maxHeight: 400, overflow: "hidden" }}>
                 <img
                   src={post.image_url}
                   alt="Post"
                   style={{ width: "100%", objectFit: "cover", display: "block", maxHeight: 400 }}
                 />
-                {/* Arrow to swipe to summary (for workout posts) */}
-                {(post.workout_name || post.workout_exercises) && (
-                  <button
-                    onClick={() => setShowSummary(true)}
-                    style={{
-                      position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)",
-                      width: 40, height: 40, borderRadius: "50%",
-                      background: "rgba(255,255,255,0.15)", border: "1px solid rgba(255,255,255,0.3)",
-                      display: "flex", alignItems: "center", justifyContent: "center",
-                      cursor: "pointer", backdropFilter: "blur(6px)",
-                      transition: "all 0.2s",
-                    }}
-                    onMouseEnter={e => {
-                      e.currentTarget.style.background = "rgba(255,255,255,0.25)";
-                      e.currentTarget.style.borderColor = "rgba(255,255,255,0.5)";
-                    }}
-                    onMouseLeave={e => {
-                      e.currentTarget.style.background = "rgba(255,255,255,0.15)";
-                      e.currentTarget.style.borderColor = "rgba(255,255,255,0.3)";
-                    }}
-                  >
-                    <ChevronRight size={20} color="#fff" />
-                  </button>
-                )}
               </div>
             )}
 
@@ -194,54 +357,6 @@ export default function PostPreviewModal({ post, gym, avatarMap = {}, nameMap = 
             {post.video_url && !post.image_url && (
               <div style={{ width: "100%" }}>
                 <video src={post.video_url} controls playsInline style={{ width: "100%", display: "block" }} />
-              </div>
-            )}
-
-
-
-            {/* Workout Summary (swipe view) */}
-            {showSummary && (post.workout_name || post.workout_exercises) && (
-              <div style={{ padding: "0 16px 16px", borderTop: "1px solid rgba(255,255,255,0.1)" }}>
-                <button
-                  onClick={() => setShowSummary(false)}
-                  style={{
-                    display: "flex", alignItems: "center", gap: 6, marginBottom: 12,
-                    background: "none", border: "none", color: "rgba(255,255,255,0.6)",
-                    fontSize: 12, fontWeight: 600, cursor: "pointer",
-                    transition: "color 0.2s",
-                  }}
-                  onMouseEnter={e => e.currentTarget.style.color = "#fff"}
-                  onMouseLeave={e => e.currentTarget.style.color = "rgba(255,255,255,0.6)"}
-                >
-                  ← Back to post
-                </button>
-                {post.workout_name && (
-                  <div style={{ fontSize: 14, fontWeight: 700, color: "#fff", marginBottom: 10 }}>
-                    {post.workout_name}
-                  </div>
-                )}
-                {post.workout_exercises && (
-                  <div style={{ fontSize: 12, color: "rgba(255,255,255,0.7)", lineHeight: 1.6 }}>
-                    {Array.isArray(post.workout_exercises) ? post.workout_exercises.map((ex, i) => (
-                      <div key={i} style={{ marginBottom: 8, paddingBottom: 8, borderBottom: i < post.workout_exercises.length - 1 ? "1px solid rgba(255,255,255,0.1)" : "none" }}>
-                        <div style={{ fontWeight: 600, color: "#fff", marginBottom: 2 }}>{ex.name}</div>
-                        {ex.sets && <div>Sets: {ex.sets}</div>}
-                        {ex.reps && <div>Reps: {ex.reps}</div>}
-                        {ex.weight && <div>Weight: {ex.weight}</div>}
-                      </div>
-                    )) : <p>{post.workout_exercises}</p>}
-                  </div>
-                )}
-                {post.workout_duration && (
-                  <div style={{ marginTop: 10, fontSize: 12, color: "rgba(255,255,255,0.6)" }}>
-                    Duration: {post.workout_duration}
-                  </div>
-                )}
-                {post.workout_volume && (
-                  <div style={{ fontSize: 12, color: "rgba(255,255,255,0.6)" }}>
-                    Volume: {post.workout_volume}
-                  </div>
-                )}
               </div>
             )}
 
@@ -271,7 +386,7 @@ export default function PostPreviewModal({ post, gym, avatarMap = {}, nameMap = 
             )}
           </div>
 
-          {/* Reactions — bottom right */}
+          {/* Reactions — bottom right of modal box */}
           {reactionCount > 0 && (
             <div style={{ position: "absolute", bottom: 16, right: 16, zIndex: 2 }}>
               <button
