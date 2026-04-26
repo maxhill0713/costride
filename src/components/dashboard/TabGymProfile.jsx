@@ -9,6 +9,7 @@ import {
   Instagram, Facebook, Twitter, Globe, MapPin,
   Users, Dumbbell, Star, GraduationCap, UserPlus,
   Plus, Pencil, CheckCircle2, AlertCircle, X,
+  BookOpen, Lightbulb, Bell, Camera, Award, MessageCircle,
 } from 'lucide-react';
 import { createPageUrl } from '../../utils';
 
@@ -412,8 +413,196 @@ function TrustRow({ gym, openModal }) {
   );
 }
 
+/* ─── TIPS PANEL ─────────────────────────────────────────────── */
+const ALL_TIPS = [
+  {
+    id: 't1',
+    icon: Bell,
+    color: '#4d7fff',
+    category: 'Automations',
+    title: 'Re-engage inactive members automatically',
+    summary: 'Set up a 14-day inactivity nudge to win back members before they cancel.',
+    detail: `Go to the Automations tab and enable the "Inactive 14 days" rule. Write a warm, personal message using {name} so it feels human. Members who receive a check-in message within 14 days of going quiet return at a 38% rate — three times higher than those who don't. Pair it with a 30-day rule as a second safety net.`,
+    relevantIf: () => true,
+  },
+  {
+    id: 't2',
+    icon: Camera,
+    color: '#a855f7',
+    category: 'First Impression',
+    title: 'Add 5+ gallery photos to build trust faster',
+    summary: 'Gyms with rich galleries convert 60% more profile visitors into members.',
+    detail: `Upload photos of your gym floor, equipment, classes in action, and social areas. Aim for at least 5 — this unlocks the "full score" for your gallery section. Good angles: wide shots of the main floor, close-ups of specialist equipment, candid shots of classes. Avoid dark or cluttered photos. Update the gallery seasonally to keep the profile feeling current.`,
+    relevantIf: (gym) => (gym.gallery?.length || 0) < 5,
+  },
+  {
+    id: 't3',
+    icon: Award,
+    color: '#f59e0b',
+    category: 'Engagement',
+    title: 'Launch a monthly challenge to spike activity',
+    summary: 'Active challenges increase weekly check-ins by an average of 31%.',
+    detail: `Go to the Content tab and create a new Challenge. Themes that work well: most check-ins this month, longest streak, total weight lifted. Set a visible reward — even a small one like a free shake or a shout-out on the feed — dramatically increases participation. Run challenges consistently: members who join one challenge are 3× more likely to stay active the following month.`,
+    relevantIf: () => true,
+  },
+  {
+    id: 't4',
+    icon: MessageCircle,
+    color: '#22c55e',
+    category: 'Community',
+    title: 'Post to your gym feed at least twice a week',
+    summary: 'Regular posts keep your community active and your gym top-of-mind.',
+    detail: `Use the Content tab to create gym posts. Mix post types: share a member spotlight one week, an event announcement the next, a training tip after that. Consistency matters more than perfection — even a short motivational post counts. Gyms that post 2–3 times per week see significantly higher member engagement scores than those that post rarely.`,
+    relevantIf: () => true,
+  },
+  {
+    id: 't5',
+    icon: Users,
+    color: '#14b8a6',
+    category: 'Trust',
+    title: 'Add your membership pricing to remove hesitation',
+    summary: 'Missing pricing is the #1 reason prospective members leave a gym profile.',
+    detail: `Go to Actions → Edit Pricing and add your monthly membership cost. Even a range (e.g. "£30–£55/month") builds confidence. Members who can see pricing before visiting are 2× more likely to book a visit. If you offer multiple tiers (monthly, annual, student), list them all — it signals transparency and professionalism.`,
+    relevantIf: (gym) => !gym.price,
+  },
+  {
+    id: 't6',
+    icon: Globe,
+    color: '#60a5fa',
+    category: 'Discovery',
+    title: 'Link your social media to boost discoverability',
+    summary: 'Gyms with social links receive 40% more profile views from organic discovery.',
+    detail: `Add your Instagram, Facebook, or website link via Edit Basic Info. Instagram is the highest-impact link — potential members often browse your feed before deciding. Make sure your social profiles are active and public. A direct link from your CoStride profile to a well-maintained Instagram page dramatically increases perceived credibility.`,
+    relevantIf: (gym) => !(gym.instagram_url || gym.facebook_url || gym.website_url),
+  },
+  {
+    id: 't7',
+    icon: Star,
+    color: '#f59e0b',
+    category: 'Milestones',
+    title: 'Celebrate member milestones to drive referrals',
+    summary: 'Members who receive a milestone message refer friends at 3× the normal rate.',
+    detail: `Set up "10th visit" and "50th visit" automation rules in the Automations tab. Write a short, genuine congratulations message. Members who feel recognised are far more likely to talk about the gym positively. You can also celebrate these milestones publicly on the community feed (with member permission) to reinforce a culture of achievement.`,
+    relevantIf: () => true,
+  },
+  {
+    id: 't8',
+    icon: Dumbbell,
+    color: '#ff4d6d',
+    category: 'Profile',
+    title: 'List your equipment to attract the right members',
+    summary: 'Equipment listings reduce "not the right fit" churn by helping members self-select.',
+    detail: `Go to Manage Equipment and add everything available: barbells, squat racks, cable machines, cardio equipment, etc. Be specific — "6 squat racks" is more compelling than just "squat racks". Serious lifters filter gyms by equipment before visiting. A complete equipment list also reduces disappointment-driven cancellations from members who expected something different.`,
+    relevantIf: (gym) => (gym.equipment?.length || 0) < 3,
+  },
+];
+
+function TipsPanel({ communityScore, impressionScore, trustScore, discoveryScore, gym }) {
+  const [expanded, setExpanded] = useState(false);
+  const [openTipId, setOpenTipId] = useState(null);
+
+  // Sort: tips where relevantIf matches the gym first
+  const tips = ALL_TIPS.slice().sort((a, b) => {
+    const aR = a.relevantIf(gym) ? 0 : 1;
+    const bR = b.relevantIf(gym) ? 0 : 1;
+    return aR - bR;
+  });
+
+  const shown = expanded ? tips : tips.slice(0, 3);
+
+  return (
+    <div style={{ padding: '14px 16px 24px', borderTop: `1px solid ${C.brd}`, marginTop: 14 }}>
+      {/* Header */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 12 }}>
+        <Lightbulb style={{ width: 13, height: 13, color: C.amber, flexShrink: 0 }} />
+        <span style={{ fontSize: 12, fontWeight: 700, color: C.t1, flex: 1 }}>Tips & Recommendations</span>
+        <span style={{ fontSize: 10, color: C.t3 }}>{tips.length} tips</span>
+      </div>
+
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+        {shown.map(tip => {
+          const isOpen = openTipId === tip.id;
+          const isRelevant = tip.relevantIf(gym);
+          return (
+            <div
+              key={tip.id}
+              style={{
+                borderRadius: 9,
+                background: isOpen ? 'rgba(255,255,255,0.03)' : C.card,
+                border: `1px solid ${isOpen ? tip.color + '40' : C.brd}`,
+                overflow: 'hidden',
+                transition: 'border-color 0.15s, background 0.15s',
+              }}
+            >
+              {/* Tip header row */}
+              <button
+                onClick={() => setOpenTipId(isOpen ? null : tip.id)}
+                style={{
+                  width: '100%', display: 'flex', alignItems: 'flex-start', gap: 9,
+                  padding: '10px 11px', background: 'transparent', border: 'none',
+                  cursor: 'pointer', textAlign: 'left', fontFamily: FONT,
+                }}
+              >
+                <div style={{
+                  width: 26, height: 26, borderRadius: 7, flexShrink: 0,
+                  background: `${tip.color}14`, border: `1px solid ${tip.color}28`,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                }}>
+                  <tip.icon style={{ width: 12, height: 12, color: tip.color }} />
+                </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginBottom: 2, flexWrap: 'wrap' }}>
+                    <span style={{ fontSize: 11.5, fontWeight: 700, color: C.t1, lineHeight: 1.3 }}>{tip.title}</span>
+                    {isRelevant && (
+                      <span style={{ fontSize: 8.5, fontWeight: 700, color: tip.color, background: `${tip.color}14`, border: `1px solid ${tip.color}30`, borderRadius: 4, padding: '1px 5px', textTransform: 'uppercase', letterSpacing: '0.04em', whiteSpace: 'nowrap', flexShrink: 0 }}>
+                        Relevant
+                      </span>
+                    )}
+                  </div>
+                  <div style={{ fontSize: 10.5, color: C.t3, lineHeight: 1.4 }}>{tip.summary}</div>
+                </div>
+                <ChevronDown style={{ width: 11, height: 11, color: C.t3, flexShrink: 0, marginTop: 2, transform: isOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} />
+              </button>
+
+              {/* Expanded detail */}
+              {isOpen && (
+                <div style={{ padding: '0 11px 12px 46px' }}>
+                  <div style={{ fontSize: 10, fontWeight: 700, color: `${tip.color}cc`, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6 }}>
+                    {tip.category}
+                  </div>
+                  <div style={{ fontSize: 11.5, color: C.t2, lineHeight: 1.7 }}>
+                    {tip.detail}
+                  </div>
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Show more / less */}
+      <button
+        onClick={() => setExpanded(v => !v)}
+        style={{
+          width: '100%', marginTop: 8, padding: '8px 0',
+          background: 'transparent', border: `1px solid ${C.brd}`,
+          borderRadius: 8, color: C.t3, fontSize: 11, fontWeight: 600,
+          cursor: 'pointer', fontFamily: FONT, display: 'flex',
+          alignItems: 'center', justifyContent: 'center', gap: 5,
+          transition: 'border-color 0.15s, color 0.15s',
+        }}
+        onMouseEnter={e => { e.currentTarget.style.borderColor = C.cyanBrd; e.currentTarget.style.color = C.cyan; }}
+        onMouseLeave={e => { e.currentTarget.style.borderColor = C.brd; e.currentTarget.style.color = C.t3; }}
+      >
+        {expanded ? 'Show fewer tips' : `Show ${tips.length - 3} more tips`}
+        <ChevronDown style={{ width: 11, height: 11, transform: expanded ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} />
+      </button>
+    </div>
+  );
+}
+
 /* ─── RIGHT SIDEBAR ──────────────────────────────────────────── */
-function ProfileSidebar({ communityScore, impressionScore, trustScore, discoveryScore, amenitiesScore, equipmentScore, coachesScore, openModal, gym, activeMembers, totalMembers }) {
+function ProfileSidebar({ communityScore, impressionScore, trustScore, discoveryScore, amenitiesScore, equipmentScore, coachesScore, openModal, gym, activeMembers, totalMembers, communityScoreVal }) {
   const communityState = qualityState(communityScore);
 
   const checks = [
@@ -479,7 +668,7 @@ function ProfileSidebar({ communityScore, impressionScore, trustScore, discovery
       </div>
 
       {/* Retention callout */}
-      <div style={{ padding: '14px 16px 20px' }}>
+      <div style={{ padding: '14px 16px 0' }}>
         <div style={{ padding: '12px 14px', borderRadius: 9, background: C.cyanDim, border: `1px solid ${C.cyanBrd}` }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 7 }}>
             <TrendingUp style={{ width: 13, height: 13, color: C.cyan, flexShrink: 0 }} />
@@ -491,6 +680,10 @@ function ProfileSidebar({ communityScore, impressionScore, trustScore, discovery
           </div>
         </div>
       </div>
+
+      {/* Tips & Recommendations */}
+      <TipsPanel communityScore={communityScore} impressionScore={impressionScore} trustScore={trustScore} discoveryScore={discoveryScore} gym={gym} />
+
     </div>
   );
 }
