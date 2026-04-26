@@ -3,7 +3,7 @@
  * styled to match the member social feed (PostCard) look.
  */
 import { useState } from "react";
-import { X } from "lucide-react";
+import { X, ChevronRight } from "lucide-react";
 import { ReactionsModal } from "./TabContent";
 
 const STREAK_ICON_URL = "https://media.base44.com/images/public/694b637358644e1c22c8ec6b/5688f98be_Pose1_V2.png";
@@ -43,6 +43,7 @@ function formatTimeAgo(dateStr) {
 
 export default function PostPreviewModal({ post, gym, avatarMap = {}, nameMap = {}, onClose }) {
   const [showReactions, setShowReactions] = useState(false);
+  const [showSummary, setShowSummary] = useState(false);
 
   if (!post) return null;
 
@@ -154,14 +155,38 @@ export default function PostPreviewModal({ post, gym, avatarMap = {}, nameMap = 
               </div>
             )}
 
-            {/* Image */}
+            {/* Image with swipe arrow for workout posts */}
             {post.image_url && (
-              <div style={{ width: "100%", maxHeight: 400, overflow: "hidden" }}>
+              <div style={{ width: "100%", maxHeight: 400, overflow: "hidden", position: "relative" }}>
                 <img
                   src={post.image_url}
                   alt="Post"
                   style={{ width: "100%", objectFit: "cover", display: "block", maxHeight: 400 }}
                 />
+                {/* Arrow to swipe to summary (for workout posts) */}
+                {(post.workout_name || post.workout_exercises) && (
+                  <button
+                    onClick={() => setShowSummary(true)}
+                    style={{
+                      position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)",
+                      width: 40, height: 40, borderRadius: "50%",
+                      background: "rgba(255,255,255,0.15)", border: "1px solid rgba(255,255,255,0.3)",
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                      cursor: "pointer", backdropFilter: "blur(6px)",
+                      transition: "all 0.2s",
+                    }}
+                    onMouseEnter={e => {
+                      e.currentTarget.style.background = "rgba(255,255,255,0.25)";
+                      e.currentTarget.style.borderColor = "rgba(255,255,255,0.5)";
+                    }}
+                    onMouseLeave={e => {
+                      e.currentTarget.style.background = "rgba(255,255,255,0.15)";
+                      e.currentTarget.style.borderColor = "rgba(255,255,255,0.3)";
+                    }}
+                  >
+                    <ChevronRight size={20} color="#fff" />
+                  </button>
+                )}
               </div>
             )}
 
@@ -173,6 +198,52 @@ export default function PostPreviewModal({ post, gym, avatarMap = {}, nameMap = 
             )}
 
 
+
+            {/* Workout Summary (swipe view) */}
+            {showSummary && (post.workout_name || post.workout_exercises) && (
+              <div style={{ padding: "0 16px 16px", borderTop: "1px solid rgba(255,255,255,0.1)" }}>
+                <button
+                  onClick={() => setShowSummary(false)}
+                  style={{
+                    display: "flex", alignItems: "center", gap: 6, marginBottom: 12,
+                    background: "none", border: "none", color: "rgba(255,255,255,0.6)",
+                    fontSize: 12, fontWeight: 600, cursor: "pointer",
+                    transition: "color 0.2s",
+                  }}
+                  onMouseEnter={e => e.currentTarget.style.color = "#fff"}
+                  onMouseLeave={e => e.currentTarget.style.color = "rgba(255,255,255,0.6)"}
+                >
+                  ← Back to post
+                </button>
+                {post.workout_name && (
+                  <div style={{ fontSize: 14, fontWeight: 700, color: "#fff", marginBottom: 10 }}>
+                    {post.workout_name}
+                  </div>
+                )}
+                {post.workout_exercises && (
+                  <div style={{ fontSize: 12, color: "rgba(255,255,255,0.7)", lineHeight: 1.6 }}>
+                    {Array.isArray(post.workout_exercises) ? post.workout_exercises.map((ex, i) => (
+                      <div key={i} style={{ marginBottom: 8, paddingBottom: 8, borderBottom: i < post.workout_exercises.length - 1 ? "1px solid rgba(255,255,255,0.1)" : "none" }}>
+                        <div style={{ fontWeight: 600, color: "#fff", marginBottom: 2 }}>{ex.name}</div>
+                        {ex.sets && <div>Sets: {ex.sets}</div>}
+                        {ex.reps && <div>Reps: {ex.reps}</div>}
+                        {ex.weight && <div>Weight: {ex.weight}</div>}
+                      </div>
+                    )) : <p>{post.workout_exercises}</p>}
+                  </div>
+                )}
+                {post.workout_duration && (
+                  <div style={{ marginTop: 10, fontSize: 12, color: "rgba(255,255,255,0.6)" }}>
+                    Duration: {post.workout_duration}
+                  </div>
+                )}
+                {post.workout_volume && (
+                  <div style={{ fontSize: 12, color: "rgba(255,255,255,0.6)" }}>
+                    Volume: {post.workout_volume}
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* Comments preview */}
             {(post.comments || []).length > 0 && (
