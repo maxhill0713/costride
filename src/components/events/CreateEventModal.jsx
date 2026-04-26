@@ -66,7 +66,7 @@ function Inp({ value, onChange, placeholder, type = 'text', disabled, Icon, acce
   );
 }
 
-function Textarea({ value, onChange, placeholder, rows = 4, accentColor = C.blue }) {
+function Textarea({ value, onChange, placeholder, rows = 3, accentColor = C.blue }) {
   return (
     <textarea
       value={value} onChange={onChange} placeholder={placeholder} rows={rows}
@@ -235,7 +235,7 @@ export default function CreateEventModal({ open, onClose, onSave, gym, isLoading
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', paddingTop: 22 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
                   <div style={{ width: 28, height: 28, borderRadius: 9, background: C.blueDim, border: `1px solid ${C.blueBrd}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                    <Calendar size={13} color={C.blue} />
+                    <Calendar size={13} color="#ffffff" />
                   </div>
                   <div style={{ fontSize: 17, fontWeight: 700, color: C.t1, letterSpacing: '-0.02em' }}>Create Event</div>
                 </div>
@@ -252,7 +252,7 @@ export default function CreateEventModal({ open, onClose, onSave, gym, isLoading
               <>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 11 }}>
                   <div style={{ width: 32, height: 32, borderRadius: 9, background: C.blueDim, border: `1px solid ${C.blueBrd}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                    <Calendar size={14} color={C.blue} />
+                    <Calendar size={14} color="#ffffff" />
                   </div>
                   <div style={{ fontSize: 18, fontWeight: 700, color: C.t1, letterSpacing: '-0.02em', lineHeight: 1.2 }}>Create Event</div>
                 </div>
@@ -272,7 +272,8 @@ export default function CreateEventModal({ open, onClose, onSave, gym, isLoading
                   <Inp value={form.title} onChange={e => set('title', e.target.value)} placeholder="e.g. Summer Fitness Challenge" Icon={Zap} accentColor={C.blue} />
                 </Field>
                 <Field label="Description">
-                  <Textarea value={form.description} onChange={e => set('description', e.target.value)} placeholder="Tell members what to expect, what to bring, and who it's for…" rows={isMobile ? 3 : 4} accentColor={C.blue} />
+                  {/* rows reduced from 4 to 3 (≈25% shorter) */}
+                  <Textarea value={form.description} onChange={e => set('description', e.target.value)} placeholder="Tell members what to expect, what to bring, and who it's for…" rows={isMobile ? 2 : 3} accentColor={C.blue} />
                 </Field>
                 <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: isMobile ? 14 : 12 }}>
                   <Field label="Date & Time" required>
@@ -294,7 +295,8 @@ export default function CreateEventModal({ open, onClose, onSave, gym, isLoading
                 <Field label="Banner Image" hint="Recommended: 1200×630px · PNG or JPG">
                   {form.image_url ? (
                     <div style={{ position: 'relative', borderRadius: 9, overflow: 'hidden' }}>
-                      <img src={form.image_url} alt="Banner" style={{ width: '100%', height: 140, objectFit: 'cover', display: 'block', borderRadius: 9, border: `1px solid ${C.brd}` }} onError={e => e.target.style.display = 'none'} />
+                      {/* image height reduced from 140 to ~119 (≈15% shorter) */}
+                      <img src={form.image_url} alt="Banner" style={{ width: '100%', height: 119, objectFit: 'cover', display: 'block', borderRadius: 9, border: `1px solid ${C.brd}` }} onError={e => e.target.style.display = 'none'} />
                       <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top,rgba(0,0,0,0.55) 0%,transparent 55%)', borderRadius: 9, pointerEvents: 'none' }} />
                       <button type="button" onClick={() => set('image_url', '')} style={{ position: 'absolute', top: 8, right: 8, width: 26, height: 26, borderRadius: 7, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(13,13,17,0.82)', border: `1px solid ${C.brd}`, cursor: 'pointer' }}>
                         <X size={10} color={C.t1} />
@@ -303,8 +305,8 @@ export default function CreateEventModal({ open, onClose, onSave, gym, isLoading
                     </div>
                   ) : (
                     <div onDragOver={e => { e.preventDefault(); setDragOver(true); }} onDragLeave={() => setDragOver(false)} onDrop={handleDrop} onClick={() => fileRef.current?.click()}
-                      style={{ padding: '20px 14px', borderRadius: 9, border: `1.5px dashed ${dragOver ? C.blue + '60' : C.brd2}`, background: dragOver ? C.blueDim : C.card, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 9, cursor: 'pointer', transition: 'all 0.18s' }}>
-                      <div style={{ width: 36, height: 36, borderRadius: 9, background: C.blueDim, border: `1px solid ${C.blueBrd}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      style={{ padding: '14px 14px', borderRadius: 9, border: `1.5px dashed ${dragOver ? C.blue + '60' : C.brd2}`, background: dragOver ? C.blueDim : C.card, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 7, cursor: 'pointer', transition: 'all 0.18s' }}>
+                      <div style={{ width: 32, height: 32, borderRadius: 9, background: C.blueDim, border: `1px solid ${C.blueBrd}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                         {uploading ? <div style={{ width: 14, height: 14, border: `2px solid ${C.blue}25`, borderTop: `2px solid ${C.blue}`, borderRadius: '50%', animation: 'ev-spin 0.8s linear infinite' }} /> : <Upload size={14} color={C.blue} />}
                       </div>
                       <div style={{ textAlign: 'center' }}>
