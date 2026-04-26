@@ -20,6 +20,19 @@ const FONT = "'DM Sans','Inter',system-ui,sans-serif";
 const DIFFICULTIES = ['beginner', 'intermediate', 'advanced', 'all_levels'];
 const todayStr = new Date().toISOString().split('T')[0];
 
+const CLASS_COLORS = [
+  '#a855f7', // purple (default)
+  '#4d7fff', // blue
+  '#22c55e', // green
+  '#f59e0b', // amber
+  '#f04a68', // red/pink
+  '#14b8a6', // teal
+  '#f97316', // orange
+  '#ec4899', // hot pink
+  '#6366f1', // indigo
+  '#84cc16', // lime
+];
+
 const baseInp = {
   width: '100%', boxSizing: 'border-box', padding: '9px 12px',
   borderRadius: 9, background: C.card, border: `1px solid ${C.brd}`,
@@ -122,7 +135,7 @@ function ClassPreview({ form }) {
 }
 
 export default function CreateClassModal({ open, onClose, onSave, gym, isLoading }) {
-  const emptyForm = { name: '', description: '', instructor: '', duration_minutes: '', max_capacity: '', difficulty: 'all_levels', date: '', time: '', weekly: false };
+  const emptyForm = { name: '', description: '', instructor: '', duration_minutes: '', max_capacity: '', difficulty: 'all_levels', date: '', time: '', weekly: false, color: CLASS_COLORS[0] };
   const [form, setForm] = useState(emptyForm);
   const [showPreview, setShowPreview] = useState(false);
 
@@ -144,7 +157,8 @@ export default function CreateClassModal({ open, onClose, onSave, gym, isLoading
       ...form,
       duration_minutes: Number(form.duration_minutes),
       max_capacity: Number(form.max_capacity),
-      schedule: [{ day: dayName, time: form.time, date: form.date, weekly: form.weekly }],
+      schedule: [{ day: dayName, time: form.time, date: form.date, weekly: form.weekly === true }],
+      color: form.color,
       gym_id: gym?.id,
       gym_name: gym?.name,
     };
@@ -198,6 +212,24 @@ export default function CreateClassModal({ open, onClose, onSave, gym, isLoading
                 <Dumbbell size={14} color={C.purple} />
               </div>
               <div style={{ fontSize: 18, fontWeight: 700, color: C.t1, letterSpacing: '-0.02em' }}>Create Class</div>
+              {/* Colour picker swatches */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 5, flexWrap: 'wrap', maxWidth: 160 }}>
+                {CLASS_COLORS.map(col => (
+                  <button
+                    key={col}
+                    type="button"
+                    onClick={() => set('color', col)}
+                    title={col}
+                    style={{
+                      width: 18, height: 18, borderRadius: 5, flexShrink: 0,
+                      background: col, border: form.color === col ? `2px solid #fff` : '2px solid transparent',
+                      cursor: 'pointer', outline: form.color === col ? `2px solid ${col}` : 'none',
+                      outlineOffset: 1, transition: 'outline 0.1s, border 0.1s',
+                      boxShadow: form.color === col ? `0 0 0 1px ${col}55` : 'none',
+                    }}
+                  />
+                ))}
+              </div>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               {isMobile && (

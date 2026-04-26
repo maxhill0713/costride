@@ -250,15 +250,20 @@ export default function EventsCalendar({ events, classes = [], onDeleteEvent, on
                       {ev.title}
                     </button>
                   ))}
-                  {(cell.classes || []).slice(0, 2).map((cls, ci) => (
-                    <button key={`cls-${cls.id}-${ci}`}
-                      onClick={() => setSelectedClass(cls)}
-                      style={{ display: "block", width: "100%", textAlign: "left", padding: "3px 6px", borderRadius: 5, background: "rgba(168,85,247,0.14)", border: "1px solid rgba(168,85,247,0.32)", cursor: "pointer", fontFamily: FONT, overflow: "hidden", whiteSpace: "normal", wordBreak: "break-word", fontSize: 10.5, fontWeight: 600, color: "#a855f7", lineHeight: 1.35, boxSizing: "border-box", transition: "background 0.12s, border-color 0.12s" }}
-                      onMouseEnter={e => { e.currentTarget.style.background = "rgba(168,85,247,0.25)"; e.currentTarget.style.borderColor = "rgba(168,85,247,0.55)"; }}
-                      onMouseLeave={e => { e.currentTarget.style.background = "rgba(168,85,247,0.14)"; e.currentTarget.style.borderColor = "rgba(168,85,247,0.32)"; }}>
-                      {cls.name}{cls._scheduleTime ? ` · ${cls._scheduleTime}` : ''}
-                    </button>
-                  ))}
+                  {(cell.classes || []).slice(0, 2).map((cls, ci) => {
+                    const clsColor = cls.color || "#a855f7";
+                    const bgAlpha = "26"; // ~15% opacity
+                    const brdAlpha = "55"; // ~33% opacity
+                    return (
+                      <button key={`cls-${cls.id}-${ci}`}
+                        onClick={() => setSelectedClass(cls)}
+                        style={{ display: "block", width: "100%", textAlign: "left", padding: "3px 6px", borderRadius: 5, background: `${clsColor}${bgAlpha}`, border: `1px solid ${clsColor}${brdAlpha}`, cursor: "pointer", fontFamily: FONT, overflow: "hidden", whiteSpace: "normal", wordBreak: "break-word", fontSize: 10.5, fontWeight: 600, color: clsColor, lineHeight: 1.35, boxSizing: "border-box", transition: "background 0.12s, border-color 0.12s" }}
+                        onMouseEnter={e => { e.currentTarget.style.background = `${clsColor}40`; e.currentTarget.style.borderColor = `${clsColor}88`; }}
+                        onMouseLeave={e => { e.currentTarget.style.background = `${clsColor}${bgAlpha}`; e.currentTarget.style.borderColor = `${clsColor}${brdAlpha}`; }}>
+                        {cls.name}{cls._scheduleTime ? ` · ${cls._scheduleTime}` : ''}
+                      </button>
+                    );
+                  })}
                   {(cell.events.length + (cell.classes || []).length) > 5 && (
                     <div style={{ fontSize: 10, color: C.t3, fontWeight: 600, paddingLeft: 6, marginTop: 1 }}>+{cell.events.length + (cell.classes || []).length - 5} more</div>
                   )}
@@ -275,7 +280,11 @@ export default function EventsCalendar({ events, classes = [], onDeleteEvent, on
           <span style={{ fontSize: 10.5, color: C.t3 }}>Event — click for details</span>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
-          <div style={{ width: 10, height: 10, borderRadius: 3, background: "rgba(168,85,247,0.14)", border: "1px solid rgba(168,85,247,0.32)" }} />
+          <div style={{ display: "flex", gap: 2 }}>
+            {["#a855f7","#4d7fff","#22c55e","#f59e0b"].map(col => (
+              <div key={col} style={{ width: 7, height: 10, borderRadius: 2, background: col + "33", border: `1px solid ${col}55` }} />
+            ))}
+          </div>
           <span style={{ fontSize: 10.5, color: C.t3 }}>Class — click for details</span>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
