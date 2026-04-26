@@ -360,7 +360,7 @@ export default function PostPreviewModal({ post, gym, avatarMap = {}, nameMap = 
               </div>
             )}
 
-            {/* Caption (non-workout or workout comment) */}
+            {/* Caption — for non-workout posts only */}
             {post.content && !isWorkoutPost && (
               <div style={{ padding: "0 16px 14px", fontSize: 14, color: "rgba(255,255,255,0.85)", lineHeight: 1.65, fontWeight: 400 }}>
                 {post.content}
@@ -370,6 +370,13 @@ export default function PostPreviewModal({ post, gym, avatarMap = {}, nameMap = 
             {/* Workout swipe panel (image + exercise summary) */}
             {isWorkoutPost && post.image_url && (
               <WorkoutSwipePanel post={post} />
+            )}
+
+            {/* Workout caption — shown below the swipe panel / stats */}
+            {isWorkoutPost && post.content && (
+              <div style={{ padding: "10px 16px 4px", fontSize: 13, color: "rgba(255,255,255,0.7)", lineHeight: 1.65, fontWeight: 400 }}>
+                {post.content}
+              </div>
             )}
 
             {/* Non-workout image */}

@@ -1257,9 +1257,9 @@ export default function ContentPage({
                                 {postedAt && <div style={{ fontSize: 10, color: C.t3, marginTop: 2 }}>{postedAt}</div>}
                               </div>
                             </div>
-                            {p.content && (
-                              <div style={{ fontSize: 11.5, color: C.t2, lineHeight: 1.5, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
-                                {p.content}
+                            {(p.workout_name || p.content) && (
+                              <div style={{ fontSize: 11.5, color: p.workout_name ? C.t1 : C.t2, fontWeight: p.workout_name ? 700 : 400, lineHeight: 1.5, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
+                                {p.workout_name || p.content}
                               </div>
                             )}
                             {reactionCount > 0 && (
