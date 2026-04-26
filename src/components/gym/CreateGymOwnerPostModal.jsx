@@ -77,23 +77,8 @@ function SL({ children, required, right }) {
   );
 }
 
-/* ─── TOGGLE ─────────────────────────────────────────────────── */
-function Toggle({ value, onChange, color = C.blue, label, sub }) {
-  return (
-    <div onClick={() => onChange(!value)} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 13px', borderRadius: 9, cursor: 'pointer', background: value ? `${color}09` : C.card, border: `1px solid ${value ? color + '28' : C.brd}`, transition: 'all 0.18s' }}>
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontSize: 12, fontWeight: 600, color: value ? C.t1 : C.t2 }}>{label}</div>
-        {sub && <div style={{ fontSize: 10, color: C.t3, marginTop: 2 }}>{sub}</div>}
-      </div>
-      <div style={{ flexShrink: 0, width: 38, height: 21, borderRadius: 99, background: value ? color : C.brd2, transition: 'background 0.2s', position: 'relative' }}>
-        <div style={{ position: 'absolute', top: 2.5, left: value ? 19 : 2.5, width: 16, height: 16, borderRadius: '50%', background: '#fff', transition: 'left 0.2s', boxShadow: '0 1px 4px rgba(0,0,0,0.6)' }} />
-      </div>
-    </div>
-  );
-}
-
 /* ─── LIVE PREVIEW ───────────────────────────────────────────── */
-function PostPreview({ postType, content, imageUrl, tags, callToAction, isPinned, scheduledDate, gym }) {
+function PostPreview({ postType, content, imageUrl, tags, scheduledDate, gym }) {
   const type  = POST_TYPES.find(t => t.value === postType) || POST_TYPES[0];
   const empty = !content.trim() && !imageUrl;
 
@@ -105,7 +90,7 @@ function PostPreview({ postType, content, imageUrl, tags, callToAction, isPinned
     <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 12 }}>
         <Eye size={11} color={C.t3} />
-        <span style={{ fontSize: 9.5, fontWeight: 600, color: C.t3, textTransform: 'uppercase', letterSpacing: '0.09em' }}>Live Preview</span>
+        <span style={{ fontSize: 9.5, fontWeight: 600, color: C.t3, textTransform: 'uppercase', letterSpacing: '0.09em' }}>Preview</span>
       </div>
 
       <div style={{
@@ -133,7 +118,6 @@ function PostPreview({ postType, content, imageUrl, tags, callToAction, isPinned
                 <div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6, lineHeight: 1.2 }}>
                     <span style={{ fontSize: 13, fontWeight: 700, color: '#fff' }}>{gymName}</span>
-                    {isPinned && <span style={{ fontSize: 12 }}>📌</span>}
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 3 }}>
                     <span style={{ fontSize: 9, fontWeight: 700, padding: '1px 7px', borderRadius: 5, background: type.dim, border: `1px solid ${type.border}`, color: type.color, display: 'inline-flex', alignItems: 'center', gap: 3 }}>
@@ -164,12 +148,6 @@ function PostPreview({ postType, content, imageUrl, tags, callToAction, isPinned
                 ))}
               </div>
             )}
-            {callToAction.enabled && callToAction.text && (
-              <div style={{ margin: '10px 16px 0', padding: '9px 12px', borderRadius: 9, background: type.dim, border: `1px solid ${type.border}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <span style={{ fontSize: 12, fontWeight: 700, color: type.color }}>{callToAction.text}</span>
-                <ArrowUpRight size={12} color={type.color} />
-              </div>
-            )}
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 12px 10px', borderTop: '1px solid rgba(255,255,255,0.06)', marginTop: 10, minHeight: 44 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                 <img src={STREAK_ICON_URL} alt="react" style={{ width: 44, height: 44, objectFit: 'contain', opacity: 0.35 }} />
@@ -192,9 +170,7 @@ export default function CreateGymOwnerPostModal({ open, onClose, gym, onSuccess 
   const [postType,      setPostType]      = useState('update');
   const [tags,          setTags]          = useState([]);
   const [newTag,        setNewTag]        = useState('');
-  const [isPinned,      setIsPinned]      = useState(false);
   const [scheduledDate, setScheduledDate] = useState('');
-  const [callToAction,  setCallToAction]  = useState({ enabled: false, text: '', link: '' });
   const [submitting,    setSubmitting]    = useState(false);
   const [uploading,     setUploading]     = useState(false);
   const [dragOver,      setDragOver]      = useState(false);
@@ -237,7 +213,7 @@ export default function CreateGymOwnerPostModal({ open, onClose, gym, onSuccess 
 
   const reset = () => {
     setContent(''); setImageUrl(''); setPostType('update'); setTags([]);
-    setIsPinned(false); setScheduledDate(''); setCallToAction({ enabled: false, text: '', link: '' }); setNewTag('');
+    setScheduledDate(''); setNewTag('');
   };
 
   const buildPostData = async (overrides = {}) => {
@@ -248,10 +224,10 @@ export default function CreateGymOwnerPostModal({ open, onClose, gym, onSuccess 
       gym_id: gym.id, gym_name: gym.name,
       content: content.trim(), image_url: imageUrl || null,
       likes: 0, comments: [], reactions: {},
-      post_type: postType, tags, is_pinned: isPinned,
+      post_type: postType, tags, is_pinned: false,
       share_with_community: true,
       scheduled_date: scheduledDate || null,
-      call_to_action: callToAction.enabled && callToAction.text ? { text: callToAction.text, link: callToAction.link } : null,
+      call_to_action: null,
       ...overrides,
     };
   };
@@ -361,9 +337,8 @@ export default function CreateGymOwnerPostModal({ open, onClose, gym, onSuccess 
             )}
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: isMobile ? 4 : 16, paddingBottom: 0 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? 8 : 11 }}>
-                <div style={{ width: isMobile ? 28 : 32, height: isMobile ? 28 : 32, borderRadius: 9, background: activeType.dim, border: `1px solid ${activeType.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'all 0.2s' }}>
-                  <activeType.Icon size={isMobile ? 12 : 14} color={activeType.color} />
-                </div>
+                {/* Clean white icon, no box — matches CreateEventModal style */}
+                <activeType.Icon size={isMobile ? 20 : 22} color="#ffffff" strokeWidth={1.75} />
                 <div style={{ fontSize: isMobile ? 16 : 18, fontWeight: 700, color: C.t1, letterSpacing: '-0.02em', lineHeight: 1.2 }}>New Post</div>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -446,37 +421,17 @@ export default function CreateGymOwnerPostModal({ open, onClose, gym, onSuccess 
                 </div>
 
                 <div>
-                  <SL>Call to Action</SL>
-                  <Toggle value={callToAction.enabled} onChange={v => setCallToAction({ ...callToAction, enabled: v })} color={activeType.color} label="Add a button to the post" sub="Direct members to a booking page, link or form" />
-                  {callToAction.enabled && (
-                    <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 9, marginTop: 9 }}>
-                      <div>
-                        <div style={{ fontSize: 10, color: C.t3, fontWeight: 600, marginBottom: 5, textTransform: 'uppercase', letterSpacing: '0.08em' }}>Button label</div>
-                        <input className="ch-inp" value={callToAction.text} onChange={e => setCallToAction({ ...callToAction, text: e.target.value })} placeholder="e.g. Book your spot" />
-                      </div>
-                      <div>
-                        <div style={{ fontSize: 10, color: C.t3, fontWeight: 600, marginBottom: 5, textTransform: 'uppercase', letterSpacing: '0.08em' }}>Destination URL</div>
-                        <input className="ch-inp" value={callToAction.link} onChange={e => setCallToAction({ ...callToAction, link: e.target.value })} placeholder="https://…" />
-                      </div>
+                  <SL>Schedule</SL>
+                  <div style={{ position: 'relative' }}>
+                    <Clock size={11} color={C.t3} style={{ position: 'absolute', left: 11, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }} />
+                    <input type="datetime-local" className="ch-inp" style={{ paddingLeft: 30, colorScheme: 'dark' }} value={scheduledDate} onChange={e => setScheduledDate(e.target.value)} />
+                  </div>
+                  {scheduledDate && (
+                    <div style={{ fontSize: 10, color: C.amber, fontWeight: 600, marginTop: 6, display: 'flex', alignItems: 'center', gap: 4 }}>
+                      <Clock size={9} color={C.amber} />
+                      {format(new Date(scheduledDate), "MMM d 'at' h:mma")}
                     </div>
                   )}
-                </div>
-
-                <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: isMobile ? 12 : 10 }}>
-                  <Toggle value={isPinned} onChange={setIsPinned} color={C.amber} label="📌 Pin to top" sub="Stays at the top of the member feed" />
-                  <div>
-                    <SL>Schedule</SL>
-                    <div style={{ position: 'relative' }}>
-                      <Clock size={11} color={C.t3} style={{ position: 'absolute', left: 11, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }} />
-                      <input type="datetime-local" className="ch-inp" style={{ paddingLeft: 30, colorScheme: 'dark' }} value={scheduledDate} onChange={e => setScheduledDate(e.target.value)} />
-                    </div>
-                    {scheduledDate && (
-                      <div style={{ fontSize: 10, color: C.amber, fontWeight: 600, marginTop: 6, display: 'flex', alignItems: 'center', gap: 4 }}>
-                        <Clock size={9} color={C.amber} />
-                        {format(new Date(scheduledDate), "MMM d 'at' h:mma")}
-                      </div>
-                    )}
-                  </div>
                 </div>
 
                 {isMobile && <div style={{ height: 8 }} />}
@@ -485,7 +440,7 @@ export default function CreateGymOwnerPostModal({ open, onClose, gym, onSuccess 
 
             {(!isMobile || showPreview) && (
               <div style={{ padding: isMobile ? '12px 16px' : '13px 16px', background: '#0d0d11', overflowY: 'auto', borderLeft: isMobile ? 'none' : `1px solid ${C.brd}`, WebkitOverflowScrolling: 'touch' }}>
-                <PostPreview postType={postType} content={content} imageUrl={imageUrl} tags={tags} callToAction={callToAction} isPinned={isPinned} scheduledDate={scheduledDate} gym={gym} />
+                <PostPreview postType={postType} content={content} imageUrl={imageUrl} tags={tags} scheduledDate={scheduledDate} gym={gym} />
               </div>
             )}
           </div>
