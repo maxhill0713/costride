@@ -7,6 +7,8 @@ const C = {
   bg: "#000000", card: "#141416", brd: "#222226", brd2: "#2a2a30",
   t1: "#ffffff", t2: "#8a8a94", t3: "#444450",
   cyan: "#4d7fff", cyanDim: "rgba(77,127,255,0.12)", cyanBrd: "rgba(77,127,255,0.28)",
+  // Professional muted event colour — slate blue
+  evBg: "rgba(99,115,152,0.18)", evBrd: "rgba(99,115,152,0.28)", evTxt: "#ffffff",
 };
 const FONT = "'DM Sans', 'Segoe UI', system-ui, sans-serif";
 const DAYS_OF_WEEK = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
@@ -64,7 +66,7 @@ function MonthDropdown({ viewYear, viewMonth, onSelect }) {
 function DayDetailModal({ cell, dateLabel, onClose, onSelectEvent, onSelectClass }) {
   const PX_PER_MIN = 0.84;  // 0.8 × 1.05 — 5% taller per hour
   const PADDING_MIN = 30;   // 30-min buffer around content
-  const CORE_START  = 7 * 60;   // 07:00
+  const CORE_START  = 8 * 60;   // 08:00
   const CORE_END    = 20 * 60;  // 20:00
   // Fixed visible height = 13 hours of core × PX_PER_MIN
   const VISIBLE_H   = Math.round((CORE_END - CORE_START) * PX_PER_MIN) + 20;
@@ -222,8 +224,9 @@ function DayDetailModal({ cell, dateLabel, onClose, onSelectEvent, onSelectClass
                 const left = `${item.col * colW * 100}%`;
                 const width = `calc(${colW * 100}% - 4px)`;
                 const color = item.color;
-                const bg = hexToRgba(color, 0.15);
-                const brd = hexToRgba(color, 0.4);
+                const bg = item.type === "event" ? C.evBg : hexToRgba(color, 0.13);
+                const brd = item.type === "event" ? C.evBrd : hexToRgba(color, 0.22);
+                const leftAccent = item.type === "event" ? "rgba(99,115,152,0.6)" : hexToRgba(color, 0.55);
                 const label = item.type === "event" ? item.data.title : item.data.name;
                 const sublabel = item.type === "class" ? (item.data.instructor || "") : "";
                 const timeStr = `${String(Math.floor(item.startMin / 60)).padStart(2, "0")}:${String(item.startMin % 60).padStart(2, "0")}`;
@@ -232,7 +235,7 @@ function DayDetailModal({ cell, dateLabel, onClose, onSelectEvent, onSelectClass
                     onClick={() => { onClose(); if (item.type === "event") onSelectEvent(item.data); else onSelectClass(item.data); }}
                     style={{
                       position: "absolute", top, left, width, height,
-                      background: bg, border: `1px solid ${brd}`, borderLeft: `3px solid ${color}`,
+                      background: bg, border: `1px solid ${brd}`, borderLeft: `3px solid ${leftAccent}`,
                       borderRadius: 5, padding: "3px 6px", cursor: "pointer",
                       textAlign: "left", fontFamily: FONT, overflow: "hidden",
                       display: "flex", flexDirection: "column", justifyContent: "flex-start", gap: 1,
@@ -468,16 +471,16 @@ export default function EventsCalendar({ events, classes = [], onDeleteEvent, on
                 <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
                   {/* Events — up to 4 total rows combined */}
                   {cell.events.slice(0, 4).map(ev => (
-                    <div key={ev.id} style={{ ...pillStyle, background: cell.isOtherMonth ? "rgba(77,127,255,0.06)" : C.cyanDim, border: `1px solid ${cell.isOtherMonth ? "rgba(77,127,255,0.12)" : C.cyanBrd}`, color: cell.isOtherMonth ? "rgba(77,127,255,0.5)" : C.cyan }}>
+                    <div key={ev.id} style={{ ...pillStyle, background: cell.isOtherMonth ? "rgba(99,115,152,0.08)" : C.evBg, border: `1px solid ${cell.isOtherMonth ? "rgba(99,115,152,0.15)" : C.evBrd}`, color: cell.isOtherMonth ? "rgba(255,255,255,0.25)" : C.evTxt }}>
                       {ev.title}
                     </div>
                   ))}
                   {/* Classes */}
                   {(cell.classes || []).slice(0, Math.max(0, 4 - cell.events.slice(0, 4).length)).map((cls, ci) => {
                     const rawColor = (cls.color && cls.color.startsWith("#") && cls.color.length >= 7) ? cls.color : "#a855f7";
-                    const bgAlpha  = cell.isOtherMonth ? 0.06 : 0.15;
-                    const brdAlpha = cell.isOtherMonth ? 0.15 : 0.4;
-                    const txtColor = cell.isOtherMonth ? hexToRgba(rawColor, 0.45) : rawColor;
+                    const bgAlpha  = cell.isOtherMonth ? 0.05 : 0.13;
+                    const brdAlpha = cell.isOtherMonth ? 0.1  : 0.2;
+                    const txtColor = cell.isOtherMonth ? "rgba(255,255,255,0.2)" : "#ffffff";
                     return (
                       <div key={`cls-${cls.id}-${ci}`} style={{ ...pillStyle, background: hexToRgba(rawColor, bgAlpha), border: `1px solid ${hexToRgba(rawColor, brdAlpha)}`, color: txtColor }}>
                         {cls.name}
