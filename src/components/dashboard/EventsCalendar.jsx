@@ -62,11 +62,11 @@ function MonthDropdown({ viewYear, viewMonth, onSelect }) {
 
 // ── Day detail modal — fixed-height scroll, 9–17 core always visible ─────────
 function DayDetailModal({ cell, dateLabel, onClose, onSelectEvent, onSelectClass }) {
-  const PX_PER_MIN = 0.8;   // 0.8px per minute
+  const PX_PER_MIN = 0.84;  // 0.8 × 1.05 — 5% taller per hour
   const PADDING_MIN = 30;   // 30-min buffer around content
-  const CORE_START  = 9 * 60;   // 09:00
-  const CORE_END    = 17 * 60;  // 17:00
-  // Fixed visible height = 8 hours of core × PX_PER_MIN + padding top/bottom
+  const CORE_START  = 7 * 60;   // 07:00
+  const CORE_END    = 20 * 60;  // 20:00
+  // Fixed visible height = 13 hours of core × PX_PER_MIN
   const VISIBLE_H   = Math.round((CORE_END - CORE_START) * PX_PER_MIN) + 20;
 
   // Build items
@@ -240,14 +240,17 @@ function DayDetailModal({ cell, dateLabel, onClose, onSelectEvent, onSelectClass
                     }}
                     onMouseEnter={e => e.currentTarget.style.opacity = "0.8"}
                     onMouseLeave={e => e.currentTarget.style.opacity = "1"}>
-                    <div style={{ fontSize: 11.5, fontWeight: 700, color: C.t1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", lineHeight: 1.2 }}>{label}</div>
-                    {height > 26 && sublabel && (
-                      <div style={{ fontSize: 10.5, color: C.t1, fontWeight: 600, lineHeight: 1.2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{sublabel}</div>
-                    )}
-                    {height > 26 && (
-                      <div style={{ fontSize: 10, color: C.t1, fontWeight: 500, lineHeight: 1.2 }}>
-                        {timeStr}–{`${String(Math.floor((item.startMin + item.durationMin) / 60) % 24).padStart(2, "0")}:${String((item.startMin + item.durationMin) % 60).padStart(2, "0")}`}
-                      </div>
+                    {/* Title row with time top-right */}
+                    <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 4 }}>
+                      <div style={{ fontSize: 11.5, fontWeight: 700, color: C.t1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", lineHeight: 1.2, flex: 1, minWidth: 0 }}>{label}</div>
+                      {height > 20 && (
+                        <div style={{ fontSize: 9.5, color: C.t1, fontWeight: 500, lineHeight: 1.2, whiteSpace: "nowrap", flexShrink: 0, opacity: 0.75 }}>
+                          {timeStr}–{`${String(Math.floor((item.startMin + item.durationMin) / 60) % 24).padStart(2, "0")}:${String((item.startMin + item.durationMin) % 60).padStart(2, "0")}`}
+                        </div>
+                      )}
+                    </div>
+                    {height > 32 && sublabel && (
+                      <div style={{ fontSize: 10.5, color: C.t1, fontWeight: 600, lineHeight: 1.2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>Coach — {sublabel}</div>
                     )}
                   </button>
                 );
