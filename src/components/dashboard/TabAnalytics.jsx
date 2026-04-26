@@ -40,11 +40,39 @@ function weekLabel(date) {
 }
 
 /* ─── DATA DERIVATION ────────────────────────────────────────── */
-function useAnalytics({ checkIns = [], allMemberships = [], classes = [], coaches = [], challenges = [], polls = [], posts = [], totalMembers = 0 }) {
+function useAnalytics({
+  checkIns = [], allMemberships = [], classes = [], coaches = [],
+  challenges = [], polls = [], posts = [], totalMembers = 0,
+  membershipPlans = null, classHistory = null,
+}) {
   return useMemo(() => {
     const now = Date.now();
     const MS_DAY = 86400000;
     const MS_WEEK = 7 * MS_DAY;
+
+    // ── 1. DYNAMIC REVENUE PER MEMBER ────────────────────────────
+    const extractRevenue = () => {
+      const prices = [];
+      // Scan membershipPlans prop first
+      if (membershipPlans?.length) {
+        membershipPlans.forEach(plan => {
+          const p = parseFloat(plan.price || 0);
+          if (p > 0) prices.push(plan.interval === "year" ? p / 12 : p);
+        });
+      }
+      // Scan allMemberships for price fields
+      allMemberships.forEach(m => {
+        const raw = parseFloat(m.price || m.monthly_fee || m.plan_price || 0);
+        if (raw > 0) {
+          prices.push(m.interval === "year" || m.billing_cycle === "annual" ? raw / 12 : raw);
+        }
+      });
+      if (!prices.length) return 60; // fallback
+      prices.sort((a, b) => a - b);
+      const mid = Math.floor(prices.length / 2);
+      return prices.length % 2 === 0 ? (prices[mid - 1] + prices[mid]) / 2 : prices[mid];
+    };
+    const estMonthlyValue = Math.round(extractRevenue());
 
     // ── Member check-in map ──────────────────────────────────────
     const ciByUser = {};
@@ -62,7 +90,6 @@ function useAnalytics({ checkIns = [], allMemberships = [], classes = [], coache
     });
 
     // ── Week 1 return rate ───────────────────────────────────────
-    // Members who joined >7 days ago and returned within 7 days of joining
     const w1Eligible = allMemberships.filter(m => {
       const jt = joinMap[m.user_id];
       return jt && (now - jt) > MS_WEEK;
@@ -73,6 +100,28 @@ function useAnalytics({ checkIns = [], allMemberships = [], classes = [], coache
       return cis.some(t => t > jt && t <= jt + MS_WEEK);
     });
     const week1ReturnRate = pct(w1Returned.length, w1Eligible.length);
+
+    // ── 8. W1 Return Rate real trend (30d vs prior 30d) ─────────
+    const MS30 = 30 * MS_DAY;
+    const w1Recent = allMemberships.filter(m => {
+      const jt = joinMap[m.user_id];
+      return jt && (now - jt) > MS_WEEK && (now - jt) <= MS30 + MS_WEEK;
+    });
+    const w1Prior = allMemberships.filter(m => {
+      const jt = joinMap[m.user_id];
+      return jt && (now - jt) > MS30 + MS_WEEK && (now - jt) <= 2 * MS30 + MS_WEEK;
+    });
+    const w1RecentReturned = w1Recent.filter(m => {
+      const jt = joinMap[m.user_id];
+      return (ciByUser[m.user_id] || []).some(t => t > jt && t <= jt + MS_WEEK);
+    });
+    const w1PriorReturned = w1Prior.filter(m => {
+      const jt = joinMap[m.user_id];
+      return (ciByUser[m.user_id] || []).some(t => t > jt && t <= jt + MS_WEEK);
+    });
+    const w1RecentRate = pct(w1RecentReturned.length, Math.max(w1Recent.length, 1));
+    const w1PriorRate = pct(w1PriorReturned.length, Math.max(w1Prior.length, 1));
+    const week1ReturnTrend = w1Prior.length > 0 ? w1RecentRate - w1PriorRate : 0;
 
     // ── Month 3 retention ────────────────────────────────────────
     const m3Eligible = allMemberships.filter(m => {
@@ -87,14 +136,73 @@ function useAnalytics({ checkIns = [], allMemberships = [], classes = [], coache
     });
     const month3Rate = pct(m3Active.length, m3Eligible.length);
 
-    // ── At-risk members (inactive 14+ days) ─────────────────────
+    // Month 1 funnel
+    const m1Eligible = allMemberships.filter(m => {
+      const jt = joinMap[m.user_id];
+      return jt && (now - jt) > 30 * MS_DAY;
+    });
+    const m1Active = m1Eligible.filter(m => {
+      const cis = ciByUser[m.user_id] || [];
+      const jt = joinMap[m.user_id] || 0;
+      return cis.some(t => t >= jt + 20 * MS_DAY && t <= jt + 45 * MS_DAY);
+    });
+    const funnelM1 = pct(m1Active.length, m1Eligible.length);
+
+    // ── 2. COMPOSITE CHURN SCORE for at-risk members ─────────────
+    const calcChurnScore = (m) => {
+      const cis = (ciByUser[m.user_id] || []).sort((a, b) => a - b);
+      const days = m.daysSinceLastCheckIn;
+
+      // Recency (35pts): 0–35 based on days, capped at 60
+      const recency = Math.min(35, (Math.min(days, 60) / 60) * 35);
+
+      // Frequency drop (35pts): last 30d vs lifetime avg
+      const MS30 = 30 * MS_DAY;
+      const last30 = cis.filter(t => t >= now - MS30).length;
+      const lifetimeWeeks = cis.length > 0 ? Math.max(1, (now - cis[0]) / MS_WEEK) : 1;
+      const lifetimeAvgPer30 = (cis.length / lifetimeWeeks) * 4.33;
+      let freqDrop = 0;
+      if (lifetimeAvgPer30 > 0) {
+        const dropRatio = Math.max(0, (lifetimeAvgPer30 - last30) / lifetimeAvgPer30);
+        freqDrop = Math.min(35, dropRatio * 35);
+        if (dropRatio >= 0.5) freqDrop = 35; // full score at 50%+ drop
+      } else {
+        freqDrop = 17; // no history — moderate
+      }
+
+      // Tenure risk (15pts): new members (<90d) going inactive = higher risk
+      const tenureMs = joinMap[m.user_id] ? now - joinMap[m.user_id] : MS30 * 12;
+      const tenure = tenureMs < 90 * MS_DAY ? 15 : tenureMs < 180 * MS_DAY ? 8 : 0;
+
+      // Streak break (15pts): had 3+ consecutive active weeks, now broken
+      let streakBreak = 0;
+      if (cis.length >= 3) {
+        // Check prior 12 weeks for 3+ consecutive weeks with check-ins
+        let maxStreak = 0, streak = 0;
+        for (let w = 11; w >= 1; w--) {
+          const wStart = now - w * MS_WEEK;
+          const wEnd = wStart + MS_WEEK;
+          const hadCI = cis.some(t => t >= wStart && t < wEnd);
+          if (hadCI) streak++;
+          else { maxStreak = Math.max(maxStreak, streak); streak = 0; }
+        }
+        maxStreak = Math.max(maxStreak, streak);
+        // Last week no check-in + had prior streak
+        const lastWeekCI = cis.some(t => t >= now - MS_WEEK);
+        if (maxStreak >= 3 && !lastWeekCI) streakBreak = 15;
+      }
+
+      return Math.round(recency + freqDrop + tenure + streakBreak);
+    };
+
     const atRiskMembers = allMemberships.map(m => {
       const cis = ciByUser[m.user_id] || [];
       const last = cis.length ? Math.max(...cis) : null;
       const daysSince = last ? Math.floor((now - last) / MS_DAY) : 999;
       return { ...m, daysSinceLastCheckIn: daysSince };
     }).filter(m => m.daysSinceLastCheckIn >= 14)
-      .sort((a, b) => b.daysSinceLastCheckIn - a.daysSinceLastCheckIn);
+      .map(m => ({ ...m, riskScore: calcChurnScore(m) }))
+      .sort((a, b) => b.riskScore - a.riskScore);
 
     // ── Avg visits per member last 7 days ────────────────────────
     const weekAgo = now - MS_WEEK;
@@ -102,37 +210,66 @@ function useAnalytics({ checkIns = [], allMemberships = [], classes = [], coache
     const memberCount = Math.max(totalMembers || allMemberships.length, 1);
     const avgVisitsPerWeek = (totalCiThisWeek / memberCount).toFixed(1);
 
-    // ── Member segments (last 30 days) ───────────────────────────
+    // ── 7. SMOOTHED week-over-week KPI trend ─────────────────────
+    const ciCount = (weeksBack, numWeeks = 1) => {
+      const end = now - weeksBack * MS_WEEK;
+      const start = end - numWeeks * MS_WEEK;
+      return checkIns.filter(c => {
+        const t = new Date(c.check_in_date || c.created_date).getTime();
+        return t >= start && t < end;
+      }).length;
+    };
+    // 3-week rolling average: weeks 0-2 (current) vs weeks 3-5 (prior)
+    const smoothedCurrent = (ciCount(0) + ciCount(1) + ciCount(2)) / 3;
+    const smoothedPrior   = (ciCount(3) + ciCount(4) + ciCount(5)) / 3;
+    const weekChangePct = smoothedPrior > 0 ? Math.round(((smoothedCurrent - smoothedPrior) / smoothedPrior) * 100) : 0;
+    const totalWindowCIs = ciCount(0, 6);
+    const trendConfidence = totalWindowCIs < 15 ? "low" : totalWindowCIs > 50 ? "high" : "medium";
+
+    // ── 4. GYM-ADAPTIVE SEGMENT THRESHOLDS ───────────────────────
     const monthAgo = now - 30 * MS_DAY;
+    const memberVisitCounts = allMemberships.map(m =>
+      (ciByUser[m.user_id] || []).filter(t => t > monthAgo).length
+    ).filter(n => n > 0);
+
+    let threshSuperActive = 15, threshConsistent = 8, threshSlipping = 3;
+    if (memberVisitCounts.length >= 5) {
+      const sorted = [...memberVisitCounts].sort((a, b) => a - b);
+      const medianVisits = sorted[Math.floor(sorted.length / 2)];
+      if (medianVisits > 0) {
+        threshSuperActive = Math.round(medianVisits * 2);
+        threshConsistent  = medianVisits;
+        threshSlipping    = Math.max(1, Math.round(medianVisits * 0.3));
+      }
+    }
+
     const segments = { superActive: 0, consistent: 0, slipping: 0, atRisk: 0 };
     allMemberships.forEach(m => {
-      const cis = (ciByUser[m.user_id] || []).filter(t => t > monthAgo);
-      const count = cis.length;
-      if (count >= 15) segments.superActive++;
-      else if (count >= 8) segments.consistent++;
-      else if (count >= 3) segments.slipping++;
+      const count = (ciByUser[m.user_id] || []).filter(t => t > monthAgo).length;
+      if (count >= threshSuperActive) segments.superActive++;
+      else if (count >= threshConsistent) segments.consistent++;
+      else if (count >= threshSlipping) segments.slipping++;
       else segments.atRisk++;
     });
     const totalSeg = allMemberships.length || 1;
     const segmentsData = [
-      { label: "Super Active", sub: "15+ visits/mo", val: segments.superActive, pct: pct(segments.superActive, totalSeg), col: C.cyan },
-      { label: "Consistent",   sub: "8–14 visits",   val: segments.consistent,  pct: pct(segments.consistent, totalSeg),  col: C.blue },
-      { label: "Slipping",     sub: "3–7 visits",    val: segments.slipping,    pct: pct(segments.slipping, totalSeg),    col: C.amber },
-      { label: "At Risk",      sub: "0–2 visits",    val: segments.atRisk,      pct: pct(segments.atRisk, totalSeg),      col: C.red },
+      { label: "Super Active", sub: `${threshSuperActive}+ visits/mo`, val: segments.superActive, pct: pct(segments.superActive, totalSeg), col: C.cyan },
+      { label: "Consistent",   sub: `${threshConsistent}–${threshSuperActive - 1} visits`,  val: segments.consistent,  pct: pct(segments.consistent, totalSeg),  col: C.blue },
+      { label: "Slipping",     sub: `${threshSlipping}–${threshConsistent - 1} visits`,     val: segments.slipping,    pct: pct(segments.slipping, totalSeg),    col: C.amber },
+      { label: "At Risk",      sub: `0–${threshSlipping - 1} visits`,                       val: segments.atRisk,      pct: pct(segments.atRisk, totalSeg),      col: C.red },
     ];
 
-    // ── Segment trends — last 4 months ───────────────────────────
+    // ── Segment trends — last 4 months (adaptive thresholds) ─────
     const segmentTrend = Array.from({ length: 4 }, (_, i) => {
       const mEnd   = now - i * 30 * MS_DAY;
       const mStart = mEnd - 30 * MS_DAY;
       const label  = new Date(mStart).toLocaleDateString("en-GB", { month: "short" });
       const counts = { super: 0, cons: 0, slip: 0, risk: 0 };
       allMemberships.forEach(m => {
-        const cis = (ciByUser[m.user_id] || []).filter(t => t >= mStart && t < mEnd);
-        const n = cis.length;
-        if (n >= 15) counts.super++;
-        else if (n >= 8) counts.cons++;
-        else if (n >= 3) counts.slip++;
+        const n = (ciByUser[m.user_id] || []).filter(t => t >= mStart && t < mEnd).length;
+        if (n >= threshSuperActive) counts.super++;
+        else if (n >= threshConsistent) counts.cons++;
+        else if (n >= threshSlipping) counts.slip++;
         else counts.risk++;
       });
       return { m: label, ...counts };
@@ -151,88 +288,129 @@ function useAnalytics({ checkIns = [], allMemberships = [], classes = [], coache
       return { w: weekLabel(new Date(wStart)), total, avg: avgV };
     }).reverse();
 
-    // ── Peak hours ───────────────────────────────────────────────
+    // ── 5. PEAK HOURS + PEAK DAY OF WEEK ─────────────────────────
     const hourBuckets = {};
+    const dayBuckets = { Mon: 0, Tue: 0, Wed: 0, Thu: 0, Fri: 0, Sat: 0, Sun: 0 };
+    const DAY_NAMES = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
     checkIns.forEach(c => {
       const d = new Date(c.check_in_date || c.created_date);
       const h = d.getHours();
       const label = h === 0 ? "12am" : h < 12 ? `${h}am` : h === 12 ? "12pm" : `${h - 12}pm`;
       hourBuckets[label] = (hourBuckets[label] || 0) + 1;
+      const dayName = DAY_NAMES[d.getDay()];
+      if (dayName !== "Sun") dayBuckets[dayName] = (dayBuckets[dayName] || 0) + 1;
+      else dayBuckets["Sun"] = (dayBuckets["Sun"] || 0) + 1;
     });
     const hoursData = Object.entries(hourBuckets)
       .map(([h, v]) => ({ h, v }))
       .sort((a, b) => {
         const toMins = s => {
-          const isAm = s.includes("am"), isPm = s.includes("pm");
+          const isPm = s.includes("pm");
           let h = parseInt(s);
           if (isPm && h !== 12) h += 12;
-          if (isAm && h === 12) h = 0;
+          if (!isPm && h === 12) h = 0;
           return h * 60;
         };
         return toMins(a.h) - toMins(b.h);
       });
+    // peakDayData: Mon–Sun order
+    const peakDayData = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"].map(d => ({ d, v: dayBuckets[d] || 0 }));
+    const peakDay = peakDayData.reduce((best, cur) => cur.v > best.v ? cur : best, { d: "—", v: 0 }).d;
 
-    // ── Retention funnel ─────────────────────────────────────────
+    // ── 3. RETENTION OVER TIME — true join-month cohorts ─────────
     const joined = allMemberships.length;
-    const funnelW1 = w1Eligible.length > 0 ? w1Returned.length : 0;
-    // Month 1
-    const m1Eligible = allMemberships.filter(m => {
-      const jt = joinMap[m.user_id];
-      return jt && (now - jt) > 30 * MS_DAY;
-    });
-    const m1Active = m1Eligible.filter(m => {
-      const cis = ciByUser[m.user_id] || [];
-      const jt = joinMap[m.user_id] || 0;
-      return cis.some(t => t >= jt + 20 * MS_DAY && t <= jt + 45 * MS_DAY);
-    });
-    const funnelM1 = pct(m1Active.length, m1Eligible.length);
     const funnelM3 = month3Rate;
 
-    // ── Retention over time (last 6 months cohort w1/m1/m3 rates) ─
+    // Build cohort key: "YYYY-MM"
+    const cohortMap = {};
+    allMemberships.forEach(m => {
+      const jt = joinMap[m.user_id];
+      if (!jt) return;
+      const d = new Date(jt);
+      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+      if (!cohortMap[key]) cohortMap[key] = [];
+      cohortMap[key].push(m);
+    });
+
+    // Last 6 calendar months
     const retentionOverTime = Array.from({ length: 6 }, (_, i) => {
-      const mStart = now - (5 - i) * 30 * MS_DAY - 30 * MS_DAY;
-      const mEnd   = mStart + 30 * MS_DAY;
-      const label  = new Date(mStart).toLocaleDateString("en-GB", { month: "short" });
-      const cohort = allMemberships.filter(m => {
-        const jt = joinMap[m.user_id];
-        return jt && jt >= mStart && jt < mEnd;
-      });
+      const refDate = new Date(now);
+      refDate.setDate(1);
+      refDate.setMonth(refDate.getMonth() - (5 - i));
+      const key = `${refDate.getFullYear()}-${String(refDate.getMonth() + 1).padStart(2, "0")}`;
+      const label = refDate.toLocaleDateString("en-GB", { month: "short", year: "2-digit" });
+      const cohort = cohortMap[key] || [];
       if (!cohort.length) return { m: label, w1: null, m1: null, m3: null };
+
+      const cohortJoinStart = refDate.getTime();
+      const cohortJoinEnd = new Date(refDate.getFullYear(), refDate.getMonth() + 1, 1).getTime();
+      const msElapsed = now - cohortJoinStart;
+
       const cW1 = cohort.filter(m => {
         const jt = joinMap[m.user_id];
         return (ciByUser[m.user_id] || []).some(t => t > jt && t <= jt + MS_WEEK);
       });
-      const cM1 = cohort.filter(m => {
-        const jt = joinMap[m.user_id];
-        return (ciByUser[m.user_id] || []).some(t => t >= jt + 20 * MS_DAY && t <= jt + 45 * MS_DAY);
-      });
-      const cM3 = cohort.filter(m => {
-        const jt = joinMap[m.user_id];
-        return (ciByUser[m.user_id] || []).some(t => t >= jt + 75 * MS_DAY && t <= jt + 105 * MS_DAY);
-      });
-      return {
-        m: label,
-        w1: pct(cW1.length, cohort.length),
-        m1: pct(cM1.length, cohort.length),
-        m3: pct(cM3.length, cohort.length),
-      };
+      // M1: only if ≥30 days have elapsed since cohort joined
+      const m1Rate = msElapsed >= 30 * MS_DAY
+        ? pct(cohort.filter(m => {
+            const jt = joinMap[m.user_id];
+            return (ciByUser[m.user_id] || []).some(t => t >= jt + 20 * MS_DAY && t <= jt + 45 * MS_DAY);
+          }).length, cohort.length)
+        : null;
+      // M3: only if ≥90 days have elapsed
+      const m3Rate = msElapsed >= 90 * MS_DAY
+        ? pct(cohort.filter(m => {
+            const jt = joinMap[m.user_id];
+            return (ciByUser[m.user_id] || []).some(t => t >= jt + 75 * MS_DAY && t <= jt + 105 * MS_DAY);
+          }).length, cohort.length)
+        : null;
+
+      return { m: label, w1: pct(cW1.length, cohort.length), m1: m1Rate, m3: m3Rate };
     });
 
-    // ── Class performance ────────────────────────────────────────
+    // ── 6. CLASS PERFORMANCE with real trend ─────────────────────
     const classData = classes.map(cls => {
       const capacity = cls.max_capacity || 0;
       const sessions = (cls.schedule || []).length || 1;
-      // use attendees or booked count if available
       const booked = cls.booked ?? cls.attendees ?? 0;
       const fillRate = capacity > 0 ? pct(booked, capacity) : 0;
-      return {
-        name: cls.name,
-        sessions,
-        fill: fillRate,
-        trend: 0, // no historical booking data available per class
-        capacity,
-        booked,
-      };
+
+      let trend = 0;
+      if (classHistory?.length) {
+        // Use snapshot data if available
+        const snapshots = classHistory
+          .filter(h => h.class_id === cls.id && h.capacity > 0)
+          .sort((a, b) => new Date(b.recorded_at) - new Date(a.recorded_at));
+        if (snapshots.length >= 2) {
+          const recent = snapshots[0];
+          const MS4W = 28 * MS_DAY;
+          const prior = snapshots.find(h => new Date(recent.recorded_at) - new Date(h.recorded_at) >= MS4W);
+          if (prior && prior.capacity > 0) {
+            const recentFill = pct(recent.booked, recent.capacity);
+            const priorFill  = pct(prior.booked, prior.capacity);
+            trend = recentFill - priorFill;
+          }
+        }
+      } else {
+        // Infer from checkIns: class-attributed CIs last 2 weeks vs prior 2 weeks
+        const name = (cls.name || "").toLowerCase();
+        const classCI = checkIns.filter(c =>
+          c.class_name?.toLowerCase().includes(name) || c.class_id === cls.id
+        );
+        const MS2W = 14 * MS_DAY;
+        const recent2w = classCI.filter(c => new Date(c.check_in_date || c.created_date).getTime() >= now - MS2W).length;
+        const prior2w  = classCI.filter(c => {
+          const t = new Date(c.check_in_date || c.created_date).getTime();
+          return t >= now - 2 * MS2W && t < now - MS2W;
+        }).length;
+        if (capacity > 0 && (recent2w > 0 || prior2w > 0)) {
+          const recentFill = pct(recent2w, capacity);
+          const priorFill  = pct(prior2w, capacity);
+          trend = recentFill - priorFill;
+        }
+      }
+
+      return { name: cls.name, sessions, fill: fillRate, trend, capacity, booked };
     }).sort((a, b) => b.fill - a.fill);
 
     // ── Engagement radar ─────────────────────────────────────────
@@ -242,58 +420,125 @@ function useAnalytics({ checkIns = [], allMemberships = [], classes = [], coache
     const pollVoters = polls.reduce((s, p) => s + (p.voters || []).length, 0);
     const classParticipants = classes.reduce((s, cls) => s + (cls.booked ?? cls.attendees ?? 0), 0);
     const engMemberBase = Math.max(totalSeg, 1);
+    const activePct = pct(activeUsers, engMemberBase);
     const engagementData = [
-      { subject: "Check-ins",  A: pct(activeUsers, engMemberBase) },
+      { subject: "Check-ins",  A: activePct },
       { subject: "Classes",    A: pct(classParticipants, engMemberBase) },
       { subject: "Challenges", A: pct(challengeParticipants, engMemberBase) },
       { subject: "Community",  A: pct(communityPostUsers, engMemberBase) },
       { subject: "Polls",      A: pct(pollVoters, engMemberBase) },
     ];
 
-    // ── Insights (derived from real data) ────────────────────────
-    const biggestDrop = week1ReturnRate < 60 ? "Week 1" : funnelM1 < week1ReturnRate - 10 ? "Month 1" : "Month 3";
-    const slippingCount = segments.slipping;
-    const insights = [
-      week1ReturnRate >= 60
-        ? { icon: TrendingUp, color: C.cyan, bg: C.cyanD, brd: C.cyanB, tag: "Positive signal",
-            title: `${week1ReturnRate}% of new members return in Week 1`,
-            body: `Members who check in within their first 7 days show strong early habit formation. Keep nurturing them through week 2–4.` }
-        : { icon: AlertTriangle, color: C.amber, bg: C.amberD, brd: C.amberB, tag: "Needs attention",
-            title: `Week 1 return rate is only ${week1ReturnRate}%`,
-            body: `${100 - week1ReturnRate}% of new members don't return after their first visit. A welcome message on days 3–5 could improve this significantly.` },
-      {
-        icon: AlertTriangle, color: C.amber, bg: C.amberD, brd: C.amberB, tag: "Drop-off point",
-        title: `Biggest churn window: ${biggestDrop}`,
-        body: `${atRiskMembers.length} members are currently inactive for 14+ days. Targeted outreach now can prevent further churn.`,
-      },
-      slippingCount > 0
-        ? { icon: Zap, color: C.blue, bg: C.blueD, brd: C.blueB, tag: "Opportunity",
-            title: `${slippingCount} members slipping from Consistent → At Risk`,
-            body: `Re-engage these members with a challenge invite or personal message before they drop to At Risk status.` }
-        : { icon: TrendingUp, color: C.green, bg: C.greenD, brd: C.greenB, tag: "Positive signal",
-            title: "Member segments are healthy",
-            body: `${segments.superActive} super-active and ${segments.consistent} consistent members forming your retention backbone.` },
-    ];
+    // ── 10. GYM HEALTH SCORE ─────────────────────────────────────
+    const retentionScore = Math.min(30, ((week1ReturnRate / 100) * 10 + (funnelM1 / 100) * 10 + (month3Rate / 100) * 10));
+    const engagementScore = Math.min(25, (avg(engagementData.map(d => d.A)) / 100) * 25);
+    const activityScore = Math.min(25, (activePct / 100) * 25);
+    const riskScore30 = Math.max(0, 20 - (atRiskMembers.length / Math.max(totalSeg, 1)) * 20);
+    const gymHealthScore = Math.round(retentionScore + engagementScore + activityScore + riskScore30);
+    const gymHealthLabel = gymHealthScore >= 80 ? "Excellent" : gymHealthScore >= 60 ? "Good" : gymHealthScore >= 40 ? "Needs Work" : "Critical";
 
-    // ── This week vs last week check-in delta ────────────────────
-    const lastWeekCi = checkIns.filter(c => {
-      const t = new Date(c.check_in_date || c.created_date).getTime();
-      return t >= now - 2 * MS_WEEK && t < now - MS_WEEK;
-    }).length;
-    const weekChangePct = lastWeekCi > 0 ? Math.round(((totalCiThisWeek - lastWeekCi) / lastWeekCi) * 100) : 0;
+    // ── 9. RANKED SIGNAL INSIGHTS ────────────────────────────────
+    const signals = [];
+    // Generate all signals with impact scores
+    const pushSignal = (impact, category, isPositive, icon, color, bgD, brdD, tag, title, body) => {
+      signals.push({ impact, category, isPositive, icon, color, bg: bgD, brd: brdD, tag, title, body });
+    };
+
+    // Retention signals
+    if (week1ReturnRate >= 65) {
+      pushSignal(w1Eligible.length * 1.5, "retention", true, TrendingUp, C.cyan, C.cyanD, C.cyanB,
+        "Positive signal", `${week1ReturnRate}% of new members return in Week 1`,
+        `Members who check in within their first 7 days show strong early habit formation. Keep nurturing them through week 2–4.`);
+    } else {
+      pushSignal((100 - week1ReturnRate) * w1Eligible.length, "retention", false, AlertTriangle, C.amber, C.amberD, C.amberB,
+        "Needs attention", `Week 1 return rate is only ${week1ReturnRate}%`,
+        `${100 - week1ReturnRate}% of new members don't return after their first visit. A welcome message on days 3–5 could improve this significantly.`);
+    }
+    if (month3Rate >= 50) {
+      pushSignal(m3Eligible.length * 1.2, "retention", true, TrendingUp, C.green, C.greenD, C.greenB,
+        "Positive signal", `Strong long-term retention — ${month3Rate}% reach Month 3`,
+        `Over half your members are still active three months after joining. This is above industry average and signals strong community health.`);
+    } else if (m3Eligible.length > 0) {
+      pushSignal((50 - month3Rate) * m3Eligible.length, "retention", false, AlertTriangle, C.amber, C.amberD, C.amberB,
+        "Drop-off point", `Only ${month3Rate}% retention at Month 3`,
+        `${m3Eligible.length - m3Active.length} members dropped off by month 3. Structured check-in programmes or milestone rewards in months 2–3 can reverse this.`);
+    }
+
+    // At-risk signal
+    if (atRiskMembers.length > 0) {
+      pushSignal(atRiskMembers.length * estMonthlyValue, "retention", false, AlertTriangle, C.red, C.redD, C.redB,
+        "Churn risk", `${atRiskMembers.length} members inactive 14+ days`,
+        `~£${atRiskMembers.length * estMonthlyValue}/mo at risk. These members are in the critical churn window — targeted outreach now recovers ~1 in 3.`);
+    }
+
+    // Engagement signals
+    if (segments.slipping > 0) {
+      pushSignal(segments.slipping * estMonthlyValue * 0.5, "engagement", false, Zap, C.blue, C.blueD, C.blueB,
+        "Opportunity", `${segments.slipping} members slipping toward At Risk`,
+        `Re-engage with a challenge invite or personal message before they drop below ${threshSlipping} visits/mo.`);
+    }
+    if (activePct >= 60) {
+      pushSignal(activeUsers, "engagement", true, TrendingUp, C.green, C.greenD, C.greenB,
+        "Positive signal", `${activePct}% of members active in the last 30 days`,
+        `Strong engagement — ${activeUsers} members checked in recently. This signals a healthy, active community.`);
+    }
+    const avgEngScore = Math.round(avg(engagementData.map(d => d.A)));
+    if (avgEngScore < 30) {
+      pushSignal(totalSeg * 20, "engagement", false, BarChart2, C.amber, C.amberD, C.amberB,
+        "Engagement gap", `Community engagement averaging only ${avgEngScore}%`,
+        `Low participation across challenges, polls, and classes. A single coordinated campaign can lift all three metrics simultaneously.`);
+    }
+
+    // Segment signals
+    if (segments.superActive > 0) {
+      pushSignal(segments.superActive * 2, "engagement", true, TrendingUp, C.cyan, C.cyanD, C.cyanB,
+        "Positive signal", `${segments.superActive} super-active members forming your backbone`,
+        `${segments.superActive} members exceed ${threshSuperActive} visits/mo. Celebrate them publicly — they drive referrals and culture.`);
+    }
+
+    // Sort by impact descending
+    signals.sort((a, b) => b.impact - a.impact);
+
+    // Pick top 3 across different categories; ensure at most 2 negatives if any positives exist
+    const chosen = [];
+    const usedCategories = new Set();
+    const hasPositiveSignal = signals.some(s => s.isPositive);
+    let positiveIncluded = false;
+
+    for (const sig of signals) {
+      if (chosen.length >= 3) break;
+      if (usedCategories.has(sig.category + sig.isPositive)) continue; // avoid same cat+polarity twice
+      if (chosen.length === 2 && !positiveIncluded && hasPositiveSignal && !sig.isPositive) continue;
+      chosen.push(sig);
+      usedCategories.add(sig.category + sig.isPositive);
+      if (sig.isPositive) positiveIncluded = true;
+    }
+    // Fallback if < 3 chosen
+    if (chosen.length < 3) {
+      for (const sig of signals) {
+        if (chosen.length >= 3) break;
+        if (!chosen.includes(sig)) chosen.push(sig);
+      }
+    }
+    const insights = chosen.slice(0, 3);
 
     return {
+      estMonthlyValue,
       week1ReturnRate,
+      week1ReturnTrend,
       month3Rate,
       atRiskMembers,
       atRiskCount: atRiskMembers.length,
       avgVisitsPerWeek,
       totalCiThisWeek,
       weekChangePct,
+      trendConfidence,
       segmentsData,
       segmentTrend,
       visitTrend,
       hoursData,
+      peakDayData,
+      peakDay,
       funnelJoined: joined,
       funnelW1Pct: pct(w1Returned.length, w1Eligible.length),
       funnelW1Count: w1Returned.length,
@@ -308,9 +553,11 @@ function useAnalytics({ checkIns = [], allMemberships = [], classes = [], coache
       challengePct: pct(challengeParticipants, engMemberBase),
       pollPct: pct(pollVoters, engMemberBase),
       classFillPct: classData.length > 0 ? Math.round(avg(classData.map(c => c.fill))) : 0,
-      activePct: pct(activeUsers, engMemberBase),
+      activePct,
+      gymHealthScore,
+      gymHealthLabel,
     };
-  }, [checkIns, allMemberships, classes, challenges, polls, posts, totalMembers]);
+  }, [checkIns, allMemberships, classes, challenges, polls, posts, totalMembers, membershipPlans, classHistory]);
 }
 
 /* ─── SHARED COMPONENTS ──────────────────────────────────────── */
@@ -369,9 +616,9 @@ function ChartTip({ active, payload, label, suffix = "" }) {
    SECTION 1 — KPI STRIP
 ═══════════════════════════════════════════════════════════════ */
 function KpiStrip({ isMobile, data }) {
-  const { week1ReturnRate, month3Rate, atRiskCount, avgVisitsPerWeek, weekChangePct } = data;
+  const { week1ReturnRate, week1ReturnTrend, month3Rate, atRiskCount, avgVisitsPerWeek, weekChangePct } = data;
   const kpis = [
-    { label: "Week 1 Return",    value: `${week1ReturnRate}%`, trend: 0, sub: "of new members return in 7d", accent: C.cyan },
+    { label: "Week 1 Return",    value: `${week1ReturnRate}%`, trend: week1ReturnTrend, sub: "of new members return in 7d", accent: C.cyan },
     { label: "Month 3 Retained", value: `${month3Rate}%`,      trend: 0, sub: "long-term cohort health",     accent: C.cyan },
     { label: "At Risk",          value: `${atRiskCount}`,       trend: atRiskCount > 0 ? -1 : 1, sub: `inactive 14+ days`, accent: C.red, trendInvert: true },
     { label: "Avg Visits / Week",value: avgVisitsPerWeek,       trend: weekChangePct, sub: "per member this week",  accent: C.blue },
@@ -578,7 +825,7 @@ function MemberSegmentsSection({ isMobile, data }) {
    SECTION 5 — VISIT TRENDS + PEAK HOURS
 ═══════════════════════════════════════════════════════════════ */
 function VisitTrendsSection({ isMobile, data }) {
-  const { visitTrend, hoursData, totalCiThisWeek, avgVisitsPerWeek, weekChangePct } = data;
+  const { visitTrend, hoursData, peakDay, totalCiThisWeek, avgVisitsPerWeek, weekChangePct } = data;
   return (
     <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "2fr 1fr", gap: 12 }}>
       <Card>
@@ -656,6 +903,7 @@ function VisitTrendsSection({ isMobile, data }) {
             {hoursData.length > 0 && (
               <div style={{ marginTop: 9, fontSize: 10, color: C.t3, lineHeight: 1.5 }}>
                 {hoursData.reduce((a, b) => a.v > b.v ? a : b).h} is your peak hour.
+                {peakDay && peakDay !== "—" && <span> {peakDay} is your busiest day.</span>}
               </div>
             )}
           </>
@@ -770,11 +1018,10 @@ function EngagementSection({ isMobile, data }) {
    SECTION 8 — AT-RISK / REVENUE IMPACT
 ═══════════════════════════════════════════════════════════════ */
 function AtRiskSection({ isMobile, data }) {
-  const { atRiskMembers } = data;
+  const { atRiskMembers, estMonthlyValue } = data;
   const shown = atRiskMembers.slice(0, 6);
-  // Estimate monthly value at ~£60/member (no actual payment data available)
-  const estMonthlyValue = 60;
-  const totalRisk = shown.length * estMonthlyValue;
+  // Use ALL at-risk members for total revenue exposure (not just the 6 shown)
+  const totalRisk = atRiskMembers.length * estMonthlyValue;
 
   return (
     <Card>
@@ -792,8 +1039,8 @@ function AtRiskSection({ isMobile, data }) {
         <div style={{ fontSize: 12, color: C.green, textAlign: "center", padding: "16px 0" }}>✓ No members currently at risk</div>
       ) : (
         shown.map((m, i) => {
-          const days = m.daysSinceLastCheckIn;
-          const riskScore = Math.min(100, Math.round((days / 60) * 100));
+          // Use composite churn score attached by useAnalytics
+          const riskScore = m.riskScore ?? Math.min(100, Math.round((m.daysSinceLastCheckIn / 60) * 100));
           const name = m.user_name || m.name || "Member";
           return (
             <div key={m.user_id || i} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "7px 0", borderBottom: i < shown.length - 1 ? `1px solid ${C.brd}` : "none" }}>
@@ -804,7 +1051,7 @@ function AtRiskSection({ isMobile, data }) {
                     <div style={{ width: `${riskScore}%`, height: "100%", background: riskCol(riskScore), borderRadius: 2 }}/>
                   </div>
                   <span style={{ fontSize: 9.5, color: riskCol(riskScore), fontWeight: 700, ...mono }}>{riskScore}%</span>
-                  <span style={{ fontSize: 9.5, color: C.t3 }}>{days === 999 ? "never visited" : `${days}d absent`}</span>
+                  <span style={{ fontSize: 9.5, color: C.t3 }}>{m.daysSinceLastCheckIn === 999 ? "never visited" : `${m.daysSinceLastCheckIn}d absent`}</span>
                 </div>
               </div>
               <span style={{ fontSize: 10.5, color: C.t2, ...mono }}>~£{estMonthlyValue}/mo</span>
@@ -814,7 +1061,7 @@ function AtRiskSection({ isMobile, data }) {
       )}
       {shown.length > 0 && (
         <div style={{ marginTop: 10, padding: "8px 10px", borderRadius: 7, background: C.redD, border: `1px solid ${C.redB}` }}>
-          <div style={{ fontSize: 10.5, color: C.red, fontWeight: 600, marginBottom: 2 }}>{shown.length} members need attention</div>
+          <div style={{ fontSize: 10.5, color: C.red, fontWeight: 600, marginBottom: 2 }}>{atRiskMembers.length} members need attention</div>
           <div style={{ fontSize: 10, color: C.t2 }}>Sending a personal message to at-risk members can significantly improve re-engagement rates.</div>
         </div>
       )}
@@ -828,6 +1075,7 @@ function AtRiskSection({ isMobile, data }) {
 export default function TabAnalytics({
   checkIns = [], allMemberships = [], classes = [], coaches = [],
   challenges = [], polls = [], posts = [], totalMembers = 0,
+  membershipPlans = null, classHistory = null,
   sparkData, Spark, Delta, gymId,
   // legacy props passed through but not needed
   ...rest
@@ -839,7 +1087,7 @@ export default function TabAnalytics({
     return () => window.removeEventListener("resize", h);
   }, []);
 
-  const data = useAnalytics({ checkIns, allMemberships, classes, challenges, polls, posts, totalMembers });
+  const data = useAnalytics({ checkIns, allMemberships, classes, challenges, polls, posts, totalMembers, membershipPlans, classHistory });
 
   return (
     <div style={{ padding: isMobile ? "12px 12px" : "16px 18px", display: "flex", flexDirection: "column", gap: 18, fontFamily: FONT, color: C.t1 }}>
@@ -852,11 +1100,20 @@ export default function TabAnalytics({
           </div>
           <div style={{ fontSize: 10.5, color: C.t3, marginTop: 2 }}>Retention, engagement and visit habits — live from your data</div>
         </div>
-        {data.atRiskCount > 0 && (
-          <div style={{ display: "flex", alignItems: "center", gap: 5, padding: "5px 10px", borderRadius: 7, background: C.amberD, border: `1px solid ${C.amberB}`, fontSize: 11, color: C.amber, fontWeight: 600 }}>
-            <AlertTriangle style={{ width: 10, height: 10 }}/> {data.atRiskCount} members need attention
+        <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+          {data.atRiskCount > 0 && (
+            <div style={{ display: "flex", alignItems: "center", gap: 5, padding: "5px 10px", borderRadius: 7, background: C.amberD, border: `1px solid ${C.amberB}`, fontSize: 11, color: C.amber, fontWeight: 600 }}>
+              <AlertTriangle style={{ width: 10, height: 10 }}/> {data.atRiskCount} members need attention
+            </div>
+          )}
+          <div style={{ display: "flex", alignItems: "center", gap: 5, padding: "5px 10px", borderRadius: 7, fontSize: 11, fontWeight: 700,
+            background: data.gymHealthScore >= 80 ? C.cyanD : data.gymHealthScore >= 60 ? C.cyanD : data.gymHealthScore >= 40 ? C.amberD : C.redD,
+            border: `1px solid ${data.gymHealthScore >= 80 ? C.cyanB : data.gymHealthScore >= 60 ? C.cyanB : data.gymHealthScore >= 40 ? C.amberB : C.redB}`,
+            color: data.gymHealthScore >= 80 ? C.cyan : data.gymHealthScore >= 60 ? C.cyan : data.gymHealthScore >= 40 ? C.amber : C.red,
+          }}>
+            {data.gymHealthScore}/100 — {data.gymHealthLabel}
           </div>
-        )}
+        </div>
       </div>
 
       <KpiStrip isMobile={isMobile} data={data}/>
