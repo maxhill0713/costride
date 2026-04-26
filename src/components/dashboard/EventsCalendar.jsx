@@ -195,6 +195,18 @@ export default function EventsCalendar({ events, classes = [], onDeleteEvent, on
           if (!classesByDay[dateKey]) classesByDay[dateKey] = [];
           classesByDay[dateKey].push({ ...cls, _scheduleTime: s.time });
         }
+      } else if (s.day) {
+        // No date set — treat as recurring weekly by day name
+        const targetDow = DAY_NAME_TO_DOW[s.day];
+        if (targetDow === undefined) return;
+        for (let d = 1; d <= daysInView; d++) {
+          const cellDate = new Date(viewYear, viewMonth, d);
+          if (cellDate.getDay() === targetDow) {
+            const key = `${viewYear}-${String(viewMonth+1).padStart(2,"0")}-${String(d).padStart(2,"0")}`;
+            if (!classesByDay[key]) classesByDay[key] = [];
+            classesByDay[key].push({ ...cls, _scheduleTime: s.time });
+          }
+        }
       }
     });
   });
