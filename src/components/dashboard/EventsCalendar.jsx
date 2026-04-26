@@ -94,10 +94,13 @@ export default function EventsCalendar({ events, classes = [], onDeleteEvent, on
   const daysInView = new Date(viewYear, viewMonth + 1, 0).getDate();
   (classes || []).forEach(cls => {
     (cls.schedule || []).forEach(s => {
-      if (!s.date) return; // skip any legacy entries with no date
+      // Skip entries with no date
+      if (!s.date) return;
+      // Normalise: strip any time component so key is always YYYY-MM-DD
+      const dateKey = s.date.length > 10 ? s.date.slice(0, 10) : s.date;
       if (s.weekly === true) {
         // Weekly repeating: show on matching weekday ON OR AFTER the start date
-        const startDate = new Date(s.date + 'T00:00:00');
+        const startDate = new Date(dateKey + 'T00:00:00');
         const targetDow = DAY_NAME_TO_DOW[s.day];
         if (targetDow === undefined) return;
         for (let d = 1; d <= daysInView; d++) {
@@ -110,8 +113,8 @@ export default function EventsCalendar({ events, classes = [], onDeleteEvent, on
         }
       } else {
         // One-off: show only on the specific date
-        if (!classesByDay[s.date]) classesByDay[s.date] = [];
-        classesByDay[s.date].push({ ...cls, _scheduleTime: s.time });
+        if (!classesByDay[dateKey]) classesByDay[dateKey] = [];
+        classesByDay[dateKey].push({ ...cls, _scheduleTime: s.time });
       }
     });
   });
@@ -157,6 +160,9 @@ export default function EventsCalendar({ events, classes = [], onDeleteEvent, on
     return d.getFullYear() === viewYear && d.getMonth() === viewMonth;
   }).length;
 
+  // Count classes visible in this month's view
+  const totalClasses = Object.values(classesByDay).flat().length;
+
   return (
     <>
       <style>{`
@@ -174,7 +180,7 @@ export default function EventsCalendar({ events, classes = [], onDeleteEvent, on
 
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
         <span style={{ fontSize: 12, fontWeight: 500, color: C.t2 }}>
-          {totalEvents} event{totalEvents !== 1 ? "s" : ""} · {classes.length} class{classes.length !== 1 ? "es" : ""} this month
+          {totalEvents} event{totalEvents !== 1 ? "s" : ""} · {totalClasses} class{totalClasses !== 1 ? "es" : ""} this month
         </span>
         <div style={{ display: "flex", alignItems: "center", gap: 0 }}>
           <button onClick={() => navigate(-1)} disabled={animating}
