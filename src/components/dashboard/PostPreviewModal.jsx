@@ -171,21 +171,21 @@ function WorkoutSwipePanel({ post }) {
             alt="workout"
             style={{ position: "absolute", left: 0, right: 0, width: "100%", height: "130%", top: "-15%", objectFit: "cover", objectPosition: "center center" }}
           />
-          {/* Arrow hint — right arrow when on image, left arrow when on summary */}
+          {/* Arrow hint — right arrow when on image */}
           {slide === 0 && (
             <button
               onClick={() => setSlide(1)}
               style={{
                 position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)",
-                width: 36, height: 36, borderRadius: "50%",
-                background: "rgba(255,255,255,0.18)", border: "1px solid rgba(255,255,255,0.35)",
+                width: 34, height: 34, borderRadius: "50%",
+                background: "rgba(0,0,0,0.45)", border: "1px solid rgba(255,255,255,0.25)",
                 display: "flex", alignItems: "center", justifyContent: "center",
                 cursor: "pointer", backdropFilter: "blur(6px)", transition: "all 0.2s",
               }}
-              onMouseEnter={e => { e.currentTarget.style.background = "rgba(255,255,255,0.3)"; }}
-              onMouseLeave={e => { e.currentTarget.style.background = "rgba(255,255,255,0.18)"; }}
+              onMouseEnter={e => { e.currentTarget.style.background = "rgba(0,0,0,0.65)"; }}
+              onMouseLeave={e => { e.currentTarget.style.background = "rgba(0,0,0,0.45)"; }}
             >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                 <polyline points="9 18 15 12 9 6" />
               </svg>
             </button>
@@ -200,15 +200,15 @@ function WorkoutSwipePanel({ post }) {
               onClick={() => setSlide(0)}
               style={{
                 position: "absolute", left: 6, top: "50%", transform: "translateY(-50%)",
-                width: 32, height: 32, borderRadius: "50%",
-                background: "rgba(0,0,0,0.45)", border: "1px solid rgba(255,255,255,0.2)",
+                width: 34, height: 34, borderRadius: "50%",
+                background: "rgba(0,0,0,0.45)", border: "1px solid rgba(255,255,255,0.25)",
                 display: "flex", alignItems: "center", justifyContent: "center",
                 cursor: "pointer", backdropFilter: "blur(6px)", transition: "all 0.2s", zIndex: 10,
               }}
               onMouseEnter={e => { e.currentTarget.style.background = "rgba(0,0,0,0.65)"; }}
               onMouseLeave={e => { e.currentTarget.style.background = "rgba(0,0,0,0.45)"; }}
             >
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                 <polyline points="15 18 9 12 15 6" />
               </svg>
             </button>
