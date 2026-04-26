@@ -662,13 +662,15 @@ function PostCard({ post, onLike, onComment, onSave, onDelete, fullWidth = false
     gcTime: 30 * 60 * 1000,
   });
 
-  const { data: postAuthorStreak } = useQuery({
+  // Use the streak saved at post time; fall back to fetching current streak only for old posts without it
+  const { data: postAuthorStreakFallback } = useQuery({
     queryKey: ['postAuthorStreak', post.member_id],
     queryFn: () => base44.functions.invoke('getUserAvatars', { userIds: [post.member_id] }).then(r => r.data?.avatars?.[post.member_id]?.current_streak ?? null),
-    enabled: !!post.member_id && !isGymAuthoredPost && isWorkoutPost,
+    enabled: !!post.member_id && !isGymAuthoredPost && isWorkoutPost && post.streak_at_post_time == null,
     staleTime: 5 * 60 * 1000,
     gcTime: 15 * 60 * 1000,
   });
+  const postAuthorStreak = post.streak_at_post_time ?? postAuthorStreakFallback;
 
   const resolvedMemberName = isGymAuthoredPost
     ? (gymData?.name || post.member_name || 'Gym')

@@ -75,6 +75,10 @@
       "type": "string",
       "description": "Total volume lifted (e.g. '4,200 kg')"
     },
+    "streak_at_post_time": {
+      "type": "number",
+      "description": "Author's streak value at the moment they shared this workout post"
+    },
     "likes": {
       "type": "number",
       "default": 0,
@@ -153,6 +157,11 @@
       "type": "boolean",
       "default": false,
       "description": "Whether this post is hidden from the feed"
+    },
+    "is_draft": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether this post is saved as a draft (not yet published)"
     },
     "share_with_community": {
       "type": "boolean",
