@@ -7,8 +7,8 @@ const C = {
   bg: "#000000", card: "#141416", brd: "#222226", brd2: "#2a2a30",
   t1: "#ffffff", t2: "#8a8a94", t3: "#444450",
   cyan: "#4d7fff", cyanDim: "rgba(77,127,255,0.12)", cyanBrd: "rgba(77,127,255,0.28)",
-  // Professional muted event colour — slate blue
-  evBg: "rgba(99,115,152,0.18)", evBrd: "rgba(99,115,152,0.28)", evTxt: "#ffffff",
+  // Events — muted blue
+  evBg: "rgba(77,127,255,0.2)", evBrd: "rgba(77,127,255,0.25)", evTxt: "rgba(255,255,255,0.82)",
 };
 const FONT = "'DM Sans', 'Segoe UI', system-ui, sans-serif";
 const DAYS_OF_WEEK = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
@@ -224,9 +224,9 @@ function DayDetailModal({ cell, dateLabel, onClose, onSelectEvent, onSelectClass
                 const left = `${item.col * colW * 100}%`;
                 const width = `calc(${colW * 100}% - 4px)`;
                 const color = item.color;
-                const bg = item.type === "event" ? C.evBg : hexToRgba(color, 0.13);
+                const bg = item.type === "event" ? C.evBg : hexToRgba(color, 0.18);
                 const brd = item.type === "event" ? C.evBrd : hexToRgba(color, 0.22);
-                const leftAccent = item.type === "event" ? "rgba(99,115,152,0.6)" : hexToRgba(color, 0.55);
+                const leftAccent = item.type === "event" ? "rgba(77,127,255,0.7)" : hexToRgba(color, 0.55);
                 const label = item.type === "event" ? item.data.title : item.data.name;
                 const sublabel = item.type === "class" ? (item.data.instructor || "") : "";
                 const timeStr = `${String(Math.floor(item.startMin / 60)).padStart(2, "0")}:${String(item.startMin % 60).padStart(2, "0")}`;
@@ -478,9 +478,9 @@ export default function EventsCalendar({ events, classes = [], onDeleteEvent, on
                   {/* Classes */}
                   {(cell.classes || []).slice(0, Math.max(0, 4 - cell.events.slice(0, 4).length)).map((cls, ci) => {
                     const rawColor = (cls.color && cls.color.startsWith("#") && cls.color.length >= 7) ? cls.color : "#a855f7";
-                    const bgAlpha  = cell.isOtherMonth ? 0.05 : 0.13;
-                    const brdAlpha = cell.isOtherMonth ? 0.1  : 0.2;
-                    const txtColor = cell.isOtherMonth ? "rgba(255,255,255,0.2)" : "#ffffff";
+                    const bgAlpha  = cell.isOtherMonth ? 0.05 : 0.18;
+                    const brdAlpha = cell.isOtherMonth ? 0.1  : 0.22;
+                    const txtColor = cell.isOtherMonth ? "rgba(255,255,255,0.2)" : "rgba(255,255,255,0.82)";
                     return (
                       <div key={`cls-${cls.id}-${ci}`} style={{ ...pillStyle, background: hexToRgba(rawColor, bgAlpha), border: `1px solid ${hexToRgba(rawColor, brdAlpha)}`, color: txtColor }}>
                         {cls.name}
