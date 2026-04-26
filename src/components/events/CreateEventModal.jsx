@@ -87,7 +87,7 @@ function EventPreview({ form, gym }) {
     <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 12 }}>
         <Eye size={11} color={C.t3} />
-        <span style={{ fontSize: 9.5, fontWeight: 600, color: C.t3, textTransform: 'uppercase', letterSpacing: '0.09em' }}>Live Preview</span>
+        <span style={{ fontSize: 9.5, fontWeight: 600, color: C.t3, textTransform: 'uppercase', letterSpacing: '0.09em' }}>Preview</span>
       </div>
       {!hasContent ? (
         <div style={{ borderRadius: 12, background: C.card, border: `1px solid ${C.brd}`, padding: '28px 16px', textAlign: 'center' }}>
@@ -234,7 +234,6 @@ export default function CreateEventModal({ open, onClose, onSave, gym, isLoading
             {isMobile ? (
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', paddingTop: 22 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
-                  {/* Standalone calendar icon, no box */}
                   <Calendar size={20} color="#ffffff" strokeWidth={1.75} />
                   <div style={{ fontSize: 17, fontWeight: 700, color: C.t1, letterSpacing: '-0.02em' }}>Create Event</div>
                 </div>
@@ -250,7 +249,6 @@ export default function CreateEventModal({ open, onClose, onSave, gym, isLoading
             ) : (
               <>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 11 }}>
-                  {/* Standalone calendar icon, no box */}
                   <Calendar size={22} color="#ffffff" strokeWidth={1.75} />
                   <div style={{ fontSize: 18, fontWeight: 700, color: C.t1, letterSpacing: '-0.02em', lineHeight: 1.2 }}>Create Event</div>
                 </div>
@@ -270,7 +268,6 @@ export default function CreateEventModal({ open, onClose, onSave, gym, isLoading
                   <Inp value={form.title} onChange={e => set('title', e.target.value)} placeholder="e.g. Summer Fitness Challenge" Icon={Zap} accentColor={C.blue} />
                 </Field>
                 <Field label="Description">
-                  {/* rows reduced ~25% from original 4 */}
                   <Textarea value={form.description} onChange={e => set('description', e.target.value)} placeholder="Tell members what to expect, what to bring, and who it's for…" rows={isMobile ? 2 : 3} accentColor={C.blue} />
                 </Field>
                 <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: isMobile ? 14 : 12 }}>
@@ -287,14 +284,13 @@ export default function CreateEventModal({ open, onClose, onSave, gym, isLoading
                     <Inp type="time" value={form.end_time} onChange={e => set('end_time', e.target.value)} Icon={Clock} accentColor={C.blue} />
                   </Field>
                 </div>
-                {/* compactTop reduces gap between this field and the date/time grid above it */}
                 <Field label="Location" hint="Set to your gym by default" compactTop>
                   <Inp value={gym?.name || ''} disabled Icon={MapPin} accentColor={C.blue} />
                 </Field>
-                <Field label="Banner Image" hint="Recommended: 1200×630px · PNG or JPG">
+                {/* Banner Image — hint text removed */}
+                <Field label="Banner Image">
                   {form.image_url ? (
                     <div style={{ position: 'relative', borderRadius: 9, overflow: 'hidden' }}>
-                      {/* image height reduced from 119 to ~113 (further 5% shorter) */}
                       <img src={form.image_url} alt="Banner" style={{ width: '100%', height: 113, objectFit: 'cover', display: 'block', borderRadius: 9, border: `1px solid ${C.brd}` }} onError={e => e.target.style.display = 'none'} />
                       <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top,rgba(0,0,0,0.55) 0%,transparent 55%)', borderRadius: 9, pointerEvents: 'none' }} />
                       <button type="button" onClick={() => set('image_url', '')} style={{ position: 'absolute', top: 8, right: 8, width: 26, height: 26, borderRadius: 7, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(13,13,17,0.82)', border: `1px solid ${C.brd}`, cursor: 'pointer' }}>
@@ -303,7 +299,6 @@ export default function CreateEventModal({ open, onClose, onSave, gym, isLoading
                       <div style={{ position: 'absolute', bottom: 8, left: 11, fontSize: 10, fontWeight: 700, color: 'rgba(255,255,255,0.7)' }}>Banner attached ✓</div>
                     </div>
                   ) : (
-                    // Drop zone: padding reduced to shrink overall height ~5%
                     <div onDragOver={e => { e.preventDefault(); setDragOver(true); }} onDragLeave={() => setDragOver(false)} onDrop={handleDrop} onClick={() => fileRef.current?.click()}
                       style={{ padding: '11px 14px', borderRadius: 9, border: `1.5px dashed ${dragOver ? C.blue + '60' : C.brd2}`, background: dragOver ? C.blueDim : C.card, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, cursor: 'pointer', transition: 'all 0.18s' }}>
                       <div style={{ width: 32, height: 32, borderRadius: 9, background: C.blueDim, border: `1px solid ${C.blueBrd}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
