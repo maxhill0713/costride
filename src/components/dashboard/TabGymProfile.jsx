@@ -47,13 +47,26 @@ function qualityState(score) {
   if (score >= 40) return { label: 'Needs attention', color: C.amber, dim: C.amberDim, brd: C.amberBrd };
   return           { label: 'Weak',                   color: C.red,   dim: C.redDim,   brd: C.redBrd   };
 }
-function buildInsight({ communityScore, engScore, postsWeek, hasLogo, hasHero, galleryCount, amenitiesCount, price }) {
-  if (!hasLogo && !hasHero) return "Your gym has no photos yet — members won't be able to visualise the space before joining.";
-  if (galleryCount < 3 && engScore < 40) return "Your profile is sparse and community activity is low — both reduce a member's confidence before joining.";
-  if (communityScore >= 70 && postsWeek < 2) return "Your profile looks solid, but low community activity means members see a quiet gym, not a thriving one.";
-  if (communityScore >= 70 && engScore >= 60) return "Your gym is in good shape — a consistent post cadence is the next step to sustaining retention.";
-  if (!price && amenitiesCount === 0) return "Pricing and amenities are missing — this creates uncertainty before a member decides to join.";
-  return "Your gym is making progress — a few more improvements will noticeably boost member confidence.";
+function buildInsight({ communityScore, rawEngScore, engTrend, postsWeek, hasLogo, hasHero, galleryCount, hasPricing, activeMembers, totalMembers }) {
+  const signals = [
+    { priority: 1, cond: !hasLogo && !hasHero,
+      msg: "No photos added yet — members visiting your profile see an empty gym before they've ever walked in." },
+    { priority: 2, cond: engTrend < -3,
+      msg: `Active members dropped by ${Math.abs(engTrend)} this week — your engagement is declining and the profile may not be helping retain them.` },
+    { priority: 3, cond: galleryCount < 3 && rawEngScore < 40,
+      msg: `With only ${galleryCount} photo${galleryCount !== 1 ? 's' : ''} and ${rawEngScore}% of members active this week, both your profile and community need attention.` },
+    { priority: 4, cond: !hasPricing,
+      msg: "Membership pricing is missing — this is the #1 reason prospective members leave without enquiring." },
+    { priority: 5, cond: postsWeek === 0 && rawEngScore < 50,
+      msg: `No posts this week and only ${rawEngScore}% of members active — community activity drives retention more than any profile change.` },
+    { priority: 6, cond: communityScore >= 70 && postsWeek < 2,
+      msg: `Your profile looks solid at ${communityScore}%, but posting frequency is low — members in quiet communities churn at 2× the rate.` },
+    { priority: 7, cond: communityScore >= 70 && rawEngScore >= 60 && engTrend >= 0,
+      msg: `Your gym is in strong shape — ${activeMembers} of ${totalMembers} members active this week. Consistency is the only lever left.` },
+    { priority: 8, cond: true,
+      msg: "Your gym is making progress — a few more improvements across photos, amenities, and posting will noticeably boost member confidence." },
+  ];
+  return (signals.find(s => s.cond) || signals[signals.length - 1]).msg;
 }
 
 /* ─── STATUS BADGE ───────────────────────────────────────────── */
@@ -423,7 +436,7 @@ const ALL_TIPS = [
     title: 'Re-engage inactive members automatically',
     summary: 'Set up a 14-day inactivity nudge to win back members before they cancel.',
     detail: `Go to the Automations tab and enable the "Inactive 14 days" rule. Write a warm, personal message using {name} so it feels human. Members who receive a check-in message within 14 days of going quiet return at a 38% rate — three times higher than those who don't. Pair it with a 30-day rule as a second safety net.`,
-    relevantIf: () => true,
+    relevantIf: (gym, ctx) => ctx ? (ctx.activeMembers / Math.max(ctx.totalMembers, 1)) < 0.5 : true,
   },
   {
     id: 't2',
@@ -453,7 +466,7 @@ const ALL_TIPS = [
     title: 'Post to your gym feed at least twice a week',
     summary: 'Regular posts keep your community active and your gym top-of-mind.',
     detail: `Use the Content tab to create gym posts. Mix post types: share a member spotlight one week, an event announcement the next, a training tip after that. Consistency matters more than perfection — even a short motivational post counts. Gyms that post 2–3 times per week see significantly higher member engagement scores than those that post rarely.`,
-    relevantIf: () => true,
+    relevantIf: (gym, ctx) => ctx ? ctx.postsWeek < 2 : true,
   },
   {
     id: 't5',
@@ -497,15 +510,17 @@ const ALL_TIPS = [
   },
 ];
 
-function TipsPanel({ communityScore, impressionScore, trustScore, discoveryScore, gym }) {
+const TIP_BASE_SCORES = { t1: 70, t2: 80, t3: 65, t4: 75, t5: 90, t6: 60, t7: 55, t8: 70 };
+
+function TipsPanel({ communityScore, impressionScore, trustScore, discoveryScore, gym, activeMembers, totalMembers, postsWeek }) {
   const [expanded, setExpanded] = useState(false);
   const [openTipId, setOpenTipId] = useState(null);
 
-  // Sort: tips where relevantIf matches the gym first
+  // Sort by effectiveScore = base * (isRelevant ? 1.5 : 1.0) descending
   const tips = ALL_TIPS.slice().sort((a, b) => {
-    const aR = a.relevantIf(gym) ? 0 : 1;
-    const bR = b.relevantIf(gym) ? 0 : 1;
-    return aR - bR;
+    const aR = a.relevantIf(gym, { activeMembers, totalMembers, postsWeek }) ? 1.5 : 1.0;
+    const bR = b.relevantIf(gym, { activeMembers, totalMembers, postsWeek }) ? 1.5 : 1.0;
+    return (TIP_BASE_SCORES[b.id] * bR) - (TIP_BASE_SCORES[a.id] * aR);
   });
 
   const shown = expanded ? tips : tips.slice(0, 3);
@@ -522,7 +537,7 @@ function TipsPanel({ communityScore, impressionScore, trustScore, discoveryScore
       <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
         {shown.map(tip => {
           const isOpen = openTipId === tip.id;
-          const isRelevant = tip.relevantIf(gym);
+          const isRelevant = tip.relevantIf(gym, { activeMembers, totalMembers, postsWeek });
           return (
             <div
               key={tip.id}
@@ -602,20 +617,33 @@ function TipsPanel({ communityScore, impressionScore, trustScore, discoveryScore
 }
 
 /* ─── RIGHT SIDEBAR ──────────────────────────────────────────── */
-function ProfileSidebar({ communityScore, impressionScore, trustScore, discoveryScore, amenitiesScore, equipmentScore, coachesScore, openModal, gym, activeMembers, totalMembers, communityScoreVal }) {
+function ProfileSidebar({ communityScore, impressionScore, trustScore, discoveryScore, amenitiesScore, equipmentScore, coachesScore, openModal, gym, activeMembers, totalMembers, communityScoreVal, postsWeek, engTrend, checkIns, allMemberships }) {
   const communityState = qualityState(communityScore);
 
-  const checks = [
-    { label: 'Logo / profile photo',  done: !!gym.logo_url,    action: () => openModal('logo')      },
-    { label: 'Cover image',           done: !!gym.image_url,   action: () => openModal('heroPhoto') },
-    { label: 'Gallery photos (5+)',   done: (gym.gallery?.length || 0) >= 5, action: () => openModal('photos')   },
-    { label: 'Address & location',    done: !!(gym.address || gym.city), action: () => openModal('editInfo') },
-    { label: 'Social media links',    done: !!(gym.instagram_url || gym.facebook_url || gym.website_url), action: () => openModal('editInfo') },
-    { label: 'Membership pricing',    done: !!gym.price,       action: () => openModal('pricing')   },
-    { label: 'Amenities listed',      done: (gym.amenities?.length || 0) > 0, action: () => openModal('amenities') },
-    { label: 'Equipment listed',      done: (gym.equipment?.length || 0) > 0, action: () => openModal('equipment') },
+  // Checklist with impact scores for ordering
+  const galleryCount = gym.gallery?.length || 0;
+  const allChecks = [
+    { label: 'Logo / profile photo',  done: !!gym.logo_url,    action: () => openModal('logo'),      impact: 8  },
+    { label: 'Cover image',           done: !!gym.image_url,   action: () => openModal('heroPhoto'), impact: 6  },
+    { label: 'Gallery photos (5+)',   done: galleryCount >= 5,  action: () => openModal('photos'),   impact: galleryCount === 0 ? 10 : 5 },
+    { label: 'Address & location',    done: !!(gym.address || gym.city), action: () => openModal('editInfo'), impact: 7 },
+    { label: 'Social media links',    done: !!(gym.instagram_url || gym.facebook_url || gym.website_url), action: () => openModal('editInfo'), impact: !!(gym.instagram_url || gym.facebook_url || gym.website_url) ? 3 : 4 },
+    { label: 'Membership pricing',    done: !!gym.price,       action: () => openModal('pricing'),   impact: 12 },
+    { label: 'Amenities listed',      done: (gym.amenities?.length || 0) > 0, action: () => openModal('amenities'), impact: 5 },
+    { label: 'Equipment listed',      done: (gym.equipment?.length || 0) > 0, action: () => openModal('equipment'), impact: 5 },
   ];
-  const doneCount = checks.filter(c => c.done).length;
+  // Incomplete sorted by impact desc, completed sorted alphabetically last
+  const checks = [
+    ...allChecks.filter(c => !c.done).sort((a, b) => b.impact - a.impact),
+    ...allChecks.filter(c => c.done).sort((a, b) => a.label.localeCompare(b.label)),
+  ];
+  const doneCount = allChecks.filter(c => c.done).length;
+
+  // Retention callout: data-driven
+  const avgCheckInsPerMember = allMemberships.length >= 5 && checkIns.length >= 10
+    ? Math.round(checkIns.length / allMemberships.length)
+    : null;
+  const profileComplete = communityScore >= 70;
 
   return (
     <div style={{ width: 244, flexShrink: 0, background: C.sidebar, borderLeft: `1px solid ${C.brd}`, display: 'flex', flexDirection: 'column', fontFamily: FONT, position: 'sticky', top: 0, maxHeight: '100vh', overflowY: 'auto', scrollbarWidth: 'none' }}>
@@ -627,8 +655,21 @@ function ProfileSidebar({ communityScore, impressionScore, trustScore, discovery
 
       {/* Community strength + stat grid */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1px', background: C.brd, borderBottom: `1px solid ${C.brd}` }}>
-        <StatCell label="Community" value={communityScore + '%'} color={communityState.color} borderRight />
-        <StatCell label="First impression" value={impressionScore + '%'} color={qualityState(impressionScore).color} />
+        {/* Community cell with engTrend delta */}
+        <div style={{ padding: '12px 14px', background: C.sidebar, borderRight: `1px solid ${C.brd}` }}>
+          <div style={{ fontSize: 10, color: C.t3, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4 }}>Community</div>
+          <div style={{ fontSize: 20, fontWeight: 700, color: communityState.color, lineHeight: 1 }}>{communityScore}%</div>
+          {Math.abs(engTrend) > 0 && (
+            <div style={{ fontSize: 9.5, fontWeight: 700, color: engTrend > 0 ? C.green : C.red, marginTop: 3 }}>
+              {engTrend > 0 ? `+${engTrend}` : engTrend} this week
+            </div>
+          )}
+        </div>
+        {/* Posts this week (replaces First impression) */}
+        <div style={{ padding: '12px 14px', background: C.sidebar }}>
+          <div style={{ fontSize: 10, color: C.t3, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4 }}>Posts this week</div>
+          <div style={{ fontSize: 20, fontWeight: 700, color: postsWeek >= 3 ? C.green : postsWeek >= 1 ? C.amber : C.red, lineHeight: 1 }}>{postsWeek}</div>
+        </div>
         <StatCell label="Trust & clarity" value={trustScore + '%'} color={qualityState(trustScore).color} borderRight />
         <StatCell label="Discovery" value={discoveryScore + '%'} color={qualityState(discoveryScore).color} />
       </div>
@@ -675,14 +716,26 @@ function ProfileSidebar({ communityScore, impressionScore, trustScore, discovery
             <span style={{ fontSize: 11.5, fontWeight: 700, color: C.t1 }}>Retention impact</span>
           </div>
           <div style={{ fontSize: 11, color: C.t2, lineHeight: 1.5 }}>
-            Complete profiles retain members{' '}
-            <span style={{ color: C.t1, fontWeight: 600 }}>2.3× longer</span> on average.
+            {avgCheckInsPerMember !== null ? (
+              <>
+                Your members average{' '}
+                <span style={{ color: C.t1, fontWeight: 600 }}>{avgCheckInsPerMember} visit{avgCheckInsPerMember !== 1 ? 's' : ''}</span>{' '}
+                — {profileComplete
+                  ? 'your complete profile is helping drive this.'
+                  : 'completing your profile could meaningfully increase this.'}
+              </>
+            ) : (
+              <>
+                Complete profiles retain members{' '}
+                <span style={{ color: C.t1, fontWeight: 600 }}>2.3× longer</span> on average.
+              </>
+            )}
           </div>
         </div>
       </div>
 
       {/* Tips & Recommendations */}
-      <TipsPanel communityScore={communityScore} impressionScore={impressionScore} trustScore={trustScore} discoveryScore={discoveryScore} gym={gym} />
+      <TipsPanel communityScore={communityScore} impressionScore={impressionScore} trustScore={trustScore} discoveryScore={discoveryScore} gym={gym} activeMembers={activeMembers} totalMembers={totalMembers} postsWeek={postsWeek} />
 
     </div>
   );
@@ -708,41 +761,65 @@ export default function TabGymProfile({ gym, openModal, coaches = [], onDeleteCo
   const hasHero        = !!gym.image_url;
   const hasPricing     = !!gym.price;
   const hasInfo        = !!gym.name;
-  const hasSocial      = !!(gym.instagram_url || gym.facebook_url || gym.twitter_url || gym.website_url);
+  const socialPlatforms = [gym.instagram_url, gym.facebook_url, gym.twitter_url, gym.website_url].filter(Boolean).length;
+  const hasSocial      = socialPlatforms > 0;
+  const hasFullAddress = !!(gym.address && (gym.city || gym.postcode));
   const hasAddress     = !!(gym.address || gym.city || gym.postcode);
 
   const MS_WEEK = 7 * 24 * 60 * 60 * 1000;
-  const weekAgo = Date.now() - MS_WEEK;
+  const now = Date.now();
+  const weekAgo     = now - MS_WEEK;
+  const twoWeeksAgo = now - 2 * MS_WEEK;
+
+  const gymCheckIns = checkIns.filter(c => c.gym_id === gym.id);
 
   const recentCiUsers = new Set(
-    checkIns.filter(c => c.gym_id === gym.id && new Date(c.check_in_date || c.created_date).getTime() > weekAgo).map(c => c.user_id)
+    gymCheckIns.filter(c => new Date(c.check_in_date || c.created_date).getTime() > weekAgo).map(c => c.user_id)
   );
   const activeMembers = recentCiUsers.size;
+
+  // Members active in the PREVIOUS week (7–14 days ago)
+  const prevWeekCiUsers = new Set(
+    gymCheckIns.filter(c => {
+      const t = new Date(c.check_in_date || c.created_date).getTime();
+      return t > twoWeeksAgo && t <= weekAgo;
+    }).map(c => c.user_id)
+  );
+  const activeMembersLastWeek = prevWeekCiUsers.size;
+  const engTrend = activeMembers - activeMembersLastWeek; // signed delta
 
   const postsWeek = posts.filter(p =>
     !p.is_hidden && p.gym_id === gym.id && new Date(p.created_date || p.created_at || 0).getTime() > weekAgo
   ).length;
 
   const totalMembers = allMemberships.length || gym.members_count || 1;
-  const rawEngScore  = Math.round((activeMembers / totalMembers) * 100);
 
-  const impressionScore = Math.round(([hasLogo, hasHero, galleryCount >= 3].filter(Boolean).length / 3) * 100);
-  const trustScore      = Math.round(([hasInfo, hasPricing].filter(Boolean).length / 2) * 100);
-  const discoveryScore  = Math.round(([hasAddress, hasSocial, coaches.length > 0].filter(Boolean).length / 3) * 100);
-  const amenitiesScore  = amenitiesCount >= 4 ? 100 : amenitiesCount > 0 ? 50 : 0;
-  const equipmentScore  = equipmentCount >= 5 ? 100 : equipmentCount > 0 ? 50 : 0;
-  const coachesScore    = coaches.length >= 2 ? 100 : coaches.length > 0 ? 60 : 0;
+  // Trend-aware engagement score
+  let rawEngScore = Math.round((activeMembers / totalMembers) * 100);
+  if (engTrend < 0) rawEngScore = Math.max(0, rawEngScore - Math.min(10, Math.abs(engTrend) * 2));
+  else if (engTrend > 0) rawEngScore = Math.min(100, rawEngScore + Math.min(5, engTrend));
 
-  const profileScore   = Math.round((impressionScore + trustScore + discoveryScore) / 3);
-  const communityScore = Math.round(profileScore * 0.6 + rawEngScore * 0.4);
-
+  // ── Graduated scores ──────────────────────────────────────────
   const logoScore    = hasLogo ? 100 : 0;
   const coverScore   = hasHero ? 100 : 0;
-  const galleryScore = galleryCount >= 5 ? 100 : galleryCount > 0 ? 50 : 0;
-  const mapScore     = hasAddress ? 100 : 0;
-  const socialScore  = hasSocial ? 100 : 0;
+  const galleryScore = galleryCount >= 8 ? 100 : galleryCount >= 5 ? 75 : galleryCount >= 3 ? 50 : galleryCount >= 1 ? 25 : 0;
+  const amenitiesScore  = amenitiesCount >= 10 ? 100 : amenitiesCount >= 6 ? 80 : amenitiesCount >= 3 ? 60 : amenitiesCount >= 1 ? 30 : 0;
+  const equipmentScore  = equipmentCount >= 11 ? 100 : equipmentCount >= 7 ? 80 : equipmentCount >= 4 ? 60 : equipmentCount >= 1 ? 30 : 0;
+  const coachesScore    = coaches.length >= 4 ? 100 : coaches.length === 3 ? 85 : coaches.length === 2 ? 70 : coaches.length === 1 ? 40 : 0;
+  const socialScore     = socialPlatforms >= 3 ? 100 : socialPlatforms === 2 ? 70 : socialPlatforms === 1 ? 40 : 0;
+  const trustScore      = (hasPricing ? 60 : 0) + (hasInfo ? 40 : 0);
+  const mapScore        = hasFullAddress ? 100 : hasAddress ? 60 : 0;
 
-  const insight = buildInsight({ communityScore, engScore: rawEngScore, postsWeek, hasLogo, hasHero, galleryCount, amenitiesCount, price: hasPricing });
+  const impressionScore = Math.round((logoScore + coverScore + galleryScore) / 3);
+  const discoveryScore  = Math.round((mapScore + socialScore + coachesScore) / 3);
+  const profileScore    = Math.round((impressionScore + trustScore + discoveryScore) / 3);
+
+  // Data-driven blended community score
+  const profileWeight = totalMembers < 10 ? 0.8 : totalMembers < 50 ? 0.65 : 0.5;
+  const engWeight     = 1 - profileWeight;
+  const communityScore = Math.round(profileScore * profileWeight + rawEngScore * engWeight);
+
+  const insight = buildInsight({ communityScore, rawEngScore, engTrend, postsWeek, hasLogo, hasHero, galleryCount, hasPricing, activeMembers, totalMembers });
   const previewUrl = createPageUrl('GymCommunity') + '?id=' + gym.id;
 
   return (
@@ -806,7 +883,7 @@ export default function TabGymProfile({ gym, openModal, coaches = [], onDeleteCo
                 </ItemCard>
               </div>
               <ItemCard title="Photo Gallery" score={galleryScore} flex={1}
-                microcopy={galleryCount >= 5 ? `Rich gallery with ${galleryCount}+ photos.` : galleryCount > 0 ? `${galleryCount} photos — add ${5 - galleryCount} more for full score.` : "No gallery. Members can't visualise the space."}
+                microcopy={galleryCount >= 8 ? `Rich gallery with ${galleryCount} photos.` : galleryCount >= 5 ? `${galleryCount} photos — add ${8 - galleryCount} more for full score.` : galleryCount > 0 ? `${galleryCount} photo${galleryCount !== 1 ? 's' : ''} — aim for 8+ for full score.` : "No gallery. Members can't visualise the space."}
                 onClick={() => openModal('photos')}>
                 <GalleryVisual gallery={gym.gallery} />
               </ItemCard>
@@ -864,6 +941,10 @@ export default function TabGymProfile({ gym, openModal, coaches = [], onDeleteCo
         gym={gym}
         activeMembers={activeMembers}
         totalMembers={totalMembers}
+        postsWeek={postsWeek}
+        engTrend={engTrend}
+        checkIns={gymCheckIns}
+        allMemberships={allMemberships}
       />
 
     </div>
