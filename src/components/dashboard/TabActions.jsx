@@ -220,52 +220,123 @@ function deriveActions({
     });
   }
 
-  // ── 4. CHALLENGE: No active challenges ────────────────────────
+  // ── 4. CONTENT: Gym hasn't posted recently ────────────────────
+  const gymPosts = posts.filter(p => p.post_type && !p.is_draft && !p.is_hidden);
+  const lastGymPost = gymPosts.sort((a, b) => new Date(b.created_date || b.created_at || 0) - new Date(a.created_date || a.created_at || 0))[0];
+  const daysSincePost = lastGymPost ? daysSince(lastGymPost.created_date || lastGymPost.created_at) : 99;
+  const POST_SILENCE_THRESHOLD = 3;
+
+  if (daysSincePost >= POST_SILENCE_THRESHOLD) {
+    const isLong = daysSincePost >= 7;
+    actions.push({
+      id: "content-no-post",
+      urgency: isLong ? "high" : "medium",
+      icon: MessageCircle,
+      title: daysSincePost >= 99
+        ? "You haven't posted to your community yet"
+        : `No gym post in ${daysSincePost} day${daysSincePost !== 1 ? "s" : ""}`,
+      subtitle: "Gyms that post 3× a week see 40% higher member retention.",
+      tag: "Engagement", tagColor: C.amber,
+      successRate: 68,
+      memberInitials: [],
+      cta: "Write a Post", ctaIcon: Plus, secondaryCta: null,
+      stats: [
+        { label: "Last post", val: daysSincePost >= 99 ? "Never" : `${daysSincePost}d ago` },
+        { label: "Ideal cadence", val: "3×/wk" },
+        { label: "Retention lift", val: "+40%" },
+      ],
+      detail: isLong
+        ? `It's been ${daysSincePost} days since your last post. Members who see regular updates are far less likely to disengage. A tip, announcement, or motivational post takes under 2 minutes.`
+        : `Your last post was ${daysSincePost} days ago. Staying consistent in members' feeds keeps your gym top-of-mind and drives check-in frequency.`,
+      timeAgo: lastGymPost ? `last post ${daysSincePost}d ago` : "never posted",
+      onCta: () => openModal?.("post"),
+    });
+  }
+
+  // ── 5. CONTENT: No upcoming events ────────────────────────────
+  const upcomingEvents = events.filter(ev => ev.event_date && new Date(ev.event_date) > nowDate);
+  if (upcomingEvents.length === 0) {
+    actions.push({
+      id: "content-no-event",
+      urgency: "medium",
+      icon: Calendar,
+      title: "No upcoming events scheduled",
+      subtitle: "Events create social anchors that drive visits and referrals.",
+      tag: "Engagement", tagColor: C.amber,
+      successRate: 73,
+      memberInitials: [],
+      cta: "Create Event", ctaIcon: Plus, secondaryCta: null,
+      stats: [
+        { label: "Avg sign-ups", val: `${Math.max(3, Math.round(totalMembers * 0.18))}` },
+        { label: "Referral rate", val: "+22%" },
+        { label: "Success", val: "73%" },
+      ],
+      detail: "Gyms with at least one upcoming event see 22% more referrals that week. Even a simple open box day or social workout drives visits from members who might otherwise skip.",
+      timeAgo: "ongoing",
+      onCta: () => openModal?.("event"),
+    });
+  }
+
+  // ── 6. CHALLENGE: No active challenges — smarter ──────────────
   const now2 = new Date();
   const activeChallenges = challenges.filter(ch =>
     ch.status === "active" || (!ch.end_date || new Date(ch.end_date) >= now2)
   );
+  const lastChallenge = challenges.sort((a, b) => new Date(b.created_date || 0) - new Date(a.created_date || 0))[0];
+  const daysSinceChallenge = lastChallenge ? daysSince(lastChallenge.created_date) : 99;
+
   if (activeChallenges.length === 0) {
+    // Smarter messaging: if engagement is dropping, escalate urgency
+    const isEngagementDrop = monthChangePct < -5;
+    const urgencyLevel = isEngagementDrop ? "high" : "medium";
+    const titlePrefix = isEngagementDrop ? "Engagement dropping — " : "";
     actions.push({
       id: "challenge-none",
-      urgency: "medium",
+      urgency: urgencyLevel,
       icon: Trophy,
-      title: "No active challenges running",
-      subtitle: "Create a challenge to boost member engagement this month.",
+      title: `${titlePrefix}No active challenge running`,
+      subtitle: isEngagementDrop
+        ? "A challenge right now could reverse your engagement drop within 2 weeks."
+        : "Launch a challenge to spike activity and reward your most loyal members.",
       tag: "Challenge", tagColor: C.cyan,
       successRate: 76,
       memberInitials: [],
       cta: "Create Challenge", ctaIcon: Plus, secondaryCta: null,
       stats: [
         { label: "Engagement lift", val: "+31%" },
-        { label: "Duration", val: "30d" },
+        { label: "Last one", val: daysSinceChallenge >= 99 ? "Never" : `${daysSinceChallenge}d ago` },
         { label: "Success", val: "76%" },
       ],
-      detail: "Members who join a challenge are 3× more likely to stay active the following month. Even a simple check-in challenge drives meaningful retention.",
-      timeAgo: "ongoing",
+      detail: `Members who join a challenge are 3× more likely to stay active the following month. ${isEngagementDrop ? `With attendance down ${Math.abs(monthChangePct)}%, a 2-week check-in challenge is your fastest lever. ` : ""}Even a simple "most check-ins this month" challenge drives meaningful retention.`,
+      timeAgo: lastChallenge ? `last ${daysSinceChallenge}d ago` : "never run",
       onCta: () => openModal?.("challenge"),
     });
   }
 
-  // ── 5. ENGAGEMENT: No active polls ────────────────────────────
-  if (polls.length === 0) {
+  // ── 7. ENGAGEMENT: No active polls ────────────────────────────
+  const lastPoll = polls.sort((a, b) => new Date(b.created_date || 0) - new Date(a.created_date || 0))[0];
+  const daysSincePoll = lastPoll ? daysSince(lastPoll.created_date) : 99;
+
+  if (polls.length === 0 || daysSincePoll > 14) {
     actions.push({
       id: "polls-none",
       urgency: "low",
       icon: BarChart2,
-      title: "No active polls",
-      subtitle: "Polls increase community engagement by up to 24%.",
+      title: polls.length === 0
+        ? "You've never run a community poll"
+        : `No poll active — last one was ${daysSincePoll}d ago`,
+      subtitle: "Ask members what classes or events they want next.",
       tag: "Engagement", tagColor: C.blue,
       successRate: 71,
       memberInitials: [],
       cta: "Create Poll", ctaIcon: Plus, secondaryCta: null,
       stats: [
         { label: "Engagement", val: "+24%" },
-        { label: "Avg votes", val: `${Math.round(totalMembers * 0.35)}` },
-        { label: "Success", val: "71%" },
+        { label: "Avg votes", val: `${Math.max(3, Math.round(totalMembers * 0.35))}` },
+        { label: "Response rate", val: "35%" },
       ],
-      detail: "Polls give members a voice and keep them returning to see results. They also signal activity to inactive members.",
-      timeAgo: "ongoing",
+      detail: "Polls give members a voice and pull inactive members back into the app to vote. A 'What class do you want next?' poll consistently gets the highest response rates.",
+      timeAgo: lastPoll ? `${daysSincePoll}d ago` : "never",
       onCta: () => openModal?.("poll"),
     });
   }
