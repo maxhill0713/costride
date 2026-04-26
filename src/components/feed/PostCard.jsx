@@ -662,6 +662,14 @@ function PostCard({ post, onLike, onComment, onSave, onDelete, fullWidth = false
     gcTime: 30 * 60 * 1000,
   });
 
+  const { data: postAuthorStreak } = useQuery({
+    queryKey: ['postAuthorStreak', post.member_id],
+    queryFn: () => base44.functions.invoke('getUserAvatars', { userIds: [post.member_id] }).then(r => r.data?.avatars?.[post.member_id]?.current_streak ?? null),
+    enabled: !!post.member_id && !isGymAuthoredPost && isWorkoutPost,
+    staleTime: 5 * 60 * 1000,
+    gcTime: 15 * 60 * 1000,
+  });
+
   const resolvedMemberName = isGymAuthoredPost
     ? (gymData?.name || post.member_name || 'Gym')
     : (postAuthor?.display_name || postAuthor?.full_name || post.member_name);
@@ -907,7 +915,7 @@ function PostCard({ post, onLike, onComment, onSave, onDelete, fullWidth = false
               </div>
               <div className="w-px self-stretch bg-white/10" />
               <div className="flex flex-col items-center flex-1">
-                <span className="text-sm font-black text-white leading-tight">{currentUser?.current_streak ?? '—'}</span>
+                <span className="text-sm font-black text-white leading-tight">{isOwner ? (currentUser?.current_streak ?? '—') : (postAuthorStreak ?? '—')}</span>
                 <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mt-0.5">Streak</span>
               </div>
             </div>
