@@ -164,7 +164,7 @@ function DayDetailModal({ cell, dateLabel, onClose, onSelectEvent, onSelectClass
                     left: 0, width: HOUR_LABEL_W,
                     textAlign: "right", paddingRight: 8,
                     fontSize: 9.5, fontWeight: 600,
-                    color: (absMin >= CORE_START && absMin <= CORE_END) ? C.t2 : C.t3,
+                    color: C.t3,
                     lineHeight: 1, userSelect: "none",
                   }}>
                     {String(h).padStart(2, "0")}:00
@@ -176,16 +176,7 @@ function DayDetailModal({ cell, dateLabel, onClose, onSelectEvent, onSelectClass
             {/* Grid area */}
             <div style={{ flex: 1, position: "relative", marginRight: 4 }}>
 
-              {/* 9–5 core band — slightly lighter background */}
-              <div style={{
-                position: "absolute",
-                top: coreTop, left: 0, right: 0,
-                height: coreBottom - coreTop,
-                background: "rgba(255,255,255,0.018)",
-                borderTop: `1px solid rgba(255,255,255,0.06)`,
-                borderBottom: `1px solid rgba(255,255,255,0.06)`,
-                pointerEvents: "none",
-              }} />
+
 
               {/* Hour lines */}
               {hourLabels.map(h => {
@@ -249,9 +240,14 @@ function DayDetailModal({ cell, dateLabel, onClose, onSelectEvent, onSelectClass
                     }}
                     onMouseEnter={e => e.currentTarget.style.opacity = "0.8"}
                     onMouseLeave={e => e.currentTarget.style.opacity = "1"}>
-                    <div style={{ fontSize: 10, fontWeight: 700, color: C.t1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", lineHeight: 1.2 }}>{label}</div>
+                    <div style={{ fontSize: 11.5, fontWeight: 700, color: C.t1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", lineHeight: 1.2 }}>{label}</div>
+                    {height > 26 && sublabel && (
+                      <div style={{ fontSize: 10.5, color: C.t1, fontWeight: 600, lineHeight: 1.2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{sublabel}</div>
+                    )}
                     {height > 26 && (
-                      <div style={{ fontSize: 9, color, fontWeight: 600, lineHeight: 1.1 }}>{timeStr}{sublabel ? ` · ${sublabel}` : ""}</div>
+                      <div style={{ fontSize: 10, color: C.t1, fontWeight: 500, lineHeight: 1.2 }}>
+                        {timeStr}–{`${String(Math.floor((item.startMin + item.durationMin) / 60) % 24).padStart(2, "0")}:${String((item.startMin + item.durationMin) % 60).padStart(2, "0")}`}
+                      </div>
                     )}
                   </button>
                 );
