@@ -1142,6 +1142,14 @@ export default function ContentPage({
               </div>
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
+              {tab === "Events" && (
+                <button onClick={() => setShowCreateClass(true)}
+                  style={{ display: "flex", alignItems: "center", gap: 6, padding: "9px 18px", borderRadius: 9, fontSize: 12.5, fontWeight: 700, cursor: "pointer", fontFamily: FONT, background: "#7c3aed", border: "none", color: "#fff" }}
+                  onMouseEnter={e => e.currentTarget.style.opacity = "0.88"}
+                  onMouseLeave={e => e.currentTarget.style.opacity = "1"}>
+                  <Plus size={12} /> Add Class
+                </button>
+              )}
               <button onClick={() => tabAction && openModal?.(tabAction.modal)}
                 style={{ display: "flex", alignItems: "center", gap: 6, padding: "9px 18px", borderRadius: 9, fontSize: 12.5, fontWeight: 700, cursor: "pointer", fontFamily: FONT, visibility: tabAction ? "visible" : "hidden", pointerEvents: tabAction ? "auto" : "none", ...GRAD_BTN }}
                 onMouseEnter={e => e.currentTarget.style.opacity = "0.88"}
@@ -1152,21 +1160,9 @@ export default function ContentPage({
           </div>
         )}
 
- <div style={{ padding: isMobile ? "0 12px" : "0 4px" }}>
-  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-    <div style={{ flex: 1, minWidth: 0 }}>
-      <Tabs active={tab} setActive={setTab} isMobile={isMobile} />
-    </div>
-    {!isMobile && tab === "Events" && (
-      <button onClick={() => setShowCreateClass(true)}
-        style={{ display: "flex", alignItems: "center", gap: 6, padding: "5px 14px", borderRadius: 8, fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: FONT, background: "#7c3aed", border: "none", color: "#fff", flexShrink: 0, marginLeft: 10, marginBottom: 1 }}
-        onMouseEnter={e => e.currentTarget.style.opacity = "0.88"}
-        onMouseLeave={e => e.currentTarget.style.opacity = "1"}>
-        <Plus size={11} /> Add Class
-      </button>
-    )}
-  </div>
-</div>
+        <div style={{ padding: isMobile ? "0 12px" : "0 4px" }}>
+          <Tabs active={tab} setActive={setTab} isMobile={isMobile} />
+        </div>
 
         <div style={{ padding: isMobile ? "8px 12px 24px" : "0 16px 32px 4px" }}>
 
