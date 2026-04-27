@@ -20,7 +20,7 @@ import { recordTrainedOnRestDay, useRestDayCredit as applyRestDayCredit, hasRest
 const DAY_NAMES_FULL = ['', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 
 // ── Workout Switcher Modal ───────────────────────────────────────────────────
-function WorkoutSwitcherModal({ open, onClose, currentUser, activeDayKey, adjustedDay, onSelect, restSwapActive, creditRestActive }) {
+function WorkoutSwitcherModal({ open, onClose, currentUser, activeDayKey, adjustedDay, onSelect, restSwapActive, creditRestActive, checkedInToday }) {
   if (!open) return null;
 
   const customWorkoutTypes = currentUser?.custom_workout_types || {};
@@ -96,7 +96,7 @@ function WorkoutSwitcherModal({ open, onClose, currentUser, activeDayKey, adjust
         </div>
         <div className="px-3 pb-4 space-y-1.5 max-h-[60vh] overflow-y-auto">
 
-          {restSwapActive && (
+          {!checkedInToday && restSwapActive && (
             <button
               onClick={() => { onSelect(adjustedDay, 'revert-rest-swap'); onClose(); }}
               className="w-full text-left rounded-2xl border border-blue-500/40 bg-blue-500/10 hover:bg-blue-500/20 transition-all duration-200 px-4 py-3 flex items-center gap-3">
@@ -105,7 +105,7 @@ function WorkoutSwitcherModal({ open, onClose, currentUser, activeDayKey, adjust
             </button>
           )}
 
-          {creditRestActive && (
+          {!checkedInToday && creditRestActive && (
             <>
               <button
                 onClick={() => { onSelect(adjustedDay, 'revert-credit-rest'); onClose(); }}
@@ -119,7 +119,7 @@ function WorkoutSwitcherModal({ open, onClose, currentUser, activeDayKey, adjust
             </>
           )}
 
-          {!creditRestActive && todayWasRestDayOverridden && (
+          {!checkedInToday && !creditRestActive && todayWasRestDayOverridden && (
             <button
               onClick={() => { onSelect(adjustedDay, 'revert-rest-override'); onClose(); }}
               className="w-full text-left rounded-2xl border border-green-500/40 bg-green-500/10 hover:bg-green-500/20 transition-all duration-200 px-4 py-3 flex items-center gap-3">
@@ -128,7 +128,7 @@ function WorkoutSwitcherModal({ open, onClose, currentUser, activeDayKey, adjust
             </button>
           )}
 
-          {!restSwapActive && !creditRestActive && creditAvailable && todayIsTrainingDay && (
+          {!checkedInToday && !restSwapActive && !creditRestActive && creditAvailable && todayIsTrainingDay && (
             <>
               <button
                 onClick={() => { onSelect(adjustedDay, 'use-credit-rest'); onClose(); }}
@@ -143,7 +143,7 @@ function WorkoutSwitcherModal({ open, onClose, currentUser, activeDayKey, adjust
             </>
           )}
 
-          {!restSwapActive && !creditRestActive && futureRestDaysForSwap.length > 0 && (
+          {!checkedInToday && !restSwapActive && !creditRestActive && futureRestDaysForSwap.length > 0 && (
             <>
               {futureRestDaysForSwap.map((d) => (
                 <button
@@ -1330,6 +1330,7 @@ export default function TodayWorkout({ currentUser, workoutStartTime, onWorkoutS
         adjustedDay={adjustedDay}
         restSwapActive={restSwapActive}
         creditRestActive={creditRestActive}
+        checkedInToday={checkedInToday}
         onSelect={(dayKey, mode) => {
           if (mode === 'revert-credit-rest') {
             clearCreditRestDay();
