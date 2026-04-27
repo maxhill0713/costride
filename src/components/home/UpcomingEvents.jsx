@@ -251,9 +251,7 @@ function AttendeesModal({ open, onClose, count, attendeeProfiles }) {
             );
           })}
         </div>
-        <div style={{ padding: '0 16px 20px' }}>
-          <button onClick={onClose} style={{ width: '100%', padding: '11px', borderRadius: 14, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.6)', fontSize: 13, fontWeight: 700, cursor: 'pointer' }}>Close</button>
-        </div>
+        <div style={{ paddingBottom: 8 }} />
       </div>
     </>
   );
@@ -284,7 +282,7 @@ function DetailAttendeeRow({ event, attendeeProfiles, onTap }) {
             </div>
           )}
         </div>
-        <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)', fontWeight: 600 }}>{count} attending — tap to see</span>
+        <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)', fontWeight: 600 }}>{count} attending</span>
       </button>
     </div>
   );
