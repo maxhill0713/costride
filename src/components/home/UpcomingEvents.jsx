@@ -234,11 +234,89 @@ function WaitlistButton({ onJoinWaitlist, onLeaveWaitlist, isWaitlisted }) {
   );
 }
 
+// ─── Attendees Modal ─────────────────────────────────────────────────────────
+
+function AttendeesModal({ open, onClose, count, attendeeProfiles }) {
+  const [search, setSearch] = useState('');
+  if (!open) return null;
+
+  const filtered = attendeeProfiles.filter(p => {
+    const name = p.full_name || p.display_name || '';
+    return name.toLowerCase().includes(search.toLowerCase());
+  });
+
+  const ini = (n = '') => (n || '?').split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
+
+  return (
+    <>
+      <div onClick={onClose} style={{ position: 'fixed', inset: 0, zIndex: 10200, background: 'rgba(2,6,23,0.7)', backdropFilter: 'blur(8px)' }} />
+      <div style={{
+        position: 'fixed', left: '50%', top: '50%', transform: 'translate(-50%,-50%)',
+        width: 'calc(100% - 32px)', maxWidth: 360, zIndex: 10201,
+        background: 'rgba(13,18,40,0.98)', border: '1px solid rgba(255,255,255,0.08)',
+        borderRadius: 24, boxShadow: '0 32px 80px rgba(0,0,0,0.8)', overflow: 'hidden',
+      }}>
+        <div style={{ padding: '20px 20px 12px', textAlign: 'center' }}>
+          <h3 style={{ fontSize: 17, fontWeight: 900, color: '#fff', margin: '0 0 4px', letterSpacing: '-0.02em' }}>
+            {count} Attending
+          </h3>
+        </div>
+        <div style={{ padding: '0 16px 10px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 12px', borderRadius: 12, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.09)' }}>
+            <svg width="13" height="13" fill="none" stroke="rgba(255,255,255,0.4)" strokeWidth="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+            <input
+              value={search}
+              onChange={e => setSearch(e.target.value.slice(0, 40))}
+              placeholder="Search attendees..."
+              style={{ flex: 1, background: 'none', border: 'none', outline: 'none', color: '#fff', fontSize: 13, fontWeight: 500 }}
+            />
+          </div>
+        </div>
+        <div style={{ maxHeight: 320, overflowY: 'auto', padding: '0 12px 16px' }}>
+          {filtered.length === 0 ? (
+            <p style={{ textAlign: 'center', color: 'rgba(255,255,255,0.3)', fontSize: 13, padding: '20px 0' }}>No attendees found</p>
+          ) : filtered.map((p, i) => {
+            const name = p.full_name || p.display_name || 'Member';
+            return (
+              <div key={p.id || i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 4px', borderBottom: i < filtered.length - 1 ? '1px solid rgba(255,255,255,0.05)' : 'none' }}>
+                <div style={{ width: 38, height: 38, borderRadius: '50%', flexShrink: 0, overflow: 'hidden', background: 'rgba(99,102,241,0.2)', border: '1px solid rgba(99,102,241,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 800, color: '#818cf8' }}>
+                  {p.avatar_url ? <img src={p.avatar_url} alt={name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : ini(name)}
+                </div>
+                <span style={{ fontSize: 13, fontWeight: 600, color: '#fff' }}>{name}</span>
+              </div>
+            );
+          })}
+        </div>
+        <div style={{ padding: '0 16px 20px' }}>
+          <button onClick={onClose} style={{ width: '100%', padding: '11px', borderRadius: 14, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.6)', fontSize: 13, fontWeight: 700, cursor: 'pointer' }}>Close</button>
+        </div>
+      </div>
+    </>
+  );
+}
+
 // ─── Event Detail Sheet ──────────────────────────────────────────────────────
 
 function EventDetailSheet({ event, isJoined, isWaitlisted, remindMe, onClose, onJoin, onLeave, onJoinWaitlist, onLeaveWaitlist, onCalendar, onShare, onToggleRemind }) {
   const isFull = event.capacity && (event.attendees || 0) >= event.capacity;
   const equipment = event.equipment || [];
+  const [showAttendeesModal, setShowAttendeesModal] = useState(false);
+  const [attendeeProfiles, setAttendeeProfiles] = useState([]);
+
+  const attendeeIds = event.attendee_ids || [];
+
+  useEffect(() => {
+    if (!attendeeIds.length) return;
+    base44.functions.invoke('getUserAvatars', { userIds: attendeeIds })
+      .then(res => {
+        const avatars = res?.data?.avatars || {};
+        const profiles = attendeeIds.map(id => ({ id, ...avatars[id] }));
+        setAttendeeProfiles(profiles);
+      })
+      .catch(() => {});
+  }, [attendeeIds.join(',')]);
+
+  const ini = (n = '') => (n || '?').split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
 
   const formatTime = (d, e) => {
     const s = new Date(d).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
@@ -326,10 +404,42 @@ function EventDetailSheet({ event, isJoined, isWaitlisted, remindMe, onClose, on
             {/* Equipment chips */}
             <EquipmentChips items={equipment} />
 
-            {/* Attendees */}
-            <div style={{ marginBottom: 20 }}>
-              <AttendeeAvatars count={event.attendees || 0} />
-            </div>
+            {/* Attendees — real profile pictures, tappable */}
+            {(event.attendees > 0 || attendeeProfiles.length > 0) && (
+              <div style={{ marginBottom: 20 }}>
+                <button
+                  onClick={() => setShowAttendeesModal(true)}
+                  style={{ display: 'flex', alignItems: 'center', gap: 10, background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+                >
+                  {/* Avatar cluster — 50% bigger (was ~20px, now 30px) */}
+                  <div style={{ display: 'flex', alignItems: 'center' }}>
+                    {attendeeProfiles.slice(0, 5).map((p, i) => {
+                      const name = p.full_name || p.display_name || 'M';
+                      return (
+                        <div key={p.id || i} style={{ width: 30, height: 30, borderRadius: '50%', overflow: 'hidden', flexShrink: 0, background: 'rgba(99,102,241,0.25)', border: '2px solid rgba(6,8,18,0.9)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 800, color: '#818cf8', marginLeft: i === 0 ? 0 : -9, zIndex: 5 - i }}>
+                          {p.avatar_url ? <img src={p.avatar_url} alt={name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : ini(name)}
+                        </div>
+                      );
+                    })}
+                    {attendeeProfiles.length === 0 && (event.attendees || 0) > 0 && (
+                      <div style={{ width: 30, height: 30, borderRadius: '50%', background: 'rgba(99,102,241,0.15)', border: '2px solid rgba(99,102,241,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 800, color: '#818cf8' }}>
+                        {event.attendees}
+                      </div>
+                    )}
+                  </div>
+                  <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)', fontWeight: 600 }}>
+                    {event.attendees || attendeeProfiles.length} attending — tap to see
+                  </span>
+                </button>
+              </div>
+            )}
+
+            <AttendeesModal
+              open={showAttendeesModal}
+              onClose={() => setShowAttendeesModal(false)}
+              count={event.attendees || attendeeProfiles.length}
+              attendeeProfiles={attendeeProfiles}
+            />
 
             {/* CTA */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10, paddingBottom: 36 }}>
