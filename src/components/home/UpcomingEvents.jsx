@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   Calendar, ChevronDown, Clock, CheckCircle, MapPin,
   Users, Share2, Bell, BellOff, ChevronRight, X,
-  CalendarPlus, Zap, Star
+  CalendarPlus, Zap, Star, Repeat, AlertCircle
 } from 'lucide-react';
 
 const CARD_STYLE = {
@@ -20,6 +20,15 @@ const RANGE_OPTIONS = [
   { key: 'month', label: 'Month', days: 30 },
   { key: '2months', label: '2 Months', days: 60 },
 ];
+
+const LEVEL_COLORS = {
+  beginner:     { bg: 'rgba(16,185,129,0.12)', border: 'rgba(16,185,129,0.3)', text: '#34d399' },
+  intermediate: { bg: 'rgba(251,191,36,0.10)', border: 'rgba(251,191,36,0.3)', text: '#fbbf24' },
+  advanced:     { bg: 'rgba(239,68,68,0.10)',  border: 'rgba(239,68,68,0.28)', text: '#f87171' },
+  all:          { bg: 'rgba(148,163,184,0.08)', border: 'rgba(148,163,184,0.2)', text: '#94a3b8' },
+};
+
+// ─── Helpers ────────────────────────────────────────────────────────────────
 
 function useCountdown(eventDate) {
   const [timeLeft, setTimeLeft] = useState('');
@@ -41,12 +50,45 @@ function useCountdown(eventDate) {
   return timeLeft;
 }
 
+function humanRelativeDate(dateStr) {
+  const d = new Date(dateStr);
+  const now = new Date();
+  const diffDays = Math.round((d - now) / 86400000);
+  if (diffDays === 0) return 'Today';
+  if (diffDays === 1) return 'Tomorrow';
+  if (diffDays <= 6) return `This ${d.toLocaleDateString('en-GB', { weekday: 'long' })}`;
+  return d.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' });
+}
+
+function addToCalendar(event) {
+  const start = new Date(event.event_date);
+  const end = event.end_time
+    ? new Date(`${start.toISOString().split('T')[0]}T${event.end_time}:00`)
+    : new Date(start.getTime() + 60 * 60 * 1000);
+  const fmt = d => d.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+  const url = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(event.title)}&dates=${fmt(start)}/${fmt(end)}&details=${encodeURIComponent(event.description || '')}&location=${encodeURIComponent(event.gym_name || '')}`;
+  window.open(url, '_blank');
+}
+
+function shareEvent(event) {
+  const text = `🏋️ ${event.title} — ${new Date(event.event_date).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' })}`;
+  if (navigator.share) navigator.share({ title: event.title, text }).catch(() => {});
+  else navigator.clipboard?.writeText(text).catch(() => {});
+}
+
+function openMaps(gymName, address) {
+  const query = encodeURIComponent(address || gymName || '');
+  window.open(`https://maps.google.com/?q=${query}`, '_blank');
+}
+
+// ─── Sub-components ──────────────────────────────────────────────────────────
+
 function RangeDropdown({ value, onChange }) {
   const [open, setOpen] = useState(false);
   const current = RANGE_OPTIONS.find(o => o.key === value) || RANGE_OPTIONS[0];
   return (
     <div style={{ position: 'relative', flexShrink: 0 }}>
-      <button onClick={() => setOpen(o => !o)} style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '4px 9px', borderRadius: 8, background: open ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.10)', color: '#cbd5e1', fontSize: 11, fontWeight: 600, cursor: 'pointer', transition: 'background 0.15s' }}>
+      <button onClick={() => setOpen(o => !o)} style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '4px 9px', borderRadius: 8, background: open ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.10)', color: '#cbd5e1', fontSize: 11, fontWeight: 600, cursor: 'pointer' }}>
         <span>{current.label}</span>
         <ChevronDown size={11} color="#64748b" style={{ transform: open ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} />
       </button>
@@ -55,7 +97,7 @@ function RangeDropdown({ value, onChange }) {
           <div style={{ position: 'fixed', inset: 0, zIndex: 10 }} onClick={() => setOpen(false)} />
           <div style={{ position: 'absolute', top: 'calc(100% + 6px)', right: 0, zIndex: 20, background: 'rgba(10,14,30,0.98)', border: '1px solid rgba(255,255,255,0.10)', borderRadius: 10, overflow: 'hidden', minWidth: 110, boxShadow: '0 12px 40px rgba(0,0,0,0.7)', backdropFilter: 'blur(20px)' }}>
             {RANGE_OPTIONS.map(opt => (
-              <button key={opt.key} onClick={() => { onChange(opt.key); setOpen(false); }} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, width: '100%', padding: '9px 12px', background: opt.key === value ? 'rgba(96,165,250,0.08)' : 'transparent', border: 'none', cursor: 'pointer', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+              <button key={opt.key} onClick={() => { onChange(opt.key); setOpen(false); }} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, width: '100%', padding: '9px 12px', background: opt.key === value ? 'rgba(96,165,250,0.08)' : 'transparent', border: 'none', borderBottom: '1px solid rgba(255,255,255,0.05)', cursor: 'pointer' }}>
                 <span style={{ fontSize: 12, fontWeight: opt.key === value ? 700 : 500, color: opt.key === value ? '#93c5fd' : '#94a3b8' }}>{opt.label}</span>
                 {opt.key === value && <div style={{ width: 5, height: 5, borderRadius: '50%', background: '#60a5fa' }} />}
               </button>
@@ -67,42 +109,69 @@ function RangeDropdown({ value, onChange }) {
   );
 }
 
-function addToCalendar(event) {
-  const start = new Date(event.event_date);
-  const end = event.end_time
-    ? new Date(`${start.toISOString().split('T')[0]}T${event.end_time}:00`)
-    : new Date(start.getTime() + 60 * 60 * 1000);
-
-  const fmt = d => d.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
-  const url = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(event.title)}&dates=${fmt(start)}/${fmt(end)}&details=${encodeURIComponent(event.description || '')}&location=${encodeURIComponent(event.gym_name || '')}`;
-  window.open(url, '_blank');
-}
-
-function shareEvent(event) {
-  const text = `🏋️ ${event.title} — ${new Date(event.event_date).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' })}`;
-  if (navigator.share) {
-    navigator.share({ title: event.title, text }).catch(() => {});
-  } else {
-    navigator.clipboard?.writeText(text).catch(() => {});
-  }
-}
-
 function EventCountdown({ eventDate }) {
   const timeLeft = useCountdown(eventDate);
-  const isImminent = (() => {
-    const diff = new Date(eventDate) - new Date();
-    return diff > 0 && diff < 86400000;
-  })();
+  const isImminent = new Date(eventDate) - new Date() < 86400000 && new Date(eventDate) > new Date();
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '2px 8px', borderRadius: 6, background: isImminent ? 'rgba(251,191,36,0.12)' : 'rgba(96,165,250,0.10)', border: `1px solid ${isImminent ? 'rgba(251,191,36,0.28)' : 'rgba(96,165,250,0.2)'}` }}>
+    <div style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '3px 8px', borderRadius: 6, background: isImminent ? 'rgba(251,191,36,0.12)' : 'rgba(96,165,250,0.10)', border: `1px solid ${isImminent ? 'rgba(251,191,36,0.28)' : 'rgba(96,165,250,0.2)'}`, flexShrink: 0 }}>
       <Zap size={9} color={isImminent ? '#fbbf24' : '#60a5fa'} />
       <span style={{ fontSize: 10, fontWeight: 800, color: isImminent ? '#fbbf24' : '#93c5fd', whiteSpace: 'nowrap' }}>{timeLeft}</span>
     </div>
   );
 }
 
-function AttendeeAvatars({ count, attendeeIds = [] }) {
-  if (count === 0) return null;
+function CapacityBar({ capacity, attendees }) {
+  if (!capacity) return null;
+  const filled = Math.min(attendees || 0, capacity);
+  const pct = (filled / capacity) * 100;
+  const spotsLeft = capacity - filled;
+  const isFull = spotsLeft <= 0;
+  const isLow = spotsLeft <= 3 && !isFull;
+  const barColor = isFull ? '#ef4444' : isLow ? '#f59e0b' : '#34d399';
+
+  return (
+    <div style={{ marginBottom: 14 }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+          <Users size={11} color={barColor} />
+          <span style={{ fontSize: 11, fontWeight: 700, color: barColor }}>
+            {isFull ? 'FULL' : isLow ? `Only ${spotsLeft} spot${spotsLeft === 1 ? '' : 's'} left` : `${spotsLeft} spots left`}
+          </span>
+        </div>
+        <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.3)', fontWeight: 600 }}>{filled}/{capacity}</span>
+      </div>
+      <div style={{ height: 4, borderRadius: 99, background: 'rgba(255,255,255,0.07)', overflow: 'hidden' }}>
+        <div style={{ height: '100%', width: `${pct}%`, borderRadius: 99, background: barColor, transition: 'width 0.4s ease', boxShadow: `0 0 6px ${barColor}66` }} />
+      </div>
+    </div>
+  );
+}
+
+function LevelTag({ level }) {
+  if (!level) return null;
+  const key = level.toLowerCase();
+  const c = LEVEL_COLORS[key] || LEVEL_COLORS.all;
+  const label = key === 'all' ? 'All Levels' : level.charAt(0).toUpperCase() + level.slice(1);
+  return (
+    <span style={{ padding: '2px 8px', borderRadius: 6, background: c.bg, border: `1px solid ${c.border}`, fontSize: 10, fontWeight: 800, color: c.text, letterSpacing: '0.03em', textTransform: 'uppercase' }}>
+      {label}
+    </span>
+  );
+}
+
+function PriceTag({ price }) {
+  const isFree = !price || price === 0 || price === 'free';
+  return (
+    <span style={{ padding: '2px 8px', borderRadius: 6, background: isFree ? 'rgba(16,185,129,0.10)' : 'rgba(251,191,36,0.10)', border: `1px solid ${isFree ? 'rgba(16,185,129,0.25)' : 'rgba(251,191,36,0.25)'}`, fontSize: 10, fontWeight: 800, color: isFree ? '#34d399' : '#fbbf24', letterSpacing: '0.03em' }}>
+      {isFree ? 'FREE' : typeof price === 'number' ? `£${price}` : price}
+    </span>
+  );
+}
+
+function AttendeeAvatars({ count }) {
+  if (!count || count === 0) return (
+    <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.22)', fontWeight: 500 }}>Be the first to join</span>
+  );
   const colors = ['#3b82f6', '#8b5cf6', '#ec4899', '#10b981', '#f59e0b'];
   const dots = Math.min(count, 4);
   return (
@@ -114,9 +183,28 @@ function AttendeeAvatars({ count, attendeeIds = [] }) {
           </div>
         ))}
       </div>
-      <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.38)', fontWeight: 600 }}>
-        {count} attending
-      </span>
+      <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.38)', fontWeight: 600 }}>{count} attending</span>
+    </div>
+  );
+}
+
+function EquipmentChips({ items = [] }) {
+  if (!items.length) return null;
+  const icons = { goggles: '🥽', mat: '🧘', gloves: '🥊', towel: '🏳️', shoes: '👟', water: '💧', kit: '👕' };
+  return (
+    <div style={{ marginBottom: 16 }}>
+      <span style={{ fontSize: 10, fontWeight: 700, color: 'rgba(255,255,255,0.3)', letterSpacing: '0.08em', textTransform: 'uppercase', display: 'block', marginBottom: 6 }}>Bring</span>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+        {items.map((item, i) => {
+          const key = Object.keys(icons).find(k => item.toLowerCase().includes(k));
+          return (
+            <span key={i} style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '4px 10px', borderRadius: 8, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.09)', fontSize: 12, color: 'rgba(255,255,255,0.65)', fontWeight: 600 }}>
+              {key && <span>{icons[key]}</span>}
+              {item}
+            </span>
+          );
+        })}
+      </div>
     </div>
   );
 }
@@ -132,10 +220,10 @@ function LeaveConfirmDialog({ open, onClose, onConfirm, eventName }) {
           <h3 style={{ fontSize: 18, fontWeight: 900, color: '#fff', letterSpacing: '-0.02em', margin: '0 0 8px' }}>
             Leave <span style={{ color: '#60a5fa' }}>{eventName}</span>?
           </h3>
-          <p style={{ fontSize: 13, color: 'rgba(138,138,148,0.9)', lineHeight: 1.5, margin: '0 0 24px' }}>You can always rejoin later.</p>
+          <p style={{ fontSize: 13, color: 'rgba(138,138,148,0.9)', lineHeight: 1.5, margin: '0 0 24px' }}>Your spot will be released to others.</p>
           <div style={{ display: 'flex', gap: 10 }}>
             <button onClick={onClose} style={{ flex: 1, padding: '12px 0', borderRadius: 14, fontSize: 13, fontWeight: 800, color: '#fff', background: 'linear-gradient(to bottom, #2d3748, #1a202c)', border: '1px solid rgba(255,255,255,0.12)', borderBottom: '3px solid rgba(0,0,0,0.5)', cursor: 'pointer' }}>Cancel</button>
-            <button onClick={onConfirm} style={{ flex: 1, padding: '12px 0', borderRadius: 14, fontSize: 13, fontWeight: 800, color: '#fff', background: 'linear-gradient(to bottom, #f87171, #ef4444 40%, #b91c1c)', border: '1px solid transparent', borderBottom: '3px solid #7f1d1d', boxShadow: '0 2px 0 rgba(0,0,0,0.4)', cursor: 'pointer' }}>Leave</button>
+            <button onClick={onConfirm} style={{ flex: 1, padding: '12px 0', borderRadius: 14, fontSize: 13, fontWeight: 800, color: '#fff', background: 'linear-gradient(to bottom, #f87171, #ef4444 40%, #b91c1c)', border: '1px solid transparent', borderBottom: '3px solid #7f1d1d', cursor: 'pointer' }}>Leave</button>
           </div>
         </div>
       </div>
@@ -143,7 +231,33 @@ function LeaveConfirmDialog({ open, onClose, onConfirm, eventName }) {
   );
 }
 
-function EventDetailSheet({ event, isJoined, remindMe, onClose, onJoin, onLeave, onCalendar, onShare, onToggleRemind }) {
+function WaitlistButton({ onJoinWaitlist, onLeaveWaitlist, isWaitlisted }) {
+  return (
+    <button
+      onClick={isWaitlisted ? onLeaveWaitlist : onJoinWaitlist}
+      style={{
+        width: '100%', padding: '14px', borderRadius: 18,
+        fontSize: 15, fontWeight: 900, cursor: 'pointer', border: 'none',
+        background: isWaitlisted
+          ? 'rgba(239,68,68,0.12)'
+          : 'linear-gradient(135deg, rgba(239,68,68,0.15), rgba(185,28,28,0.1))',
+        color: isWaitlisted ? '#f87171' : '#fca5a5',
+        outline: `1px solid ${isWaitlisted ? 'rgba(239,68,68,0.35)' : 'rgba(239,68,68,0.2)'}`,
+      }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+        <AlertCircle size={16} />
+        {isWaitlisted ? 'On Waitlist — Tap to Leave' : 'Event Full — Join Waitlist'}
+      </div>
+    </button>
+  );
+}
+
+// ─── Event Detail Sheet ──────────────────────────────────────────────────────
+
+function EventDetailSheet({ event, isJoined, isWaitlisted, remindMe, onClose, onJoin, onLeave, onJoinWaitlist, onLeaveWaitlist, onCalendar, onShare, onToggleRemind }) {
+  const isFull = event.capacity && (event.attendees || 0) >= event.capacity;
+  const equipment = event.equipment || [];
+
   const formatDate = d => new Date(d).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
   const formatTime = (d, e) => {
     const s = new Date(d).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
@@ -158,11 +272,15 @@ function EventDetailSheet({ event, isJoined, remindMe, onClose, onJoin, onLeave,
       <motion.div
         initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }}
         transition={{ type: 'spring', stiffness: 340, damping: 36 }}
-        style={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 10011, maxHeight: '90vh', display: 'flex', flexDirection: 'column', borderRadius: '24px 24px 0 0', background: 'linear-gradient(160deg, #0d1232 0%, #060810 100%)', border: '1px solid rgba(255,255,255,0.09)', borderBottom: 'none', boxShadow: '0 -16px 60px rgba(0,0,0,0.7)' }}>
+        style={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 10011, maxHeight: '92vh', display: 'flex', flexDirection: 'column', borderRadius: '24px 24px 0 0', background: 'linear-gradient(160deg, #0d1232 0%, #060810 100%)', border: '1px solid rgba(255,255,255,0.09)', borderBottom: 'none', boxShadow: '0 -16px 60px rgba(0,0,0,0.7)' }}>
 
-        {/* Drag handle */}
-        <div style={{ display: 'flex', justifyContent: 'center', padding: '12px 0 0', flexShrink: 0 }}>
+        {/* Drag handle + close */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px 0', flexShrink: 0 }}>
+          <div style={{ width: 28 }} />
           <div style={{ width: 38, height: 4, borderRadius: 99, background: 'rgba(255,255,255,0.14)' }} />
+          <button onClick={onClose} style={{ width: 28, height: 28, borderRadius: 8, background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+            <X size={13} color="rgba(255,255,255,0.5)" />
+          </button>
         </div>
 
         <div style={{ flex: 1, overflowY: 'auto', WebkitOverflowScrolling: 'touch' }}>
@@ -175,27 +293,43 @@ function EventDetailSheet({ event, isJoined, remindMe, onClose, onJoin, onLeave,
           )}
 
           <div style={{ padding: '16px 20px 0' }}>
-            {/* Title + countdown */}
-            <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, marginBottom: 6 }}>
+            {/* Title row */}
+            <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, marginBottom: 8 }}>
               <h2 style={{ fontSize: 22, fontWeight: 900, color: '#fff', letterSpacing: '-0.03em', lineHeight: 1.2, margin: 0, flex: 1 }}>{event.title}</h2>
               <EventCountdown eventDate={event.event_date} />
             </div>
 
-            {/* Gym name */}
+            {/* Tags row */}
+            <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 6, marginBottom: 12 }}>
+              <PriceTag price={event.price} />
+              {event.level && <LevelTag level={event.level} />}
+              {event.is_recurring && (
+                <span style={{ display: 'flex', alignItems: 'center', gap: 3, padding: '2px 8px', borderRadius: 6, background: 'rgba(139,92,246,0.10)', border: '1px solid rgba(139,92,246,0.25)', fontSize: 10, fontWeight: 800, color: '#a78bfa' }}>
+                  <Repeat size={9} /> Recurring
+                </span>
+              )}
+            </div>
+
+            {/* Location — tappable */}
             {event.gym_name && (
-              <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginBottom: 12 }}>
+              <button onClick={() => openMaps(event.gym_name, event.gym_address)} style={{ display: 'flex', alignItems: 'center', gap: 5, marginBottom: 14, background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
                 <MapPin size={12} color="#60a5fa" />
-                <span style={{ fontSize: 13, color: '#60a5fa', fontWeight: 600 }}>{event.gym_name}</span>
-              </div>
+                <span style={{ fontSize: 13, color: '#60a5fa', fontWeight: 600, textDecoration: 'underline', textDecorationColor: 'rgba(96,165,250,0.3)', textUnderlineOffset: 3 }}>
+                  {event.gym_name}
+                </span>
+              </button>
             )}
 
             {/* Date + time */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '12px 14px', borderRadius: 14, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)', marginBottom: 12 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '12px 14px', borderRadius: 14, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)', marginBottom: 14 }}>
               <div style={{ width: 36, height: 36, borderRadius: 10, background: 'rgba(96,165,250,0.12)', border: '1px solid rgba(96,165,250,0.22)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                 <Calendar size={16} color="#60a5fa" />
               </div>
               <div>
-                <div style={{ fontSize: 13, fontWeight: 700, color: '#fff' }}>{formatDate(event.event_date)}</div>
+                <div style={{ fontSize: 13, fontWeight: 700, color: '#fff' }}>
+                  {humanRelativeDate(event.event_date)}
+                  <span style={{ color: 'rgba(255,255,255,0.4)', fontWeight: 500 }}> · {formatDate(event.event_date)}</span>
+                </div>
                 <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)', marginTop: 2, display: 'flex', alignItems: 'center', gap: 4 }}>
                   <Clock size={10} />
                   {formatTime(event.event_date, event.end_time)}
@@ -203,41 +337,53 @@ function EventDetailSheet({ event, isJoined, remindMe, onClose, onJoin, onLeave,
               </div>
             </div>
 
+            {/* Capacity bar */}
+            <CapacityBar capacity={event.capacity} attendees={event.attendees} />
+
             {/* Description */}
             {event.description && (
-              <p style={{ fontSize: 13.5, color: 'rgba(255,255,255,0.6)', lineHeight: 1.65, marginBottom: 16 }}>{event.description}</p>
+              <div style={{ marginBottom: 16 }}>
+                <span style={{ fontSize: 10, fontWeight: 700, color: 'rgba(255,255,255,0.3)', letterSpacing: '0.08em', textTransform: 'uppercase', display: 'block', marginBottom: 6 }}>About</span>
+                <p style={{ fontSize: 13.5, color: 'rgba(255,255,255,0.6)', lineHeight: 1.65, margin: 0 }}>{event.description}</p>
+              </div>
             )}
+
+            {/* Equipment chips */}
+            <EquipmentChips items={equipment} />
 
             {/* Attendees */}
             <div style={{ marginBottom: 20 }}>
               <AttendeeAvatars count={event.attendees || 0} />
             </div>
 
-            {/* Action buttons */}
+            {/* CTA */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10, paddingBottom: 36 }}>
-              {/* Join / Leave */}
-              <button
-                onClick={isJoined ? onLeave : onJoin}
-                style={{
-                  width: '100%', padding: '15px', borderRadius: 18,
-                  fontSize: 15, fontWeight: 900, cursor: 'pointer', border: 'none',
-                  background: isJoined
-                    ? 'linear-gradient(135deg, rgba(16,185,129,0.2), rgba(5,150,105,0.15))'
-                    : 'linear-gradient(135deg, #2563eb, #1d4ed8)',
-                  color: isJoined ? '#34d399' : '#fff',
-                  boxShadow: isJoined
-                    ? '0 4px 20px rgba(16,185,129,0.2), inset 0 1px 0 rgba(255,255,255,0.1)'
-                    : '0 6px 28px rgba(37,99,235,0.5), inset 0 1px 0 rgba(255,255,255,0.2)',
-                  outline: isJoined ? '1px solid rgba(52,211,153,0.3)' : 'none',
-                }}>
-                {isJoined ? '✓ Joined — Tap to Leave' : '🎉 Join This Event'}
-              </button>
+              {isFull && !isJoined ? (
+                <WaitlistButton isWaitlisted={isWaitlisted} onJoinWaitlist={onJoinWaitlist} onLeaveWaitlist={onLeaveWaitlist} />
+              ) : (
+                <button
+                  onClick={isJoined ? onLeave : onJoin}
+                  style={{
+                    width: '100%', padding: '15px', borderRadius: 18,
+                    fontSize: 15, fontWeight: 900, cursor: 'pointer', border: 'none',
+                    background: isJoined
+                      ? 'linear-gradient(135deg, rgba(16,185,129,0.2), rgba(5,150,105,0.15))'
+                      : 'linear-gradient(135deg, #2563eb, #1d4ed8)',
+                    color: isJoined ? '#34d399' : '#fff',
+                    boxShadow: isJoined
+                      ? '0 4px 20px rgba(16,185,129,0.2), inset 0 1px 0 rgba(255,255,255,0.1)'
+                      : '0 6px 28px rgba(37,99,235,0.5), inset 0 1px 0 rgba(255,255,255,0.2)',
+                    outline: isJoined ? '1px solid rgba(52,211,153,0.3)' : 'none',
+                  }}>
+                  {isJoined ? '✓ Joined — Tap to Leave' : '🎉 Join This Event'}
+                </button>
+              )}
 
               {/* Secondary actions */}
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8 }}>
                 <button onClick={onCalendar} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5, padding: '10px 4px', borderRadius: 14, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.09)', cursor: 'pointer', color: 'rgba(255,255,255,0.55)', fontSize: 10, fontWeight: 700 }}>
                   <CalendarPlus size={16} color="#60a5fa" />
-                  Add to Calendar
+                  Add to Cal
                 </button>
                 <button onClick={onShare} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5, padding: '10px 4px', borderRadius: 14, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.09)', cursor: 'pointer', color: 'rgba(255,255,255,0.55)', fontSize: 10, fontWeight: 700 }}>
                   <Share2 size={16} color="#a78bfa" />
@@ -256,39 +402,35 @@ function EventDetailSheet({ event, isJoined, remindMe, onClose, onJoin, onLeave,
   );
 }
 
-const getStorageKey = (userId) => `joinedEventIds_${userId || 'guest'}`;
-const getRemindKey = (userId) => `remindEventIds_${userId || 'guest'}`;
+// ─── Storage ─────────────────────────────────────────────────────────────────
+
+const getStorageKey  = (uid) => `joinedEventIds_${uid || 'guest'}`;
+const getRemindKey   = (uid) => `remindEventIds_${uid || 'guest'}`;
+const getWaitlistKey = (uid) => `waitlistEventIds_${uid || 'guest'}`;
+
+// ─── Main Component ──────────────────────────────────────────────────────────
 
 export default function UpcomingEvents({ gymMemberships = [], currentUser, isMember = true }) {
   const [range, setRange] = useState('week');
-  const [joinedEventIds, setJoinedEventIds] = useState(() => {
-    try { return new Set(JSON.parse(localStorage.getItem(getStorageKey(currentUser?.id)) || '[]')); } catch { return new Set(); }
-  });
-  const [remindEventIds, setRemindEventIds] = useState(() => {
-    try { return new Set(JSON.parse(localStorage.getItem(getRemindKey(currentUser?.id)) || '[]')); } catch { return new Set(); }
-  });
+  const [joinedEventIds, setJoinedEventIds]   = useState(() => { try { return new Set(JSON.parse(localStorage.getItem(getStorageKey(currentUser?.id))  || '[]')); } catch { return new Set(); } });
+  const [remindEventIds, setRemindEventIds]   = useState(() => { try { return new Set(JSON.parse(localStorage.getItem(getRemindKey(currentUser?.id))   || '[]')); } catch { return new Set(); } });
+  const [waitlistEventIds, setWaitlistEventIds] = useState(() => { try { return new Set(JSON.parse(localStorage.getItem(getWaitlistKey(currentUser?.id)) || '[]')); } catch { return new Set(); } });
   const [leaveConfirmEventId, setLeaveConfirmEventId] = useState(null);
   const [openEventId, setOpenEventId] = useState(null);
-  const [joinSuccessId, setJoinSuccessId] = useState(null);
   const queryClient = useQueryClient();
-
   const gymIds = gymMemberships.map(m => m.gym_id);
 
-  useEffect(() => {
-    try { localStorage.setItem(getStorageKey(currentUser?.id), JSON.stringify(Array.from(joinedEventIds))); } catch {}
-  }, [joinedEventIds, currentUser?.id]);
-
-  useEffect(() => {
-    try { localStorage.setItem(getRemindKey(currentUser?.id), JSON.stringify(Array.from(remindEventIds))); } catch {}
-  }, [remindEventIds, currentUser?.id]);
+  useEffect(() => { try { localStorage.setItem(getStorageKey(currentUser?.id),  JSON.stringify([...joinedEventIds])); } catch {} }, [joinedEventIds, currentUser?.id]);
+  useEffect(() => { try { localStorage.setItem(getRemindKey(currentUser?.id),   JSON.stringify([...remindEventIds])); } catch {} }, [remindEventIds, currentUser?.id]);
+  useEffect(() => { try { localStorage.setItem(getWaitlistKey(currentUser?.id), JSON.stringify([...waitlistEventIds])); } catch {} }, [waitlistEventIds, currentUser?.id]);
 
   const { data: events = [] } = useQuery({
     queryKey: ['upcomingEvents', gymIds.join(','), range],
     queryFn: async () => {
-      if (gymIds.length === 0) return [];
+      if (!gymIds.length) return [];
       const now = new Date();
       const days = RANGE_OPTIONS.find(o => o.key === range)?.days || 7;
-      const cutoff = new Date(now.getTime() + days * 24 * 60 * 60 * 1000);
+      const cutoff = new Date(now.getTime() + days * 86400000);
       const all = [];
       await Promise.all(gymIds.map(async (gymId) => {
         const gymEvents = await base44.entities.Event.filter({ gym_id: gymId }, 'event_date', 20);
@@ -311,12 +453,8 @@ export default function UpcomingEvents({ gymMemberships = [], currentUser, isMem
         attendees: (currentAttendees || 0) + 1,
         attendee_ids: [...(events.find(e => e.id === eventId)?.attendee_ids || []), currentUser?.id].filter(Boolean),
       }),
-    onMutate: async ({ eventId }) => { setJoinedEventIds(prev => new Set(prev).add(eventId)); },
-    onSuccess: (_, { eventId }) => {
-      queryClient.invalidateQueries({ queryKey: ['upcomingEvents'] });
-      setJoinSuccessId(eventId);
-      setTimeout(() => setJoinSuccessId(null), 2500);
-    },
+    onMutate: ({ eventId }) => setJoinedEventIds(prev => new Set(prev).add(eventId)),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['upcomingEvents'] }),
   });
 
   const leaveMutation = useMutation({
@@ -325,32 +463,17 @@ export default function UpcomingEvents({ gymMemberships = [], currentUser, isMem
         attendees: Math.max(0, (currentAttendees || 1) - 1),
         attendee_ids: (events.find(e => e.id === eventId)?.attendee_ids || []).filter(id => id !== currentUser?.id),
       }),
-    onMutate: async ({ eventId }) => { setJoinedEventIds(prev => { const n = new Set(prev); n.delete(eventId); return n; }); },
+    onMutate: ({ eventId }) => setJoinedEventIds(prev => { const n = new Set(prev); n.delete(eventId); return n; }),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['upcomingEvents'] }),
   });
 
-  if (gymIds.length === 0) return null;
+  if (!gymIds.length) return null;
 
-  const formatDate = (dateStr) => {
-    const d = new Date(dateStr);
-    return d.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' });
-  };
-  const formatTime = (dateStr, endTime) => {
-    const d = new Date(dateStr);
-    const start = d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
-    return endTime ? `${start}–${endTime}` : start;
-  };
+  const formatDate = (s) => new Date(s).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' });
+  const formatTime = (s, e) => { const t = new Date(s).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }); return e ? `${t}–${e}` : t; };
 
   const leaveEvent = events.find(e => e.id === leaveConfirmEventId);
-  const openEvent = events.find(e => e.id === openEventId);
-
-  const handleJoin = (event) => {
-    joinMutation.mutate({ eventId: event.id, currentAttendees: event.attendees || 0 });
-  };
-  const handleLeaveRequest = (event) => {
-    setOpenEventId(null);
-    setLeaveConfirmEventId(event.id);
-  };
+  const openEvent  = events.find(e => e.id === openEventId);
 
   return (
     <>
@@ -367,47 +490,65 @@ export default function UpcomingEvents({ gymMemberships = [], currentUser, isMem
         {/* Empty state */}
         {events.length === 0 && (
           <div style={{ padding: '28px 16px', textAlign: 'center' }}>
-            <span style={{ fontSize: 13, color: 'rgba(255,255,255,0.35)', fontWeight: 500 }}>No upcoming events</span>
+            <span style={{ fontSize: 13, color: 'rgba(255,255,255,0.35)', fontWeight: 500 }}>No upcoming events in this period</span>
           </div>
         )}
 
         {/* Events list */}
         <div style={{ display: 'flex', flexDirection: 'column' }}>
           {events.map((event, i) => {
-            const isJoined = joinedEventIds.has(event.id);
-            const isLast = i === events.length - 1;
+            const isJoined   = joinedEventIds.has(event.id);
+            const isLast     = i === events.length - 1;
+            const isFull     = event.capacity && (event.attendees || 0) >= event.capacity;
+            const isWaitlisted = waitlistEventIds.has(event.id);
+            const spotsLeft  = event.capacity ? event.capacity - (event.attendees || 0) : null;
+            const isLowSpots = spotsLeft !== null && spotsLeft <= 3 && spotsLeft > 0;
 
-            const JoinButton = () => (
-              <button
-                onClick={() => isJoined ? setLeaveConfirmEventId(event.id) : joinMutation.mutate({ eventId: event.id, currentAttendees: event.attendees || 0 })}
-                style={{
-                  display: 'flex', alignItems: 'center', gap: 5,
-                  padding: '7px 14px', borderRadius: 10,
-                  fontSize: 12, fontWeight: 800,
-                  cursor: 'pointer', border: 'none',
-                  transition: 'all 0.12s ease', flexShrink: 0,
-                  ...(isJoined ? {
-                    background: 'rgba(52,211,153,0.12)', color: '#34d399', outline: '1px solid rgba(52,211,153,0.28)',
-                  } : {
-                    background: 'linear-gradient(to bottom, #3b82f6 0%, #2563eb 40%, #1d4ed8 100%)',
-                    color: '#fff', boxShadow: '0 2px 0 #1a3fa8, inset 0 1px 0 rgba(255,255,255,0.2)', borderBottom: '2px solid #1a3fa8',
-                  }),
-                }}>
-                {isJoined ? <><CheckCircle style={{ width: 12, height: 12 }} /> Joined</> : 'Join Event'}
-              </button>
-            );
+            const InlineJoinButton = () => {
+              if (isFull && !isJoined) return (
+                <button
+                  onClick={() => setWaitlistEventIds(prev => { const n = new Set(prev); isWaitlisted ? n.delete(event.id) : n.add(event.id); return n; })}
+                  style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '7px 12px', borderRadius: 10, fontSize: 11, fontWeight: 800, cursor: 'pointer', border: 'none', background: isWaitlisted ? 'rgba(239,68,68,0.15)' : 'rgba(239,68,68,0.08)', color: isWaitlisted ? '#f87171' : '#fca5a5', outline: '1px solid rgba(239,68,68,0.25)', flexShrink: 0 }}>
+                  {isWaitlisted ? '⏳ Waitlisted' : '+ Waitlist'}
+                </button>
+              );
+              return (
+                <button
+                  onClick={() => isJoined
+                    ? setLeaveConfirmEventId(event.id)
+                    : joinMutation.mutate({ eventId: event.id, currentAttendees: event.attendees || 0 })}
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: 5,
+                    padding: '7px 14px', borderRadius: 10,
+                    fontSize: 12, fontWeight: 800, cursor: 'pointer', border: 'none',
+                    flexShrink: 0,
+                    ...(isJoined
+                      ? { background: 'rgba(52,211,153,0.12)', color: '#34d399', outline: '1px solid rgba(52,211,153,0.28)' }
+                      : { background: 'linear-gradient(to bottom, #3b82f6 0%, #2563eb 40%, #1d4ed8 100%)', color: '#fff', boxShadow: '0 2px 0 #1a3fa8, inset 0 1px 0 rgba(255,255,255,0.2)', borderBottom: '2px solid #1a3fa8' }),
+                  }}>
+                  {isJoined ? <><CheckCircle style={{ width: 12, height: 12 }} /> Joined</> : 'Join'}
+                </button>
+              );
+            };
 
             const BottomRow = () => (
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 4, minWidth: 0 }}>
-                  {event.description && (
+                  {/* Urgency nudge */}
+                  {isLowSpots && (
+                    <span style={{ fontSize: 11, color: '#f59e0b', fontWeight: 700 }}>⚡ {spotsLeft} spot{spotsLeft === 1 ? '' : 's'} left</span>
+                  )}
+                  {!isLowSpots && event.description && (
                     <p style={{ fontSize: 12.5, color: 'rgba(226,232,240,0.6)', lineHeight: 1.5, margin: 0, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
                       {event.description}
                     </p>
                   )}
-                  <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.25)', fontWeight: 600 }}>{event.attendees || 0} attending</span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.25)', fontWeight: 600 }}>{event.attendees || 0} attending</span>
+                    {event.level && <LevelTag level={event.level} />}
+                  </div>
                 </div>
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 10, flexShrink: 0 }}>
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 8, flexShrink: 0 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                     <Clock style={{ width: 10, height: 10, color: 'rgba(255,255,255,0.4)' }} />
                     <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.45)', fontWeight: 600 }}>{formatTime(event.event_date, event.end_time)}</span>
@@ -416,7 +557,7 @@ export default function UpcomingEvents({ gymMemberships = [], currentUser, isMem
                     <button onClick={() => setOpenEventId(event.id)} style={{ width: 30, height: 30, borderRadius: 8, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.09)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0 }}>
                       <ChevronRight size={13} color="rgba(255,255,255,0.4)" />
                     </button>
-                    {isMember && <JoinButton />}
+                    {isMember && <InlineJoinButton />}
                   </div>
                 </div>
               </div>
@@ -424,31 +565,28 @@ export default function UpcomingEvents({ gymMemberships = [], currentUser, isMem
 
             return (
               <div key={event.id} style={{ borderBottom: isLast ? 'none' : '1px solid rgba(255,255,255,0.045)' }}>
-
-                {/* ── WITH BANNER IMAGE ── */}
-                {event.image_url && (
+                {event.image_url ? (
                   <>
                     <div style={{ height: 150, overflow: 'hidden', position: 'relative' }}>
                       <img src={event.image_url} alt={event.title} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
                       <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, rgba(8,10,20,0.82) 0%, transparent 55%)' }} />
-                      <div style={{ position: 'absolute', top: 12, left: 12, right: 12 }}>
+                      <div style={{ position: 'absolute', top: 12, left: 12, right: 12, display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8 }}>
                         <h3 style={{ fontSize: 15, fontWeight: 900, color: '#fff', letterSpacing: '-0.02em', lineHeight: 1.25, margin: 0, textShadow: '0 1px 6px rgba(0,0,0,0.6)' }}>
-                          {formatDate(event.event_date)} - {event.title}
+                          {humanRelativeDate(event.event_date)} · {event.title}
                         </h3>
+                        {event.is_recurring && <Repeat size={13} color="rgba(167,139,250,0.9)" style={{ flexShrink: 0, marginTop: 2 }} />}
                       </div>
                     </div>
-                    <div style={{ padding: '10px 14px 14px' }}>
-                      <BottomRow />
-                    </div>
+                    <div style={{ padding: '10px 14px 14px' }}><BottomRow /></div>
                   </>
-                )}
-
-                {/* ── WITHOUT BANNER IMAGE ── */}
-                {!event.image_url && (
+                ) : (
                   <div style={{ padding: '14px 14px' }}>
-                    <h3 style={{ fontSize: 14, fontWeight: 900, color: '#fff', letterSpacing: '-0.02em', lineHeight: 1.3, margin: '0 0 8px' }}>
-                      {formatDate(event.event_date)} - {event.title}
-                    </h3>
+                    <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 6, marginBottom: 8 }}>
+                      <h3 style={{ fontSize: 14, fontWeight: 900, color: '#fff', letterSpacing: '-0.02em', lineHeight: 1.3, margin: 0 }}>
+                        {humanRelativeDate(event.event_date)} · {event.title}
+                      </h3>
+                      {event.is_recurring && <Repeat size={12} color="rgba(167,139,250,0.7)" style={{ flexShrink: 0, marginTop: 2 }} />}
+                    </div>
                     <BottomRow />
                   </div>
                 )}
@@ -458,26 +596,22 @@ export default function UpcomingEvents({ gymMemberships = [], currentUser, isMem
         </div>
       </div>
 
-      {/* Event detail sheet */}
+      {/* Detail sheet */}
       <AnimatePresence>
         {openEvent && (
           <EventDetailSheet
             event={openEvent}
             isJoined={joinedEventIds.has(openEvent.id)}
+            isWaitlisted={waitlistEventIds.has(openEvent.id)}
             remindMe={remindEventIds.has(openEvent.id)}
             onClose={() => setOpenEventId(null)}
-            onJoin={() => { handleJoin(openEvent); setOpenEventId(null); }}
-            onLeave={() => handleLeaveRequest(openEvent)}
+            onJoin={() => { joinMutation.mutate({ eventId: openEvent.id, currentAttendees: openEvent.attendees || 0 }); setOpenEventId(null); }}
+            onLeave={() => { setOpenEventId(null); setLeaveConfirmEventId(openEvent.id); }}
+            onJoinWaitlist={() => setWaitlistEventIds(prev => new Set(prev).add(openEvent.id))}
+            onLeaveWaitlist={() => setWaitlistEventIds(prev => { const n = new Set(prev); n.delete(openEvent.id); return n; })}
             onCalendar={() => addToCalendar(openEvent)}
             onShare={() => shareEvent(openEvent)}
-            onToggleRemind={() => {
-              setRemindEventIds(prev => {
-                const n = new Set(prev);
-                if (n.has(openEvent.id)) n.delete(openEvent.id);
-                else n.add(openEvent.id);
-                return n;
-              });
-            }}
+            onToggleRemind={() => setRemindEventIds(prev => { const n = new Set(prev); n.has(openEvent.id) ? n.delete(openEvent.id) : n.add(openEvent.id); return n; })}
           />
         )}
       </AnimatePresence>
