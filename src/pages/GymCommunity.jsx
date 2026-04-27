@@ -168,6 +168,17 @@ const CLASS_TYPE_CONFIG = {
 };
 const DAYS_SHORT = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
+// Full day names mapping
+const DAY_FULL_NAMES = {
+  'Mon': 'Monday',
+  'Tue': 'Tuesday',
+  'Wed': 'Wednesday',
+  'Thu': 'Thursday',
+  'Fri': 'Friday',
+  'Sat': 'Saturday',
+  'Sun': 'Sunday'
+};
+
 function getClassType(c) {
   const n = (c.name || c.title || '').toLowerCase();
   if (n.includes('hiit') || n.includes('interval')) return 'hiit';
@@ -532,6 +543,26 @@ function getTimeSlot(t) {
   return 'Evening';
 }
 
+// Helper to compute finish time string like "21:00-22:00 (1 hour)"
+function getTimeRange(startTime, durationMinutes) {
+  if (!startTime) return null;
+  const m = startTime.match(/(\d{1,2}):(\d{2})/);
+  if (!m) return startTime;
+  const startH = parseInt(m[1]);
+  const startM = parseInt(m[2]);
+  const totalMins = startH * 60 + startM + (durationMinutes || 60);
+  const endH = Math.floor(totalMins / 60) % 24;
+  const endM = totalMins % 60;
+  const pad = (n) => String(n).padStart(2, '0');
+  const endStr = `${pad(endH)}:${pad(endM)}`;
+  const durationLabel = durationMinutes
+    ? durationMinutes % 60 === 0
+      ? `${durationMinutes / 60} hour${durationMinutes / 60 !== 1 ? 's' : ''}`
+      : `${durationMinutes} min`
+    : '1 hour';
+  return `${startTime}-${endStr} (${durationLabel})`;
+}
+
 function btn3D(active, activeProps, inactiveProps) {
   return {
     style: active ? activeProps : inactiveProps,
@@ -551,23 +582,18 @@ function btn3D(active, activeProps, inactiveProps) {
   };
 }
 
-// ─── UPDATED: ClassDateHeader ───────────────────────────────────────────────
-// • Today is always the first day shown; the row then shows the next 6 days
-// • No horizontal scrolling — all 7 days spread evenly across the full width
-// • Day boxes are ~5% narrower (achieved via padding reduction)
+// ─── ClassDateHeader ─────────────────────────────────────────────────────────
 function ClassDateHeader({ activeDay, setActiveDay, activeSlot, setActiveSlot }) {
   const today = new Date();
 
-  // Build 7 days starting from today
   const days = Array.from({ length: 7 }, (_, i) => {
     const d = new Date(today);
     d.setDate(today.getDate() + i);
-    // Get Mon=0 … Sun=6 index for matching against DAY_LABELS
-    const jsDay = d.getDay(); // 0=Sun,1=Mon,...,6=Sat
-    const dayIdx = jsDay === 0 ? 6 : jsDay - 1; // convert to Mon=0…Sun=6
+    const jsDay = d.getDay();
+    const dayIdx = jsDay === 0 ? 6 : jsDay - 1;
     return {
-      offset: i,           // 0 = today, 1 = tomorrow, etc.
-      dayIdx,              // used to match schedule days
+      offset: i,
+      dayIdx,
       label: DAY_LABELS[dayIdx],
       num: d.getDate(),
       isToday: i === 0,
@@ -577,7 +603,7 @@ function ClassDateHeader({ activeDay, setActiveDay, activeSlot, setActiveSlot })
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-      {/* Day selector — no overflow scroll, spread evenly */}
+      {/* Day selector */}
       <div style={{ display: 'flex', gap: 5 }}>
         {days.map((d) => {
           const active = activeDay === d.offset;
@@ -626,35 +652,36 @@ function ClassDateHeader({ activeDay, setActiveDay, activeSlot, setActiveSlot })
         })}
       </div>
 
-      {/* Time-slot filters */}
+      {/* Time-slot filters — FIX: use React state only, no inline style mutation */}
       <div style={{ display: 'flex', gap: 8 }}>
         {TIME_SLOTS.map((slot) => {
           const active = activeSlot === slot;
-          const b = btn3D(
-            active,
-            {
-              flex: 1, padding: '8px 0', borderRadius: 99, cursor: 'pointer', fontSize: 12, fontWeight: 800,
-              background: 'linear-gradient(to bottom, #3b82f6, #2563eb, #1d4ed8)',
-              border: '1px solid transparent',
-              borderBottom: '3px solid #1a3fa8',
-              boxShadow: '0 2px 0 rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.2), 0 4px 14px rgba(37,99,235,0.3)',
-              color: '#fff',
-              transition: 'transform 0.08s ease, box-shadow 0.08s ease, border-bottom 0.08s ease'
-            },
-            {
-              flex: 1, padding: '8px 0', borderRadius: 99, cursor: 'pointer', fontSize: 12, fontWeight: 700,
-              background: 'rgba(20,28,60,0.8)',
-              border: '1px solid rgba(255,255,255,0.1)',
-              borderBottom: '3px solid rgba(0,0,0,0.5)',
-              boxShadow: '0 2px 0 rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.07)',
-              color: 'rgba(255,255,255,0.45)',
-              transition: 'transform 0.08s ease, box-shadow 0.08s ease, border-bottom 0.08s ease'
-            }
-          );
           return (
-            <button key={slot} onClick={() => setActiveSlot(active ? null : slot)} {...b}>
+            <button
+              key={slot}
+              onClick={() => setActiveSlot(active ? null : slot)}
+              style={{
+                flex: 1,
+                padding: '8px 0',
+                borderRadius: 99,
+                cursor: 'pointer',
+                fontSize: 12,
+                fontWeight: active ? 800 : 700,
+                background: active
+                  ? 'linear-gradient(to bottom, #3b82f6, #2563eb, #1d4ed8)'
+                  : 'rgba(20,28,60,0.8)',
+                border: active ? '1px solid transparent' : '1px solid rgba(255,255,255,0.1)',
+                borderBottom: active ? '3px solid #1a3fa8' : '3px solid rgba(0,0,0,0.5)',
+                boxShadow: active
+                  ? '0 2px 0 rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.2)'
+                  : '0 2px 0 rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.07)',
+                color: active ? '#fff' : 'rgba(255,255,255,0.45)',
+                transition: 'background 0.12s ease, color 0.12s ease, border 0.12s ease, box-shadow 0.12s ease',
+              }}
+            >
               {slot}
-            </button>);
+            </button>
+          );
         })}
       </div>
     </div>);
@@ -666,6 +693,8 @@ function PremiumClassCard({ gymClass, isOwner, onDelete, onBook, booked, onClick
 
   const typeKey = getClassType(gymClass);
   const cfg = CLASS_TYPE_CONFIG[typeKey];
+  // Reduced image height by 40% (was 185, now 111)
+  const IMAGE_HEIGHT = 111;
   const img = gymClass.image_url || CLASS_IMAGES[typeKey] || CLASS_IMAGES.default;
   const cap = gymClass.capacity || gymClass.max_participants || null;
   const enr = gymClass.enrolled || gymClass.participants_count || 0;
@@ -678,6 +707,10 @@ function PremiumClassCard({ gymClass, isOwner, onDelete, onBook, booked, onClick
   const diff = gymClass.difficulty ?
   gymClass.difficulty.replace('_', ' ').replace(/\b\w/g, (l) => l.toUpperCase()) :
   null;
+
+  const coachName = gymClass.instructor || gymClass.coach_name;
+  const coachAvatar = gymClass.coach_avatar || gymClass.instructor_avatar || null;
+  const timeRange = getTimeRange(timeStr, gymClass.duration_minutes);
 
   return (
     <div
@@ -707,7 +740,8 @@ function PremiumClassCard({ gymClass, isOwner, onDelete, onBook, booked, onClick
       <div style={{ height: 1, background: 'linear-gradient(90deg,transparent 10%,rgba(255,255,255,0.09) 50%,transparent 90%)', flexShrink: 0 }} />
       <div style={{ height: 3, background: `linear-gradient(90deg,${cfg.color}cc,${cfg.color}44)`, flexShrink: 0 }} />
 
-      <div style={{ position: 'relative', height: 185, overflow: 'hidden', flexShrink: 0 }}>
+      {/* Image area — reduced height, coach avatar top-left, no "Class" badge, no shimmer overlay */}
+      <div style={{ position: 'relative', height: IMAGE_HEIGHT, overflow: 'hidden', flexShrink: 0 }}>
         <img src={img} alt={gymClass.name}
         style={{ width: '100%', height: '100%', objectFit: 'cover',
           transform: pressed ? 'scale(1.05)' : 'scale(1)',
@@ -718,21 +752,27 @@ function PremiumClassCard({ gymClass, isOwner, onDelete, onBook, booked, onClick
           background: 'linear-gradient(to bottom,rgba(0,0,0,0) 0%,rgba(0,0,0,0.12) 35%,rgba(8,10,22,0.97) 100%)' }} />
         <div style={{ position: 'absolute', inset: 0,
           background: `radial-gradient(ellipse at 75% 15%,rgba(${cfg.color.slice(1).match(/../g).map((h) => parseInt(h, 16)).join(',')},0.18) 0%,transparent 60%)` }} />
-        <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', pointerEvents: 'none' }}>
-          <div style={{ position: 'absolute', top: 0, bottom: 0, width: '50%',
-            background: 'linear-gradient(90deg,transparent,rgba(255,255,255,0.04),transparent)',
-            animation: 'cl-shimmer 5s ease-in-out infinite' }} />
-        </div>
 
-        <div style={{ position: 'absolute', top: 10, left: 10, display: 'flex', alignItems: 'center', gap: 4,
-          fontSize: 9, fontWeight: 900, letterSpacing: '0.12em', textTransform: 'uppercase',
-          color: cfg.color, background: 'rgba(0,0,0,0.65)', border: `1px solid ${cfg.border}`,
-          borderRadius: 20, padding: '3px 9px', backdropFilter: 'blur(12px)' }}>
-          <span style={{ fontSize: 11 }}>{cfg.emoji}</span>{cfg.label}
+        {/* COACH AVATAR — top left */}
+        {coachName &&
+        <div style={{
+          position: 'absolute', top: 8, left: 8,
+          width: 32, height: 32, borderRadius: '50%',
+          background: `linear-gradient(135deg,${cfg.color}44,${cfg.color}1a)`,
+          border: `2px solid ${cfg.border}`,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          fontSize: 9, fontWeight: 900, color: cfg.color,
+          overflow: 'hidden',
+          boxShadow: `0 2px 8px rgba(0,0,0,0.5)` }}>
+          {coachAvatar
+            ? <img src={coachAvatar} alt={coachName} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            : ini(coachName)
+          }
         </div>
+        }
 
         {isPrem &&
-        <div style={{ position: 'absolute', top: 38, left: 10,
+        <div style={{ position: 'absolute', top: 8, left: coachName ? 46 : 8,
           fontSize: 8, fontWeight: 900, letterSpacing: '0.1em', textTransform: 'uppercase',
           color: '#fbbf24', background: 'rgba(0,0,0,0.65)',
           border: '1px solid rgba(251,191,36,0.4)', borderRadius: 20, padding: '2px 8px' }}>
@@ -740,7 +780,7 @@ function PremiumClassCard({ gymClass, isOwner, onDelete, onBook, booked, onClick
           </div>
         }
 
-        <div style={{ position: 'absolute', top: 10, right: isOwner ? 42 : 10, display: 'flex', flexDirection: 'column', gap: 4, alignItems: 'flex-end' }}>
+        <div style={{ position: 'absolute', top: 8, right: isOwner ? 42 : 8, display: 'flex', flexDirection: 'column', gap: 4, alignItems: 'flex-end' }}>
           {booked && <span style={{ fontSize: 9, fontWeight: 900, color: '#34d399', background: 'rgba(0,0,0,0.68)', border: '1px solid rgba(52,211,153,0.45)', borderRadius: 20, padding: '3px 8px' }}>✓ Booked</span>}
           {full && !booked && <span style={{ fontSize: 9, fontWeight: 900, color: '#f87171', background: 'rgba(0,0,0,0.68)', border: '1px solid rgba(248,113,113,0.45)', borderRadius: 20, padding: '3px 8px' }}>Full</span>}
           {hot && !full && <span style={{ fontSize: 9, fontWeight: 900, color: '#fbbf24', background: 'rgba(0,0,0,0.68)', border: '1px solid rgba(251,191,36,0.4)', borderRadius: 20, padding: '3px 8px', animation: 'cl-hot 1.8s ease-in-out infinite' }}>🔥 {left} left</span>}
@@ -753,42 +793,35 @@ function PremiumClassCard({ gymClass, isOwner, onDelete, onBook, booked, onClick
           </button>
         }
 
-        {(gymClass.instructor || gymClass.coach_name) &&
-        <div style={{ position: 'absolute', bottom: 10, right: 12,
-          width: 34, height: 34, borderRadius: '50%',
-          background: `linear-gradient(135deg,${cfg.color}44,${cfg.color}1a)`,
-          border: `2px solid ${cfg.border}`,
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          fontSize: 10, fontWeight: 900, color: cfg.color,
-          boxShadow: `0 0 10px ${cfg.color}33,0 2px 8px rgba(0,0,0,0.5)` }}>
-            {(gymClass.instructor || gymClass.coach_name || '?').split(' ').map((w) => w[0]).join('').toUpperCase().slice(0, 2)}
-          </div>
-        }
-
-        <div style={{ position: 'absolute', bottom: 0, left: 0, right: 50, padding: '0 12px 11px' }}>
-          <div style={{ fontSize: 16, fontWeight: 900, color: '#fff', letterSpacing: '-0.025em', lineHeight: 1.18, textShadow: '0 2px 10px rgba(0,0,0,0.9)' }}>
+        {/* Class name + coach name at bottom of image */}
+        <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '0 10px 9px' }}>
+          <div style={{ fontSize: 14, fontWeight: 900, color: '#fff', letterSpacing: '-0.025em', lineHeight: 1.18, textShadow: '0 2px 10px rgba(0,0,0,0.9)' }}>
             {gymClass.name || gymClass.title}
           </div>
-          {(gymClass.instructor || gymClass.coach_name) &&
-          <div style={{ fontSize: 11, fontWeight: 600, color: 'rgba(255,255,255,0.65)', marginTop: 2, textShadow: '0 1px 4px rgba(0,0,0,0.8)' }}>
-              with {gymClass.instructor || gymClass.coach_name}
+          {coachName &&
+          <div style={{ fontSize: 10, fontWeight: 600, color: 'rgba(255,255,255,0.6)', marginTop: 1, textShadow: '0 1px 4px rgba(0,0,0,0.8)' }}>
+              with {coachName}
             </div>
           }
         </div>
       </div>
 
-      <div style={{ padding: '10px 12px 0', display: 'flex', flexDirection: 'column', gap: 7, flex: 1 }}>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '2px 8px', alignItems: 'center' }}>
-          <span style={{ fontSize: 12, fontWeight: 800, color: '#60a5fa' }}>{timeStr}</span>
-          {gymClass.duration_minutes && <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.38)', fontWeight: 600 }}>({gymClass.duration_minutes} min)</span>}
-          {diff && <><span style={{ fontSize: 10, color: 'rgba(255,255,255,0.2)' }}>·</span><span style={{ fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,0.58)' }}>{diff}</span></>}
+      {/* Card body */}
+      <div style={{ padding: '8px 10px 0', display: 'flex', flexDirection: 'column', gap: 6, flex: 1 }}>
+        {/* Time range */}
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '2px 6px', alignItems: 'center' }}>
+          <span style={{ fontSize: 11.5, fontWeight: 800, color: '#60a5fa' }}>
+            {timeRange || timeStr}
+          </span>
+          {diff && <><span style={{ fontSize: 10, color: 'rgba(255,255,255,0.2)' }}>·</span><span style={{ fontSize: 10, fontWeight: 700, color: 'rgba(255,255,255,0.5)' }}>{diff}</span></>}
         </div>
+
         {left !== null &&
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <div style={{ flex: 1, height: 4, borderRadius: 99, background: 'rgba(255,255,255,0.08)', overflow: 'hidden' }}>
               <div style={{ height: '100%', borderRadius: 99, width: `${cap ? Math.min(100, Math.round(enr / cap * 100)) : 0}%`, background: full ? '#f87171' : hot ? 'linear-gradient(90deg,#d97706,#fbbf24)' : `linear-gradient(90deg,${cfg.color}88,${cfg.color})`, transition: 'width 0.6s ease' }} />
             </div>
-            <span style={{ fontSize: 11, fontWeight: 800, color: full ? '#f87171' : hot ? '#fbbf24' : 'rgba(255,255,255,0.5)', whiteSpace: 'nowrap', flexShrink: 0 }}>
+            <span style={{ fontSize: 10, fontWeight: 800, color: full ? '#f87171' : hot ? '#fbbf24' : 'rgba(255,255,255,0.5)', whiteSpace: 'nowrap', flexShrink: 0 }}>
               {full ? '🔴 Full' : hot ? `🔥 ${left} left` : `${left} spots`}
             </span>
           </div>
@@ -802,19 +835,11 @@ function PremiumClassCard({ gymClass, isOwner, onDelete, onBook, booked, onClick
           </div>
         }
 
-        {getScheduleDays(gymClass).length > 0 &&
-        <div style={{ display: 'flex', gap: 3 }}>
-            {DAY_LABELS.map((d) => {
-            const on = getScheduleDays(gymClass).includes(d);
-            return <div key={d} style={{ flex: 1, textAlign: 'center', padding: '3px 0', borderRadius: 6, fontSize: 7.5, fontWeight: 900,
-              background: on ? cfg.bg : 'rgba(255,255,255,0.03)', border: `1px solid ${on ? cfg.border : 'rgba(255,255,255,0.05)'}`, color: on ? cfg.color : 'rgba(255,255,255,0.18)' }}>{d}</div>;
-          })}
-          </div>
-        }
+        {/* Day pills REMOVED */}
       </div>
 
       {!isOwner &&
-      <div style={{ padding: '10px 12px 12px' }}>
+      <div style={{ padding: '8px 10px 10px' }}>
           <button
           onClick={(e) => {e.stopPropagation();if (!full || booked) onBook && onBook(gymClass.id);}}
           disabled={full && !booked}
@@ -824,7 +849,7 @@ function PremiumClassCard({ gymClass, isOwner, onDelete, onBook, booked, onClick
           onTouchStart={(e) => {if (full && !booked) return;e.currentTarget.style.transform = 'translateY(3px)';e.currentTarget.style.boxShadow = 'none';e.currentTarget.style.borderBottom = '1px solid rgba(0,0,0,0.4)';}}
           onTouchEnd={(e) => {e.currentTarget.style.transform = '';e.currentTarget.style.boxShadow = '';e.currentTarget.style.borderBottom = '';}}
           style={{
-            width: '100%', padding: '11px', borderRadius: 13,
+            width: '100%', padding: '10px', borderRadius: 13,
             fontSize: 12, fontWeight: 900, letterSpacing: '-0.01em',
             cursor: full && !booked ? 'default' : 'pointer', border: 'none',
             position: 'relative', overflow: 'hidden',
@@ -842,37 +867,28 @@ function PremiumClassCard({ gymClass, isOwner, onDelete, onBook, booked, onClick
             } : {
               background: 'linear-gradient(to bottom,#3b82f6,#2563eb,#1d4ed8)',
               borderBottom: '3px solid #1a3fa8',
-              boxShadow: '0 2px 0 rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.2), 0 4px 16px rgba(37,99,235,0.45)',
+              // Glow removed — no boxShadow on the book button
+              boxShadow: '0 2px 0 rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.2)',
               color: '#fff'
             }),
             transition: 'transform 0.08s ease,box-shadow 0.08s ease,border-bottom 0.08s ease'
           }}>
-            {!booked && !full &&
-          <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', borderRadius: 'inherit' }}>
-                <div style={{ position: 'absolute', top: 0, bottom: 0, width: '40%',
-              background: 'linear-gradient(90deg,transparent,rgba(255,255,255,0.1),transparent)',
-              animation: 'cl-shimmer 3.5s ease-in-out infinite 1.2s' }} />
-              </div>
-          }
+            {/* Shimmer on book button REMOVED */}
             <span style={{ position: 'relative', zIndex: 1 }}>
-              {booked ? '✓ Booked' : full ? 'Join Waitlist' : left !== null ? `Book Spot · ${left} left` : 'Book Spot'}
+              {booked ? '✓ Booked' : full ? 'Join Waitlist' : left !== null ? `Book · ${left} left` : 'Book Spot'}
             </span>
           </button>
         </div>
       }
-      {isOwner && <div style={{ height: 12 }} />}
+      {isOwner && <div style={{ height: 10 }} />}
     </div>);
 }
 
-// ─── UPDATED: ClassesTabContent ──────────────────────────────────────────────
-// • Removed "Classes" label above the title
-// • "Today's Sessions" → "Today's Classes"
-// • activeDay is now an offset (0=today, 1=tomorrow …) matching the new ClassDateHeader
-// • Type filter buttons (All / Yoga / HIIT / …) completely removed
+// ─── ClassesTabContent ────────────────────────────────────────────────────────
 function ClassesTabContent({ classes, showOwnerControls, onManage, onDelete, currentUser }) {
   const today = new Date();
 
-  const [activeDay, setActiveDay] = useState(0); // 0 = today
+  const [activeDay, setActiveDay] = useState(0);
   const [activeSlot, setActiveSlot] = useState(null);
   const [bookedIds, setBookedIds] = useState(new Set());
   const [selectedClass, setSelectedClass] = useState(null);
@@ -881,12 +897,13 @@ function ClassesTabContent({ classes, showOwnerControls, onManage, onDelete, cur
     const n = new Set(prev);n.has(id) ? n.delete(id) : n.add(id);return n;
   });
 
-  // Build the active date from today + offset
   const activeDate = new Date(today);
   activeDate.setDate(today.getDate() + activeDay);
-  const jsDay = activeDate.getDay(); // 0=Sun … 6=Sat
-  const activeDayIdx = jsDay === 0 ? 6 : jsDay - 1; // Mon=0 … Sun=6
+  const jsDay = activeDate.getDay();
+  const activeDayIdx = jsDay === 0 ? 6 : jsDay - 1;
   const activeDayName = DAY_LABELS[activeDayIdx];
+  // Full day name for title
+  const activeDayFullName = DAY_FULL_NAMES[activeDayName] || activeDayName;
   const isToday = activeDay === 0;
 
   const withTime = React.useMemo(() =>
@@ -921,15 +938,11 @@ function ClassesTabContent({ classes, showOwnerControls, onManage, onDelete, cur
     <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.25 }}
     style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
 
-      {/* Header — "Classes" label removed; title is now "Today's Classes" */}
+      {/* Header — full day name, no date subtitle, no session count */}
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
         <div>
           <div style={{ fontSize: 24, fontWeight: 900, color: '#fff', letterSpacing: '-0.04em', lineHeight: 1 }}>
-            {isToday ? "Today's Classes" : `${activeDayName}'s Classes`}
-          </div>
-          <div style={{ fontSize: 11.5, color: 'rgba(255,255,255,0.28)', fontWeight: 600, marginTop: 4 }}>
-            {activeDate.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
-            {activeSlot && <span style={{ color: 'rgba(147,197,253,0.7)', fontWeight: 700 }}> · {activeSlot}</span>}
+            {isToday ? "Today's Classes" : `${activeDayFullName}'s Classes`}
           </div>
         </div>
         {showOwnerControls &&
@@ -954,13 +967,7 @@ function ClassesTabContent({ classes, showOwnerControls, onManage, onDelete, cur
         activeDay={activeDay} setActiveDay={setActiveDay}
         activeSlot={activeSlot} setActiveSlot={setActiveSlot} />
 
-      {/* Type filter buttons removed entirely */}
-
-      {filtered.length > 0 &&
-      <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.2)', fontWeight: 600, marginTop: -4 }}>
-          {filtered.length} session{filtered.length !== 1 ? 's' : ''} · tap to book
-        </div>
-      }
+      {/* Session count + tap to book line REMOVED */}
 
       {filtered.length > 0 ?
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
