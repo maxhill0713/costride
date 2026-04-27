@@ -1,9 +1,10 @@
 /**
- * ClassDetailPopup — purple-themed popup for class details on calendar.
+ * ClassDetailPopup — popup for class details on calendar.
+ * Accepts a `color` prop (hex) from the calendar event to use as the accent color.
  * Delete uses a proper overlay confirmation modal matching RemovePostModal style.
  */
 import React, { useState, useEffect } from 'react';
-import { X, Dumbbell, Clock, Users, Trash2 } from 'lucide-react';
+import { X, Clock, Users, Trash2 } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 
 const C = {
@@ -12,6 +13,15 @@ const C = {
   red: '#ff4d6d', redDim: 'rgba(255,77,109,0.10)',
 };
 const FONT = "'DM Sans','Inter',system-ui,sans-serif";
+
+function hexToRgb(hex) {
+  const h = hex.replace('#', '');
+  const bigint = parseInt(h, 16);
+  const r = (bigint >> 16) & 255;
+  const g = (bigint >> 8) & 255;
+  const b = bigint & 255;
+  return `${r},${g},${b}`;
+}
 
 function RemoveClassModal({ gymClass, onConfirm, onClose }) {
   const [removing, setRemoving] = useState(false);
@@ -51,7 +61,7 @@ function RemoveClassModal({ gymClass, onConfirm, onClose }) {
   );
 }
 
-export default function ClassDetailPopup({ gymClass, onClose, onDelete }) {
+export default function ClassDetailPopup({ gymClass, onClose, onDelete, color }) {
   const [showRemoveModal, setShowRemoveModal] = useState(false);
   const [liveAttendeeCount, setLiveAttendeeCount] = useState((gymClass.attendee_ids || []).length);
 
@@ -62,39 +72,47 @@ export default function ClassDetailPopup({ gymClass, onClose, onDelete }) {
     }).catch(() => {});
   }, [gymClass?.id]);
 
-  const schedule = (gymClass.schedule || []).filter(s => s.day && s.time);
+  // Use the passed-in color, or fall back to purple
+  const accentColor = color || C.purple;
+  const accentRgb = hexToRgb(accentColor);
+  const accentDim = `rgba(${accentRgb},0.10)`;
+  const accentBrd = `rgba(${accentRgb},0.25)`;
 
   return (
     <>
       <div onClick={e => e.target === e.currentTarget && onClose()}
         style={{ position: 'fixed', inset: 0, zIndex: 10000, background: 'rgba(0,0,0,0.55)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20, fontFamily: FONT }}>
-        <div style={{ background: C.bg, border: `1px solid ${C.brd}`, borderRadius: 16, width: 460, maxWidth: '94vw', maxHeight: '85vh', display: 'flex', flexDirection: 'column', overflow: 'hidden', boxShadow: '0 32px 80px rgba(0,0,0,0.85)', animation: 'detail-in 0.2s ease' }}>
+        <div style={{ background: C.bg, border: `1px solid ${C.brd}`, borderRadius: 16, width: 460, maxWidth: '94vw', maxHeight: '102vh', display: 'flex', flexDirection: 'column', overflow: 'hidden', boxShadow: '0 32px 80px rgba(0,0,0,0.85)', animation: 'detail-in 0.2s ease' }}>
           <style>{`@keyframes detail-in { from{opacity:0;transform:scale(0.97) translateY(8px)} to{opacity:1;transform:scale(1) translateY(0)} }`}</style>
 
-          {/* Purple accent bar */}
-          <div style={{ height: 3, background: `linear-gradient(90deg, ${C.purple}, rgba(168,85,247,0.3))`, flexShrink: 0 }} />
+          {/* Dynamic accent bar using class color */}
+          <div style={{ height: 3, background: `linear-gradient(90deg, ${accentColor}, rgba(${accentRgb},0.3))`, flexShrink: 0 }} />
 
           {/* Header */}
-          <div style={{ padding: '16px 18px', borderBottom: `1px solid ${C.brd}`, display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexShrink: 0 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 11 }}>
-              <div style={{ width: 40, height: 40, borderRadius: 11, background: C.purpleDim, border: `1px solid ${C.purpleBrd}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                <Dumbbell size={18} color={C.purple} />
+          <div style={{ padding: '16px 18px', borderBottom: `1px solid ${C.brd}`, flexShrink: 0 }}>
+            <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
+              <div style={{ fontSize: 17, fontWeight: 800, color: C.t1, letterSpacing: '-0.02em', lineHeight: 1.2 }}>
+                {gymClass.name}
               </div>
-              <div>
-                <div style={{ fontSize: 17, fontWeight: 800, color: C.t1, letterSpacing: '-0.02em', lineHeight: 1.2 }}>{gymClass.name}</div>
-                {gymClass.instructor && <div style={{ fontSize: 12, color: C.purple, fontWeight: 600, marginTop: 2 }}>with {gymClass.instructor}</div>}
-              {liveAttendeeCount > 0 && (
-                <div style={{ fontSize: 11, color: C.t2, fontWeight: 600, marginTop: 3, display: 'flex', alignItems: 'center', gap: 4 }}>
-                  <Users size={10} color={C.t3} />
-                  {liveAttendeeCount} attending
+              <button onClick={onClose} style={{ width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'transparent', border: 'none', cursor: 'pointer', color: C.t3, flexShrink: 0, marginLeft: 12 }}
+                onMouseEnter={e => e.currentTarget.style.color = C.t1} onMouseLeave={e => e.currentTarget.style.color = C.t3}>
+                <X size={15} />
+              </button>
+            </div>
+
+            {/* Coach and Capacity below the title */}
+            <div style={{ marginTop: 8, display: 'flex', flexDirection: 'column', gap: 4 }}>
+              {gymClass.instructor && (
+                <div style={{ fontSize: 13, color: C.t2, fontWeight: 500 }}>
+                  Coach — <span style={{ color: accentColor, fontWeight: 700 }}>{gymClass.instructor}</span>
                 </div>
               )}
-              </div>
+              {gymClass.max_capacity && (
+                <div style={{ fontSize: 13, color: C.t2, fontWeight: 500 }}>
+                  Capacity — <span style={{ color: accentColor, fontWeight: 700 }}>{gymClass.max_capacity}</span>
+                </div>
+              )}
             </div>
-            <button onClick={onClose} style={{ width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'transparent', border: 'none', cursor: 'pointer', color: C.t3, flexShrink: 0 }}
-              onMouseEnter={e => e.currentTarget.style.color = C.t1} onMouseLeave={e => e.currentTarget.style.color = C.t3}>
-              <X size={15} />
-            </button>
           </div>
 
           {/* Body */}
@@ -103,42 +121,26 @@ export default function ClassDetailPopup({ gymClass, onClose, onDelete }) {
               <div style={{ fontSize: 13, color: C.t2, lineHeight: 1.65 }}>{gymClass.description}</div>
             )}
 
-            {/* Stats row */}
+            {/* Stats row — duration, difficulty, attendee count */}
             <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
               {gymClass.duration_minutes && (
-                <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '7px 12px', borderRadius: 9, background: C.purpleDim, border: `1px solid ${C.purpleBrd}` }}>
-                  <Clock size={12} color={C.purple} />
-                  <span style={{ fontSize: 12, color: C.purple, fontWeight: 600 }}>{gymClass.duration_minutes} min</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '7px 12px', borderRadius: 9, background: accentDim, border: `1px solid ${accentBrd}` }}>
+                  <Clock size={12} color={accentColor} />
+                  <span style={{ fontSize: 12, color: accentColor, fontWeight: 600 }}>{gymClass.duration_minutes} min</span>
                 </div>
               )}
-              {gymClass.max_capacity && (
-                <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '7px 12px', borderRadius: 9, background: C.purpleDim, border: `1px solid ${C.purpleBrd}` }}>
-                  <Users size={12} color={C.purple} />
-                  <span style={{ fontSize: 12, color: C.purple, fontWeight: 600 }}>Max {gymClass.max_capacity}</span>
+              {liveAttendeeCount > 0 && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '7px 12px', borderRadius: 9, background: accentDim, border: `1px solid ${accentBrd}` }}>
+                  <Users size={12} color={accentColor} />
+                  <span style={{ fontSize: 12, color: accentColor, fontWeight: 600 }}>{liveAttendeeCount} attending</span>
                 </div>
               )}
               {gymClass.difficulty && (
-                <div style={{ padding: '7px 12px', borderRadius: 9, background: C.purpleDim, border: `1px solid ${C.purpleBrd}` }}>
-                  <span style={{ fontSize: 12, color: C.purple, fontWeight: 600, textTransform: 'capitalize' }}>{gymClass.difficulty.replace('_', ' ')}</span>
+                <div style={{ padding: '7px 12px', borderRadius: 9, background: accentDim, border: `1px solid ${accentBrd}` }}>
+                  <span style={{ fontSize: 12, color: accentColor, fontWeight: 600, textTransform: 'capitalize' }}>{gymClass.difficulty.replace('_', ' ')}</span>
                 </div>
               )}
             </div>
-
-            {/* Schedule */}
-            {schedule.length > 0 && (
-              <div>
-                <div style={{ fontSize: 10, fontWeight: 700, color: C.t3, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>Weekly Schedule</div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                  {schedule.map((s, i) => (
-                    <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 12px', borderRadius: 8, background: C.card, border: `1px solid ${C.brd}` }}>
-                      <div style={{ width: 8, height: 8, borderRadius: '50%', background: C.purple, flexShrink: 0 }} />
-                      <span style={{ fontSize: 13, fontWeight: 600, color: C.t1 }}>{s.day}</span>
-                      <span style={{ fontSize: 12, color: C.t3, marginLeft: 'auto' }}>{s.time}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
           </div>
 
           {/* Footer */}
