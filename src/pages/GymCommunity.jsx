@@ -885,7 +885,7 @@ function PremiumClassCard({ gymClass, isOwner, onDelete, onBook, booked, onClick
 }
 
 // ─── ClassesTabContent ────────────────────────────────────────────────────────
-function ClassesTabContent({ classes, showOwnerControls, onManage, onDelete, currentUser }) {
+function ClassesTabContent({ classes, showOwnerControls, onManage, onDelete, currentUser, gymId }) {
   const today = new Date();
   const queryClient = useQueryClient();
 
@@ -905,8 +905,21 @@ function ClassesTabContent({ classes, showOwnerControls, onManage, onDelete, cur
     const newIds = alreadyBooked
       ? currentIds.filter(id => id !== currentUser.id)
       : [...currentIds, currentUser.id];
+
+    // Optimistically update the cache so UI reflects instantly
+    const feedGymId = gymClass.gym_id || gymId;
+    queryClient.setQueryData(['gymActivityFeed', feedGymId], (old) => {
+      if (!old) return old;
+      return {
+        ...old,
+        classes: (old.classes || []).map(c =>
+          c.id === classId ? { ...c, attendee_ids: newIds } : c
+        ),
+      };
+    });
+
     await base44.entities.GymClass.update(classId, { attendee_ids: newIds });
-    queryClient.invalidateQueries({ queryKey: ['gymActivityFeed'] });
+    queryClient.invalidateQueries({ queryKey: ['gymActivityFeed', feedGymId] });
   };
 
   const activeDate = new Date(today);
@@ -1837,7 +1850,8 @@ export default function GymCommunity() {
                 showOwnerControls={showOwnerControls}
                 onManage={() => setShowManageClasses(true)}
                 onDelete={(id) => deleteClassMutation.mutate(id)}
-                currentUser={currentUser} />
+                currentUser={currentUser}
+                gymId={gymId} />
               }
             </TabsContent>
 
