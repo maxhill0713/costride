@@ -30,26 +30,6 @@ const LEVEL_COLORS = {
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
-function useCountdown(eventDate) {
-  const [timeLeft, setTimeLeft] = useState('');
-  useEffect(() => {
-    const calc = () => {
-      const diff = new Date(eventDate) - new Date();
-      if (diff <= 0) return setTimeLeft('Starting now');
-      const d = Math.floor(diff / 86400000);
-      const h = Math.floor((diff % 86400000) / 3600000);
-      const m = Math.floor((diff % 3600000) / 60000);
-      if (d > 0) setTimeLeft(`${d}d ${h}h`);
-      else if (h > 0) setTimeLeft(`${h}h ${m}m`);
-      else setTimeLeft(`${m}m`);
-    };
-    calc();
-    const id = setInterval(calc, 60000);
-    return () => clearInterval(id);
-  }, [eventDate]);
-  return timeLeft;
-}
-
 function humanRelativeDate(dateStr) {
   const d = new Date(dateStr);
   const now = new Date();
@@ -58,6 +38,19 @@ function humanRelativeDate(dateStr) {
   if (diffDays === 1) return 'Tomorrow';
   if (diffDays <= 6) return `This ${d.toLocaleDateString('en-GB', { weekday: 'long' })}`;
   return d.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' });
+}
+
+function formatFullDate(dateStr) {
+  const d = new Date(dateStr);
+  const weekday = d.toLocaleDateString('en-GB', { weekday: 'long' });
+  const day = d.getDate();
+  const month = d.toLocaleDateString('en-GB', { month: 'long' });
+  const year = d.getFullYear();
+  const suffix = day === 1 || day === 21 || day === 31 ? 'st'
+    : day === 2 || day === 22 ? 'nd'
+    : day === 3 || day === 23 ? 'rd'
+    : 'th';
+  return `${weekday} ${day}${suffix} ${month} ${year}`;
 }
 
 function addToCalendar(event) {
@@ -109,17 +102,6 @@ function RangeDropdown({ value, onChange }) {
   );
 }
 
-function EventCountdown({ eventDate }) {
-  const timeLeft = useCountdown(eventDate);
-  const isImminent = new Date(eventDate) - new Date() < 86400000 && new Date(eventDate) > new Date();
-  return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '3px 8px', borderRadius: 6, background: isImminent ? 'rgba(251,191,36,0.12)' : 'rgba(96,165,250,0.10)', border: `1px solid ${isImminent ? 'rgba(251,191,36,0.28)' : 'rgba(96,165,250,0.2)'}`, flexShrink: 0 }}>
-      <Zap size={9} color={isImminent ? '#fbbf24' : '#60a5fa'} />
-      <span style={{ fontSize: 10, fontWeight: 800, color: isImminent ? '#fbbf24' : '#93c5fd', whiteSpace: 'nowrap' }}>{timeLeft}</span>
-    </div>
-  );
-}
-
 function CapacityBar({ capacity, attendees }) {
   if (!capacity) return null;
   const filled = Math.min(attendees || 0, capacity);
@@ -141,7 +123,7 @@ function CapacityBar({ capacity, attendees }) {
         <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.3)', fontWeight: 600 }}>{filled}/{capacity}</span>
       </div>
       <div style={{ height: 4, borderRadius: 99, background: 'rgba(255,255,255,0.07)', overflow: 'hidden' }}>
-        <div style={{ height: '100%', width: `${pct}%`, borderRadius: 99, background: barColor, transition: 'width 0.4s ease', boxShadow: `0 0 6px ${barColor}66` }} />
+        <div style={{ height: '100%', width: `${pct}%`, borderRadius: 99, background: barColor, transition: 'width 0.4s ease' }} />
       </div>
     </div>
   );
@@ -258,7 +240,6 @@ function EventDetailSheet({ event, isJoined, isWaitlisted, remindMe, onClose, on
   const isFull = event.capacity && (event.attendees || 0) >= event.capacity;
   const equipment = event.equipment || [];
 
-  const formatDate = d => new Date(d).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
   const formatTime = (d, e) => {
     const s = new Date(d).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
     return e ? `${s} – ${e}` : s;
@@ -274,29 +255,40 @@ function EventDetailSheet({ event, isJoined, isWaitlisted, remindMe, onClose, on
         transition={{ type: 'spring', stiffness: 340, damping: 36 }}
         style={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 10011, maxHeight: '92vh', display: 'flex', flexDirection: 'column', borderRadius: '24px 24px 0 0', background: 'linear-gradient(160deg, #0d1232 0%, #060810 100%)', border: '1px solid rgba(255,255,255,0.09)', borderBottom: 'none', boxShadow: '0 -16px 60px rgba(0,0,0,0.7)' }}>
 
-        {/* Drag handle + close */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px 0', flexShrink: 0 }}>
-          <div style={{ width: 28 }} />
+        {/* Drag handle */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '12px 16px 0', flexShrink: 0 }}>
           <div style={{ width: 38, height: 4, borderRadius: 99, background: 'rgba(255,255,255,0.14)' }} />
-          <button onClick={onClose} style={{ width: 28, height: 28, borderRadius: 8, background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
-            <X size={13} color="rgba(255,255,255,0.5)" />
-          </button>
         </div>
 
         <div style={{ flex: 1, overflowY: 'auto', WebkitOverflowScrolling: 'touch' }}>
-          {/* Hero image */}
-          {event.image_url && (
-            <div style={{ height: 200, overflow: 'hidden', position: 'relative', margin: '12px 0 0' }}>
+          {/* Hero image with title overlaid at top */}
+          {event.image_url ? (
+            <div style={{ height: 220, overflow: 'hidden', position: 'relative', margin: '12px 0 0' }}>
               <img src={event.image_url} alt={event.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-              <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, transparent 40%, rgba(6,8,16,0.95) 100%)' }} />
+              {/* Gradient at top for title legibility */}
+              <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, rgba(6,8,16,0.85) 0%, rgba(6,8,16,0.3) 55%, rgba(6,8,16,0.7) 100%)' }} />
+              {/* Title overlaid at top of image */}
+              <div style={{ position: 'absolute', top: 0, left: 0, right: 0, padding: '14px 18px' }}>
+                <h2 style={{ fontSize: 22, fontWeight: 900, color: '#fff', letterSpacing: '-0.03em', lineHeight: 1.2, margin: 0, textShadow: '0 2px 8px rgba(0,0,0,0.7)' }}>{event.title}</h2>
+              </div>
+            </div>
+          ) : (
+            /* No image: title at top of sheet content */
+            <div style={{ padding: '16px 20px 0' }}>
+              <h2 style={{ fontSize: 22, fontWeight: 900, color: '#fff', letterSpacing: '-0.03em', lineHeight: 1.2, margin: '0 0 12px' }}>{event.title}</h2>
             </div>
           )}
 
           <div style={{ padding: '16px 20px 0' }}>
-            {/* Title row */}
-            <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, marginBottom: 8 }}>
-              <h2 style={{ fontSize: 22, fontWeight: 900, color: '#fff', letterSpacing: '-0.03em', lineHeight: 1.2, margin: 0, flex: 1 }}>{event.title}</h2>
-              <EventCountdown eventDate={event.event_date} />
+            {/* Date & time — plain text, replaces old box */}
+            <div style={{ marginBottom: 14 }}>
+              <div style={{ fontSize: 14, fontWeight: 700, color: '#ffffff' }}>
+                {formatFullDate(event.event_date)}
+              </div>
+              <div style={{ fontSize: 14, color: 'rgba(255,255,255,0.55)', marginTop: 3, display: 'flex', alignItems: 'center', gap: 5 }}>
+                <Clock size={12} color="rgba(255,255,255,0.4)" />
+                {formatTime(event.event_date, event.end_time)}
+              </div>
             </div>
 
             {/* Tags row */}
@@ -319,23 +311,6 @@ function EventDetailSheet({ event, isJoined, isWaitlisted, remindMe, onClose, on
                 </span>
               </button>
             )}
-
-            {/* Date + time */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '12px 14px', borderRadius: 14, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)', marginBottom: 14 }}>
-              <div style={{ width: 36, height: 36, borderRadius: 10, background: 'rgba(96,165,250,0.12)', border: '1px solid rgba(96,165,250,0.22)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                <Calendar size={16} color="#60a5fa" />
-              </div>
-              <div>
-                <div style={{ fontSize: 13, fontWeight: 700, color: '#fff' }}>
-                  {humanRelativeDate(event.event_date)}
-                  <span style={{ color: 'rgba(255,255,255,0.4)', fontWeight: 500 }}> · {formatDate(event.event_date)}</span>
-                </div>
-                <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)', marginTop: 2, display: 'flex', alignItems: 'center', gap: 4 }}>
-                  <Clock size={10} />
-                  {formatTime(event.event_date, event.end_time)}
-                </div>
-              </div>
-            </div>
 
             {/* Capacity bar */}
             <CapacityBar capacity={event.capacity} attendees={event.attendees} />
@@ -365,17 +340,26 @@ function EventDetailSheet({ event, isJoined, isWaitlisted, remindMe, onClose, on
                   onClick={isJoined ? onLeave : onJoin}
                   style={{
                     width: '100%', padding: '15px', borderRadius: 18,
-                    fontSize: 15, fontWeight: 900, cursor: 'pointer', border: 'none',
+                    fontSize: 15, fontWeight: 900, cursor: 'pointer',
+                    // 3D button styles — no glow, strong depth effect
                     background: isJoined
-                      ? 'linear-gradient(135deg, rgba(16,185,129,0.2), rgba(5,150,105,0.15))'
-                      : 'linear-gradient(135deg, #2563eb, #1d4ed8)',
-                    color: isJoined ? '#34d399' : '#fff',
+                      ? 'linear-gradient(to bottom, #34d399 0%, #10b981 50%, #059669 100%)'
+                      : 'linear-gradient(to bottom, #4f8ef7 0%, #2563eb 50%, #1d4ed8 100%)',
+                    color: '#fff',
+                    border: isJoined ? '1px solid #059669' : '1px solid #1d4ed8',
+                    borderBottom: isJoined ? '4px solid #047857' : '4px solid #1a3fa8',
                     boxShadow: isJoined
-                      ? '0 4px 20px rgba(16,185,129,0.2), inset 0 1px 0 rgba(255,255,255,0.1)'
-                      : '0 6px 28px rgba(37,99,235,0.5), inset 0 1px 0 rgba(255,255,255,0.2)',
-                    outline: isJoined ? '1px solid rgba(52,211,153,0.3)' : 'none',
-                  }}>
-                  {isJoined ? '✓ Joined — Tap to Leave' : '🎉 Join This Event'}
+                      ? 'inset 0 1px 0 rgba(255,255,255,0.25), 0 2px 0 #047857'
+                      : 'inset 0 1px 0 rgba(255,255,255,0.25), 0 2px 0 #1a3fa8',
+                    textShadow: '0 1px 2px rgba(0,0,0,0.3)',
+                    transform: 'translateY(0)',
+                    transition: 'transform 0.08s, box-shadow 0.08s',
+                  }}
+                  onMouseDown={e => { e.currentTarget.style.transform = 'translateY(2px)'; e.currentTarget.style.boxShadow = isJoined ? 'inset 0 1px 0 rgba(255,255,255,0.15), 0 0px 0 #047857' : 'inset 0 1px 0 rgba(255,255,255,0.15), 0 0px 0 #1a3fa8'; }}
+                  onMouseUp={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = isJoined ? 'inset 0 1px 0 rgba(255,255,255,0.25), 0 2px 0 #047857' : 'inset 0 1px 0 rgba(255,255,255,0.25), 0 2px 0 #1a3fa8'; }}
+                  onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = isJoined ? 'inset 0 1px 0 rgba(255,255,255,0.25), 0 2px 0 #047857' : 'inset 0 1px 0 rgba(255,255,255,0.25), 0 2px 0 #1a3fa8'; }}
+                >
+                  {isJoined ? '✓ Joined — Tap to Leave' : 'Join This Event'}
                 </button>
               )}
 
@@ -469,7 +453,6 @@ export default function UpcomingEvents({ gymMemberships = [], currentUser, isMem
 
   if (!gymIds.length) return null;
 
-  const formatDate = (s) => new Date(s).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' });
   const formatTime = (s, e) => { const t = new Date(s).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }); return e ? `${t}–${e}` : t; };
 
   const leaveEvent = events.find(e => e.id === leaveConfirmEventId);
@@ -497,12 +480,12 @@ export default function UpcomingEvents({ gymMemberships = [], currentUser, isMem
         {/* Events list */}
         <div style={{ display: 'flex', flexDirection: 'column' }}>
           {events.map((event, i) => {
-            const isJoined   = joinedEventIds.has(event.id);
-            const isLast     = i === events.length - 1;
-            const isFull     = event.capacity && (event.attendees || 0) >= event.capacity;
+            const isJoined     = joinedEventIds.has(event.id);
+            const isLast       = i === events.length - 1;
+            const isFull       = event.capacity && (event.attendees || 0) >= event.capacity;
             const isWaitlisted = waitlistEventIds.has(event.id);
-            const spotsLeft  = event.capacity ? event.capacity - (event.attendees || 0) : null;
-            const isLowSpots = spotsLeft !== null && spotsLeft <= 3 && spotsLeft > 0;
+            const spotsLeft    = event.capacity ? event.capacity - (event.attendees || 0) : null;
+            const isLowSpots   = spotsLeft !== null && spotsLeft <= 3 && spotsLeft > 0;
 
             const InlineJoinButton = () => {
               if (isFull && !isJoined) return (
@@ -531,10 +514,11 @@ export default function UpcomingEvents({ gymMemberships = [], currentUser, isMem
               );
             };
 
+            // Bottom row: attending count is now beside the join button
             const BottomRow = () => (
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+                {/* Left: urgency / description */}
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 4, minWidth: 0 }}>
-                  {/* Urgency nudge */}
                   {isLowSpots && (
                     <span style={{ fontSize: 11, color: '#f59e0b', fontWeight: 700 }}>⚡ {spotsLeft} spot{spotsLeft === 1 ? '' : 's'} left</span>
                   )}
@@ -543,20 +527,18 @@ export default function UpcomingEvents({ gymMemberships = [], currentUser, isMem
                       {event.description}
                     </p>
                   )}
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                    <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.25)', fontWeight: 600 }}>{event.attendees || 0} attending</span>
-                    {event.level && <LevelTag level={event.level} />}
-                  </div>
+                  {event.level && <LevelTag level={event.level} />}
                 </div>
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 8, flexShrink: 0 }}>
+
+                {/* Right: time on top row, then attending + join button aligned */}
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 6, flexShrink: 0 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                     <Clock style={{ width: 10, height: 10, color: 'rgba(255,255,255,0.4)' }} />
                     <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.45)', fontWeight: 600 }}>{formatTime(event.event_date, event.end_time)}</span>
                   </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                    <button onClick={() => setOpenEventId(event.id)} style={{ width: 30, height: 30, borderRadius: 8, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.09)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0 }}>
-                      <ChevronRight size={13} color="rgba(255,255,255,0.4)" />
-                    </button>
+                  {/* Attending count + join button on same row */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.25)', fontWeight: 600, whiteSpace: 'nowrap' }}>{event.attendees || 0} attending</span>
                     {isMember && <InlineJoinButton />}
                   </div>
                 </div>
@@ -567,25 +549,39 @@ export default function UpcomingEvents({ gymMemberships = [], currentUser, isMem
               <div key={event.id} style={{ borderBottom: isLast ? 'none' : '1px solid rgba(255,255,255,0.045)' }}>
                 {event.image_url ? (
                   <>
-                    <div style={{ height: 150, overflow: 'hidden', position: 'relative' }}>
+                    {/* Clickable image area */}
+                    <div
+                      onClick={() => setOpenEventId(event.id)}
+                      style={{ height: 150, overflow: 'hidden', position: 'relative', cursor: 'pointer' }}
+                    >
                       <img src={event.image_url} alt={event.title} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
                       <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, rgba(8,10,20,0.82) 0%, transparent 55%)' }} />
+                      {/* Title + recurring + chevron in top row */}
                       <div style={{ position: 'absolute', top: 12, left: 12, right: 12, display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8 }}>
-                        <h3 style={{ fontSize: 15, fontWeight: 900, color: '#fff', letterSpacing: '-0.02em', lineHeight: 1.25, margin: 0, textShadow: '0 1px 6px rgba(0,0,0,0.6)' }}>
+                        <h3 style={{ fontSize: 15, fontWeight: 900, color: '#fff', letterSpacing: '-0.02em', lineHeight: 1.25, margin: 0, textShadow: '0 1px 6px rgba(0,0,0,0.6)', flex: 1 }}>
                           {humanRelativeDate(event.event_date)} · {event.title}
                         </h3>
-                        {event.is_recurring && <Repeat size={13} color="rgba(167,139,250,0.9)" style={{ flexShrink: 0, marginTop: 2 }} />}
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0, marginTop: 2 }}>
+                          {event.is_recurring && <Repeat size={13} color="rgba(167,139,250,0.9)" />}
+                          <ChevronRight size={15} color="rgba(255,255,255,0.55)" />
+                        </div>
                       </div>
                     </div>
                     <div style={{ padding: '10px 14px 14px' }}><BottomRow /></div>
                   </>
                 ) : (
                   <div style={{ padding: '14px 14px' }}>
-                    <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 6, marginBottom: 8 }}>
-                      <h3 style={{ fontSize: 14, fontWeight: 900, color: '#fff', letterSpacing: '-0.02em', lineHeight: 1.3, margin: 0 }}>
+                    <div
+                      onClick={() => setOpenEventId(event.id)}
+                      style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 6, marginBottom: 8, cursor: 'pointer' }}
+                    >
+                      <h3 style={{ fontSize: 14, fontWeight: 900, color: '#fff', letterSpacing: '-0.02em', lineHeight: 1.3, margin: 0, flex: 1 }}>
                         {humanRelativeDate(event.event_date)} · {event.title}
                       </h3>
-                      {event.is_recurring && <Repeat size={12} color="rgba(167,139,250,0.7)" style={{ flexShrink: 0, marginTop: 2 }} />}
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0, marginTop: 2 }}>
+                        {event.is_recurring && <Repeat size={12} color="rgba(167,139,250,0.7)" />}
+                        <ChevronRight size={14} color="rgba(255,255,255,0.45)" />
+                      </div>
                     </div>
                     <BottomRow />
                   </div>
