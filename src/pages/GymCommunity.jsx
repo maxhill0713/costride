@@ -887,15 +887,27 @@ function PremiumClassCard({ gymClass, isOwner, onDelete, onBook, booked, onClick
 // ─── ClassesTabContent ────────────────────────────────────────────────────────
 function ClassesTabContent({ classes, showOwnerControls, onManage, onDelete, currentUser }) {
   const today = new Date();
+  const queryClient = useQueryClient();
 
   const [activeDay, setActiveDay] = useState(0);
   const [activeSlot, setActiveSlot] = useState(null);
-  const [bookedIds, setBookedIds] = useState(new Set());
   const [selectedClass, setSelectedClass] = useState(null);
 
-  const handleBook = (id) => setBookedIds((prev) => {
-    const n = new Set(prev);n.has(id) ? n.delete(id) : n.add(id);return n;
-  });
+  // Derive booked state from live attendee_ids — persisted in the DB
+  const isBooked = (gymClass) => (gymClass.attendee_ids || []).includes(currentUser?.id);
+
+  const handleBook = async (classId) => {
+    if (!currentUser?.id) return;
+    const gymClass = classes.find(c => c.id === classId);
+    if (!gymClass) return;
+    const currentIds = gymClass.attendee_ids || [];
+    const alreadyBooked = currentIds.includes(currentUser.id);
+    const newIds = alreadyBooked
+      ? currentIds.filter(id => id !== currentUser.id)
+      : [...currentIds, currentUser.id];
+    await base44.entities.GymClass.update(classId, { attendee_ids: newIds });
+    queryClient.invalidateQueries({ queryKey: ['gymActivityFeed'] });
+  };
 
   const activeDate = new Date(today);
   activeDate.setDate(today.getDate() + activeDay);
@@ -976,7 +988,7 @@ function ClassesTabContent({ classes, showOwnerControls, onManage, onDelete, cur
           key={gymClass.id}
           gymClass={gymClass}
           isOwner={showOwnerControls}
-          booked={bookedIds.has(gymClass.id)}
+          booked={isBooked(gymClass)}
           onBook={handleBook}
           onClick={() => setSelectedClass(gymClass)}
           onDelete={showOwnerControls ? (id) => {if (window.confirm('Delete?')) onDelete(id);} : null}
@@ -1005,7 +1017,7 @@ function ClassesTabContent({ classes, showOwnerControls, onManage, onDelete, cur
         gymClass={selectedClass}
         open={!!selectedClass}
         onClose={() => setSelectedClass(null)}
-        booked={selectedClass ? bookedIds.has(selectedClass.id) : false}
+        booked={selectedClass ? isBooked(selectedClass) : false}
         onBook={handleBook}
         isOwner={showOwnerControls}
         currentUser={currentUser} />
