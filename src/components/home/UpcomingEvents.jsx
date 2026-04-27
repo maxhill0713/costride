@@ -216,42 +216,53 @@ function AttendeesModal({ open, onClose, count, attendeeProfiles }) {
   const [search, setSearch] = useState('');
   if (!open) return null;
 
+  const sanitised = search.replace(/[^a-zA-Z0-9_. ]/g, '').slice(0, 30).toLowerCase();
   const filtered = attendeeProfiles.filter(p => {
     const name = p.full_name || p.display_name || '';
-    return name.toLowerCase().includes(search.toLowerCase());
+    return name.toLowerCase().includes(sanitised);
   });
-
-  const ini = (n = '') => (n || '?').split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
 
   return (
     <>
-      <div onClick={onClose} style={{ position: 'fixed', inset: 0, zIndex: 10200, background: 'rgba(2,6,23,0.7)', backdropFilter: 'blur(8px)' }} />
-      <div style={{ position: 'fixed', left: '50%', top: '50%', transform: 'translate(-50%,-50%)', width: 'calc(100% - 32px)', maxWidth: 360, zIndex: 10201, background: 'rgba(13,18,40,0.98)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 24, boxShadow: '0 32px 80px rgba(0,0,0,0.8)', overflow: 'hidden' }}>
-        <div style={{ padding: '20px 20px 12px', textAlign: 'center' }}>
-          <h3 style={{ fontSize: 17, fontWeight: 900, color: '#fff', margin: '0 0 4px', letterSpacing: '-0.02em' }}>{count} Attending</h3>
+      <div
+        onClick={onClose}
+        style={{ position: 'fixed', top: '-100px', left: 0, right: 0, bottom: 0, zIndex: 10200, background: 'rgba(2,6,23,0.6)', backdropFilter: 'blur(6px)', WebkitBackdropFilter: 'blur(6px)' }}
+      />
+      <div className="fixed left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2 w-11/12 max-w-sm z-[10201] bg-slate-900/60 backdrop-blur-md border border-slate-700/20 rounded-3xl shadow-2xl shadow-black/20 text-white overflow-hidden">
+        <div className="px-5 pt-5 pb-3">
+          <h3 className="text-lg font-semibold leading-none tracking-tight text-white text-center">{count} Attending</h3>
         </div>
-        <div style={{ padding: '0 16px 10px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 12px', borderRadius: 12, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.09)' }}>
-            <svg width="13" height="13" fill="none" stroke="rgba(255,255,255,0.4)" strokeWidth="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-            <input value={search} onChange={e => setSearch(e.target.value.slice(0, 40))} placeholder="Search attendees..." style={{ flex: 1, background: 'none', border: 'none', outline: 'none', color: '#fff', fontSize: 13, fontWeight: 500 }} />
+        <div className="px-3 pb-2">
+          <div className="flex items-center gap-2 px-3 rounded-xl bg-white/10 border border-white/20" style={{ paddingTop: '7px', paddingBottom: '7px' }}>
+            <svg className="w-3.5 h-3.5 text-slate-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+            </svg>
+            <input
+              value={search}
+              onChange={e => setSearch(e.target.value.replace(/[^a-zA-Z0-9_. ]/g, '').slice(0, 30))}
+              placeholder="Search by name..."
+              maxLength={30}
+              autoComplete="off"
+              style={{ fontSize: '16px' }}
+              className="flex-1 bg-transparent border-none outline-none text-white placeholder:text-slate-400 text-sm"
+            />
           </div>
         </div>
-        <div style={{ maxHeight: 320, overflowY: 'auto', padding: '0 12px 16px' }}>
+        <div className="overflow-y-auto max-h-80 px-3 pb-4">
           {filtered.length === 0 ? (
-            <p style={{ textAlign: 'center', color: 'rgba(255,255,255,0.3)', fontSize: 13, padding: '20px 0' }}>No attendees found</p>
+            <p className="text-center text-slate-400 text-sm py-6">No attendees found</p>
           ) : filtered.map((p, i) => {
             const name = p.full_name || p.display_name || 'Member';
             return (
-              <div key={p.id || i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 4px', borderBottom: i < filtered.length - 1 ? '1px solid rgba(255,255,255,0.05)' : 'none' }}>
-                <div style={{ width: 38, height: 38, borderRadius: '50%', flexShrink: 0, overflow: 'hidden', background: 'rgba(99,102,241,0.2)', border: '1px solid rgba(99,102,241,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 800, color: '#818cf8' }}>
-                  {p.avatar_url ? <img src={p.avatar_url} alt={name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : ini(name)}
+              <div key={p.id || i} className="flex items-center gap-2.5 px-2 py-1.5 rounded-lg hover:bg-slate-800/50 transition-colors">
+                <div className="flex-shrink-0 w-8 h-8 rounded-full overflow-hidden bg-slate-700 flex items-center justify-center text-xs font-bold text-slate-300">
+                  {p.avatar_url ? <img src={p.avatar_url} alt={name} className="w-full h-full object-cover" /> : (name || '?').charAt(0).toUpperCase()}
                 </div>
-                <span style={{ fontSize: 13, fontWeight: 600, color: '#fff' }}>{name}</span>
+                <span className="text-sm text-slate-200 font-semibold flex-1 min-w-0 truncate">{name}</span>
               </div>
             );
           })}
         </div>
-        <div style={{ paddingBottom: 8 }} />
       </div>
     </>
   );
