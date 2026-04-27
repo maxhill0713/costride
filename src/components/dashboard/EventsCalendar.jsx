@@ -178,8 +178,6 @@ function DayDetailModal({ cell, dateLabel, onClose, onSelectEvent, onSelectClass
             {/* Grid area */}
             <div style={{ flex: 1, position: "relative", marginRight: 4 }}>
 
-
-
               {/* Hour lines */}
               {hourLabels.map(h => {
                 const absMin = h * 60;
@@ -233,7 +231,11 @@ function DayDetailModal({ cell, dateLabel, onClose, onSelectEvent, onSelectClass
                 const timeStr = `${String(Math.floor(item.startMin / 60)).padStart(2, "0")}:${String(item.startMin % 60).padStart(2, "0")}`;
                 return (
                   <button key={i}
-                    onClick={() => { if (item.type === "event") onSelectEvent(item.data); else onSelectClass(item.data); }}
+                    onClick={() => {
+                      if (item.type === "event") onSelectEvent(item.data);
+                      // Pass the resolved color alongside the class data
+                      else onSelectClass(item.data, item.color);
+                    }}
                     style={{
                       position: "absolute", top, left, width, height,
                       background: bg, border: `1px solid ${brd}`, borderLeft: `3px solid ${leftAccent}`,
@@ -283,8 +285,8 @@ export default function EventsCalendar({ events, classes = [], onDeleteEvent, on
 
   const [viewYear, setViewYear] = useState(today.getFullYear());
   const [viewMonth, setViewMonth] = useState(today.getMonth());
-  // selectedEvent / selectedClass are now shown ON TOP of the day modal (not replacing it)
   const [selectedEvent, setSelectedEvent] = useState(null);
+  // selectedClass now stores { gymClass, color } so the color travels with it
   const [selectedClass, setSelectedClass] = useState(null);
   const [selectedDayCell, setSelectedDayCell] = useState(null);
   const [slideDir, setSlideDir] = useState(null);
@@ -404,7 +406,6 @@ export default function EventsCalendar({ events, classes = [], onDeleteEvent, on
 
   const totalClasses = Object.values(classesByDay).flat().length;
 
-  // Pills: 5% shorter line-height (1.14 vs 1.2)
   const pillStyle = {
     display: "block", width: "100%", textAlign: "left",
     padding: "2px 5px", borderRadius: 4,
@@ -461,7 +462,6 @@ export default function EventsCalendar({ events, classes = [], onDeleteEvent, on
           {cells.map((cell, idx) => {
             const isLastRow = idx >= cells.length - 7;
             const isLastCol = (idx % 7) === 6;
-            const hasItems = cell.events.length > 0 || (cell.classes || []).length > 0;
             return (
               <div key={cell.key} className="cal-cell"
                 onClick={() => !cell.isOtherMonth && setSelectedDayCell(cell)}
@@ -471,7 +471,6 @@ export default function EventsCalendar({ events, classes = [], onDeleteEvent, on
                   borderBottom: isLastRow ? "none" : `1px solid ${C.brd}`,
                   background: cell.isToday ? "rgba(77,127,255,0.06)" : cell.isOtherMonth ? "rgba(255,255,255,0.012)" : "transparent",
                   transition: "background 0.12s",
-                  // 10% taller: 96 → 106px
                   height: 106,
                   boxSizing: "border-box",
                   overflow: "hidden",
@@ -481,13 +480,11 @@ export default function EventsCalendar({ events, classes = [], onDeleteEvent, on
                   {cell.dayNum}
                 </div>
                 <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
-                  {/* Events — up to 4 total rows combined */}
                   {cell.events.slice(0, 4).map(ev => (
                     <div key={ev.id} style={{ ...pillStyle, background: cell.isOtherMonth ? "rgba(99,115,152,0.08)" : C.evBg, border: `1px solid ${cell.isOtherMonth ? "rgba(99,115,152,0.15)" : C.evBrd}`, color: cell.isOtherMonth ? "rgba(255,255,255,0.25)" : C.evTxt }}>
                       {ev.title}
                     </div>
                   ))}
-                  {/* Classes */}
                   {(cell.classes || []).slice(0, Math.max(0, 4 - cell.events.slice(0, 4).length)).map((cls, ci) => {
                     const rawColor = (cls.color && cls.color.startsWith("#") && cls.color.length >= 7) ? cls.color : "#a855f7";
                     const bgAlpha  = cell.isOtherMonth ? 0.05 : 0.18;
@@ -499,7 +496,6 @@ export default function EventsCalendar({ events, classes = [], onDeleteEvent, on
                       </div>
                     );
                   })}
-                  {/* Overflow indicator */}
                   {(cell.events.length + (cell.classes || []).length) > 4 && (
                     <div style={{ fontSize: 9.5, color: C.t3, fontWeight: 600, paddingLeft: 4, marginTop: 1 }}>+{cell.events.length + (cell.classes || []).length - 4} more</div>
                   )}
@@ -517,11 +513,11 @@ export default function EventsCalendar({ events, classes = [], onDeleteEvent, on
           dateLabel={new Date(selectedDayCell.cellYear, selectedDayCell.cellMonth, selectedDayCell.cellDay).toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}
           onClose={() => setSelectedDayCell(null)}
           onSelectEvent={ev => setSelectedEvent(ev)}
-          onSelectClass={cls => setSelectedClass(cls)}
+          onSelectClass={(cls, color) => setSelectedClass({ gymClass: cls, color })}
         />
       )}
 
-      {/* Event/class detail popups stacked ON TOP of the day modal — closing them returns to day modal */}
+      {/* Event/class detail popups stacked ON TOP of the day modal */}
       {selectedEvent && (
         <div style={{ position: "fixed", inset: 0, zIndex: 600, display: "flex", alignItems: "center", justifyContent: "center" }}>
           <EventDetailPopup event={selectedEvent} onClose={() => setSelectedEvent(null)}
@@ -531,8 +527,12 @@ export default function EventsCalendar({ events, classes = [], onDeleteEvent, on
       )}
       {selectedClass && (
         <div style={{ position: "fixed", inset: 0, zIndex: 600, display: "flex", alignItems: "center", justifyContent: "center" }}>
-          <ClassDetailPopup gymClass={selectedClass} onClose={() => setSelectedClass(null)}
-            onDelete={async (id) => { await onDeleteClass?.(id); setSelectedClass(null); }} />
+          <ClassDetailPopup
+            gymClass={selectedClass.gymClass}
+            color={selectedClass.color}
+            onClose={() => setSelectedClass(null)}
+            onDelete={async (id) => { await onDeleteClass?.(id); setSelectedClass(null); }}
+          />
         </div>
       )}
     </>
