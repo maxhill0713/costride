@@ -150,148 +150,36 @@ function PriceTag({ price }) {
   );
 }
 
-function AttendeeAvatars({ count }) {
-  if (!count || count === 0) return (
-    <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.22)', fontWeight: 500 }}>Be the first to join</span>
-  );
-  const colors = ['#3b82f6', '#8b5cf6', '#ec4899', '#10b981', '#f59e0b'];
-  const dots = Math.min(count, 4);
-  return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-      <div style={{ display: 'flex' }}>
-        {[...Array(dots)].map((_, i) => (
-          <div key={i} style={{ width: 20, height: 20, borderRadius: '50%', background: colors[i % colors.length], border: '1.5px solid rgba(6,8,18,0.9)', marginLeft: i > 0 ? -6 : 0, zIndex: dots - i, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 8, fontWeight: 800, color: '#fff', flexShrink: 0 }}>
-            {String.fromCharCode(65 + i)}
-          </div>
-        ))}
-      </div>
-      <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.38)', fontWeight: 600 }}>{count} attending</span>
-    </div>
-  );
-}
-
-function EquipmentChips({ items = [] }) {
-  if (!items.length) return null;
-  const icons = { goggles: '🥽', mat: '🧘', gloves: '🥊', towel: '🏳️', shoes: '👟', water: '💧', kit: '👕' };
-  return (
-    <div style={{ marginBottom: 16 }}>
-      <span style={{ fontSize: 10, fontWeight: 700, color: 'rgba(255,255,255,0.3)', letterSpacing: '0.08em', textTransform: 'uppercase', display: 'block', marginBottom: 6 }}>Bring</span>
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-        {items.map((item, i) => {
-          const key = Object.keys(icons).find(k => item.toLowerCase().includes(k));
-          return (
-            <span key={i} style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '4px 10px', borderRadius: 8, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.09)', fontSize: 12, color: 'rgba(255,255,255,0.65)', fontWeight: 600 }}>
-              {key && <span>{icons[key]}</span>}
-              {item}
-            </span>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
-
-function LeaveConfirmDialog({ open, onClose, onConfirm, eventName }) {
-  if (!open) return null;
-  return (
-    <>
-      <div onClick={onClose} style={{ position: 'fixed', inset: 0, zIndex: 10003, background: 'rgba(2,4,10,0.85)', backdropFilter: 'blur(12px)' }} />
-      <div style={{ position: 'fixed', left: '50%', top: '50%', transform: 'translate(-50%, -50%)', width: 'calc(100% - 32px)', maxWidth: 340, zIndex: 10004, background: 'linear-gradient(135deg, rgba(16,19,40,0.98) 0%, rgba(6,8,18,1) 100%)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 24, boxShadow: '0 32px 80px rgba(0,0,0,0.8)', backdropFilter: 'blur(20px)', overflow: 'hidden' }}>
-        <div style={{ height: 1, background: 'linear-gradient(90deg, transparent 10%, rgba(255,255,255,0.1) 50%, transparent 90%)' }} />
-        <div style={{ padding: 24, textAlign: 'center' }}>
-          <h3 style={{ fontSize: 18, fontWeight: 900, color: '#fff', letterSpacing: '-0.02em', margin: '0 0 8px' }}>
-            Leave <span style={{ color: '#60a5fa' }}>{eventName}</span>?
-          </h3>
-          <p style={{ fontSize: 13, color: 'rgba(138,138,148,0.9)', lineHeight: 1.5, margin: '0 0 24px' }}>Your spot will be released to others.</p>
-          <div style={{ display: 'flex', gap: 10 }}>
-            <button onClick={onClose} style={{ flex: 1, padding: '12px 0', borderRadius: 14, fontSize: 13, fontWeight: 800, color: '#fff', background: 'linear-gradient(to bottom, #2d3748, #1a202c)', border: '1px solid rgba(255,255,255,0.12)', borderBottom: '3px solid rgba(0,0,0,0.5)', cursor: 'pointer' }}>Cancel</button>
-            <button onClick={onConfirm} style={{ flex: 1, padding: '12px 0', borderRadius: 14, fontSize: 13, fontWeight: 800, color: '#fff', background: 'linear-gradient(to bottom, #f87171, #ef4444 40%, #b91c1c)', border: '1px solid transparent', borderBottom: '3px solid #7f1d1d', cursor: 'pointer' }}>Leave</button>
-          </div>
-        </div>
-      </div>
-    </>
-  );
-}
-
-function WaitlistButton({ onJoinWaitlist, onLeaveWaitlist, isWaitlisted }) {
-  return (
-    <button
-      onClick={isWaitlisted ? onLeaveWaitlist : onJoinWaitlist}
-      style={{
-        width: '100%', padding: '14px', borderRadius: 18,
-        fontSize: 15, fontWeight: 900, cursor: 'pointer', border: 'none',
-        background: isWaitlisted
-          ? 'rgba(239,68,68,0.12)'
-          : 'linear-gradient(135deg, rgba(239,68,68,0.15), rgba(185,28,28,0.1))',
-        color: isWaitlisted ? '#f87171' : '#fca5a5',
-        outline: `1px solid ${isWaitlisted ? 'rgba(239,68,68,0.35)' : 'rgba(239,68,68,0.2)'}`,
-      }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
-        <AlertCircle size={16} />
-        {isWaitlisted ? 'On Waitlist — Tap to Leave' : 'Event Full — Join Waitlist'}
-      </div>
-    </button>
-  );
-}
-
-// ─── Attendees Modal ─────────────────────────────────────────────────────────
-
-function AttendeesModal({ open, onClose, count, attendeeProfiles }) {
-  const [search, setSearch] = useState('');
-  if (!open) return null;
-
-  const filtered = attendeeProfiles.filter(p => {
-    const name = p.full_name || p.display_name || '';
-    return name.toLowerCase().includes(search.toLowerCase());
-  });
+// Attendees row in the detail sheet — just avatars + count, no "tap to see"
+function DetailAttendeeRow({ event, attendeeProfiles }) {
+  const count = event.attendees || attendeeProfiles.length || 0;
+  if (count === 0) return null;
 
   const ini = (n = '') => (n || '?').split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
 
   return (
-    <>
-      <div onClick={onClose} style={{ position: 'fixed', inset: 0, zIndex: 10200, background: 'rgba(2,6,23,0.7)', backdropFilter: 'blur(8px)' }} />
-      <div style={{
-        position: 'fixed', left: '50%', top: '50%', transform: 'translate(-50%,-50%)',
-        width: 'calc(100% - 32px)', maxWidth: 360, zIndex: 10201,
-        background: 'rgba(13,18,40,0.98)', border: '1px solid rgba(255,255,255,0.08)',
-        borderRadius: 24, boxShadow: '0 32px 80px rgba(0,0,0,0.8)', overflow: 'hidden',
-      }}>
-        <div style={{ padding: '20px 20px 12px', textAlign: 'center' }}>
-          <h3 style={{ fontSize: 17, fontWeight: 900, color: '#fff', margin: '0 0 4px', letterSpacing: '-0.02em' }}>
-            {count} Attending
-          </h3>
-        </div>
-        <div style={{ padding: '0 16px 10px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 12px', borderRadius: 12, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.09)' }}>
-            <svg width="13" height="13" fill="none" stroke="rgba(255,255,255,0.4)" strokeWidth="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-            <input
-              value={search}
-              onChange={e => setSearch(e.target.value.slice(0, 40))}
-              placeholder="Search attendees..."
-              style={{ flex: 1, background: 'none', border: 'none', outline: 'none', color: '#fff', fontSize: 13, fontWeight: 500 }}
-            />
-          </div>
-        </div>
-        <div style={{ maxHeight: 320, overflowY: 'auto', padding: '0 12px 16px' }}>
-          {filtered.length === 0 ? (
-            <p style={{ textAlign: 'center', color: 'rgba(255,255,255,0.3)', fontSize: 13, padding: '20px 0' }}>No attendees found</p>
-          ) : filtered.map((p, i) => {
-            const name = p.full_name || p.display_name || 'Member';
+    <div style={{ marginBottom: 20 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+        <div style={{ display: 'flex', alignItems: 'center' }}>
+          {attendeeProfiles.slice(0, 5).map((p, i) => {
+            const name = p.full_name || p.display_name || 'M';
             return (
-              <div key={p.id || i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 4px', borderBottom: i < filtered.length - 1 ? '1px solid rgba(255,255,255,0.05)' : 'none' }}>
-                <div style={{ width: 38, height: 38, borderRadius: '50%', flexShrink: 0, overflow: 'hidden', background: 'rgba(99,102,241,0.2)', border: '1px solid rgba(99,102,241,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 800, color: '#818cf8' }}>
-                  {p.avatar_url ? <img src={p.avatar_url} alt={name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : ini(name)}
-                </div>
-                <span style={{ fontSize: 13, fontWeight: 600, color: '#fff' }}>{name}</span>
+              <div key={p.id || i} style={{ width: 30, height: 30, borderRadius: '50%', overflow: 'hidden', flexShrink: 0, background: 'rgba(99,102,241,0.25)', border: '2px solid rgba(6,8,18,0.9)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 800, color: '#818cf8', marginLeft: i === 0 ? 0 : -9, zIndex: 5 - i }}>
+                {p.avatar_url ? <img src={p.avatar_url} alt={name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : ini(name)}
               </div>
             );
           })}
+          {attendeeProfiles.length === 0 && count > 0 && (
+            <div style={{ width: 30, height: 30, borderRadius: '50%', background: 'rgba(99,102,241,0.15)', border: '2px solid rgba(99,102,241,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 800, color: '#818cf8' }}>
+              {count}
+            </div>
+          )}
         </div>
-        <div style={{ padding: '0 16px 20px' }}>
-          <button onClick={onClose} style={{ width: '100%', padding: '11px', borderRadius: 14, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.6)', fontSize: 13, fontWeight: 700, cursor: 'pointer' }}>Close</button>
-        </div>
+        <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)', fontWeight: 600 }}>
+          {count} attending
+        </span>
       </div>
-    </>
+    </div>
   );
 }
 
@@ -300,7 +188,6 @@ function AttendeesModal({ open, onClose, count, attendeeProfiles }) {
 function EventDetailSheet({ event, isJoined, isWaitlisted, remindMe, onClose, onJoin, onLeave, onJoinWaitlist, onLeaveWaitlist, onCalendar, onShare, onToggleRemind }) {
   const isFull = event.capacity && (event.attendees || 0) >= event.capacity;
   const equipment = event.equipment || [];
-  const [showAttendeesModal, setShowAttendeesModal] = useState(false);
   const [attendeeProfiles, setAttendeeProfiles] = useState([]);
 
   const attendeeIds = event.attendee_ids || [];
@@ -310,17 +197,38 @@ function EventDetailSheet({ event, isJoined, isWaitlisted, remindMe, onClose, on
     base44.functions.invoke('getUserAvatars', { userIds: attendeeIds })
       .then(res => {
         const avatars = res?.data?.avatars || {};
-        const profiles = attendeeIds.map(id => ({ id, ...avatars[id] }));
-        setAttendeeProfiles(profiles);
+        setAttendeeProfiles(attendeeIds.map(id => ({ id, ...avatars[id] })));
       })
       .catch(() => {});
   }, [attendeeIds.join(',')]);
 
-  const ini = (n = '') => (n || '?').split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
-
   const formatTime = (d, e) => {
     const s = new Date(d).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
     return e ? `${s} – ${e}` : s;
+  };
+
+  // Green "joined / pressed in" 3D effect — shallower depth, inset shadow
+  const pressJoined = e => {
+    e.currentTarget.style.transform = 'translateY(2px)';
+    e.currentTarget.style.boxShadow = 'inset 0 2px 5px rgba(0,0,0,0.28), inset 0 1px 0 rgba(0,0,0,0.15)';
+    e.currentTarget.style.borderBottom = '1px solid #047857';
+  };
+  const releaseJoined = e => {
+    e.currentTarget.style.transform = 'translateY(0)';
+    e.currentTarget.style.boxShadow = 'inset 0 1px 0 rgba(255,255,255,0.12), 0 1px 0 #047857';
+    e.currentTarget.style.borderBottom = '2px solid #047857';
+  };
+
+  // Blue "join" standard 3D
+  const pressBlue = e => {
+    e.currentTarget.style.transform = 'translateY(2px)';
+    e.currentTarget.style.boxShadow = 'inset 0 1px 0 rgba(255,255,255,0.15)';
+    e.currentTarget.style.borderBottom = '2px solid #1a3fa8';
+  };
+  const releaseBlue = e => {
+    e.currentTarget.style.transform = 'translateY(0)';
+    e.currentTarget.style.boxShadow = 'inset 0 1px 0 rgba(255,255,255,0.25), 0 2px 0 #1a3fa8';
+    e.currentTarget.style.borderBottom = '4px solid #1a3fa8';
   };
 
   return (
@@ -333,7 +241,7 @@ function EventDetailSheet({ event, isJoined, isWaitlisted, remindMe, onClose, on
         transition={{ type: 'spring', stiffness: 340, damping: 36 }}
         style={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 10011, maxHeight: '92vh', display: 'flex', flexDirection: 'column', borderRadius: '24px 24px 0 0', background: 'linear-gradient(160deg, #0d1232 0%, #060810 100%)', border: '1px solid rgba(255,255,255,0.09)', borderBottom: 'none', boxShadow: '0 -16px 60px rgba(0,0,0,0.7)' }}>
 
-        {/* Drag handle */}
+        {/* Drag handle only — no X button */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '12px 16px 0', flexShrink: 0 }}>
           <div style={{ width: 38, height: 4, borderRadius: 99, background: 'rgba(255,255,255,0.14)' }} />
         </div>
@@ -343,23 +251,20 @@ function EventDetailSheet({ event, isJoined, isWaitlisted, remindMe, onClose, on
           {event.image_url ? (
             <div style={{ height: 220, overflow: 'hidden', position: 'relative', margin: '12px 0 0' }}>
               <img src={event.image_url} alt={event.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-              {/* Gradient at top for title legibility */}
               <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, rgba(6,8,16,0.85) 0%, rgba(6,8,16,0.3) 55%, rgba(6,8,16,0.7) 100%)' }} />
-              {/* Title overlaid at top of image */}
               <div style={{ position: 'absolute', top: 0, left: 0, right: 0, padding: '14px 18px' }}>
                 <h2 style={{ fontSize: 22, fontWeight: 900, color: '#fff', letterSpacing: '-0.03em', lineHeight: 1.2, margin: 0, textShadow: '0 2px 8px rgba(0,0,0,0.7)' }}>{event.title}</h2>
               </div>
             </div>
           ) : (
-            /* No image: title at top of sheet content */
             <div style={{ padding: '16px 20px 0' }}>
               <h2 style={{ fontSize: 22, fontWeight: 900, color: '#fff', letterSpacing: '-0.03em', lineHeight: 1.2, margin: '0 0 12px' }}>{event.title}</h2>
             </div>
           )}
 
           <div style={{ padding: '16px 20px 0' }}>
-            {/* Date & time — plain text, replaces old box */}
-            <div style={{ marginBottom: 14 }}>
+            {/* Date & time — plain text */}
+            <div style={{ marginBottom: 12 }}>
               <div style={{ fontSize: 14, fontWeight: 700, color: '#ffffff' }}>
                 {formatFullDate(event.event_date)}
               </div>
@@ -368,6 +273,13 @@ function EventDetailSheet({ event, isJoined, isWaitlisted, remindMe, onClose, on
                 {formatTime(event.event_date, event.end_time)}
               </div>
             </div>
+
+            {/* Description — now lives here in the detail sheet */}
+            {event.description && (
+              <div style={{ marginBottom: 14 }}>
+                <p style={{ fontSize: 13.5, color: 'rgba(255,255,255,0.6)', lineHeight: 1.65, margin: 0 }}>{event.description}</p>
+              </div>
+            )}
 
             {/* Tags row */}
             <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 6, marginBottom: 12 }}>
@@ -380,7 +292,7 @@ function EventDetailSheet({ event, isJoined, isWaitlisted, remindMe, onClose, on
               )}
             </div>
 
-            {/* Location — tappable */}
+            {/* Location */}
             {event.gym_name && (
               <button onClick={() => openMaps(event.gym_name, event.gym_address)} style={{ display: 'flex', alignItems: 'center', gap: 5, marginBottom: 14, background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
                 <MapPin size={12} color="#60a5fa" />
@@ -393,53 +305,11 @@ function EventDetailSheet({ event, isJoined, isWaitlisted, remindMe, onClose, on
             {/* Capacity bar */}
             <CapacityBar capacity={event.capacity} attendees={event.attendees} />
 
-            {/* Description */}
-            {event.description && (
-              <div style={{ marginBottom: 16 }}>
-                <span style={{ fontSize: 10, fontWeight: 700, color: 'rgba(255,255,255,0.3)', letterSpacing: '0.08em', textTransform: 'uppercase', display: 'block', marginBottom: 6 }}>About</span>
-                <p style={{ fontSize: 13.5, color: 'rgba(255,255,255,0.6)', lineHeight: 1.65, margin: 0 }}>{event.description}</p>
-              </div>
-            )}
-
             {/* Equipment chips */}
             <EquipmentChips items={equipment} />
 
-            {/* Attendees — real profile pictures, tappable */}
-            {(event.attendees > 0 || attendeeProfiles.length > 0) && (
-              <div style={{ marginBottom: 20 }}>
-                <button
-                  onClick={() => setShowAttendeesModal(true)}
-                  style={{ display: 'flex', alignItems: 'center', gap: 10, background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
-                >
-                  {/* Avatar cluster — 50% bigger (was ~20px, now 30px) */}
-                  <div style={{ display: 'flex', alignItems: 'center' }}>
-                    {attendeeProfiles.slice(0, 5).map((p, i) => {
-                      const name = p.full_name || p.display_name || 'M';
-                      return (
-                        <div key={p.id || i} style={{ width: 30, height: 30, borderRadius: '50%', overflow: 'hidden', flexShrink: 0, background: 'rgba(99,102,241,0.25)', border: '2px solid rgba(6,8,18,0.9)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 800, color: '#818cf8', marginLeft: i === 0 ? 0 : -9, zIndex: 5 - i }}>
-                          {p.avatar_url ? <img src={p.avatar_url} alt={name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : ini(name)}
-                        </div>
-                      );
-                    })}
-                    {attendeeProfiles.length === 0 && (event.attendees || 0) > 0 && (
-                      <div style={{ width: 30, height: 30, borderRadius: '50%', background: 'rgba(99,102,241,0.15)', border: '2px solid rgba(99,102,241,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 800, color: '#818cf8' }}>
-                        {event.attendees}
-                      </div>
-                    )}
-                  </div>
-                  <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)', fontWeight: 600 }}>
-                    {event.attendees || attendeeProfiles.length} attending — tap to see
-                  </span>
-                </button>
-              </div>
-            )}
-
-            <AttendeesModal
-              open={showAttendeesModal}
-              onClose={() => setShowAttendeesModal(false)}
-              count={event.attendees || attendeeProfiles.length}
-              attendeeProfiles={attendeeProfiles}
-            />
+            {/* Attendees — no "tap to see" */}
+            <DetailAttendeeRow event={event} attendeeProfiles={attendeeProfiles} />
 
             {/* CTA */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10, paddingBottom: 36 }}>
@@ -451,23 +321,26 @@ function EventDetailSheet({ event, isJoined, isWaitlisted, remindMe, onClose, on
                   style={{
                     width: '100%', padding: '15px', borderRadius: 18,
                     fontSize: 15, fontWeight: 900, cursor: 'pointer',
-                    // 3D button styles — no glow, strong depth effect
+                    // Joined = green pressed-in 3D (shallower bottom border, inset top shadow to feel depressed)
+                    // Not joined = blue standard raised 3D
                     background: isJoined
-                      ? 'linear-gradient(to bottom, #34d399 0%, #10b981 50%, #059669 100%)'
+                      ? 'linear-gradient(to bottom, #0d9e6e 0%, #059669 55%, #047857 100%)'
                       : 'linear-gradient(to bottom, #4f8ef7 0%, #2563eb 50%, #1d4ed8 100%)',
                     color: '#fff',
-                    border: isJoined ? '1px solid #059669' : '1px solid #1d4ed8',
-                    borderBottom: isJoined ? '4px solid #047857' : '4px solid #1a3fa8',
+                    border: isJoined ? '1px solid #047857' : '1px solid #1d4ed8',
+                    borderBottom: isJoined ? '2px solid #047857' : '4px solid #1a3fa8',
                     boxShadow: isJoined
-                      ? 'inset 0 1px 0 rgba(255,255,255,0.25), 0 2px 0 #047857'
+                      ? 'inset 0 1px 0 rgba(255,255,255,0.12), 0 1px 0 #047857'
                       : 'inset 0 1px 0 rgba(255,255,255,0.25), 0 2px 0 #1a3fa8',
                     textShadow: '0 1px 2px rgba(0,0,0,0.3)',
                     transform: 'translateY(0)',
-                    transition: 'transform 0.08s, box-shadow 0.08s',
+                    transition: 'transform 0.08s, box-shadow 0.08s, border-bottom 0.08s',
                   }}
-                  onMouseDown={e => { e.currentTarget.style.transform = 'translateY(2px)'; e.currentTarget.style.boxShadow = isJoined ? 'inset 0 1px 0 rgba(255,255,255,0.15), 0 0px 0 #047857' : 'inset 0 1px 0 rgba(255,255,255,0.15), 0 0px 0 #1a3fa8'; }}
-                  onMouseUp={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = isJoined ? 'inset 0 1px 0 rgba(255,255,255,0.25), 0 2px 0 #047857' : 'inset 0 1px 0 rgba(255,255,255,0.25), 0 2px 0 #1a3fa8'; }}
-                  onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = isJoined ? 'inset 0 1px 0 rgba(255,255,255,0.25), 0 2px 0 #047857' : 'inset 0 1px 0 rgba(255,255,255,0.25), 0 2px 0 #1a3fa8'; }}
+                  onMouseDown={isJoined ? pressJoined : pressBlue}
+                  onMouseUp={isJoined ? releaseJoined : releaseBlue}
+                  onMouseLeave={isJoined ? releaseJoined : releaseBlue}
+                  onTouchStart={isJoined ? pressJoined : pressBlue}
+                  onTouchEnd={isJoined ? releaseJoined : releaseBlue}
                 >
                   {isJoined ? '✓ Joined — Tap to Leave' : 'Join This Event'}
                 </button>
@@ -597,6 +470,28 @@ export default function UpcomingEvents({ gymMemberships = [], currentUser, isMem
             const spotsLeft    = event.capacity ? event.capacity - (event.attendees || 0) : null;
             const isLowSpots   = spotsLeft !== null && spotsLeft <= 3 && spotsLeft > 0;
 
+            // Press handlers for inline join button
+            const inlineJoinedDown = e => {
+              e.currentTarget.style.transform = 'translateY(2px)';
+              e.currentTarget.style.boxShadow = 'inset 0 2px 3px rgba(0,0,0,0.25)';
+              e.currentTarget.style.borderBottom = '1px solid #047857';
+            };
+            const inlineJoinedUp = e => {
+              e.currentTarget.style.transform = '';
+              e.currentTarget.style.boxShadow = 'inset 0 1px 0 rgba(255,255,255,0.12), 0 1px 0 #047857';
+              e.currentTarget.style.borderBottom = '2px solid #047857';
+            };
+            const inlineBlueDown = e => {
+              e.currentTarget.style.transform = 'translateY(2px)';
+              e.currentTarget.style.boxShadow = 'none';
+              e.currentTarget.style.borderBottom = '1px solid #1a3fa8';
+            };
+            const inlineBlueUp = e => {
+              e.currentTarget.style.transform = '';
+              e.currentTarget.style.boxShadow = '0 2px 0 #1a3fa8, inset 0 1px 0 rgba(255,255,255,0.2)';
+              e.currentTarget.style.borderBottom = '2px solid #1a3fa8';
+            };
+
             const InlineJoinButton = () => {
               if (isFull && !isJoined) return (
                 <button
@@ -610,47 +505,59 @@ export default function UpcomingEvents({ gymMemberships = [], currentUser, isMem
                   onClick={() => isJoined
                     ? setLeaveConfirmEventId(event.id)
                     : joinMutation.mutate({ eventId: event.id, currentAttendees: event.attendees || 0 })}
+                  onMouseDown={isJoined ? inlineJoinedDown : inlineBlueDown}
+                  onMouseUp={isJoined ? inlineJoinedUp : inlineBlueUp}
+                  onMouseLeave={isJoined ? inlineJoinedUp : inlineBlueUp}
+                  onTouchStart={isJoined ? inlineJoinedDown : inlineBlueDown}
+                  onTouchEnd={isJoined ? inlineJoinedUp : inlineBlueUp}
                   style={{
                     display: 'flex', alignItems: 'center', gap: 5,
                     padding: '7px 14px', borderRadius: 10,
                     fontSize: 12, fontWeight: 800, cursor: 'pointer', border: 'none',
                     flexShrink: 0,
+                    transition: 'transform 0.08s, box-shadow 0.08s, border-bottom 0.08s',
+                    // Joined = green pressed-in (shallow bottom border, inset shadow)
+                    // Not joined = blue raised 3D
                     ...(isJoined
-                      ? { background: 'rgba(52,211,153,0.12)', color: '#34d399', outline: '1px solid rgba(52,211,153,0.28)' }
-                      : { background: 'linear-gradient(to bottom, #3b82f6 0%, #2563eb 40%, #1d4ed8 100%)', color: '#fff', boxShadow: '0 2px 0 #1a3fa8, inset 0 1px 0 rgba(255,255,255,0.2)', borderBottom: '2px solid #1a3fa8' }),
+                      ? {
+                          background: 'linear-gradient(to bottom, #0d9e6e 0%, #059669 60%, #047857 100%)',
+                          color: '#fff',
+                          borderBottom: '2px solid #047857',
+                          boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.12), 0 1px 0 #047857',
+                          textShadow: '0 1px 1px rgba(0,0,0,0.2)',
+                        }
+                      : {
+                          background: 'linear-gradient(to bottom, #3b82f6 0%, #2563eb 40%, #1d4ed8 100%)',
+                          color: '#fff',
+                          boxShadow: '0 2px 0 #1a3fa8, inset 0 1px 0 rgba(255,255,255,0.2)',
+                          borderBottom: '2px solid #1a3fa8',
+                        }),
                   }}>
                   {isJoined ? <><CheckCircle style={{ width: 12, height: 12 }} /> Joined</> : 'Join'}
                 </button>
               );
             };
 
-            // Bottom row: attending count is now beside the join button
+            // BottomRow: left side = time + attending count (stacked), right = join button only
+            // Description removed from card (lives in detail sheet now)
             const BottomRow = () => (
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
-                {/* Left: urgency / description */}
+                {/* Left: time, attending, urgency/level tag */}
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 4, minWidth: 0 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                    <Clock style={{ width: 10, height: 10, color: 'rgba(255,255,255,0.4)', flexShrink: 0 }} />
+                    <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.45)', fontWeight: 600 }}>{formatTime(event.event_date, event.end_time)}</span>
+                  </div>
+                  <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.25)', fontWeight: 600, whiteSpace: 'nowrap' }}>{event.attendees || 0} attending</span>
                   {isLowSpots && (
                     <span style={{ fontSize: 11, color: '#f59e0b', fontWeight: 700 }}>⚡ {spotsLeft} spot{spotsLeft === 1 ? '' : 's'} left</span>
                   )}
-                  {!isLowSpots && event.description && (
-                    <p style={{ fontSize: 12.5, color: 'rgba(226,232,240,0.6)', lineHeight: 1.5, margin: 0, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
-                      {event.description}
-                    </p>
-                  )}
-                  {event.level && <LevelTag level={event.level} />}
+                  {!isLowSpots && event.level && <LevelTag level={event.level} />}
                 </div>
 
-                {/* Right: time on top row, then attending + join button aligned */}
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 6, flexShrink: 0 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                    <Clock style={{ width: 10, height: 10, color: 'rgba(255,255,255,0.4)' }} />
-                    <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.45)', fontWeight: 600 }}>{formatTime(event.event_date, event.end_time)}</span>
-                  </div>
-                  {/* Attending count + join button on same row */}
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.25)', fontWeight: 600, whiteSpace: 'nowrap' }}>{event.attendees || 0} attending</span>
-                    {isMember && <InlineJoinButton />}
-                  </div>
+                {/* Right: join button only */}
+                <div style={{ flexShrink: 0 }}>
+                  {isMember && <InlineJoinButton />}
                 </div>
               </div>
             );
@@ -666,7 +573,6 @@ export default function UpcomingEvents({ gymMemberships = [], currentUser, isMem
                     >
                       <img src={event.image_url} alt={event.title} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
                       <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, rgba(8,10,20,0.82) 0%, transparent 55%)' }} />
-                      {/* Title + recurring + chevron in top row */}
                       <div style={{ position: 'absolute', top: 12, left: 12, right: 12, display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8 }}>
                         <h3 style={{ fontSize: 15, fontWeight: 900, color: '#fff', letterSpacing: '-0.02em', lineHeight: 1.25, margin: 0, textShadow: '0 1px 6px rgba(0,0,0,0.6)', flex: 1 }}>
                           {humanRelativeDate(event.event_date)} · {event.title}
@@ -677,7 +583,8 @@ export default function UpcomingEvents({ gymMemberships = [], currentUser, isMem
                         </div>
                       </div>
                     </div>
-                    <div style={{ padding: '10px 14px 14px' }}><BottomRow /></div>
+                    {/* Slightly tighter top padding to close gap under image */}
+                    <div style={{ padding: '8px 14px 12px' }}><BottomRow /></div>
                   </>
                 ) : (
                   <div style={{ padding: '14px 14px' }}>
