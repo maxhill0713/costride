@@ -212,8 +212,55 @@ function LeaveConfirmDialog({ open, onClose, onConfirm, eventName }) {
   );
 }
 
-// Attendees row in the detail sheet — just avatars + count, no "tap to see"
-function DetailAttendeeRow({ event, attendeeProfiles }) {
+function AttendeesModal({ open, onClose, count, attendeeProfiles }) {
+  const [search, setSearch] = useState('');
+  if (!open) return null;
+
+  const filtered = attendeeProfiles.filter(p => {
+    const name = p.full_name || p.display_name || '';
+    return name.toLowerCase().includes(search.toLowerCase());
+  });
+
+  const ini = (n = '') => (n || '?').split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
+
+  return (
+    <>
+      <div onClick={onClose} style={{ position: 'fixed', inset: 0, zIndex: 10200, background: 'rgba(2,6,23,0.7)', backdropFilter: 'blur(8px)' }} />
+      <div style={{ position: 'fixed', left: '50%', top: '50%', transform: 'translate(-50%,-50%)', width: 'calc(100% - 32px)', maxWidth: 360, zIndex: 10201, background: 'rgba(13,18,40,0.98)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 24, boxShadow: '0 32px 80px rgba(0,0,0,0.8)', overflow: 'hidden' }}>
+        <div style={{ padding: '20px 20px 12px', textAlign: 'center' }}>
+          <h3 style={{ fontSize: 17, fontWeight: 900, color: '#fff', margin: '0 0 4px', letterSpacing: '-0.02em' }}>{count} Attending</h3>
+        </div>
+        <div style={{ padding: '0 16px 10px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 12px', borderRadius: 12, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.09)' }}>
+            <svg width="13" height="13" fill="none" stroke="rgba(255,255,255,0.4)" strokeWidth="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+            <input value={search} onChange={e => setSearch(e.target.value.slice(0, 40))} placeholder="Search attendees..." style={{ flex: 1, background: 'none', border: 'none', outline: 'none', color: '#fff', fontSize: 13, fontWeight: 500 }} />
+          </div>
+        </div>
+        <div style={{ maxHeight: 320, overflowY: 'auto', padding: '0 12px 16px' }}>
+          {filtered.length === 0 ? (
+            <p style={{ textAlign: 'center', color: 'rgba(255,255,255,0.3)', fontSize: 13, padding: '20px 0' }}>No attendees found</p>
+          ) : filtered.map((p, i) => {
+            const name = p.full_name || p.display_name || 'Member';
+            return (
+              <div key={p.id || i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 4px', borderBottom: i < filtered.length - 1 ? '1px solid rgba(255,255,255,0.05)' : 'none' }}>
+                <div style={{ width: 38, height: 38, borderRadius: '50%', flexShrink: 0, overflow: 'hidden', background: 'rgba(99,102,241,0.2)', border: '1px solid rgba(99,102,241,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 800, color: '#818cf8' }}>
+                  {p.avatar_url ? <img src={p.avatar_url} alt={name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : ini(name)}
+                </div>
+                <span style={{ fontSize: 13, fontWeight: 600, color: '#fff' }}>{name}</span>
+              </div>
+            );
+          })}
+        </div>
+        <div style={{ padding: '0 16px 20px' }}>
+          <button onClick={onClose} style={{ width: '100%', padding: '11px', borderRadius: 14, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.6)', fontSize: 13, fontWeight: 700, cursor: 'pointer' }}>Close</button>
+        </div>
+      </div>
+    </>
+  );
+}
+
+// Attendees row in the detail sheet — tappable to open AttendeesModal
+function DetailAttendeeRow({ event, attendeeProfiles, onTap }) {
   const count = event.attendees || attendeeProfiles.length || 0;
   if (count === 0) return null;
 
@@ -221,7 +268,7 @@ function DetailAttendeeRow({ event, attendeeProfiles }) {
 
   return (
     <div style={{ marginBottom: 20 }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+      <button onClick={onTap} style={{ display: 'flex', alignItems: 'center', gap: 10, background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
         <div style={{ display: 'flex', alignItems: 'center' }}>
           {attendeeProfiles.slice(0, 5).map((p, i) => {
             const name = p.full_name || p.display_name || 'M';
@@ -237,10 +284,8 @@ function DetailAttendeeRow({ event, attendeeProfiles }) {
             </div>
           )}
         </div>
-        <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)', fontWeight: 600 }}>
-          {count} attending
-        </span>
-      </div>
+        <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)', fontWeight: 600 }}>{count} attending — tap to see</span>
+      </button>
     </div>
   );
 }
@@ -251,6 +296,7 @@ function EventDetailSheet({ event, isJoined, isWaitlisted, remindMe, onClose, on
   const isFull = event.capacity && (event.attendees || 0) >= event.capacity;
   const equipment = event.equipment || [];
   const [attendeeProfiles, setAttendeeProfiles] = useState([]);
+  const [showAttendeesModal, setShowAttendeesModal] = useState(false);
 
   const attendeeIds = event.attendee_ids || [];
 
@@ -370,8 +416,9 @@ function EventDetailSheet({ event, isJoined, isWaitlisted, remindMe, onClose, on
             {/* Equipment chips */}
             <EquipmentChips items={equipment} />
 
-            {/* Attendees — no "tap to see" */}
-            <DetailAttendeeRow event={event} attendeeProfiles={attendeeProfiles} />
+            {/* Attendees — tappable */}
+            <DetailAttendeeRow event={event} attendeeProfiles={attendeeProfiles} onTap={() => setShowAttendeesModal(true)} />
+            <AttendeesModal open={showAttendeesModal} onClose={() => setShowAttendeesModal(false)} count={event.attendees || attendeeProfiles.length} attendeeProfiles={attendeeProfiles} />
 
             {/* CTA */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10, paddingBottom: 36 }}>
