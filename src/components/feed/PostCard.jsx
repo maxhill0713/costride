@@ -642,6 +642,7 @@ function PostCard({ post, onLike, onComment, onSave, onDelete, fullWidth = false
   });
 
   const isGymAuthoredPost = !!post.post_type;
+  const isWorkoutPost = !!post.workout_name;
 
   const { data: gymData } = useQuery({
     queryKey: ['gymForPost', post.gym_id],
@@ -683,7 +684,6 @@ function PostCard({ post, onLike, onComment, onSave, onDelete, fullWidth = false
   const isCommunityMember = !isOwner && !friendIdList.includes(post.member_id);
   const isNudgePost = post.exercise === 'workout_completion_nudge';
   const isGymJoinPost = post.gym_join === true;
-  const isWorkoutPost = !!post.workout_name;
   const hasMedia = !!(post.video_url || post.image_url);
 
   const userStreakVariant = useMemo(() => currentUser?.streak_variant || 'default', [currentUser?.streak_variant]);
