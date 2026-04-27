@@ -3,77 +3,16 @@ import CoachProfileModal from './CoachProfileModal';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   X, Clock, Users, MapPin, Star, Calendar, Dumbbell,
-  ChevronRight, Zap, Heart, Share2, Bell, CheckCircle,
-  TrendingUp, Info, QrCode, UserPlus, MessageSquare,
+  ChevronRight, Zap, Bell, CheckCircle,
+  TrendingUp, Info, QrCode, MessageSquare,
   ChevronDown, ChevronUp, Award, Repeat, ExternalLink,
-  ThumbsUp, Tag, Wifi, AlertCircle, Flame, Radio,
+  ThumbsUp, Tag, Wifi, AlertCircle, Flame,
 } from 'lucide-react';
 
-// ─────────────────────────────────────────────────────────────────────────────
-// SCHEMA SHAPE (documents the expected data model for this component)
-// ─────────────────────────────────────────────────────────────────────────────
-//
-// CLASS_SESSION {
-//   id                  : string | number
-//   class_name          : string
-//   instructor_id       : string
-//   instructor          : string
-//   cover_image_url     : string
-//   description         : string
-//   start_time          : ISO string | Date
-//   end_time            : ISO string | Date
-//   duration_minutes    : number
-//   max_capacity        : number
-//   attendees           : Attendee[]
-//   intensity_level     : string
-//   equipment_needed    : string | string[]
-//   estimated_calories  : number
-//   category            : string
-//   cancellation_policy : string
-//   average_rating      : number
-//   review_count        : number
-//   reviews             : Review[]
-//   location            : string
-//   is_virtual          : boolean
-//   price_drop_in       : number | null
-//   price_member        : number | null
-//   schedule            : string | object[]
-// }
-//
-// ATTENDEE { id, name, avatar?, color?, status: 'booked'|'waitlisted'|'cancelled' }
-//
-// REVIEW {
-//   id, reviewer_id, name, initials, rating, comment, created_at, likes
-// }
-
-// ─────────────────────────────────────────────────────────────────────────────
-// PAGE SLIDE VARIANTS — slides in/out from the bottom
-// ─────────────────────────────────────────────────────────────────────────────
 const pageSlideVariants = {
-  hidden: {
-    y: '100%',
-    opacity: 1,
-  },
-  visible: {
-    y: 0,
-    opacity: 1,
-    transition: {
-      type: 'spring',
-      stiffness: 380,
-      damping: 36,
-      mass: 1,
-    },
-  },
-  exit: {
-    y: '100%',
-    opacity: 1,
-    transition: {
-      type: 'spring',
-      stiffness: 420,
-      damping: 40,
-      mass: 0.9,
-    },
-  },
+  hidden:  { y: '100%', opacity: 1 },
+  visible: { y: 0, opacity: 1, transition: { type: 'spring', stiffness: 380, damping: 36, mass: 1 } },
+  exit:    { y: '100%', opacity: 1, transition: { type: 'spring', stiffness: 420, damping: 40, mass: 0.9 } },
 };
 
 const CARD_BG     = 'linear-gradient(135deg, rgba(30,35,60,0.82) 0%, rgba(8,10,20,0.96) 100%)';
@@ -142,7 +81,6 @@ function injectCSS() {
   }
 }
 
-// ── Derive category/type ───────────────────────────────────────────────────
 function classType(c) {
   if (c.category) {
     const cat = c.category.toLowerCase();
@@ -175,7 +113,6 @@ function scheduleDays(c) {
 
 function ini(name = '') { return (name || '?').split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2); }
 
-// ── Schema field resolvers ─────────────────────────────────────────────────
 function getClassName(c)    { return c.class_name || c.name || c.title || 'Untitled Class'; }
 function getInstructor(c)   { return c.instructor || c.coach_name || null; }
 function getCoverImage(c, tk) { return c.cover_image_url || c.image_url || IMGS[tk] || IMGS.default; }
@@ -252,7 +189,6 @@ function formatDateTime(iso) {
   } catch { return { date: null, time: null }; }
 }
 
-// ── Session generation ─────────────────────────────────────────────────────
 function generateUpcomingSessions(gymClass, days, startDT, endDT) {
   const sessions = [];
   const now = new Date();
@@ -298,9 +234,7 @@ function generateUpcomingSessions(gymClass, days, startDT, endDT) {
           sessions.push({
             id: `s-${sessionDate.getTime()}`,
             date: sessionDate,
-            dateLabel: sessionDate.toLocaleDateString('en-GB', {
-              weekday: 'short', day: 'numeric', month: 'long',
-            }),
+            dateLabel: sessionDate.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'long' }),
             dayShort: sessionDate.toLocaleDateString('en-GB', { weekday: 'short' }),
             monthLabel: sessionDate.toLocaleDateString('en-GB', { month: 'short' }),
             dayNum: sessionDate.getDate(),
@@ -322,9 +256,7 @@ function generateUpcomingSessions(gymClass, days, startDT, endDT) {
       sessions.push({
         id: `s-${sessionDate.getTime()}`,
         date: sessionDate,
-        dateLabel: sessionDate.toLocaleDateString('en-GB', {
-          weekday: 'short', day: 'numeric', month: 'long',
-        }),
+        dateLabel: sessionDate.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'long' }),
         dayShort: sessionDate.toLocaleDateString('en-GB', { weekday: 'short' }),
         monthLabel: sessionDate.toLocaleDateString('en-GB', { month: 'short' }),
         dayNum: sessionDate.getDate(),
@@ -347,7 +279,6 @@ function availabilityBadge(session) {
   return { label: 'Available', color: '#34d399', bg: 'rgba(16,185,129,0.12)', border: 'rgba(16,185,129,0.25)' };
 }
 
-// ── Reusable micro-components ──────────────────────────────────────────────
 function Bar({ pct, color, anim = true, h = 6 }) {
   return (
     <div style={{ height: h, borderRadius: 99, background: 'rgba(255,255,255,0.06)', overflow: 'hidden', position: 'relative' }}>
@@ -373,7 +304,6 @@ function SectionHead({ children }) {
   return <div style={{ fontSize: 10.5, fontWeight: 800, color: 'rgba(255,255,255,0.28)', letterSpacing: '0.14em', textTransform: 'uppercase', marginBottom: 10 }}>{children}</div>;
 }
 
-// ── QR Check-in ─────────────────────────────────────────────────────────────
 function QRModal({ open, onClose, gymClass, c }) {
   const code = `CLASS-${(gymClass?.id || 'DEMO').toString().slice(-6).toUpperCase()}`;
   return (
@@ -412,7 +342,6 @@ function QRModal({ open, onClose, gymClass, c }) {
   );
 }
 
-// ── Rate & Review sheet ────────────────────────────────────────────────────
 function RateSheet({ open, onClose, c, className }) {
   const [rating, setRating] = useState(0);
   const [hov, setHov] = useState(0);
@@ -426,11 +355,7 @@ function RateSheet({ open, onClose, c, className }) {
         <>
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose}
             style={{ position: 'fixed', inset: 0, zIndex: 10200, background: 'rgba(2,4,10,0.88)', backdropFilter: 'blur(12px)' }} />
-          <motion.div
-            variants={pageSlideVariants}
-            initial="hidden"
-            animate="visible"
-            exit="exit"
+          <motion.div variants={pageSlideVariants} initial="hidden" animate="visible" exit="exit"
             style={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 10201, borderRadius: '24px 24px 0 0',
               background: 'linear-gradient(160deg,#0d1232 0%,#060810 100%)',
               border: '1px solid rgba(255,255,255,0.08)', borderBottom: 'none', padding: '10px 18px 42px' }}>
@@ -477,7 +402,7 @@ function RateSheet({ open, onClose, c, className }) {
                     cursor: rating > 0 ? 'pointer' : 'default', border: 'none',
                     background: rating > 0 ? 'linear-gradient(135deg,#2563eb,#1d4ed8)' : 'rgba(255,255,255,0.05)',
                     color: rating > 0 ? '#fff' : 'rgba(255,255,255,0.2)',
-                    boxShadow: rating > 0 ? '0 6px 24px rgba(37,99,235,0.4),inset 0 1px 0 rgba(255,255,255,0.2)' : 'none', transition: 'all 0.2s' }}>
+                    transition: 'all 0.2s' }}>
                   Submit Review
                 </button>
               </>
@@ -489,7 +414,6 @@ function RateSheet({ open, onClose, c, className }) {
   );
 }
 
-// ── Review card ──────────────────────────────────────────────────────────────
 function ReviewCard({ r, c }) {
   return (
     <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 14, padding: '13px 14px' }}>
@@ -512,7 +436,6 @@ function ReviewCard({ r, c }) {
   );
 }
 
-// ── Session Row ──────────────────────────────────────────────────────────────
 function SessionRow({ session, isSelected, onSelect, c, isFirst }) {
   const badge = availabilityBadge(session);
   const isToday = session.date.toDateString() === new Date().toDateString();
@@ -529,9 +452,7 @@ function SessionRow({ session, isSelected, onSelect, c, isFirst }) {
         display: 'flex', alignItems: 'center', gap: 14, width: '100%',
         padding: '13px 14px', borderRadius: 16, cursor: session.full ? 'not-allowed' : 'pointer',
         border: `1px solid ${isSelected ? c.border : 'rgba(255,255,255,0.06)'}`,
-        background: isSelected
-          ? `rgba(${c.rgb},0.09)`
-          : 'rgba(255,255,255,0.025)',
+        background: isSelected ? `rgba(${c.rgb},0.09)` : 'rgba(255,255,255,0.025)',
         boxShadow: isSelected ? `0 0 0 1px ${c.border}, 0 4px 20px rgba(${c.rgb},0.08)` : 'none',
         transition: 'all 0.18s cubic-bezier(0.25,0.46,0.45,0.94)',
         opacity: session.full ? 0.55 : 1,
@@ -540,7 +461,6 @@ function SessionRow({ session, isSelected, onSelect, c, isFirst }) {
         animationDelay: `${isFirst * 0.04}s`,
       }}
     >
-      {/* Date block */}
       <div style={{
         width: 46, height: 50, borderRadius: 12, flexShrink: 0,
         background: isSelected ? `rgba(${c.rgb},0.15)` : 'rgba(255,255,255,0.05)',
@@ -548,18 +468,10 @@ function SessionRow({ session, isSelected, onSelect, c, isFirst }) {
         display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
         transition: 'all 0.18s',
       }}>
-        <div style={{ fontSize: 9, fontWeight: 800, color: isSelected ? c.color : 'rgba(255,255,255,0.35)', textTransform: 'uppercase', letterSpacing: '0.06em', lineHeight: 1 }}>
-          {session.dayShort}
-        </div>
-        <div style={{ fontSize: 20, fontWeight: 900, color: isSelected ? c.color : '#fff', lineHeight: 1, marginTop: 2 }}>
-          {session.dayNum}
-        </div>
-        <div style={{ fontSize: 8.5, fontWeight: 700, color: isSelected ? c.color : 'rgba(255,255,255,0.3)', lineHeight: 1, marginTop: 1 }}>
-          {session.monthLabel}
-        </div>
+        <div style={{ fontSize: 9, fontWeight: 800, color: isSelected ? c.color : 'rgba(255,255,255,0.35)', textTransform: 'uppercase', letterSpacing: '0.06em', lineHeight: 1 }}>{session.dayShort}</div>
+        <div style={{ fontSize: 20, fontWeight: 900, color: isSelected ? c.color : '#fff', lineHeight: 1, marginTop: 2 }}>{session.dayNum}</div>
+        <div style={{ fontSize: 8.5, fontWeight: 700, color: isSelected ? c.color : 'rgba(255,255,255,0.3)', lineHeight: 1, marginTop: 1 }}>{session.monthLabel}</div>
       </div>
-
-      {/* Info */}
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
           <span style={{ fontSize: 13.5, fontWeight: 700, color: '#fff' }}>
@@ -575,18 +487,11 @@ function SessionRow({ session, isSelected, onSelect, c, isFirst }) {
           )}
         </div>
         <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.42)', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 5 }}>
-          <Clock style={{ width: 10, height: 10, flexShrink: 0 }} />
-          {session.timeLabel}
+          <Clock style={{ width: 10, height: 10, flexShrink: 0 }} />{session.timeLabel}
         </div>
       </div>
-
-      {/* Availability + radio */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 9, flexShrink: 0 }}>
-        <span style={{
-          fontSize: 10.5, fontWeight: 800, padding: '4px 9px', borderRadius: 20,
-          color: badge.color, background: badge.bg, border: `1px solid ${badge.border}`,
-          whiteSpace: 'nowrap',
-        }}>
+        <span style={{ fontSize: 10.5, fontWeight: 800, padding: '4px 9px', borderRadius: 20, color: badge.color, background: badge.bg, border: `1px solid ${badge.border}`, whiteSpace: 'nowrap' }}>
           {badge.label}
         </span>
         {!session.full && (
@@ -598,9 +503,7 @@ function SessionRow({ session, isSelected, onSelect, c, isFirst }) {
             transition: 'all 0.18s cubic-bezier(0.25,0.46,0.45,0.94)',
             boxShadow: isSelected ? `0 0 8px rgba(${c.rgb},0.4)` : 'none',
           }}>
-            {isSelected && (
-              <div style={{ width: 7, height: 7, borderRadius: '50%', background: '#fff' }} />
-            )}
+            {isSelected && <div style={{ width: 7, height: 7, borderRadius: '50%', background: '#fff' }} />}
           </div>
         )}
       </div>
@@ -621,22 +524,20 @@ export default function ClassDetailModal({
 }) {
   const [booked, setBooked]             = useState(initBooked);
   const [waitlist, setWaitlist]         = useState(false);
-  const [saved, setSaved]               = useState(false);
   const [reminded, setReminded]         = useState(false);
   const [recurring, setRecurring]       = useState(false);
   const [showQR, setShowQR]             = useState(false);
   const [showRate, setShowRate]         = useState(false);
   const [toast, setToast]               = useState('');
   const [moreReviews, setMoreReviews]   = useState(false);
-  const [bookAnim, setBookAnim]         = useState(false);
   const [tab, setTab]                   = useState('details');
   const [selectedSession, setSelectedSession] = useState(null);
   const [showCoachProfile, setShowCoachProfile] = useState(false);
   const [showLeaveConfirm, setShowLeaveConfirm] = useState(false);
   const [joinLoading, setJoinLoading]   = useState(false);
   const [liveAttendeeIds, setLiveAttendeeIds] = useState(null);
+  const [btnPressed, setBtnPressed]     = useState(false);
 
-  // Resolve current user
   const [resolvedUser, setResolvedUser] = useState(currentUserProp);
   useEffect(() => {
     if (currentUserProp) { setResolvedUser(currentUserProp); return; }
@@ -645,7 +546,6 @@ export default function ClassDetailModal({
     });
   }, [currentUserProp]);
 
-  // Sync live attendee_ids from the class record when opened
   useEffect(() => {
     if (!open || !gymClass?.id) return;
     setLiveAttendeeIds(gymClass.attendee_ids || []);
@@ -654,9 +554,7 @@ export default function ClassDetailModal({
   const attendeeIds = liveAttendeeIds ?? (gymClass?.attendee_ids || []);
   const isJoined = resolvedUser ? attendeeIds.includes(resolvedUser.id) : false;
 
-  // Keep legacy booked state in sync with real join state
   useEffect(() => { setBooked(initBooked || isJoined); }, [initBooked, isJoined]);
-
   useEffect(() => { injectCSS(); }, []);
   useEffect(() => { if (!open) { setSelectedSession(null); setShowLeaveConfirm(false); } }, [open]);
 
@@ -666,12 +564,9 @@ export default function ClassDetailModal({
     setJoinLoading(true);
     try {
       const currentIds = [...attendeeIds];
-      let newIds;
-      if (isJoined) {
-        newIds = currentIds.filter(id => id !== resolvedUser.id);
-      } else {
-        newIds = [...currentIds, resolvedUser.id];
-      }
+      const newIds = isJoined
+        ? currentIds.filter(id => id !== resolvedUser.id)
+        : [...currentIds, resolvedUser.id];
       await base44.entities.GymClass.update(gymClass.id, { attendee_ids: newIds });
       setLiveAttendeeIds(newIds);
       setBooked(!isJoined);
@@ -687,7 +582,6 @@ export default function ClassDetailModal({
 
   if (!gymClass) return null;
 
-  // ── Resolve all schema fields ────────────────────────────────────────────
   const tk          = classType(gymClass);
   const c           = CFG[tk];
   const className   = getClassName(gymClass);
@@ -724,51 +618,38 @@ export default function ClassDetailModal({
   const showToast = (msg) => { setToast(msg); setTimeout(() => setToast(''), 2300); };
 
   const handleBook = () => {
-    // If already joined, show leave confirmation
-    if (isJoined) {
-      setShowLeaveConfirm(true);
-      return;
-    }
-    // Join directly
+    if (isJoined) { setShowLeaveConfirm(true); return; }
     handleJoinLeave();
   };
 
   const ctaLabel = (() => {
     if (joinLoading) return '…';
     if (isJoined)   return '✓ Joined — Tap to Leave';
-    if (waitlist) return '⏳ On Waitlist — Tap to Leave';
+    if (waitlist)   return '⏳ On Waitlist — Tap to Leave';
     return 'Join Class';
   })();
-
-  const ctaDisabled = false;
-  const ctaActive   = isJoined || waitlist;
 
   const ratCounts = [5, 4, 3, 2, 1].map(s => ({
     s, n: REVIEWS.filter(r => r.rating === s).length,
     p: Math.round(REVIEWS.filter(r => r.rating === s).length / REVIEWS.length * 100),
   }));
 
-  const MOCK_ATT = [
-    { id: 'a1', name: 'Alex M.', color: '#3b82f6' },
-    { id: 'a2', name: 'Sara K.', color: '#8b5cf6' },
-    { id: 'a3', name: 'Tom B.',  color: '#10b981' },
-    { id: 'a4', name: 'Jen L.',  color: '#f59e0b' },
-  ];
   const schemaAttendees = Array.isArray(gymClass.attendees)
     ? gymClass.attendees.filter(a => !a.status || a.status === 'booked').slice(0, 4)
     : [];
-  const att   = [...friendsBooked, ...(schemaAttendees.length ? schemaAttendees : MOCK_ATT)].slice(0, 5);
-  const extra = Math.max(0, enr - att.length);
 
   return (
     <>
       <AnimatePresence>
         {open && (
           <>
-            {/* Backdrop */}
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.28, ease: 'easeOut' }}
+            {/* Backdrop — clicking the top 40% (outside the sheet) closes it */}
+            <motion.div
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              transition={{ duration: 0.28, ease: 'easeOut' }}
               onClick={onClose}
-              style={{ position: 'fixed', inset: 0, zIndex: 9998, background: 'rgba(2,4,10,0.87)', backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)' }} />
+              style={{ position: 'fixed', inset: 0, zIndex: 9998, background: 'rgba(2,4,10,0.87)', backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)' }}
+            />
 
             {/* Toast */}
             <AnimatePresence>
@@ -777,26 +658,31 @@ export default function ClassDetailModal({
                   style={{ position: 'fixed', bottom: 130, left: '50%', transform: 'translateX(-50%)', zIndex: 10300,
                     background: 'rgba(12,16,36,0.98)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 14,
                     padding: '11px 20px', fontSize: 13, fontWeight: 700, color: '#fff', whiteSpace: 'nowrap',
-                    backdropFilter: 'blur(20px)', boxShadow: `0 4px 24px rgba(${c.rgb},0.22)` }}>
+                    backdropFilter: 'blur(20px)' }}>
                   {toast}
                 </motion.div>
               )}
             </AnimatePresence>
 
-            {/* Sheet — now uses pageSlideVariants */}
+            {/* Sheet — 60% of screen height, anchored to bottom */}
             <motion.div
               variants={pageSlideVariants}
               initial="hidden"
               animate="visible"
               exit="exit"
-              style={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 9999,
-                maxHeight: '95vh', display: 'flex', flexDirection: 'column',
+              // Stop clicks inside the sheet from bubbling to the backdrop
+              onClick={e => e.stopPropagation()}
+              style={{
+                position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 9999,
+                height: '60vh',
+                display: 'flex', flexDirection: 'column',
                 borderRadius: '26px 26px 0 0',
                 background: 'linear-gradient(160deg,#0c1128 0%,#060810 100%)',
                 border: '1px solid rgba(255,255,255,0.09)', borderBottom: 'none',
-                boxShadow: `0 -16px 60px rgba(0,0,0,0.7),inset 0 1px 0 rgba(255,255,255,0.06)` }}>
+                boxShadow: '0 -16px 60px rgba(0,0,0,0.7),inset 0 1px 0 rgba(255,255,255,0.06)',
+              }}>
 
-              {/* Drag handle */}
+              {/* Drag handle — tap above sheet (on backdrop) to dismiss */}
               <div style={{ display: 'flex', justifyContent: 'center', padding: '12px 0 0', flexShrink: 0 }}>
                 <div style={{ width: 38, height: 4, borderRadius: 99, background: 'rgba(255,255,255,0.14)' }} />
               </div>
@@ -804,33 +690,11 @@ export default function ClassDetailModal({
               {/* Scroll body */}
               <div style={{ flex: 1, overflowY: 'auto', WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none' }}>
 
-                {/* ── HERO ── */}
-                <div style={{ position: 'relative', height: 245, overflow: 'hidden', flexShrink: 0 }}>
-                  <img src={img} alt={className} style={{ width: '100%', height: '100%', objectFit: 'cover', animation: 'cdm-hero-in 0.6s cubic-bezier(0.16,1,0.3,1) both' }} />
+                {/* ── HERO — flush to top of sheet, no gap ── */}
+                <div style={{ position: 'relative', height: 220, overflow: 'hidden', flexShrink: 0, marginTop: 0 }}>
+                  <img src={img} alt={className} style={{ width: '100%', height: '100%', objectFit: 'cover', animation: 'cdm-hero-in 0.6s cubic-bezier(0.16,1,0.3,1) both', display: 'block' }} />
                   <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom,rgba(0,0,0,0.1) 0%,rgba(6,8,18,0.97) 100%)' }} />
                   <div style={{ position: 'absolute', inset: 0, background: `radial-gradient(ellipse at 75% 25%,rgba(${c.rgb},0.14) 0%,transparent 60%)` }} />
-
-                  {/* Actions row */}
-                  <div style={{ position: 'absolute', top: 13, left: 14, right: 14, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                    <motion.div initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.08, duration: 0.35 }}
-                      style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 10, fontWeight: 900, letterSpacing: '0.12em', textTransform: 'uppercase', color: c.color, background: 'rgba(0,0,0,0.62)', border: `1px solid ${c.border}`, borderRadius: 20, padding: '5px 11px', backdropFilter: 'blur(12px)' }}>
-                      <span style={{ fontSize: 13 }}>{c.emoji}</span>{category}
-                      {gymClass.is_virtual && <><span style={{ margin: '0 2px', opacity: 0.4 }}>·</span><Wifi style={{ width: 10, height: 10 }} />Virtual</>}
-                    </motion.div>
-                    <div style={{ display: 'flex', gap: 7 }}>
-                      {[
-                        { I: Heart, act: () => setSaved(s => !s), on: saved, ac: '#f472b6' },
-                        { I: Share2, act: () => { try { navigator.clipboard.writeText(className); } catch {} showToast('Link copied 🔗'); } },
-                        { I: X, act: onClose },
-                      ].map(({ I, act, on, ac }, i) => (
-                        <motion.button key={i} initial={{ opacity: 0, scale: 0.7 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.1 + i * 0.05, type: 'spring', stiffness: 260, damping: 24 }}
-                          onClick={act}
-                          style={{ width: 35, height: 35, borderRadius: '50%', background: 'rgba(0,0,0,0.58)', border: '1px solid rgba(255,255,255,0.14)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', backdropFilter: 'blur(12px)' }}>
-                          <I style={{ width: 14, height: 14, color: on ? ac : '#fff', fill: on && ac ? ac : 'none', transition: 'all 0.2s' }} />
-                        </motion.button>
-                      ))}
-                    </div>
-                  </div>
 
                   {/* Title block */}
                   <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '0 18px 16px' }}>
@@ -846,7 +710,6 @@ export default function ClassDetailModal({
                       </h2>
                       {instructor && (
                         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                          {/* Instructor info */}
                           <div style={{ display: 'flex', alignItems: 'center', gap: 9, flex: 1, minWidth: 0 }}>
                             <div style={{ width: 33, height: 33, borderRadius: '50%', background: `linear-gradient(135deg,${c.color}55,${c.color}22)`, border: `1.5px solid ${c.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 900, color: c.color, flexShrink: 0, boxShadow: `0 0 10px ${c.glow}` }}>
                               {ini(instructor)}
@@ -856,7 +719,6 @@ export default function ClassDetailModal({
                               <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.38)', fontWeight: 600, marginTop: 2 }}>Lead Instructor</div>
                             </div>
                           </div>
-                          {/* Class rating + view profile */}
                           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 5, flexShrink: 0 }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                               <div style={{ display: 'flex', gap: 1 }}>
@@ -925,7 +787,8 @@ export default function ClassDetailModal({
                         </div>
                       )}
 
-                      {att.length > 0 && (
+                      {/* Who's Going — invite button removed */}
+                      {schemaAttendees.length > 0 && (
                         <div style={{ background: CARD_BG, border: CARD_BORDER, borderRadius: 16, padding: '13px 15px' }}>
                           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
                             <SectionHead>Who's Going</SectionHead>
@@ -933,18 +796,12 @@ export default function ClassDetailModal({
                           </div>
                           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                             <div style={{ display: 'flex', alignItems: 'center' }}>
-                              {att.map((a, i) => (
-                                <div key={a.id || i} style={{ width: 32, height: 32, borderRadius: '50%', background: a.color || c.color, border: '2px solid rgba(6,8,18,1)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 800, color: '#fff', marginLeft: i > 0 ? -10 : 0, zIndex: att.length - i, overflow: 'hidden', flexShrink: 0 }}>
+                              {schemaAttendees.map((a, i) => (
+                                <div key={a.id || i} style={{ width: 32, height: 32, borderRadius: '50%', background: a.color || c.color, border: '2px solid rgba(6,8,18,1)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 800, color: '#fff', marginLeft: i > 0 ? -10 : 0, zIndex: schemaAttendees.length - i, overflow: 'hidden', flexShrink: 0 }}>
                                   {a.avatar ? <img src={a.avatar} alt={a.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : ini(a.name)}
                                 </div>
                               ))}
-                              {extra > 0 && <div style={{ width: 32, height: 32, borderRadius: '50%', background: 'rgba(255,255,255,0.08)', border: '2px solid rgba(6,8,18,1)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 9, fontWeight: 800, color: 'rgba(255,255,255,0.5)', marginLeft: -10, flexShrink: 0 }}>+{extra}</div>}
                             </div>
-                            {friendsBooked.length > 0 && <div style={{ flex: 1, fontSize: 12, color: 'rgba(255,255,255,0.5)', fontWeight: 600 }}>{friendsBooked[0]?.name}{friendsBooked.length > 1 ? ` +${friendsBooked.length - 1} friend${friendsBooked.length > 2 ? 's' : ''} ` : ' '}going</div>}
-                            <button onClick={() => showToast('Invite link copied!')}
-                              style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 11, fontWeight: 800, color: c.color, background: c.bg, border: `1px solid ${c.border}`, borderRadius: 10, padding: '6px 11px', cursor: 'pointer', flexShrink: 0 }}>
-                              <UserPlus style={{ width: 11, height: 11 }} />Invite
-                            </button>
                           </div>
                         </div>
                       )}
@@ -962,10 +819,10 @@ export default function ClassDetailModal({
                         </div>
                         <div style={{ padding: '6px 15px 12px' }}>
                           {[
-                            { I: Zap,        l: 'Intensity',     v: intensity },
-                            { I: Dumbbell,   l: 'Equipment',     v: equipment },
-                            { I: Flame,      l: 'Est. Calories', v: calories },
-                            { I: Award,      l: 'Category',      v: category },
+                            { I: Zap,      l: 'Intensity',     v: intensity },
+                            { I: Dumbbell, l: 'Equipment',     v: equipment },
+                            { I: Flame,    l: 'Est. Calories', v: calories },
+                            { I: Award,    l: 'Category',      v: category },
                             ...(gymClass.price_drop_in  ? [{ I: Tag, l: 'Drop-In',      v: `$${gymClass.price_drop_in}` }]  : []),
                             ...(gymClass.price_member   ? [{ I: Tag, l: 'Member Price', v: `$${gymClass.price_member}` }]   : []),
                           ].map(({ I, l, v }, i, arr) => (
@@ -1050,9 +907,7 @@ export default function ClassDetailModal({
                           </div>
                         </div>
                         {selectedSession && (
-                          <motion.button
-                            initial={{ opacity: 0, scale: 0.85 }}
-                            animate={{ opacity: 1, scale: 1 }}
+                          <motion.button initial={{ opacity: 0, scale: 0.85 }} animate={{ opacity: 1, scale: 1 }}
                             onClick={() => setSelectedSession(null)}
                             style={{ fontSize: 10.5, fontWeight: 800, color: 'rgba(255,255,255,0.38)', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.09)', borderRadius: 8, padding: '5px 10px', cursor: 'pointer' }}>
                             Clear
@@ -1062,24 +917,12 @@ export default function ClassDetailModal({
 
                       <AnimatePresence>
                         {selectedSession && (
-                          <motion.div
-                            key="chip"
-                            initial={{ opacity: 0, y: -6, scale: 0.96 }}
-                            animate={{ opacity: 1, y: 0, scale: 1 }}
-                            exit={{ opacity: 0, y: -4, scale: 0.96 }}
-                            transition={{ duration: 0.2 }}
-                            style={{
-                              display: 'flex', alignItems: 'center', gap: 10,
-                              padding: '11px 14px', borderRadius: 14,
-                              background: `rgba(${c.rgb},0.1)`,
-                              border: `1px solid ${c.border}`,
-                            }}>
+                          <motion.div key="chip" initial={{ opacity: 0, y: -6, scale: 0.96 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: -4, scale: 0.96 }} transition={{ duration: 0.2 }}
+                            style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '11px 14px', borderRadius: 14, background: `rgba(${c.rgb},0.1)`, border: `1px solid ${c.border}` }}>
                             <CheckCircle style={{ width: 15, height: 15, color: c.color, flexShrink: 0 }} />
                             <div style={{ flex: 1 }}>
                               <div style={{ fontSize: 11, fontWeight: 800, color: c.color, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Selected</div>
-                              <div style={{ fontSize: 13, fontWeight: 700, color: '#fff' }}>
-                                {selectedSession.dateLabel} · {selectedSession.timeLabel}
-                              </div>
+                              <div style={{ fontSize: 13, fontWeight: 700, color: '#fff' }}>{selectedSession.dateLabel} · {selectedSession.timeLabel}</div>
                             </div>
                           </motion.div>
                         )}
@@ -1088,14 +931,7 @@ export default function ClassDetailModal({
                       {upcomingSessions.length > 0 ? (
                         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                           {upcomingSessions.map((session, idx) => (
-                            <SessionRow
-                              key={session.id}
-                              session={session}
-                              isSelected={selectedSession?.id === session.id}
-                              onSelect={setSelectedSession}
-                              c={c}
-                              isFirst={idx}
-                            />
+                            <SessionRow key={session.id} session={session} isSelected={selectedSession?.id === session.id} onSelect={setSelectedSession} c={c} isFirst={idx} />
                           ))}
                         </div>
                       ) : (
@@ -1180,35 +1016,48 @@ export default function ClassDetailModal({
                 </div>
               </div>
 
-              {/* ── Fixed CTA ── */}
+              {/* ── Fixed CTA — 3D button style, no glow ── */}
               {!isOwner && (
-                <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.18, type: 'spring', stiffness: 200, damping: 28 }}
-                  style={{ flexShrink: 0, padding: '12px 18px 34px', background: 'linear-gradient(to top,#060810 55%,transparent)', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.18, type: 'spring', stiffness: 200, damping: 28 }}
+                  style={{ flexShrink: 0, padding: '12px 18px 28px', background: 'linear-gradient(to top,#060810 55%,transparent)', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
                   <button
+                    onMouseDown={() => setBtnPressed(true)}
+                    onMouseUp={() => setBtnPressed(false)}
+                    onMouseLeave={() => setBtnPressed(false)}
+                    onTouchStart={() => setBtnPressed(true)}
+                    onTouchEnd={() => setBtnPressed(false)}
                     onClick={handleBook}
                     disabled={joinLoading}
                     style={{
-                      width: '100%', padding: '16px', borderRadius: 18,
-                      fontSize: 15, fontWeight: 900, cursor: joinLoading ? 'default' : 'pointer',
-                      border: 'none', letterSpacing: '-0.01em',
-                      position: 'relative', overflow: 'hidden',
+                      width: '100%',
+                      padding: '16px',
+                      borderRadius: 18,
+                      fontSize: 15,
+                      fontWeight: 900,
+                      cursor: joinLoading ? 'default' : 'pointer',
+                      letterSpacing: '-0.01em',
+                      border: 'none',
+                      // 3D effect: solid background + bottom border for depth + top highlight
                       background: isJoined
-                        ? 'linear-gradient(135deg,rgba(16,185,129,0.25),rgba(5,150,105,0.2))'
-                        : 'linear-gradient(135deg,#2563eb,#1d4ed8)',
+                        ? 'linear-gradient(180deg, rgba(16,185,129,0.28) 0%, rgba(5,150,105,0.22) 100%)'
+                        : 'linear-gradient(180deg, #3b82f6 0%, #1d4ed8 100%)',
                       color: isJoined ? '#34d399' : '#fff',
-                      boxShadow: isJoined
-                        ? '0 4px 20px rgba(16,185,129,0.25),inset 0 1px 0 rgba(255,255,255,0.1)'
-                        : '0 6px 28px rgba(37,99,235,0.5),inset 0 1px 0 rgba(255,255,255,0.2)',
+                      // Inset top highlight + bottom shadow for 3D depth
+                      boxShadow: btnPressed
+                        ? (isJoined
+                            ? 'inset 0 2px 4px rgba(0,0,0,0.3), 0 1px 0 rgba(0,0,0,0.4)'
+                            : 'inset 0 2px 4px rgba(0,0,0,0.3), 0 1px 0 rgba(0,0,0,0.4)')
+                        : (isJoined
+                            ? 'inset 0 1px 0 rgba(255,255,255,0.15), 0 4px 0 rgba(3,100,70,0.8), 0 5px 6px rgba(0,0,0,0.4)'
+                            : 'inset 0 1px 0 rgba(255,255,255,0.2), 0 4px 0 rgba(29,78,216,0.9), 0 5px 6px rgba(0,0,0,0.4)'),
+                      transform: btnPressed ? 'translateY(3px)' : 'translateY(0)',
                       outline: isJoined ? '1px solid rgba(52,211,153,0.3)' : 'none',
                       opacity: joinLoading ? 0.7 : 1,
-                      transition: 'background 0.3s ease,box-shadow 0.3s ease,color 0.3s ease',
+                      transition: 'transform 0.08s ease, box-shadow 0.08s ease, background 0.3s ease, color 0.3s ease',
                     }}>
-                    {!isJoined && (
-                      <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', borderRadius: 'inherit' }}>
-                        <div style={{ position: 'absolute', top: 0, bottom: 0, width: '40%', background: 'linear-gradient(90deg,transparent,rgba(255,255,255,0.1),transparent)', animation: 'cdm-shimmer 4s cubic-bezier(0.4,0,0.6,1) infinite 2s' }} />
-                      </div>
-                    )}
-                    <span style={{ position: 'relative', zIndex: 1 }}>{ctaLabel}</span>
+                    {ctaLabel}
                   </button>
                 </motion.div>
               )}
