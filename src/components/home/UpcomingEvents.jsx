@@ -150,6 +150,68 @@ function PriceTag({ price }) {
   );
 }
 
+function EquipmentChips({ items = [] }) {
+  if (!items.length) return null;
+  const icons = { goggles: '🥽', mat: '🧘', gloves: '🥊', towel: '🏳️', shoes: '👟', water: '💧', kit: '👕' };
+  return (
+    <div style={{ marginBottom: 16 }}>
+      <span style={{ fontSize: 10, fontWeight: 700, color: 'rgba(255,255,255,0.3)', letterSpacing: '0.08em', textTransform: 'uppercase', display: 'block', marginBottom: 6 }}>Bring</span>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+        {items.map((item, i) => {
+          const key = Object.keys(icons).find(k => item.toLowerCase().includes(k));
+          return (
+            <span key={i} style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '4px 10px', borderRadius: 8, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.09)', fontSize: 12, color: 'rgba(255,255,255,0.65)', fontWeight: 600 }}>
+              {key && <span>{icons[key]}</span>}
+              {item}
+            </span>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function WaitlistButton({ onJoinWaitlist, onLeaveWaitlist, isWaitlisted }) {
+  return (
+    <button
+      onClick={isWaitlisted ? onLeaveWaitlist : onJoinWaitlist}
+      style={{
+        width: '100%', padding: '14px', borderRadius: 18,
+        fontSize: 15, fontWeight: 900, cursor: 'pointer', border: 'none',
+        background: isWaitlisted ? 'rgba(239,68,68,0.12)' : 'linear-gradient(135deg, rgba(239,68,68,0.15), rgba(185,28,28,0.1))',
+        color: isWaitlisted ? '#f87171' : '#fca5a5',
+        outline: `1px solid ${isWaitlisted ? 'rgba(239,68,68,0.35)' : 'rgba(239,68,68,0.2)'}`,
+      }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+        <AlertCircle size={16} />
+        {isWaitlisted ? 'On Waitlist — Tap to Leave' : 'Event Full — Join Waitlist'}
+      </div>
+    </button>
+  );
+}
+
+function LeaveConfirmDialog({ open, onClose, onConfirm, eventName }) {
+  if (!open) return null;
+  return (
+    <>
+      <div onClick={onClose} style={{ position: 'fixed', inset: 0, zIndex: 10003, background: 'rgba(2,4,10,0.85)', backdropFilter: 'blur(12px)' }} />
+      <div style={{ position: 'fixed', left: '50%', top: '50%', transform: 'translate(-50%, -50%)', width: 'calc(100% - 32px)', maxWidth: 340, zIndex: 10004, background: 'linear-gradient(135deg, rgba(16,19,40,0.98) 0%, rgba(6,8,18,1) 100%)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 24, boxShadow: '0 32px 80px rgba(0,0,0,0.8)', backdropFilter: 'blur(20px)', overflow: 'hidden' }}>
+        <div style={{ height: 1, background: 'linear-gradient(90deg, transparent 10%, rgba(255,255,255,0.1) 50%, transparent 90%)' }} />
+        <div style={{ padding: 24, textAlign: 'center' }}>
+          <h3 style={{ fontSize: 18, fontWeight: 900, color: '#fff', letterSpacing: '-0.02em', margin: '0 0 8px' }}>
+            Leave <span style={{ color: '#60a5fa' }}>{eventName}</span>?
+          </h3>
+          <p style={{ fontSize: 13, color: 'rgba(138,138,148,0.9)', lineHeight: 1.5, margin: '0 0 24px' }}>Your spot will be released to others.</p>
+          <div style={{ display: 'flex', gap: 10 }}>
+            <button onClick={onClose} style={{ flex: 1, padding: '12px 0', borderRadius: 14, fontSize: 13, fontWeight: 800, color: '#fff', background: 'linear-gradient(to bottom, #2d3748, #1a202c)', border: '1px solid rgba(255,255,255,0.12)', borderBottom: '3px solid rgba(0,0,0,0.5)', cursor: 'pointer' }}>Cancel</button>
+            <button onClick={onConfirm} style={{ flex: 1, padding: '12px 0', borderRadius: 14, fontSize: 13, fontWeight: 800, color: '#fff', background: 'linear-gradient(to bottom, #f87171, #ef4444 40%, #b91c1c)', border: '1px solid transparent', borderBottom: '3px solid #7f1d1d', cursor: 'pointer' }}>Leave</button>
+          </div>
+        </div>
+      </div>
+    </>
+  );
+}
+
 // Attendees row in the detail sheet — just avatars + count, no "tap to see"
 function DetailAttendeeRow({ event, attendeeProfiles }) {
   const count = event.attendees || attendeeProfiles.length || 0;
