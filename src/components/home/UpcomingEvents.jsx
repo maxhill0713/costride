@@ -375,129 +375,81 @@ export default function UpcomingEvents({ gymMemberships = [], currentUser, isMem
         <div style={{ display: 'flex', flexDirection: 'column' }}>
           {events.map((event, i) => {
             const isJoined = joinedEventIds.has(event.id);
-            const isReminded = remindEventIds.has(event.id);
-            const isSuccessFlash = joinSuccessId === event.id;
             const isLast = i === events.length - 1;
+
+            const JoinButton = () => (
+              <button
+                onClick={() => isJoined ? setLeaveConfirmEventId(event.id) : joinMutation.mutate({ eventId: event.id, currentAttendees: event.attendees || 0 })}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 5,
+                  padding: '7px 14px', borderRadius: 10,
+                  fontSize: 12, fontWeight: 800,
+                  cursor: 'pointer', border: 'none',
+                  transition: 'all 0.12s ease', flexShrink: 0,
+                  ...(isJoined ? {
+                    background: 'rgba(52,211,153,0.12)', color: '#34d399', outline: '1px solid rgba(52,211,153,0.28)',
+                  } : {
+                    background: 'linear-gradient(to bottom, #3b82f6 0%, #2563eb 40%, #1d4ed8 100%)',
+                    color: '#fff', boxShadow: '0 2px 0 #1a3fa8, inset 0 1px 0 rgba(255,255,255,0.2)', borderBottom: '2px solid #1a3fa8',
+                  }),
+                }}>
+                {isJoined ? <><CheckCircle style={{ width: 12, height: 12 }} /> Joined</> : 'Join Event'}
+              </button>
+            );
+
+            const BottomRow = () => (
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 4, minWidth: 0 }}>
+                  {event.description && (
+                    <p style={{ fontSize: 12.5, color: 'rgba(226,232,240,0.6)', lineHeight: 1.5, margin: 0, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                      {event.description}
+                    </p>
+                  )}
+                  <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.25)', fontWeight: 600 }}>{event.attendees || 0} attending</span>
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 10, flexShrink: 0 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                    <Clock style={{ width: 10, height: 10, color: 'rgba(255,255,255,0.4)' }} />
+                    <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.45)', fontWeight: 600 }}>{formatTime(event.event_date, event.end_time)}</span>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <button onClick={() => setOpenEventId(event.id)} style={{ width: 30, height: 30, borderRadius: 8, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.09)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0 }}>
+                      <ChevronRight size={13} color="rgba(255,255,255,0.4)" />
+                    </button>
+                    {isMember && <JoinButton />}
+                  </div>
+                </div>
+              </div>
+            );
 
             return (
               <div key={event.id} style={{ borderBottom: isLast ? 'none' : '1px solid rgba(255,255,255,0.045)' }}>
 
-                {/* Banner image variant */}
-                {event.image_url ? (
+                {/* ── WITH BANNER IMAGE ── */}
+                {event.image_url && (
                   <>
-                    <div style={{ height: 160, overflow: 'hidden', position: 'relative', cursor: 'pointer' }} onClick={() => setOpenEventId(event.id)}>
-                      <img src={event.image_url} alt={event.title} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', transition: 'transform 0.3s ease' }} />
-                      <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, rgba(6,8,18,0.55) 0%, transparent 45%, rgba(6,8,18,0.82) 100%)' }} />
-                      {/* Title overlaid */}
-                      <div style={{ position: 'absolute', top: 10, left: 12, right: 12, display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
-                        <h3 style={{ fontSize: 15, fontWeight: 900, color: '#fff', letterSpacing: '-0.02em', lineHeight: 1.25, margin: 0, textShadow: '0 1px 6px rgba(0,0,0,0.7)' }}>{event.title}</h3>
-                        <EventCountdown eventDate={event.event_date} />
-                      </div>
-                      {/* Bottom overlay: date + attendees */}
-                      <div style={{ position: 'absolute', bottom: 10, left: 12, right: 12, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-                          <Clock size={10} color="rgba(255,255,255,0.7)" />
-                          <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.7)', fontWeight: 600 }}>{formatDate(event.event_date)} · {formatTime(event.event_date, event.end_time)}</span>
-                        </div>
-                        <AttendeeAvatars count={event.attendees || 0} />
+                    <div style={{ height: 150, overflow: 'hidden', position: 'relative' }}>
+                      <img src={event.image_url} alt={event.title} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+                      <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, rgba(8,10,20,0.82) 0%, transparent 55%)' }} />
+                      <div style={{ position: 'absolute', top: 12, left: 12, right: 12 }}>
+                        <h3 style={{ fontSize: 15, fontWeight: 900, color: '#fff', letterSpacing: '-0.02em', lineHeight: 1.25, margin: 0, textShadow: '0 1px 6px rgba(0,0,0,0.6)' }}>
+                          {formatDate(event.event_date)} - {event.title}
+                        </h3>
                       </div>
                     </div>
-                    {/* Action bar */}
-                    <div style={{ padding: '10px 14px 12px', display: 'flex', alignItems: 'center', gap: 8 }}>
-                      {isMember && (
-                        <AnimatePresence mode="wait">
-                          <motion.button
-                            key={isJoined ? 'joined' : 'join'}
-                            initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }}
-                            onClick={() => isJoined ? handleLeaveRequest(event) : handleJoin(event)}
-                            style={{
-                              flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
-                              padding: '9px 0', borderRadius: 12, fontSize: 13, fontWeight: 800,
-                              cursor: 'pointer', border: 'none', transition: 'all 0.12s ease',
-                              ...(isJoined ? {
-                                background: 'rgba(52,211,153,0.12)', color: '#34d399', outline: '1px solid rgba(52,211,153,0.28)',
-                              } : isSuccessFlash ? {
-                                background: 'linear-gradient(to bottom, #34d399 0%, #10b981 100%)', color: '#fff', boxShadow: '0 2px 0 #065f46',
-                              } : {
-                                background: 'linear-gradient(to bottom, #3b82f6 0%, #2563eb 40%, #1d4ed8 100%)',
-                                color: '#fff', boxShadow: '0 2px 0 #1a3fa8, inset 0 1px 0 rgba(255,255,255,0.2)', borderBottom: '2px solid #1a3fa8',
-                              })
-                            }}>
-                            {isJoined ? <><CheckCircle size={13} /> Joined</> : isSuccessFlash ? <>✓ You're in!</> : <>🎉 Join Event</>}
-                          </motion.button>
-                        </AnimatePresence>
-                      )}
-                      <button onClick={() => addToCalendar(event)} title="Add to Calendar" style={{ width: 36, height: 36, borderRadius: 10, background: 'rgba(96,165,250,0.08)', border: '1px solid rgba(96,165,250,0.18)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0 }}>
-                        <CalendarPlus size={14} color="#60a5fa" />
-                      </button>
-                      <button onClick={() => shareEvent(event)} title="Share" style={{ width: 36, height: 36, borderRadius: 10, background: 'rgba(167,139,250,0.08)', border: '1px solid rgba(167,139,250,0.18)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0 }}>
-                        <Share2 size={14} color="#a78bfa" />
-                      </button>
-                      <button onClick={() => setOpenEventId(event.id)} style={{ width: 36, height: 36, borderRadius: 10, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.09)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0 }}>
-                        <ChevronRight size={14} color="rgba(255,255,255,0.4)" />
-                      </button>
+                    <div style={{ padding: '10px 14px 14px' }}>
+                      <BottomRow />
                     </div>
                   </>
-                ) : (
-                  /* No-image variant */
-                  <div style={{ padding: '14px 14px' }}>
-                    <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8, marginBottom: 6 }}>
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <h3 style={{ fontSize: 14, fontWeight: 900, color: '#fff', letterSpacing: '-0.02em', lineHeight: 1.3, margin: '0 0 4px', cursor: 'pointer' }} onClick={() => setOpenEventId(event.id)}>{event.title}</h3>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                            <Calendar size={10} color="rgba(255,255,255,0.35)" />
-                            <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', fontWeight: 600 }}>{formatDate(event.event_date)}</span>
-                          </div>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                            <Clock size={10} color="rgba(255,255,255,0.35)" />
-                            <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', fontWeight: 600 }}>{formatTime(event.event_date, event.end_time)}</span>
-                          </div>
-                          <EventCountdown eventDate={event.event_date} />
-                        </div>
-                      </div>
-                    </div>
-
-                    {event.description && (
-                      <p style={{ fontSize: 12.5, color: 'rgba(226,232,240,0.55)', lineHeight: 1.5, margin: '0 0 10px', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
-                        {event.description}
-                      </p>
-                    )}
-
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
-                      <AttendeeAvatars count={event.attendees || 0} />
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
-                        <button onClick={() => addToCalendar(event)} title="Add to Calendar" style={{ width: 30, height: 30, borderRadius: 8, background: 'rgba(96,165,250,0.08)', border: '1px solid rgba(96,165,250,0.18)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
-                          <CalendarPlus size={13} color="#60a5fa" />
-                        </button>
-                        <button onClick={() => shareEvent(event)} title="Share" style={{ width: 30, height: 30, borderRadius: 8, background: 'rgba(167,139,250,0.08)', border: '1px solid rgba(167,139,250,0.18)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
-                          <Share2 size={13} color="#a78bfa" />
-                        </button>
-                        {isMember && (
-                          <AnimatePresence mode="wait">
-                            <motion.button
-                              key={isJoined ? 'j' : 'n'}
-                              initial={{ scale: 0.9 }} animate={{ scale: 1 }} exit={{ scale: 0.9 }}
-                              onClick={() => isJoined ? handleLeaveRequest(event) : handleJoin(event)}
-                              style={{
-                                display: 'flex', alignItems: 'center', gap: 5, padding: '7px 14px', borderRadius: 10, fontSize: 12, fontWeight: 800, cursor: 'pointer', border: 'none',
-                                ...(isJoined ? { background: 'rgba(52,211,153,0.12)', color: '#34d399', outline: '1px solid rgba(52,211,153,0.28)' }
-                                  : { background: 'linear-gradient(to bottom, #3b82f6, #2563eb 40%, #1d4ed8)', color: '#fff', boxShadow: '0 2px 0 #1a3fa8, inset 0 1px 0 rgba(255,255,255,0.2)' })
-                              }}>
-                              {isJoined ? <><CheckCircle size={12} /> Joined</> : '🎉 Join'}
-                            </motion.button>
-                          </AnimatePresence>
-                        )}
-                      </div>
-                    </div>
-                  </div>
                 )}
 
-                {/* Reminder badge */}
-                {isReminded && (
-                  <div style={{ margin: '0 14px 10px', display: 'flex', alignItems: 'center', gap: 5, padding: '4px 10px', borderRadius: 8, background: 'rgba(251,191,36,0.07)', border: '1px solid rgba(251,191,36,0.2)', width: 'fit-content' }}>
-                    <Bell size={10} color="#fbbf24" />
-                    <span style={{ fontSize: 10, fontWeight: 700, color: '#fbbf24' }}>Reminder set</span>
+                {/* ── WITHOUT BANNER IMAGE ── */}
+                {!event.image_url && (
+                  <div style={{ padding: '14px 14px' }}>
+                    <h3 style={{ fontSize: 14, fontWeight: 900, color: '#fff', letterSpacing: '-0.02em', lineHeight: 1.3, margin: '0 0 8px' }}>
+                      {formatDate(event.event_date)} - {event.title}
+                    </h3>
+                    <BottomRow />
                   </div>
                 )}
               </div>
