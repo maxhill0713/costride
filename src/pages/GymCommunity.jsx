@@ -885,6 +885,36 @@ function PremiumClassCard({ gymClass, isOwner, onDelete, onBook, booked, onClick
 }
 
 // ─── ClassesTabContent ────────────────────────────────────────────────────────
+function LeaveClassConfirm({ open, className, onClose, onConfirm }) {
+  if (!open) return null;
+  return (
+    <>
+      <div onClick={onClose} style={{ position: 'fixed', inset: 0, zIndex: 10050, background: 'rgba(2,4,10,0.82)', backdropFilter: 'blur(10px)' }} />
+      <div style={{
+        position: 'fixed', left: '50%', top: '50%', transform: 'translate(-50%,-50%)',
+        width: 'calc(100% - 32px)', maxWidth: 340, zIndex: 10051,
+        background: 'linear-gradient(135deg, rgba(16,19,40,0.98) 0%, rgba(6,8,18,1) 100%)',
+        border: '1px solid rgba(255,255,255,0.07)', borderRadius: 24,
+        boxShadow: '0 32px 80px rgba(0,0,0,0.8)', overflow: 'hidden',
+      }}>
+        <div style={{ height: 1, background: 'linear-gradient(90deg, transparent 10%, rgba(255,255,255,0.1) 50%, transparent 90%)' }} />
+        <div style={{ padding: 24, textAlign: 'center' }}>
+          <h3 style={{ fontSize: 18, fontWeight: 900, color: '#fff', letterSpacing: '-0.02em', margin: '0 0 8px' }}>
+            Leave <span style={{ color: '#60a5fa' }}>{className}</span>?
+          </h3>
+          <p style={{ fontSize: 13, color: 'rgba(148,163,184,0.9)', lineHeight: 1.5, margin: '0 0 24px' }}>
+            Your spot will be released back to others.
+          </p>
+          <div style={{ display: 'flex', gap: 10 }}>
+            <button onClick={onClose} style={{ flex: 1, padding: '12px 0', borderRadius: 14, fontSize: 13, fontWeight: 800, color: '#fff', background: 'linear-gradient(to bottom, #2d3748, #1a202c)', border: '1px solid rgba(255,255,255,0.12)', borderBottom: '3px solid rgba(0,0,0,0.5)', cursor: 'pointer' }}>Cancel</button>
+            <button onClick={onConfirm} style={{ flex: 1, padding: '12px 0', borderRadius: 14, fontSize: 13, fontWeight: 800, color: '#fff', background: 'linear-gradient(to bottom, #f87171, #ef4444 40%, #b91c1c)', border: '1px solid transparent', borderBottom: '3px solid #7f1d1d', cursor: 'pointer' }}>Leave</button>
+          </div>
+        </div>
+      </div>
+    </>
+  );
+}
+
 function ClassesTabContent({ classes, showOwnerControls, onManage, onDelete, currentUser, gymId }) {
   const today = new Date();
   const queryClient = useQueryClient();
@@ -892,32 +922,55 @@ function ClassesTabContent({ classes, showOwnerControls, onManage, onDelete, cur
   const [activeDay, setActiveDay] = useState(0);
   const [activeSlot, setActiveSlot] = useState(null);
   const [selectedClass, setSelectedClass] = useState(null);
+  const [leaveConfirmClassId, setLeaveConfirmClassId] = useState(null);
+  const [localBookedIds, setLocalBookedIds] = useState(() => {
+    const s = new Set();
+    classes.forEach(c => { if ((c.attendee_ids || []).includes(currentUser?.id)) s.add(c.id); });
+    return s;
+  });
 
-  // Derive booked state from live attendee_ids — persisted in the DB
-  const isBooked = (gymClass) => (gymClass.attendee_ids || []).includes(currentUser?.id);
+  useEffect(() => {
+    const s = new Set();
+    classes.forEach(c => { if ((c.attendee_ids || []).includes(currentUser?.id)) s.add(c.id); });
+    setLocalBookedIds(s);
+  }, [classes, currentUser?.id]);
+
+  const isBooked = (gymClass) => localBookedIds.has(gymClass.id);
 
   const handleBook = async (classId) => {
     if (!currentUser?.id) return;
     const gymClass = classes.find(c => c.id === classId);
     if (!gymClass) return;
-    const currentIds = gymClass.attendee_ids || [];
-    const alreadyBooked = currentIds.includes(currentUser.id);
-    const newIds = alreadyBooked
-      ? currentIds.filter(id => id !== currentUser.id)
-      : [...currentIds, currentUser.id];
-
-    // Optimistically update the cache so UI reflects instantly
+    if (localBookedIds.has(classId)) {
+      setLeaveConfirmClassId(classId);
+      return;
+    }
+    // Book instantly
+    setLocalBookedIds(prev => new Set([...prev, classId]));
+    const newIds = [...(gymClass.attendee_ids || []), currentUser.id];
     const feedGymId = gymClass.gym_id || gymId;
     queryClient.setQueryData(['gymActivityFeed', feedGymId], (old) => {
       if (!old) return old;
-      return {
-        ...old,
-        classes: (old.classes || []).map(c =>
-          c.id === classId ? { ...c, attendee_ids: newIds } : c
-        ),
-      };
+      return { ...old, classes: (old.classes || []).map(c => c.id === classId ? { ...c, attendee_ids: newIds } : c) };
     });
+    await base44.entities.GymClass.update(classId, { attendee_ids: newIds });
+    queryClient.invalidateQueries({ queryKey: ['gymActivityFeed', feedGymId] });
+  };
 
+  const handleLeaveConfirmed = async () => {
+    const classId = leaveConfirmClassId;
+    setLeaveConfirmClassId(null);
+    if (!classId || !currentUser?.id) return;
+    const gymClass = classes.find(c => c.id === classId);
+    if (!gymClass) return;
+    // Unbook instantly
+    setLocalBookedIds(prev => { const n = new Set(prev); n.delete(classId); return n; });
+    const newIds = (gymClass.attendee_ids || []).filter(id => id !== currentUser.id);
+    const feedGymId = gymClass.gym_id || gymId;
+    queryClient.setQueryData(['gymActivityFeed', feedGymId], (old) => {
+      if (!old) return old;
+      return { ...old, classes: (old.classes || []).map(c => c.id === classId ? { ...c, attendee_ids: newIds } : c) };
+    });
     await base44.entities.GymClass.update(classId, { attendee_ids: newIds });
     queryClient.invalidateQueries({ queryKey: ['gymActivityFeed', feedGymId] });
   };
@@ -1034,6 +1087,13 @@ function ClassesTabContent({ classes, showOwnerControls, onManage, onDelete, cur
         onBook={handleBook}
         isOwner={showOwnerControls}
         currentUser={currentUser} />
+
+      <LeaveClassConfirm
+        open={!!leaveConfirmClassId}
+        className={classes.find(c => c.id === leaveConfirmClassId)?.name || ''}
+        onClose={() => setLeaveConfirmClassId(null)}
+        onConfirm={handleLeaveConfirmed}
+      />
 
     </motion.div>);
 }
