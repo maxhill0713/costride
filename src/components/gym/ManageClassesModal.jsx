@@ -45,7 +45,7 @@ const todayStr = new Date().toISOString().split('T')[0];
 const EMPTY_FORM = {
  name: '', description: '', instructor: '', class_type: 'other',
  duration_minutes: 45, difficulty: 'all_levels',
- max_capacity: 20, location: '', date: '', time: '', weekly: false, image_url: '',
+ max_capacity: 20, location: '', date: '', time: '', weekly: false, image_url: '', price: '',
 };
 
 function typeFor(val) { return CLASS_TYPES.find(t => t.value === val) || CLASS_TYPES[CLASS_TYPES.length - 1]; }
@@ -337,6 +337,9 @@ function ClassRow({ gymClass, onEdit, onDelete }) {
  {gymClass.max_capacity && (
  <span style={{ display: 'flex', alignItems: 'center', gap: 3, fontSize: 10, color: T.text3, fontWeight: 500 }}><Users style={{ width: 9, height: 9 }} />{gymClass.max_capacity} max</span>
  )}
+ {gymClass.price > 0 && (
+ <span style={{ display: 'flex', alignItems: 'center', gap: 3, fontSize: 10, color: T.green, fontWeight: 700 }}>£{gymClass.price}</span>
+ )}
  </div>
  {gymClass.schedule?.length > 0 && (
  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5, marginTop: 7 }}>
@@ -380,7 +383,7 @@ export default function ManageClassesModal({ open, onClose, classes = [], onCrea
  const openCreate = () => { setForm(EMPTY_FORM); setEditingClass(null); setView('form'); };
  const openEdit = (c) => {
  const s = (c.schedule || [])[0] || {};
- setForm({ name: c.name||'', description: c.description||'', instructor: c.instructor||'', class_type: c.class_type||'other', duration_minutes: c.duration_minutes||45, difficulty: c.difficulty||'all_levels', max_capacity: c.max_capacity||20, location: c.location||'', date: s.date||'', time: s.time||'', weekly: s.weekly||false, image_url: c.image_url||'' });
+ setForm({ name: c.name||'', description: c.description||'', instructor: c.instructor||'', class_type: c.class_type||'other', duration_minutes: c.duration_minutes||45, difficulty: c.difficulty||'all_levels', max_capacity: c.max_capacity||20, location: c.location||'', date: s.date||'', time: s.time||'', weekly: s.weekly||false, image_url: c.image_url||'', price: c.price != null ? String(c.price) : '' });
  setEditingClass(c);
  setView('form');
  };
@@ -390,7 +393,8 @@ export default function ManageClassesModal({ open, onClose, classes = [], onCrea
  if (!form.name.trim() || !form.date || !form.time) return;
  const dayName = new Date(form.date + 'T12:00:00').toLocaleDateString('en-GB', { weekday: 'long' });
  const schedule = [{ day: dayName, time: form.time, date: form.date, weekly: form.weekly }];
- const payload = { name: form.name, description: form.description, instructor: form.instructor, class_type: form.class_type, duration_minutes: form.duration_minutes, difficulty: form.difficulty, max_capacity: form.max_capacity, location: form.location, image_url: form.image_url, schedule };
+ const priceVal = form.price !== '' ? parseFloat(form.price) : null;
+ const payload = { name: form.name, description: form.description, instructor: form.instructor, class_type: form.class_type, duration_minutes: form.duration_minutes, difficulty: form.difficulty, max_capacity: form.max_capacity, location: form.location, image_url: form.image_url, schedule, price: priceVal || null };
  if (editingClass) onUpdateClass?.(editingClass.id, payload);
  else onCreateClass?.({ ...payload, gym_id: gym?.id, gym_name: gym?.name });
  cancel();
@@ -528,6 +532,11 @@ export default function ManageClassesModal({ open, onClose, classes = [], onCrea
  <Inp type="number" value={form.max_capacity} onChange={e => set('max_capacity', parseInt(e.target.value) || 0)} icon={Users} accentColor={activeType.color} min="1" />
  </Field>
  </div>
+
+ {/* Price */}
+ <Field label="Price (£)" hint="Leave empty for free classes">
+ <Inp type="number" value={form.price} onChange={e => set('price', e.target.value)} placeholder="e.g. 12.00 — leave blank if free" accentColor={T.green} min="0" />
+ </Field>
 
  {/* Difficulty */}
  <Field label="Difficulty">

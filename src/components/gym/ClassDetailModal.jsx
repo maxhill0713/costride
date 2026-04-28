@@ -551,6 +551,26 @@ export default function ClassDetailModal({
     setLiveAttendeeIds(gymClass.attendee_ids || []);
   }, [open, gymClass?.id]);
 
+  // Auto-book after successful Stripe payment redirect
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const bookedClassId = params.get('class_booked');
+    if (!bookedClassId || bookedClassId !== gymClass?.id || !resolvedUser) return;
+    // Remove query param from URL
+    const url = new URL(window.location.href);
+    url.searchParams.delete('class_booked');
+    window.history.replaceState({}, '', url.toString());
+    // Add user to class attendees if not already
+    import('@/api/base44Client').then(({ base44 }) => {
+      const currentIds = gymClass.attendee_ids || [];
+      if (currentIds.includes(resolvedUser.id)) return;
+      const newIds = [...currentIds, resolvedUser.id];
+      base44.entities.GymClass.update(gymClass.id, { attendee_ids: newIds })
+        .then(() => { setLiveAttendeeIds(newIds); setBooked(true); showToast('Booking confirmed! See you there 🎉'); })
+        .catch(() => {});
+    });
+  }, [gymClass?.id, resolvedUser]);
+
   const attendeeIds = liveAttendeeIds ?? (gymClass?.attendee_ids || []);
   const isJoined = resolvedUser ? attendeeIds.includes(resolvedUser.id) : false;
 
@@ -561,6 +581,35 @@ export default function ClassDetailModal({
   const handleJoinLeave = async () => {
     if (!resolvedUser || !gymClass?.id) return;
     const { base44 } = await import('@/api/base44Client');
+
+    // If class has a price and user is not yet joined, go to Stripe checkout
+    const classPrice = gymClass.price;
+    if (classPrice > 0 && !isJoined) {
+      // Block if running in iframe
+      if (window.self !== window.top) {
+        showToast('Checkout only works from the published app');
+        return;
+      }
+      setJoinLoading(true);
+      try {
+        const res = await base44.functions.invoke('createClassCheckout', {
+          classId: gymClass.id,
+          successUrl: `${window.location.href}?class_booked=${gymClass.id}`,
+          cancelUrl: window.location.href,
+        });
+        if (res.data?.url) {
+          window.location.href = res.data.url;
+        } else {
+          showToast('Could not start checkout');
+        }
+      } catch (e) {
+        showToast('Could not start checkout');
+      } finally {
+        setJoinLoading(false);
+      }
+      return;
+    }
+
     setJoinLoading(true);
     try {
       const currentIds = [...attendeeIds];
@@ -626,6 +675,7 @@ export default function ClassDetailModal({
     if (joinLoading) return '…';
     if (isJoined)   return '✓ Joined — Tap to Leave';
     if (waitlist)   return '⏳ On Waitlist — Tap to Leave';
+    if (gymClass.price > 0) return `Pay £${gymClass.price} & Join`;
     return 'Join Class';
   })();
 
