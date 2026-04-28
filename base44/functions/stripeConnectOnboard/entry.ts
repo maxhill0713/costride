@@ -53,6 +53,10 @@ Deno.serve(async (req) => {
     return Response.json({ url: accountLink.url, stripeAccountId });
   } catch (error) {
     console.error('stripeConnectOnboard error:', error.message);
+    // Detect Stripe Connect not being enabled on this account
+    if (error.message && error.message.includes('signed up for Connect')) {
+      return Response.json({ error: 'connect_not_enabled', message: error.message }, { status: 200 });
+    }
     return Response.json({ error: error.message }, { status: 500 });
   }
 });

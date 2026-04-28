@@ -39,9 +39,16 @@ export default function StripeConnectPanel({ gym }) {
       const res = await base44.functions.invoke('stripeConnectOnboard', { gymId: gym.id, returnUrl });
       if (res.data?.url) {
         window.location.href = res.data.url;
+      } else if (res.data?.error === 'connect_not_enabled') {
+        setStatus({ connectNotEnabled: true });
       }
     } catch (err) {
-      alert('Failed to start Stripe onboarding: ' + err.message);
+      const msg = err.message || '';
+      if (msg.includes('signed up for Connect') || msg.includes('connect')) {
+        setStatus({ connectNotEnabled: true });
+      } else {
+        alert('Failed to start Stripe onboarding: ' + msg);
+      }
     } finally {
       setLoading(false);
     }
@@ -49,6 +56,7 @@ export default function StripeConnectPanel({ gym }) {
 
   const isFullyActive = status?.chargesEnabled && status?.payoutsEnabled;
   const isPartial = status?.connected && !isFullyActive;
+  const connectNotEnabled = status?.connectNotEnabled;
 
   return (
     <div style={{ background: C.card, border: `1px solid ${C.brd}`, borderRadius: 12, overflow: 'hidden', fontFamily: FONT }}>
@@ -117,6 +125,28 @@ export default function StripeConnectPanel({ gym }) {
               {loading ? <Loader style={{ width: 13, height: 13, animation: 'spin 1s linear infinite' }} /> : <ExternalLink style={{ width: 13, height: 13 }} />}
               {loading ? 'Redirecting…' : 'Complete Setup'}
             </button>
+          </div>
+        ) : connectNotEnabled ? (
+          <div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
+              <AlertCircle style={{ width: 15, height: 15, color: C.amber, flexShrink: 0 }} />
+              <span style={{ fontSize: 13, fontWeight: 700, color: C.amber }}>Stripe Connect Not Activated</span>
+            </div>
+            <div style={{ fontSize: 11.5, color: C.t2, lineHeight: 1.65, marginBottom: 14 }}>
+              To allow gym owners to receive payments, you first need to enable <strong style={{ color: C.t1 }}>Stripe Connect</strong> on your Stripe account. This is a one-time setup done by the platform admin.
+            </div>
+            <a
+              href="https://dashboard.stripe.com/connect"
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7, padding: '10px 20px', borderRadius: 9, background: '#635bff', border: 'none', color: '#fff', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: FONT, textDecoration: 'none', width: '100%', boxSizing: 'border-box' }}
+            >
+              <ExternalLink style={{ width: 14, height: 14 }} />
+              Enable Stripe Connect →
+            </a>
+            <div style={{ fontSize: 10, color: C.t3, textAlign: 'center', marginTop: 8 }}>
+              Go to Stripe Dashboard → Connect → Get started
+            </div>
           </div>
         ) : (
           <div>
