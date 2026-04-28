@@ -39,7 +39,7 @@ Deno.serve(async (req) => {
     }
 
     // No account yet — send owner through Stripe Connect OAuth flow
-    const state = Buffer.from(JSON.stringify({ gymId, userId: user.id })).toString('base64');
+    const state = btoa(JSON.stringify({ gymId, userId: user.id }));
     const oauthUrl = `https://connect.stripe.com/express/oauth/authorize?` +
       `response_type=code` +
       `&client_id=${clientId}` +
