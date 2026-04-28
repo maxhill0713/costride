@@ -1570,7 +1570,7 @@ export default function GymCommunity() {
     }
   }, []);
 
-  useEffect(() => {window.scrollTo(0, 0);}, [gymId]);
+  useEffect(() => { window.scrollTo(0, 0); const h = () => queryClient.invalidateQueries({ queryKey: ['gymActivityFeed', gymId] }); window.addEventListener('focus', h); return () => window.removeEventListener('focus', h); }, [gymId]);
 
   const [showCreateEvent, setShowCreateEvent] = useState(false);
   const [showManageEquipment, setShowManageEquipment] = useState(false);
@@ -1993,7 +1993,7 @@ export default function GymCommunity() {
         <CreateChallengeModal open={showCreateChallenge} onClose={() => setShowCreateChallenge(false)} gyms={allGyms} onSave={(data) => createChallengeMutation.mutate(data)} isLoading={createChallengeMutation.isPending} />
         <InviteOwnerModal isOpen={showInviteOwnerModal} onClose={() => setShowInviteOwnerModal(false)} gym={gym} currentUser={currentUser} />
         <CoachProfileModal coach={selectedCoach} open={!!selectedCoach} onClose={() => setSelectedCoach(null)} gymClasses={classes} />
-        <ClassBookedModal open={showBookedModal && !!bookedClass} onClose={() => setShowBookedModal(false)} gymClass={bookedClass} gymName={gym?.name} />
+        <ClassBookedModal open={showBookedModal && !!bookedClass && classes.length > 0} onClose={() => setShowBookedModal(false)} gymClass={bookedClass} gymName={gym?.name} />
       </div>
     </PullToRefresh>);
 }
