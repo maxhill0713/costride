@@ -62,7 +62,7 @@ export default function StripeConnectPanel({ gym }) {
       const returnUrl = window.location.href;
       const res = await base44.functions.invoke('stripeConnectOnboard', { gymId: gym.id, returnUrl });
       if (res.data?.url) {
-        window.open(res.data.url, '_blank');
+        window.location.href = res.data.url;
       } else if (res.data?.error === 'connect_not_enabled') {
         setStatus({ connectNotEnabled: true });
       }
