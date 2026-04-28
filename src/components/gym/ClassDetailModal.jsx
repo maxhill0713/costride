@@ -585,11 +585,6 @@ export default function ClassDetailModal({
     // If class has a price and user is not yet joined, go to Stripe checkout
     const classPrice = gymClass.price;
     if (classPrice > 0 && !isJoined) {
-      // Block if running in iframe
-      if (window.self !== window.top) {
-        showToast('Checkout only works from the published app');
-        return;
-      }
       setJoinLoading(true);
       try {
         const res = await base44.functions.invoke('createClassCheckout', {
