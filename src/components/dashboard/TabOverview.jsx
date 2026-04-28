@@ -5,6 +5,8 @@ import {
   AlertTriangle, Flame, TrendingUp, ChevronRight, ChevronDown,
   Dumbbell,
 } from 'lucide-react';
+import ClassDetailPopup from './ClassDetailPopup';
+import EventDetailPopup from './EventDetailPopup';
 
 /* ─── TOKENS ─────────────────────────────────────────────── */
 const C = {
@@ -293,7 +295,7 @@ function NotificationTicker({ posts, events, challenges, checkIns, gymId, classe
 }
 
 /* ─── SCHEDULE TIMELINE ───────────────────────────────────── */
-function ScheduleTimeline({ classes }) {
+function ScheduleTimeline({ classes, events, onClassClick, onEventClick }) {
   const PX_PER_MIN   = TIMELINE_PX_PER_MIN;
   const CONTENT_H    = Math.round(24 * 60 * PX_PER_MIN);
   const VIEWPORT_H   = TIMELINE_VIEWPORT_H;
@@ -313,19 +315,36 @@ function ScheduleTimeline({ classes }) {
   }, []);
 
   const todayDay     = now.toLocaleDateString('en-GB', { weekday: 'long' });
+  const todayStr     = now.toISOString().split('T')[0];
+
   const todayClasses = (classes || []).filter(cls => {
     if (!cls.schedule || cls.schedule.length === 0) return true;
     return cls.schedule.some(s => s.day?.toLowerCase() === todayDay.toLowerCase());
   });
 
-  const items = todayClasses.map(cls => {
+  const todayEvents = (events || []).filter(ev => {
+    if (!ev.event_date) return false;
+    return ev.event_date.startsWith(todayStr);
+  });
+
+  // Build unified items: type 'class' or 'event'
+  const classItems = todayClasses.map(cls => {
     let timeStr = cls.time || '';
     if (!timeStr && cls.schedule?.length > 0) timeStr = cls.schedule[0].time || '';
     const [h, m]      = (timeStr || '00:00').split(':').map(Number);
     const startMin    = (h || 0) * 60 + (m || 0);
     const durationMin = cls.duration_minutes || 60;
-    return { cls, startMin, durationMin, color: classTypeColor(cls.name) };
+    return { type: 'class', data: cls, startMin, durationMin, color: classTypeColor(cls.name) };
   });
+
+  const eventItems = todayEvents.map(ev => {
+    const d = new Date(ev.event_date);
+    const startMin    = d.getHours() * 60 + d.getMinutes();
+    const durationMin = ev.duration_minutes || 60;
+    return { type: 'event', data: ev, startMin, durationMin, color: '#22c55e' };
+  });
+
+  const items = [...classItems, ...eventItems].sort((a, b) => a.startMin - b.startMin);
 
   // Greedy column assignment
   const columns = [];
@@ -399,11 +418,11 @@ function ScheduleTimeline({ classes }) {
 
             {items.length === 0 && (
               <div style={{ position: 'absolute', top: nowPx + 12, left: 0, right: 0, textAlign: 'center', fontSize: 12, color: C.t3, fontFamily: FONT }}>
-                No classes scheduled today
+                No classes or events today
               </div>
             )}
 
-            {/* ── Class blocks — styled like DayDetailModal popup, no capacity bar ── */}
+            {/* ── Blocks — classes and events ── */}
             {itemsWithCol.map((item, i) => {
               const top    = minToPx(item.startMin);
               const height = Math.max(20, Math.round(item.durationMin * PX_PER_MIN));
@@ -419,12 +438,23 @@ function ScheduleTimeline({ classes }) {
               const endM       = endTotal % 60;
               const timeStr    = `${String(absH).padStart(2,'0')}:${String(absM).padStart(2,'0')}`;
               const timeEndStr = `${String(endH).padStart(2,'0')}:${String(endM).padStart(2,'0')}`;
-              const attendeeCount = (item.cls.attendee_ids || []).length;
+
+              const isEvent = item.type === 'event';
+              const label   = isEvent ? item.data.title : item.data.name;
+              const subLine = isEvent
+                ? (item.data.attendees > 0 ? `${item.data.attendees} attending` : null)
+                : (item.data.instructor ? `Coach — ${item.data.instructor}` : null);
+
+              const handleClick = () => {
+                if (isEvent) onEventClick?.(item.data);
+                else onClassClick?.(item.data, color);
+              };
 
               return (
                 <button
                   key={i}
                   className="sched-block"
+                  onClick={handleClick}
                   style={{
                     position: 'absolute', top, left, width, height,
                     background: hexToRgba(color, 0.18),
@@ -438,19 +468,15 @@ function ScheduleTimeline({ classes }) {
                     justifyContent: 'flex-start',
                     gap: 1,
                     boxSizing: 'border-box',
-                    cursor: 'default',
+                    cursor: 'pointer',
                     textAlign: 'left',
                     fontFamily: FONT,
                   }}
                 >
-                  {/* Title row: name left, time-range + chevron right */}
+                  {/* Title row */}
                   <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 2 }}>
-                    <div style={{
-                      fontSize: 11.5, fontWeight: 700, color: C.t1,
-                      overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-                      lineHeight: 1.2, flex: 1, minWidth: 0,
-                    }}>
-                      {item.cls.name}
+                    <div style={{ fontSize: 11.5, fontWeight: 700, color: C.t1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', lineHeight: 1.2, flex: 1, minWidth: 0 }}>
+                      {label}
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 2, flexShrink: 0 }}>
                       {height > 20 && (
@@ -462,21 +488,17 @@ function ScheduleTimeline({ classes }) {
                     </div>
                   </div>
 
-                  {/* Instructor — "Coach — Name · N attending" */}
-                  {height > 32 && item.cls.instructor && (
+                  {/* Sub-line */}
+                  {height > 32 && subLine && (
                     <div style={{ fontSize: 10.5, color: C.t1, fontWeight: 600, lineHeight: 1.2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', opacity: 0.8 }}>
-                      Coach — {item.cls.instructor}{attendeeCount > 0 ? ` · ${attendeeCount} attending` : ''}
+                      {subLine}
                     </div>
                   )}
 
-                  {/* No instructor but has attendees */}
-                  {height > 32 && !item.cls.instructor && attendeeCount > 0 && (
-                    <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.5)', fontWeight: 600, lineHeight: 1.2 }}>
-                      {attendeeCount} attending
-                    </div>
+                  {/* Event type badge */}
+                  {isEvent && height > 20 && (
+                    <div style={{ fontSize: 9, fontWeight: 700, color: color, opacity: 0.85, lineHeight: 1.2 }}>EVENT</div>
                   )}
-
-                  {/* Capacity bar intentionally removed */}
                 </button>
               );
             })}
@@ -497,6 +519,8 @@ function DesktopOverview({
   atRiskMembers, openModal, setTab, ownerName, avatarMap = {},
   peakLabel, peakEntry,
 }) {
+  const [selectedClass, setSelectedClass] = useState(null); // { cls, color }
+  const [selectedEvent, setSelectedEvent] = useState(null);
   const twoHoursAgo = Date.now() - 2 * 60 * 60 * 1000;
   const liveCount = (checkIns || []).filter(c =>
     new Date(c.check_in_date || c.created_date || 0).getTime() > twoHoursAgo
@@ -613,7 +637,12 @@ function DesktopOverview({
               Edit Schedule
             </button>
           </div>
-          <ScheduleTimeline classes={classes} />
+          <ScheduleTimeline
+            classes={classes}
+            events={events}
+            onClassClick={(cls, color) => setSelectedClass({ cls, color })}
+            onEventClick={(ev) => setSelectedEvent(ev)}
+          />
         </div>
 
         {/* At-Risk card — same height as schedule card */}
@@ -671,6 +700,21 @@ function DesktopOverview({
           Live gym presence will appear here
         </div>
       </div>
+
+      {/* ── Popups ── */}
+      {selectedClass && (
+        <ClassDetailPopup
+          gymClass={selectedClass.cls}
+          color={selectedClass.color}
+          onClose={() => setSelectedClass(null)}
+        />
+      )}
+      {selectedEvent && (
+        <EventDetailPopup
+          event={selectedEvent}
+          onClose={() => setSelectedEvent(null)}
+        />
+      )}
     </div>
   );
 }
@@ -685,13 +729,34 @@ function MobileOverview({
   openModal, setTab, monthChangePct, avatarMap = {},
 }) {
   const [expanded, setExpanded] = useState(false);
+  const [selectedClass, setSelectedClass] = useState(null);
+  const [selectedEvent, setSelectedEvent] = useState(null);
 
-  const todayDay     = new Date().toLocaleDateString('en-GB', { weekday: 'long' });
+  const now          = new Date();
+  const todayDay     = now.toLocaleDateString('en-GB', { weekday: 'long' });
+  const todayStr     = now.toISOString().split('T')[0];
+
   const todayClasses = (classes || []).filter(cls => {
     if (!cls.schedule || cls.schedule.length === 0) return true;
     return cls.schedule.some(s => s.day?.toLowerCase() === todayDay.toLowerCase());
   });
-  const shown = expanded ? todayClasses : todayClasses.slice(0, 4);
+  const todayEvents = (events || []).filter(ev => ev.event_date?.startsWith(todayStr));
+
+  // Merge and sort by time
+  const allItems = [
+    ...todayClasses.map(cls => {
+      let timeStr = cls.time || '';
+      if (!timeStr && cls.schedule?.length > 0) timeStr = cls.schedule[0].time || '';
+      const [h = 0, m = 0] = (timeStr || '00:00').split(':').map(Number);
+      return { type: 'class', data: cls, sortMin: h * 60 + m, timeLabel: timeStr };
+    }),
+    ...todayEvents.map(ev => {
+      const d = new Date(ev.event_date);
+      return { type: 'event', data: ev, sortMin: d.getHours() * 60 + d.getMinutes(), timeLabel: `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}` };
+    }),
+  ].sort((a, b) => a.sortMin - b.sortMin);
+
+  const shown = expanded ? allItems : allItems.slice(0, 4);
 
   const twoHoursAgo = Date.now() - 2 * 60 * 60 * 1000;
   const liveCount   = (checkIns || []).filter(c => new Date(c.check_in_date || c.created_date || 0).getTime() > twoHoursAgo).length;
@@ -763,43 +828,40 @@ function MobileOverview({
 
       <div style={{ marginBottom: 20 }}>
         <div style={{ fontSize: 15, fontWeight: 700, color: C.t1, marginBottom: 10 }}>Today's Schedule</div>
-        {todayClasses.length === 0 ? (
-          <div style={{ fontSize: 12, color: C.t3, padding: '16px 0' }}>No classes scheduled today</div>
+        {allItems.length === 0 ? (
+          <div style={{ fontSize: 12, color: C.t3, padding: '16px 0' }}>No classes or events today</div>
         ) : (
           <>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
-              {shown.map((cls, i) => {
-                const color    = classTypeColor(cls.name);
-                const booked   = cls.booked ?? 0;
-                const capacity = cls.max_capacity || cls.capacity || 0;
-                const pct      = capacity > 0 ? Math.round((booked / capacity) * 100) : 0;
-                const full     = capacity > 0 && booked >= capacity;
-                let timeLabel  = cls.time || '';
-                if (!timeLabel && cls.schedule?.length > 0) timeLabel = cls.schedule[0].time || '';
+              {shown.map((item, i) => {
+                const isEvent = item.type === 'event';
+                const color   = isEvent ? '#22c55e' : classTypeColor(item.data.name);
+                const label   = isEvent ? item.data.title : item.data.name;
+                const sub     = isEvent
+                  ? (item.data.attendees > 0 ? `${item.data.attendees} attending` : 'Event')
+                  : item.data.instructor;
+                const handleClick = () => {
+                  if (isEvent) setSelectedEvent(item.data);
+                  else setSelectedClass({ cls: item.data, color });
+                };
                 return (
-                  <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '9px 11px', borderRadius: 8, background: 'rgba(255,255,255,0.02)', border: `1px solid ${C.brd}`, borderLeft: `3px solid ${color}` }}>
-                    {timeLabel && <div style={{ fontSize: 11, fontWeight: 700, color: C.t3, width: 36, flexShrink: 0 }}>{timeLabel}</div>}
+                  <button key={i} onClick={handleClick} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '9px 11px', borderRadius: 8, background: 'rgba(255,255,255,0.02)', border: `1px solid ${C.brd}`, borderLeft: `3px solid ${color}`, cursor: 'pointer', textAlign: 'left', fontFamily: FONT, width: '100%' }}>
+                    {item.timeLabel && <div style={{ fontSize: 11, fontWeight: 700, color: C.t3, width: 36, flexShrink: 0 }}>{item.timeLabel}</div>}
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontSize: 12.5, fontWeight: 600, color: C.t1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{cls.name}</div>
-                      {cls.instructor && <div style={{ fontSize: 10.5, color: C.t2, marginTop: 1 }}>{cls.instructor}</div>}
+                      <div style={{ fontSize: 12.5, fontWeight: 600, color: C.t1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{label}</div>
+                      {sub && <div style={{ fontSize: 10.5, color: C.t2, marginTop: 1 }}>{sub}</div>}
                     </div>
-                    {capacity > 0 && (
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 7, flexShrink: 0 }}>
-                        <div style={{ width: 60 }}>
-                          <div style={{ height: 3, background: C.brd, borderRadius: 2, overflow: 'hidden' }}>
-                            <div style={{ width: `${pct}%`, height: '100%', background: full ? C.red : color, borderRadius: 2 }} />
-                          </div>
-                        </div>
-                        <span style={{ fontSize: 10.5, fontWeight: 700, color: full ? C.red : C.t2, minWidth: 32, textAlign: 'right' }}>{booked}/{capacity}</span>
-                      </div>
+                    {isEvent && (
+                      <span style={{ fontSize: 9, fontWeight: 800, color, background: hexToRgba(color, 0.15), border: `1px solid ${hexToRgba(color, 0.3)}`, borderRadius: 4, padding: '2px 6px', flexShrink: 0 }}>EVENT</span>
                     )}
-                  </div>
+                    <ChevronRight style={{ width: 12, height: 12, color: C.t3, flexShrink: 0 }} />
+                  </button>
                 );
               })}
             </div>
-            {todayClasses.length > 4 && (
+            {allItems.length > 4 && (
               <button onClick={() => setExpanded(!expanded)} style={{ width: '100%', marginTop: 8, padding: '11px', background: 'rgba(255,255,255,0.03)', border: `1px solid ${C.brd}`, borderRadius: 12, color: C.t2, fontSize: 12.5, cursor: 'pointer', fontFamily: FONT, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5 }}>
-                {expanded ? 'Show less' : `${todayClasses.length - 4} more classes`}
+                {expanded ? 'Show less' : `${allItems.length - 4} more`}
                 <ChevronDown style={{ width: 13, height: 13, transform: expanded ? 'rotate(180deg)' : 'none' }} />
               </button>
             )}
@@ -821,6 +883,20 @@ function MobileOverview({
             See all at-risk members →
           </button>
         </div>
+      )}
+
+      {selectedClass && (
+        <ClassDetailPopup
+          gymClass={selectedClass.cls}
+          color={selectedClass.color}
+          onClose={() => setSelectedClass(null)}
+        />
+      )}
+      {selectedEvent && (
+        <EventDetailPopup
+          event={selectedEvent}
+          onClose={() => setSelectedEvent(null)}
+        />
       )}
     </div>
   );
