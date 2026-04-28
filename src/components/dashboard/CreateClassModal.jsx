@@ -135,7 +135,7 @@ function ClassPreview({ form }) {
 }
 
 export default function CreateClassModal({ open, onClose, onSave, gym, isLoading }) {
-  const emptyForm = { name: '', description: '', instructor: '', duration_minutes: '', max_capacity: '', difficulty: 'all_levels', date: '', time: '', weekly: false, color: CLASS_COLORS[0] };
+  const emptyForm = { name: '', description: '', instructor: '', duration_minutes: '', max_capacity: '', difficulty: 'all_levels', date: '', time: '', weekly: false, color: CLASS_COLORS[0], price: '' };
   const [form, setForm] = useState(emptyForm);
   const [showPreview, setShowPreview] = useState(false);
 
@@ -157,6 +157,7 @@ export default function CreateClassModal({ open, onClose, onSave, gym, isLoading
       ...form,
       duration_minutes: Number(form.duration_minutes),
       max_capacity: Number(form.max_capacity),
+      price: form.price ? Number(form.price) : 0,
       schedule: [{ day: dayName, time: form.time, date: form.date, weekly: form.weekly === true }],
       color: form.color,
       gym_id: gym?.id,
@@ -260,6 +261,18 @@ export default function CreateClassModal({ open, onClose, onSave, gym, isLoading
                         {DIFFICULTIES.map(d => <option key={d} value={d}>{d.replace('_', ' ').replace(/\b\w/g, c => c.toUpperCase())}</option>)}
                       </select>
                     </div>
+                  </div>
+                </div>
+
+                <div>
+                  <SL>Price (£) — leave blank for free</SL>
+                  <div style={{ position: 'relative' }}>
+                    <span style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: C.t3, fontSize: 14, fontWeight: 600, pointerEvents: 'none' }}>£</span>
+                    <input type="number" value={form.price} onChange={e => set('price', e.target.value)} placeholder="0.00" min="0" step="0.01"
+                      onFocus={e => { e.target.style.borderColor = `${C.purple}55`; e.target.style.background = C.inset; }}
+                      onBlur={e => { e.target.style.borderColor = C.brd; e.target.style.background = C.card; }}
+                      style={{ ...baseInp, paddingLeft: 28 }}
+                    />
                   </div>
                 </div>
 
