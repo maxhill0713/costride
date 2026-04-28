@@ -1,16 +1,3 @@
-/**
- * TabOverview — updated per user requests:
- * - Removed "New Post" button
- * - Title: "Good {time} {name}" no comma, 20% larger
- * - Sub-stats line REMOVED (members active / retention / % from last month)
- * - Notification ticker: full width (title above it on its own line), classes+events count added as ticker items
- * - Classes/events info bar above KPI row REMOVED
- * - KPI cards height reduced a further 15% (tighter padding)
- * - Community Highlights replaced with "Currently in the Gym" box
- * - Today's Schedule: scrollable midnight-to-midnight timeline, default centred ±2.5h now
- * - "Currently in the Gym" icon REMOVED from title
- * - At-risk member rows packed tightly; empty space stays at bottom of box
- */
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { AreaChart, Area, ResponsiveContainer } from 'recharts';
 import {
@@ -39,6 +26,13 @@ const C = {
   greenDim: 'rgba(34,197,94,0.12)',
 };
 const FONT = "'DM Sans', 'Segoe UI', sans-serif";
+
+/* ─── shared timeline constants — used by both ScheduleTimeline and DesktopOverview ── */
+// 4.5 hours visible. PX_PER_MIN chosen so the viewport shows that window.
+const TIMELINE_PX_PER_MIN = 1.1;   // px per minute in the scrollable timeline
+const TIMELINE_VISIBLE_H  = Math.round(4.5 * 60 * TIMELINE_PX_PER_MIN); // ~297px
+// Apply the 20% reduction on top of this base
+const TIMELINE_VIEWPORT_H = Math.round(TIMELINE_VISIBLE_H * 0.80);       // −20% ≈ 238px
 
 /* ─── CLASS COLOR BY TYPE ─────────────────────────────────── */
 function classTypeColor(name = '') {
@@ -114,7 +108,7 @@ function Donut({ pct, size = 58, stroke = 5, color = C.cyan }) {
   );
 }
 
-/* ─── KPI CARD — height reduced further via tighter padding ── */
+/* ─── KPI CARD ───────────────────────────────────────────── */
 function KpiCard({ label, value, sub, subColor, delta, donutPct, donutColor, sparkData, children }) {
   return (
     <div style={{ background: C.card, border: `1px solid ${C.brd}`, borderRadius: 10, padding: '7px 14px 8px' }}>
@@ -165,10 +159,6 @@ function AtRiskRow({ member, avatarMap = {} }) {
 }
 
 /* ─── NOTIFICATION TICKER ─────────────────────────────────── */
-/**
- * Now includes classes count + events count as ticker items alongside
- * the live activity notifications. Full width — title sits above it.
- */
 function NotificationTicker({ posts, events, challenges, checkIns, gymId, classes }) {
   const WINDOW_MS = 60 * 60 * 1000;
 
@@ -185,7 +175,7 @@ function NotificationTicker({ posts, events, challenges, checkIns, gymId, classe
 
     const notifs = [];
 
-    // ── Static info items: classes + events today ──
+    // Static info: classes + events today
     const todayDay = new Date().toLocaleDateString('en-GB', { weekday: 'long' });
     const todayClasses = (classes || []).filter(cls => {
       if (!cls.schedule || cls.schedule.length === 0) return true;
@@ -193,13 +183,10 @@ function NotificationTicker({ posts, events, challenges, checkIns, gymId, classe
     });
     const classCount = todayClasses.length;
     const eventCount = (events || []).length;
+    if (classCount > 0) notifs.push(`${classCount} class${classCount !== 1 ? 'es' : ''} scheduled today`);
+    if (eventCount > 0) notifs.push(`${eventCount} event${eventCount !== 1 ? 's' : ''} today`);
 
-    if (classCount > 0)
-      notifs.push(`${classCount} class${classCount !== 1 ? 'es' : ''} scheduled today`);
-    if (eventCount > 0)
-      notifs.push(`${eventCount} event${eventCount !== 1 ? 's' : ''} today`);
-
-    // ── Live activity items ──
+    // Live activity
     const recentPosts = (posts || []).filter(p =>
       !p.is_hidden && p.share_with_community && !p.post_type &&
       (!gymId || p.gym_id === gymId) && isRecent(p.created_date || p.created_at)
@@ -246,10 +233,7 @@ function NotificationTicker({ posts, events, challenges, checkIns, gymId, classe
       setPrevIndex(prev);
       setIndex(next);
       setTransitioning(true);
-      setTimeout(() => {
-        setPrevIndex(null);
-        setTransitioning(false);
-      }, 800);
+      setTimeout(() => { setPrevIndex(null); setTransitioning(false); }, 800);
     }, 5000);
     return () => clearInterval(id);
   }, [notifications.length]);
@@ -268,8 +252,10 @@ function NotificationTicker({ posts, events, challenges, checkIns, gymId, classe
           to   { transform: translateX(0);     opacity: 1; }
         }
       `}</style>
+      {/* flex: 1 so it fills the remaining space to the right of the title */}
       <div style={{
-        width: '100%',
+        flex: 1,
+        minWidth: 0,
         height: 37,
         background: 'rgba(77,127,255,0.11)',
         borderRadius: 4,
@@ -300,9 +286,7 @@ function NotificationTicker({ posts, events, challenges, checkIns, gymId, classe
             fontFamily: FONT, whiteSpace: 'nowrap',
             overflow: 'hidden', textOverflow: 'ellipsis',
             padding: '0 14px', boxSizing: 'border-box',
-            animation: transitioning
-              ? 'notifSlideInR 0.8s cubic-bezier(0.4,0,0.2,1) forwards'
-              : 'none',
+            animation: transitioning ? 'notifSlideInR 0.8s cubic-bezier(0.4,0,0.2,1) forwards' : 'none',
           }}
         >
           {notifications[index]}
@@ -313,23 +297,17 @@ function NotificationTicker({ posts, events, challenges, checkIns, gymId, classe
 }
 
 /* ─── SCHEDULE TIMELINE ───────────────────────────────────── */
-/**
- * Scrollable midnight-to-midnight timeline.
- * On mount, scrolls so the current time is centred in the visible window (±2.5h).
- * User can then freely scroll to any part of the day.
- */
-function ScheduleTimeline({ classes, openModal }) {
-  const PX_PER_MIN   = 1.6;
-  const TOTAL_MINS   = 24 * 60;
-  const CONTENT_H    = Math.round(TOTAL_MINS * PX_PER_MIN);
-  const VISIBLE_H    = Math.round(5 * 60 * PX_PER_MIN);
-  const VIEWPORT_H   = Math.round(VISIBLE_H * 0.85);
+function ScheduleTimeline({ classes }) {
+  const PX_PER_MIN   = TIMELINE_PX_PER_MIN;
+  const CONTENT_H    = Math.round(24 * 60 * PX_PER_MIN);
+  const VIEWPORT_H   = TIMELINE_VIEWPORT_H;
   const HOUR_LABEL_W = 38;
 
   const scrollRef = useRef(null);
   const now    = new Date();
   const nowMin = now.getHours() * 60 + now.getMinutes();
 
+  // Scroll so "now" is centred on mount
   useEffect(() => {
     if (scrollRef.current) {
       const nowPx        = Math.round(nowMin * PX_PER_MIN);
@@ -339,7 +317,7 @@ function ScheduleTimeline({ classes, openModal }) {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const todayDay    = now.toLocaleDateString('en-GB', { weekday: 'long' });
+  const todayDay     = now.toLocaleDateString('en-GB', { weekday: 'long' });
   const todayClasses = (classes || []).filter(cls => {
     if (!cls.schedule || cls.schedule.length === 0) return true;
     return cls.schedule.some(s => s.day?.toLowerCase() === todayDay.toLowerCase());
@@ -347,22 +325,21 @@ function ScheduleTimeline({ classes, openModal }) {
 
   const items = todayClasses.map(cls => {
     let timeStr = cls.time || '';
-    if (!timeStr && cls.schedule && cls.schedule.length > 0) timeStr = cls.schedule[0].time || '';
-    const [h, m] = (timeStr || '00:00').split(':').map(Number);
+    if (!timeStr && cls.schedule?.length > 0) timeStr = cls.schedule[0].time || '';
+    const [h, m]      = (timeStr || '00:00').split(':').map(Number);
     const startMin    = (h || 0) * 60 + (m || 0);
     const durationMin = cls.duration_minutes || 60;
-    const color       = classTypeColor(cls.name);
-    return { cls, startMin, durationMin, color };
+    return { cls, startMin, durationMin, color: classTypeColor(cls.name) };
   });
 
+  // Greedy column assignment
   const columns = [];
   const itemsWithCol = items.map(item => {
     let col = 0;
     while (true) {
       const colItems = columns[col] || [];
       const overlaps = colItems.some(ci =>
-        ci.startMin < item.startMin + item.durationMin &&
-        ci.startMin + ci.durationMin > item.startMin
+        ci.startMin < item.startMin + item.durationMin && ci.startMin + ci.durationMin > item.startMin
       );
       if (!overlaps) {
         if (!columns[col]) columns[col] = [];
@@ -373,9 +350,9 @@ function ScheduleTimeline({ classes, openModal }) {
     }
   });
   const numCols = Math.max(1, ...itemsWithCol.map(i => i.col + 1));
-  const nowPx = Math.round(nowMin * PX_PER_MIN);
+  const nowPx   = Math.round(nowMin * PX_PER_MIN);
   const hourLabels = Array.from({ length: 24 }, (_, i) => i);
-  const minToPx = (absMin) => Math.round(absMin * PX_PER_MIN);
+  const minToPx = (m) => Math.round(m * PX_PER_MIN);
 
   return (
     <div
@@ -390,11 +367,12 @@ function ScheduleTimeline({ classes, openModal }) {
       }}
     >
       <div style={{ position: 'relative', height: CONTENT_H, display: 'flex' }}>
+
+        {/* Hour labels */}
         <div style={{ width: HOUR_LABEL_W, flexShrink: 0, position: 'relative' }}>
           {hourLabels.map(h => (
             <div key={h} style={{
-              position: 'absolute',
-              top: minToPx(h * 60) - 7,
+              position: 'absolute', top: minToPx(h * 60) - 7,
               left: 0, width: HOUR_LABEL_W,
               textAlign: 'right', paddingRight: 8,
               fontSize: 10, fontWeight: 700, color: C.t3,
@@ -405,6 +383,7 @@ function ScheduleTimeline({ classes, openModal }) {
           ))}
         </div>
 
+        {/* Grid */}
         <div style={{ flex: 1, position: 'relative', marginRight: 2 }}>
           {hourLabels.map(h => (
             <div key={h} style={{ position: 'absolute', top: minToPx(h * 60), left: 0, right: 0, height: 1, background: 'rgba(255,255,255,0.07)' }} />
@@ -413,6 +392,7 @@ function ScheduleTimeline({ classes, openModal }) {
             <div key={`hh-${h}`} style={{ position: 'absolute', top: minToPx(h * 60 + 30), left: 0, right: 0, height: 1, background: 'rgba(255,255,255,0.03)' }} />
           ))}
 
+          {/* Now line */}
           <div style={{ position: 'absolute', top: nowPx, left: 0, right: 0, height: 2, background: C.cyan, borderRadius: 2, zIndex: 10, boxShadow: `0 0 6px ${C.cyan}` }}>
             <div style={{ position: 'absolute', left: -4, top: -3, width: 8, height: 8, borderRadius: '50%', background: C.cyan }} />
           </div>
@@ -423,6 +403,7 @@ function ScheduleTimeline({ classes, openModal }) {
             </div>
           )}
 
+          {/* Class blocks */}
           {itemsWithCol.map((item, i) => {
             const top    = minToPx(item.startMin);
             const height = Math.max(20, Math.round(item.durationMin * PX_PER_MIN));
@@ -453,12 +434,12 @@ function ScheduleTimeline({ classes, openModal }) {
                   </div>
                   <div style={{ fontSize: 9.5, color: C.t1, fontWeight: 500, lineHeight: 1.2, whiteSpace: 'nowrap', opacity: 0.7, flexShrink: 0 }}>{timeStr}</div>
                 </div>
-                {height > 32 && item.cls.instructor && (
+                {height > 28 && item.cls.instructor && (
                   <div style={{ fontSize: 10.5, color: C.t1, fontWeight: 600, lineHeight: 1.2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', opacity: 0.8 }}>
                     {item.cls.instructor}
                   </div>
                 )}
-                {height > 44 && capacity > 0 && (
+                {height > 38 && capacity > 0 && (
                   <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginTop: 2 }}>
                     <div style={{ flex: 1, height: 3, background: 'rgba(255,255,255,0.15)', borderRadius: 2, overflow: 'hidden' }}>
                       <div style={{ width: `${Math.round((booked / capacity) * 100)}%`, height: '100%', background: full ? C.red : color, borderRadius: 2 }} />
@@ -488,10 +469,9 @@ function DesktopOverview({
   peakLabel, peakEntry,
 }) {
   const twoHoursAgo = Date.now() - 2 * 60 * 60 * 1000;
-  const liveCount = (checkIns || []).filter(c => {
-    const t = new Date(c.check_in_date || c.created_date || 0).getTime();
-    return t > twoHoursAgo;
-  }).length;
+  const liveCount = (checkIns || []).filter(c =>
+    new Date(c.check_in_date || c.created_date || 0).getTime() > twoHoursAgo
+  ).length;
   const livePct = totalMembers > 0 ? Math.round((liveCount / totalMembers) * 100) : 0;
 
   const computedRetention = retentionRate ?? (
@@ -500,7 +480,7 @@ function DesktopOverview({
   const retentionTier = computedRetention >= 80 ? 'Elite Tier' : computedRetention >= 60 ? 'Good' : 'Needs Attention';
 
   const atRiskList = useMemo(() => {
-    if (atRiskMembers && atRiskMembers.length > 0) return atRiskMembers.slice(0, 5);
+    if (atRiskMembers?.length > 0) return atRiskMembers.slice(0, 5);
     const now = Date.now();
     return (allMemberships || [])
       .map(m => {
@@ -522,19 +502,23 @@ function DesktopOverview({
   const greetingCap = greeting.charAt(0).toUpperCase() + greeting.slice(1);
   const gymId       = events?.[0]?.gym_id;
 
+  // The schedule card and at-risk card share the same explicit height
+  // = timeline viewport + card chrome (header ~46px + padding 32px)
+  const CARD_INNER_H = TIMELINE_VIEWPORT_H + 46 + 32; // total card height
+
   return (
     <div style={{ fontFamily: FONT, display: 'flex', flexDirection: 'column', gap: 11, background: '#000', minHeight: '100%' }}>
 
-      {/* ── Header: title on its own line ── */}
-      <div>
+      {/* ── Header: title left, ticker fills the right ── */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
         <h1 style={{
-          fontSize: 23, fontWeight: 700, color: C.t1, margin: '0 0 8px 0',
-          letterSpacing: '-0.02em', lineHeight: 1.25, whiteSpace: 'nowrap',
+          fontSize: 23, fontWeight: 700, color: C.t1,
+          margin: 0, letterSpacing: '-0.02em', lineHeight: 1.25,
+          whiteSpace: 'nowrap', flexShrink: 0,
         }}>
           Good {greetingCap} <span style={{ color: C.cyan }}>{firstName}</span>
         </h1>
 
-        {/* Ticker: full width below the title */}
         <NotificationTicker
           posts={posts}
           events={events}
@@ -545,20 +529,10 @@ function DesktopOverview({
         />
       </div>
 
-      {/* ── KPI row — no info bar above, no sub-stats line ── */}
+      {/* ── KPI row ── */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 10 }}>
-        <KpiCard
-          label="Today's Check-ins"
-          value={todayCI ?? 0}
-          delta={todayVsYest}
-          sparkData={sparkData}
-        />
-        <KpiCard
-          label="Weekly Active Members"
-          value={activeThisWeek ?? 0}
-          delta={monthChangePct}
-          sparkData={sparkData?.slice(-7)}
-        />
+        <KpiCard label="Today's Check-ins"      value={todayCI ?? 0}       delta={todayVsYest}    sparkData={sparkData} />
+        <KpiCard label="Weekly Active Members"  value={activeThisWeek ?? 0} delta={monthChangePct} sparkData={sparkData?.slice(-7)} />
 
         {/* Live in Gym */}
         <div style={{ background: C.card, border: `1px solid ${C.brd}`, borderRadius: 10, padding: '7px 14px 8px' }}>
@@ -579,21 +553,25 @@ function DesktopOverview({
         {/* Retention */}
         <div style={{ background: C.card, border: `1px solid ${C.brd}`, borderRadius: 10, padding: '7px 14px 8px' }}>
           <div style={{ fontSize: 11, color: C.t2, fontWeight: 500, marginBottom: 1 }}>Retention Score</div>
-          <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', marginTop: 2 }}>
-            <div>
-              <div style={{ fontSize: 28, fontWeight: 700, color: C.cyan, letterSpacing: '-0.03em', lineHeight: 1 }}>{computedRetention}%</div>
-              <div style={{ fontSize: 11, color: C.t3, marginTop: 3 }}>{retentionTier}</div>
-            </div>
+          <div>
+            <div style={{ fontSize: 28, fontWeight: 700, color: C.cyan, letterSpacing: '-0.03em', lineHeight: 1, marginTop: 2 }}>{computedRetention}%</div>
+            <div style={{ fontSize: 11, color: C.t3, marginTop: 3 }}>{retentionTier}</div>
           </div>
         </div>
       </div>
 
-      {/* ── Schedule + At-Risk ── */}
+      {/* ── Schedule + At-Risk — same explicit height ── */}
       <div style={{ display: 'flex', gap: 11 }}>
 
-        {/* Schedule */}
-        <div style={{ background: C.card, border: `1px solid ${C.brd}`, borderRadius: 10, padding: '16px 18px', flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
+        {/* Schedule card */}
+        <div style={{
+          background: C.card, border: `1px solid ${C.brd}`, borderRadius: 10,
+          padding: '14px 18px 14px',
+          flex: 1, minWidth: 0,
+          display: 'flex', flexDirection: 'column',
+          height: CARD_INNER_H, boxSizing: 'border-box',
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12, flexShrink: 0 }}>
             <span style={{ fontSize: 13, fontWeight: 600, color: C.t1 }}>Today's Schedule</span>
             <button
               onClick={() => openModal?.('classes')}
@@ -602,33 +580,43 @@ function DesktopOverview({
               + Add Class
             </button>
           </div>
-          <ScheduleTimeline classes={classes} openModal={openModal} />
+          <ScheduleTimeline classes={classes} />
         </div>
 
-        {/* At-Risk */}
-        <div style={{ background: C.card, border: `1px solid ${C.brd}`, borderRadius: 10, padding: '16px', width: 248, flexShrink: 0, display: 'flex', flexDirection: 'column' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
+        {/* At-Risk card — same height, content stacks from top */}
+        <div style={{
+          background: C.card, border: `1px solid ${C.brd}`, borderRadius: 10,
+          padding: '14px 16px',
+          width: 248, flexShrink: 0,
+          display: 'flex', flexDirection: 'column',
+          height: CARD_INNER_H, boxSizing: 'border-box',
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4, flexShrink: 0 }}>
             <div style={{ width: 20, height: 20, borderRadius: 5, background: C.redDim, border: `1px solid rgba(255,77,109,0.3)`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
               <AlertTriangle style={{ width: 11, height: 11, color: C.red }} />
             </div>
             <span style={{ fontSize: 13, fontWeight: 700, color: C.t1 }}>At-Risk Members</span>
-            <span style={{ marginLeft: 'auto', fontSize: 11, fontWeight: 700, color: C.red, background: C.redDim, border: `1px solid rgba(255,77,109,0.28)`, borderRadius: 5, padding: '2px 7px' }}>{atRiskList.length}</span>
+            <span style={{ marginLeft: 'auto', fontSize: 11, fontWeight: 700, color: C.red, background: C.redDim, border: `1px solid rgba(255,77,109,0.28)`, borderRadius: 5, padding: '2px 7px' }}>
+              {atRiskList.length}
+            </span>
           </div>
-          <div style={{ fontSize: 11, color: C.t3, marginBottom: 12 }}>Haven't visited in 14+ days</div>
+          <div style={{ fontSize: 11, color: C.t3, marginBottom: 12, flexShrink: 0 }}>Haven't visited in 14+ days</div>
 
           {atRiskList.length === 0 ? (
-            <div style={{ fontSize: 12, color: C.green, textAlign: 'center', padding: '16px 0', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
+            <div style={{ fontSize: 12, color: C.green, display: 'flex', alignItems: 'center', gap: 6, padding: '8px 0' }}>
               <TrendingUp style={{ width: 14, height: 14 }} /> All members active!
             </div>
           ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            /* Rows packed tightly from top; remaining space left empty below */
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
               {atRiskList.map((m, i) => (
                 <AtRiskRow key={m.user_id || i} member={m} avatarMap={avatarMap} />
               ))}
             </div>
           )}
 
-          <div style={{ marginTop: 14, paddingTop: 12, borderTop: `1px solid ${C.brd}` }}>
+          {/* Footer pinned to bottom of the fixed-height card */}
+          <div style={{ marginTop: 'auto', paddingTop: 12, borderTop: `1px solid ${C.brd}` }}>
             <button
               onClick={() => setTab?.('members')}
               style={{ background: 'none', border: 'none', padding: 0, color: C.cyan, fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: FONT, display: 'flex', alignItems: 'center', gap: 4 }}
@@ -641,7 +629,7 @@ function DesktopOverview({
 
       {/* ── Currently in the Gym ── */}
       <div style={{ background: C.card, border: `1px solid ${C.brd}`, borderRadius: 10, padding: '14px 16px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 11 }}>
+        <div style={{ marginBottom: 11 }}>
           <span style={{ fontSize: 13, fontWeight: 600, color: C.t1 }}>Currently in the Gym</span>
         </div>
         <div style={{ fontSize: 12, color: C.t3, textAlign: 'center', padding: '24px 0' }}>
@@ -657,13 +645,13 @@ function DesktopOverview({
 ═══════════════════════════════════════════════════════════════ */
 function MobileOverview({
   todayCI, todayVsYest, activeThisWeek, totalMembers,
-  retentionRate, atRisk, checkIns, allMemberships,
+  retentionRate, checkIns, allMemberships,
   challenges, posts, events, classes, atRiskMembers,
   openModal, setTab, monthChangePct, avatarMap = {},
 }) {
   const [expanded, setExpanded] = useState(false);
 
-  const todayDay    = new Date().toLocaleDateString('en-GB', { weekday: 'long' });
+  const todayDay     = new Date().toLocaleDateString('en-GB', { weekday: 'long' });
   const todayClasses = (classes || []).filter(cls => {
     if (!cls.schedule || cls.schedule.length === 0) return true;
     return cls.schedule.some(s => s.day?.toLowerCase() === todayDay.toLowerCase());
@@ -676,7 +664,7 @@ function MobileOverview({
   const computedRetention = retentionRate ?? (totalMembers > 0 ? Math.round((activeThisWeek / totalMembers) * 100) : 0);
 
   const atRiskList = useMemo(() => {
-    if (atRiskMembers && atRiskMembers.length > 0) return atRiskMembers.slice(0, 3);
+    if (atRiskMembers?.length > 0) return atRiskMembers.slice(0, 3);
     const now = Date.now();
     return (allMemberships || [])
       .map(m => {
@@ -752,7 +740,7 @@ function MobileOverview({
                 const pct      = capacity > 0 ? Math.round((booked / capacity) * 100) : 0;
                 const full     = capacity > 0 && booked >= capacity;
                 let timeLabel  = cls.time || '';
-                if (!timeLabel && cls.schedule && cls.schedule.length > 0) timeLabel = cls.schedule[0].time || '';
+                if (!timeLabel && cls.schedule?.length > 0) timeLabel = cls.schedule[0].time || '';
                 return (
                   <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '9px 11px', borderRadius: 8, background: 'rgba(255,255,255,0.02)', border: `1px solid ${C.brd}`, borderLeft: `3px solid ${color}` }}>
                     {timeLabel && <div style={{ fontSize: 11, fontWeight: 700, color: C.t3, width: 36, flexShrink: 0 }}>{timeLabel}</div>}
