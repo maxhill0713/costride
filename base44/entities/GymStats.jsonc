@@ -61,9 +61,90 @@
       "type": "string",
       "format": "date-time",
       "description": "When foot traffic data was last cached"
+    },
+    "description": {
+      "type": "string",
+      "maxLength": 1000,
+      "description": "Optional description of gym statistics"
     }
   },
   "required": [
     "gym_id"
-  ]
+  ],
+  "rls": {
+    "create": {
+      "$or": [
+        {
+          "data.gym_id": {
+            "$in": {
+              "$map": {
+                "input": "{{user.gymMemberships}}",
+                "as": "m",
+                "in": "$$m.data.gym_id"
+              }
+            }
+          },
+          "user_condition": {
+            "account_type": "gym_owner"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "read": {
+      "$or": [
+        {
+          "data.gym_id": {
+            "$in": {
+              "$map": {
+                "input": "{{user.gymMemberships}}",
+                "as": "m",
+                "in": "$$m.data.gym_id"
+              }
+            }
+          },
+          "user_condition": {
+            "account_type": "gym_owner"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "data.gym_id": {
+            "$in": {
+              "$map": {
+                "input": "{{user.gymMemberships}}",
+                "as": "m",
+                "in": "$$m.data.gym_id"
+              }
+            }
+          },
+          "user_condition": {
+            "account_type": "gym_owner"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
 }

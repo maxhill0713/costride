@@ -43,6 +43,11 @@
       ],
       "default": "pending",
       "description": "Invite status"
+    },
+    "description": {
+      "type": "string",
+      "maxLength": 1000,
+      "description": "Optional invite message or details"
     }
   },
   "required": [

@@ -45,6 +45,11 @@
     "redeemed_date": {
       "type": "string",
       "format": "date-time"
+    },
+    "description": {
+      "type": "string",
+      "maxLength": 1000,
+      "description": "Optional bonus details or notes"
     }
   },
   "required": [
@@ -52,7 +57,9 @@
   ],
   "rls": {
     "create": {
-      "data.user_id": "{{user.id}}"
+      "user_condition": {
+        "role": "admin"
+      }
     },
     "read": {
       "$or": [
@@ -63,14 +70,11 @@
           "data.gym_id": {
             "$in": {
               "$map": {
-                "input": { "$ifNull": ["{{user.gymMemberships}}", []] },
+                "input": "{{user.gymMemberships}}",
                 "as": "m",
                 "in": "$$m.data.gym_id"
               }
             }
-          },
-          "user_condition": {
-            "account_type": "gym_owner"
           }
         },
         {
@@ -81,16 +85,9 @@
       ]
     },
     "update": {
-      "$or": [
-        {
-          "data.user_id": "{{user.id}}"
-        },
-        {
-          "user_condition": {
-            "role": "admin"
-          }
-        }
-      ]
+      "user_condition": {
+        "role": "admin"
+      }
     },
     "delete": {
       "user_condition": {

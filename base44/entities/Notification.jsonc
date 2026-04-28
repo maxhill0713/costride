@@ -34,6 +34,11 @@
     "metadata": {
       "type": "object",
       "description": "Additional data"
+    },
+    "description": {
+      "type": "string",
+      "maxLength": 1000,
+      "description": "Optional notification details or context"
     }
   },
   "required": [

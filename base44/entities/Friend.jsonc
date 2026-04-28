@@ -22,6 +22,11 @@
       ],
       "default": "pending",
       "description": "Friendship status"
+    },
+    "description": {
+      "type": "string",
+      "maxLength": 1000,
+      "description": "Optional friendship notes"
     }
   },
   "required": [

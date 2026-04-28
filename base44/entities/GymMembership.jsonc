@@ -51,6 +51,11 @@
       ],
       "default": "monthly",
       "description": "Type of membership"
+    },
+    "description": {
+      "type": "string",
+      "maxLength": 1000,
+      "description": "Optional membership notes or details"
     }
   },
   "required": [

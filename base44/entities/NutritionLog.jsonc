@@ -47,6 +47,11 @@
       ],
       "default": "muscle_gain",
       "description": "User's nutrition goal"
+    },
+    "description": {
+      "type": "string",
+      "maxLength": 1000,
+      "description": "Optional notes about the nutrition log"
     }
   },
   "required": [

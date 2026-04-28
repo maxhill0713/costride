@@ -32,6 +32,11 @@
       "type": "boolean",
       "default": false,
       "description": "True if auto-logged as a rest day"
+    },
+    "description": {
+      "type": "string",
+      "maxLength": 1000,
+      "description": "Optional check-in notes or details"
     }
   },
   "required": [
@@ -52,7 +57,7 @@
           "data.gym_id": {
             "$in": {
               "$map": {
-                "input": { "$ifNull": ["{{user.gymMemberships}}", []] },
+                "input": "{{user.gymMemberships}}",
                 "as": "m",
                 "in": "$$m.data.gym_id"
               }

@@ -61,6 +61,11 @@
     "billing_postcode": {
       "type": "string",
       "description": "Billing postcode"
+    },
+    "description": {
+      "type": "string",
+      "maxLength": 1000,
+      "description": "Optional payment method notes"
     }
   },
   "required": [

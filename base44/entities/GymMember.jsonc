@@ -28,6 +28,11 @@
         "super_heavyweight"
       ],
       "description": "Competition weight class"
+    },
+    "description": {
+      "type": "string",
+      "maxLength": 1000,
+      "description": "Optional member bio or description"
     }
   },
   "required": [
@@ -40,30 +45,33 @@
           "data.gym_id": {
             "$in": {
               "$map": {
-                "input": { "$ifNull": ["{{user.gymMemberships}}", []] },
+                "input": "{{user.gymMemberships}}",
                 "as": "membership",
                 "in": "$$membership.data.gym_id"
               }
             }
-          },
-          "user_condition": {
-            "account_type": "gym_owner"
           }
         },
         {
           "user_condition": {
             "role": "admin"
           }
+        },
+        {
+          "data.user_id": "{{user.id}}"
         }
       ]
     },
     "read": {
       "$or": [
         {
+          "data.user_id": "{{user.id}}"
+        },
+        {
           "data.gym_id": {
             "$in": {
               "$map": {
-                "input": { "$ifNull": ["{{user.gymMemberships}}", []] },
+                "input": "{{user.gymMemberships}}",
                 "as": "membership",
                 "in": "$$membership.data.gym_id"
               }
@@ -80,10 +88,13 @@
     "update": {
       "$or": [
         {
+          "data.user_id": "{{user.id}}"
+        },
+        {
           "data.gym_id": {
             "$in": {
               "$map": {
-                "input": { "$ifNull": ["{{user.gymMemberships}}", []] },
+                "input": "{{user.gymMemberships}}",
                 "as": "membership",
                 "in": "$$membership.data.gym_id"
               }
@@ -103,7 +114,7 @@
           "data.gym_id": {
             "$in": {
               "$map": {
-                "input": { "$ifNull": ["{{user.gymMemberships}}", []] },
+                "input": "{{user.gymMemberships}}",
                 "as": "membership",
                 "in": "$$membership.data.gym_id"
               }

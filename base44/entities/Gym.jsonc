@@ -161,6 +161,11 @@
     "stripe_account_id": {
       "type": "string",
       "description": "Stripe Connect account ID for receiving class booking payments"
+    },
+    "description": {
+      "type": "string",
+      "maxLength": 1000,
+      "description": "Optional gym description or about section"
     }
   },
   "required": [

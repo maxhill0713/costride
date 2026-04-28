@@ -59,6 +59,11 @@
     "receipt_url": {
       "type": "string",
       "description": "URL to payment receipt"
+    },
+    "description": {
+      "type": "string",
+      "maxLength": 1000,
+      "description": "Optional payment details or notes"
     }
   },
   "required": [
@@ -69,16 +74,9 @@
   ],
   "rls": {
     "create": {
-      "$or": [
-        {
-          "data.user_id": "{{user.id}}"
-        },
-        {
-          "user_condition": {
-            "role": "admin"
-          }
-        }
-      ]
+      "user_condition": {
+        "role": "admin"
+      }
     },
     "read": {
       "$or": [
@@ -89,7 +87,7 @@
           "data.gym_id": {
             "$in": {
               "$map": {
-                "input": { "$ifNull": ["{{user.gymMemberships}}", []] },
+                "input": "{{user.gymMemberships}}",
                 "as": "m",
                 "in": "$$m.data.gym_id"
               }

@@ -23,6 +23,11 @@
     "review": {
       "type": "string",
       "description": "Optional review text"
+    },
+    "description": {
+      "type": "string",
+      "maxLength": 1000,
+      "description": "Optional additional details about the rating"
     }
   },
   "required": [
