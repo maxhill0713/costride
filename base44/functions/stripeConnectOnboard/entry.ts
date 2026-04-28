@@ -24,33 +24,32 @@ Deno.serve(async (req) => {
 
     let stripeAccountId = gym.stripe_account_id;
 
-    // Create a new Connect account if one doesn't exist
-    if (!stripeAccountId) {
-      const account = await stripe.accounts.create({
-        type: 'express',
-        email: user.email,
-        metadata: {
-          base44_app_id: Deno.env.get('BASE44_APP_ID'),
-          gym_id: gymId,
-          gym_name: gym.name,
-        },
-      });
-      stripeAccountId = account.id;
+    const clientId = Deno.env.get('STRIPE_CONNECT_CLIENT_ID');
+    if (!clientId) return Response.json({ error: 'STRIPE_CONNECT_CLIENT_ID not configured' }, { status: 500 });
 
-      // Save the account ID to the gym
-      await base44.asServiceRole.entities.Gym.update(gymId, { stripe_account_id: stripeAccountId });
-      console.log('Created Stripe Connect account:', stripeAccountId, 'for gym:', gymId);
+    if (stripeAccountId) {
+      // Account already exists — create a fresh account link to continue/update onboarding
+      const accountLink = await stripe.accountLinks.create({
+        account: stripeAccountId,
+        refresh_url: returnUrl,
+        return_url: returnUrl,
+        type: 'account_onboarding',
+      });
+      return Response.json({ url: accountLink.url, stripeAccountId });
     }
 
-    // Create an account link for onboarding
-    const accountLink = await stripe.accountLinks.create({
-      account: stripeAccountId,
-      refresh_url: returnUrl,
-      return_url: returnUrl,
-      type: 'account_onboarding',
-    });
+    // No account yet — send owner through Stripe Connect OAuth flow
+    const state = Buffer.from(JSON.stringify({ gymId, userId: user.id })).toString('base64');
+    const oauthUrl = `https://connect.stripe.com/express/oauth/authorize?` +
+      `response_type=code` +
+      `&client_id=${clientId}` +
+      `&scope=read_write` +
+      `&redirect_uri=${encodeURIComponent(returnUrl)}` +
+      `&state=${encodeURIComponent(state)}` +
+      `&stripe_user[email]=${encodeURIComponent(user.email)}`;
 
-    return Response.json({ url: accountLink.url, stripeAccountId });
+    console.log('Redirecting gym owner to Stripe Connect OAuth:', gymId);
+    return Response.json({ url: oauthUrl });
   } catch (error) {
     console.error('stripeConnectOnboard error:', error.message);
     // Detect Stripe Connect not being enabled on this account
