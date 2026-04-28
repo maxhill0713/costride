@@ -31,8 +31,8 @@ Deno.serve(async (req) => {
     const gym = gyms[0];
     const stripeAccountId = gym?.stripe_account_id;
 
-    // CoStride takes 15%, gym owner gets 85%
-    const platformFee = Math.round(price * 100 * 0.15);
+    // CoStride takes 5%, gym owner gets 95%
+    const platformFee = Math.round(price * 100 * 0.05);
 
     const sessionParams = {
       payment_method_types: ['card'],
@@ -65,7 +65,7 @@ Deno.serve(async (req) => {
           destination: stripeAccountId,
         },
       };
-      console.log(`Routing payment: gym gets 85% (${Math.round(price * 100) - platformFee}p), CoStride gets 15% (${platformFee}p)`);
+      console.log(`Routing payment: gym gets 95% (${Math.round(price * 100) - platformFee}p), CoStride gets 5% (${platformFee}p)`);
     } else {
       console.warn('No Stripe Connect account for gym:', gymClass.gym_id, '— payment goes to platform only');
     }
