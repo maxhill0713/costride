@@ -2,11 +2,12 @@
  * TabOverview — updated per user requests:
  * - Removed "New Post" button
  * - Title: "Good {time} {name}" no comma, 20% larger
- * - Notification ticker moved right of title (same slide animation as ContentPage)
+ * - Sub-stats line REMOVED (members active / retention / % from last month)
+ * - Notification ticker: full width (title above it on its own line), classes+events count added as ticker items
+ * - Classes/events info bar above KPI row REMOVED
+ * - KPI cards height reduced a further 15% (tighter padding)
  * - Community Highlights replaced with "Currently in the Gym" box
- * - Today's Schedule: scrollable midnight-to-midnight timeline, default centred ±2.5h now, height -15%
- * - Alert bar (old notifications box above KPI row) REMOVED
- * - KPI cards height reduced ~20% (tighter padding)
+ * - Today's Schedule: scrollable midnight-to-midnight timeline, default centred ±2.5h now
  * - "Currently in the Gym" icon REMOVED from title
  * - At-risk member rows packed tightly; empty space stays at bottom of box
  */
@@ -113,23 +114,23 @@ function Donut({ pct, size = 58, stroke = 5, color = C.cyan }) {
   );
 }
 
-/* ─── KPI CARD — height reduced ~20% via tighter padding ──── */
+/* ─── KPI CARD — height reduced further via tighter padding ── */
 function KpiCard({ label, value, sub, subColor, delta, donutPct, donutColor, sparkData, children }) {
   return (
-    <div style={{ background: C.card, border: `1px solid ${C.brd}`, borderRadius: 10, padding: '9px 14px' }}>
+    <div style={{ background: C.card, border: `1px solid ${C.brd}`, borderRadius: 10, padding: '7px 14px 8px' }}>
       <div style={{ fontSize: 11, color: C.t2, fontWeight: 500, marginBottom: 1 }}>{label}</div>
-      <div style={{ fontSize: 26, fontWeight: 700, color: C.t1, letterSpacing: '-0.03em', lineHeight: 1.1 }}>{value}</div>
+      <div style={{ fontSize: 24, fontWeight: 700, color: C.t1, letterSpacing: '-0.03em', lineHeight: 1.1 }}>{value}</div>
       {delta != null && (
-        <div style={{ fontSize: 11, color: delta >= 0 ? C.cyan : C.red, display: 'flex', alignItems: 'center', gap: 3, marginBottom: 3 }}>
+        <div style={{ fontSize: 11, color: delta >= 0 ? C.cyan : C.red, display: 'flex', alignItems: 'center', gap: 3, marginBottom: 2 }}>
           <ArrowUpRight style={{ width: 10, height: 10, transform: delta < 0 ? 'rotate(90deg)' : 'none' }} />
           {delta >= 0 ? '+' : ''}{delta}%
         </div>
       )}
-      {sub && <div style={{ fontSize: 10.5, color: subColor || C.t3, marginTop: 1, marginBottom: 3 }}>{sub}</div>}
+      {sub && <div style={{ fontSize: 10.5, color: subColor || C.t3, marginTop: 1, marginBottom: 2 }}>{sub}</div>}
       {donutPct != null && (
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 3 }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 2 }}>
           <div />
-          <Donut pct={donutPct} size={44} stroke={4} color={donutColor || C.cyan} />
+          <Donut pct={donutPct} size={40} stroke={4} color={donutColor || C.cyan} />
         </div>
       )}
       {sparkData && <MiniSparkline data={sparkData} color={C.cyan} />}
@@ -164,7 +165,11 @@ function AtRiskRow({ member, avatarMap = {} }) {
 }
 
 /* ─── NOTIFICATION TICKER ─────────────────────────────────── */
-function NotificationTicker({ posts, events, challenges, checkIns, gymId }) {
+/**
+ * Now includes classes count + events count as ticker items alongside
+ * the live activity notifications. Full width — title sits above it.
+ */
+function NotificationTicker({ posts, events, challenges, checkIns, gymId, classes }) {
   const WINDOW_MS = 60 * 60 * 1000;
 
   const notifications = useMemo(() => {
@@ -180,6 +185,21 @@ function NotificationTicker({ posts, events, challenges, checkIns, gymId }) {
 
     const notifs = [];
 
+    // ── Static info items: classes + events today ──
+    const todayDay = new Date().toLocaleDateString('en-GB', { weekday: 'long' });
+    const todayClasses = (classes || []).filter(cls => {
+      if (!cls.schedule || cls.schedule.length === 0) return true;
+      return cls.schedule.some(s => s.day?.toLowerCase() === todayDay.toLowerCase());
+    });
+    const classCount = todayClasses.length;
+    const eventCount = (events || []).length;
+
+    if (classCount > 0)
+      notifs.push(`${classCount} class${classCount !== 1 ? 'es' : ''} scheduled today`);
+    if (eventCount > 0)
+      notifs.push(`${eventCount} event${eventCount !== 1 ? 's' : ''} today`);
+
+    // ── Live activity items ──
     const recentPosts = (posts || []).filter(p =>
       !p.is_hidden && p.share_with_community && !p.post_type &&
       (!gymId || p.gym_id === gymId) && isRecent(p.created_date || p.created_at)
@@ -210,7 +230,7 @@ function NotificationTicker({ posts, events, challenges, checkIns, gymId }) {
     }
 
     return notifs;
-  }, [posts, events, challenges, checkIns, gymId]);
+  }, [posts, events, challenges, checkIns, gymId, classes]);
 
   const indexRef = useRef(0);
   const [index, setIndex] = useState(0);
@@ -249,7 +269,7 @@ function NotificationTicker({ posts, events, challenges, checkIns, gymId }) {
         }
       `}</style>
       <div style={{
-        flex: 1,
+        width: '100%',
         height: 37,
         background: 'rgba(77,127,255,0.11)',
         borderRadius: 4,
@@ -257,7 +277,6 @@ function NotificationTicker({ posts, events, challenges, checkIns, gymId }) {
         position: 'relative',
         display: 'flex',
         alignItems: 'center',
-        minWidth: 0,
       }}>
         {transitioning && prevIndex !== null && (
           <span style={{
@@ -300,19 +319,17 @@ function NotificationTicker({ posts, events, challenges, checkIns, gymId }) {
  * User can then freely scroll to any part of the day.
  */
 function ScheduleTimeline({ classes, openModal }) {
-  const PX_PER_MIN  = 1.6;           // pixels per minute
-  const TOTAL_MINS  = 24 * 60;       // 1440 — full day
-  const CONTENT_H   = Math.round(TOTAL_MINS * PX_PER_MIN); // ~2304px
-  const VISIBLE_H   = Math.round(5 * 60 * PX_PER_MIN);     // 5-hour viewport (~480px) — reduced 15% below
-  const VIEWPORT_H  = Math.round(VISIBLE_H * 0.85);        // −15%
+  const PX_PER_MIN   = 1.6;
+  const TOTAL_MINS   = 24 * 60;
+  const CONTENT_H    = Math.round(TOTAL_MINS * PX_PER_MIN);
+  const VISIBLE_H    = Math.round(5 * 60 * PX_PER_MIN);
+  const VIEWPORT_H   = Math.round(VISIBLE_H * 0.85);
   const HOUR_LABEL_W = 38;
 
   const scrollRef = useRef(null);
-
   const now    = new Date();
   const nowMin = now.getHours() * 60 + now.getMinutes();
 
-  // Scroll to centre "now" on mount
   useEffect(() => {
     if (scrollRef.current) {
       const nowPx        = Math.round(nowMin * PX_PER_MIN);
@@ -322,7 +339,6 @@ function ScheduleTimeline({ classes, openModal }) {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Today's classes
   const todayDay    = now.toLocaleDateString('en-GB', { weekday: 'long' });
   const todayClasses = (classes || []).filter(cls => {
     if (!cls.schedule || cls.schedule.length === 0) return true;
@@ -339,7 +355,6 @@ function ScheduleTimeline({ classes, openModal }) {
     return { cls, startMin, durationMin, color };
   });
 
-  // Greedy column assignment for overlaps
   const columns = [];
   const itemsWithCol = items.map(item => {
     let col = 0;
@@ -358,12 +373,8 @@ function ScheduleTimeline({ classes, openModal }) {
     }
   });
   const numCols = Math.max(1, ...itemsWithCol.map(i => i.col + 1));
-
   const nowPx = Math.round(nowMin * PX_PER_MIN);
-
-  // Hour labels (0–23)
   const hourLabels = Array.from({ length: 24 }, (_, i) => i);
-
   const minToPx = (absMin) => Math.round(absMin * PX_PER_MIN);
 
   return (
@@ -378,10 +389,7 @@ function ScheduleTimeline({ classes, openModal }) {
         scrollbarColor: `${C.brd} transparent`,
       }}
     >
-      {/* Inner full-day content */}
       <div style={{ position: 'relative', height: CONTENT_H, display: 'flex' }}>
-
-        {/* Hour labels column */}
         <div style={{ width: HOUR_LABEL_W, flexShrink: 0, position: 'relative' }}>
           {hourLabels.map(h => (
             <div key={h} style={{
@@ -389,8 +397,7 @@ function ScheduleTimeline({ classes, openModal }) {
               top: minToPx(h * 60) - 7,
               left: 0, width: HOUR_LABEL_W,
               textAlign: 'right', paddingRight: 8,
-              fontSize: 10, fontWeight: 700,
-              color: C.t3,
+              fontSize: 10, fontWeight: 700, color: C.t3,
               lineHeight: 1, userSelect: 'none',
             }}>
               {String(h).padStart(2, '0')}:00
@@ -398,60 +405,24 @@ function ScheduleTimeline({ classes, openModal }) {
           ))}
         </div>
 
-        {/* Grid + blocks */}
         <div style={{ flex: 1, position: 'relative', marginRight: 2 }}>
-          {/* Hour gridlines */}
           {hourLabels.map(h => (
-            <div key={h} style={{
-              position: 'absolute',
-              top: minToPx(h * 60),
-              left: 0, right: 0, height: 1,
-              background: 'rgba(255,255,255,0.07)',
-            }} />
+            <div key={h} style={{ position: 'absolute', top: minToPx(h * 60), left: 0, right: 0, height: 1, background: 'rgba(255,255,255,0.07)' }} />
+          ))}
+          {hourLabels.map(h => (
+            <div key={`hh-${h}`} style={{ position: 'absolute', top: minToPx(h * 60 + 30), left: 0, right: 0, height: 1, background: 'rgba(255,255,255,0.03)' }} />
           ))}
 
-          {/* Half-hour lines */}
-          {hourLabels.map(h => (
-            <div key={`hh-${h}`} style={{
-              position: 'absolute',
-              top: minToPx(h * 60 + 30),
-              left: 0, right: 0, height: 1,
-              background: 'rgba(255,255,255,0.03)',
-            }} />
-          ))}
-
-          {/* Now line */}
-          <div style={{
-            position: 'absolute',
-            top: nowPx,
-            left: 0, right: 0,
-            height: 2,
-            background: C.cyan,
-            borderRadius: 2,
-            zIndex: 10,
-            boxShadow: `0 0 6px ${C.cyan}`,
-          }}>
-            <div style={{
-              position: 'absolute',
-              left: -4, top: -3,
-              width: 8, height: 8,
-              borderRadius: '50%',
-              background: C.cyan,
-            }} />
+          <div style={{ position: 'absolute', top: nowPx, left: 0, right: 0, height: 2, background: C.cyan, borderRadius: 2, zIndex: 10, boxShadow: `0 0 6px ${C.cyan}` }}>
+            <div style={{ position: 'absolute', left: -4, top: -3, width: 8, height: 8, borderRadius: '50%', background: C.cyan }} />
           </div>
 
-          {/* Empty state */}
           {items.length === 0 && (
-            <div style={{
-              position: 'absolute',
-              top: nowPx + 12,
-              left: 0, right: 0,
-              textAlign: 'center',
-              fontSize: 12, color: C.t3, fontFamily: FONT,
-            }}>No classes scheduled today</div>
+            <div style={{ position: 'absolute', top: nowPx + 12, left: 0, right: 0, textAlign: 'center', fontSize: 12, color: C.t3, fontFamily: FONT }}>
+              No classes scheduled today
+            </div>
           )}
 
-          {/* Class blocks */}
           {itemsWithCol.map((item, i) => {
             const top    = minToPx(item.startMin);
             const height = Math.max(20, Math.round(item.durationMin * PX_PER_MIN));
@@ -462,9 +433,8 @@ function ScheduleTimeline({ classes, openModal }) {
             const booked   = item.cls.booked ?? 0;
             const capacity = item.cls.max_capacity || item.cls.capacity || 0;
             const full     = capacity > 0 && booked >= capacity;
-
-            const absH = Math.floor(item.startMin / 60) % 24;
-            const absM = item.startMin % 60;
+            const absH  = Math.floor(item.startMin / 60) % 24;
+            const absM  = item.startMin % 60;
             const timeStr = `${String(absH).padStart(2,'0')}:${String(absM).padStart(2,'0')}`;
 
             return (
@@ -473,25 +443,15 @@ function ScheduleTimeline({ classes, openModal }) {
                 background: hexToRgba(color, 0.18),
                 border: `1px solid ${hexToRgba(color, 0.35)}`,
                 borderLeft: `3px solid ${hexToRgba(color, 0.75)}`,
-                borderRadius: 5,
-                padding: '3px 6px 3px 5px',
-                overflow: 'hidden',
-                display: 'flex', flexDirection: 'column',
-                justifyContent: 'flex-start', gap: 1,
-                boxSizing: 'border-box',
-                cursor: 'default',
+                borderRadius: 5, padding: '3px 6px 3px 5px', overflow: 'hidden',
+                display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', gap: 1,
+                boxSizing: 'border-box', cursor: 'default',
               }}>
                 <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 2 }}>
-                  <div style={{
-                    fontSize: 11.5, fontWeight: 700, color: C.t1,
-                    overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-                    lineHeight: 1.2, flex: 1, minWidth: 0,
-                  }}>
+                  <div style={{ fontSize: 11.5, fontWeight: 700, color: C.t1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', lineHeight: 1.2, flex: 1, minWidth: 0 }}>
                     {item.cls.name}
                   </div>
-                  <div style={{ fontSize: 9.5, color: C.t1, fontWeight: 500, lineHeight: 1.2, whiteSpace: 'nowrap', opacity: 0.7, flexShrink: 0 }}>
-                    {timeStr}
-                  </div>
+                  <div style={{ fontSize: 9.5, color: C.t1, fontWeight: 500, lineHeight: 1.2, whiteSpace: 'nowrap', opacity: 0.7, flexShrink: 0 }}>{timeStr}</div>
                 </div>
                 {height > 32 && item.cls.instructor && (
                   <div style={{ fontSize: 10.5, color: C.t1, fontWeight: 600, lineHeight: 1.2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', opacity: 0.8 }}>
@@ -501,12 +461,7 @@ function ScheduleTimeline({ classes, openModal }) {
                 {height > 44 && capacity > 0 && (
                   <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginTop: 2 }}>
                     <div style={{ flex: 1, height: 3, background: 'rgba(255,255,255,0.15)', borderRadius: 2, overflow: 'hidden' }}>
-                      <div style={{
-                        width: `${Math.round((booked / capacity) * 100)}%`,
-                        height: '100%',
-                        background: full ? C.red : color,
-                        borderRadius: 2,
-                      }} />
+                      <div style={{ width: `${Math.round((booked / capacity) * 100)}%`, height: '100%', background: full ? C.red : color, borderRadius: 2 }} />
                     </div>
                     <span style={{ fontSize: 9.5, fontWeight: 700, color: full ? C.red : 'rgba(255,255,255,0.5)', flexShrink: 0 }}>
                       {booked}/{capacity}
@@ -532,12 +487,6 @@ function DesktopOverview({
   atRiskMembers, openModal, setTab, ownerName, avatarMap = {},
   peakLabel, peakEntry,
 }) {
-  // Today's posts count
-  const todayStart = new Date(); todayStart.setHours(0, 0, 0, 0);
-  const todayStartMs = todayStart.getTime();
-  const postsToday = (posts || []).filter(p => new Date(p.created_date || p.created_at || 0).getTime() >= todayStartMs).length;
-
-  // Live in gym: check-ins in last 2 hours
   const twoHoursAgo = Date.now() - 2 * 60 * 60 * 1000;
   const liveCount = (checkIns || []).filter(c => {
     const t = new Date(c.check_in_date || c.created_date || 0).getTime();
@@ -545,13 +494,11 @@ function DesktopOverview({
   }).length;
   const livePct = totalMembers > 0 ? Math.round((liveCount / totalMembers) * 100) : 0;
 
-  // Retention
   const computedRetention = retentionRate ?? (
     totalMembers > 0 ? Math.round((activeThisWeek / totalMembers) * 100) : 0
   );
   const retentionTier = computedRetention >= 80 ? 'Elite Tier' : computedRetention >= 60 ? 'Good' : 'Needs Attention';
 
-  // At-risk members
   const atRiskList = useMemo(() => {
     if (atRiskMembers && atRiskMembers.length > 0) return atRiskMembers.slice(0, 5);
     const now = Date.now();
@@ -573,67 +520,32 @@ function DesktopOverview({
   const hour        = new Date().getHours();
   const greeting    = hour < 12 ? 'morning' : hour < 17 ? 'afternoon' : 'evening';
   const greetingCap = greeting.charAt(0).toUpperCase() + greeting.slice(1);
-
-  const gymId = events?.[0]?.gym_id;
+  const gymId       = events?.[0]?.gym_id;
 
   return (
     <div style={{ fontFamily: FONT, display: 'flex', flexDirection: 'column', gap: 11, background: '#000', minHeight: '100%' }}>
 
-      {/* ── Header ── */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
+      {/* ── Header: title on its own line ── */}
+      <div>
         <h1 style={{
-          fontSize: 23,
-          fontWeight: 700,
-          color: C.t1,
-          margin: 0,
-          letterSpacing: '-0.02em',
-          lineHeight: 1.25,
-          whiteSpace: 'nowrap',
-          flexShrink: 0,
+          fontSize: 23, fontWeight: 700, color: C.t1, margin: '0 0 8px 0',
+          letterSpacing: '-0.02em', lineHeight: 1.25, whiteSpace: 'nowrap',
         }}>
           Good {greetingCap} <span style={{ color: C.cyan }}>{firstName}</span>
         </h1>
 
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <NotificationTicker
-            posts={posts}
-            events={events}
-            challenges={challenges}
-            checkIns={checkIns}
-            gymId={gymId}
-          />
-        </div>
+        {/* Ticker: full width below the title */}
+        <NotificationTicker
+          posts={posts}
+          events={events}
+          challenges={challenges}
+          checkIns={checkIns}
+          gymId={gymId}
+          classes={classes}
+        />
       </div>
 
-      {/* ── Sub-stats line ── */}
-      <div style={{ fontSize: 12, color: C.t2, display: 'flex', gap: 5, alignItems: 'center', marginTop: -6 }}>
-        {activeThisWeek} members active this week
-        <span style={{ color: C.t3 }}>•</span>
-        {computedRetention}% retention
-        {monthChangePct != null && (
-          <>
-            <span style={{ color: C.t3 }}>•</span>
-            <span style={{ color: monthChangePct >= 0 ? C.cyan : C.red }}>
-              {monthChangePct >= 0 ? '+' : ''}{monthChangePct}% from last month
-            </span>
-          </>
-        )}
-      </div>
-
-      {/* ── Notifications bar — classes & events ── */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '9px 14px', background: 'rgba(255,255,255,0.02)', border: `1px solid ${C.brd}`, borderRadius: 8, fontSize: 12, color: C.t2 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-          <Dumbbell style={{ width: 14, height: 14, color: C.cyan, flexShrink: 0 }} />
-          <span><strong>{(classes || []).length}</strong> class{(classes || []).length !== 1 ? 'es' : ''} today</span>
-        </div>
-        <span style={{ color: C.t3 }}>•</span>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-          <Activity style={{ width: 14, height: 14, color: C.amber, flexShrink: 0 }} />
-          <span><strong>{(events || []).length}</strong> event{(events || []).length !== 1 ? 's' : ''} today</span>
-        </div>
-      </div>
-
-      {/* ── KPI row — no alert bar above ── */}
+      {/* ── KPI row — no info bar above, no sub-stats line ── */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 10 }}>
         <KpiCard
           label="Today's Check-ins"
@@ -648,28 +560,28 @@ function DesktopOverview({
           sparkData={sparkData?.slice(-7)}
         />
 
-        {/* Live in Gym card */}
-        <div style={{ background: C.card, border: `1px solid ${C.brd}`, borderRadius: 10, padding: '9px 14px' }}>
+        {/* Live in Gym */}
+        <div style={{ background: C.card, border: `1px solid ${C.brd}`, borderRadius: 10, padding: '7px 14px 8px' }}>
           <div style={{ fontSize: 11, color: C.t2, fontWeight: 500, marginBottom: 1 }}>Live in Gym</div>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 2 }}>
             <div>
-              <div style={{ fontSize: 26, fontWeight: 700, color: C.t1, letterSpacing: '-0.03em', lineHeight: 1 }}>
-                {liveCount}<span style={{ fontSize: 14, color: C.t3, fontWeight: 400 }}> now</span>
+              <div style={{ fontSize: 24, fontWeight: 700, color: C.t1, letterSpacing: '-0.03em', lineHeight: 1 }}>
+                {liveCount}<span style={{ fontSize: 13, color: C.t3, fontWeight: 400 }}> now</span>
               </div>
               <div style={{ fontSize: 10.5, color: C.t3, marginTop: 3 }}>
                 {peakLabel ? `Peak: ${peakLabel}` : `${livePct}% of total`}
               </div>
             </div>
-            <Donut pct={livePct} size={48} stroke={4} color={C.cyan} />
+            <Donut pct={livePct} size={42} stroke={4} color={C.cyan} />
           </div>
         </div>
 
-        {/* Retention card */}
-        <div style={{ background: C.card, border: `1px solid ${C.brd}`, borderRadius: 10, padding: '9px 14px' }}>
+        {/* Retention */}
+        <div style={{ background: C.card, border: `1px solid ${C.brd}`, borderRadius: 10, padding: '7px 14px 8px' }}>
           <div style={{ fontSize: 11, color: C.t2, fontWeight: 500, marginBottom: 1 }}>Retention Score</div>
           <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', marginTop: 2 }}>
             <div>
-              <div style={{ fontSize: 30, fontWeight: 700, color: C.cyan, letterSpacing: '-0.03em', lineHeight: 1 }}>{computedRetention}%</div>
+              <div style={{ fontSize: 28, fontWeight: 700, color: C.cyan, letterSpacing: '-0.03em', lineHeight: 1 }}>{computedRetention}%</div>
               <div style={{ fontSize: 11, color: C.t3, marginTop: 3 }}>{retentionTier}</div>
             </div>
           </div>
@@ -679,7 +591,7 @@ function DesktopOverview({
       {/* ── Schedule + At-Risk ── */}
       <div style={{ display: 'flex', gap: 11 }}>
 
-        {/* Schedule — scrollable timeline */}
+        {/* Schedule */}
         <div style={{ background: C.card, border: `1px solid ${C.brd}`, borderRadius: 10, padding: '16px 18px', flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
             <span style={{ fontSize: 13, fontWeight: 600, color: C.t1 }}>Today's Schedule</span>
@@ -693,7 +605,7 @@ function DesktopOverview({
           <ScheduleTimeline classes={classes} openModal={openModal} />
         </div>
 
-        {/* At-Risk — rows packed tightly, empty space at bottom */}
+        {/* At-Risk */}
         <div style={{ background: C.card, border: `1px solid ${C.brd}`, borderRadius: 10, padding: '16px', width: 248, flexShrink: 0, display: 'flex', flexDirection: 'column' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
             <div style={{ width: 20, height: 20, borderRadius: 5, background: C.redDim, border: `1px solid rgba(255,77,109,0.3)`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
@@ -709,7 +621,6 @@ function DesktopOverview({
               <TrendingUp style={{ width: 14, height: 14 }} /> All members active!
             </div>
           ) : (
-            /* Rows stacked tightly — gap:8px, no flex:1/justifyContent:space-between */
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               {atRiskList.map((m, i) => (
                 <AtRiskRow key={m.user_id || i} member={m} avatarMap={avatarMap} />
@@ -728,12 +639,11 @@ function DesktopOverview({
         </div>
       </div>
 
-      {/* ── Currently in the Gym — no icon in title ── */}
+      {/* ── Currently in the Gym ── */}
       <div style={{ background: C.card, border: `1px solid ${C.brd}`, borderRadius: 10, padding: '14px 16px' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 11 }}>
           <span style={{ fontSize: 13, fontWeight: 600, color: C.t1 }}>Currently in the Gym</span>
         </div>
-        {/* Placeholder — user will edit this section later */}
         <div style={{ fontSize: 12, color: C.t3, textAlign: 'center', padding: '24px 0' }}>
           Live gym presence will appear here
         </div>
@@ -782,7 +692,6 @@ function MobileOverview({
 
   return (
     <div style={{ fontFamily: FONT }}>
-      {/* KPI Grid */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 20 }}>
         <div style={{ background: C.card, border: `1px solid ${C.brd}`, borderRadius: 14, padding: '13px 13px 11px' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
@@ -829,7 +738,6 @@ function MobileOverview({
         </div>
       </div>
 
-      {/* Schedule (simple list on mobile) */}
       <div style={{ marginBottom: 20 }}>
         <div style={{ fontSize: 15, fontWeight: 700, color: C.t1, marginBottom: 10 }}>Today's Schedule</div>
         {todayClasses.length === 0 ? (
@@ -876,7 +784,6 @@ function MobileOverview({
         )}
       </div>
 
-      {/* At-Risk */}
       {atRiskList.length > 0 && (
         <div style={{ marginBottom: 20 }}>
           <div style={{ fontSize: 15, fontWeight: 700, color: C.t1, marginBottom: 10 }}>At-Risk Members</div>
