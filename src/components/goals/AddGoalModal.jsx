@@ -383,7 +383,7 @@ export default function AddGoalModal({ open, onClose, onSave, currentUser, isLoa
         <motion.div
           key="goal-panel"
           className="fixed inset-0 z-50"
-          style={{ minHeight: '100vh', minHeight: '100dvh', background: 'linear-gradient(to bottom right, #02040a, #0d2360, #02040a)' }}
+          style={{ minHeight: '100dvh', background: 'linear-gradient(to bottom right, #02040a, #0d2360, #02040a)' }}
           variants={pageSlideVariants}
           initial="hidden" animate="visible" exit="exit"
         >

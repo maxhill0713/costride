@@ -192,7 +192,7 @@ function WorkoutSwipePanel({ post }) {
           )}
         </div>
         {/* Right panel — exercise summary */}
-        <div style={{ position: "absolute", top: 0, height: "100%", left: "48.5%", width: "45%", overflow: "hidden", position: "relative" }}>
+        <div style={{ position: "relative", top: 0, height: "100%", left: "48.5%", width: "45%", overflow: "hidden" }}>
           {exerciseSummaryJSX}
           {/* Back arrow — only visible when on summary panel */}
           {slide === 1 && (
