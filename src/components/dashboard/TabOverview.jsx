@@ -24,18 +24,15 @@ const C = {
   amberDim: 'rgba(245,158,11,0.15)',
   green:    '#22c55e',
   greenDim: 'rgba(34,197,94,0.12)',
-  // Event colours (matching calendar popup)
-  evBg:    'rgba(77,127,255,0.2)',
-  evBrd:   'rgba(77,127,255,0.25)',
-  evTxt:   'rgba(255,255,255,0.82)',
 };
 const FONT = "'DM Sans', 'Segoe UI', sans-serif";
 
-/* ─── shared timeline constants ─────────────────────────── */
-const TIMELINE_PX_PER_MIN = 1.1;
-const TIMELINE_VISIBLE_H  = Math.round(4.5 * 60 * TIMELINE_PX_PER_MIN);
-// +5% increase on the schedule / at-risk card height
-const TIMELINE_VIEWPORT_H = Math.round(TIMELINE_VISIBLE_H * 0.80 * 1.05);
+/* ─── shared timeline constants — used by both ScheduleTimeline and DesktopOverview ── */
+// 4.5 hours visible. PX_PER_MIN chosen so the viewport shows that window.
+const TIMELINE_PX_PER_MIN = 1.1;   // px per minute in the scrollable timeline
+const TIMELINE_VISIBLE_H  = Math.round(4.5 * 60 * TIMELINE_PX_PER_MIN); // ~297px
+// Apply the 20% reduction on top of this base
+const TIMELINE_VIEWPORT_H = Math.round(TIMELINE_VISIBLE_H * 0.80);       // −20% ≈ 238px
 
 /* ─── CLASS COLOR BY TYPE ─────────────────────────────────── */
 function classTypeColor(name = '') {
@@ -178,6 +175,7 @@ function NotificationTicker({ posts, events, challenges, checkIns, gymId, classe
 
     const notifs = [];
 
+    // Static info: classes + events today
     const todayDay = new Date().toLocaleDateString('en-GB', { weekday: 'long' });
     const todayClasses = (classes || []).filter(cls => {
       if (!cls.schedule || cls.schedule.length === 0) return true;
@@ -188,6 +186,7 @@ function NotificationTicker({ posts, events, challenges, checkIns, gymId, classe
     if (classCount > 0) notifs.push(`${classCount} class${classCount !== 1 ? 'es' : ''} scheduled today`);
     if (eventCount > 0) notifs.push(`${eventCount} event${eventCount !== 1 ? 's' : ''} today`);
 
+    // Live activity
     const recentPosts = (posts || []).filter(p =>
       !p.is_hidden && p.share_with_community && !p.post_type &&
       (!gymId || p.gym_id === gymId) && isRecent(p.created_date || p.created_at)
@@ -253,6 +252,7 @@ function NotificationTicker({ posts, events, challenges, checkIns, gymId, classe
           to   { transform: translateX(0);     opacity: 1; }
         }
       `}</style>
+      {/* flex: 1 so it fills the remaining space to the right of the title */}
       <div style={{
         flex: 1,
         minWidth: 0,
@@ -307,6 +307,7 @@ function ScheduleTimeline({ classes }) {
   const now    = new Date();
   const nowMin = now.getHours() * 60 + now.getMinutes();
 
+  // Scroll so "now" is centred on mount
   useEffect(() => {
     if (scrollRef.current) {
       const nowPx        = Math.round(nowMin * PX_PER_MIN);
@@ -354,161 +355,106 @@ function ScheduleTimeline({ classes }) {
   const minToPx = (m) => Math.round(m * PX_PER_MIN);
 
   return (
-    <>
-      <style>{`
-        .schedule-class-block {
-          transition: opacity 0.12s;
-        }
-        .schedule-class-block:hover {
-          opacity: 0.8 !important;
-        }
-      `}</style>
-      <div
-        ref={scrollRef}
-        style={{
-          height: VIEWPORT_H,
-          overflowY: 'auto',
-          overflowX: 'hidden',
-          position: 'relative',
-          scrollbarWidth: 'thin',
-          scrollbarColor: `${C.brd} transparent`,
-        }}
-      >
-        <div style={{ position: 'relative', height: CONTENT_H, display: 'flex' }}>
+    <div
+      ref={scrollRef}
+      style={{
+        height: VIEWPORT_H,
+        overflowY: 'auto',
+        overflowX: 'hidden',
+        position: 'relative',
+        scrollbarWidth: 'thin',
+        scrollbarColor: `${C.brd} transparent`,
+      }}
+    >
+      <div style={{ position: 'relative', height: CONTENT_H, display: 'flex' }}>
 
-          {/* Hour labels */}
-          <div style={{ width: HOUR_LABEL_W, flexShrink: 0, position: 'relative' }}>
-            {hourLabels.map(h => (
-              <div key={h} style={{
-                position: 'absolute', top: minToPx(h * 60) - 7,
-                left: 0, width: HOUR_LABEL_W,
-                textAlign: 'right', paddingRight: 8,
-                fontSize: 10, fontWeight: 700, color: C.t3,
-                lineHeight: 1, userSelect: 'none',
-              }}>
-                {String(h).padStart(2, '0')}:00
-              </div>
-            ))}
-          </div>
-
-          {/* Grid */}
-          <div style={{ flex: 1, position: 'relative', marginRight: 2 }}>
-            {hourLabels.map(h => (
-              <div key={h} style={{ position: 'absolute', top: minToPx(h * 60), left: 0, right: 0, height: 1, background: 'rgba(255,255,255,0.07)' }} />
-            ))}
-            {hourLabels.map(h => (
-              <div key={`hh-${h}`} style={{ position: 'absolute', top: minToPx(h * 60 + 30), left: 0, right: 0, height: 1, background: 'rgba(255,255,255,0.03)' }} />
-            ))}
-
-            {/* Now line */}
-            <div style={{ position: 'absolute', top: nowPx, left: 0, right: 0, height: 2, background: C.cyan, borderRadius: 2, zIndex: 10, boxShadow: `0 0 6px ${C.cyan}` }}>
-              <div style={{ position: 'absolute', left: -4, top: -3, width: 8, height: 8, borderRadius: '50%', background: C.cyan }} />
+        {/* Hour labels */}
+        <div style={{ width: HOUR_LABEL_W, flexShrink: 0, position: 'relative' }}>
+          {hourLabels.map(h => (
+            <div key={h} style={{
+              position: 'absolute', top: minToPx(h * 60) - 7,
+              left: 0, width: HOUR_LABEL_W,
+              textAlign: 'right', paddingRight: 8,
+              fontSize: 10, fontWeight: 700, color: C.t3,
+              lineHeight: 1, userSelect: 'none',
+            }}>
+              {String(h).padStart(2, '0')}:00
             </div>
+          ))}
+        </div>
 
-            {items.length === 0 && (
-              <div style={{ position: 'absolute', top: nowPx + 12, left: 0, right: 0, textAlign: 'center', fontSize: 12, color: C.t3, fontFamily: FONT }}>
-                No classes scheduled today
-              </div>
-            )}
+        {/* Grid */}
+        <div style={{ flex: 1, position: 'relative', marginRight: 2 }}>
+          {hourLabels.map(h => (
+            <div key={h} style={{ position: 'absolute', top: minToPx(h * 60), left: 0, right: 0, height: 1, background: 'rgba(255,255,255,0.07)' }} />
+          ))}
+          {hourLabels.map(h => (
+            <div key={`hh-${h}`} style={{ position: 'absolute', top: minToPx(h * 60 + 30), left: 0, right: 0, height: 1, background: 'rgba(255,255,255,0.03)' }} />
+          ))}
 
-            {/* ── Class blocks — styled like DayDetailModal popup ── */}
-            {itemsWithCol.map((item, i) => {
-              const top    = minToPx(item.startMin);
-              const height = Math.max(20, Math.round(item.durationMin * PX_PER_MIN));
-              const colW   = 1 / numCols;
-              const left   = `${item.col * colW * 100}%`;
-              const width  = `calc(${colW * 100}% - 4px)`;
-              const color  = item.color;
-
-              const absH  = Math.floor(item.startMin / 60) % 24;
-              const absM  = item.startMin % 60;
-              const endTotalMin = item.startMin + item.durationMin;
-              const endH  = Math.floor(endTotalMin / 60) % 24;
-              const endM  = endTotalMin % 60;
-              const timeStr    = `${String(absH).padStart(2,'0')}:${String(absM).padStart(2,'0')}`;
-              const timeEndStr = `${String(endH).padStart(2,'0')}:${String(endM).padStart(2,'0')}`;
-
-              const attendeeCount = (item.cls.attendee_ids || []).length;
-              const booked   = item.cls.booked ?? attendeeCount ?? 0;
-              const capacity = item.cls.max_capacity || item.cls.capacity || 0;
-
-              const bg         = hexToRgba(color, 0.18);
-              const brd        = hexToRgba(color, 0.22);
-              const leftAccent = hexToRgba(color, 0.55);
-
-              return (
-                <button
-                  key={i}
-                  className="schedule-class-block"
-                  style={{
-                    position: 'absolute', top, left, width, height,
-                    background: bg,
-                    border: `1px solid ${brd}`,
-                    borderLeft: `3px solid ${leftAccent}`,
-                    borderRadius: 5,
-                    padding: '3px 6px 3px 5px',
-                    overflow: 'hidden',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    justifyContent: 'flex-start',
-                    gap: 1,
-                    boxSizing: 'border-box',
-                    cursor: 'default',
-                    textAlign: 'left',
-                    fontFamily: FONT,
-                  }}
-                >
-                  {/* Title row with time range + chevron */}
-                  <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 2 }}>
-                    <div style={{
-                      fontSize: 11.5, fontWeight: 700, color: C.t1,
-                      overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-                      lineHeight: 1.2, flex: 1, minWidth: 0,
-                    }}>
-                      {item.cls.name}
-                    </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 2, flexShrink: 0 }}>
-                      {height > 20 && (
-                        <div style={{ fontSize: 9.5, color: C.t1, fontWeight: 500, lineHeight: 1.2, whiteSpace: 'nowrap', opacity: 0.75 }}>
-                          {timeStr}–{timeEndStr}
-                        </div>
-                      )}
-                      <ChevronRight style={{ width: 10, height: 10, color: 'rgba(255,255,255,0.45)', flexShrink: 0 }} />
-                    </div>
-                  </div>
-
-                  {/* Instructor row — "Coach — Name · N attending" */}
-                  {height > 32 && item.cls.instructor && (
-                    <div style={{ fontSize: 10.5, color: C.t1, fontWeight: 600, lineHeight: 1.2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', opacity: 0.8 }}>
-                      Coach — {item.cls.instructor}{attendeeCount > 0 ? ` · ${attendeeCount} attending` : ''}
-                    </div>
-                  )}
-
-                  {/* No instructor but has attendees */}
-                  {height > 32 && !item.cls.instructor && attendeeCount > 0 && (
-                    <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.5)', fontWeight: 600, lineHeight: 1.2 }}>
-                      {attendeeCount} attending
-                    </div>
-                  )}
-
-                  {/* Capacity bar (shown when tall enough and capacity is set) */}
-                  {height > 48 && capacity > 0 && (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginTop: 2 }}>
-                      <div style={{ flex: 1, height: 3, background: 'rgba(255,255,255,0.15)', borderRadius: 2, overflow: 'hidden' }}>
-                        <div style={{ width: `${Math.round((booked / capacity) * 100)}%`, height: '100%', background: booked >= capacity ? C.red : color, borderRadius: 2 }} />
-                      </div>
-                      <span style={{ fontSize: 9.5, fontWeight: 700, color: booked >= capacity ? C.red : 'rgba(255,255,255,0.5)', flexShrink: 0 }}>
-                        {booked}/{capacity}
-                      </span>
-                    </div>
-                  )}
-                </button>
-              );
-            })}
+          {/* Now line */}
+          <div style={{ position: 'absolute', top: nowPx, left: 0, right: 0, height: 2, background: C.cyan, borderRadius: 2, zIndex: 10, boxShadow: `0 0 6px ${C.cyan}` }}>
+            <div style={{ position: 'absolute', left: -4, top: -3, width: 8, height: 8, borderRadius: '50%', background: C.cyan }} />
           </div>
+
+          {items.length === 0 && (
+            <div style={{ position: 'absolute', top: nowPx + 12, left: 0, right: 0, textAlign: 'center', fontSize: 12, color: C.t3, fontFamily: FONT }}>
+              No classes scheduled today
+            </div>
+          )}
+
+          {/* Class blocks */}
+          {itemsWithCol.map((item, i) => {
+            const top    = minToPx(item.startMin);
+            const height = Math.max(20, Math.round(item.durationMin * PX_PER_MIN));
+            const colW   = 1 / numCols;
+            const left   = `${item.col * colW * 100}%`;
+            const width  = `calc(${colW * 100}% - 4px)`;
+            const color  = item.color;
+            const booked   = item.cls.booked ?? 0;
+            const capacity = item.cls.max_capacity || item.cls.capacity || 0;
+            const full     = capacity > 0 && booked >= capacity;
+            const absH  = Math.floor(item.startMin / 60) % 24;
+            const absM  = item.startMin % 60;
+            const timeStr = `${String(absH).padStart(2,'0')}:${String(absM).padStart(2,'0')}`;
+
+            return (
+              <div key={i} style={{
+                position: 'absolute', top, left, width, height,
+                background: hexToRgba(color, 0.18),
+                border: `1px solid ${hexToRgba(color, 0.35)}`,
+                borderLeft: `3px solid ${hexToRgba(color, 0.75)}`,
+                borderRadius: 5, padding: '3px 6px 3px 5px', overflow: 'hidden',
+                display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', gap: 1,
+                boxSizing: 'border-box', cursor: 'default',
+              }}>
+                <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 2 }}>
+                  <div style={{ fontSize: 11.5, fontWeight: 700, color: C.t1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', lineHeight: 1.2, flex: 1, minWidth: 0 }}>
+                    {item.cls.name}
+                  </div>
+                  <div style={{ fontSize: 9.5, color: C.t1, fontWeight: 500, lineHeight: 1.2, whiteSpace: 'nowrap', opacity: 0.7, flexShrink: 0 }}>{timeStr}</div>
+                </div>
+                {height > 28 && item.cls.instructor && (
+                  <div style={{ fontSize: 10.5, color: C.t1, fontWeight: 600, lineHeight: 1.2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', opacity: 0.8 }}>
+                    {item.cls.instructor}
+                  </div>
+                )}
+                {height > 38 && capacity > 0 && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginTop: 2 }}>
+                    <div style={{ flex: 1, height: 3, background: 'rgba(255,255,255,0.15)', borderRadius: 2, overflow: 'hidden' }}>
+                      <div style={{ width: `${Math.round((booked / capacity) * 100)}%`, height: '100%', background: full ? C.red : color, borderRadius: 2 }} />
+                    </div>
+                    <span style={{ fontSize: 9.5, fontWeight: 700, color: full ? C.red : 'rgba(255,255,255,0.5)', flexShrink: 0 }}>
+                      {booked}/{capacity}
+                    </span>
+                  </div>
+                )}
+              </div>
+            );
+          })}
         </div>
       </div>
-    </>
+    </div>
   );
 }
 
@@ -556,17 +502,14 @@ function DesktopOverview({
   const greetingCap = greeting.charAt(0).toUpperCase() + greeting.slice(1);
   const gymId       = events?.[0]?.gym_id;
 
-  // Schedule + at-risk card total height (uses the +5% viewport)
-  const CARD_INNER_H = TIMELINE_VIEWPORT_H + 46 + 32;
-
-  // "Currently in the Gym" inner content height — +20% vs a comfortable base
-  const GYM_CONTENT_H = Math.round(60 * 1.20); // 72px inner content area
-  const GYM_CARD_H    = GYM_CONTENT_H + 14 + 11 + 14; // padding top + header mb + padding bottom
+  // The schedule card and at-risk card share the same explicit height
+  // = timeline viewport + card chrome (header ~46px + padding 32px)
+  const CARD_INNER_H = TIMELINE_VIEWPORT_H + 46 + 32; // total card height
 
   return (
     <div style={{ fontFamily: FONT, display: 'flex', flexDirection: 'column', gap: 11, background: '#000', minHeight: '100%' }}>
 
-      {/* ── Header ── */}
+      {/* ── Header: title left, ticker fills the right ── */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
         <h1 style={{
           fontSize: 23, fontWeight: 700, color: C.t1,
@@ -617,7 +560,7 @@ function DesktopOverview({
         </div>
       </div>
 
-      {/* ── Schedule + At-Risk ── */}
+      {/* ── Schedule + At-Risk — same explicit height ── */}
       <div style={{ display: 'flex', gap: 11 }}>
 
         {/* Schedule card */}
@@ -631,16 +574,18 @@ function DesktopOverview({
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12, flexShrink: 0 }}>
             <span style={{ fontSize: 13, fontWeight: 600, color: C.t1 }}>Today's Schedule</span>
             <button
-              onClick={() => openModal?.('classes')}
-              style={{ padding: '5px 12px', borderRadius: 6, background: C.cyanDim, border: `1px solid ${C.cyanBrd}`, color: C.cyan, fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: FONT }}
+              onClick={() => setTab?.('content')}
+              style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '7.5px 18px', borderRadius: 9, background: '#2563eb', border: 'none', color: '#fff', fontSize: 12.5, fontWeight: 700, cursor: 'pointer', fontFamily: FONT }}
+              onMouseEnter={e => { e.currentTarget.style.opacity = '0.88'; }}
+              onMouseLeave={e => { e.currentTarget.style.opacity = '1'; }}
             >
-              + Add Class
+              Edit Schedule
             </button>
           </div>
           <ScheduleTimeline classes={classes} />
         </div>
 
-        {/* At-Risk card */}
+        {/* At-Risk card — same height, content stacks from top */}
         <div style={{
           background: C.card, border: `1px solid ${C.brd}`, borderRadius: 10,
           padding: '14px 16px',
@@ -664,6 +609,7 @@ function DesktopOverview({
               <TrendingUp style={{ width: 14, height: 14 }} /> All members active!
             </div>
           ) : (
+            /* Rows packed tightly from top; remaining space left empty below */
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
               {atRiskList.map((m, i) => (
                 <AtRiskRow key={m.user_id || i} member={m} avatarMap={avatarMap} />
@@ -671,6 +617,7 @@ function DesktopOverview({
             </div>
           )}
 
+          {/* Footer pinned to bottom of the fixed-height card */}
           <div style={{ marginTop: 'auto', paddingTop: 12, borderTop: `1px solid ${C.brd}` }}>
             <button
               onClick={() => setTab?.('members')}
@@ -682,27 +629,12 @@ function DesktopOverview({
         </div>
       </div>
 
-      {/* ── Currently in the Gym — 20% taller ── */}
-      <div style={{
-        background: C.card,
-        border: `1px solid ${C.brd}`,
-        borderRadius: 10,
-        padding: '14px 16px',
-        minHeight: GYM_CARD_H,
-        boxSizing: 'border-box',
-      }}>
+      {/* ── Currently in the Gym ── */}
+      <div style={{ background: C.card, border: `1px solid ${C.brd}`, borderRadius: 10, padding: '14px 16px' }}>
         <div style={{ marginBottom: 11 }}>
           <span style={{ fontSize: 13, fontWeight: 600, color: C.t1 }}>Currently in the Gym</span>
         </div>
-        <div style={{
-          fontSize: 12,
-          color: C.t3,
-          textAlign: 'center',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          height: GYM_CONTENT_H,
-        }}>
+        <div style={{ fontSize: 12, color: C.t3, textAlign: 'center', padding: '24px 0' }}>
           Live gym presence will appear here
         </div>
       </div>
