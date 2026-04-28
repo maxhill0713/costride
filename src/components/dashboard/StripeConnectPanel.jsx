@@ -25,29 +25,9 @@ export default function StripeConnectPanel({ gym }) {
   const [status, setStatus] = useState(null); // null = loading
   const [loading, setLoading] = useState(false);
 
-  // Handle Stripe OAuth callback — exchange code for account ID
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const code = params.get('code');
-    const state = params.get('state');
-    if (!code || !state) return;
+  // Refresh status when returning from Stripe onboarding (return_url includes no special params,
+  // but re-fetching on mount covers the case where the user returns to the page)
 
-    let parsed;
-    try { parsed = JSON.parse(atob(state)); } catch { return; }
-    if (!parsed?.gymId || parsed.gymId !== gym?.id) return;
-
-    // Remove params from URL
-    const url = new URL(window.location.href);
-    url.searchParams.delete('code');
-    url.searchParams.delete('state');
-    window.history.replaceState({}, '', url.toString());
-
-    setLoading(true);
-    base44.functions.invoke('stripeConnectCallback', { code, gymId: parsed.gymId })
-      .then(() => base44.functions.invoke('stripeConnectStatus', { gymId: gym.id }).then(res => setStatus(res.data)))
-      .catch(err => { alert('Failed to connect Stripe: ' + err.message); })
-      .finally(() => setLoading(false));
-  }, [gym?.id]);
 
   useEffect(() => {
     if (!gym?.id) return;
