@@ -584,9 +584,11 @@ export default function ClassDetailModal({
     if (classPrice > 0 && !isJoined) {
       setJoinLoading(true);
       try {
+        const successUrl = new URL(window.location.href);
+        successUrl.searchParams.set('class_booked', gymClass.id);
         const res = await base44.functions.invoke('createClassCheckout', {
           classId: gymClass.id,
-          successUrl: `${window.location.href}?class_booked=${gymClass.id}`,
+          successUrl: successUrl.toString(),
           cancelUrl: window.location.href,
         });
         if (res.data?.url) {
