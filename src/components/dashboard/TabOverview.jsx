@@ -574,10 +574,12 @@ function DesktopOverview({
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12, flexShrink: 0 }}>
             <span style={{ fontSize: 13, fontWeight: 600, color: C.t1 }}>Today's Schedule</span>
             <button
-              onClick={() => openModal?.('classes')}
-              style={{ padding: '5px 12px', borderRadius: 6, background: C.cyanDim, border: `1px solid ${C.cyanBrd}`, color: C.cyan, fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: FONT }}
+              onClick={() => setTab?.('content')}
+              style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '7.5px 18px', borderRadius: 9, background: '#2563eb', border: 'none', color: '#fff', fontSize: 12.5, fontWeight: 700, cursor: 'pointer', fontFamily: FONT }}
+              onMouseEnter={e => { e.currentTarget.style.opacity = '0.88'; }}
+              onMouseLeave={e => { e.currentTarget.style.opacity = '1'; }}
             >
-              + Add Class
+              Edit Schedule
             </button>
           </div>
           <ScheduleTimeline classes={classes} />
