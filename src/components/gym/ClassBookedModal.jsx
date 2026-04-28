@@ -240,6 +240,7 @@ export default function ClassBookedModal({ open, onClose, gymClass, gymName }) {
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.22 }}
+          onClick={onClose}
           className="cbm-root"
           style={{
             position: 'fixed', inset: 0, zIndex: 10500,

@@ -2,15 +2,14 @@ import React, { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
-import { CheckCircle, MapPin, Check } from 'lucide-react';
+import { CheckCircle, MapPin } from 'lucide-react';
 import { toast } from 'sonner';
 import confetti from 'canvas-confetti';
 import { differenceInDays, parseISO, startOfDay } from 'date-fns';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 
 export default function CheckInButton({ gym, onCheckInSuccess }) {
   const [isChecking, setIsChecking] = useState(false);
-  const [showSuccess, setShowSuccess] = useState(false);
   const queryClient = useQueryClient();
 
   const { data: currentUser } = useQuery({
@@ -79,21 +78,7 @@ export default function CheckInButton({ gym, onCheckInSuccess }) {
     setIsChecking(true);
     try {
       await checkInMutation.mutateAsync({ gym_id: gym.id });
-      setShowSuccess(true);
-      // Play success sound
-      const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-      const oscillator = audioContext.createOscillator();
-      const gain = audioContext.createGain();
-      oscillator.connect(gain);
-      gain.connect(audioContext.destination);
-      oscillator.frequency.value = 800;
-      gain.gain.setValueAtTime(0.3, audioContext.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.2);
-      oscillator.start(audioContext.currentTime);
-      oscillator.stop(audioContext.currentTime + 0.2);
-      // Hide success button and reset after 2 seconds
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      setShowSuccess(false);
+      await new Promise(resolve => setTimeout(resolve, 2500));
     } finally {
       setIsChecking(false);
     }
@@ -116,37 +101,18 @@ export default function CheckInButton({ gym, onCheckInSuccess }) {
           Membership Required
         </Button> :
         !hasCheckedInToday() &&
-        <AnimatePresence mode="wait">
-          {showSuccess ? (
-            <motion.div
-              key="success"
-              initial={{ y: 0, opacity: 1 }}
-              exit={{ y: -100, opacity: 0 }}
-              transition={{ duration: 0.5, ease: "easeInOut" }}>
-              <Button
-                disabled
-                className="w-full h-14 rounded-2xl font-bold text-base bg-gradient-to-b from-emerald-400 via-emerald-500 to-emerald-600 text-white border border-transparent backdrop-blur-md shadow-[0_5px_0_0_#047857,0_8px_20px_rgba(16,185,129,0.5),inset_0_1px_0_rgba(255,255,255,0.2),inset_0_0_20px_rgba(255,255,255,0.05)]">
-                <Check className="w-5 h-5 mr-2" />
-                Checked In
-              </Button>
-            </motion.div>
-          ) : (
-            <motion.div
-              key="default"
-              initial={{ y: 0, opacity: 1 }}
-              whileTap={!isChecking ? { scale: 0.95 } : {}}
-              animate={isChecking ? { scale: [1, 1.05, 1] } : {}}
-              transition={{ duration: 0.3, repeat: isChecking ? Infinity : 0 }}>
-              <Button
-                onClick={handleCheckIn}
-                disabled={isChecking || checkInMutation.isPending}
-                className="w-full h-14 rounded-2xl font-bold text-base bg-gradient-to-b from-green-400 via-green-500 to-green-600 text-white border border-transparent backdrop-blur-md shadow-[0_5px_0_0_#065f46,0_8px_20px_rgba(16,185,129,0.4),inset_0_1px_0_rgba(255,255,255,0.2),inset_0_0_20px_rgba(255,255,255,0.05)] active:shadow-none active:translate-y-[5px] active:scale-95 transition-all duration-100 transform-gpu">
-                <CheckCircle className="w-5 h-5 mr-2" />
-                {isChecking || checkInMutation.isPending ? 'Checking in...' : 'Check In'}
-              </Button>
-            </motion.div>
-          )}
-        </AnimatePresence>
+        <motion.div
+          whileTap={!isChecking ? { scale: 0.95 } : {}}
+          animate={isChecking ? { scale: [1, 1.05, 1] } : {}}
+          transition={{ duration: 0.3, repeat: isChecking ? Infinity : 0 }}>
+          <Button
+            onClick={handleCheckIn}
+            disabled={isChecking || checkInMutation.isPending}
+            className="w-full h-14 rounded-2xl font-bold text-base bg-gradient-to-b from-green-400 via-green-500 to-green-600 text-white border border-transparent backdrop-blur-md shadow-[0_5px_0_0_#065f46,0_8px_20px_rgba(16,185,129,0.4),inset_0_1px_0_rgba(255,255,255,0.2),inset_0_0_20px_rgba(255,255,255,0.05)] active:shadow-none active:translate-y-[5px] active:scale-95 transition-all duration-100 transform-gpu">
+            <CheckCircle className="w-5 h-5 mr-2" />
+            {isChecking || checkInMutation.isPending ? 'Checking in...' : 'Check In'}
+          </Button>
+        </motion.div>
       }
     </div>
   );
