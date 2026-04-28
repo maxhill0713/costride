@@ -25,7 +25,7 @@ export default function GymCommunityHero({
     <div className="relative overflow-hidden">
       <div className="absolute inset-0 z-0">
         {gym?.image_url ?
-        <img src={gym.image_url} alt={gym?.name} className="w-full h-full object-cover" style={{ opacity: 0.55 }} loading="eager" fetchPriority="high" /> :
+        <img src={gym.image_url} alt={gym?.name} className="w-full h-full object-cover" style={{ opacity: 0.55 }} loading="eager" /> :
         <div className="w-full h-full" style={{ background: 'linear-gradient(135deg, #0f172a 0%, #1e3a5f 100%)' }} />
         }
         <div className="absolute inset-0" style={{ background: 'linear-gradient(to bottom, rgba(2,4,10,0.3) 0%, rgba(2,4,10,0.0) 40%, rgba(2,4,10,0.75) 100%)' }} />
