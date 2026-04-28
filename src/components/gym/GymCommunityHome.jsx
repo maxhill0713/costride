@@ -44,7 +44,7 @@ export default function GymCommunityHome({
       />
 
       {coaches.length > 0 &&
-      <div style={{ ...CARD_BG, borderRadius: 18, overflow: 'hidden', border: CARD_BORDER, backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)' }}>
+      <div style={{ background: CARD_BG, borderRadius: 18, overflow: 'hidden', border: CARD_BORDER, backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)' }}>
         <div style={{ padding: '13px 14px 11px', borderBottom: '1px solid rgba(255,255,255,0.055)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <span style={{ fontSize: 14, fontWeight: 900, color: '#fff', letterSpacing: '-0.01em' }}>Featured Coaches</span>
           {showOwnerControls &&
