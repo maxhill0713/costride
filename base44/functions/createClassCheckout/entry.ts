@@ -25,7 +25,15 @@ Deno.serve(async (req) => {
       customerEmail = user?.email;
     } catch (_) {}
 
-    const session = await stripe.checkout.sessions.create({
+    // Fetch gym to get Stripe Connect account ID
+    const gyms = await base44.asServiceRole.entities.Gym.filter({ id: gymClass.gym_id });
+    const gym = gyms[0];
+    const stripeAccountId = gym?.stripe_account_id;
+
+    // CoStride takes 15%, gym owner gets 85%
+    const platformFee = Math.round(price * 100 * 0.15);
+
+    const sessionParams = {
       payment_method_types: ['card'],
       mode: 'payment',
       ...(customerEmail ? { customer_email: customerEmail } : {}),
@@ -46,7 +54,22 @@ Deno.serve(async (req) => {
       },
       success_url: successUrl,
       cancel_url: cancelUrl,
-    });
+    };
+
+    // If the gym has a connected Stripe account, route payment with split
+    if (stripeAccountId) {
+      sessionParams.payment_intent_data = {
+        application_fee_amount: platformFee,
+        transfer_data: {
+          destination: stripeAccountId,
+        },
+      };
+      console.log(`Routing payment: gym gets 85% (${Math.round(price * 100) - platformFee}p), CoStride gets 15% (${platformFee}p)`);
+    } else {
+      console.warn('No Stripe Connect account for gym:', gymClass.gym_id, '— payment goes to platform only');
+    }
+
+    const session = await stripe.checkout.sessions.create(sessionParams);
 
     console.log('Checkout session created:', session.id, 'for class:', classId);
     return Response.json({ url: session.url });

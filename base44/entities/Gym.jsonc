@@ -157,6 +157,10 @@
       ],
       "default": "unclaimed",
       "description": "Whether gym has been claimed by owner"
+    },
+    "stripe_account_id": {
+      "type": "string",
+      "description": "Stripe Connect account ID for receiving class booking payments"
     }
   },
   "required": [

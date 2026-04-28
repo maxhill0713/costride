@@ -12,6 +12,7 @@ import {
   BookOpen, Lightbulb, Bell, Camera, Award, MessageCircle,
 } from 'lucide-react';
 import { createPageUrl } from '../../utils';
+import StripeConnectPanel from './StripeConnectPanel';
 
 /* ─── TOKENS ────────────────────────────────────────────────── */
 const C = {
@@ -909,6 +910,14 @@ export default function TabGymProfile({ gym, openModal, coaches = [], onDeleteCo
           <FullSection title="Equipment" subtitle="Help members find the equipment they care about." score={equipmentScore} defaultOpen={equipmentScore < 100}>
             <TagsList items={gym.equipment} emptyText="No equipment listed. A common reason members choose a competitor." onClick={() => openModal('equipment')} />
           </FullSection>
+
+          {/* Stripe Connect */}
+          <div style={{ marginBottom: 9 }}>
+            <div style={{ fontSize: 9.5, fontWeight: 700, color: C.t3, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 9 }}>
+              Payments
+            </div>
+            <StripeConnectPanel gym={gym} />
+          </div>
 
         </div>
       </div>
