@@ -56,17 +56,23 @@ export default function StripeConnectPanel({ gym }) {
       .catch(() => setStatus({ connected: false, chargesEnabled: false }));
   }, [gym?.id]);
 
-  const handleConnect = async () => {
+  const handleConnect = async (e) => {
+    // Open a blank window immediately (must be synchronous with user click to avoid popup blockers)
+    const newWin = window.open('about:blank', '_blank');
     setLoading(true);
     try {
-      const returnUrl = window.location.href;
+      const returnUrl = window.location.href.split('?')[0]; // clean URL without existing params
       const res = await base44.functions.invoke('stripeConnectOnboard', { gymId: gym.id, returnUrl });
       if (res.data?.url) {
-        window.location.href = res.data.url;
-      } else if (res.data?.error === 'connect_not_enabled') {
-        setStatus({ connectNotEnabled: true });
+        newWin.location.href = res.data.url;
+      } else {
+        newWin.close();
+        if (res.data?.error === 'connect_not_enabled') {
+          setStatus({ connectNotEnabled: true });
+        }
       }
     } catch (err) {
+      newWin.close();
       const msg = err.message || '';
       if (msg.includes('signed up for Connect') || msg.includes('connect')) {
         setStatus({ connectNotEnabled: true });
