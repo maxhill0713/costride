@@ -67,6 +67,10 @@
       ],
       "description": "Difficulty level"
     },
+    "price": {
+      "type": "number",
+      "description": "Price per booking in GBP. Leave empty or 0 for free classes."
+    },
     "attendee_ids": {
       "type": "array",
       "items": {
