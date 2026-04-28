@@ -1570,7 +1570,7 @@ export default function GymCommunity() {
     }
   }, []);
 
-  useEffect(() => { window.scrollTo(0, 0); const h = () => queryClient.invalidateQueries({ queryKey: ['gymActivityFeed', gymId] }); window.addEventListener('focus', h); return () => window.removeEventListener('focus', h); }, [gymId]);
+  useEffect(() => { window.scrollTo(0, 0); window.addEventListener('focus', () => queryClient.invalidateQueries({ queryKey: ['gymActivityFeed', gymId] })); }, [gymId]);
 
   const [showCreateEvent, setShowCreateEvent] = useState(false);
   const [showManageEquipment, setShowManageEquipment] = useState(false);
