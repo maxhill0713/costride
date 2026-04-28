@@ -27,6 +27,7 @@ import ManageMembersModal from '../components/gym/ManageMembersModal';
 import InviteOwnerModal from '../components/gym/InviteOwnerModal';
 import CoachProfileModal from '../components/gym/CoachProfileModal';
 import ClassDetailModal from '../components/gym/ClassDetailModal';
+import ClassBookedModal from '../components/gym/ClassBookedModal';
 import UpgradeMembershipModal from '../components/membership/UpgradeMembershipModal';
 import JoinGymModal from '../components/membership/JoinGymModal';
 import ChallengeProgressCard from '../components/challenges/ChallengeProgressCard';
@@ -1591,10 +1592,10 @@ export default function GymCommunity() {
   const [primaryConfirmed, setPrimaryConfirmed] = useState(false);
   const [showCreateChallenge, setShowCreateChallenge] = useState(false);
   const [activeTab, setActiveTab] = useState(() => new URLSearchParams(window.location.search).get('class_booked') ? 'classes' : 'home');
-  const [copiedCoachId, setCopiedCoachId] = useState(null);
   const [showInviteOwner, setShowInviteOwner] = useState(false);
   const [showInviteOwnerModal, setShowInviteOwnerModal] = useState(false);
   const [selectedCoach, setSelectedCoach] = useState(null);
+  const [showBookedModal, setShowBookedModal] = useState(() => !!new URLSearchParams(window.location.search).get('class_booked'));
 
   const { data: currentUser } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me(), staleTime: 5 * 60 * 1000, gcTime: 10 * 60 * 1000 });
   const { data: gym, isLoading: gymLoading } = useQuery({ queryKey: ['gym', gymId], queryFn: () => base44.entities.Gym.filter({ id: gymId }).then((r) => r[0]), enabled: !!gymId, staleTime: 5 * 60 * 1000, gcTime: 15 * 60 * 1000, placeholderData: (prev) => prev });
@@ -1993,6 +1994,7 @@ export default function GymCommunity() {
         <CreateChallengeModal open={showCreateChallenge} onClose={() => setShowCreateChallenge(false)} gyms={allGyms} onSave={(data) => createChallengeMutation.mutate(data)} isLoading={createChallengeMutation.isPending} />
         <InviteOwnerModal isOpen={showInviteOwnerModal} onClose={() => setShowInviteOwnerModal(false)} gym={gym} currentUser={currentUser} />
         <CoachProfileModal coach={selectedCoach} open={!!selectedCoach} onClose={() => setSelectedCoach(null)} gymClasses={classes} />
+        <ClassBookedModal open={showBookedModal && !!classes.find(c => c.id === new URLSearchParams(window.location.search).get('class_booked'))} onClose={() => setShowBookedModal(false)} gymClass={classes.find(c => c.id === new URLSearchParams(window.location.search).get('class_booked')) || null} gymName={gym?.name} />
       </div>
     </PullToRefresh>);
 }
