@@ -584,7 +584,11 @@ export default function ClassDetailModal({
     if (classPrice > 0 && !isJoined) {
       setJoinLoading(true);
       try {
-        const successUrl = new URL(window.location.href);
+        // Build a clean success URL with just the gym id and class_booked param
+        const successUrl = new URL(window.location.origin + '/GymCommunity');
+        const currentParams = new URLSearchParams(window.location.search);
+        const gymId = currentParams.get('id');
+        if (gymId) successUrl.searchParams.set('id', gymId);
         successUrl.searchParams.set('class_booked', gymClass.id);
         const res = await base44.functions.invoke('createClassCheckout', {
           classId: gymClass.id,

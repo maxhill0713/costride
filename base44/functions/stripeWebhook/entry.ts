@@ -42,8 +42,43 @@ Deno.serve(async (req) => {
         const session          = event.data.object;
         const userId           = session.metadata?.user_id;
         const userEmail        = session.metadata?.user_email || session.customer_email;
-        const subscriptionType = session.metadata?.subscription_type || 'user_premium';
+        const subscriptionType = session.metadata?.subscription_type;
+        const classId          = session.metadata?.class_id;
 
+        // ── CLASS BOOKING ──────────────────────────────────────────────────
+        if (classId) {
+          console.log('Class booking payment completed, classId:', classId, 'event:', event.id);
+          try {
+            // Find the user by email to get their ID
+            let bookingUserId = userId;
+            if (!bookingUserId && userEmail) {
+              const users = await base44.asServiceRole.entities.User.filter({ email: userEmail });
+              if (users.length > 0) bookingUserId = users[0].id;
+            }
+
+            if (bookingUserId) {
+              const classes = await base44.asServiceRole.entities.GymClass.filter({ id: classId });
+              const gymClass = classes[0];
+              if (gymClass) {
+                const currentIds = gymClass.attendee_ids || [];
+                if (!currentIds.includes(bookingUserId)) {
+                  const newIds = [...currentIds, bookingUserId];
+                  await base44.asServiceRole.entities.GymClass.update(classId, { attendee_ids: newIds });
+                  console.log('User', bookingUserId, 'booked into class', classId);
+                } else {
+                  console.log('User', bookingUserId, 'already booked in class', classId);
+                }
+              }
+            } else {
+              console.warn('Could not resolve user ID for class booking, email:', userEmail);
+            }
+          } catch (e) {
+            console.error('Error booking class after payment:', e.message);
+          }
+          break;
+        }
+
+        // ── SUBSCRIPTION ───────────────────────────────────────────────────
         if (!userId) {
           console.warn('checkout.session.completed: missing user_id in metadata, event:', event.id);
           break;

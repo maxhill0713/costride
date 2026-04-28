@@ -21,9 +21,11 @@ Deno.serve(async (req) => {
 
     // Try to get current user for prefilling email (optional)
     let customerEmail;
+    let userId;
     try {
       const user = await base44.auth.me();
       customerEmail = user?.email;
+      userId = user?.id;
     } catch (_) {}
 
     // Fetch gym to get Stripe Connect account ID
@@ -52,6 +54,8 @@ Deno.serve(async (req) => {
       metadata: {
         base44_app_id: Deno.env.get('BASE44_APP_ID'),
         class_id: classId,
+        ...(userId ? { user_id: userId } : {}),
+        ...(customerEmail ? { user_email: customerEmail } : {}),
       },
       success_url: successUrl,
       cancel_url: cancelUrl,
