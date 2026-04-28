@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { base44 } from '@/api/base44Client';
 import CoachProfileModal from './CoachProfileModal';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -541,9 +542,7 @@ export default function ClassDetailModal({
   const [resolvedUser, setResolvedUser] = useState(currentUserProp);
   useEffect(() => {
     if (currentUserProp) { setResolvedUser(currentUserProp); return; }
-    import('@/api/base44Client').then(({ base44 }) => {
-      base44.auth.me().then(u => setResolvedUser(u)).catch(() => {});
-    });
+    base44.auth.me().then(u => setResolvedUser(u)).catch(() => {});
   }, [currentUserProp]);
 
   useEffect(() => {
@@ -561,14 +560,13 @@ export default function ClassDetailModal({
     url.searchParams.delete('class_booked');
     window.history.replaceState({}, '', url.toString());
     // Add user to class attendees if not already
-    import('@/api/base44Client').then(({ base44 }) => {
-      const currentIds = gymClass.attendee_ids || [];
-      if (currentIds.includes(resolvedUser.id)) return;
+    const currentIds = gymClass.attendee_ids || [];
+    if (!currentIds.includes(resolvedUser.id)) {
       const newIds = [...currentIds, resolvedUser.id];
       base44.entities.GymClass.update(gymClass.id, { attendee_ids: newIds })
         .then(() => { setLiveAttendeeIds(newIds); setBooked(true); showToast('Booking confirmed! See you there 🎉'); })
         .catch(() => {});
-    });
+    }
   }, [gymClass?.id, resolvedUser]);
 
   const attendeeIds = liveAttendeeIds ?? (gymClass?.attendee_ids || []);
@@ -580,7 +578,6 @@ export default function ClassDetailModal({
 
   const handleJoinLeave = async () => {
     if (!resolvedUser || !gymClass?.id) return;
-    const { base44 } = await import('@/api/base44Client');
 
     // If class has a price and user is not yet joined, go to Stripe checkout
     const classPrice = gymClass.price;
