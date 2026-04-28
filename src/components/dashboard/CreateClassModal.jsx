@@ -283,7 +283,11 @@ export default function CreateClassModal({ open, onClose, onSave, gym, isLoading
                       <Inp type="date" value={form.date} onChange={e => set('date', e.target.value)} min={todayStr} />
                     </div>
                     <div style={{ flex: 1 }}>
-                      <Inp type="time" value={form.time} onChange={e => set('time', e.target.value)} />
+                      <input type="time" value={form.time} onChange={e => set('time', e.target.value)}
+                        onFocus={e => { e.target.style.borderColor = `${C.purple}55`; e.target.style.background = C.inset; }}
+                        onBlur={e => { e.target.style.borderColor = C.brd; e.target.style.background = C.card; }}
+                        style={{ ...baseInp, colorScheme: 'dark' }}
+                      />
                     </div>
                   </div>
 
