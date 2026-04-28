@@ -1751,7 +1751,7 @@ export default function Home() {
         celebrationDurationMinutes={celebrationDurationMinutes}
         currentUser={currentUser}
         gymId={checkedInGymId || primaryGymIdForQuery}
-        gymName={checkedInGymName || memberGym?.name || null}
+        gymName={checkedInGymName || allMemberGyms.find(g => g.id === (checkedInGymId || primaryGymIdForQuery))?.name || null}
         showDaysCelebration={showDaysCelebration}
         weeklyWorkoutLogs={weeklyWorkoutLogs}
         todayDowAdjusted={todayDowAdjusted}
