@@ -543,9 +543,8 @@ function DesktopOverview({
   // Schedule + at-risk card total height
   const CARD_INNER_H = TIMELINE_VIEWPORT_H + 46 + 32;
 
-  // Currently in the Gym — original inner padding was '24px 0' = 48px total
-  // +20% from previous iteration, then +25% on top of that = 48 * 1.20 * 1.25 = 72px
-  const GYM_INNER_H = Math.round(48 * 1.20 * 1.25); // 72px
+  // Currently in the Gym — original 48px * 1.20 * 1.25 * 1.15 = ~83px
+  const GYM_INNER_H = Math.round(48 * 1.20 * 1.25 * 1.15); // 83px
 
   return (
     <div style={{ fontFamily: FONT, display: 'flex', flexDirection: 'column', gap: 11, background: '#000', minHeight: '100%' }}>
@@ -607,7 +606,7 @@ function DesktopOverview({
         {/* Schedule card — 20% taller via TIMELINE_VIEWPORT_H */}
         <div style={{
           background: C.card, border: `1px solid ${C.brd}`, borderRadius: 10,
-          padding: '14px 18px 14px',
+          padding: '8px 18px 14px',
           flex: 1, minWidth: 0,
           display: 'flex', flexDirection: 'column',
           height: CARD_INNER_H, boxSizing: 'border-box',
@@ -669,7 +668,7 @@ function DesktopOverview({
       </div>
 
       {/* ── Currently in the Gym — 20% taller from before, now additionally +25% ── */}
-      <div style={{ background: C.card, border: `1px solid ${C.brd}`, borderRadius: 10, padding: '14px 16px' }}>
+      <div style={{ background: C.card, border: `1px solid ${C.brd}`, borderRadius: 10, padding: '8px 16px 14px' }}>
         <div style={{ marginBottom: 11 }}>
           <span style={{ fontSize: 13, fontWeight: 600, color: C.t1 }}>Currently in the Gym</span>
         </div>
