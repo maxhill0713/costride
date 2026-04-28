@@ -44,7 +44,7 @@ export default function ClassBookedModal({ open, onClose, gymClass, gymName }) {
   const [reminderSet, setReminderSet] = useState(false);
   const [calendarOpen, setCalendarOpen] = useState(false);
 
-  if (!gymClass) return null;
+  if (!gymClass || !open) return null;
 
   const scheduleInfo = (() => {
     if (Array.isArray(gymClass.schedule) && gymClass.schedule[0]) {

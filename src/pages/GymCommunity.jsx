@@ -937,8 +937,8 @@ function ClassesTabContent({ classes, showOwnerControls, onManage, onDelete, cur
   useEffect(() => {
     const s = new Set();
     classes.forEach(c => { if ((c.attendee_ids || []).includes(currentUser?.id)) s.add(c.id); });
+    if (autoOpenClassId) { s.add(autoOpenClassId); const cls = classes.find(c => c.id === autoOpenClassId); if (cls) setSelectedClass(cls); }
     setLocalBookedIds(s);
-    if (autoOpenClassId) { const cls = classes.find(c => c.id === autoOpenClassId); if (cls) setSelectedClass(cls); }
   }, [classes, currentUser?.id]);
 
   const isBooked = (gymClass) => localBookedIds.has(gymClass.id);
@@ -1595,7 +1595,7 @@ export default function GymCommunity() {
   const [showInviteOwner, setShowInviteOwner] = useState(false);
   const [showInviteOwnerModal, setShowInviteOwnerModal] = useState(false);
   const [selectedCoach, setSelectedCoach] = useState(null);
-  const [showBookedModal, setShowBookedModal] = useState(() => !!new URLSearchParams(window.location.search).get('class_booked'));
+  const [showBookedModal, setShowBookedModal] = useState(!!new URLSearchParams(window.location.search).get('class_booked'));
 
   const { data: currentUser } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me(), staleTime: 5 * 60 * 1000, gcTime: 10 * 60 * 1000 });
   const { data: gym, isLoading: gymLoading } = useQuery({ queryKey: ['gym', gymId], queryFn: () => base44.entities.Gym.filter({ id: gymId }).then((r) => r[0]), enabled: !!gymId, staleTime: 5 * 60 * 1000, gcTime: 15 * 60 * 1000, placeholderData: (prev) => prev });
@@ -1618,19 +1618,18 @@ export default function GymCommunity() {
   const backendMemberAvatars = gymActivityData.memberAvatars || {};
   const backendMemberNames = gymActivityData.memberNames || {};
   const gymChallenges = challenges.filter((c) => c.status === 'active' || c.status === 'upcoming');
+  const bookedClassId = new URLSearchParams(window.location.search).get('class_booked');
+  const bookedClass = bookedClassId ? (classes.find(c => c.id === bookedClassId) || null) : null;
   const { data: allGyms = [] } = useQuery({ queryKey: ['gyms'], queryFn: () => base44.entities.Gym.filter({ status: 'approved' }, 'name', 50), enabled: showCreateChallenge, staleTime: 10 * 60 * 1000, gcTime: 30 * 60 * 1000 });
   const { data: gymMembership } = useQuery({ queryKey: ['gymMembership', currentUser?.id, gymId], queryFn: () => base44.entities.GymMembership.filter({ user_id: currentUser.id, gym_id: gymId, status: 'active' }).then((r) => r[0]), enabled: !!currentUser && !!gymId, staleTime: 5 * 60 * 1000, gcTime: 15 * 60 * 1000, placeholderData: (prev) => prev });
   const { data: claimedBonuses = [] } = useQuery({ queryKey: ['claimedBonuses', currentUser?.id, gymId], queryFn: () => base44.entities.ClaimedBonus.filter({ user_id: currentUser.id, gym_id: gymId }, '-created_date', 100), enabled: !!currentUser && !!gymId, staleTime: 5 * 60 * 1000, gcTime: 15 * 60 * 1000, placeholderData: (prev) => prev });
   const { data: challengeParticipants = [] } = useQuery({ queryKey: ['challengeParticipants', currentUser?.id], queryFn: () => base44.entities.ChallengeParticipant.filter({ user_id: currentUser.id }, '-created_date', 50), enabled: !!currentUser, staleTime: 2 * 60 * 1000, gcTime: 10 * 60 * 1000, placeholderData: (prev) => prev });
-  const gymWorkoutLogs = gymWorkoutLogsFromFeed;
-  const gymAchievements = gymAchievementsFromFeed;
+  const gymWorkoutLogs = gymWorkoutLogsFromFeed, gymAchievements = gymAchievementsFromFeed;
   const { data: gymChallengeParticipants = [] } = useQuery({ queryKey: ['gymChallengeParticipants', gymId], queryFn: async () => {const ids = challenges.map((c) => c.id);if (!ids.length) return [];return base44.entities.ChallengeParticipant.filter({ challenge_id: ids[0] }, '-created_date', 100);}, enabled: !!gymId && activeTab === 'activity' && challenges.length > 0, staleTime: 2 * 60 * 1000, gcTime: 10 * 60 * 1000, placeholderData: (prev) => prev });
-  const POSTS_PAGE_SIZE = 20;
   const [postsPage, setPostsPage] = React.useState(1);
-
   const gymPostsRaw = gymActivityData.posts || [];
-  const gymPosts = gymPostsRaw.slice(0, postsPage * POSTS_PAGE_SIZE);
-  const hasMorePosts = gymPostsRaw.length > postsPage * POSTS_PAGE_SIZE;
+  const gymPosts = gymPostsRaw.slice(0, postsPage * 20);
+  const hasMorePosts = gymPostsRaw.length > postsPage * 20;
 
   const { data: leaderboards = {} } = useQuery({
     queryKey: ['leaderboards', gymId],
@@ -1994,7 +1993,7 @@ export default function GymCommunity() {
         <CreateChallengeModal open={showCreateChallenge} onClose={() => setShowCreateChallenge(false)} gyms={allGyms} onSave={(data) => createChallengeMutation.mutate(data)} isLoading={createChallengeMutation.isPending} />
         <InviteOwnerModal isOpen={showInviteOwnerModal} onClose={() => setShowInviteOwnerModal(false)} gym={gym} currentUser={currentUser} />
         <CoachProfileModal coach={selectedCoach} open={!!selectedCoach} onClose={() => setSelectedCoach(null)} gymClasses={classes} />
-        <ClassBookedModal open={showBookedModal && !!classes.find(c => c.id === new URLSearchParams(window.location.search).get('class_booked'))} onClose={() => setShowBookedModal(false)} gymClass={classes.find(c => c.id === new URLSearchParams(window.location.search).get('class_booked')) || null} gymName={gym?.name} />
+        <ClassBookedModal open={showBookedModal && !!bookedClass} onClose={() => setShowBookedModal(false)} gymClass={bookedClass} gymName={gym?.name} />
       </div>
     </PullToRefresh>);
 }
