@@ -620,6 +620,19 @@ function DesktopOverview({
         )}
       </div>
 
+      {/* ── Notifications bar — classes & events ── */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '9px 14px', background: 'rgba(255,255,255,0.02)', border: `1px solid ${C.brd}`, borderRadius: 8, fontSize: 12, color: C.t2 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          <Dumbbell style={{ width: 14, height: 14, color: C.cyan, flexShrink: 0 }} />
+          <span><strong>{(classes || []).length}</strong> class{(classes || []).length !== 1 ? 'es' : ''} today</span>
+        </div>
+        <span style={{ color: C.t3 }}>•</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          <Activity style={{ width: 14, height: 14, color: C.amber, flexShrink: 0 }} />
+          <span><strong>{(events || []).length}</strong> event{(events || []).length !== 1 ? 's' : ''} today</span>
+        </div>
+      </div>
+
       {/* ── KPI row — no alert bar above ── */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 10 }}>
         <KpiCard
