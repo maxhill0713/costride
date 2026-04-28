@@ -1596,7 +1596,7 @@ export default function GymCommunity() {
   const [showInviteOwnerModal, setShowInviteOwnerModal] = useState(false);
   const [selectedCoach, setSelectedCoach] = useState(null);
   const [showBookedModal, setShowBookedModal] = useState(false);
-
+  const [displayedClass, setDisplayedClass] = useState(null);
   const { data: currentUser } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me(), staleTime: 5 * 60 * 1000, gcTime: 10 * 60 * 1000 });
   const { data: gym, isLoading: gymLoading } = useQuery({ queryKey: ['gym', gymId], queryFn: () => base44.entities.Gym.filter({ id: gymId }).then((r) => r[0]), enabled: !!gymId, staleTime: 5 * 60 * 1000, gcTime: 15 * 60 * 1000, placeholderData: (prev) => prev });
   const { data: members = [] } = useQuery({ queryKey: ['members', gymId], queryFn: () => base44.entities.GymMember.filter({ gym_id: gymId }, 'user_name', 200), enabled: !!gymId, staleTime: 2 * 60 * 1000, gcTime: 10 * 60 * 1000, placeholderData: (prev) => prev });
@@ -1619,8 +1619,8 @@ export default function GymCommunity() {
   const backendMemberNames = gymActivityData.memberNames || {};
   const gymChallenges = challenges.filter((c) => c.status === 'active' || c.status === 'upcoming');
   const bookedClassId = new URLSearchParams(window.location.search).get('class_booked');
-  const bookedClass = bookedClassId ? (classes.find(c => c.id === bookedClassId) || null) : null;
-  useEffect(() => { if (bookedClass && !showBookedModal) setShowBookedModal(true); }, [bookedClass?.id]);
+  const foundBookedClass = bookedClassId ? (classes.find(c => c.id === bookedClassId) || null) : null;
+  useEffect(() => { if (foundBookedClass && !displayedClass) { setDisplayedClass(foundBookedClass); setShowBookedModal(true); } }, [foundBookedClass?.id]);
   const { data: allGyms = [] } = useQuery({ queryKey: ['gyms'], queryFn: () => base44.entities.Gym.filter({ status: 'approved' }, 'name', 50), enabled: showCreateChallenge, staleTime: 10 * 60 * 1000, gcTime: 30 * 60 * 1000 });
   const { data: gymMembership } = useQuery({ queryKey: ['gymMembership', currentUser?.id, gymId], queryFn: () => base44.entities.GymMembership.filter({ user_id: currentUser.id, gym_id: gymId, status: 'active' }).then((r) => r[0]), enabled: !!currentUser && !!gymId, staleTime: 5 * 60 * 1000, gcTime: 15 * 60 * 1000, placeholderData: (prev) => prev });
   const { data: claimedBonuses = [] } = useQuery({ queryKey: ['claimedBonuses', currentUser?.id, gymId], queryFn: () => base44.entities.ClaimedBonus.filter({ user_id: currentUser.id, gym_id: gymId }, '-created_date', 100), enabled: !!currentUser && !!gymId, staleTime: 5 * 60 * 1000, gcTime: 15 * 60 * 1000, placeholderData: (prev) => prev });
@@ -1994,7 +1994,7 @@ export default function GymCommunity() {
         <CreateChallengeModal open={showCreateChallenge} onClose={() => setShowCreateChallenge(false)} gyms={allGyms} onSave={(data) => createChallengeMutation.mutate(data)} isLoading={createChallengeMutation.isPending} />
         <InviteOwnerModal isOpen={showInviteOwnerModal} onClose={() => setShowInviteOwnerModal(false)} gym={gym} currentUser={currentUser} />
         <CoachProfileModal coach={selectedCoach} open={!!selectedCoach} onClose={() => setSelectedCoach(null)} gymClasses={classes} />
-        <ClassBookedModal open={showBookedModal && !!bookedClass} onClose={() => setShowBookedModal(false)} gymClass={bookedClass} gymName={gym?.name} />
+        <ClassBookedModal open={showBookedModal && !!displayedClass} onClose={() => { setShowBookedModal(false); setDisplayedClass(null); }} gymClass={displayedClass} gymName={gym?.name} />
       </div>
     </PullToRefresh>);
 }
