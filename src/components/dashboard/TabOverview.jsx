@@ -27,12 +27,11 @@ const C = {
 };
 const FONT = "'DM Sans', 'Segoe UI', sans-serif";
 
-/* ─── shared timeline constants — used by both ScheduleTimeline and DesktopOverview ── */
-// 4.5 hours visible. PX_PER_MIN chosen so the viewport shows that window.
-const TIMELINE_PX_PER_MIN = 1.1;   // px per minute in the scrollable timeline
-const TIMELINE_VISIBLE_H  = Math.round(4.5 * 60 * TIMELINE_PX_PER_MIN); // ~297px
-// Apply the 20% reduction on top of this base
-const TIMELINE_VIEWPORT_H = Math.round(TIMELINE_VISIBLE_H * 0.80);       // −20% ≈ 238px
+/* ─── shared timeline constants ─────────────────────────── */
+// 4.5 hours visible — 80% reduction then +20% increase
+const TIMELINE_PX_PER_MIN = 1.1;
+const TIMELINE_VISIBLE_H  = Math.round(4.5 * 60 * TIMELINE_PX_PER_MIN);
+const TIMELINE_VIEWPORT_H = Math.round(TIMELINE_VISIBLE_H * 0.80 * 1.20); // +20% taller
 
 /* ─── CLASS COLOR BY TYPE ─────────────────────────────────── */
 function classTypeColor(name = '') {
@@ -175,7 +174,6 @@ function NotificationTicker({ posts, events, challenges, checkIns, gymId, classe
 
     const notifs = [];
 
-    // Static info: classes + events today
     const todayDay = new Date().toLocaleDateString('en-GB', { weekday: 'long' });
     const todayClasses = (classes || []).filter(cls => {
       if (!cls.schedule || cls.schedule.length === 0) return true;
@@ -186,7 +184,6 @@ function NotificationTicker({ posts, events, challenges, checkIns, gymId, classe
     if (classCount > 0) notifs.push(`${classCount} class${classCount !== 1 ? 'es' : ''} scheduled today`);
     if (eventCount > 0) notifs.push(`${eventCount} event${eventCount !== 1 ? 's' : ''} today`);
 
-    // Live activity
     const recentPosts = (posts || []).filter(p =>
       !p.is_hidden && p.share_with_community && !p.post_type &&
       (!gymId || p.gym_id === gymId) && isRecent(p.created_date || p.created_at)
@@ -252,7 +249,6 @@ function NotificationTicker({ posts, events, challenges, checkIns, gymId, classe
           to   { transform: translateX(0);     opacity: 1; }
         }
       `}</style>
-      {/* flex: 1 so it fills the remaining space to the right of the title */}
       <div style={{
         flex: 1,
         minWidth: 0,
@@ -307,7 +303,6 @@ function ScheduleTimeline({ classes }) {
   const now    = new Date();
   const nowMin = now.getHours() * 60 + now.getMinutes();
 
-  // Scroll so "now" is centred on mount
   useEffect(() => {
     if (scrollRef.current) {
       const nowPx        = Math.round(nowMin * PX_PER_MIN);
@@ -349,112 +344,146 @@ function ScheduleTimeline({ classes }) {
       col++;
     }
   });
-  const numCols = Math.max(1, ...itemsWithCol.map(i => i.col + 1));
-  const nowPx   = Math.round(nowMin * PX_PER_MIN);
+  const numCols    = Math.max(1, ...itemsWithCol.map(i => i.col + 1));
+  const nowPx      = Math.round(nowMin * PX_PER_MIN);
   const hourLabels = Array.from({ length: 24 }, (_, i) => i);
-  const minToPx = (m) => Math.round(m * PX_PER_MIN);
+  const minToPx    = (m) => Math.round(m * PX_PER_MIN);
 
   return (
-    <div
-      ref={scrollRef}
-      style={{
-        height: VIEWPORT_H,
-        overflowY: 'auto',
-        overflowX: 'hidden',
-        position: 'relative',
-        scrollbarWidth: 'thin',
-        scrollbarColor: `${C.brd} transparent`,
-      }}
-    >
-      <div style={{ position: 'relative', height: CONTENT_H, display: 'flex' }}>
+    <>
+      <style>{`
+        .sched-block { transition: opacity 0.12s; }
+        .sched-block:hover { opacity: 0.8 !important; }
+      `}</style>
+      <div
+        ref={scrollRef}
+        style={{
+          height: VIEWPORT_H,
+          overflowY: 'auto',
+          overflowX: 'hidden',
+          position: 'relative',
+          scrollbarWidth: 'thin',
+          scrollbarColor: `${C.brd} transparent`,
+        }}
+      >
+        <div style={{ position: 'relative', height: CONTENT_H, display: 'flex' }}>
 
-        {/* Hour labels */}
-        <div style={{ width: HOUR_LABEL_W, flexShrink: 0, position: 'relative' }}>
-          {hourLabels.map(h => (
-            <div key={h} style={{
-              position: 'absolute', top: minToPx(h * 60) - 7,
-              left: 0, width: HOUR_LABEL_W,
-              textAlign: 'right', paddingRight: 8,
-              fontSize: 10, fontWeight: 700, color: C.t3,
-              lineHeight: 1, userSelect: 'none',
-            }}>
-              {String(h).padStart(2, '0')}:00
-            </div>
-          ))}
-        </div>
-
-        {/* Grid */}
-        <div style={{ flex: 1, position: 'relative', marginRight: 2 }}>
-          {hourLabels.map(h => (
-            <div key={h} style={{ position: 'absolute', top: minToPx(h * 60), left: 0, right: 0, height: 1, background: 'rgba(255,255,255,0.07)' }} />
-          ))}
-          {hourLabels.map(h => (
-            <div key={`hh-${h}`} style={{ position: 'absolute', top: minToPx(h * 60 + 30), left: 0, right: 0, height: 1, background: 'rgba(255,255,255,0.03)' }} />
-          ))}
-
-          {/* Now line */}
-          <div style={{ position: 'absolute', top: nowPx, left: 0, right: 0, height: 2, background: C.cyan, borderRadius: 2, zIndex: 10, boxShadow: `0 0 6px ${C.cyan}` }}>
-            <div style={{ position: 'absolute', left: -4, top: -3, width: 8, height: 8, borderRadius: '50%', background: C.cyan }} />
+          {/* Hour labels */}
+          <div style={{ width: HOUR_LABEL_W, flexShrink: 0, position: 'relative' }}>
+            {hourLabels.map(h => (
+              <div key={h} style={{
+                position: 'absolute', top: minToPx(h * 60) - 7,
+                left: 0, width: HOUR_LABEL_W,
+                textAlign: 'right', paddingRight: 8,
+                fontSize: 10, fontWeight: 700, color: C.t3,
+                lineHeight: 1, userSelect: 'none',
+              }}>
+                {String(h).padStart(2, '0')}:00
+              </div>
+            ))}
           </div>
 
-          {items.length === 0 && (
-            <div style={{ position: 'absolute', top: nowPx + 12, left: 0, right: 0, textAlign: 'center', fontSize: 12, color: C.t3, fontFamily: FONT }}>
-              No classes scheduled today
+          {/* Grid */}
+          <div style={{ flex: 1, position: 'relative', marginRight: 2 }}>
+            {hourLabels.map(h => (
+              <div key={h} style={{ position: 'absolute', top: minToPx(h * 60), left: 0, right: 0, height: 1, background: 'rgba(255,255,255,0.07)' }} />
+            ))}
+            {hourLabels.map(h => (
+              <div key={`hh-${h}`} style={{ position: 'absolute', top: minToPx(h * 60 + 30), left: 0, right: 0, height: 1, background: 'rgba(255,255,255,0.03)' }} />
+            ))}
+
+            {/* Now line */}
+            <div style={{ position: 'absolute', top: nowPx, left: 0, right: 0, height: 2, background: C.cyan, borderRadius: 2, zIndex: 10, boxShadow: `0 0 6px ${C.cyan}` }}>
+              <div style={{ position: 'absolute', left: -4, top: -3, width: 8, height: 8, borderRadius: '50%', background: C.cyan }} />
             </div>
-          )}
 
-          {/* Class blocks */}
-          {itemsWithCol.map((item, i) => {
-            const top    = minToPx(item.startMin);
-            const height = Math.max(20, Math.round(item.durationMin * PX_PER_MIN));
-            const colW   = 1 / numCols;
-            const left   = `${item.col * colW * 100}%`;
-            const width  = `calc(${colW * 100}% - 4px)`;
-            const color  = item.color;
-            const booked   = item.cls.booked ?? 0;
-            const capacity = item.cls.max_capacity || item.cls.capacity || 0;
-            const full     = capacity > 0 && booked >= capacity;
-            const absH  = Math.floor(item.startMin / 60) % 24;
-            const absM  = item.startMin % 60;
-            const timeStr = `${String(absH).padStart(2,'0')}:${String(absM).padStart(2,'0')}`;
-
-            return (
-              <div key={i} style={{
-                position: 'absolute', top, left, width, height,
-                background: hexToRgba(color, 0.18),
-                border: `1px solid ${hexToRgba(color, 0.35)}`,
-                borderLeft: `3px solid ${hexToRgba(color, 0.75)}`,
-                borderRadius: 5, padding: '3px 6px 3px 5px', overflow: 'hidden',
-                display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', gap: 1,
-                boxSizing: 'border-box', cursor: 'default',
-              }}>
-                <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 2 }}>
-                  <div style={{ fontSize: 11.5, fontWeight: 700, color: C.t1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', lineHeight: 1.2, flex: 1, minWidth: 0 }}>
-                    {item.cls.name}
-                  </div>
-                  <div style={{ fontSize: 9.5, color: C.t1, fontWeight: 500, lineHeight: 1.2, whiteSpace: 'nowrap', opacity: 0.7, flexShrink: 0 }}>{timeStr}</div>
-                </div>
-                {height > 28 && item.cls.instructor && (
-                  <div style={{ fontSize: 10.5, color: C.t1, fontWeight: 600, lineHeight: 1.2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', opacity: 0.8 }}>
-                    {item.cls.instructor}
-                  </div>
-                )}
-                {height > 38 && capacity > 0 && (
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginTop: 2 }}>
-                    <div style={{ flex: 1, height: 3, background: 'rgba(255,255,255,0.15)', borderRadius: 2, overflow: 'hidden' }}>
-                      <div style={{ width: `${Math.round((booked / capacity) * 100)}%`, height: '100%', background: full ? C.red : color, borderRadius: 2 }} />
-                    </div>
-                    <span style={{ fontSize: 9.5, fontWeight: 700, color: full ? C.red : 'rgba(255,255,255,0.5)', flexShrink: 0 }}>
-                      {booked}/{capacity}
-                    </span>
-                  </div>
-                )}
+            {items.length === 0 && (
+              <div style={{ position: 'absolute', top: nowPx + 12, left: 0, right: 0, textAlign: 'center', fontSize: 12, color: C.t3, fontFamily: FONT }}>
+                No classes scheduled today
               </div>
-            );
-          })}
+            )}
+
+            {/* ── Class blocks — styled like DayDetailModal popup, no capacity bar ── */}
+            {itemsWithCol.map((item, i) => {
+              const top    = minToPx(item.startMin);
+              const height = Math.max(20, Math.round(item.durationMin * PX_PER_MIN));
+              const colW   = 1 / numCols;
+              const left   = `${item.col * colW * 100}%`;
+              const width  = `calc(${colW * 100}% - 4px)`;
+              const color  = item.color;
+
+              const absH       = Math.floor(item.startMin / 60) % 24;
+              const absM       = item.startMin % 60;
+              const endTotal   = item.startMin + item.durationMin;
+              const endH       = Math.floor(endTotal / 60) % 24;
+              const endM       = endTotal % 60;
+              const timeStr    = `${String(absH).padStart(2,'0')}:${String(absM).padStart(2,'0')}`;
+              const timeEndStr = `${String(endH).padStart(2,'0')}:${String(endM).padStart(2,'0')}`;
+              const attendeeCount = (item.cls.attendee_ids || []).length;
+
+              return (
+                <button
+                  key={i}
+                  className="sched-block"
+                  style={{
+                    position: 'absolute', top, left, width, height,
+                    background: hexToRgba(color, 0.18),
+                    border: `1px solid ${hexToRgba(color, 0.22)}`,
+                    borderLeft: `3px solid ${hexToRgba(color, 0.55)}`,
+                    borderRadius: 5,
+                    padding: '3px 6px 3px 5px',
+                    overflow: 'hidden',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'flex-start',
+                    gap: 1,
+                    boxSizing: 'border-box',
+                    cursor: 'default',
+                    textAlign: 'left',
+                    fontFamily: FONT,
+                  }}
+                >
+                  {/* Title row: name left, time-range + chevron right */}
+                  <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 2 }}>
+                    <div style={{
+                      fontSize: 11.5, fontWeight: 700, color: C.t1,
+                      overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                      lineHeight: 1.2, flex: 1, minWidth: 0,
+                    }}>
+                      {item.cls.name}
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 2, flexShrink: 0 }}>
+                      {height > 20 && (
+                        <div style={{ fontSize: 9.5, color: C.t1, fontWeight: 500, lineHeight: 1.2, whiteSpace: 'nowrap', opacity: 0.75 }}>
+                          {timeStr}–{timeEndStr}
+                        </div>
+                      )}
+                      <ChevronRight style={{ width: 10, height: 10, color: 'rgba(255,255,255,0.45)', flexShrink: 0 }} />
+                    </div>
+                  </div>
+
+                  {/* Instructor — "Coach — Name · N attending" */}
+                  {height > 32 && item.cls.instructor && (
+                    <div style={{ fontSize: 10.5, color: C.t1, fontWeight: 600, lineHeight: 1.2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', opacity: 0.8 }}>
+                      Coach — {item.cls.instructor}{attendeeCount > 0 ? ` · ${attendeeCount} attending` : ''}
+                    </div>
+                  )}
+
+                  {/* No instructor but has attendees */}
+                  {height > 32 && !item.cls.instructor && attendeeCount > 0 && (
+                    <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.5)', fontWeight: 600, lineHeight: 1.2 }}>
+                      {attendeeCount} attending
+                    </div>
+                  )}
+
+                  {/* Capacity bar intentionally removed */}
+                </button>
+              );
+            })}
+          </div>
         </div>
       </div>
-    </div>
+    </>
   );
 }
 
@@ -502,14 +531,16 @@ function DesktopOverview({
   const greetingCap = greeting.charAt(0).toUpperCase() + greeting.slice(1);
   const gymId       = events?.[0]?.gym_id;
 
-  // The schedule card and at-risk card share the same explicit height
-  // = timeline viewport + card chrome (header ~46px + padding 32px)
-  const CARD_INNER_H = TIMELINE_VIEWPORT_H + 46 + 32; // total card height
+  // Schedule + at-risk card total height
+  const CARD_INNER_H = TIMELINE_VIEWPORT_H + 46 + 32;
+
+  // Currently in the Gym — original inner padding was '24px 0' = 48px total; +20%
+  const GYM_INNER_H = Math.round(48 * 1.20); // 58px
 
   return (
     <div style={{ fontFamily: FONT, display: 'flex', flexDirection: 'column', gap: 11, background: '#000', minHeight: '100%' }}>
 
-      {/* ── Header: title left, ticker fills the right ── */}
+      {/* ── Header ── */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
         <h1 style={{
           fontSize: 23, fontWeight: 700, color: C.t1,
@@ -560,10 +591,10 @@ function DesktopOverview({
         </div>
       </div>
 
-      {/* ── Schedule + At-Risk — same explicit height ── */}
+      {/* ── Schedule + At-Risk ── */}
       <div style={{ display: 'flex', gap: 11 }}>
 
-        {/* Schedule card */}
+        {/* Schedule card — 20% taller via TIMELINE_VIEWPORT_H */}
         <div style={{
           background: C.card, border: `1px solid ${C.brd}`, borderRadius: 10,
           padding: '14px 18px 14px',
@@ -585,7 +616,7 @@ function DesktopOverview({
           <ScheduleTimeline classes={classes} />
         </div>
 
-        {/* At-Risk card — same height, content stacks from top */}
+        {/* At-Risk card — same height as schedule card */}
         <div style={{
           background: C.card, border: `1px solid ${C.brd}`, borderRadius: 10,
           padding: '14px 16px',
@@ -609,7 +640,6 @@ function DesktopOverview({
               <TrendingUp style={{ width: 14, height: 14 }} /> All members active!
             </div>
           ) : (
-            /* Rows packed tightly from top; remaining space left empty below */
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
               {atRiskList.map((m, i) => (
                 <AtRiskRow key={m.user_id || i} member={m} avatarMap={avatarMap} />
@@ -617,7 +647,6 @@ function DesktopOverview({
             </div>
           )}
 
-          {/* Footer pinned to bottom of the fixed-height card */}
           <div style={{ marginTop: 'auto', paddingTop: 12, borderTop: `1px solid ${C.brd}` }}>
             <button
               onClick={() => setTab?.('members')}
@@ -629,12 +658,16 @@ function DesktopOverview({
         </div>
       </div>
 
-      {/* ── Currently in the Gym ── */}
+      {/* ── Currently in the Gym — 20% taller ── */}
       <div style={{ background: C.card, border: `1px solid ${C.brd}`, borderRadius: 10, padding: '14px 16px' }}>
         <div style={{ marginBottom: 11 }}>
           <span style={{ fontSize: 13, fontWeight: 600, color: C.t1 }}>Currently in the Gym</span>
         </div>
-        <div style={{ fontSize: 12, color: C.t3, textAlign: 'center', padding: '24px 0' }}>
+        <div style={{
+          fontSize: 12, color: C.t3, textAlign: 'center',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          height: GYM_INNER_H,
+        }}>
           Live gym presence will appear here
         </div>
       </div>
