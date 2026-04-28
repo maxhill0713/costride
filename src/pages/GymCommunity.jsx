@@ -919,7 +919,7 @@ function LeaveClassConfirm({ open, className, onClose, onConfirm }) {
   );
 }
 
-function ClassesTabContent({ classes, showOwnerControls, onManage, onDelete, currentUser, gymId }) {
+function ClassesTabContent({ classes, showOwnerControls, onManage, onDelete, currentUser, gymId, autoOpenClassId }) {
   const today = new Date();
   const queryClient = useQueryClient();
 
@@ -937,6 +937,7 @@ function ClassesTabContent({ classes, showOwnerControls, onManage, onDelete, cur
     const s = new Set();
     classes.forEach(c => { if ((c.attendee_ids || []).includes(currentUser?.id)) s.add(c.id); });
     setLocalBookedIds(s);
+    if (autoOpenClassId) { const cls = classes.find(c => c.id === autoOpenClassId); if (cls) setSelectedClass(cls); }
   }, [classes, currentUser?.id]);
 
   const isBooked = (gymClass) => localBookedIds.has(gymClass.id);
@@ -1589,7 +1590,7 @@ export default function GymCommunity() {
   const [joinCodeSuccess, setJoinCodeSuccess] = useState(false);
   const [primaryConfirmed, setPrimaryConfirmed] = useState(false);
   const [showCreateChallenge, setShowCreateChallenge] = useState(false);
-  const [activeTab, setActiveTab] = useState('home');
+  const [activeTab, setActiveTab] = useState(() => new URLSearchParams(window.location.search).get('class_booked') ? 'classes' : 'home');
   const [copiedCoachId, setCopiedCoachId] = useState(null);
   const [showInviteOwner, setShowInviteOwner] = useState(false);
   const [showInviteOwnerModal, setShowInviteOwnerModal] = useState(false);
@@ -1910,12 +1911,13 @@ export default function GymCommunity() {
                 </div>
               }
               {!isGhostGym && <ClassesTabContent
-                classes={classes}
-                showOwnerControls={showOwnerControls}
-                onManage={() => setShowManageClasses(true)}
-                onDelete={(id) => deleteClassMutation.mutate(id)}
-                currentUser={currentUser}
-                gymId={gymId} />
+                 classes={classes}
+                 showOwnerControls={showOwnerControls}
+                 onManage={() => setShowManageClasses(true)}
+                 onDelete={(id) => deleteClassMutation.mutate(id)}
+                 currentUser={currentUser}
+                 gymId={gymId}
+                 autoOpenClassId={new URLSearchParams(window.location.search).get('class_booked')} />
               }
             </TabsContent>
 
