@@ -147,7 +147,7 @@ export default function CreateClassModal({ open, onClose, onSave, gym, isLoading
   }, []);
 
   const set = (k, v) => setForm(f => ({ ...f, [k]: v }));
-  const canSubmit = form.name.trim() && form.instructor.trim() && form.duration_minutes && form.max_capacity && form.date && form.time && !isLoading;
+  const canSubmit = form.name.trim() && form.instructor.trim() && form.duration_minutes && form.max_capacity && form.date && form.time;
 
   const handleSubmit = async (e) => {
     e?.preventDefault();
