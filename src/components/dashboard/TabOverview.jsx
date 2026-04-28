@@ -543,11 +543,8 @@ function DesktopOverview({
   // Schedule + at-risk card total height
   const CARD_INNER_H = TIMELINE_VIEWPORT_H + 46 + 32;
 
-  // Currently in the Gym — original 48px * 1.20 * 1.25 * 1.15 = ~83px
-  const GYM_INNER_H = Math.round(48 * 1.20 * 1.25 * 1.15); // 83px
-
   return (
-    <div style={{ fontFamily: FONT, display: 'flex', flexDirection: 'column', gap: 11, background: '#000', minHeight: '100%' }}>
+    <div style={{ fontFamily: FONT, display: 'flex', flexDirection: 'column', gap: 11, background: '#000', minHeight: '100%', height: '100%', boxSizing: 'border-box', paddingBottom: 32 }}>
 
       {/* ── Header ── */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
@@ -667,15 +664,15 @@ function DesktopOverview({
         </div>
       </div>
 
-      {/* ── Currently in the Gym — 20% taller from before, now additionally +25% ── */}
-      <div style={{ background: C.card, border: `1px solid ${C.brd}`, borderRadius: 10, padding: '8px 16px 14px' }}>
-        <div style={{ marginBottom: 11 }}>
+      {/* ── Currently in the Gym — grows to fill remaining page space ── */}
+      <div style={{ background: C.card, border: `1px solid ${C.brd}`, borderRadius: 10, padding: '8px 16px 14px', flex: 1, display: 'flex', flexDirection: 'column', minHeight: 80 }}>
+        <div style={{ marginBottom: 11, flexShrink: 0 }}>
           <span style={{ fontSize: 13, fontWeight: 600, color: C.t1 }}>Currently in the Gym</span>
         </div>
         <div style={{
           fontSize: 12, color: C.t3, textAlign: 'center',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          height: GYM_INNER_H,
+          flex: 1,
         }}>
           Live gym presence will appear here
         </div>
