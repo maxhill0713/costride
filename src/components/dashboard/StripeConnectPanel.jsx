@@ -24,29 +24,20 @@ const FONT = "'DM Sans','Segoe UI',system-ui,sans-serif";
 export default function StripeConnectPanel({ gym }) {
   const [status, setStatus] = useState(null); // null = loading
   const [loading, setLoading] = useState(false);
+  const gymId = gym?.id;
 
-  // Handle Stripe OAuth callback — exchange code for account ID
+  // After returning from Stripe onboarding, refresh status
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    const code = params.get('code');
-    const state = params.get('state');
-    if (!code || !state) return;
-
-    let parsed;
-    try { parsed = JSON.parse(atob(state)); } catch { return; }
-    if (!parsed?.gymId || parsed.gymId !== gym?.id) return;
-
-    // Remove params from URL
-    const url = new URL(window.location.href);
-    url.searchParams.delete('code');
-    url.searchParams.delete('state');
-    window.history.replaceState({}, '', url.toString());
-
-    setLoading(true);
-    base44.functions.invoke('stripeConnectCallback', { code, gymId: parsed.gymId })
-      .then(() => base44.functions.invoke('stripeConnectStatus', { gymId: gym.id }).then(res => setStatus(res.data)))
-      .catch(err => { alert('Failed to connect Stripe: ' + err.message); })
-      .finally(() => setLoading(false));
+    if (params.get('stripe_return') === gymId && gym?.id) {
+      const url = new URL(window.location.href);
+      url.searchParams.delete('stripe_return');
+      window.history.replaceState({}, '', url.toString());
+      // Re-fetch status after returning from Stripe
+      base44.functions.invoke('stripeConnectStatus', { gymId: gym.id })
+        .then(res => setStatus(res.data))
+        .catch(() => {});
+    }
   }, [gym?.id]);
 
   useEffect(() => {
@@ -61,7 +52,7 @@ export default function StripeConnectPanel({ gym }) {
     const newWin = window.open('about:blank', '_blank');
     setLoading(true);
     try {
-      const returnUrl = window.location.href.split('?')[0]; // clean URL without existing params
+      const returnUrl = window.location.href.split('?')[0] + `?stripe_return=${gym.id}`;
       const res = await base44.functions.invoke('stripeConnectOnboard', { gymId: gym.id, returnUrl });
       if (res.data?.url) {
         newWin.location.href = res.data.url;
