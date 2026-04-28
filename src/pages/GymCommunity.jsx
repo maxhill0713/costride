@@ -814,6 +814,10 @@ function PremiumClassCard({ gymClass, isOwner, onDelete, onBook, booked, onClick
             {timeRange || timeStr}
           </span>
           {diff && <><span style={{ fontSize: 10, color: 'rgba(255,255,255,0.2)' }}>·</span><span style={{ fontSize: 10, fontWeight: 700, color: 'rgba(255,255,255,0.5)' }}>{diff}</span></>}
+          {gymClass.price > 0
+            ? <span style={{ fontSize: 12, fontWeight: 900, color: '#34d399', background: 'rgba(52,211,153,0.12)', border: '1px solid rgba(52,211,153,0.28)', borderRadius: 8, padding: '2px 7px' }}>£{gymClass.price}</span>
+            : <span style={{ fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,0.28)' }}>Free</span>
+          }
         </div>
 
         {left !== null &&
