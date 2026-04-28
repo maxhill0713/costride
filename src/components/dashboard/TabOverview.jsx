@@ -544,7 +544,7 @@ function DesktopOverview({
   const CARD_INNER_H = TIMELINE_VIEWPORT_H + 46 + 32;
 
   return (
-    <div style={{ fontFamily: FONT, display: 'flex', flexDirection: 'column', gap: 11, background: '#000', height: 'calc(100vh - 56px)', boxSizing: 'border-box', paddingBottom: 32 }}>
+    <div style={{ fontFamily: FONT, display: 'flex', flexDirection: 'column', gap: 11, background: '#000', height: 'calc(100vh - 122px)', boxSizing: 'border-box', paddingBottom: 32 }}>
 
       {/* ── Header ── */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
