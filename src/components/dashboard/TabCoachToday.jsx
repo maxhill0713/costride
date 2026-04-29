@@ -1008,7 +1008,8 @@ function MobileCoachToday({
 /* ═══════════════════════════════════════════════════════════
    ROOT EXPORT
 ═══════════════════════════════════════════════════════════ */
-export default function TabCoachToday(props) {
+export default function TabCoachToday({ todayClasses = [], ...rest }) {
+  const props = { todayClasses, ...rest };
   const [isMobile, setIsMobile] = useState(() =>
     typeof window !== 'undefined' ? window.innerWidth < 768 : false
   );
