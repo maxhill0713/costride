@@ -73,8 +73,9 @@ function classColor(name = "") {
 }
 
 function fmtTime(t) {
-  if (!t) return "—";
+  if (!t || typeof t !== "string") return "—";
   const [h, m] = t.split(":").map(Number);
+  if (isNaN(h)) return "—";
   const p = h >= 12 ? "PM" : "AM";
   return `${h % 12 || 12}:${String(m || 0).padStart(2,"0")} ${p}`;
 }
@@ -178,9 +179,10 @@ function ClassCard({ cls, isSelected, onSelect, onDuplicate, onDelete, bookings 
 
   const schedLabel = (() => {
     const s = cls.schedule?.[0];
-    if (!s) return fmtTime(cls.time||"");
-    const days = cls.schedule.map(x=>x.day).filter(Boolean).slice(0,2).join(", ");
-    return `${days}${days?" · ":""}${fmtTime(s.time||cls.time||"")}`.trim();
+    const timeStr = typeof s?.time === "string" ? s.time : (typeof cls.time === "string" ? cls.time : "");
+    if (!s) return fmtTime(timeStr);
+    const days = cls.schedule.map(x=>x.day).filter(x=>typeof x==="string").slice(0,2).join(", ");
+    return `${days}${days?" · ":""}${fmtTime(timeStr)}`.trim();
   })();
 
   const palette = ["#6366f1","#8b5cf6","#ec4899","#14b8a6","#f59e0b","#4d7fff","#10b981"];
@@ -345,9 +347,10 @@ function ClassControlCenter({ cls, bookings, allMemberships, onClose, onUpdateCl
 
   const schedLabel = (() => {
     const s = cls.schedule?.[0];
-    if (!s) return fmtTime(cls.time||"");
-    const days = cls.schedule.map(x=>x.day).filter(Boolean).join(", ");
-    return `${days}${days?" · ":""}${fmtTime(s.time||cls.time||"")}`.trim();
+    const timeStr = typeof s?.time === "string" ? s.time : (typeof cls.time === "string" ? cls.time : "");
+    if (!s) return fmtTime(timeStr);
+    const days = cls.schedule.map(x=>x.day).filter(x=>typeof x==="string").join(", ");
+    return `${days}${days?" · ":""}${fmtTime(timeStr)}`.trim();
   })();
 
   async function handleStatusChange(id, newStatus) {
