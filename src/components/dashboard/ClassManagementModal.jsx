@@ -318,13 +318,27 @@ function AttendeeRow({ attendee, onStatusChange, onRemove }) {
 }
 
 /* ─── CLASS CONTROL CENTRE (right panel = ContentPage RightSidebar) */
-function ClassControlCenter({ cls, bookings, allMemberships, onClose, onUpdateClass, onDeleteClass, onEditClass }) {
+function ClassControlCenter({ cls, bookings, allMemberships, onClose, onUpdateClass, onDeleteClass, onEditClass, coaches = [] }) {
   const color   = classColor(cls.name||"");
   const booked  = (cls.attendee_ids||[]).length;
   const max     = cls.max_capacity || 0;
   const status  = capacityStatus(booked, max);
   const fillPct = max > 0 ? Math.min(Math.round(booked/max*100),100) : 0;
   const isFull  = max > 0 && booked >= max;
+
+  // Cover coach state
+  const [coverCoach,    setCoverCoach]    = useState(cls.instructor || cls.coach_name || "");
+  const [savingCoach,   setSavingCoach]   = useState(false);
+  const [coachSaved,    setCoachSaved]    = useState(false);
+  const originalCoach = cls.instructor || cls.coach_name || "";
+
+  async function handleSaveCoverCoach() {
+    setSavingCoach(true);
+    await onUpdateClass(cls.id, { instructor: coverCoach, coach_name: coverCoach });
+    setSavingCoach(false);
+    setCoachSaved(true);
+    setTimeout(() => setCoachSaved(false), 2000);
+  }
 
   const [attendees, setAttendees] = useState(() => {
     const ids = cls.attendee_ids || [];
@@ -446,6 +460,44 @@ function ClassControlCenter({ cls, bookings, allMemberships, onClose, onUpdateCl
               <div style={{ fontSize:9, color:C.t3, textTransform:"uppercase", letterSpacing:"0.07em", marginTop:3, fontWeight:600 }}>{s.label}</div>
             </div>
           ))}
+        </div>
+
+        {/* Cover coach assignment */}
+        <div style={{ marginTop:10, padding:"10px 12px", borderRadius:9, background:C.card2, border:`1px solid ${C.brd}` }}>
+          <div style={{ fontSize:9.5, fontWeight:700, color:C.t3, textTransform:"uppercase", letterSpacing:"0.08em", marginBottom:7 }}>
+            Assign Cover Coach
+          </div>
+          <div style={{ display:"flex", gap:6 }}>
+            {coaches.length > 0 ? (
+              <select value={coverCoach} onChange={e=>setCoverCoach(e.target.value)}
+                style={{ flex:1, background:"rgba(255,255,255,0.03)", border:`1px solid ${C.brd}`, color:coverCoach?C.t1:C.t3, fontSize:12, fontFamily:FONT, outline:"none", borderRadius:7, padding:"6px 9px", cursor:"pointer" }}>
+                <option value="">No coach assigned</option>
+                {coaches.map(c=><option key={c.id} value={c.name}>{c.name}</option>)}
+              </select>
+            ) : (
+              <input value={coverCoach} onChange={e=>setCoverCoach(e.target.value)} placeholder="Coach name…"
+                style={{ flex:1, background:"rgba(255,255,255,0.03)", border:`1px solid ${C.brd}`, color:C.t1, fontSize:12, fontFamily:FONT, outline:"none", borderRadius:7, padding:"6px 9px" }}
+                onFocus={e=>e.target.style.borderColor=C.cyanBrd} onBlur={e=>e.target.style.borderColor=C.brd} />
+            )}
+            <button className="cmm3-btn" onClick={handleSaveCoverCoach}
+              disabled={savingCoach || coverCoach === originalCoach}
+              style={{ padding:"6px 11px", borderRadius:7, fontSize:11, fontWeight:700, flexShrink:0,
+                background: coachSaved ? C.greenDim : (coverCoach !== originalCoach ? C.cyanDim : "rgba(255,255,255,0.03)"),
+                border: `1px solid ${coachSaved ? C.greenBrd : (coverCoach !== originalCoach ? C.cyanBrd : C.brd)}`,
+                color: coachSaved ? C.green : (coverCoach !== originalCoach ? C.cyan : C.t3),
+                cursor: coverCoach === originalCoach ? "default" : "pointer",
+                opacity: savingCoach ? 0.6 : 1,
+              }}>
+              {coachSaved ? <Check style={{ width:10, height:10 }} /> : <Save style={{ width:10, height:10 }} />}
+              {savingCoach ? "Saving…" : coachSaved ? "Saved!" : "Save"}
+            </button>
+          </div>
+          {originalCoach && coverCoach !== originalCoach && coverCoach && (
+            <div style={{ fontSize:10, color:C.amber, marginTop:5, display:"flex", alignItems:"center", gap:4 }}>
+              <Zap style={{ width:9, height:9 }} />
+              Replacing <span style={{ fontWeight:700 }}>{originalCoach}</span> with <span style={{ fontWeight:700 }}>{coverCoach}</span>
+            </div>
+          )}
         </div>
       </div>
 
@@ -953,6 +1005,7 @@ export default function ClassManagementModal({
               cls={selected}
               bookings={bookings}
               allMemberships={allMemberships}
+              coaches={coaches}
               onClose={()=>setSelected(null)}
               onUpdateClass={async(id,data)=>{ await onUpdateClass?.(id,data); }}
               onDeleteClass={id=>{ onDeleteClass?.(id); setSelected(null); }}
