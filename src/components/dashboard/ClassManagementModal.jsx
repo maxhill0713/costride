@@ -4,9 +4,13 @@ import {
   Trash2, Copy, UserPlus, ChevronDown, MoreHorizontal,
   XCircle, TrendingUp, TrendingDown, MessageCircle,
   Zap, AlertCircle, BarChart3, RefreshCw, Settings2,
-  ChevronRight, Minus, ArrowUpRight, ArrowDownRight,
+  ChevronRight, Minus, ArrowUpRight, ArrowDownRight, Save, Calendar,
 } from "lucide-react";
 import { base44 } from "@/api/base44Client";
+
+/* ─── CONSTANTS ─────────────────────────────────────────────── */
+const DAYS_OF_WEEK = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+const CLASS_TYPES  = ["HIIT", "Yoga", "Pilates", "Strength", "Cardio", "Boxing", "Spin", "CrossFit", "Mobility", "Open Gym", "Other"];
 
 /* ─── DESIGN TOKENS (matches ContentPage) ──────────────────── */
 const C = {
@@ -108,6 +112,214 @@ const BOOKING_STATUS = {
   waitlist:  { label: "Waitlist",  color: C.amber, bg: C.amberD, brd: C.amberB },
   cancelled: { label: "Cancelled", color: C.t3,    bg: "rgba(255,255,255,0.04)", brd: C.brd },
 };
+
+/* ─── CLASS EDITOR MODAL ─────────────────────────────────────── */
+function ClassEditorModal({ cls, coaches, onClose, onSave }) {
+  const isEdit = !!cls?.id;
+  const [form, setForm] = useState({
+    name: cls?.name || "",
+    class_type: cls?.class_type || "",
+    description: cls?.description || "",
+    instructor: cls?.instructor || cls?.coach_name || "",
+    location: cls?.location || "",
+    max_capacity: cls?.max_capacity || "",
+    duration_minutes: cls?.duration_minutes || 60,
+    schedule_type: cls?.schedule_type || "recurring",
+    schedule: cls?.schedule?.length ? cls.schedule : [{ day: "Monday", time: "09:00" }],
+    single_date: cls?.single_date || "",
+    single_time: cls?.single_time || cls?.time || "09:00",
+    bookings_enabled: cls?.bookings_enabled !== false,
+    booking_deadline_hours: cls?.booking_deadline_hours || "",
+    status: cls?.status || "active",
+  });
+  const [saving, setSaving] = useState(false);
+  const set = (k, v) => setForm(f => ({ ...f, [k]: v }));
+
+  const inputStyle = {
+    width: "100%", boxSizing: "border-box",
+    background: "rgba(255,255,255,0.03)", border: `1px solid ${C.brd}`,
+    color: C.t1, fontSize: 13, fontFamily: FONT, outline: "none",
+    borderRadius: 9, padding: "9px 12px", transition: "border-color .18s",
+  };
+
+  async function handleSave() {
+    if (!form.name.trim()) return;
+    setSaving(true);
+    const payload = {
+      ...form,
+      max_capacity: form.max_capacity ? Number(form.max_capacity) : null,
+      duration_minutes: Number(form.duration_minutes) || 60,
+      booking_deadline_hours: form.booking_deadline_hours ? Number(form.booking_deadline_hours) : null,
+      schedule: form.schedule_type === "single"
+        ? [{ date: form.single_date, time: form.single_time }]
+        : form.schedule,
+      time: form.schedule_type === "single" ? form.single_time : (form.schedule[0]?.time || "09:00"),
+    };
+    await onSave(payload);
+    setSaving(false);
+  }
+
+  return (
+    <div onClick={e => e.target === e.currentTarget && onClose()}
+      style={{ position: "fixed", inset: 0, zIndex: 10000, background: "rgba(0,0,0,0.85)", backdropFilter: "blur(6px)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20, fontFamily: FONT }}>
+      <div style={{ width: 560, maxWidth: "95vw", maxHeight: "90vh", background: C.card, border: `1px solid ${C.brd2}`, borderRadius: 14, display: "flex", flexDirection: "column", overflow: "hidden", boxShadow: "0 40px 80px rgba(0,0,0,0.8)" }}>
+
+        <div style={{ padding: "16px 20px", borderBottom: `1px solid ${C.brd}`, display: "flex", alignItems: "center", justifyContent: "space-between", flexShrink: 0 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 9 }}>
+            <div style={{ width: 28, height: 28, borderRadius: 8, background: C.violetD, border: `1px solid ${C.violetB}`, display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <Dumbbell style={{ width: 13, height: 13, color: C.violet }} />
+            </div>
+            <span style={{ fontSize: 15, fontWeight: 700, color: C.t1 }}>{isEdit ? "Edit Class" : "Create Class"}</span>
+          </div>
+          <button className="cmm2-btn" onClick={onClose} style={{ width: 28, height: 28, borderRadius: 7, background: "transparent", border: `1px solid ${C.brd}`, color: C.t3, justifyContent: "center" }}>
+            <X style={{ width: 13, height: 13 }} />
+          </button>
+        </div>
+
+        <div className="cmm2-scr" style={{ flex: 1, overflowY: "auto", padding: "18px 20px", display: "flex", flexDirection: "column", gap: 13 }}>
+
+          <div style={{ display: "flex", gap: 12 }}>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontSize: 10, fontWeight: 600, color: C.t3, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 6 }}>Class Name *</div>
+              <input value={form.name} onChange={e => set("name", e.target.value)} placeholder="e.g. Morning HIIT" style={inputStyle} onFocus={e => e.target.style.borderColor = C.cyanB} onBlur={e => e.target.style.borderColor = C.brd} />
+            </div>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontSize: 10, fontWeight: 600, color: C.t3, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 6 }}>Class Type</div>
+              <select value={form.class_type} onChange={e => set("class_type", e.target.value)} style={{ ...inputStyle, cursor: "pointer" }}>
+                <option value="">Select type…</option>
+                {CLASS_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+              </select>
+            </div>
+          </div>
+
+          <div>
+            <div style={{ fontSize: 10, fontWeight: 600, color: C.t3, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 6 }}>Description</div>
+            <textarea value={form.description} onChange={e => set("description", e.target.value)} rows={2} placeholder="Brief description…" style={{ ...inputStyle, resize: "vertical" }} onFocus={e => e.target.style.borderColor = C.cyanB} onBlur={e => e.target.style.borderColor = C.brd} />
+          </div>
+
+          <div style={{ display: "flex", gap: 12 }}>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontSize: 10, fontWeight: 600, color: C.t3, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 6 }}>Instructor</div>
+              {coaches?.length > 0 ? (
+                <select value={form.instructor} onChange={e => set("instructor", e.target.value)} style={{ ...inputStyle, cursor: "pointer" }}>
+                  <option value="">Select coach…</option>
+                  {coaches.map(c => <option key={c.id} value={c.name}>{c.name}</option>)}
+                </select>
+              ) : (
+                <input value={form.instructor} onChange={e => set("instructor", e.target.value)} placeholder="Coach name" style={inputStyle} onFocus={e => e.target.style.borderColor = C.cyanB} onBlur={e => e.target.style.borderColor = C.brd} />
+              )}
+            </div>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontSize: 10, fontWeight: 600, color: C.t3, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 6 }}>Location</div>
+              <input value={form.location} onChange={e => set("location", e.target.value)} placeholder="e.g. Studio A" style={inputStyle} onFocus={e => e.target.style.borderColor = C.cyanB} onBlur={e => e.target.style.borderColor = C.brd} />
+            </div>
+          </div>
+
+          <div style={{ display: "flex", gap: 12 }}>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontSize: 10, fontWeight: 600, color: C.t3, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 6 }}>Max Capacity</div>
+              <input type="number" value={form.max_capacity} onChange={e => set("max_capacity", e.target.value)} placeholder="Unlimited" min={1} style={inputStyle} onFocus={e => e.target.style.borderColor = C.cyanB} onBlur={e => e.target.style.borderColor = C.brd} />
+            </div>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontSize: 10, fontWeight: 600, color: C.t3, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 6 }}>Duration (minutes)</div>
+              <input type="number" value={form.duration_minutes} onChange={e => set("duration_minutes", e.target.value)} min={15} step={15} style={inputStyle} onFocus={e => e.target.style.borderColor = C.cyanB} onBlur={e => e.target.style.borderColor = C.brd} />
+            </div>
+          </div>
+
+          {/* Schedule type */}
+          <div>
+            <div style={{ fontSize: 10, fontWeight: 600, color: C.t3, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 8 }}>Schedule Type</div>
+            <div style={{ display: "flex", gap: 8 }}>
+              {[{ v: "recurring", label: "Recurring (Weekly)", icon: RefreshCw }, { v: "single", label: "Single Date", icon: Calendar }].map(opt => {
+                const Ic = opt.icon;
+                const active = form.schedule_type === opt.v;
+                return (
+                  <button key={opt.v} className="cmm2-btn" onClick={() => set("schedule_type", opt.v)}
+                    style={{ flex: 1, padding: "9px 14px", borderRadius: 9, border: `1px solid ${active ? C.cyanB : C.brd}`, background: active ? C.cyanD : "transparent", color: active ? C.cyan : C.t2, fontSize: 12, fontWeight: 600, justifyContent: "center" }}>
+                    <Ic style={{ width: 12, height: 12 }} />{opt.label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {form.schedule_type === "recurring" ? (
+            <div>
+              <div style={{ fontSize: 10, fontWeight: 600, color: C.t3, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 8 }}>Days & Times</div>
+              <div style={{ display: "flex", flexDirection: "column", gap: 7 }}>
+                {form.schedule.map((s, i) => (
+                  <div key={i} style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                    <select value={s.day} onChange={e => setForm(f => ({ ...f, schedule: f.schedule.map((x, idx) => idx === i ? { ...x, day: e.target.value } : x) }))} style={{ ...inputStyle, flex: 1 }}>
+                      {DAYS_OF_WEEK.map(d => <option key={d} value={d}>{d}</option>)}
+                    </select>
+                    <input type="time" value={s.time} onChange={e => setForm(f => ({ ...f, schedule: f.schedule.map((x, idx) => idx === i ? { ...x, time: e.target.value } : x) }))} style={{ ...inputStyle, width: 120, flex: "none" }} onFocus={e => e.target.style.borderColor = C.cyanB} onBlur={e => e.target.style.borderColor = C.brd} />
+                    {form.schedule.length > 1 && (
+                      <button className="cmm2-btn" onClick={() => setForm(f => ({ ...f, schedule: f.schedule.filter((_, idx) => idx !== i) }))} style={{ width: 28, height: 28, borderRadius: 7, background: C.redD, border: `1px solid ${C.redB}`, color: C.red, justifyContent: "center", flexShrink: 0 }}>
+                        <X style={{ width: 11, height: 11 }} />
+                      </button>
+                    )}
+                  </div>
+                ))}
+                <button className="cmm2-btn" onClick={() => setForm(f => ({ ...f, schedule: [...f.schedule, { day: "Monday", time: "09:00" }] }))} style={{ padding: "7px 12px", borderRadius: 7, background: "transparent", border: `1px dashed ${C.brd2}`, color: C.t3, fontSize: 12 }}>
+                  <Plus style={{ width: 11, height: 11 }} /> Add another day
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div style={{ display: "flex", gap: 12 }}>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: 10, fontWeight: 600, color: C.t3, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 6 }}>Date</div>
+                <input type="date" value={form.single_date} onChange={e => set("single_date", e.target.value)} style={inputStyle} onFocus={e => e.target.style.borderColor = C.cyanB} onBlur={e => e.target.style.borderColor = C.brd} />
+              </div>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: 10, fontWeight: 600, color: C.t3, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 6 }}>Time</div>
+                <input type="time" value={form.single_time} onChange={e => set("single_time", e.target.value)} style={inputStyle} onFocus={e => e.target.style.borderColor = C.cyanB} onBlur={e => e.target.style.borderColor = C.brd} />
+              </div>
+            </div>
+          )}
+
+          {/* Booking controls */}
+          <div style={{ padding: "12px 14px", borderRadius: 10, background: C.card2, border: `1px solid ${C.brd}` }}>
+            <div style={{ fontSize: 11, fontWeight: 700, color: C.t2, textTransform: "uppercase", letterSpacing: "0.07em", marginBottom: 10 }}>Booking Controls</div>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
+              <div>
+                <div style={{ fontSize: 13, fontWeight: 600, color: C.t1 }}>Enable Bookings</div>
+                <div style={{ fontSize: 11, color: C.t3 }}>Allow members to book this class</div>
+              </div>
+              <button className="cmm2-btn" onClick={() => set("bookings_enabled", !form.bookings_enabled)}
+                style={{ width: 44, height: 24, borderRadius: 12, background: form.bookings_enabled ? C.green : C.brd2, border: "none", padding: 2, justifyContent: "flex-start" }}>
+                <div style={{ width: 20, height: 20, borderRadius: "50%", background: "#fff", transition: "transform .2s", transform: form.bookings_enabled ? "translateX(20px)" : "none" }} />
+              </button>
+            </div>
+            <div>
+              <div style={{ fontSize: 10, fontWeight: 600, color: C.t3, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 6 }}>Booking Deadline (hours before)</div>
+              <input type="number" value={form.booking_deadline_hours} onChange={e => set("booking_deadline_hours", e.target.value)} placeholder="No deadline" min={0} style={inputStyle} onFocus={e => e.target.style.borderColor = C.cyanB} onBlur={e => e.target.style.borderColor = C.brd} />
+            </div>
+          </div>
+
+          {isEdit && (
+            <div>
+              <div style={{ fontSize: 10, fontWeight: 600, color: C.t3, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 6 }}>Status</div>
+              <select value={form.status} onChange={e => set("status", e.target.value)} style={{ ...inputStyle, cursor: "pointer" }}>
+                <option value="active">Active</option>
+                <option value="completed">Completed</option>
+                <option value="cancelled">Cancelled</option>
+              </select>
+            </div>
+          )}
+        </div>
+
+        <div style={{ padding: "12px 20px", borderTop: `1px solid ${C.brd}`, display: "flex", gap: 8, justifyContent: "flex-end", flexShrink: 0 }}>
+          <button className="cmm2-btn" onClick={onClose} style={{ padding: "9px 18px", borderRadius: 9, background: "transparent", border: `1px solid ${C.brd}`, color: C.t2, fontSize: 13, fontWeight: 600 }}>Cancel</button>
+          <button className="cmm2-btn" onClick={handleSave} disabled={!form.name.trim() || saving}
+            style={{ padding: "9px 22px", borderRadius: 9, background: form.name.trim() ? C.violet : C.brd, border: "none", color: form.name.trim() ? "#fff" : C.t3, fontSize: 13, fontWeight: 700, opacity: saving ? 0.7 : 1 }}>
+            <Save style={{ width: 13, height: 13 }} />{saving ? "Saving…" : isEdit ? "Save Changes" : "Create Class"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 /* ─── KPI STRIP ─────────────────────────────────────────────── */
 function KpiStrip({ classes, bookings }) {
@@ -912,9 +1124,19 @@ export default function ClassManagementModal({
   const [filter,      setFilter]      = useState("all");
   const [selected,    setSelected]    = useState(null);
   const [coachFilter, setCoachFilter] = useState("all");
+  const [editing,     setEditing]     = useState(null); // null | "new" | cls object
+
+  async function handleSaveClass(data) {
+    if (editing?.id) {
+      await onUpdateClass?.(editing.id, data);
+    } else {
+      await onCreateClass?.(data);
+    }
+    setEditing(null);
+  }
 
   useEffect(() => {
-    if (!open) { setSelected(null); setSearch(""); return; }
+    if (!open) { setSelected(null); setSearch(""); setEditing(null); return; }
     if (initialClassId) {
       const match = classes.find(c => c.id === initialClassId);
       if (match) setSelected(match);
@@ -991,7 +1213,7 @@ export default function ClassManagementModal({
             </div>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <button className="cmm2-btn" onClick={() => onCreateClass?.()}
+            <button className="cmm2-btn" onClick={() => setEditing("new")}
               style={{
                 padding: "8px 18px", borderRadius: RADIUS.md,
                 background: C.violet, border: "none",
@@ -1116,7 +1338,7 @@ export default function ClassManagementModal({
                       : "Try adjusting your search or filters"}
                   </div>
                   {classes.length === 0 && (
-                    <button className="cmm2-btn" onClick={() => onCreateClass?.()}
+                    <button className="cmm2-btn" onClick={() => setEditing("new")}
                       style={{
                         padding: "10px 22px", borderRadius: RADIUS.md,
                         background: C.violet, border: "none",
@@ -1179,6 +1401,16 @@ export default function ClassManagementModal({
           )}
         </div>
       </div>
+
+      {/* Class Editor */}
+      {editing && (
+        <ClassEditorModal
+          cls={editing === "new" ? null : editing}
+          coaches={coaches}
+          onClose={() => setEditing(null)}
+          onSave={handleSaveClass}
+        />
+      )}
     </div>
   );
 }
