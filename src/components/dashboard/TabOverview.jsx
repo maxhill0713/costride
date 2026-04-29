@@ -530,7 +530,7 @@ function CurrentlyInGym({ checkIns = [], allMemberships = [], avatarMap = {}, gy
   return (
     <div style={{
       background: C.card, border: `1px solid ${C.brd}`, borderRadius: 10,
-      padding: '10px 16px 10px 10px',
+      padding: '5px 16px 5px 10px',
       flex: 1, display: 'flex', flexDirection: 'column', minHeight: 80,
       position: 'relative',
     }}>
@@ -558,9 +558,10 @@ function CurrentlyInGym({ checkIns = [], allMemberships = [], avatarMap = {}, gy
           overflow: 'hidden',
         }}>
           {visible.map((ci, i) => {
-            const name   = ci.user_name || 'Member';
-            const avatar = getMemberAvatar(ci);
-            const time   = timeLabel(ci);
+            const fullName  = ci.user_name || 'Member';
+            const firstName = fullName.split(' ')[0];
+            const avatar    = getMemberAvatar(ci);
+            const time      = timeLabel(ci);
             return (
               <div
                 key={ci.user_id || i}
@@ -568,8 +569,8 @@ function CurrentlyInGym({ checkIns = [], allMemberships = [], avatarMap = {}, gy
                   display: 'flex',
                   flexDirection: 'column',
                   alignItems: 'center',
-                  paddingTop: 10,
-                  paddingBottom: 10,
+                  paddingTop: 3,    // 70% reduction from 10px
+                  paddingBottom: 5, // half of original 10px
                   paddingLeft: 8,
                   paddingRight: 8,
                   borderRadius: 10,
@@ -579,7 +580,6 @@ function CurrentlyInGym({ checkIns = [], allMemberships = [], avatarMap = {}, gy
                   flex: '0 0 auto',
                   transition: 'border-color 0.15s',
                   boxSizing: 'border-box',
-                  // Fill the available height
                   alignSelf: 'stretch',
                   justifyContent: 'flex-start',
                 }}
@@ -587,11 +587,11 @@ function CurrentlyInGym({ checkIns = [], allMemberships = [], avatarMap = {}, gy
                 onMouseLeave={e => e.currentTarget.style.borderColor = C.brd}
               >
                 {/* Large avatar at the top */}
-                <div style={{ marginBottom: 8, flexShrink: 0 }}>
-                  <Av name={name} src={avatar} size={AVATAR_SIZE} />
+                <div style={{ marginBottom: 4, flexShrink: 0 }}>
+                  <Av name={firstName} src={avatar} size={AVATAR_SIZE} />
                 </div>
 
-                {/* Name — wraps to two lines, centred */}
+                {/* First name only */}
                 <div style={{
                   fontSize: 12,
                   fontWeight: 700,
@@ -600,9 +600,9 @@ function CurrentlyInGym({ checkIns = [], allMemberships = [], avatarMap = {}, gy
                   lineHeight: 1.3,
                   wordBreak: 'break-word',
                   width: '100%',
-                  marginBottom: 4,
+                  marginBottom: 2,
                 }}>
-                  {name}
+                  {firstName}
                 </div>
 
                 {/* Check-in time */}
