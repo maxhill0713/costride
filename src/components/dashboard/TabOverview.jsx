@@ -496,6 +496,124 @@ function ScheduleTimeline({ classes }) {
   );
 }
 
+/* ─── CURRENTLY IN THE GYM ───────────────────────────────────── */
+function CurrentlyInGym({ checkIns = [], allMemberships = [], avatarMap = {}, gymId }) {
+  const MAX_VISIBLE = 8;
+  const TWO_HOURS   = 2 * 60 * 60 * 1000;
+  const now         = Date.now();
+
+  // Members who checked in within the last 2 hours at this gym
+  // and have NOT logged a workout since their check-in
+  const liveMembers = useMemo(() => {
+    const gymCheckIns = (checkIns || [])
+      .filter(c => {
+        const ts = new Date(c.check_in_date || c.created_date || 0).getTime();
+        const matchesGym = !gymId || c.gym_id === gymId;
+        return matchesGym && (now - ts) < TWO_HOURS && !c.is_rest_day;
+      })
+      .sort((a, b) => new Date(b.check_in_date || b.created_date) - new Date(a.check_in_date || a.created_date));
+
+    // Deduplicate by user_id (keep most recent per user)
+    const seen = new Set();
+    return gymCheckIns.filter(c => {
+      if (seen.has(c.user_id)) return false;
+      seen.add(c.user_id);
+      return true;
+    });
+  }, [checkIns, gymId, now]);
+
+  const visible  = liveMembers.slice(0, MAX_VISIBLE);
+  const overflow = Math.max(0, liveMembers.length - MAX_VISIBLE);
+
+  function timeLabel(ci) {
+    const ts = new Date(ci.check_in_date || ci.created_date || 0).getTime();
+    const diffMin = Math.round((now - ts) / 60000);
+    if (diffMin < 1)  return 'just now';
+    if (diffMin < 60) return `${diffMin}m ago`;
+    return `${Math.floor(diffMin / 60)}h ago`;
+  }
+
+  function getMemberAvatar(ci) {
+    if (avatarMap[ci.user_id]) return avatarMap[ci.user_id];
+    const member = (allMemberships || []).find(m => m.user_id === ci.user_id);
+    return member?.avatar_url || null;
+  }
+
+  return (
+    <div style={{
+      background: C.card, border: `1px solid ${C.brd}`, borderRadius: 10,
+      padding: '10px 16px 14px', flex: 1, display: 'flex', flexDirection: 'column', minHeight: 80,
+    }}>
+      {/* Header */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12, flexShrink: 0 }}>
+        <span style={{ fontSize: 13, fontWeight: 600, color: C.t1 }}>Currently in the Gym</span>
+        {liveMembers.length > 0 && (
+          <span style={{
+            fontSize: 11, fontWeight: 700, color: C.green,
+            background: C.greenDim, border: '1px solid rgba(34,197,94,0.28)',
+            borderRadius: 5, padding: '2px 7px',
+          }}>
+            {liveMembers.length} live
+          </span>
+        )}
+        {/* Pulsing dot */}
+        {liveMembers.length > 0 && (
+          <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 5 }}>
+            <div style={{ width: 7, height: 7, borderRadius: '50%', background: C.green, boxShadow: `0 0 6px ${C.green}`, animation: 'liveGymPulse 2s ease-in-out infinite' }} />
+            <span style={{ fontSize: 10.5, color: C.green, fontWeight: 600 }}>Live</span>
+          </div>
+        )}
+      </div>
+
+      <style>{`@keyframes liveGymPulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.5;transform:scale(1.3)} }`}</style>
+
+      {liveMembers.length === 0 ? (
+        <div style={{ fontSize: 12, color: C.t3, display: 'flex', alignItems: 'center', justifyContent: 'center', flex: 1 }}>
+          No members currently checked in
+        </div>
+      ) : (
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, flex: 1, flexWrap: 'nowrap', overflow: 'hidden' }}>
+          {visible.map((ci, i) => {
+            const name   = ci.user_name || 'Member';
+            const avatar = getMemberAvatar(ci);
+            const time   = timeLabel(ci);
+            return (
+              <div key={ci.user_id || i} style={{
+                display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5,
+                padding: '8px 10px', borderRadius: 10,
+                background: 'rgba(255,255,255,0.025)',
+                border: `1px solid ${C.brd}`,
+                minWidth: 72, maxWidth: 90, flex: '0 0 auto',
+                transition: 'border-color 0.15s',
+              }}
+                onMouseEnter={e => e.currentTarget.style.borderColor = C.cyanBrd}
+                onMouseLeave={e => e.currentTarget.style.borderColor = C.brd}
+              >
+                <Av name={name} src={avatar} size={40} />
+                <div style={{ fontSize: 11, fontWeight: 700, color: C.t1, textAlign: 'center', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', width: '100%' }}>
+                  {name.split(' ')[0]}
+                </div>
+                <div style={{ fontSize: 9.5, color: C.t3, fontWeight: 500 }}>{time}</div>
+              </div>
+            );
+          })}
+          {overflow > 0 && (
+            <div style={{
+              display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 4,
+              padding: '8px 10px', borderRadius: 10,
+              background: C.cyanDim, border: `1px solid ${C.cyanBrd}`,
+              minWidth: 60, flex: '0 0 auto',
+            }}>
+              <div style={{ fontSize: 16, fontWeight: 800, color: C.cyan }}>+{overflow}</div>
+              <div style={{ fontSize: 9.5, color: C.cyan, fontWeight: 600 }}>more</div>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 /* ═══════════════════════════════════════════════════════════════
    DESKTOP OVERVIEW
 ═══════════════════════════════════════════════════════════════ */
@@ -664,19 +782,8 @@ function DesktopOverview({
         </div>
       </div>
 
-      {/* ── Currently in the Gym — grows to fill remaining page space ── */}
-      <div style={{ background: C.card, border: `1px solid ${C.brd}`, borderRadius: 10, padding: '8px 16px 14px', flex: 1, display: 'flex', flexDirection: 'column', minHeight: 80 }}>
-        <div style={{ marginBottom: 11, flexShrink: 0 }}>
-          <span style={{ fontSize: 13, fontWeight: 600, color: C.t1 }}>Currently in the Gym</span>
-        </div>
-        <div style={{
-          fontSize: 12, color: C.t3, textAlign: 'center',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          flex: 1,
-        }}>
-          Live gym presence will appear here
-        </div>
-      </div>
+      {/* ── Currently in the Gym ── */}
+      <CurrentlyInGym checkIns={checkIns} allMemberships={allMemberships} avatarMap={avatarMap} gymId={gymId} />
     </div>
   );
 }
