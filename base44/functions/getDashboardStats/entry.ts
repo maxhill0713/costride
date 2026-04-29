@@ -427,9 +427,9 @@ Deno.serve(async (req) => {
       }
     } catch (_) { /* non-critical — fall back to membership avatars */ }
 
-    // Lightweight recent check-ins for UI (last 50, no internal id)
-    const recentCheckIns = checkIns.slice(0, 50).map(c => ({
-      user_id: c.user_id, user_name: c.user_name, check_in_date: c.check_in_date,
+    // Lightweight recent check-ins for UI (last 100, includes gym_id for "Currently in Gym" filtering)
+    const recentCheckIns = checkIns.slice(0, 100).map(c => ({
+      user_id: c.user_id, user_name: c.user_name, check_in_date: c.check_in_date, gym_id: c.gym_id,
     }));
 
     const responseBody = {

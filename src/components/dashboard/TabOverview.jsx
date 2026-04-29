@@ -622,7 +622,7 @@ function DesktopOverview({
   retentionRate, newSignUps, monthChangePct, atRisk, sparkData,
   checkIns, allMemberships, challenges, posts, events, classes,
   atRiskMembers, openModal, setTab, ownerName, avatarMap = {},
-  peakLabel, peakEntry,
+  peakLabel, peakEntry, selectedGym,
 }) {
   const twoHoursAgo = Date.now() - 2 * 60 * 60 * 1000;
   const liveCount = (checkIns || []).filter(c =>
@@ -656,7 +656,7 @@ function DesktopOverview({
   const hour        = new Date().getHours();
   const greeting    = hour < 12 ? 'morning' : hour < 17 ? 'afternoon' : 'evening';
   const greetingCap = greeting.charAt(0).toUpperCase() + greeting.slice(1);
-  const gymId       = events?.[0]?.gym_id;
+  const gymId       = selectedGym?.id || events?.[0]?.gym_id;
 
   // Schedule + at-risk card total height
   const CARD_INNER_H = TIMELINE_VIEWPORT_H + 46 + 32;
