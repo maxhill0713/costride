@@ -742,7 +742,7 @@ function RightSidebar({ workouts, workoutStats, posts, polls, events, openModal 
   ];
 
   return (
-    <div style={{ width: 244, flexShrink: 0, background: C.sidebar, borderLeft: `1px solid ${C.brd}`, display: 'flex', flexDirection: 'column', fontFamily: FONT, alignSelf: 'flex-start' }}>
+    <div style={{ width: 244, flexShrink: 0, background: C.sidebar, borderLeft: `1px solid ${C.brd}`, display: 'flex', flexDirection: 'column', fontFamily: FONT, overflowY: 'auto', scrollbarWidth: 'thin', scrollbarColor: `${C.brd} transparent` }}>
       {/* Header — exact match to ContentPage "Content Overview" */}
       <div style={{ padding: '16px 16px 12px', borderBottom: `1px solid ${C.brd}` }}>
         <div style={{ fontSize: 12, fontWeight: 700, color: C.t1 }}>Library Overview</div>
@@ -1241,13 +1241,6 @@ export default function TabCoachContent({
         assignedMemberIds: assignedIds,
       };
     });
-    return stats
-  // ─────────────────────────────────────────────────────────────────────────────
-// PASTE THIS DIRECTLY AFTER THE TRUNCATED LINE:
-//   return stats
-// (i.e. replace everything from "return stats" to end-of-file with this block)
-// ─────────────────────────────────────────────────────────────────────────────
-
     return stats;
   }, [workouts, checkIns, now]);
 
@@ -1291,12 +1284,12 @@ export default function TabCoachContent({
 
   // ── Layout ──────────────────────────────────────────────────────────────────
   return (
-    <div style={{ display: 'flex', minHeight: '100%', background: C.bg, fontFamily: FONT }}>
+    <div style={{ display: 'flex', background: C.bg, fontFamily: FONT, height: 'calc(100vh - 80px)', boxSizing: 'border-box', overflow: 'hidden' }}>
 
       {/* ── Main column ── */}
-      <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column' }}>
+      <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
 
-        {/* Page header */}
+        {/* Page header — matches TabCoachToday header style */}
         <div style={{
           padding: isMobile ? '16px 16px 12px' : '20px 24px 16px',
           borderBottom: `1px solid ${C.brd}`,
@@ -1309,41 +1302,38 @@ export default function TabCoachContent({
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
-            flexWrap: 'wrap',
-            gap: 10,
+            gap: 16,
             marginBottom: 14,
           }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <h1 style={{
+              fontSize: 23, fontWeight: 700, color: C.t1,
+              margin: 0, letterSpacing: '-0.02em', lineHeight: 1.25,
+              whiteSpace: 'nowrap', flexShrink: 0,
+            }}>
+              Workout <span style={{ color: C.cyan }}>Library</span>
+            </h1>
+            <div style={{ flex: 1, minWidth: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <div style={{
-                width: 34, height: 34, borderRadius: 10,
-                background: C.violetDim, border: `1px solid ${C.violetBrd}`,
-                display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+                padding: '0 14px', height: 37, display: 'flex', alignItems: 'center',
+                background: 'rgba(77,127,255,0.11)', borderRadius: 4,
+                fontSize: 11.5, fontWeight: 600, color: '#93c5fd',
+                fontFamily: FONT, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+                maxWidth: '80%',
               }}>
-                <Dumbbell style={{ width: 15, height: 15, color: C.violet }} />
-              </div>
-              <div>
-                <div style={{ fontSize: 17, fontWeight: 800, color: C.t1, letterSpacing: '-.02em', lineHeight: 1.2 }}>
-                  Workout Library
-                </div>
-                <div style={{ fontSize: 11, color: C.t3, fontWeight: 500, marginTop: 2 }}>
-                  {workouts.length} workout{workouts.length !== 1 ? 's' : ''} · Build, assign &amp; track
-                </div>
+                {workouts.length} workout{workouts.length !== 1 ? 's' : ''} in your library · Build, assign &amp; track client programmes
               </div>
             </div>
-
             <button
               onClick={handleNew}
               style={{
                 display: 'flex', alignItems: 'center', gap: 7,
-                padding: '9px 18px', borderRadius: 10,
+                padding: '7.5px 18px', borderRadius: 9,
                 ...GRAD_BTN,
-                fontSize: 12, fontWeight: 800,
-                boxShadow: '0 2px 14px rgba(37,99,235,0.30)',
-                letterSpacing: '-.01em', cursor: 'pointer',
-                fontFamily: FONT, outline: 'none',
+                fontSize: 12.5, fontWeight: 700,
+                cursor: 'pointer', fontFamily: FONT, outline: 'none',
                 transition: 'opacity .14s', flexShrink: 0,
               }}
-              onMouseEnter={e => (e.currentTarget.style.opacity = '.85')}
+              onMouseEnter={e => (e.currentTarget.style.opacity = '0.88')}
               onMouseLeave={e => (e.currentTarget.style.opacity = '1')}
             >
               <Plus style={{ width: 13, height: 13 }} /> New Workout
@@ -1406,7 +1396,7 @@ export default function TabCoachContent({
         </div>
 
         {/* Page body */}
-        <div style={{ flex: 1, padding: isMobile ? '16px' : '20px 24px', overflow: 'auto' }}>
+        <div style={{ flex: 1, padding: isMobile ? '16px' : '20px 24px', overflowY: 'auto', scrollbarWidth: 'thin', scrollbarColor: `${C.brd} transparent` }}>
 
           {/* Performance overview — hidden when editor is open */}
           {!showEditor && (
