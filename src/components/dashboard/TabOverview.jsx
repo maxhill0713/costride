@@ -532,16 +532,15 @@ function CurrentlyInGym({ checkIns = [], allMemberships = [], avatarMap = {}, gy
       background: C.card, border: `1px solid ${C.brd}`, borderRadius: 10,
       padding: '10px 16px 10px 10px',
       flex: 1, display: 'flex', flexDirection: 'column', minHeight: 80,
+      position: 'relative',
     }}>
 
-      {/* Live indicator — top right */}
+      {/* Live indicator — top right, absolutely positioned so it doesn't affect card layout */}
       {liveMembers.length > 0 && (
-        <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 6, flexShrink: 0 }}>
+        <div style={{ position: 'absolute', top: 10, right: 16, display: 'flex', alignItems: 'center', gap: 5 }}>
           <style>{`@keyframes liveGymPulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.5;transform:scale(1.3)} }`}</style>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-            <div style={{ width: 7, height: 7, borderRadius: '50%', background: C.green, boxShadow: `0 0 6px ${C.green}`, animation: 'liveGymPulse 2s ease-in-out infinite' }} />
-            <span style={{ fontSize: 10.5, color: C.green, fontWeight: 600 }}>Live</span>
-          </div>
+          <div style={{ width: 7, height: 7, borderRadius: '50%', background: C.green, boxShadow: `0 0 6px ${C.green}`, animation: 'liveGymPulse 2s ease-in-out infinite' }} />
+          <span style={{ fontSize: 10.5, color: C.green, fontWeight: 600 }}>Live</span>
         </div>
       )}
 
@@ -569,8 +568,7 @@ function CurrentlyInGym({ checkIns = [], allMemberships = [], avatarMap = {}, gy
                   display: 'flex',
                   flexDirection: 'column',
                   alignItems: 'center',
-                  // Top padding = half of bottom (5px top, 10px bottom)
-                  paddingTop: 5,
+                  paddingTop: 10,
                   paddingBottom: 10,
                   paddingLeft: 8,
                   paddingRight: 8,
