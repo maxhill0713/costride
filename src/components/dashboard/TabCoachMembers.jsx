@@ -5,6 +5,7 @@
  * Zero external dependencies. Fully prop-driven.
  */
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
+import ClientDrawer from './ClientDrawer';
 import {
   Search, X, UserPlus, ChevronRight, ChevronDown,
   Send, CheckCircle, ShieldAlert, ArrowUpRight,
@@ -514,7 +515,10 @@ function FilterTabs({ filter, setFilter, counts }) {
   );
 }
 
-/* ─── MOCK DATA FOR PREVIEW EXTENSIONS ──────────────────────── */
+/* ─── CLIENT PREVIEW ────────────────────────────────────────── */
+// Delegated to ClientDrawer component — see ClientDrawer.jsx
+
+/* ─── [LEGACY STUBS — kept for inline old sections if needed] ── */
 const MOCK_WEIGHT = [
   { w:'8wk', v:76.2 }, { w:'7wk', v:75.8 }, { w:'6wk', v:75.1 },
   { w:'5wk', v:74.5 }, { w:'4wk', v:74.0 }, { w:'3wk', v:73.4 },
@@ -822,7 +826,7 @@ function PreviewComms({ client, onMessage }) {
   );
 }
 
-/* ─── CLIENT DRAWER (full-height, 80% width) ─────────────────── */
+/* ─── [OLD DRAWER — replaced by ClientDrawer.jsx] ─────────────── */
 const DRAWER_TABS = [
   { id:'overview',  label:'Overview',  icon:BarChart2    },
   { id:'activity',  label:'Activity',  icon:Activity     },
@@ -1670,7 +1674,7 @@ export default function TabCoachMembers({
           avgScore={avgScore}
         />
       </div>
-      {preview   && <ClientPreview client={preview}   onClose={()=>setPreview(null)}   onMessage={handleMsg} avatarMap={avatarMap} />}
+      {preview   && <ClientDrawer client={preview}   onClose={()=>setPreview(null)}   onMessage={handleMsg} avatarMap={avatarMap} />}
       {msgTarget && <MessageToast  client={msgTarget} onClose={()=>setMsgTarget(null)} />}
     </div>
   );
