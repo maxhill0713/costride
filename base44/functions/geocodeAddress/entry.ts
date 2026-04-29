@@ -13,23 +13,23 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'No address provided' }, { status: 400 });
     }
 
-    const apiKey = Deno.env.get('GOOGLE_PLACES_API_KEY');
-    if (!apiKey) {
-      return Response.json({ error: 'Geocoding not configured' }, { status: 500 });
-    }
-
-    const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(query)}&key=${apiKey}`;
-    const res = await fetch(url);
+    // Use Nominatim (OpenStreetMap) — free, no key required
+    const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&limit=1`;
+    const res = await fetch(url, {
+      headers: { 'User-Agent': 'CoStride-App/1.0' }
+    });
     const data = await res.json();
 
-    if (data.status === 'OK' && data.results?.[0]?.geometry?.location) {
-      const { lat, lng } = data.results[0].geometry.location;
-      console.log(`Geocoded "${query}" → ${lat}, ${lng}`);
-      return Response.json({ latitude: lat, longitude: lng });
+    if (data && data.length > 0) {
+      const { lat, lon } = data[0];
+      const latitude = parseFloat(lat);
+      const longitude = parseFloat(lon);
+      console.log(`Geocoded "${query}" → ${latitude}, ${longitude}`);
+      return Response.json({ latitude, longitude });
     }
 
-    console.warn(`Geocoding failed for "${query}": ${data.status}`);
-    return Response.json({ error: `Geocoding failed: ${data.status}` }, { status: 422 });
+    console.warn(`Nominatim found no results for "${query}"`);
+    return Response.json({ error: 'No results found for that address' }, { status: 422 });
   } catch (error) {
     console.error('Geocode error:', error);
     return Response.json({ error: 'Internal error' }, { status: 500 });
