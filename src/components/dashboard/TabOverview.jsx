@@ -489,9 +489,9 @@ function CurrentlyInGym({ checkIns = [], allMemberships = [], avatarMap = {}, gy
   const now         = Date.now();
 
   // Avatar size: 4× original 40px, then halved = 80px
-  const AVATAR_SIZE = 80;
-  // Card width is 70% wider than original (72–90px) → ~122–153px; use 136px fixed
-  const CARD_WIDTH  = 136;
+  const AVATAR_SIZE = 92;
+  // Card width: 136px − 25% = 102px
+  const CARD_WIDTH  = 102;
 
   const liveMembers = useMemo(() => {
     const gymCheckIns = (checkIns || [])
@@ -530,7 +530,7 @@ function CurrentlyInGym({ checkIns = [], allMemberships = [], avatarMap = {}, gy
   return (
     <div style={{
       background: C.card, border: `1px solid ${C.brd}`, borderRadius: 10,
-      padding: '5px 16px 5px 10px',
+      padding: '5px 16px 5px 5px',
       flex: 1, display: 'flex', flexDirection: 'column', minHeight: 80,
       position: 'relative',
     }}>
