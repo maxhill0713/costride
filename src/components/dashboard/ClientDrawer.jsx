@@ -6,15 +6,12 @@ import React, { useState, useEffect } from 'react';
 import {
   X, Send, Check, Flame, ShieldAlert, AlertTriangle,
   BarChart2, Activity, FileText, Dumbbell, MessageSquare,
-  TrendingUp, TrendingDown, Minus, Plus, ChevronRight,
-  Utensils, Zap, Target, Heart, ClipboardList, Layers,
+  TrendingUp, Plus, ChevronRight, ExternalLink,
+  Utensils, Zap, Target, Layers,
 } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
 
 import { C, FONT, Card, SectionLabel, ProgressBar, ChartTip } from './drawer/DrawerShared';
-import TabProgress   from './drawer/TabProgress';
-import TabNutrition  from './drawer/TabNutrition';
-import TabHabits     from './drawer/TabHabits';
 import TabAdherence  from './drawer/TabAdherence';
 import TabProgram    from './drawer/TabProgram';
 
@@ -322,9 +319,6 @@ function MessageComposer({ client, onMessage }) {
 const TABS = [
   { id: 'overview',   label: 'Overview',   icon: BarChart2    },
   { id: 'activity',   label: 'Activity',   icon: Activity     },
-  { id: 'progress',   label: 'Progress',   icon: TrendingUp   },
-  { id: 'nutrition',  label: 'Nutrition',  icon: Utensils     },
-  { id: 'habits',     label: 'Habits',     icon: Heart        },
   { id: 'adherence',  label: 'Adherence',  icon: Target       },
   { id: 'notes',      label: 'Notes',      icon: FileText     },
   { id: 'program',    label: 'Program',    icon: Layers       },
@@ -527,22 +521,27 @@ export default function ClientDrawer({ client, onClose, onMessage, avatarMap = {
                     </div>
                   ))}
                 </div>
-                {/* Quick nav shortcuts */}
+                {/* Member app data summaries */}
                 <div style={{ marginTop: 8 }}>
-                  <SectionLabel>Jump To</SectionLabel>
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+                  <SectionLabel>Member App Data</SectionLabel>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
                     {[
-                      { tab: 'progress', label: 'Progress', col: C.green },
-                      { tab: 'nutrition', label: 'Nutrition', col: C.amber },
-                      { tab: 'habits', label: 'Habits', col: C.cyan },
-                      { tab: 'adherence', label: 'Adherence', col: C.violet },
-                    ].map(s => (
-                      <button key={s.tab} onClick={() => setTab(s.tab)}
-                        style={{ padding: '9px 10px', borderRadius: 9, background: `${s.col}0c`, border: `1px solid ${s.col}20`, color: s.col, fontSize: 11.5, fontWeight: 700, cursor: 'pointer', fontFamily: FONT, transition: 'all .15s' }}
-                        onMouseEnter={e => e.currentTarget.style.background = `${s.col}18`}
-                        onMouseLeave={e => e.currentTarget.style.background = `${s.col}0c`}>
-                        {s.label} →
-                      </button>
+                      { label: 'Bodyweight', summary: 'Last updated 3 days ago · 72.4 kg (↓3.8 kg)', col: C.green,  section: 'Progress'  },
+                      { label: 'Nutrition',  summary: 'Adherence 84% last week · 1,720 kcal/day',    col: C.amber,  section: 'Progress'  },
+                      { label: 'Habits',     summary: 'Steps streak 5d · Sleep avg 7.2 hrs',          col: C.cyan,   section: 'Progress'  },
+                    ].map((item, i, arr) => (
+                      <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, paddingTop: 13, paddingBottom: 13, borderBottom: i < arr.length - 1 ? `1px solid ${C.brd}` : 'none' }}>
+                        <div style={{ minWidth: 0 }}>
+                          <div style={{ fontSize: 12.5, fontWeight: 700, color: C.t1, marginBottom: 3 }}>{item.label}</div>
+                          <div style={{ fontSize: 11.5, color: C.t3, lineHeight: 1.5 }}>{item.summary}</div>
+                        </div>
+                        <a href={`/Progress`} target="_blank" rel="noopener noreferrer"
+                          style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '5px 10px', borderRadius: 7, background: `${item.col}0c`, border: `1px solid ${item.col}22`, color: item.col, fontSize: 11, fontWeight: 700, textDecoration: 'none', whiteSpace: 'nowrap', flexShrink: 0, transition: 'background .14s' }}
+                          onMouseEnter={e => e.currentTarget.style.background = `${item.col}1a`}
+                          onMouseLeave={e => e.currentTarget.style.background = `${item.col}0c`}>
+                          View in app <ExternalLink style={{ width: 10, height: 10 }} />
+                        </a>
+                      </div>
                     ))}
                   </div>
                 </div>
@@ -617,15 +616,6 @@ export default function ClientDrawer({ client, onClose, onMessage, avatarMap = {
               </div>
             );
           })()}
-
-          {/* ════ PROGRESS ════ */}
-          {tab === 'progress' && <TabProgress />}
-
-          {/* ════ NUTRITION ════ */}
-          {tab === 'nutrition' && <TabNutrition />}
-
-          {/* ════ HABITS ════ */}
-          {tab === 'habits' && <TabHabits />}
 
           {/* ════ ADHERENCE ════ */}
           {tab === 'adherence' && <TabAdherence />}
