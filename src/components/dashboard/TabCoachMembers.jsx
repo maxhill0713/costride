@@ -11,7 +11,9 @@ import {
   ArrowDownRight, Users, Flame, Bell,
   BarChart2, SlidersHorizontal, Check,
   XCircle, MoreHorizontal, Phone, Calendar,
-  AlertTriangle,
+  AlertTriangle, Plus, Dumbbell, Utensils, Target,
+  TrendingUp, TrendingDown, Minus, Camera, FileText,
+  Activity, Award, MessageSquare,
 } from 'lucide-react';
 import {
   AreaChart, Area, XAxis, YAxis, Tooltip,
@@ -512,6 +514,314 @@ function FilterTabs({ filter, setFilter, counts }) {
   );
 }
 
+/* ─── MOCK DATA FOR PREVIEW EXTENSIONS ──────────────────────── */
+const MOCK_WEIGHT = [
+  { w:'8wk', v:76.2 }, { w:'7wk', v:75.8 }, { w:'6wk', v:75.1 },
+  { w:'5wk', v:74.5 }, { w:'4wk', v:74.0 }, { w:'3wk', v:73.4 },
+  { w:'2wk', v:72.9 }, { w:'Now', v:72.4 },
+];
+const MOCK_PERF = [
+  { name:'Squat 1RM', current:62, target:80, unit:'kg' },
+  { name:'5km Run',   current:28, target:25, unit:'min', lower:true },
+];
+const MOCK_SESSIONS = [
+  { date:'23 May', type:'Upper Strength', dur:55, attended:true  },
+  { date:'20 May', type:'HIIT Cardio',    dur:45, attended:true  },
+  { date:'17 May', type:'Lower Body',     dur:60, attended:false },
+  { date:'14 May', type:'Full Body',      dur:50, attended:false },
+  { date:'10 May', type:'Upper Strength', dur:55, attended:true  },
+];
+
+/* ─── PREVIEW SECTION: PROGRESS ─────────────────────────────── */
+function PreviewProgress() {
+  return (
+    <div style={{ borderRadius:8, background:C.card, border:`1px solid ${C.brd}`, overflow:'hidden' }}>
+      <div style={{ padding:'9px 12px', borderBottom:`1px solid ${C.brd}`, display:'flex', alignItems:'center', gap:7 }}>
+        <TrendingUp style={{ width:11, height:11, color:C.cyan }} />
+        <span style={{ fontSize:11, fontWeight:700, color:C.t1 }}>Progress</span>
+      </div>
+      <div style={{ padding:'10px 12px' }}>
+        {/* Weight sparkline */}
+        <div style={{ fontSize:9.5, color:C.t3, textTransform:'uppercase', letterSpacing:'0.05em', marginBottom:6 }}>Weight (kg)</div>
+        <div style={{ display:'flex', alignItems:'flex-end', gap:2, height:32, marginBottom:8 }}>
+          {MOCK_WEIGHT.map((d,i) => {
+            const min=72, max=77;
+            const pct = 1 - (d.v - min) / (max - min);
+            const h = Math.max(4, Math.round(pct * 28));
+            return (
+              <div key={i} style={{ flex:1, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'flex-end' }}>
+                <div style={{ width:'100%', background:i===MOCK_WEIGHT.length-1?C.green:C.cyanD, borderRadius:2, height:h, border:i===MOCK_WEIGHT.length-1?`1px solid ${C.greenB}`:`1px solid ${C.cyanB}` }} />
+              </div>
+            );
+          })}
+        </div>
+        <div style={{ display:'flex', justifyContent:'space-between', fontSize:9, color:C.t3, marginBottom:10 }}>
+          <span>8wk ago</span><span style={{ color:C.green, fontWeight:700 }}>72.4kg now ▼3.8kg</span>
+        </div>
+        {/* Performance */}
+        {MOCK_PERF.map((p,i) => {
+          const pct = p.lower
+            ? Math.round(Math.max(0, Math.min(100, (p.target / p.current) * 100)))
+            : Math.round(Math.max(0, Math.min(100, (p.current / p.target) * 100)));
+          return (
+            <div key={i} style={{ marginBottom:i<MOCK_PERF.length-1?8:0 }}>
+              <div style={{ display:'flex', justifyContent:'space-between', fontSize:10.5, color:C.t2, marginBottom:4 }}>
+                <span>{p.name}</span>
+                <span style={{ color:C.t1, fontWeight:600 }}>{p.current} <span style={{ color:C.t3 }}>/ {p.target} {p.unit}</span></span>
+              </div>
+              <div style={{ height:3, background:C.brd, borderRadius:2, overflow:'hidden' }}>
+                <div style={{ width:`${pct}%`, height:'100%', background:pct>=80?C.green:pct>=50?C.cyan:C.amber, borderRadius:2 }} />
+              </div>
+            </div>
+          );
+        })}
+        {/* Photos placeholder */}
+        <div style={{ marginTop:10 }}>
+          <div style={{ fontSize:9.5, color:C.t3, textTransform:'uppercase', letterSpacing:'0.05em', marginBottom:6 }}>Progress Photos</div>
+          <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:4 }}>
+            {['Jan','Mar','May'].map((m,i) => (
+              <div key={i} style={{ aspectRatio:'3/4', borderRadius:5, background:C.card2, border:`1px solid ${C.brd}`, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', gap:3, cursor:'pointer' }}>
+                <Camera style={{ width:10, height:10, color:C.t3 }} />
+                <span style={{ fontSize:8, color:C.t3 }}>{m}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ─── PREVIEW SECTION: INJURIES ──────────────────────────────── */
+function PreviewInjuries({ client }) {
+  const [injuries, setInjuries] = useState(
+    client.injuries?.length ? client.injuries : [
+      { id:1, area:'Right Knee', severity:'Moderate', notes:'Avoid heavy squats.' },
+    ]
+  );
+  const [form, setForm] = useState({ area:'', severity:'Mild', notes:'' });
+  const [adding, setAdding] = useState(false);
+  const sevColor = s => s==='Cleared'?C.green:s==='Severe'?C.red:C.amber;
+  return (
+    <div style={{ borderRadius:8, background:C.card, border:`1px solid ${C.brd}`, overflow:'hidden' }}>
+      <div style={{ padding:'9px 12px', borderBottom:`1px solid ${C.brd}`, display:'flex', alignItems:'center', justifyContent:'space-between' }}>
+        <div style={{ display:'flex', alignItems:'center', gap:7 }}>
+          <ShieldAlert style={{ width:11, height:11, color:C.amber }} />
+          <span style={{ fontSize:11, fontWeight:700, color:C.t1 }}>Injuries & Health</span>
+        </div>
+        <button onClick={()=>setAdding(v=>!v)} style={{ background:'none', border:'none', cursor:'pointer', color:C.t3, display:'flex', padding:0 }}>
+          <Plus style={{ width:12, height:12 }} />
+        </button>
+      </div>
+      <div style={{ padding:'8px 12px' }}>
+        {injuries.length === 0 && !adding && (
+          <div style={{ fontSize:11, color:C.t3, textAlign:'center', padding:'10px 0' }}>No injuries logged</div>
+        )}
+        {injuries.map((inj,i) => (
+          <div key={inj.id||i} style={{ padding:'8px 10px', borderRadius:7, background:inj.severity==='Cleared'?C.greenD:inj.severity==='Severe'?C.redD:C.amberD, border:`1px solid ${inj.severity==='Cleared'?C.greenB:inj.severity==='Severe'?C.redB:C.amberB}`, marginBottom:6 }}>
+            <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:2 }}>
+              <span style={{ fontSize:11, fontWeight:700, color:sevColor(inj.severity) }}>{inj.area}</span>
+              <span style={{ fontSize:9.5, color:sevColor(inj.severity) }}>{inj.severity}</span>
+            </div>
+            {inj.notes && <div style={{ fontSize:10, color:C.t2, lineHeight:1.4 }}>{inj.notes}</div>}
+          </div>
+        ))}
+        {adding && (
+          <div style={{ padding:'8px 10px', borderRadius:7, background:C.card2, border:`1px solid ${C.brd}`, marginTop:4 }}>
+            <input value={form.area} onChange={e=>setForm(p=>({...p,area:e.target.value}))} placeholder="Area (e.g. Left Shoulder)" style={{ width:'100%', boxSizing:'border-box', background:'transparent', border:'none', borderBottom:`1px solid ${C.brd}`, color:C.t1, fontSize:11.5, outline:'none', padding:'4px 0', marginBottom:6, fontFamily:FONT }} />
+            <select value={form.severity} onChange={e=>setForm(p=>({...p,severity:e.target.value}))} style={{ background:C.card, border:`1px solid ${C.brd}`, color:C.t2, fontSize:11, borderRadius:5, padding:'3px 6px', marginBottom:6, fontFamily:FONT, outline:'none', width:'100%' }}>
+              {['Mild','Moderate','Severe','Cleared'].map(s=><option key={s}>{s}</option>)}
+            </select>
+            <input value={form.notes} onChange={e=>setForm(p=>({...p,notes:e.target.value}))} placeholder="Notes (optional)" style={{ width:'100%', boxSizing:'border-box', background:'transparent', border:'none', borderBottom:`1px solid ${C.brd}`, color:C.t1, fontSize:11, outline:'none', padding:'4px 0', marginBottom:8, fontFamily:FONT }} />
+            <div style={{ display:'flex', gap:6 }}>
+              <button onClick={()=>{ if(form.area.trim()){ setInjuries(p=>[...p,{id:Date.now(),...form}]); setForm({area:'',severity:'Mild',notes:''}); setAdding(false); } }} style={{ flex:1, padding:'6px', borderRadius:6, background:C.cyan, border:'none', color:'#fff', fontSize:11, fontWeight:700, cursor:'pointer', fontFamily:FONT }}>Add</button>
+              <button onClick={()=>setAdding(false)} style={{ flex:1, padding:'6px', borderRadius:6, background:C.card, border:`1px solid ${C.brd}`, color:C.t2, fontSize:11, cursor:'pointer', fontFamily:FONT }}>Cancel</button>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+/* ─── PREVIEW SECTION: COACH NOTES ──────────────────────────── */
+function PreviewNotes() {
+  const [notes, setNotes] = useState([
+    { id:1, date:'23 May', text:'Good session. Knee improving. Suggested 3x/week.' },
+    { id:2, date:'10 May', text:'New squat PB at 62kg — very motivated.' },
+  ]);
+  const [text, setText] = useState('');
+  const addNote = () => {
+    if (!text.trim()) return;
+    const now = new Date();
+    const date = now.toLocaleDateString('en-GB',{day:'numeric',month:'short'});
+    setNotes(p=>[{id:Date.now(),date,text:text.trim()},...p]);
+    setText('');
+  };
+  return (
+    <div style={{ borderRadius:8, background:C.card, border:`1px solid ${C.brd}`, overflow:'hidden' }}>
+      <div style={{ padding:'9px 12px', borderBottom:`1px solid ${C.brd}`, display:'flex', alignItems:'center', gap:7 }}>
+        <FileText style={{ width:11, height:11, color:C.cyan }} />
+        <span style={{ fontSize:11, fontWeight:700, color:C.t1 }}>Coach Notes</span>
+      </div>
+      <div style={{ padding:'8px 12px' }}>
+        <div style={{ display:'flex', gap:6, marginBottom:8 }}>
+          <input value={text} onChange={e=>setText(e.target.value)} onKeyDown={e=>e.key==='Enter'&&addNote()} placeholder="Add a note…" style={{ flex:1, background:C.card2, border:`1px solid ${C.brd}`, borderRadius:6, color:C.t1, fontSize:11.5, outline:'none', padding:'7px 9px', fontFamily:FONT }} />
+          <button onClick={addNote} style={{ padding:'7px 9px', borderRadius:6, background:C.cyanD, border:`1px solid ${C.cyanB}`, color:C.cyan, cursor:'pointer', display:'flex', alignItems:'center' }}>
+            <Plus style={{ width:11, height:11 }} />
+          </button>
+        </div>
+        {notes.map((n,i) => (
+          <div key={n.id} style={{ marginBottom:i<notes.length-1?8:0, paddingBottom:i<notes.length-1?8:0, borderBottom:i<notes.length-1?`1px solid ${C.brd}`:'none' }}>
+            <div style={{ fontSize:9.5, color:C.t3, marginBottom:3 }}>{n.date}</div>
+            <div style={{ fontSize:11, color:C.t2, lineHeight:1.55 }}>{n.text}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* ─── PREVIEW SECTION: ATTENDANCE ────────────────────────────── */
+function PreviewAttendance() {
+  const attended = MOCK_SESSIONS.filter(s=>s.attended).length;
+  const missed   = MOCK_SESSIONS.filter(s=>!s.attended).length;
+  const rate     = Math.round(attended/MOCK_SESSIONS.length*100);
+  const trend    = rate >= 70 ? 'Improving' : rate >= 50 ? 'Stable' : 'Declining';
+  const trendCol = rate >= 70 ? C.green : rate >= 50 ? C.amber : C.red;
+  const TrendIcon = rate >= 70 ? TrendingUp : rate >= 50 ? Minus : TrendingDown;
+  return (
+    <div style={{ borderRadius:8, background:C.card, border:`1px solid ${C.brd}`, overflow:'hidden' }}>
+      <div style={{ padding:'9px 12px', borderBottom:`1px solid ${C.brd}`, display:'flex', alignItems:'center', justifyContent:'space-between' }}>
+        <div style={{ display:'flex', alignItems:'center', gap:7 }}>
+          <Activity style={{ width:11, height:11, color:C.cyan }} />
+          <span style={{ fontSize:11, fontWeight:700, color:C.t1 }}>Attendance</span>
+        </div>
+        <div style={{ display:'flex', alignItems:'center', gap:4, fontSize:10, fontWeight:700, color:trendCol }}>
+          <TrendIcon style={{ width:10, height:10 }} />{trend}
+        </div>
+      </div>
+      <div style={{ padding:'8px 12px' }}>
+        <div style={{ display:'flex', gap:8, marginBottom:8 }}>
+          {[{label:'Attended',val:attended,col:C.green},{label:'Missed',val:missed,col:C.red},{label:'Rate',val:`${rate}%`,col:rate>=70?C.green:rate>=50?C.amber:C.red}].map((s,i)=>(
+            <div key={i} style={{ flex:1, padding:'7px 8px', borderRadius:6, background:C.card2, border:`1px solid ${C.brd}`, textAlign:'center' }}>
+              <div style={{ fontSize:14, fontWeight:700, color:s.col }}>{s.val}</div>
+              <div style={{ fontSize:9, color:C.t3, marginTop:2 }}>{s.label}</div>
+            </div>
+          ))}
+        </div>
+        {MOCK_SESSIONS.map((s,i)=>(
+          <div key={i} style={{ display:'flex', alignItems:'center', gap:8, padding:'6px 0', borderBottom:i<MOCK_SESSIONS.length-1?`1px solid ${C.brd}`:'none' }}>
+            <div style={{ width:18, height:18, borderRadius:5, background:s.attended?C.greenD:C.redD, border:`1px solid ${s.attended?C.greenB:C.redB}`, display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
+              {s.attended ? <Check style={{ width:9, color:C.green }} /> : <X style={{ width:9, color:C.red }} />}
+            </div>
+            <div style={{ flex:1, minWidth:0 }}>
+              <div style={{ fontSize:11, fontWeight:600, color:C.t1, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{s.type}</div>
+              <div style={{ fontSize:9.5, color:C.t3 }}>{s.date} · {s.dur}min</div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* ─── PREVIEW SECTION: ASSIGNED CONTENT ─────────────────────── */
+function PreviewAssignedContent({ onMessage, client }) {
+  const fn = (client?.name||'there').split(' ')[0];
+  return (
+    <div style={{ borderRadius:8, background:C.card, border:`1px solid ${C.brd}`, overflow:'hidden' }}>
+      <div style={{ padding:'9px 12px', borderBottom:`1px solid ${C.brd}`, display:'flex', alignItems:'center', gap:7 }}>
+        <Dumbbell style={{ width:11, height:11, color:C.violet||C.cyan }} />
+        <span style={{ fontSize:11, fontWeight:700, color:C.t1 }}>Assigned Content</span>
+      </div>
+      <div style={{ padding:'8px 12px', display:'flex', flexDirection:'column', gap:6 }}>
+        {[
+          { icon:Dumbbell, label:'Workout Plan', val:'Fat Loss Phase 2', sub:'Week 4 of 8', col:C.cyan, colD:C.cyanD, colB:C.cyanB, actionLabel:'Assign Workout' },
+          { icon:Utensils, label:'Nutrition Plan', val:'Moderate Deficit', sub:'1720 kcal · 140g protein', col:C.green, colD:C.greenD, colB:C.greenB, actionLabel:'Assign Nutrition' },
+        ].map((item,i)=>{
+          const Icon = item.icon;
+          return (
+            <div key={i} style={{ padding:'9px 10px', borderRadius:7, background:C.card2, border:`1px solid ${C.brd}` }}>
+              <div style={{ display:'flex', alignItems:'flex-start', justifyContent:'space-between', marginBottom:5 }}>
+                <div style={{ display:'flex', alignItems:'center', gap:7 }}>
+                  <div style={{ width:24, height:24, borderRadius:6, background:item.colD, border:`1px solid ${item.colB}`, display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
+                    <Icon style={{ width:11, height:11, color:item.col }} />
+                  </div>
+                  <div>
+                    <div style={{ fontSize:10, color:C.t3, marginBottom:1 }}>{item.label}</div>
+                    <div style={{ fontSize:11.5, fontWeight:700, color:C.t1 }}>{item.val}</div>
+                    <div style={{ fontSize:9.5, color:C.t3 }}>{item.sub}</div>
+                  </div>
+                </div>
+              </div>
+              <button onClick={()=>onMessage({...client,_action:item.actionLabel})} style={{ width:'100%', padding:'5px', borderRadius:6, background:item.colD, border:`1px solid ${item.colB}`, color:item.col, fontSize:10.5, fontWeight:700, cursor:'pointer', fontFamily:FONT }}>
+                {item.actionLabel}
+              </button>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+/* ─── PREVIEW SECTION: GOALS ─────────────────────────────────── */
+function PreviewGoals() {
+  const goals = [
+    { label:'Reach 70kg bodyweight', current:72.4, target:70, unit:'kg', pct:73, deadline:'Aug 2024' },
+    { label:'Run 5km under 25min',   current:28,   target:25, unit:'min', pct:47, deadline:'Sep 2024' },
+    { label:'Squat 80kg',            current:62,   target:80, unit:'kg', pct:60, deadline:'Dec 2024' },
+  ];
+  return (
+    <div style={{ borderRadius:8, background:C.card, border:`1px solid ${C.brd}`, overflow:'hidden' }}>
+      <div style={{ padding:'9px 12px', borderBottom:`1px solid ${C.brd}`, display:'flex', alignItems:'center', gap:7 }}>
+        <Target style={{ width:11, height:11, color:C.amber }} />
+        <span style={{ fontSize:11, fontWeight:700, color:C.t1 }}>Goals & Milestones</span>
+      </div>
+      <div style={{ padding:'8px 12px', display:'flex', flexDirection:'column', gap:8 }}>
+        {goals.map((g,i)=>(
+          <div key={i}>
+            <div style={{ display:'flex', justifyContent:'space-between', alignItems:'baseline', marginBottom:4 }}>
+              <span style={{ fontSize:11, color:C.t2, flex:1, minWidth:0, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{g.label}</span>
+              <span style={{ fontSize:11, fontWeight:700, color:g.pct>=80?C.green:g.pct>=50?C.cyan:C.amber, marginLeft:8, flexShrink:0 }}>{g.pct}%</span>
+            </div>
+            <div style={{ height:3, background:C.brd, borderRadius:2, overflow:'hidden', marginBottom:3 }}>
+              <div style={{ width:`${g.pct}%`, height:'100%', background:g.pct>=80?C.green:g.pct>=50?C.cyan:C.amber, borderRadius:2, transition:'width .5s' }} />
+            </div>
+            <div style={{ fontSize:9.5, color:C.t3 }}>
+              {g.current} {g.unit} → {g.target} {g.unit} · Due {g.deadline}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* ─── PREVIEW SECTION: QUICK COMMS ──────────────────────────── */
+function PreviewComms({ client, onMessage }) {
+  const quick = ['Check in','We miss you','Book session','Celebrate progress'];
+  return (
+    <div style={{ borderRadius:8, background:C.card, border:`1px solid ${C.brd}`, overflow:'hidden' }}>
+      <div style={{ padding:'9px 12px', borderBottom:`1px solid ${C.brd}`, display:'flex', alignItems:'center', gap:7 }}>
+        <MessageSquare style={{ width:11, height:11, color:C.cyan }} />
+        <span style={{ fontSize:11, fontWeight:700, color:C.t1 }}>Quick Messages</span>
+      </div>
+      <div style={{ padding:'8px 12px', display:'flex', flexDirection:'column', gap:5 }}>
+        {quick.map((a,i)=>(
+          <button key={i} onClick={()=>onMessage({...client,_action:a})} style={{ width:'100%', padding:'7px 10px', borderRadius:6, background:C.card2, border:`1px solid ${C.brd}`, color:C.t2, fontSize:11, fontWeight:600, cursor:'pointer', fontFamily:FONT, textAlign:'left', display:'flex', alignItems:'center', justifyContent:'space-between', transition:'all .12s' }}
+            onMouseEnter={e=>{e.currentTarget.style.borderColor=C.cyanB;e.currentTarget.style.color=C.t1;}}
+            onMouseLeave={e=>{e.currentTarget.style.borderColor=C.brd;e.currentTarget.style.color=C.t2;}}>
+            {a}
+            <Send style={{ width:9, height:9, opacity:0.5 }} />
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 /* ─── CLIENT PREVIEW (slide-in) ──────────────────────────────── */
 function ClientPreview({ client, onClose, onMessage, avatarMap }) {
   const sc      = scoreColor(client.retentionScore);
@@ -577,6 +887,15 @@ function ClientPreview({ client, onClose, onMessage, avatarMap }) {
           <span style={{ fontSize:11, fontWeight:600, color:tier.color }}>{tier.label}</span>
           <span style={{ fontSize:10, color:C.t3 }}>retention tier</span>
         </div>
+        {/* ── Extended sections ── */}
+        <PreviewProgress />
+        <PreviewAttendance />
+        <PreviewInjuries client={client} />
+        <PreviewNotes />
+        <PreviewAssignedContent client={client} onMessage={onMessage} />
+        <PreviewGoals />
+        <PreviewComms client={client} onMessage={onMessage} />
+        <div style={{ height:8 }} />
       </div>
       <div style={{ padding:'12px 14px', borderTop:`1px solid ${C.brd}` }}>
         <button onClick={()=>onMessage(client)} style={{ width:'100%', padding:'9px', borderRadius:8, background:C.cyan, border:'none', color:'#fff', fontSize:12, fontWeight:700, cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', gap:5, fontFamily:FONT }}>
