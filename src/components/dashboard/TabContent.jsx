@@ -293,6 +293,7 @@ import CreateClassModal from "./CreateClassModal";
 import ClassDetailPopup from "./ClassDetailPopup";
 import EventsCalendar from "./EventsCalendar";
 import PostPreviewModal from "./PostPreviewModal";
+import ClassManagementModal from "./ClassManagementModal";
 
 function RemovePollModal({ poll, onConfirm, onClose }) {
   const [removing, setRemoving] = useState(false);
@@ -1064,8 +1065,8 @@ export { ReactionsModal };
 /* ─── ROOT ───────────────────────────────────────────────────────── */
 export default function ContentPage({
   events = [], challenges = [], polls = [], posts = [], checkIns = [], classes = [],
-  openModal, onDeleteEvent, onDeleteChallenge, onDeletePost, onDeletePoll, onUpdatePost, onUpdateEvent, onDeleteClass, onCreateClass,
-  avatarMap = {}, nameMap = {}, currentUser = null, gym = null, memberCount = 0, memberUserRecords = [],
+  openModal, onDeleteEvent, onDeleteChallenge, onDeletePost, onDeletePoll, onUpdatePost, onUpdateEvent, onDeleteClass, onCreateClass, onUpdateClass,
+  avatarMap = {}, nameMap = {}, currentUser = null, gym = null, memberCount = 0, memberUserRecords = [], allMemberships = [], coaches = [], bookings = [],
 }) {
   const isMobile = useIsMobile();
   const [tab,              setTab]              = useState("Events");
@@ -1082,6 +1083,7 @@ export default function ContentPage({
   const [showCreateClass, setShowCreateClass] = useState(false);
   const [creatingClass, setCreatingClass] = useState(false);
   const [previewPost, setPreviewPost] = useState(null);
+  const [showClassMgmt, setShowClassMgmt] = useState(false);
 
   const createItems = [
     { label: "📝 New Post",      action: () => { openModal?.("post");      setShowMenu(false); setTab("Community Feed"); } },
@@ -1307,7 +1309,7 @@ export default function ContentPage({
               onAddClass={() => setShowCreateClass(true)}
               onEventEdited={onUpdateEvent}
               onDeleteClass={onDeleteClass}
-              onManageClasses={() => window.open('/ClassManagement', '_blank')}
+              onManageClasses={() => setShowClassMgmt(true)}
             />
           )}
 
@@ -1720,6 +1722,17 @@ export default function ContentPage({
           onClose={() => setPreviewPost(null)}
         />
       )}
+      <ClassManagementModal
+        open={showClassMgmt}
+        onClose={() => setShowClassMgmt(false)}
+        classes={classes}
+        bookings={bookings}
+        coaches={coaches}
+        allMemberships={allMemberships}
+        onCreateClass={async (data) => { await onCreateClass?.(data); }}
+        onUpdateClass={async (id, data) => { await onUpdateClass?.(id, data); }}
+        onDeleteClass={(id) => onDeleteClass?.(id)}
+      />
     </div>
   );
 }
