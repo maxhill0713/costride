@@ -412,6 +412,7 @@ export default function GymOwnerDashboard() {
   const { data: challenges = [] } = useQuery({ queryKey: ['challenges', selectedGym?.id], queryFn: () => base44.entities.Challenge.filter({ gym_id: selectedGym.id }, '-created_date', 50), enabled: on, ...qo });
   const { data: polls = [] } = useQuery({ queryKey: ['polls', selectedGym?.id], queryFn: () => base44.entities.Poll.filter({ gym_id: selectedGym.id, status: 'active' }, '-created_date'), enabled: on, ...qo });
   const { data: coachBookings = [] } = useQuery({ queryKey: ['coachBookings', selectedGym?.id], queryFn: () => base44.entities.Booking.filter({ gym_id: selectedGym.id }, '-session_date', 300), enabled: on && isCoach, staleTime: 2 * 60 * 1000 });
+  const { data: gymMembershipsForCoach = [] } = useQuery({ queryKey: ['gymMembershipsForCoach', selectedGym?.id], queryFn: () => base44.entities.GymMembership.filter({ gym_id: selectedGym.id, status: 'active' }, 'user_name', 300), enabled: on && isCoach, staleTime: 2 * 60 * 1000 });
   const { data: coachAssignedWorkouts = [] } = useQuery({
     queryKey: ['coachAssignedWorkouts', selectedGym?.id, selectedCoachId],
     queryFn: async () => {
@@ -531,6 +532,7 @@ export default function GymOwnerDashboard() {
   }, [isCoach, activeCoachRecord, checkIns]);
   const coachCi30 = [];
   const coachUserId = activeCoachRecord ? activeCoachRecord.id : currentUser?.id;
+  const { data: coachInvites = [] } = useQuery({ queryKey: ['coachInvitesForCoach', activeCoachRecord?.id || currentUser?.id], queryFn: () => base44.entities.CoachInvite.filter({ coach_id: activeCoachRecord?.user_id || activeCoachRecord?.id || currentUser?.id }, '-created_date', 200), enabled: isCoach && !!(activeCoachRecord?.id || currentUser?.id), staleTime: 2 * 60 * 1000 });
   const coachPosts = isCoach ? posts.filter((p) => p.author_id === coachUserId || p.created_by === coachUserId || !p.author_id) : posts;
   const coachEvents = isCoach ? events.filter((e) => e.created_by === coachUserId || e.coach_id === coachUserId || !e.created_by) : events;
   const coachChallenges = isCoach ? challenges.filter((c) => c.created_by === coachUserId || c.coach_id === coachUserId || !c.created_by) : challenges;
@@ -551,7 +553,36 @@ export default function GymOwnerDashboard() {
       content = <TabCoachSchedule myClasses={myClasses} checkIns={coachCheckIns} events={coachEvents} challenges={coachChallenges} allMemberships={coachMemberships} avatarMap={avatarMapFull} openModal={openModal} now={now} />;
     } else if (item.id === 'members') {
       content = isCoach ?
-        <TabCoachMembers openModal={openModal} coach={activeCoachRecord} bookings={coachBookings} checkIns={coachCheckIns} avatarMap={avatarMapFull} now={now} /> :
+        <TabCoachMembers
+          openModal={openModal}
+          coach={activeCoachRecord}
+          bookings={coachBookings}
+          checkIns={coachCheckIns}
+          avatarMap={avatarMapFull}
+          now={now}
+          availableMembers={gymMembershipsForCoach}
+          pendingInvites={coachInvites.filter(i => i.status === 'pending')}
+          acceptedInvites={coachInvites.filter(i => i.status === 'accepted')}
+          onAddClient={async (member) => {
+            const coachId = activeCoachRecord?.user_id || activeCoachRecord?.id || currentUser?.id;
+            await base44.entities.CoachInvite.create({
+              coach_id: coachId,
+              coach_name: activeCoachRecord?.name || currentUser?.full_name || '',
+              coach_avatar: activeCoachRecord?.avatar_url || null,
+              coach_gym_id: selectedGym?.id,
+              coach_gym_name: selectedGym?.name || '',
+              member_id: member.user_id,
+              member_name: member.user_name,
+              member_email: member.user_email || '',
+              status: 'pending',
+            });
+            queryClient.invalidateQueries({ queryKey: ['coachInvitesForCoach'] });
+          }}
+          onCancelInvite={async (invite) => {
+            await base44.entities.CoachInvite.delete(invite.id);
+            queryClient.invalidateQueries({ queryKey: ['coachInvitesForCoach'] });
+          }}
+        /> :
         <TabMembersComponent allMemberships={effectiveMemberships} checkIns={checkIns} ci30={ci30} memberLastCheckIn={memberLastCheckIn} selectedGym={selectedGym} atRisk={atRisk} atRiskMembersList={atRiskMembersList} retentionRate={retentionRate} totalMembers={totalMembers} activeThisWeek={activeThisWeek} newSignUps={newSignUps} weeklyChangePct={weeklyChangePct} avatarMap={avatarMapFull} memberFilter={memberFilter} setMemberFilter={setMemberFilter} memberSearch={memberSearch} setMemberSearch={setMemberSearch} memberSort={memberSort} setMemberSort={setMemberSort} memberPage={memberPage} setMemberPage={setMemberPage} memberPageSize={memberPageSize} selectedRows={selectedRows} setSelectedRows={setSelectedRows} openModal={openModal} now={now} Spark={Spark} Delta={Delta} />;
     } else if (item.id === 'content') {
       content = isCoach ?
