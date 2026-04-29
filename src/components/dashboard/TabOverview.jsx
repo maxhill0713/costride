@@ -488,8 +488,8 @@ function CurrentlyInGym({ checkIns = [], allMemberships = [], avatarMap = {}, gy
   const TWO_HOURS   = 2 * 60 * 60 * 1000;
   const now         = Date.now();
 
-  // Avatar size is 4× the original 40px
-  const AVATAR_SIZE = 160;
+  // Avatar size: 4× original 40px, then halved = 80px
+  const AVATAR_SIZE = 80;
   // Card width is 70% wider than original (72–90px) → ~122–153px; use 136px fixed
   const CARD_WIDTH  = 136;
 
@@ -530,9 +530,20 @@ function CurrentlyInGym({ checkIns = [], allMemberships = [], avatarMap = {}, gy
   return (
     <div style={{
       background: C.card, border: `1px solid ${C.brd}`, borderRadius: 10,
-      padding: '10px 16px 10px',
+      padding: '10px 16px 10px 10px',
       flex: 1, display: 'flex', flexDirection: 'column', minHeight: 80,
     }}>
+
+      {/* Live indicator — top right */}
+      {liveMembers.length > 0 && (
+        <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 6, flexShrink: 0 }}>
+          <style>{`@keyframes liveGymPulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.5;transform:scale(1.3)} }`}</style>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+            <div style={{ width: 7, height: 7, borderRadius: '50%', background: C.green, boxShadow: `0 0 6px ${C.green}`, animation: 'liveGymPulse 2s ease-in-out infinite' }} />
+            <span style={{ fontSize: 10.5, color: C.green, fontWeight: 600 }}>Live</span>
+          </div>
+        </div>
+      )}
 
       {liveMembers.length === 0 ? (
         <div style={{ fontSize: 12, color: C.t3, display: 'flex', alignItems: 'center', justifyContent: 'center', flex: 1 }}>
