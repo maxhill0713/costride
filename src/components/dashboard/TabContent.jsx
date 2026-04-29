@@ -1084,6 +1084,7 @@ export default function ContentPage({
   const [creatingClass, setCreatingClass] = useState(false);
   const [previewPost, setPreviewPost] = useState(null);
   const [showClassMgmt, setShowClassMgmt] = useState(false);
+  const [classMgmtInitialId, setClassMgmtInitialId] = useState(null);
 
   const createItems = [
     { label: "📝 New Post",      action: () => { openModal?.("post");      setShowMenu(false); setTab("Community Feed"); } },
@@ -1310,6 +1311,7 @@ export default function ContentPage({
               onEventEdited={onUpdateEvent}
               onDeleteClass={onDeleteClass}
               onManageClasses={() => setShowClassMgmt(true)}
+              onOpenClassManagement={(classId) => { setClassMgmtInitialId(classId || null); setShowClassMgmt(true); }}
             />
           )}
 
@@ -1724,7 +1726,8 @@ export default function ContentPage({
       )}
       <ClassManagementModal
         open={showClassMgmt}
-        onClose={() => setShowClassMgmt(false)}
+        onClose={() => { setShowClassMgmt(false); setClassMgmtInitialId(null); }}
+        initialClassId={classMgmtInitialId}
         classes={classes}
         bookings={bookings}
         coaches={coaches}

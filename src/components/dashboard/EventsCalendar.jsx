@@ -279,7 +279,7 @@ function DayDetailModal({ cell, dateLabel, onClose, onSelectEvent, onSelectClass
   );
 }
 
-export default function EventsCalendar({ events, classes = [], onDeleteEvent, onAddEvent, onAddClass, onEventEdited, onDeleteClass, onManageClasses }) {
+export default function EventsCalendar({ events, classes = [], onDeleteEvent, onAddEvent, onAddClass, onEventEdited, onDeleteClass, onManageClasses, onOpenClassManagement }) {
   const today = new Date();
   const todayMidnight = new Date(today.getFullYear(), today.getMonth(), today.getDate());
 
@@ -523,7 +523,10 @@ export default function EventsCalendar({ events, classes = [], onDeleteEvent, on
           dateLabel={new Date(selectedDayCell.cellYear, selectedDayCell.cellMonth, selectedDayCell.cellDay).toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}
           onClose={() => setSelectedDayCell(null)}
           onSelectEvent={ev => setSelectedEvent(ev)}
-          onSelectClass={(cls, color) => setSelectedClass({ gymClass: cls, color })}
+          onSelectClass={(cls, color) => {
+            if (onOpenClassManagement) { onOpenClassManagement(cls.id); }
+            else setSelectedClass({ gymClass: cls, color });
+          }}
         />
       )}
 
