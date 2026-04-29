@@ -1307,6 +1307,7 @@ export default function ContentPage({
               onAddClass={() => setShowCreateClass(true)}
               onEventEdited={onUpdateEvent}
               onDeleteClass={onDeleteClass}
+              onManageClasses={() => window.open('/ClassManagement', '_blank')}
             />
           )}
 

@@ -279,7 +279,7 @@ function DayDetailModal({ cell, dateLabel, onClose, onSelectEvent, onSelectClass
   );
 }
 
-export default function EventsCalendar({ events, classes = [], onDeleteEvent, onAddEvent, onAddClass, onEventEdited, onDeleteClass }) {
+export default function EventsCalendar({ events, classes = [], onDeleteEvent, onAddEvent, onAddClass, onEventEdited, onDeleteClass, onManageClasses }) {
   const today = new Date();
   const todayMidnight = new Date(today.getFullYear(), today.getMonth(), today.getDate());
 
@@ -430,9 +430,19 @@ export default function EventsCalendar({ events, classes = [], onDeleteEvent, on
       `}</style>
 
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
-        <span style={{ fontSize: 12, fontWeight: 500, color: C.t2 }}>
-          {totalEvents} event{totalEvents !== 1 ? "s" : ""} · {totalClasses} class{totalClasses !== 1 ? "es" : ""} this month
-        </span>
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <span style={{ fontSize: 12, fontWeight: 500, color: C.t2 }}>
+            {totalEvents} event{totalEvents !== 1 ? "s" : ""} · {totalClasses} class{totalClasses !== 1 ? "es" : ""} this month
+          </span>
+          {onManageClasses && (
+            <button onClick={onManageClasses}
+              style={{ display: "flex", alignItems: "center", gap: 5, padding: "4px 11px", borderRadius: 7, background: "rgba(168,85,247,0.12)", border: "1px solid rgba(168,85,247,0.28)", color: "#a855f7", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: FONT, transition: "all 0.15s" }}
+              onMouseEnter={e => { e.currentTarget.style.background = "rgba(168,85,247,0.2)"; e.currentTarget.style.borderColor = "rgba(168,85,247,0.45)"; }}
+              onMouseLeave={e => { e.currentTarget.style.background = "rgba(168,85,247,0.12)"; e.currentTarget.style.borderColor = "rgba(168,85,247,0.28)"; }}>
+              Manage Classes
+            </button>
+          )}
+        </div>
         <div style={{ display: "flex", alignItems: "center", gap: 0 }}>
           <button onClick={() => navigate(-1)} disabled={animating}
             style={{ width: 26, height: 26, display: "flex", alignItems: "center", justifyContent: "center", background: "transparent", border: "none", borderRadius: 6, cursor: animating ? "default" : "pointer", color: C.t2, transition: "color 0.12s" }}
