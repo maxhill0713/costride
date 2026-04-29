@@ -159,8 +159,8 @@ const scoreTier  = s => s >= 80
   ? { label:'Caution',    color:C.amber, bg:C.amberD, bdr:C.amberB }
   : { label:'At Risk',    color:C.red,   bg:C.redD,   bdr:C.redB };
 
-function Av({ name='?', size=36, avatarSrc=null, id='' }) {
-  const col = AV_COLORS[(id || name).split('').reduce((a, c) => a + c.charCodeAt(0), 0) % AV_COLORS.length];
+function Av({ name = '?', size = 36, avatarSrc = null, clientId = '' }) {
+  const col = AV_COLORS[(clientId || name).split('').reduce((a, c) => a + c.charCodeAt(0), 0) % AV_COLORS.length];
   const ini = name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
   if (avatarSrc) return <img src={avatarSrc} alt={name} style={{ width:size, height:size, borderRadius:'50%', objectFit:'cover', border:`2px solid ${col}44`, flexShrink:0 }} />;
   return (
@@ -849,7 +849,7 @@ export default function ClientProfile({
         </button>
 
         {/* Avatar + name */}
-        <Av name={c.name} size={38} avatarSrc={avatarMap[c.id] || c.avatar} id={c.id} />
+        <Av name={c.name} size={38} avatarSrc={avatarMap[c.id] || c.avatar} clientId={c.id} />
         <div style={{ flex:1, minWidth:0 }}>
           <div style={{ display:'flex', alignItems:'center', gap:9 }}>
             <span style={{ fontSize:15, fontWeight:700, color:C.t1 }}>{c.name}</span>
