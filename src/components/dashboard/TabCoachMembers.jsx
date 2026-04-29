@@ -822,86 +822,281 @@ function PreviewComms({ client, onMessage }) {
   );
 }
 
-/* ─── CLIENT PREVIEW (slide-in) ──────────────────────────────── */
+/* ─── CLIENT DRAWER (full-height, 80% width) ─────────────────── */
+const DRAWER_TABS = [
+  { id:'overview',  label:'Overview',  icon:BarChart2    },
+  { id:'activity',  label:'Activity',  icon:Activity     },
+  { id:'notes',     label:'Notes',     icon:FileText     },
+  { id:'content',   label:'Content',   icon:Dumbbell     },
+  { id:'messages',  label:'Messages',  icon:MessageSquare },
+];
+
 function ClientPreview({ client, onClose, onMessage, avatarMap }) {
+  const [drawerTab, setDrawerTab] = useState('overview');
   const sc      = scoreColor(client.retentionScore);
   const tier    = scoreTier(client.retentionScore);
   const reasons = riskReasons(client);
   const sr      = successRate(client);
   const activeInj = (client.injuries||[]).filter(i=>i.severity!=='Cleared').length;
+  const visitLabel = client.lastVisit>=999?'Never':client.lastVisit===0?'Today':`${client.lastVisit}d ago`;
+  const visitCol   = client.lastVisit>=14?C.red:client.lastVisit<=1?C.cyan:C.t1;
+
+  // Escape key close
+  useEffect(() => {
+    const h = e => { if (e.key === 'Escape') onClose(); };
+    document.addEventListener('keydown', h);
+    return () => document.removeEventListener('keydown', h);
+  }, [onClose]);
+
   return (
-    <div className="tcm2-preview" style={{ position:'fixed', top:0, right:240, bottom:0, width:264, background:C.sidebar, borderLeft:`1px solid ${C.brd}`, zIndex:200, display:'flex', flexDirection:'column', boxShadow:'-10px 0 30px rgba(0,0,0,0.5)', fontFamily:FONT }}>
-      <div style={{ padding:'14px 16px', borderBottom:`1px solid ${C.brd}`, display:'flex', alignItems:'center', justifyContent:'space-between' }}>
-        <div style={{ display:'flex', alignItems:'center', gap:10 }}>
-          <Av client={client} size={34} avatarMap={avatarMap} />
-          <div>
-            <div style={{ fontSize:13, fontWeight:700, color:C.t1 }}>{client.name}</div>
-            <div style={{ fontSize:10.5, color:C.t3, marginTop:2 }}>Since {client.joinDate} · {client.sessionsThisMonth+client.sessionsLastMonth} sessions</div>
-          </div>
-        </div>
-        <button onClick={onClose} style={{ width:24, height:24, borderRadius:6, background:'transparent', border:`1px solid ${C.brd}`, cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center' }}>
-          <X style={{ width:10, height:10, color:C.t3 }} />
-        </button>
-      </div>
-      <div className="tcm2-scr" style={{ flex:1, overflowY:'auto', padding:14, display:'flex', flexDirection:'column', gap:10 }}>
-        <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:6 }}>
-          {[
-            { label:'Last Visit',  val:client.lastVisit>=999?'Never':client.lastVisit===0?'Today':`${client.lastVisit}d ago`, col:client.lastVisit>=14?C.red:client.lastVisit<=1?C.cyan:C.t1 },
-            { label:'Sessions/mo', val:`${client.sessionsThisMonth}`, col:C.t1 },
-            { label:'Streak',      val:client.streak>0?`${client.streak}d`:'—', col:client.streak>=14?C.amber:C.t1 },
-            { label:'Score',       val:`${client.retentionScore}`, col:sc },
-          ].map((s,i) => (
-            <div key={i} style={{ padding:'10px', borderRadius:8, background:C.card, border:`1px solid ${C.brd}` }}>
-              <div style={{ fontSize:9.5, color:C.t3, textTransform:'uppercase', letterSpacing:'0.05em', marginBottom:4 }}>{s.label}</div>
-              <div style={{ fontSize:14, fontWeight:700, color:s.col }}>{s.val}</div>
+    <>
+      {/* Overlay */}
+      <div onClick={onClose} style={{ position:'fixed', inset:0, zIndex:400, background:'rgba(0,0,0,0.6)', backdropFilter:'blur(4px)', animation:'tcm2FadeUp .2s ease both' }} />
+
+      {/* Drawer panel */}
+      <div style={{
+        position:'fixed', top:0, right:0, bottom:0,
+        width:'80%', maxWidth:1100,
+        background:C.sidebar, borderLeft:`1px solid ${C.brd}`,
+        zIndex:401, display:'flex', flexDirection:'column',
+        boxShadow:'-24px 0 80px rgba(0,0,0,0.7)',
+        fontFamily:FONT,
+        animation:'tcm2SlideIn .28s cubic-bezier(.16,1,.3,1) both',
+      }}>
+
+        {/* ── Header ── */}
+        <div style={{ flexShrink:0, padding:'20px 28px 0', borderBottom:`1px solid ${C.brd}`, background:C.bg }}>
+          <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:20 }}>
+            {/* Identity */}
+            <div style={{ display:'flex', alignItems:'center', gap:16 }}>
+              <Av client={client} size={52} avatarMap={avatarMap} />
+              <div>
+                <div style={{ display:'flex', alignItems:'center', gap:10, marginBottom:4 }}>
+                  <div style={{ fontSize:20, fontWeight:800, color:C.t1, letterSpacing:'-0.02em' }}>{client.name}</div>
+                  <span style={{ padding:'3px 10px', borderRadius:20, background:tier.bg, border:`1px solid ${tier.bdr}`, fontSize:11, fontWeight:700, color:tier.color }}>{tier.label}</span>
+                  {client.isNew && <span style={{ padding:'3px 10px', borderRadius:20, background:C.blueD, border:`1px solid ${C.blueB}`, fontSize:11, fontWeight:700, color:C.blue }}>New</span>}
+                </div>
+                <div style={{ fontSize:13, color:C.t3 }}>
+                  Since {client.joinDate} · {client.goal || 'General Fitness'}
+                  {client.nextSession && <span style={{ color:C.cyan, marginLeft:8 }}>· Next: {client.nextSession}</span>}
+                </div>
+              </div>
             </div>
-          ))}
+            {/* Actions */}
+            <div style={{ display:'flex', alignItems:'center', gap:10 }}>
+              <button onClick={()=>onMessage(client)} style={{ display:'flex', alignItems:'center', gap:7, padding:'9px 18px', borderRadius:9, background:C.cyan, border:'none', color:'#fff', fontSize:13, fontWeight:700, cursor:'pointer', fontFamily:FONT }}>
+                <Send style={{ width:13, height:13 }} /> {client._action}
+              </button>
+              <button onClick={onClose} style={{ width:36, height:36, borderRadius:9, background:'rgba(255,255,255,0.04)', border:`1px solid ${C.brd}`, cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', transition:'border-color .15s' }}
+                onMouseEnter={e=>e.currentTarget.style.borderColor=C.brd2}
+                onMouseLeave={e=>e.currentTarget.style.borderColor=C.brd}>
+                <X style={{ width:14, height:14, color:C.t2 }} />
+              </button>
+            </div>
+          </div>
+
+          {/* KPI strip */}
+          <div style={{ display:'grid', gridTemplateColumns:'repeat(5,1fr)', gap:12, marginBottom:20 }}>
+            {[
+              { label:'Last Visit',   val:visitLabel,                                          col:visitCol },
+              { label:'Sessions/Mo',  val:client.sessionsThisMonth,                            col:C.t1    },
+              { label:'Streak',       val:client.streak>0?`${client.streak}d`:'—',             col:client.streak>=14?C.amber:C.t1 },
+              { label:'Score',        val:client.retentionScore,                               col:sc       },
+              { label:'Success Rate', val:`${sr}%`,                                            col:C.cyan   },
+            ].map((s,i) => (
+              <div key={i} style={{ padding:'14px 16px', borderRadius:10, background:C.card, border:`1px solid ${C.brd}` }}>
+                <div style={{ fontSize:10, color:C.t3, textTransform:'uppercase', letterSpacing:'0.07em', marginBottom:6 }}>{s.label}</div>
+                <div style={{ fontSize:22, fontWeight:800, color:s.col, letterSpacing:'-0.03em', lineHeight:1 }}>{s.val}</div>
+              </div>
+            ))}
+          </div>
+
+          {/* Tab bar */}
+          <div style={{ display:'flex', gap:0 }}>
+            {DRAWER_TABS.map(t => {
+              const Icon = t.icon;
+              const on = drawerTab === t.id;
+              return (
+                <button key={t.id} onClick={()=>setDrawerTab(t.id)} style={{
+                  display:'flex', alignItems:'center', gap:7,
+                  padding:'11px 18px', background:'transparent', border:'none',
+                  borderBottom:`2px solid ${on?C.cyan:'transparent'}`,
+                  color:on?C.t1:C.t3, fontSize:13, fontWeight:on?700:500,
+                  cursor:'pointer', fontFamily:FONT, transition:'color .15s',
+                  marginBottom:-1,
+                }}>
+                  <Icon style={{ width:13, height:13 }} />
+                  {t.label}
+                </button>
+              );
+            })}
+          </div>
         </div>
-        {client.streak >= 7 && (
-          <div style={{ display:'flex', alignItems:'center', gap:8, padding:'10px 12px', borderRadius:8, background:'rgba(245,158,11,0.07)', border:'1px solid rgba(245,158,11,0.18)' }}>
-            <Flame style={{ width:13, height:13, color:C.amber, flexShrink:0 }} />
-            <span style={{ fontSize:12, fontWeight:600, color:C.amber }}>{client.streak}-day streak</span>
-          </div>
-        )}
-        {client.status === 'at_risk' && (
-          <div style={{ padding:'10px 12px', borderRadius:8, background:C.redD, border:`1px solid ${C.redB}`, borderLeft:`3px solid ${C.red}` }}>
-            <div style={{ fontSize:11, fontWeight:700, color:C.red, marginBottom:3 }}>High churn risk</div>
-            <div style={{ fontSize:10.5, color:C.t2, lineHeight:1.5 }}>{reasons[0]||'Low engagement'}</div>
-          </div>
-        )}
-        {activeInj > 0 && (
-          <div style={{ display:'flex', alignItems:'center', gap:8, padding:'10px 12px', borderRadius:8, background:C.amberD, border:`1px solid ${C.amberB}` }}>
-            <ShieldAlert style={{ width:13, height:13, color:C.amber, flexShrink:0 }} />
-            <span style={{ fontSize:12, fontWeight:600, color:C.amber }}>{activeInj} active restriction{activeInj>1?'s':''}</span>
-          </div>
-        )}
-        <div style={{ padding:'10px 12px', borderRadius:8, background:C.card, border:`1px solid ${C.brd}` }}>
-          <div style={{ fontSize:9.5, color:C.t3, textTransform:'uppercase', letterSpacing:'0.05em', marginBottom:5 }}>Recommended Action</div>
-          <div style={{ fontSize:12.5, fontWeight:700, color:C.t1, marginBottom:6 }}>{client._action}</div>
-          <div style={{ height:2, background:C.brd, borderRadius:2, overflow:'hidden', marginBottom:4 }}>
-            <div style={{ width:`${sr}%`, height:'100%', background:C.cyan, borderRadius:2 }} />
-          </div>
-          <div style={{ fontSize:10.5, color:C.t3 }}>{sr}% predicted success</div>
+
+        {/* ── Tab content (scrollable) ── */}
+        <div className="tcm2-scr" style={{ flex:1, overflowY:'auto', padding:'28px 28px 40px' }}>
+
+          {/* ────── OVERVIEW ────── */}
+          {drawerTab === 'overview' && (
+            <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:20 }}>
+              {/* Risk & action */}
+              <div style={{ display:'flex', flexDirection:'column', gap:16 }}>
+                {client.status === 'at_risk' && (
+                  <div style={{ padding:'18px 20px', borderRadius:12, background:C.redD, border:`1px solid ${C.redB}`, borderLeft:`4px solid ${C.red}` }}>
+                    <div style={{ fontSize:13, fontWeight:700, color:C.red, marginBottom:6 }}>⚠ High Churn Risk</div>
+                    <div style={{ fontSize:13, color:C.t2, lineHeight:1.6 }}>{reasons.join(' · ') || 'Low engagement detected'}</div>
+                  </div>
+                )}
+                {activeInj > 0 && (
+                  <div style={{ padding:'18px 20px', borderRadius:12, background:C.amberD, border:`1px solid ${C.amberB}` }}>
+                    <div style={{ fontSize:13, fontWeight:700, color:C.amber, marginBottom:6 }}>
+                      <ShieldAlert style={{ width:13, height:13, display:'inline', marginRight:6 }} />
+                      {activeInj} Active Restriction{activeInj>1?'s':''}
+                    </div>
+                    <div style={{ fontSize:12, color:C.t2 }}>Review before assigning heavy load.</div>
+                  </div>
+                )}
+                {client.streak >= 7 && (
+                  <div style={{ padding:'18px 20px', borderRadius:12, background:'rgba(245,158,11,0.07)', border:'1px solid rgba(245,158,11,0.2)' }}>
+                    <div style={{ fontSize:13, fontWeight:700, color:C.amber }}>
+                      <Flame style={{ width:13, height:13, display:'inline', marginRight:6 }} />
+                      {client.streak}-day streak — great consistency!
+                    </div>
+                  </div>
+                )}
+                {/* Recommended action */}
+                <div style={{ padding:'20px', borderRadius:12, background:C.card, border:`1px solid ${C.brd}` }}>
+                  <div style={{ fontSize:10.5, color:C.t3, textTransform:'uppercase', letterSpacing:'0.07em', marginBottom:10 }}>Recommended Action</div>
+                  <div style={{ fontSize:16, fontWeight:800, color:C.t1, marginBottom:12, letterSpacing:'-0.02em' }}>{client._action}</div>
+                  <div style={{ height:4, background:C.brd, borderRadius:2, overflow:'hidden', marginBottom:8 }}>
+                    <div style={{ width:`${sr}%`, height:'100%', background:C.cyan, borderRadius:2 }} />
+                  </div>
+                  <div style={{ fontSize:12, color:C.t3 }}>{sr}% predicted success rate</div>
+                  <button onClick={()=>onMessage(client)} style={{ marginTop:14, width:'100%', padding:'10px', borderRadius:9, background:C.cyanD, border:`1px solid ${C.cyanB}`, color:C.cyan, fontSize:13, fontWeight:700, cursor:'pointer', fontFamily:FONT }}>
+                    Send Message
+                  </button>
+                </div>
+              </div>
+
+              {/* Session delta + retention history */}
+              <div style={{ display:'flex', flexDirection:'column', gap:16 }}>
+                <div style={{ padding:'20px', borderRadius:12, background:C.card, border:`1px solid ${C.brd}` }}>
+                  <div style={{ fontSize:13, fontWeight:700, color:C.t1, marginBottom:16 }}>Session Trend</div>
+                  <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:12, marginBottom:16 }}>
+                    {[
+                      { label:'This Month',  val:client.sessionsThisMonth, col:C.t1 },
+                      { label:'Last Month',  val:client.sessionsLastMonth, col:C.t3 },
+                    ].map((s,i)=>(
+                      <div key={i} style={{ padding:'12px', borderRadius:9, background:C.card2, border:`1px solid ${C.brd}`, textAlign:'center' }}>
+                        <div style={{ fontSize:26, fontWeight:800, color:s.col, lineHeight:1 }}>{s.val}</div>
+                        <div style={{ fontSize:10, color:C.t3, marginTop:5, textTransform:'uppercase', letterSpacing:'0.06em' }}>{s.label}</div>
+                      </div>
+                    ))}
+                  </div>
+                  {/* Retention sparkline */}
+                  <div style={{ fontSize:10.5, color:C.t3, textTransform:'uppercase', letterSpacing:'0.06em', marginBottom:8 }}>8-Week Retention</div>
+                  <div style={{ display:'flex', alignItems:'flex-end', gap:3, height:48 }}>
+                    {(client.retentionHistory||[]).map((v,i)=>(
+                      <div key={i} style={{ flex:1, height:`${Math.max(8, v)}%`, borderRadius:3, background:i===7?C.cyan:C.cyanD, border:`1px solid ${i===7?C.cyanB:'transparent'}` }} />
+                    ))}
+                  </div>
+                </div>
+
+                {/* Retention tier card */}
+                <div style={{ padding:'20px', borderRadius:12, background:tier.bg, border:`1px solid ${tier.bdr}` }}>
+                  <div style={{ fontSize:10.5, color:tier.color, textTransform:'uppercase', letterSpacing:'0.07em', marginBottom:8 }}>Retention Tier</div>
+                  <div style={{ fontSize:22, fontWeight:800, color:tier.color, letterSpacing:'-0.02em' }}>{tier.label}</div>
+                  <div style={{ fontSize:12, color:C.t2, marginTop:6 }}>
+                    Score: <strong style={{ color:sc }}>{client.retentionScore}</strong> / 100
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* ────── ACTIVITY ────── */}
+          {drawerTab === 'activity' && (
+            <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:20 }}>
+              <div>
+                <div style={{ fontSize:15, fontWeight:700, color:C.t1, marginBottom:16 }}>Attendance History</div>
+                <PreviewAttendance />
+              </div>
+              <div>
+                <div style={{ fontSize:15, fontWeight:700, color:C.t1, marginBottom:16 }}>Progress Tracking</div>
+                <PreviewProgress />
+              </div>
+            </div>
+          )}
+
+          {/* ────── NOTES ────── */}
+          {drawerTab === 'notes' && (
+            <div style={{ maxWidth:700 }}>
+              <div style={{ fontSize:15, fontWeight:700, color:C.t1, marginBottom:16 }}>Coach Notes</div>
+              <PreviewNotes />
+              <div style={{ marginTop:24 }}>
+                <div style={{ fontSize:15, fontWeight:700, color:C.t1, marginBottom:16 }}>Health & Injuries</div>
+                <PreviewInjuries client={client} />
+              </div>
+            </div>
+          )}
+
+          {/* ────── CONTENT ────── */}
+          {drawerTab === 'content' && (
+            <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:20 }}>
+              <div>
+                <div style={{ fontSize:15, fontWeight:700, color:C.t1, marginBottom:16 }}>Assigned Plans</div>
+                <PreviewAssignedContent client={client} onMessage={onMessage} />
+              </div>
+              <div>
+                <div style={{ fontSize:15, fontWeight:700, color:C.t1, marginBottom:16 }}>Goals & Milestones</div>
+                <PreviewGoals />
+              </div>
+            </div>
+          )}
+
+          {/* ────── MESSAGES ────── */}
+          {drawerTab === 'messages' && (
+            <div style={{ maxWidth:600 }}>
+              <div style={{ fontSize:15, fontWeight:700, color:C.t1, marginBottom:16 }}>Quick Outreach</div>
+              <PreviewComms client={client} onMessage={onMessage} />
+              <div style={{ marginTop:24, padding:'20px', borderRadius:12, background:C.card, border:`1px solid ${C.brd}` }}>
+                <div style={{ fontSize:13, fontWeight:700, color:C.t1, marginBottom:12 }}>Custom Message</div>
+                <MessageToastInline client={client} onMessage={onMessage} />
+              </div>
+            </div>
+          )}
+
         </div>
-        <div style={{ padding:'8px 12px', borderRadius:8, background:tier.bg, border:`1px solid ${tier.bdr}`, display:'flex', alignItems:'center', justifyContent:'space-between' }}>
-          <span style={{ fontSize:11, fontWeight:600, color:tier.color }}>{tier.label}</span>
-          <span style={{ fontSize:10, color:C.t3 }}>retention tier</span>
-        </div>
-        {/* ── Extended sections ── */}
-        <PreviewProgress />
-        <PreviewAttendance />
-        <PreviewInjuries client={client} />
-        <PreviewNotes />
-        <PreviewAssignedContent client={client} onMessage={onMessage} />
-        <PreviewGoals />
-        <PreviewComms client={client} onMessage={onMessage} />
-        <div style={{ height:8 }} />
       </div>
-      <div style={{ padding:'12px 14px', borderTop:`1px solid ${C.brd}` }}>
-        <button onClick={()=>onMessage(client)} style={{ width:'100%', padding:'9px', borderRadius:8, background:C.cyan, border:'none', color:'#fff', fontSize:12, fontWeight:700, cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', gap:5, fontFamily:FONT }}>
-          <Send style={{ width:11, height:11 }} /> {client._action}
-        </button>
+    </>
+  );
+}
+
+/* ─── INLINE MESSAGE COMPOSER (used inside Messages tab) ─────── */
+function MessageToastInline({ client, onMessage }) {
+  const fn = (client?.name||'there').split(' ')[0];
+  const [sent, setSent] = useState(false);
+  const [body, setBody] = useState(MSG_PRESET[client?._action]?.(fn) || `Hi ${fn}, just checking in!`);
+  const [action, setAction] = useState(client._action || 'Check in');
+  const handleSend = () => {
+    setSent(true);
+    onMessage({ ...client, _action: action });
+    setTimeout(() => setSent(false), 2000);
+  };
+  return (
+    <div>
+      <select value={action} onChange={e=>{ setAction(e.target.value); setBody(MSG_PRESET[e.target.value]?.(fn)||`Hi ${fn}, just checking in!`); }}
+        style={{ width:'100%', marginBottom:10, padding:'9px 12px', borderRadius:8, background:C.card2, border:`1px solid ${C.brd}`, color:C.t2, fontSize:12, fontFamily:FONT, outline:'none' }}>
+        {COACH_ACTIONS.map(a=><option key={a} value={a}>{a}</option>)}
+      </select>
+      <textarea value={body} onChange={e=>setBody(e.target.value)} rows={4}
+        style={{ width:'100%', boxSizing:'border-box', background:C.card2, border:`1px solid ${C.brd}`, borderRadius:9, padding:'12px 14px', fontSize:13, color:C.t1, resize:'none', outline:'none', lineHeight:1.65, fontFamily:FONT, marginBottom:10 }} />
+      <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:10 }}>
+        <span style={{ fontSize:12, color:C.t3 }}><span style={{ color:C.cyan, fontWeight:700 }}>{successRate(client)}%</span> predicted response rate</span>
       </div>
+      <button onClick={handleSend} style={{ width:'100%', padding:'11px', borderRadius:9, border:'none', fontSize:13, fontWeight:700, cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', gap:7, background:sent?C.greenD:C.cyan, color:sent?C.green:'#fff', border:sent?`1px solid ${C.greenB}`:'none', transition:'all 0.2s', fontFamily:FONT }}>
+        {sent ? <><Check style={{ width:14, height:14 }} /> Sent!</> : <><Send style={{ width:14, height:14 }} /> Send to {fn}</>}
+      </button>
     </div>
   );
 }
