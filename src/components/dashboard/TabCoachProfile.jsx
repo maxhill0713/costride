@@ -1,583 +1,268 @@
-import { useState, useMemo, useEffect } from "react";
+/**
+ * TabCoachProfile — mirrors TabGymProfile design quality, tailored for coaches.
+ * Same color tokens, density, hover patterns, sidebar, and interaction style.
+ * Every section remapped to coach context: bio, pricing, specialties,
+ * certifications, availability, gallery, client retention, and online presence.
+ */
+import React, { useState } from 'react';
 import {
-  MessageSquare, Calendar, Dumbbell, AlertTriangle,
-  ChevronDown, ChevronUp, Activity, BarChart2, User,
-  Phone, Mail, MapPin, Target, Check, Plus, Zap,
-  ArrowRight, Brain, Flame, XCircle, TrendingDown,
-} from "lucide-react";
-import {
-  AreaChart, Area, XAxis, YAxis, Tooltip,
-  ResponsiveContainer, CartesianGrid,
-} from "recharts";
+  Image, ExternalLink, Zap, TrendingUp, BadgeCheck,
+  ChevronDown, ChevronUp,
+  Instagram, Facebook, Twitter, Globe, MapPin,
+  Star, GraduationCap, Plus, Pencil,
+  CheckCircle2, AlertCircle, Lightbulb, Bell,
+  Camera, Award, MessageCircle, Dumbbell, Clock,
+  FileText, Target, Activity, Shield, CreditCard,
+  Users, UserCheck, Flame,
+} from 'lucide-react';
+import { createPageUrl } from '../../utils';
 
-// ─── Tokens — exactly matching ContentHub screenshot ─────────────────────────
+/* ─── TOKENS (identical to TabGymProfile) ───────────────────────── */
 const C = {
-  bg:      "#000000",
-  card:    "#141416",
-  card2:   "#1a1a1f",
-  brd:     "#222226",
-  t1:      "#ffffff",
-  t2:      "#8a8a94",
-  t3:      "#444450",
-  blue:    "#4d7fff",
-  blueDim: "rgba(77,127,255,0.10)",
-  blueBrd: "rgba(77,127,255,0.22)",
-  // red used only for genuine critical states — sparingly
-  red:     "#ff4d6d",
-  redDim:  "rgba(255,77,109,0.10)",
+  bg:       '#000000',
+  sidebar:  '#0f0f12',
+  card:     '#141416',
+  card2:    '#1a1a1f',
+  brd:      '#222226',
+  brd2:     '#2a2a30',
+  t1:       '#ffffff',
+  t2:       '#8a8a94',
+  t3:       '#444450',
+  cyan:     '#4d7fff',
+  cyanDim:  'rgba(77,127,255,0.12)',
+  cyanBrd:  'rgba(77,127,255,0.28)',
+  red:      '#ff4d6d',
+  redDim:   'rgba(255,77,109,0.15)',
+  redBrd:   'rgba(255,77,109,0.28)',
+  amber:    '#f59e0b',
+  amberDim: 'rgba(245,158,11,0.12)',
+  amberBrd: 'rgba(245,158,11,0.28)',
+  green:    '#22c55e',
+  greenDim: 'rgba(34,197,94,0.12)',
+  greenBrd: 'rgba(34,197,94,0.28)',
 };
+const FONT     = "'DM Sans','Segoe UI',system-ui,sans-serif";
+const SHADOW   = '0 0 10px rgba(77,127,255,0.22), 0 2px 6px rgba(77,127,255,0.12)';
+const GRAD_BTN = { background: '#2563eb', border: 'none', color: '#fff' };
 
-const FONT = "'DM Sans', 'Segoe UI', system-ui, sans-serif";
-const MONO = "'DM Mono', 'Courier New', monospace";
-
-// ─── Mock Data ────────────────────────────────────────────────────────────────
-const day = 86400000;
-const now = Date.now();
-
-const MOCK_CLIENT = {
-  name: "Jordan Matthews",
-  email: "jordan@example.com",
-  phone: "+44 7700 900123",
-  location: "London, UK",
-  joined: "Jan 2024",
-  goal: "Fat Loss",
-  tags: ["HIIT", "Strength"],
-  retention_status: "needs_attention",
-  last_visit: "5d ago",
-  visits_per_week: 1.5,
-  completion_pct: 42,
-  streak: 3,
-  total_sessions: 24,
-  no_show_rate: 18,
-  next_session: null,
-};
-
-const MOCK_CHECKINS = Array.from({ length: 22 }, (_, i) => ({
-  id: i,
-  check_in_date: new Date(now - (i * 3.4 + Math.random() * 1.5) * day).toISOString(),
-}));
-
-const MOCK_BOOKINGS = [
-  { id: 1, session_date: new Date(now - 2 * day).toISOString(),  session_name: "Upper Body Strength",  status: "attended"  },
-  { id: 2, session_date: new Date(now - 5 * day).toISOString(),  session_name: "HIIT Cardio",          status: "no_show"   },
-  { id: 3, session_date: new Date(now - 9 * day).toISOString(),  session_name: "Lower Body Power",     status: "attended"  },
-  { id: 4, session_date: new Date(now - 12 * day).toISOString(), session_name: "Core & Mobility",      status: "attended"  },
-  { id: 5, session_date: new Date(now - 16 * day).toISOString(), session_name: "Full Body Circuit",    status: "no_show"   },
-  { id: 6, session_date: new Date(now - 19 * day).toISOString(), session_name: "Push Day",             status: "attended"  },
-];
-
-const MOCK_WORKOUTS = [
-  { id: 1, workout_data: { name: "12-Week Strength Program", exercises: Array(24).fill(null) }, is_activated: true,  assigned_date: new Date(now - 30 * day).toISOString() },
-  { id: 2, workout_data: { name: "HIIT Conditioning Block",  exercises: Array(12).fill(null) }, is_activated: false, assigned_date: new Date(now - 10 * day).toISOString() },
-];
-
-// ─── Global CSS ───────────────────────────────────────────────────────────────
-const CSS = `
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap');
-
-@keyframes fadeUp  { from{opacity:0;transform:translateY(5px)} to{opacity:1;transform:translateY(0)} }
-
-* { box-sizing: border-box; margin: 0; padding: 0; }
-
-.ccc { font-family: ${FONT}; color: ${C.t1}; -webkit-font-smoothing: antialiased; }
-.mono { font-family: ${MONO}; }
-
-.card {
-  background: ${C.card};
-  border: 1px solid ${C.brd};
-  border-radius: 10px;
-  overflow: hidden;
-  animation: fadeUp .25s ease both;
-  transition: border-color .13s;
-}
-.card:hover { border-color: rgba(77,127,255,0.20); }
-
-.btn {
-  border: none; outline: none; cursor: pointer;
-  font-family: ${FONT};
-  transition: all .13s;
-  display: inline-flex; align-items: center; gap: 6px;
-}
-.btn:active { transform: scale(.97); }
-
-.btn-primary {
-  padding: 8px 18px; border-radius: 9px;
-  background: #2563eb; color: #fff;
-  font-size: 13px; font-weight: 700;
-  box-shadow: 0 4px 14px rgba(37,99,235,0.28);
-}
-.btn-primary:hover { opacity: .88; }
-
-.btn-ghost {
-  padding: 7px 14px; border-radius: 8px;
-  background: rgba(255,255,255,0.04);
-  border: 1px solid ${C.brd} !important;
-  color: ${C.t2}; font-size: 12px; font-weight: 600;
-}
-.btn-ghost:hover { background: ${C.card2}; border-color: #2e2e36 !important; color: ${C.t1}; }
-
-.row { border-radius: 7px; transition: background .1s; }
-.row:hover { background: rgba(255,255,255,0.025); }
-
-.hcell { border-radius: 3px; transition: transform .1s; }
-.hcell:hover { transform: scale(1.4); position: relative; z-index: 5; }
-`;
-
-// ─── Helpers ──────────────────────────────────────────────────────────────────
-const Lbl = ({ children, style = {} }) => (
-  <div style={{ fontSize: 9.5, fontWeight: 700, color: C.t3, textTransform: "uppercase", letterSpacing: ".12em", ...style }}>
-    {children}
-  </div>
-);
-
-function SectionHead({ label, icon: Icon, sub, action, onAction }) {
-  return (
-    <div style={{ display: "flex", alignItems: "center", gap: 9, padding: "11px 16px", borderBottom: `1px solid ${C.brd}` }}>
-      {Icon && (
-        <div style={{ width: 20, height: 20, borderRadius: 5, background: C.card2, border: `1px solid ${C.brd}`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-          <Icon style={{ width: 9, height: 9, color: C.t3 }} />
-        </div>
-      )}
-      <div style={{ flex: 1 }}>
-        <Lbl>{label}</Lbl>
-        {sub && <div style={{ fontSize: 10, color: C.t3, marginTop: 1 }}>{sub}</div>}
-      </div>
-      {action && onAction && (
-        <button className="btn" onClick={onAction} style={{ fontSize: 10.5, fontWeight: 700, color: C.blue, background: C.blueDim, border: `1px solid ${C.blueBrd}`, borderRadius: 6, padding: "3px 9px", gap: 3, fontFamily: FONT }}>
-          {action}
-        </button>
-      )}
-    </div>
-  );
+/* ─── HELPERS ────────────────────────────────────────────────────── */
+function qualityState(score) {
+  if (score >= 75) return { label: 'Strong',          color: C.green, dim: C.greenDim, brd: C.greenBrd };
+  if (score >= 40) return { label: 'Needs attention', color: C.amber, dim: C.amberDim, brd: C.amberBrd };
+  return           { label: 'Weak',                   color: C.red,   dim: C.redDim,   brd: C.redBrd   };
 }
 
-function Card({ label, icon, sub, action, onAction, children, style = {} }) {
-  return (
-    <div className="card" style={style}>
-      {label && <SectionHead label={label} icon={icon} sub={sub} action={action} onAction={onAction} />}
-      <div style={{ padding: 16 }}>{children}</div>
-    </div>
-  );
-}
-
-// ─── Command Bar ──────────────────────────────────────────────────────────────
-function CommandBar({ cl, onMessage, onBook, onAssign }) {
-  const ini = n => (n || "?").split(" ").map(w => w[0]).join("").toUpperCase().slice(0, 2);
-  const [scrolled, setScrolled] = useState(false);
-
-  useEffect(() => {
-    const el = document.getElementById("ccc-root");
-    if (!el) return;
-    const fn = () => setScrolled(el.scrollTop > 6);
-    el.addEventListener("scroll", fn);
-    return () => el.removeEventListener("scroll", fn);
-  }, []);
-
-  const isAtRisk = cl.retention_status === "at_risk";
-  const statusLabel = { healthy: "Healthy", needs_attention: "Needs Attention", at_risk: "At Risk" }[cl.retention_status] || "Healthy";
-
-  return (
-    <div style={{
-      position: "sticky", top: 0, zIndex: 100,
-      background: scrolled ? "rgba(0,0,0,0.94)" : C.bg,
-      backdropFilter: scrolled ? "blur(12px)" : "none",
-      borderBottom: `1px solid ${scrolled ? C.brd : "transparent"}`,
-      transition: "all .15s",
-    }}>
-      <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 24px", height: 58, display: "flex", alignItems: "center", gap: 0 }}>
-
-        {/* Avatar + name */}
-        <div style={{ display: "flex", alignItems: "center", gap: 10, paddingRight: 22, flexShrink: 0 }}>
-          <div style={{ width: 32, height: 32, borderRadius: "50%", background: C.card2, border: `1px solid ${C.brd}`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 800, color: C.t2 }}>
-            {ini(cl.name)}
-          </div>
-          <div>
-            <div style={{ fontSize: 13.5, fontWeight: 700, color: C.t1, letterSpacing: "-0.02em", lineHeight: 1 }}>{cl.name}</div>
-            <div style={{ display: "flex", alignItems: "center", gap: 5, marginTop: 3 }}>
-              <div style={{ width: 5, height: 5, borderRadius: "50%", background: isAtRisk ? C.red : C.t3 }} />
-              <span style={{ fontSize: 10.5, color: isAtRisk ? C.red : C.t3, fontWeight: 600 }}>{statusLabel}</span>
-              {cl.goal && <><span style={{ color: C.t3, margin: "0 2px" }}>·</span><span style={{ fontSize: 10.5, color: C.t3 }}>{cl.goal}</span></>}
-            </div>
-          </div>
-        </div>
-
-        {/* KPIs */}
-        {[
-          { label: "Last Visit",   val: cl.last_visit,           flag: isAtRisk },
-          { label: "Visits / wk",  val: `${cl.visits_per_week}×` },
-          { label: "Completion",   val: `${cl.completion_pct}%`  },
-          { label: "Streak",       val: `${cl.streak}d`          },
-        ].map(({ label, val, flag }) => (
-          <div key={label} style={{ paddingLeft: 20, borderLeft: `1px solid ${C.brd}` }}>
-            <Lbl style={{ marginBottom: 3 }}>{label}</Lbl>
-            <div className="mono" style={{ fontSize: 14, fontWeight: 500, color: flag ? C.red : C.t1 }}>{val}</div>
-          </div>
-        ))}
-
-        {/* Actions */}
-        <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 6 }}>
-          <button className="btn btn-ghost" onClick={onMessage}><MessageSquare style={{ width: 11, height: 11 }} />Message</button>
-          <button className="btn btn-ghost" onClick={onAssign}><Dumbbell style={{ width: 11, height: 11 }} />Assign</button>
-          <button className="btn btn-primary" onClick={onBook}><Calendar style={{ width: 11, height: 11 }} />Book Session</button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// ─── Next Best Action ─────────────────────────────────────────────────────────
-function NextBestAction({ cl, onAction }) {
-  const nba = useMemo(() => {
-    if (cl.retention_status === "at_risk") return {
-      icon: Flame, label: "Urgent",
-      title: `${cl.name.split(" ")[0]} is at risk of churning`,
-      body: "No activity in over a week with no sessions booked. A personal message now is 3× more likely to re-engage them.",
-      cta: "Send Message", key: "message", danger: true,
-    };
-    if (!cl.next_session) return {
-      icon: Calendar, label: "Action Needed",
-      title: "No upcoming session scheduled",
-      body: "Clients with sessions booked in advance are 60% more consistent. Lock in the next slot now.",
-      cta: "Book Session", key: "book", danger: false,
-    };
-    if (cl.completion_pct < 50) return {
-      icon: Dumbbell, label: "Suggested",
-      title: `Workout completion is low — ${cl.completion_pct}%`,
-      body: "Less than half of assigned workouts are being completed. Consider adjusting the program difficulty or schedule.",
-      cta: "Reassign Workout", key: "assign", danger: false,
-    };
-    return {
-      icon: Check, label: "All Clear",
-      title: `${cl.name.split(" ")[0]} is on track`,
-      body: "Everything looks healthy. Keep the momentum going with a check-in or by scheduling the next milestone session.",
-      cta: "Send Check-in", key: "message", danger: false,
-    };
-  }, [cl]);
-
-  const Ic = nba.icon;
-  const accent    = nba.danger ? C.red : C.blue;
-  const accentDim = nba.danger ? C.redDim : C.blueDim;
-
-  return (
-    <div className="card" style={{ borderLeft: `2px solid ${accent}` }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 16, padding: "15px 20px" }}>
-        <div style={{ width: 36, height: 36, borderRadius: 9, background: accentDim, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-          <Ic style={{ width: 15, height: 15, color: accent }} />
-        </div>
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 4 }}>
-            <span style={{ fontSize: 9, fontWeight: 800, color: accent, textTransform: "uppercase", letterSpacing: ".12em" }}>Next Best Action</span>
-            <span style={{ fontSize: 9, fontWeight: 700, color: C.t3, textTransform: "uppercase", letterSpacing: ".1em", background: C.card2, border: `1px solid ${C.brd}`, borderRadius: 99, padding: "1px 7px" }}>{nba.label}</span>
-          </div>
-          <div style={{ fontSize: 13, fontWeight: 700, color: C.t1, marginBottom: 3, letterSpacing: "-0.01em" }}>{nba.title}</div>
-          <div style={{ fontSize: 11.5, color: C.t2, lineHeight: 1.6 }}>{nba.body}</div>
-        </div>
-        <button className="btn btn-primary" onClick={() => onAction(nba.key)}
-          style={{ flexShrink: 0, fontSize: 12, padding: "8px 16px", ...(nba.danger ? { background: C.red, boxShadow: "0 4px 14px rgba(255,77,109,0.22)" } : {}) }}>
-          {nba.cta} <ArrowRight style={{ width: 11, height: 11 }} />
-        </button>
-      </div>
-    </div>
-  );
-}
-
-// ─── Stats Strip ──────────────────────────────────────────────────────────────
-function StatsStrip({ cl, clientCheckIns, clientBookings }) {
-  const attended = clientBookings.filter(b => b.status === "attended").length;
-  const noShows  = clientBookings.filter(b => b.status === "no_show").length;
-
-  const stats = [
-    { label: "Total Sessions",  val: clientBookings.length },
-    { label: "Attended",        val: attended              },
-    { label: "No-shows",        val: noShows,               warn: noShows >= 2 },
-    { label: "Check-ins",       val: clientCheckIns.length },
-    { label: "Completion",      val: `${cl.completion_pct}%`, warn: cl.completion_pct < 50 },
-    { label: "Streak",          val: `${cl.streak}d`        },
+function buildInsight({
+  profileScore, retentionScore, sessionsWeek, hasBio, hasPhoto,
+  hasCover, galleryCount, hasPricing, certCount,
+  activeClients, totalClients,
+}) {
+  const signals = [
+    { cond: !hasPhoto && !hasCover,
+      msg: "No photos added yet — clients are far less likely to book a coach they can't see." },
+    { cond: !hasBio && !hasPricing,
+      msg: "No bio and no pricing — clients can't understand who you are or what working with you costs." },
+    { cond: !hasBio,
+      msg: "Your bio is missing — clients want to know your story and approach before they commit." },
+    { cond: !hasPricing,
+      msg: "Pricing is missing — the #1 reason potential clients don't enquire." },
+    { cond: galleryCount < 3 && retentionScore < 40,
+      msg: `Only ${galleryCount} photo${galleryCount !== 1 ? 's' : ''} and ${retentionScore}% client retention — both your profile and client engagement need attention.` },
+    { cond: certCount === 0,
+      msg: "No certifications listed — credentials are a top trust signal for new clients scanning your profile." },
+    { cond: sessionsWeek === 0 && retentionScore < 50,
+      msg: `No sessions logged this week and ${retentionScore}% client retention — consider reaching out to inactive clients now.` },
+    { cond: profileScore >= 70 && sessionsWeek < 3,
+      msg: `Your profile looks solid at ${profileScore}%, but session volume is low — active coaches retain clients 2× longer.` },
+    { cond: profileScore >= 70 && retentionScore >= 60,
+      msg: `Your coaching profile is in strong shape — ${activeClients} of ${totalClients} clients active this week. Consistency is the only lever left.` },
+    { cond: true,
+      msg: "A few more improvements across your photos, bio, and credentials will noticeably boost client confidence." },
   ];
+  return (signals.find(s => s.cond) || signals[signals.length - 1]).msg;
+}
 
+/* ─── STATUS BADGE ──────────────────────────────────────────────── */
+function StatusBadge({ score }) {
+  const s = qualityState(score);
   return (
-    <div style={{ display: "grid", gridTemplateColumns: "repeat(6, 1fr)", gap: "1px", background: C.brd, border: `1px solid ${C.brd}`, borderRadius: 10, overflow: "hidden" }}>
-      {stats.map(({ label, val, warn }) => (
-        <div key={label} style={{ background: C.card, padding: "12px 16px" }}>
-          <Lbl style={{ marginBottom: 5 }}>{label}</Lbl>
-          <div className="mono" style={{ fontSize: 22, fontWeight: 500, color: warn ? C.red : C.t1, letterSpacing: "-0.04em", lineHeight: 1 }}>{val}</div>
-        </div>
-      ))}
+    <span style={{
+      fontSize: 10, fontWeight: 700, padding: '2px 9px',
+      borderRadius: 20, flexShrink: 0, whiteSpace: 'nowrap',
+      color: s.color, background: s.dim, border: `1px solid ${s.brd}`,
+    }}>
+      {s.label}
+    </span>
+  );
+}
+
+function ScoreBar() { return null; }
+
+/* ─── STAT CELL ─────────────────────────────────────────────────── */
+function StatCell({ label, value, color, onClick, borderRight }) {
+  return (
+    <div
+      onClick={onClick}
+      style={{
+        padding: '12px 14px', background: C.sidebar,
+        cursor: onClick ? 'pointer' : 'default', transition: 'background 0.12s',
+        borderRight: borderRight ? `1px solid ${C.brd}` : 'none',
+      }}
+      onMouseEnter={e => onClick && (e.currentTarget.style.background = C.cyanDim)}
+      onMouseLeave={e => onClick && (e.currentTarget.style.background = C.sidebar)}
+    >
+      <div style={{ fontSize: 10, color: C.t3, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4 }}>{label}</div>
+      <div style={{ fontSize: 20, fontWeight: 700, color: color || C.cyan, lineHeight: 1 }}>{value}</div>
     </div>
   );
 }
 
-// ─── Attendance Heatmap ───────────────────────────────────────────────────────
-function AttendanceHeatmap({ clientCheckIns }) {
-  const WEEKS = 16;
-  const DAYS  = ["M", "T", "W", "T", "F", "S", "S"];
+/* ─── ITEM CARD ─────────────────────────────────────────────────── */
+function ItemCard({ title, score, microcopy, onClick, children, flex }) {
+  const [hovered, setHovered] = useState(false);
+  return (
+    <div
+      onClick={onClick}
+      style={{
+        background: C.card,
+        border: `1px solid ${hovered && onClick ? C.cyanBrd : C.brd}`,
+        borderRadius: 10, overflow: 'hidden', display: 'flex', flexDirection: 'column',
+        cursor: onClick ? 'pointer' : 'default',
+        boxShadow: hovered && onClick ? '0 0 8px rgba(77,127,255,0.07)' : 'none',
+        transition: 'border-color 0.15s, box-shadow 0.15s',
+        ...(flex ? { flex } : {}),
+      }}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+    >
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '11px 14px', flexShrink: 0 }}>
+        <div style={{ minWidth: 0, flex: 1, marginRight: 8 }}>
+          <div style={{ fontSize: 12.5, fontWeight: 700, color: C.t1 }}>{title}</div>
+          {microcopy && <div style={{ fontSize: 10.5, color: C.t3, marginTop: 2 }}>{microcopy}</div>}
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 7, flexShrink: 0 }}>
+          <StatusBadge score={score} />
+          {onClick && (
+            <Pencil style={{ width: 10, height: 10, color: hovered ? C.cyan : 'transparent', flexShrink: 0, transition: 'color 0.15s' }} />
+          )}
+        </div>
+      </div>
+      <div style={{ flex: 1 }}>{children}</div>
+      <ScoreBar score={score} />
+    </div>
+  );
+}
 
-  const cells = useMemo(() => {
-    const today = new Date();
-    const start = new Date(today);
-    start.setDate(today.getDate() - (today.getDay() || 7) + 1 - (WEEKS - 1) * 7);
+/* ─── FULL-WIDTH COLLAPSIBLE SECTION ────────────────────────────── */
+function FullSection({ title, subtitle, score, defaultOpen = true, children }) {
+  const [open, setOpen] = useState(defaultOpen);
+  return (
+    <div style={{ background: C.card, border: `1px solid ${C.brd}`, borderRadius: 10, overflow: 'hidden', marginBottom: 9 }}>
+      <button
+        onClick={() => setOpen(o => !o)}
+        style={{
+          width: '100%', display: 'flex', alignItems: 'center', padding: '12px 16px',
+          background: 'transparent', border: 'none',
+          borderBottom: open ? `1px solid ${C.brd}` : 'none',
+          cursor: 'pointer', gap: 10, textAlign: 'left',
+          fontFamily: FONT, transition: 'background 0.12s',
+        }}
+        onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.015)'}
+        onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+      >
+        <div style={{ flex: 1 }}>
+          <div style={{ fontSize: 13, fontWeight: 700, color: C.t1 }}>{title}</div>
+          {subtitle && <div style={{ fontSize: 11, color: C.t3, marginTop: 2 }}>{subtitle}</div>}
+        </div>
+        <StatusBadge score={score} />
+        {open
+          ? <ChevronUp  style={{ width: 13, height: 13, color: C.t3, flexShrink: 0 }} />
+          : <ChevronDown style={{ width: 13, height: 13, color: C.t3, flexShrink: 0 }} />
+        }
+      </button>
+      {open && children}
+    </div>
+  );
+}
 
-    const checkSet = new Set(clientCheckIns.map(c => {
-      const d = new Date(c.check_in_date);
-      return `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
-    }));
+/* ═══════════════════════════════════════════════════════════════
+   VISUAL COMPONENTS (coach-specific)
+═══════════════════════════════════════════════════════════════ */
 
-    return Array.from({ length: WEEKS }, (_, w) =>
-      Array.from({ length: 7 }, (_, d) => {
-        const date = new Date(start);
-        date.setDate(start.getDate() + w * 7 + d);
-        const key = `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`;
-        return { date, checked: checkSet.has(key), future: date > today };
-      })
+/* Profile photo — prominent circular avatar */
+function CoachPhotoVisual({ avatarUrl }) {
+  return (
+    <div style={{ height: 140, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,255,255,0.02)', borderTop: `1px solid ${C.brd}` }}>
+      {avatarUrl
+        ? (
+          <div style={{ width: 90, height: 90, borderRadius: '50%', overflow: 'hidden', border: `2px solid ${C.brd2}`, boxShadow: '0 0 0 5px rgba(77,127,255,0.07)' }}>
+            <img src={avatarUrl} alt="Coach" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+          </div>
+        ) : (
+          <div style={{ width: 90, height: 90, borderRadius: '50%', background: C.card2, border: `2px dashed ${C.brd2}`, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 5 }}>
+            <Camera style={{ width: 20, height: 20, color: C.t3 }} />
+            <span style={{ fontSize: 9, color: C.t3, fontWeight: 600 }}>Add photo</span>
+          </div>
+        )
+      }
+    </div>
+  );
+}
+
+/* Cover / banner image */
+function CoverVisual({ imageUrl }) {
+  return (
+    <div style={{ height: 140, borderTop: `1px solid ${C.brd}`, overflow: 'hidden' }}>
+      {imageUrl
+        ? <img src={imageUrl} alt="Cover" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+        : (
+          <div style={{ width: '100%', height: '100%', background: 'rgba(255,255,255,0.02)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
+            <Image style={{ width: 22, height: 22, color: C.t3 }} />
+            <span style={{ fontSize: 11, color: C.t3 }}>No cover image</span>
+          </div>
+        )
+      }
+    </div>
+  );
+}
+
+/* Results & training photo gallery */
+function GalleryVisual({ gallery }) {
+  const photos   = (gallery || []).slice(0, 8).map(g => g.url || g);
+  const needsMore = photos.length < 3;
+  const tiles    = [...photos];
+  if (needsMore) tiles.push('__add__');
+  const display  = tiles.slice(0, 6);
+  const overflow = photos.length > 6 ? photos.length - 6 : 0;
+
+  if (photos.length === 0) {
+    return (
+      <div style={{ height: 148, borderTop: `1px solid ${C.brd}`, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 6, background: 'rgba(255,255,255,0.015)' }}>
+        <Camera style={{ width: 22, height: 22, color: C.t3 }} />
+        <span style={{ fontSize: 11, color: C.t3 }}>Add training & transformation photos</span>
+      </div>
     );
-  }, [clientCheckIns]);
-
-  const total = cells.flat().filter(c => c.checked).length;
+  }
 
   return (
-    <Card label="Attendance" icon={Activity} sub={`${total} check-ins over ${WEEKS} weeks`}>
-      <div style={{ display: "flex", gap: 6 }}>
-        <div style={{ display: "flex", flexDirection: "column", gap: 3.5 }}>
-          {DAYS.map((d, i) => (
-            <div key={i} style={{ width: 10, height: 12, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 8, color: C.t3, fontWeight: 600 }}>{d}</div>
-          ))}
-        </div>
-        <div style={{ display: "flex", gap: 3.5 }}>
-          {cells.map((week, wi) => (
-            <div key={wi} style={{ display: "flex", flexDirection: "column", gap: 3.5 }}>
-              {week.map((cell, di) => (
-                <div key={di} className="hcell"
-                  title={`${cell.date.toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short" })}${cell.checked ? " ✓" : ""}`}
-                  style={{
-                    width: 12, height: 12,
-                    background: cell.future ? "transparent" : cell.checked ? C.blue : C.card2,
-                    border: `1px solid ${cell.future ? "transparent" : cell.checked ? C.blueBrd : C.brd}`,
-                    opacity: cell.future ? 0.15 : 1,
-                  }}
-                />
-              ))}
-            </div>
-          ))}
-        </div>
-      </div>
-      <div style={{ display: "flex", alignItems: "center", gap: 5, marginTop: 10 }}>
-        <span style={{ fontSize: 9, color: C.t3 }}>Less</span>
-        {[C.card2, `${C.blue}35`, `${C.blue}70`, C.blue].map((c, i) => (
-          <div key={i} style={{ width: 9, height: 9, borderRadius: 2, background: c, border: `1px solid ${C.brd}` }} />
-        ))}
-        <span style={{ fontSize: 9, color: C.t3 }}>More</span>
-      </div>
-    </Card>
-  );
-}
-
-// ─── Weekly Frequency ─────────────────────────────────────────────────────────
-function ChartTooltip({ active, payload, label }) {
-  if (!active || !payload?.length) return null;
-  return (
-    <div style={{ background: C.card2, border: `1px solid ${C.blueBrd}`, borderRadius: 7, padding: "5px 10px", fontSize: 11, color: C.t1 }}>
-      <div style={{ fontSize: 9.5, color: C.t3, marginBottom: 2 }}>{label}</div>
-      <span style={{ color: C.blue, fontWeight: 700 }}>{payload[0].value} visits</span>
-    </div>
-  );
-}
-
-function WeeklyFrequency({ clientCheckIns }) {
-  const data = useMemo(() => Array.from({ length: 8 }, (_, i) => {
-    const end   = new Date(now - i * 7 * 86400000);
-    const start = new Date(+end - 7 * 86400000);
-    const count = clientCheckIns.filter(c => { const d = new Date(c.check_in_date); return d >= start && d < end; }).length;
-    return { label: i === 0 ? "This wk" : i === 1 ? "Last wk" : `W${8 - i}`, v: count };
-  }).reverse(), [clientCheckIns]);
-
-  return (
-    <Card label="Weekly Frequency" icon={BarChart2} sub="Check-ins per week — last 8 weeks">
-      <ResponsiveContainer width="100%" height={88}>
-        <AreaChart data={data} margin={{ top: 4, right: 4, bottom: 0, left: -26 }}>
-          <defs>
-            <linearGradient id="wf" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%"   stopColor={C.blue} stopOpacity={0.28} />
-              <stop offset="100%" stopColor={C.blue} stopOpacity={0.02} />
-            </linearGradient>
-          </defs>
-          <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" vertical={false} />
-          <XAxis dataKey="label" tick={{ fill: C.t3, fontSize: 8.5, fontFamily: FONT }} axisLine={false} tickLine={false} interval={0} />
-          <YAxis tick={{ fill: C.t3, fontSize: 9, fontFamily: FONT }} axisLine={false} tickLine={false} />
-          <Tooltip content={<ChartTooltip />} />
-          <Area type="monotone" dataKey="v" stroke={C.blue} strokeWidth={2} fill="url(#wf)" dot={false}
-            activeDot={{ r: 3, fill: C.blue, strokeWidth: 2, stroke: C.card }} />
-        </AreaChart>
-      </ResponsiveContainer>
-    </Card>
-  );
-}
-
-// ─── Session History ──────────────────────────────────────────────────────────
-function SessionHistory({ clientBookings, onBook }) {
-  const STATUS = {
-    attended:  { dot: C.blue, label: "Done",      tag: { color: C.blue, bg: C.blueDim, brd: C.blueBrd } },
-    no_show:   { dot: C.red,  label: "No-show",   tag: { color: C.red,  bg: C.redDim,  brd: "rgba(255,77,109,0.22)" } },
-    cancelled: { dot: C.t3,   label: "Cancelled", tag: { color: C.t3,   bg: C.card2,   brd: C.brd } },
-  };
-
-  const sessions = useMemo(() =>
-    clientBookings.slice(0, 8).map(b => ({
-      name:   b.session_name || "Training Session",
-      date:   b.session_date ? new Date(b.session_date).toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short" }) : "—",
-      time:   b.session_date ? new Date(b.session_date).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" }) : "—",
-      status: b.status || "attended",
-    })), [clientBookings]);
-
-  return (
-    <Card label="Session History" icon={Calendar} action="Book" onAction={onBook}>
-      {sessions.length === 0 ? (
-        <div style={{ textAlign: "center", padding: "24px 0" }}>
-          <div style={{ fontSize: 12, fontWeight: 500, color: C.t2, marginBottom: 12 }}>No sessions yet</div>
-          <button className="btn btn-primary" onClick={onBook} style={{ margin: "0 auto", fontSize: 12, padding: "7px 14px" }}>
-            <Plus style={{ width: 10, height: 10 }} /> Book first session
-          </button>
-        </div>
-      ) : (
-        <>
-          <div style={{ display: "flex", gap: 3, marginBottom: 14 }}>
-            {sessions.map((s, i) => (
-              <div key={i} title={STATUS[s.status]?.label}
-                style={{ flex: 1, height: 2.5, borderRadius: 99, background: STATUS[s.status]?.dot || C.t3, opacity: .55 }} />
-            ))}
-          </div>
-          <div style={{ display: "flex", flexDirection: "column" }}>
-            {sessions.map((s, i) => {
-              const cfg = STATUS[s.status] || STATUS.attended;
-              return (
-                <div key={i} className="row" style={{ display: "flex", alignItems: "center", gap: 10, padding: "7px 8px" }}>
-                  <div style={{ width: 5, height: 5, borderRadius: "50%", background: cfg.dot, flexShrink: 0 }} />
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontSize: 12, fontWeight: 500, color: C.t1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{s.name}</div>
-                    <div className="mono" style={{ fontSize: 9.5, color: C.t3, marginTop: 1 }}>{s.date} · {s.time}</div>
-                  </div>
-                  <span style={{ fontSize: 9.5, fontWeight: 700, color: cfg.tag.color, background: cfg.tag.bg, border: `1px solid ${cfg.tag.brd}`, borderRadius: 99, padding: "2px 9px", flexShrink: 0 }}>
-                    {cfg.label}
-                  </span>
-                </div>
-              );
-            })}
-          </div>
-        </>
-      )}
-    </Card>
-  );
-}
-
-// ─── Workout Plans ────────────────────────────────────────────────────────────
-function WorkoutPlans({ clientWorkouts, onAssign }) {
-  const [open, setOpen] = useState(null);
-  const plans = useMemo(() => clientWorkouts.map(w => ({
-    name:      w.workout_data?.name || "Workout Plan",
-    exercises: w.workout_data?.exercises?.length || 0,
-    assigned:  w.assigned_date ? new Date(w.assigned_date).toLocaleDateString("en-GB", { day: "numeric", month: "short" }) : "—",
-    active:    !!w.is_activated,
-    pct:       w.is_activated ? 68 : 0,
-  })), [clientWorkouts]);
-
-  return (
-    <Card label="Workout Plans" icon={Dumbbell} action="Assign" onAction={onAssign}
-      sub={plans.length ? `${plans.length} plan${plans.length > 1 ? "s" : ""} assigned` : undefined}>
-      {plans.length === 0 ? (
-        <div style={{ textAlign: "center", padding: "20px 0" }}>
-          <div style={{ fontSize: 12, fontWeight: 500, color: C.t2, marginBottom: 12 }}>No workouts assigned</div>
-          <button className="btn btn-ghost" onClick={onAssign} style={{ margin: "0 auto", fontSize: 12 }}>
-            <Plus style={{ width: 10, height: 10 }} /> Assign workout
-          </button>
-        </div>
-      ) : (
-        <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
-          {plans.map((w, i) => (
-            <div key={i} style={{ borderRadius: 8, background: C.card2, border: `1px solid ${C.brd}`, overflow: "hidden" }}>
-              <div className="row" onClick={() => setOpen(open === i ? null : i)}
-                style={{ display: "flex", alignItems: "center", gap: 12, padding: "11px 13px", cursor: "pointer" }}>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontSize: 12, fontWeight: 600, color: C.t1, marginBottom: 6, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{w.name}</div>
-                  <div style={{ height: 2.5, borderRadius: 99, background: "rgba(255,255,255,0.06)" }}>
-                    <div style={{ height: "100%", width: `${w.pct}%`, borderRadius: 99, background: w.active ? C.blue : C.t3, transition: "width .5s" }} />
-                  </div>
-                </div>
-                <span className="mono" style={{ fontSize: 16, fontWeight: 500, color: w.active ? C.t1 : C.t3, letterSpacing: "-0.03em", flexShrink: 0 }}>{w.pct}%</span>
-                <span style={{ fontSize: 9.5, fontWeight: 700, color: w.active ? C.blue : C.t3, background: w.active ? C.blueDim : C.card, border: `1px solid ${w.active ? C.blueBrd : C.brd}`, borderRadius: 99, padding: "2px 8px", flexShrink: 0 }}>
-                  {w.active ? "Active" : "Pending"}
-                </span>
-                {open === i
-                  ? <ChevronUp style={{ width: 10, height: 10, color: C.t3, flexShrink: 0 }} />
-                  : <ChevronDown style={{ width: 10, height: 10, color: C.t3, flexShrink: 0 }} />}
+    <div style={{ height: 148, borderTop: `1px solid ${C.brd}`, overflow: 'hidden' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: `repeat(${Math.min(display.length, 3)}, 1fr)`, gridTemplateRows: display.length > 3 ? '1fr 1fr' : '1fr', gap: 2, height: '100%' }}>
+        {display.map((src, i) => {
+          if (src === '__add__') {
+            return (
+              <div key="add" style={{ background: 'rgba(77,127,255,0.06)', border: '1px dashed rgba(77,127,255,0.22)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 4 }}>
+                <Plus style={{ width: 14, height: 14, color: 'rgba(77,127,255,0.5)' }} />
+                <span style={{ fontSize: 9.5, color: 'rgba(77,127,255,0.5)', fontWeight: 600 }}>Add photos</span>
               </div>
-              {open === i && (
-                <div style={{ padding: "10px 26px 12px", borderTop: `1px solid ${C.brd}`, display: "flex", gap: 24 }}>
-                  <div><Lbl style={{ marginBottom: 3 }}>Exercises</Lbl><div className="mono" style={{ fontSize: 13, color: C.t1 }}>{w.exercises}</div></div>
-                  <div><Lbl style={{ marginBottom: 3 }}>Assigned</Lbl><div className="mono" style={{ fontSize: 13, color: C.t1 }}>{w.assigned}</div></div>
-                </div>
-              )}
-            </div>
-          ))}
-        </div>
-      )}
-    </Card>
-  );
-}
-
-// ─── Insights ─────────────────────────────────────────────────────────────────
-function Insights({ cl, clientBookings, clientCheckIns, onAction }) {
-  const items = useMemo(() => {
-    const out = [];
-    const lastCI = [...clientCheckIns].sort((a, b) => new Date(b.check_in_date) - new Date(a.check_in_date))[0];
-    const daysAgo = lastCI ? Math.floor((now - new Date(lastCI.check_in_date)) / 86400000) : null;
-
-    if (daysAgo !== null && daysAgo >= 7)
-      out.push({ icon: AlertTriangle, title: `Inactive ${daysAgo} days`, body: "Above 7-day churn threshold.", cta: "Message", key: "message", critical: true });
-
-    const noShows = clientBookings.filter(b => b.status === "no_show").length;
-    if (noShows >= 2)
-      out.push({ icon: XCircle, title: `${noShows} no-shows`, body: "May indicate scheduling mismatch.", cta: "Reschedule", key: "book", critical: true });
-
-    if (!cl.next_session)
-      out.push({ icon: Calendar, title: "No session booked", body: "No upcoming sessions scheduled.", cta: "Book", key: "book", critical: false });
-
-    if (cl.visits_per_week < 2)
-      out.push({ icon: TrendingDown, title: "Low visit frequency", body: `${cl.visits_per_week}×/week — below 2× target.`, cta: null, key: null, critical: false });
-
-    return out;
-  }, [cl, clientBookings, clientCheckIns]);
-
-  if (!items.length) return (
-    <Card label="Insights" icon={Brain}>
-      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-        <div style={{ width: 24, height: 24, borderRadius: 7, background: C.card2, border: `1px solid ${C.brd}`, display: "flex", alignItems: "center", justifyContent: "center" }}>
-          <Check style={{ width: 10, height: 10, color: C.blue }} />
-        </div>
-        <div>
-          <div style={{ fontSize: 12, fontWeight: 600, color: C.t1 }}>All clear</div>
-          <div style={{ fontSize: 10.5, color: C.t3, marginTop: 1 }}>No issues detected</div>
-        </div>
-      </div>
-    </Card>
-  );
-
-  return (
-    <div className="card" style={items.some(it => it.critical) ? { borderLeft: `2px solid ${C.red}` } : {}}>
-      <SectionHead label="Insights" icon={Brain} sub={`${items.length} issue${items.length > 1 ? "s" : ""} flagged`} />
-      <div style={{ padding: "10px 14px", display: "flex", flexDirection: "column", gap: 4 }}>
-        {items.map((it, i) => {
-          const Ic = it.icon;
-          const accent = it.critical ? C.red : C.t3;
+            );
+          }
           return (
-            <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: 9, padding: "8px 10px", borderRadius: 8, borderLeft: `2px solid ${accent}`, background: i === 0 && it.critical ? C.redDim : "transparent" }}>
-              <Ic style={{ width: 11, height: 11, color: accent, flexShrink: 0, marginTop: 2 }} />
-              <div style={{ flex: 1 }}>
-                <div style={{ fontSize: 11.5, fontWeight: 700, color: C.t1, marginBottom: 2 }}>{it.title}</div>
-                <div style={{ fontSize: 10.5, color: C.t2, lineHeight: 1.5 }}>{it.body}</div>
-              </div>
-              {it.cta && (
-                <button className="btn" onClick={() => onAction(it.key)} style={{ flexShrink: 0, fontSize: 9.5, fontWeight: 700, color: accent, background: `${accent}12`, border: `1px solid ${accent}22`, borderRadius: 5, padding: "3px 8px", fontFamily: FONT }}>
-                  {it.cta}
-                </button>
+            <div key={i} style={{ overflow: 'hidden', background: C.card2, position: 'relative' }}>
+              <img src={src} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+              {i === 5 && overflow > 0 && (
+                <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.55)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 700, color: '#fff' }}>
+                  +{overflow}
+                </div>
               )}
             </div>
           );
@@ -587,123 +272,885 @@ function Insights({ cl, clientBookings, clientCheckIns, onAction }) {
   );
 }
 
-// ─── Client Info ──────────────────────────────────────────────────────────────
-function ClientInfo({ cl }) {
+/* Location + weekly availability grid */
+function AvailabilityVisual({ coach }) {
+  const hasLocation   = coach.location || coach.city || coach.gym_name;
+  const availability  = coach.availability || {};
+  const hasSchedule   = Object.keys(availability).length > 0;
+  const DAYS          = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+  const SLOTS         = ['morning', 'afternoon', 'evening'];
+  const SLOT_COLORS   = { morning: '#60a5fa', afternoon: C.cyan, evening: '#818cf8' };
+  const displayAddr   = [coach.gym_name, coach.city || coach.location].filter(Boolean).join(' · ');
+
   return (
-    <Card label="Client Info" icon={User}>
-      <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-        {[
-          { icon: Mail,   val: cl.email,    label: "Email"    },
-          { icon: Phone,  val: cl.phone,    label: "Phone"    },
-          { icon: MapPin, val: cl.location, label: "Location" },
-          { icon: User,   val: cl.joined ? `Member since ${cl.joined}` : "—", label: "Joined" },
-          { icon: Target, val: cl.goal,     label: "Goal"     },
-        ].map(({ icon: Ic, val, label }) => (
-          <div key={label} className="row" style={{ display: "flex", alignItems: "center", gap: 9, padding: "5px 6px" }}>
-            <div style={{ width: 18, height: 18, borderRadius: 5, background: C.card2, border: `1px solid ${C.brd}`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-              <Ic style={{ width: 8, height: 8, color: C.t3 }} />
+    <div style={{ borderTop: `1px solid ${C.brd}` }}>
+      {hasLocation && (
+        <div style={{ padding: '8px 14px 0', display: 'flex', alignItems: 'center', gap: 6 }}>
+          <MapPin style={{ width: 11, height: 11, color: C.t3, flexShrink: 0 }} />
+          <span style={{ fontSize: 11, color: C.t2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+            {displayAddr}
+          </span>
+        </div>
+      )}
+      <div style={{ padding: '10px 14px 14px' }}>
+        {hasSchedule ? (
+          <>
+            <div style={{ display: 'flex', gap: 3, marginBottom: 8 }}>
+              {DAYS.map(day => {
+                const key   = day.toLowerCase();
+                const slots = availability[key] || [];
+                return (
+                  <div key={day} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
+                    <div style={{ fontSize: 8, color: C.t3, fontWeight: 600, marginBottom: 1 }}>{day}</div>
+                    {SLOTS.map(slot => (
+                      <div key={slot}
+                        title={`${day} ${slot}`}
+                        style={{
+                          width: '100%', height: 13, borderRadius: 3,
+                          background: slots.includes(slot) ? SLOT_COLORS[slot] : C.card2,
+                          border: `1px solid ${slots.includes(slot) ? SLOT_COLORS[slot] + '60' : C.brd}`,
+                          opacity: slots.includes(slot) ? 0.85 : 0.35,
+                          transition: 'opacity 0.15s',
+                        }}
+                      />
+                    ))}
+                  </div>
+                );
+              })}
             </div>
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <Lbl style={{ marginBottom: 1 }}>{label}</Lbl>
-              <div style={{ fontSize: 11.5, color: C.t1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{val || "—"}</div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              {Object.entries(SLOT_COLORS).map(([slot, color]) => (
+                <div key={slot} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                  <div style={{ width: 8, height: 8, borderRadius: 2, background: color, opacity: 0.8 }} />
+                  <span style={{ fontSize: 9, color: C.t3, textTransform: 'capitalize' }}>{slot}</span>
+                </div>
+              ))}
             </div>
-          </div>
-        ))}
-        {cl.tags?.length > 0 && (
-          <div style={{ display: "flex", gap: 4, marginTop: 4, flexWrap: "wrap" }}>
-            {cl.tags.map(t => (
-              <span key={t} style={{ fontSize: 10, fontWeight: 700, padding: "2px 8px", borderRadius: 99, background: C.blueDim, border: `1px solid ${C.blueBrd}`, color: C.blue }}>{t}</span>
-            ))}
+          </>
+        ) : (
+          <div style={{ height: 76, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 5, borderRadius: 8, background: 'rgba(255,255,255,0.02)', border: `1px dashed ${C.brd}` }}>
+            <Clock style={{ width: 16, height: 16, color: C.t3 }} />
+            <span style={{ fontSize: 10.5, color: C.t3 }}>Add your availability schedule</span>
           </div>
         )}
       </div>
-    </Card>
+    </div>
   );
 }
 
-// ─── Quick Actions ────────────────────────────────────────────────────────────
-function QuickActions({ onMessage, onBook, onAssign }) {
+/* Certifications preview — horizontal chip scroll */
+function CertificationsPreview({ certifications, onManage }) {
+  const certs = certifications || [];
   return (
-    <Card label="Quick Actions" icon={Zap}>
-      <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-        {[
-          { label: "Send check-in message", icon: MessageSquare, fn: onMessage },
-          { label: "Book next session",     icon: Calendar,      fn: onBook    },
-          { label: "Assign workout",        icon: Dumbbell,      fn: onAssign  },
-        ].map(({ label, icon: Ic, fn }) => (
-          <button key={label} onClick={fn}
-            style={{ display: "flex", alignItems: "center", gap: 9, padding: "8px 10px", borderRadius: 8, background: "transparent", border: `1px solid ${C.brd}`, fontSize: 12, fontWeight: 500, color: C.t2, cursor: "pointer", fontFamily: FONT, transition: "all .12s", textAlign: "left", width: "100%" }}
-            onMouseEnter={e => { e.currentTarget.style.borderColor = C.blueBrd; e.currentTarget.style.color = C.t1; e.currentTarget.style.background = C.blueDim; }}
-            onMouseLeave={e => { e.currentTarget.style.borderColor = C.brd; e.currentTarget.style.color = C.t2; e.currentTarget.style.background = "transparent"; }}>
-            <Ic style={{ width: 11, height: 11, flexShrink: 0 }} />
-            {label}
-            <ArrowRight style={{ width: 9, height: 9, marginLeft: "auto", color: C.t3 }} />
+    <div style={{ borderTop: `1px solid ${C.brd}`, padding: '10px 14px 12px' }}>
+      {certs.length === 0 ? (
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, flex: 1 }}>
+          <div style={{ width: 30, height: 30, borderRadius: '50%', background: 'rgba(255,255,255,0.04)', border: `1.5px dashed ${C.brd2}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+            <GraduationCap style={{ width: 14, height: 14, color: C.t3 }} />
+          </div>
+          <span style={{ fontSize: 11.5, color: C.t3 }}>No certifications added yet</span>
+          <button onClick={onManage} style={{ marginLeft: 'auto', padding: '5px 12px', borderRadius: 7, fontSize: 11, fontWeight: 700, fontFamily: FONT, cursor: 'pointer', flexShrink: 0, ...GRAD_BTN }}>
+            + Add
           </button>
-        ))}
-      </div>
-    </Card>
+        </div>
+      ) : (
+        <div style={{ display: 'flex', gap: 7, alignItems: 'center', flexWrap: 'wrap' }}>
+          {certs.slice(0, 4).map((cert, i) => (
+            <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '6px 10px', borderRadius: 8, background: C.card2, border: `1px solid ${C.brd}`, flexShrink: 0 }}>
+              <Award style={{ width: 11, height: 11, color: C.amber, flexShrink: 0 }} />
+              <span style={{ fontSize: 11.5, fontWeight: 600, color: C.t1, whiteSpace: 'nowrap' }}>
+                {typeof cert === 'object' ? cert.name || cert.label : cert}
+              </span>
+            </div>
+          ))}
+          {certs.length > 4 && (
+            <span style={{ fontSize: 11, color: C.t3 }}>+{certs.length - 4} more</span>
+          )}
+          <div
+            onClick={onManage}
+            style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '6px 10px', borderRadius: 8, border: `1px dashed ${C.brd2}`, cursor: 'pointer', transition: 'border-color 0.15s, background 0.15s' }}
+            onMouseEnter={e => { e.currentTarget.style.borderColor = C.cyanBrd; e.currentTarget.style.background = C.cyanDim; }}
+            onMouseLeave={e => { e.currentTarget.style.borderColor = C.brd2; e.currentTarget.style.background = 'transparent'; }}
+          >
+            <Plus style={{ width: 11, height: 11, color: C.t3 }} />
+            <span style={{ fontSize: 11, color: C.t3, whiteSpace: 'nowrap' }}>Add</span>
+          </div>
+        </div>
+      )}
+    </div>
   );
 }
 
-// ─── Root ─────────────────────────────────────────────────────────────────────
-export default function ClientCommandCenter({
-  client         = MOCK_CLIENT,
-  clientCheckIns = MOCK_CHECKINS,
-  clientBookings = MOCK_BOOKINGS,
-  clientWorkouts = MOCK_WORKOUTS,
-  onMessage      = () => {},
-  onBook         = () => {},
-  onAssign       = () => {},
-}) {
-  const cl  = client;
-  const act = key => { if (key === "message") onMessage(); else if (key === "book") onBook(); else onAssign(); };
+/* Social links — same pattern as gym profile */
+function SocialVisual({ coach }) {
+  const links = [
+    { key: 'instagram_url', Icon: Instagram, label: 'Instagram', color: '#a855f7' },
+    { key: 'facebook_url',  Icon: Facebook,  label: 'Facebook',  color: '#60a5fa' },
+    { key: 'twitter_url',   Icon: Twitter,   label: 'Twitter',   color: '#38bdf8' },
+    { key: 'website_url',   Icon: Globe,     label: 'Website',   color: C.cyan    },
+  ];
+  const present = links.filter(l => coach[l.key]);
+  const missing  = links.filter(l => !coach[l.key]);
 
   return (
-    <div className="ccc" id="ccc-root" style={{ background: C.bg, minHeight: "100vh", overflowY: "auto" }}>
-      <style>{CSS}</style>
+    <div style={{ padding: '10px 14px 14px' }}>
+      {present.length > 0 && (
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 7, marginBottom: missing.length > 0 ? 10 : 0 }}>
+          {present.map(l => (
+            <a key={l.key} href={coach[l.key]} target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none' }}>
+              <div
+                style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '5px 11px', borderRadius: 7, background: C.card2, border: `1px solid ${C.brd}`, cursor: 'pointer', transition: 'border-color 0.15s' }}
+                onMouseEnter={e => e.currentTarget.style.borderColor = C.brd2}
+                onMouseLeave={e => e.currentTarget.style.borderColor = C.brd}
+              >
+                <l.Icon style={{ width: 12, height: 12, color: l.color }} />
+                <span style={{ fontSize: 11.5, fontWeight: 600, color: C.t2 }}>{l.label}</span>
+              </div>
+            </a>
+          ))}
+        </div>
+      )}
+      {missing.length > 0 && (
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 7 }}>
+          {missing.map(l => (
+            <div key={l.key} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '5px 11px', borderRadius: 7, background: 'rgba(255,255,255,0.025)', border: `1px dashed ${C.brd}`, opacity: 0.6 }}>
+              <l.Icon style={{ width: 12, height: 12, color: C.t3 }} />
+              <span style={{ fontSize: 11.5, fontWeight: 500, color: C.t3 }}>{l.label}</span>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
 
-      <CommandBar cl={cl} onMessage={onMessage} onBook={onBook} onAssign={onAssign} />
+/* Generic tag list (specialties, certifications full list) */
+function TagsList({ items, emptyText, onClick }) {
+  return (
+    <div style={{ padding: '12px 16px' }}>
+      {(!items || items.length === 0) ? (
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <span style={{ fontSize: 11, color: C.t3 }}>{emptyText}</span>
+          <button onClick={onClick} style={{ fontSize: 11.5, fontWeight: 700, padding: '5px 12px', borderRadius: 7, fontFamily: FONT, cursor: 'pointer', boxShadow: SHADOW, display: 'flex', alignItems: 'center', gap: 4, ...GRAD_BTN }}>
+            <Plus style={{ width: 11, height: 11 }} /> Add
+          </button>
+        </div>
+      ) : (
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 7 }}>
+          {items.map((item, i) => (
+            <span key={i} style={{ fontSize: 11.5, padding: '4px 11px', borderRadius: 20, background: C.card2, border: `1px solid ${C.brd}`, color: C.t2 }}>
+              {typeof item === 'object' ? item.name || item.label : item}
+            </span>
+          ))}
+          <button onClick={onClick} style={{ fontSize: 11.5, padding: '4px 11px', borderRadius: 20, background: C.cyanDim, border: `1px solid ${C.cyanBrd}`, color: C.cyan, cursor: 'pointer', fontFamily: FONT, fontWeight: 700 }}>
+            + Edit
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
 
-      <div style={{ maxWidth: 1200, margin: "0 auto", padding: "20px 24px 60px" }}>
+/* ─── TRUST ROW: Bio + Pricing ──────────────────────────────────── */
+function TrustRow({ coach, openModal }) {
+  const bioScore     = coach.bio ? 100 : 0;
+  const pricingScore = (coach.hourly_rate || coach.pricing) ? 100 : 0;
 
-        {/* Page title — matching "Content Hub" pattern */}
-        <div style={{ marginBottom: 16, display: "flex", alignItems: "baseline", justifyContent: "space-between" }}>
-          <h1 style={{ fontSize: 22, fontWeight: 800, color: C.t1, letterSpacing: "-0.03em" }}>
-            Client <span style={{ color: C.blue }}>Profile</span>
-          </h1>
-          <span style={{ fontSize: 11, color: C.t3 }}>Member since {cl.joined}</span>
+  const pricingDisplay = coach.hourly_rate
+    ? `£${coach.hourly_rate}/hr`
+    : coach.pricing || null;
+
+  const items = [
+    {
+      label: 'Bio & Story',
+      score: bioScore,
+      desc:  coach.bio
+        ? `${coach.bio.slice(0, 90)}${coach.bio.length > 90 ? '…' : ''}`
+        : "No bio — clients want to know who you are and your philosophy before they commit.",
+      action: () => openModal('editBio'),
+      Icon: FileText,
+    },
+    {
+      label: 'Pricing & Rates',
+      score: pricingScore,
+      desc:  pricingDisplay
+        ? `Listed at ${pricingDisplay} — visible before clients enquire.`
+        : 'Missing pricing creates uncertainty and reduces enquiry conversion.',
+      action: () => openModal('pricing'),
+      Icon: CreditCard,
+    },
+  ];
+
+  return (
+    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1 }}>
+      {items.map((item, i) => {
+        const s  = qualityState(item.score);
+        const Ic = item.Icon;
+        return (
+          <div
+            key={i}
+            onClick={item.action}
+            style={{ padding: '13px 18px', cursor: 'pointer', borderRight: i === 0 ? `1px solid ${C.brd}` : 'none', transition: 'background 0.15s' }}
+            onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.015)'}
+            onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+                <Ic style={{ width: 12, height: 12, color: C.t3 }} />
+                <span style={{ fontSize: 13, fontWeight: 600, color: C.t1 }}>{item.label}</span>
+              </div>
+              <StatusBadge score={item.score} />
+            </div>
+            <div style={{ fontSize: 11, color: C.t3, lineHeight: 1.55 }}>{item.desc}</div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+/* ─── EXPERIENCE ROW: Years + Rating ───────────────────────────── */
+function ExperienceRow({ coach, openModal }) {
+  const expScore    = coach.years_experience ? 100 : 0;
+  const ratingScore = coach.rating ? 100 : 0;
+
+  const items = [
+    {
+      label: 'Years of Experience',
+      score: expScore,
+      desc:  coach.years_experience
+        ? `${coach.years_experience} year${coach.years_experience !== 1 ? 's' : ''} coaching — adds depth to your profile.`
+        : 'Add your years of experience to establish authority.',
+      action: () => openModal('editBio'),
+      Icon: Shield,
+    },
+    {
+      label: 'Rating & Reviews',
+      score: ratingScore,
+      desc:  coach.rating
+        ? `${coach.rating}/5 avg from ${coach.review_count || 0} review${(coach.review_count || 0) !== 1 ? 's' : ''} — social proof drives bookings.`
+        : 'No reviews yet — ask your most satisfied clients to leave one.',
+      action: () => openModal('reviews'),
+      Icon: Star,
+    },
+  ];
+
+  return (
+    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1, borderTop: `1px solid ${C.brd}` }}>
+      {items.map((item, i) => {
+        const Ic = item.Icon;
+        return (
+          <div
+            key={i}
+            onClick={item.action}
+            style={{ padding: '13px 18px', cursor: 'pointer', borderRight: i === 0 ? `1px solid ${C.brd}` : 'none', transition: 'background 0.15s' }}
+            onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.015)'}
+            onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+                <Ic style={{ width: 12, height: 12, color: C.t3 }} />
+                <span style={{ fontSize: 13, fontWeight: 600, color: C.t1 }}>{item.label}</span>
+              </div>
+              <StatusBadge score={item.score} />
+            </div>
+            <div style={{ fontSize: 11, color: C.t3, lineHeight: 1.55 }}>{item.desc}</div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+/* ─── TIPS PANEL ────────────────────────────────────────────────── */
+const ALL_TIPS = [
+  {
+    id: 't1',
+    icon: Bell,
+    color: '#4d7fff',
+    category: 'Retention',
+    title: 'Re-engage inactive clients with a personal check-in',
+    summary: 'Clients who receive a check-in within 7 days of going quiet return at 3× the rate.',
+    detail: `Filter your client list by "Last active > 7 days" and send a short personal message — use their name and reference their specific goal. Avoid templates. A genuine "Hey {name}, just checking in — how's your progress feeling?" outperforms a template by 40%. Set aside 10 minutes every Monday morning to do this consistently.`,
+    relevantIf: (coach, ctx) => ctx ? (ctx.activeClients / Math.max(ctx.totalClients, 1)) < 0.5 : true,
+  },
+  {
+    id: 't2',
+    icon: Camera,
+    color: '#a855f7',
+    category: 'First Impression',
+    title: 'Add transformation & action photos to your gallery',
+    summary: 'Coaches with 3+ gallery photos receive 60% more profile enquiries.',
+    detail: `Upload a mix: a clear headshot, action shots of you coaching, and (with client permission) transformation results. Before/after photos are the single most persuasive asset for new client conversion. Phone photos in good light work perfectly well. Aim for at least 6 total. Update your gallery seasonally to keep the profile feeling current and active.`,
+    relevantIf: (coach) => (coach.gallery?.length || 0) < 3,
+  },
+  {
+    id: 't3',
+    icon: Award,
+    color: '#f59e0b',
+    category: 'Trust',
+    title: 'List your certifications to establish credibility fast',
+    summary: 'Certifications increase booking conversion by up to 45% for new clients.',
+    detail: `Add every relevant qualification: PT certification body (e.g. NASM, REPS, ACE), nutrition, mobility, sport-specific, or specialist disciplines. Include the issuing body for maximum credibility — "NASM CPT" is more trustworthy than just "Personal Trainer". Even older certs are worth listing. Clients use credentials as a shortcut to trust before they've met you.`,
+    relevantIf: (coach) => (coach.certifications?.length || 0) < 2,
+  },
+  {
+    id: 't4',
+    icon: MessageCircle,
+    color: '#22c55e',
+    category: 'Community',
+    title: 'Post training content at least twice a week',
+    summary: 'Coaches who post regularly retain clients 2× longer than those who rarely post.',
+    detail: `You don't need polished video — a well-written training tip, a form cue with a short clip, or a client milestone post outperforms hours of produced content. Aim for 2–3 posts per week. Mix education, social proof, and motivation. Consistency matters more than production quality, especially in the early stages of building your profile.`,
+    relevantIf: (coach, ctx) => ctx ? ctx.sessionsWeek < 2 : true,
+  },
+  {
+    id: 't5',
+    icon: Target,
+    color: '#14b8a6',
+    category: 'Conversion',
+    title: 'Set your pricing to remove client hesitation',
+    summary: 'Missing pricing is the #1 reason potential clients leave a coach profile without enquiring.',
+    detail: `Add your session rate to your profile. Even a range (e.g. "£50–£80/session") builds confidence. Clients who see pricing before enquiring are far more likely to book because they've already self-qualified. If you offer packages (5-session block, monthly retainer, online plans), list those too — it signals structure and reduces the friction of the first conversation.`,
+    relevantIf: (coach) => !coach.hourly_rate && !coach.pricing,
+  },
+  {
+    id: 't6',
+    icon: FileText,
+    color: '#8b5cf6',
+    category: 'Trust',
+    title: 'Write a compelling bio to connect before they meet you',
+    summary: 'A personal bio increases enquiry rates by 38% vs profiles with no bio.',
+    detail: `Your bio should answer: Who are you? What's your training philosophy? Who do you work best with? What results do your clients achieve? Keep it under 200 words — clients want to feel like they know you, not read an essay. Lead with your strongest credential or personal story. End with who your ideal client is. Write the way you'd speak to a new client in person, not how you'd write a CV.`,
+    relevantIf: (coach) => !coach.bio,
+  },
+  {
+    id: 't7',
+    icon: Star,
+    color: '#f59e0b',
+    category: 'Social Proof',
+    title: 'Ask your best clients to leave a review',
+    summary: 'Profiles with 3+ reviews receive 52% more first enquiries than those without.',
+    detail: `Reach out to your 3–5 most satisfied clients directly and ask for a short review. Make it easy — send them a direct link and suggest they focus on: what their goal was, what changed, and what they'd tell a friend considering working with you. Timing matters: ask immediately after a milestone, not at a random moment. One genuine review is worth more than ten generic ones.`,
+    relevantIf: (coach) => !coach.rating || (coach.review_count || 0) < 3,
+  },
+  {
+    id: 't8',
+    icon: Activity,
+    color: '#ff4d6d',
+    category: 'Profile',
+    title: 'List your specialties to attract the right clients',
+    summary: 'Specific specialties reduce "wrong fit" churn by helping clients self-select before booking.',
+    detail: `Add everything you coach: strength training, HIIT, mobility, nutrition, pre/postnatal, sports-specific, body composition. Be specific — "Olympic weightlifting" is more compelling than "strength training". Clients with niche goals search for specialists. A complete specialties list reduces disappointment from clients who expected something different, which is one of the most common causes of early cancellation.`,
+    relevantIf: (coach) => (coach.specialties?.length || 0) < 3,
+  },
+];
+
+const TIP_BASE_SCORES = { t1: 70, t2: 80, t3: 75, t4: 65, t5: 90, t6: 85, t7: 72, t8: 68 };
+
+function TipsPanel({ profileScore, trustScore, coach, activeClients, totalClients, sessionsWeek }) {
+  const [expanded, setExpanded]   = useState(false);
+  const [openTipId, setOpenTipId] = useState(null);
+
+  const tips = ALL_TIPS.slice().sort((a, b) => {
+    const aR = a.relevantIf(coach, { activeClients, totalClients, sessionsWeek }) ? 1.5 : 1.0;
+    const bR = b.relevantIf(coach, { activeClients, totalClients, sessionsWeek }) ? 1.5 : 1.0;
+    return (TIP_BASE_SCORES[b.id] * bR) - (TIP_BASE_SCORES[a.id] * aR);
+  });
+
+  const shown = expanded ? tips : tips.slice(0, 3);
+
+  return (
+    <div style={{ padding: '14px 16px 24px', borderTop: `1px solid ${C.brd}`, marginTop: 14 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 12 }}>
+        <Lightbulb style={{ width: 13, height: 13, color: C.amber, flexShrink: 0 }} />
+        <span style={{ fontSize: 12, fontWeight: 700, color: C.t1, flex: 1 }}>Tips & Recommendations</span>
+        <span style={{ fontSize: 10, color: C.t3 }}>{tips.length} tips</span>
+      </div>
+
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+        {shown.map(tip => {
+          const isOpen     = openTipId === tip.id;
+          const isRelevant = tip.relevantIf(coach, { activeClients, totalClients, sessionsWeek });
+          return (
+            <div
+              key={tip.id}
+              style={{
+                borderRadius: 9,
+                background: isOpen ? 'rgba(255,255,255,0.03)' : C.card,
+                border: `1px solid ${isOpen ? tip.color + '40' : C.brd}`,
+                overflow: 'hidden', transition: 'border-color 0.15s, background 0.15s',
+              }}
+            >
+              <button
+                onClick={() => setOpenTipId(isOpen ? null : tip.id)}
+                style={{ width: '100%', display: 'flex', alignItems: 'flex-start', gap: 9, padding: '10px 11px', background: 'transparent', border: 'none', cursor: 'pointer', textAlign: 'left', fontFamily: FONT }}
+              >
+                <div style={{ width: 26, height: 26, borderRadius: 7, flexShrink: 0, background: `${tip.color}14`, border: `1px solid ${tip.color}28`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <tip.icon style={{ width: 12, height: 12, color: tip.color }} />
+                </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginBottom: 2, flexWrap: 'wrap' }}>
+                    <span style={{ fontSize: 11.5, fontWeight: 700, color: C.t1, lineHeight: 1.3 }}>{tip.title}</span>
+                    {isRelevant && (
+                      <span style={{ fontSize: 8.5, fontWeight: 700, color: tip.color, background: `${tip.color}14`, border: `1px solid ${tip.color}30`, borderRadius: 4, padding: '1px 5px', textTransform: 'uppercase', letterSpacing: '0.04em', whiteSpace: 'nowrap', flexShrink: 0 }}>
+                        Relevant
+                      </span>
+                    )}
+                  </div>
+                  <div style={{ fontSize: 10.5, color: C.t3, lineHeight: 1.4 }}>{tip.summary}</div>
+                </div>
+                <ChevronDown style={{ width: 11, height: 11, color: C.t3, flexShrink: 0, marginTop: 2, transform: isOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} />
+              </button>
+
+              {isOpen && (
+                <div style={{ padding: '0 11px 12px 46px' }}>
+                  <div style={{ fontSize: 10, fontWeight: 700, color: `${tip.color}cc`, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6 }}>
+                    {tip.category}
+                  </div>
+                  <div style={{ fontSize: 11.5, color: C.t2, lineHeight: 1.7 }}>
+                    {tip.detail}
+                  </div>
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+
+      <button
+        onClick={() => setExpanded(v => !v)}
+        style={{ width: '100%', marginTop: 8, padding: '8px 0', background: 'transparent', border: `1px solid ${C.brd}`, borderRadius: 8, color: C.t3, fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: FONT, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5, transition: 'border-color 0.15s, color 0.15s' }}
+        onMouseEnter={e => { e.currentTarget.style.borderColor = C.cyanBrd; e.currentTarget.style.color = C.cyan; }}
+        onMouseLeave={e => { e.currentTarget.style.borderColor = C.brd; e.currentTarget.style.color = C.t3; }}
+      >
+        {expanded ? 'Show fewer tips' : `Show ${tips.length - 3} more tips`}
+        <ChevronDown style={{ width: 11, height: 11, transform: expanded ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} />
+      </button>
+    </div>
+  );
+}
+
+/* ─── RIGHT SIDEBAR ─────────────────────────────────────────────── */
+function ProfileSidebar({
+  profileScore, retentionScore, trustScore, discoveryScore,
+  openModal, coach, activeClients, totalClients,
+  sessionsWeek, retentionTrend, coachSessions,
+}) {
+  const retentionState = qualityState(retentionScore);
+
+  const galleryCount = coach.gallery?.length || 0;
+  const allChecks = [
+    { label: 'Profile photo',         done: !!coach.avatar_url,                              action: () => openModal('photo'),          impact: 10 },
+    { label: 'Cover image',           done: !!coach.cover_url,                               action: () => openModal('cover'),          impact: 7  },
+    { label: 'Gallery photos (3+)',   done: galleryCount >= 3,                               action: () => openModal('photos'),         impact: galleryCount === 0 ? 12 : 6 },
+    { label: 'Bio written',           done: !!coach.bio,                                     action: () => openModal('editBio'),        impact: 9  },
+    { label: 'Pricing / rates set',   done: !!(coach.hourly_rate || coach.pricing),          action: () => openModal('pricing'),        impact: 13 },
+    { label: 'Specialties listed',    done: (coach.specialties?.length || 0) > 0,            action: () => openModal('specialties'),    impact: 6  },
+    { label: 'Certifications added',  done: (coach.certifications?.length || 0) > 0,         action: () => openModal('certifications'), impact: 8  },
+  ];
+
+  const checks = [
+    ...allChecks.filter(c => !c.done).sort((a, b) => b.impact - a.impact),
+    ...allChecks.filter(c =>  c.done).sort((a, b) => a.label.localeCompare(b.label)),
+  ];
+  const doneCount = allChecks.filter(c => c.done).length;
+
+  const avgSessionsPerClient = coachSessions.length >= 5 && totalClients >= 3
+    ? Math.round(coachSessions.length / totalClients)
+    : null;
+  const profileComplete = profileScore >= 70;
+
+  return (
+    <div style={{ width: 244, flexShrink: 0, background: C.sidebar, borderLeft: `1px solid ${C.brd}`, display: 'flex', flexDirection: 'column', fontFamily: FONT, position: 'sticky', top: 0, maxHeight: '100vh', overflowY: 'auto', scrollbarWidth: 'none' }}>
+
+      {/* Header */}
+      <div style={{ padding: '16px 16px 12px', borderBottom: `1px solid ${C.brd}` }}>
+        <div style={{ fontSize: 12, fontWeight: 700, color: C.t1 }}>Profile Overview</div>
+      </div>
+
+      {/* Stat grid — 2×2 */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1px', background: C.brd, borderBottom: `1px solid ${C.brd}` }}>
+
+        {/* Retention */}
+        <div style={{ padding: '12px 14px', background: C.sidebar, borderRight: `1px solid ${C.brd}` }}>
+          <div style={{ fontSize: 10, color: C.t3, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4 }}>Retention</div>
+          <div style={{ fontSize: 20, fontWeight: 700, color: retentionState.color, lineHeight: 1 }}>{retentionScore}%</div>
+          {Math.abs(retentionTrend) > 0 && (
+            <div style={{ fontSize: 9.5, fontWeight: 700, color: retentionTrend > 0 ? C.green : C.red, marginTop: 3 }}>
+              {retentionTrend > 0 ? `+${retentionTrend}` : retentionTrend} this week
+            </div>
+          )}
         </div>
 
-        {/* NBA banner */}
-        <div style={{ marginBottom: 10 }}>
-          <NextBestAction cl={cl} onAction={act} />
+        {/* Sessions this week */}
+        <div style={{ padding: '12px 14px', background: C.sidebar }}>
+          <div style={{ fontSize: 10, color: C.t3, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4 }}>Sessions / wk</div>
+          <div style={{ fontSize: 20, fontWeight: 700, color: sessionsWeek >= 5 ? C.green : sessionsWeek >= 2 ? C.amber : C.red, lineHeight: 1 }}>
+            {sessionsWeek}
+          </div>
         </div>
 
-        {/* Stats strip */}
-        <div style={{ marginBottom: 10 }}>
-          <StatsStrip cl={cl} clientCheckIns={clientCheckIns} clientBookings={clientBookings} />
+        <StatCell label="Trust & clarity" value={trustScore + '%'}   color={qualityState(trustScore).color}     borderRight />
+        <StatCell label="Discovery"       value={discoveryScore + '%'} color={qualityState(discoveryScore).color} />
+      </div>
+
+      {/* Profile Checklist */}
+      <div style={{ padding: '14px 16px', borderBottom: `1px solid ${C.brd}` }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+          <span style={{ fontSize: 12, fontWeight: 600, color: C.t1 }}>Profile Checklist</span>
+          <span style={{ fontSize: 11, color: C.t3 }}>{doneCount}/{checks.length}</span>
         </div>
 
-        {/* Main two-column grid */}
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 300px", gap: 10, alignItems: "start" }}>
+        {/* Progress bar */}
+        <div style={{ height: 4, background: 'rgba(255,255,255,0.07)', borderRadius: 2, overflow: 'hidden', marginBottom: 12 }}>
+          <div style={{ height: '100%', width: `${Math.round((doneCount / checks.length) * 100)}%`, background: doneCount === checks.length ? C.green : C.cyan, transition: 'width 0.6s ease', borderRadius: 2 }} />
+        </div>
 
-          {/* Left — primary content */}
-          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-            <AttendanceHeatmap clientCheckIns={clientCheckIns} />
-            <WeeklyFrequency clientCheckIns={clientCheckIns} />
-            <SessionHistory clientBookings={clientBookings} onBook={onBook} />
-            <WorkoutPlans clientWorkouts={clientWorkouts} onAssign={onAssign} />
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+          {checks.map((item, i) => (
+            <div
+              key={i}
+              onClick={item.done ? undefined : item.action}
+              style={{ display: 'flex', alignItems: 'center', gap: 9, padding: '6px 8px', borderRadius: 7, cursor: item.done ? 'default' : 'pointer', transition: 'background 0.12s' }}
+              onMouseEnter={e => { if (!item.done) e.currentTarget.style.background = C.cyanDim; }}
+              onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; }}
+            >
+              {item.done
+                ? <CheckCircle2 style={{ width: 13, height: 13, color: C.green, flexShrink: 0 }} />
+                : <AlertCircle  style={{ width: 13, height: 13, color: C.t3, flexShrink: 0 }} />
+              }
+              <span style={{ fontSize: 11.5, color: item.done ? C.t2 : C.t1, fontWeight: item.done ? 400 : 500, flex: 1, textDecoration: item.done ? 'line-through' : 'none', textDecorationColor: C.t3 }}>
+                {item.label}
+              </span>
+              {!item.done && <Plus style={{ width: 10, height: 10, color: C.cyan, flexShrink: 0 }} />}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Client impact callout */}
+      <div style={{ padding: '14px 16px 0' }}>
+        <div style={{ padding: '12px 14px', borderRadius: 9, background: C.cyanDim, border: `1px solid ${C.cyanBrd}` }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 7 }}>
+            <TrendingUp style={{ width: 13, height: 13, color: C.cyan, flexShrink: 0 }} />
+            <span style={{ fontSize: 11.5, fontWeight: 700, color: C.t1 }}>Client impact</span>
+          </div>
+          <div style={{ fontSize: 11, color: C.t2, lineHeight: 1.5 }}>
+            {avgSessionsPerClient !== null ? (
+              <>
+                Your clients average{' '}
+                <span style={{ color: C.t1, fontWeight: 600 }}>
+                  {avgSessionsPerClient} session{avgSessionsPerClient !== 1 ? 's' : ''}
+                </span>{' '}
+                — {profileComplete
+                  ? 'your complete profile is helping drive consistent bookings.'
+                  : 'completing your profile could meaningfully increase this number.'}
+              </>
+            ) : (
+              <>
+                Complete profiles attract new clients{' '}
+                <span style={{ color: C.t1, fontWeight: 600 }}>2.4× faster</span> on average.
+              </>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Tips & Recommendations */}
+      <TipsPanel
+        profileScore={profileScore}
+        trustScore={trustScore}
+        coach={coach}
+        activeClients={activeClients}
+        totalClients={totalClients}
+        sessionsWeek={sessionsWeek}
+      />
+    </div>
+  );
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   MAIN COMPONENT
+══════════════════════════════════════════════════════════════════ */
+export default function TabCoachProfile({
+  coach,
+  openModal,
+  clients    = [],
+  sessions   = [],
+  posts      = [],
+}) {
+  if (!coach) {
+    return (
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 80, color: C.t3, fontSize: 13, fontFamily: FONT }}>
+        No coach selected
+      </div>
+    );
+  }
+
+  /* ── Derived data ─────────────────────────────────────────────── */
+  const galleryCount     = coach.gallery?.length       || 0;
+  const specialtiesCount = coach.specialties?.length   || 0;
+  const certCount        = coach.certifications?.length || 0;
+  const hasPhoto         = !!coach.avatar_url;
+  const hasCover         = !!coach.cover_url;
+  const hasBio           = !!coach.bio;
+  const hasPricing       = !!(coach.hourly_rate || coach.pricing);
+  const hasLocation      = !!(coach.location || coach.city);
+  const socialPlatforms  = [coach.instagram_url, coach.facebook_url, coach.twitter_url, coach.website_url].filter(Boolean).length;
+  const hasAvailability  = coach.availability && Object.keys(coach.availability).length > 0;
+
+  const MS_WEEK    = 7  * 24 * 60 * 60 * 1000;
+  const now        = Date.now();
+  const weekAgo     = now - MS_WEEK;
+  const twoWeeksAgo = now - 2 * MS_WEEK;
+
+  const coachSessions = sessions.filter(s => s.coach_id === coach.id);
+
+  /* Active clients — had a session in the last 7 days */
+  const recentClientIds = new Set(
+    coachSessions
+      .filter(s => new Date(s.session_date || s.created_date).getTime() > weekAgo)
+      .map(s => s.client_id || s.user_id)
+  );
+  const activeClients = recentClientIds.size;
+
+  /* Previous week */
+  const prevWeekClientIds = new Set(
+    coachSessions
+      .filter(s => {
+        const t = new Date(s.session_date || s.created_date).getTime();
+        return t > twoWeeksAgo && t <= weekAgo;
+      })
+      .map(s => s.client_id || s.user_id)
+  );
+  const retentionTrend = activeClients - prevWeekClientIds.size;
+
+  const sessionsWeek = coachSessions.filter(s =>
+    new Date(s.session_date || s.created_date || 0).getTime() > weekAgo
+  ).length;
+
+  const totalClients = clients.length || 1;
+
+  /* Trend-adjusted retention score */
+  let retentionScore = Math.round((activeClients / totalClients) * 100);
+  if (retentionTrend < 0) retentionScore = Math.max(0, retentionScore - Math.min(10, Math.abs(retentionTrend) * 2));
+  else if (retentionTrend > 0) retentionScore = Math.min(100, retentionScore + Math.min(5, retentionTrend));
+
+  /* ── Graduated profile scores ─────────────────────────────────── */
+  const photoScore      = hasPhoto ? 100 : 0;
+  const coverScore      = hasCover ? 100 : 0;
+  const galleryScore    = galleryCount >= 6 ? 100 : galleryCount >= 3 ? 75 : galleryCount >= 1 ? 40 : 0;
+  const bioScore        = hasBio    ? 100 : 0;
+  const pricingScore    = hasPricing ? 100 : 0;
+  const availScore      = (hasLocation || hasAvailability) ? (hasLocation && hasAvailability ? 100 : 60) : 0;
+  const certScore       = certCount  >= 4 ? 100 : certCount  === 3 ? 80 : certCount  === 2 ? 60 : certCount  >= 1 ? 35 : 0;
+  const specialtiesScore = specialtiesCount >= 8 ? 100 : specialtiesCount >= 5 ? 80 : specialtiesCount >= 3 ? 60 : specialtiesCount >= 1 ? 30 : 0;
+  const socialScore     = socialPlatforms >= 3 ? 100 : socialPlatforms === 2 ? 70 : socialPlatforms === 1 ? 40 : 0;
+
+  const impressionScore = Math.round((photoScore + coverScore + galleryScore) / 3);
+  const trustScore      = Math.round((bioScore + pricingScore) / 2);
+  const discoveryScore  = Math.round((availScore + socialScore + certScore) / 3);
+  const profileScore    = Math.round((impressionScore + trustScore + discoveryScore) / 3);
+
+  /* Blended coach score (profile-weighted when client base is small) */
+  const profileWeight = totalClients < 5 ? 0.85 : totalClients < 20 ? 0.70 : 0.55;
+  const engWeight     = 1 - profileWeight;
+  const overallScore  = Math.round(profileScore * profileWeight + retentionScore * engWeight);
+
+  const insight = buildInsight({
+    profileScore, retentionScore, sessionsWeek, hasBio, hasPhoto,
+    hasCover, galleryCount, hasPricing, certCount,
+    activeClients, totalClients,
+  });
+
+  const previewUrl = createPageUrl('CoachProfile') + '?id=' + coach.id;
+
+  return (
+    <div style={{ display: 'flex', flex: 1, minHeight: 0, background: C.bg, color: C.t1, fontFamily: FONT, fontSize: 13, lineHeight: 1.5, WebkitFontSmoothing: 'antialiased' }}>
+
+      {/* ── MAIN CONTENT ────────────────────────────────────────── */}
+      <div style={{ flex: 1, overflowY: 'auto', minWidth: 0 }}>
+
+        {/* Page header */}
+        <div style={{ padding: '4px 16px 0 4px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <h1 style={{ fontSize: 22, fontWeight: 800, color: C.t1, margin: 0, letterSpacing: '-0.03em', lineHeight: 1.2 }}>
+                {coach.name}
+              </h1>
+              {coach.verified && <BadgeCheck style={{ width: 16, height: 16, color: C.cyan }} />}
+            </div>
+            <p style={{ fontSize: 12, color: C.t3, margin: '2px 0 0', lineHeight: 1.5 }}>
+              How your coaching profile appears and performs — strengths, gaps, and what to fix next.
+            </p>
+          </div>
+          <a href={previewUrl} target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none', flexShrink: 0 }}>
+            <button
+              style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '9px 18px', borderRadius: 9, fontSize: 12.5, fontWeight: 700, cursor: 'pointer', fontFamily: FONT, transition: 'opacity 0.15s', ...GRAD_BTN }}
+              onMouseEnter={e => e.currentTarget.style.opacity = '0.88'}
+              onMouseLeave={e => e.currentTarget.style.opacity = '1'}
+            >
+              <ExternalLink style={{ width: 11, height: 11 }} /> Client View
+            </button>
+          </a>
+        </div>
+
+        {/* Insight bar */}
+        <div style={{ margin: '12px 4px 12px 0', padding: '10px 14px', borderRadius: 4, background: 'rgba(77,127,255,0.11)', display: 'flex', alignItems: 'center', gap: 8 }}>
+          <Zap style={{ width: 12, height: 12, color: C.cyan, flexShrink: 0 }} />
+          <span style={{ fontSize: 11.5, fontWeight: 600, color: '#93c5fd' }}>{insight}</span>
+        </div>
+
+        {/* Body */}
+        <div style={{ padding: '0 16px 32px 4px' }}>
+
+          <div style={{ fontSize: 9.5, fontWeight: 700, color: C.t3, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 9 }}>
+            Profile Diagnosis
           </div>
 
-          {/* Right — context + actions */}
-          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-            <Insights cl={cl} clientBookings={clientBookings} clientCheckIns={clientCheckIns} onAction={act} />
-            <ClientInfo cl={cl} />
-            <QuickActions onMessage={onMessage} onBook={onBook} onAssign={onAssign} />
+          {/* ── 2-col grid: First Impression + Credibility ─── */}
+          <div style={{ display: 'grid', gridTemplateColumns: '55% 1fr', gap: 9, marginBottom: 9, alignItems: 'stretch' }}>
+
+            {/* LEFT — First Impression */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 9 }}>
+              <div style={{ fontSize: 12, fontWeight: 500, color: C.t2 }}>
+                First Impression <span style={{ color: C.t3, fontWeight: 400 }}>— What a client sees when they find your profile</span>
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 9 }}>
+                <ItemCard
+                  title="Profile Photo"
+                  score={photoScore}
+                  microcopy={hasPhoto ? 'Your face is your brand — looking great.' : 'Clients are less likely to book without seeing you.'}
+                  onClick={() => openModal('photo')}
+                >
+                  <CoachPhotoVisual avatarUrl={coach.avatar_url} />
+                </ItemCard>
+
+                <ItemCard
+                  title="Cover Image"
+                  score={coverScore}
+                  microcopy={hasCover ? 'A strong banner sets the tone for your page.' : 'A cover image makes your profile feel professional.'}
+                  onClick={() => openModal('cover')}
+                >
+                  <CoverVisual imageUrl={coach.cover_url} />
+                </ItemCard>
+              </div>
+
+              <ItemCard
+                title="Results & Training Gallery"
+                score={galleryScore}
+                flex={1}
+                microcopy={
+                  galleryCount >= 6 ? `${galleryCount} photos — great visual proof of your work.`
+                  : galleryCount >= 3 ? `${galleryCount} photos — aim for 6+ to maximise trust.`
+                  : galleryCount > 0 ? `${galleryCount} photo${galleryCount !== 1 ? 's' : ''} — add more to showcase your results.`
+                  : 'No gallery. Add training and transformation photos to build trust.'
+                }
+                onClick={() => openModal('photos')}
+              >
+                <GalleryVisual gallery={coach.gallery} />
+              </ItemCard>
+            </div>
+
+            {/* RIGHT — Credibility */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 9 }}>
+              <div style={{ fontSize: 12, fontWeight: 500, color: C.t2 }}>
+                Credibility <span style={{ color: C.t3, fontWeight: 400 }}>— What sets you apart and makes you findable</span>
+              </div>
+
+              <ItemCard
+                title="Location & Availability"
+                score={availScore}
+                microcopy="Where you work and when you're available."
+                onClick={() => openModal('editInfo')}
+              >
+                <AvailabilityVisual coach={coach} />
+              </ItemCard>
+
+              <ItemCard
+                title="Certifications & Credentials"
+                score={certScore}
+                flex={1}
+                microcopy={
+                  certCount > 0
+                    ? `${certCount} qualification${certCount !== 1 ? 's' : ''} listed — builds client trust before enquiry.`
+                    : 'Add certifications to prove your expertise.'
+                }
+                onClick={() => openModal('certifications')}
+              >
+                <CertificationsPreview
+                  certifications={coach.certifications}
+                  onManage={() => openModal('certifications')}
+                />
+              </ItemCard>
+            </div>
           </div>
+
+          {/* ── FULL-WIDTH SECTIONS ───────────────────────────── */}
+
+          <FullSection
+            title="Trust & Clarity"
+            subtitle="What clients need to feel confident before booking you."
+            score={trustScore}
+            defaultOpen={trustScore < 100}
+          >
+            <TrustRow coach={coach} openModal={openModal} />
+            <ExperienceRow coach={coach} openModal={openModal} />
+          </FullSection>
+
+          <FullSection
+            title="Training Specialties"
+            subtitle="The disciplines and methods you specialise in — helps clients self-select."
+            score={specialtiesScore}
+            defaultOpen={specialtiesScore < 100}
+          >
+            <TagsList
+              items={coach.specialties}
+              emptyText="No specialties listed. Clients filter coaches by discipline — make sure you show up."
+              onClick={() => openModal('specialties')}
+            />
+          </FullSection>
+
+          <FullSection
+            title="Certifications & Qualifications"
+            subtitle="Your full credentials list — a top trust signal for new clients."
+            score={certScore}
+            defaultOpen={certScore < 100}
+          >
+            <TagsList
+              items={coach.certifications}
+              emptyText="No certifications listed. A key trust signal for prospective clients scanning your profile."
+              onClick={() => openModal('certifications')}
+            />
+          </FullSection>
+
+          <FullSection
+            title="Online Presence"
+            subtitle="Social links and external profiles that extend your reach and credibility."
+            score={socialScore}
+            defaultOpen={socialScore < 70}
+          >
+            <SocialVisual coach={coach} />
+          </FullSection>
 
         </div>
       </div>
+
+      {/* ── RIGHT SIDEBAR ─────────────────────────────────────── */}
+      <ProfileSidebar
+        profileScore={profileScore}
+        retentionScore={retentionScore}
+        trustScore={trustScore}
+        discoveryScore={discoveryScore}
+        openModal={openModal}
+        coach={coach}
+        activeClients={activeClients}
+        totalClients={totalClients}
+        sessionsWeek={sessionsWeek}
+        retentionTrend={retentionTrend}
+        coachSessions={coachSessions}
+      />
     </div>
   );
 }
