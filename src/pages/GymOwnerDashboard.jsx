@@ -691,14 +691,7 @@ export default function GymOwnerDashboard() {
       <Link to={createPageUrl('Home')}><button style={{ background: T.card2, color: T.t1, border: `1px solid ${T.brd}`, borderRadius: 9, padding: '10px 20px', fontWeight: 700, cursor: 'pointer' }}>Back to Home</button></Link>
     </Splash>
   );
-  if (myGyms.length === 0 && !isCoach) return (
-    <Splash>
-      <Dumbbell style={{ width: 26, height: 26, color: T.cyan, margin: '0 auto 12px' }} />
-      <h2 style={{ color: T.t1, fontWeight: 800, marginBottom: 8 }}>No Gyms Yet</h2>
-      <p style={{ color: T.t2, fontSize: 13, marginBottom: 20 }}>Register your gym to get started.</p>
-      <Link to={createPageUrl('GymSignup')}><button style={{ background: T.cyan, color: '#fff', border: 'none', borderRadius: 9, padding: '10px 20px', fontWeight: 700, cursor: 'pointer' }}>Register Your Gym</button></Link>
-    </Splash>
-  );
+
 
   /* ── Shared modals ── */
   const sharedModals = (
