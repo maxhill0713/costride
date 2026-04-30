@@ -1,198 +1,160 @@
-/**
- * ClientCommandCenter — Premium redesign of ClientProfile
- *
- * Design Language: "Precision Instrument"
- * Every pixel earns its place. Action-first. Insight-led.
- * Coaches should never wonder "what should I do next?"
- *
- * TOKEN ALIGNMENT (extended from original):
- *   bg #060b14 · surface #0a1020 · surfaceEl #0f1928
- *   t1 #f0f4f8 · t2 #8899aa · t3 #445566
- *   accent #3b82f6 · success #10b981 · danger #ef4444 · warn #f59e0b
- *
- * LAYOUT ARCHITECTURE:
- *   [COMMAND BAR] sticky — identity + KPIs + actions always visible
- *   [NEXT BEST ACTION] — AI recommendation, full-width, unmissable
- *   [GRID: left 2/3 + right 1/3]
- *     Left: Engagement Timeline → Attendance Heatmap → Sessions → Workouts
- *     Right: Critical Insights → Behavior Patterns → Client Info → Quick Actions
- */
-
-import React, { useState, useMemo, useRef, useEffect } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { base44 } from '@/api/base44Client';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useState, useMemo, useEffect, useRef } from "react";
 import {
-  MessageSquare, Calendar, Dumbbell, AlertTriangle, AlertCircle,
-  TrendingDown, TrendingUp, Minus, ChevronRight, ChevronDown,
-  ChevronUp, Activity, BarChart2, User, Phone, Mail, MapPin,
-  Target, Check, Edit2, Plus, X, Loader2, Save, Clock,
-  Zap, ArrowRight, Brain, Flame, RefreshCw, Eye, XCircle, ExternalLink,
-} from 'lucide-react';
-import { toast } from 'sonner';
+  MessageSquare, Calendar, Dumbbell, AlertTriangle, TrendingDown,
+  ChevronRight, ChevronDown, ChevronUp, Activity, BarChart2, User,
+  Phone, Mail, MapPin, Target, Check, Plus, Clock, Zap, ArrowRight,
+  Brain, Flame, XCircle, X, Pencil, Trash2,
+} from "lucide-react";
+import {
+  AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid,
+} from "recharts";
 
-// ─── Tokens ───────────────────────────────────────────────────────────────────
+// ─── Design Tokens (matching ContentHub) ─────────────────────────────────────
 const C = {
-  bg:         '#060b14',
-  surface:    '#0a1020',
-  surfaceEl:  '#0f1928',
-  surfaceHi:  '#141f30',
-  border:     'rgba(255,255,255,0.06)',
-  borderEl:   'rgba(255,255,255,0.10)',
-  borderHi:   'rgba(255,255,255,0.16)',
-  divider:    'rgba(255,255,255,0.035)',
-  t1:         '#f0f4f8',
-  t2:         '#7b90a8',
-  t3:         '#3d5166',
-  t4:         '#1a2a38',
-  accent:     '#3b82f6',
-  accentSub:  'rgba(59,130,246,0.08)',
-  accentBrd:  'rgba(59,130,246,0.22)',
-  accentGlow: '0 0 24px rgba(59,130,246,0.18)',
-  success:    '#10b981',
-  successSub: 'rgba(16,185,129,0.08)',
-  successBrd: 'rgba(16,185,129,0.20)',
-  danger:     '#ef4444',
-  dangerSub:  'rgba(239,68,68,0.08)',
-  dangerBrd:  'rgba(239,68,68,0.22)',
-  warn:       '#f59e0b',
-  warnSub:    'rgba(245,158,11,0.08)',
-  warnBrd:    'rgba(245,158,11,0.22)',
-  purple:     '#8b5cf6',
-  purpleSub:  'rgba(139,92,246,0.09)',
-  purpleBrd:  'rgba(139,92,246,0.22)',
+  bg:       "#000000",
+  sidebar:  "#0a0a0d",
+  card:     "#141416",
+  card2:    "#1a1a1f",
+  brd:      "#222226",
+  brdHi:    "#2e2e36",
+  t1:       "#ffffff",
+  t2:       "#8a8a94",
+  t3:       "#444450",
+  t4:       "#2a2a32",
+  cyan:     "#4d7fff",
+  cyanDim:  "rgba(77,127,255,0.10)",
+  cyanBrd:  "rgba(77,127,255,0.28)",
+  red:      "#ff4d6d",
+  redDim:   "rgba(255,77,109,0.12)",
+  redBrd:   "rgba(255,77,109,0.28)",
+  green:    "#22c55e",
+  greenDim: "rgba(34,197,94,0.10)",
+  greenBrd: "rgba(34,197,94,0.26)",
+  amber:    "#f59e0b",
+  amberDim: "rgba(245,158,11,0.10)",
+  amberBrd: "rgba(245,158,11,0.26)",
+  purple:   "#a78bfa",
+  purpleDim:"rgba(167,139,250,0.10)",
+  purpleBrd:"rgba(167,139,250,0.26)",
 };
 
-const RADIUS = 12;
-const CARD_SHADOW = 'inset 0 1px 0 rgba(255,255,255,0.03), 0 2px 8px rgba(0,0,0,0.4)';
+const FONT = "'DM Sans', 'Segoe UI', system-ui, sans-serif";
+const MONO = "'DM Mono', 'Courier New', monospace";
 
-const EMPTY_CLIENT = {
-  name: '', avatar_url: null, email: '', phone: '', location: '', joined: '',
-  goal: '', tags: [], retention_status: 'healthy', trend: 'stable',
-  last_visit: '—', visits_per_week: 0, completion_pct: 0,
-  next_session: null, total_sessions: 0, no_show_rate: 0, streak: 0,
+const GRAD_BTN = {
+  background: "#2563eb",
+  border: "none",
+  color: "#fff",
+  boxShadow: "0 4px 16px rgba(37,99,235,0.30)",
 };
 
-const ini = n => (n || '?').split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
+// ─── Mock Data ────────────────────────────────────────────────────────────────
+const MOCK_CLIENT = {
+  name: "Jordan Matthews",
+  email: "jordan@example.com",
+  phone: "+44 7700 900123",
+  location: "London, UK",
+  joined: "Jan 2024",
+  goal: "Fat Loss",
+  tags: ["HIIT", "Strength"],
+  retention_status: "needs_attention",
+  last_visit: "5d ago",
+  visits_per_week: 1.5,
+  completion_pct: 42,
+  streak: 3,
+  total_sessions: 24,
+  no_show_rate: 18,
+  next_session: null,
+};
 
-// ─── Global CSS ───────────────────────────────────────────────────────────────
+const now = Date.now();
+const day = 86400000;
+
+const MOCK_CHECKINS = Array.from({ length: 22 }, (_, i) => ({
+  id: i,
+  check_in_date: new Date(now - (i * 3.2 + Math.random()) * day).toISOString(),
+}));
+
+const MOCK_BOOKINGS = [
+  { id: 1, session_date: new Date(now - 2 * day).toISOString(), session_name: "Upper Body Strength", status: "attended" },
+  { id: 2, session_date: new Date(now - 5 * day).toISOString(), session_name: "HIIT Cardio", status: "no_show" },
+  { id: 3, session_date: new Date(now - 9 * day).toISOString(), session_name: "Lower Body Power", status: "attended" },
+  { id: 4, session_date: new Date(now - 12 * day).toISOString(), session_name: "Core & Mobility", status: "attended" },
+  { id: 5, session_date: new Date(now - 16 * day).toISOString(), session_name: "Full Body Circuit", status: "no_show" },
+  { id: 6, session_date: new Date(now - 19 * day).toISOString(), session_name: "Push Day", status: "attended" },
+];
+
+const MOCK_WORKOUTS = [
+  { id: 1, workout_data: { name: "12-Week Strength Program", exercises: Array(24).fill(null) }, is_activated: true, assigned_date: new Date(now - 30 * day).toISOString() },
+  { id: 2, workout_data: { name: "HIIT Conditioning Block", exercises: Array(12).fill(null) }, is_activated: false, assigned_date: new Date(now - 10 * day).toISOString() },
+];
+
+// ─── Global Styles ────────────────────────────────────────────────────────────
 const GLOBAL_CSS = `
-@import url('https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800;900&family=DM+Mono:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap');
 
-@keyframes pulse-dot { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.5;transform:scale(.85)} }
-@keyframes fade-up   { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
-@keyframes spin      { to{transform:rotate(360deg)} }
-@keyframes scan-line { from{transform:translateY(-100%)} to{transform:translateY(400%)} }
-@keyframes bar-grow  { from{transform:scaleY(0)} to{transform:scaleY(1)} }
-@keyframes shimmer   { 0%{background-position:-200% 0} 100%{background-position:200% 0} }
+@keyframes fadeUp   { from { opacity:0; transform:translateY(6px) } to { opacity:1; transform:translateY(0) } }
+@keyframes barGrow  { from { transform:scaleY(0) } to { transform:scaleY(1) } }
+@keyframes pulseDot { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.4;transform:scale(.8)} }
+@keyframes spin     { to { transform:rotate(360deg) } }
 
 * { box-sizing: border-box; }
 
-.ccc { font-family: 'Figtree', system-ui, sans-serif; color: ${C.t1}; }
-.mono { font-family: 'DM Mono', 'Courier New', monospace; }
+.ccc-root { font-family: ${FONT}; color: ${C.t1}; -webkit-font-smoothing: antialiased; }
+.mono     { font-family: ${MONO}; }
+
+.ccc-card {
+  background: ${C.card};
+  border: 1px solid ${C.brd};
+  border-radius: 12px;
+  overflow: hidden;
+  transition: border-color .15s, box-shadow .15s;
+  animation: fadeUp .3s ease both;
+}
+.ccc-card:hover { border-color: ${C.cyanBrd}; box-shadow: 0 0 0 1px rgba(77,127,255,0.06); }
 
 .ccc-btn {
   border: none; outline: none; cursor: pointer;
-  font-family: 'Figtree', system-ui, sans-serif;
-  transition: all .15s cubic-bezier(.2,.8,.3,1);
+  font-family: ${FONT};
+  transition: all .14s;
 }
-.ccc-btn:hover  { opacity: .88; }
+.ccc-btn:hover  { opacity: .86; }
 .ccc-btn:active { transform: scale(.96); }
 
-.ccc-card {
-  border-radius: ${RADIUS}px;
-  background: ${C.surface};
-  border: 1px solid ${C.border};
-  box-shadow: ${CARD_SHADOW};
-  overflow: hidden;
-  animation: fade-up .3s ease both;
-}
-
 .row-hover { transition: background .1s; border-radius: 8px; }
-.row-hover:hover { background: rgba(255,255,255,0.025) !important; }
-
-.tag-pill {
-  display: inline-flex; align-items: center;
-  padding: 3px 10px; border-radius: 99px;
-  font-size: 11px; font-weight: 700; letter-spacing: .02em;
-  transition: all .15s;
-}
-
-.heatmap-cell {
-  border-radius: 3px;
-  transition: all .15s;
-  cursor: default;
-}
-.heatmap-cell:hover { transform: scale(1.3); z-index: 10; position: relative; }
+.row-hover:hover { background: rgba(255,255,255,0.03); }
 
 .action-primary {
-  background: ${C.accent};
-  box-shadow: 0 4px 20px rgba(59,130,246,0.35), inset 0 1px 0 rgba(255,255,255,0.12);
-  color: #fff;
-  border: none;
-  border-radius: 10px;
-  padding: 10px 20px;
-  font-size: 13px; font-weight: 700;
-  display: inline-flex; align-items: center; gap: 7px;
-  cursor: pointer; font-family: inherit;
-  transition: all .15s cubic-bezier(.2,.8,.3,1);
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 9px 18px; border-radius: 9px;
+  font-size: 13px; font-weight: 700; font-family: ${FONT};
+  cursor: pointer; border: none;
+  ${Object.entries(GRAD_BTN).map(([k,v]) => `${k.replace(/([A-Z])/g,'-$1').toLowerCase()}:${v}`).join(';')};
+  transition: all .14s;
 }
-.action-primary:hover {
-  background: #4f92ff;
-  box-shadow: 0 6px 28px rgba(59,130,246,0.5), inset 0 1px 0 rgba(255,255,255,0.15);
-  transform: translateY(-1px);
-}
+.action-primary:hover { opacity: .88; transform: translateY(-1px); }
 .action-primary:active { transform: scale(.97); }
 
 .action-ghost {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 9px 16px; border-radius: 9px;
+  font-size: 13px; font-weight: 600; font-family: ${FONT};
+  cursor: pointer; color: ${C.t2};
   background: rgba(255,255,255,0.04);
-  border: 1px solid ${C.border};
-  color: ${C.t2};
-  border-radius: 10px;
-  padding: 10px 18px;
-  font-size: 13px; font-weight: 600;
-  display: inline-flex; align-items: center; gap: 7px;
-  cursor: pointer; font-family: inherit;
-  transition: all .15s;
+  border: 1px solid ${C.brd};
+  transition: all .14s;
 }
-.action-ghost:hover { background: ${C.surfaceEl}; border-color: ${C.borderEl}; color: ${C.t1}; }
+.action-ghost:hover { background: ${C.card2}; border-color: ${C.brdHi}; color: ${C.t1}; }
 .action-ghost:active { transform: scale(.97); }
 
-.nba-glow {
-  position: relative;
-  overflow: hidden;
-}
-.nba-glow::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(135deg, rgba(59,130,246,0.04) 0%, rgba(139,92,246,0.04) 100%);
-  pointer-events: none;
-}
-
-.signal-bar {
-  border-radius: ${RADIUS}px;
-  border: 1px solid ${C.border};
-  transition: background .12s;
-  cursor: pointer;
-}
-.signal-bar:hover { background: ${C.surfaceEl} !important; }
-
-.scroll-x { overflow-x: auto; scrollbar-width: none; }
-.scroll-x::-webkit-scrollbar { display: none; }
-
-.command-bar-kpi {
-  display: flex; flex-direction: column; align-items: flex-start;
-  padding: 0 20px;
-  border-left: 1px solid rgba(255,255,255,0.06);
-}
+.heatmap-cell { border-radius: 3px; transition: transform .12s; cursor: default; }
+.heatmap-cell:hover { transform: scale(1.35); z-index: 5; position: relative; }
 `;
 
 // ─── Atoms ────────────────────────────────────────────────────────────────────
-
 function Lbl({ children, style = {} }) {
   return (
-    <div style={{ fontSize: 10, fontWeight: 700, color: C.t3, textTransform: 'uppercase', letterSpacing: '.14em', ...style }}>
+    <div style={{ fontSize: 9.5, fontWeight: 700, color: C.t3, textTransform: "uppercase", letterSpacing: ".12em", ...style }}>
       {children}
     </div>
   );
@@ -200,111 +162,106 @@ function Lbl({ children, style = {} }) {
 
 function CardHead({ label, icon: Icon, iconColor, sub, action, onAction }) {
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '13px 16px', borderBottom: `1px solid ${C.divider}` }}>
+    <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "12px 16px", borderBottom: `1px solid ${C.brd}` }}>
       {Icon && (
-        <div style={{ width: 24, height: 24, borderRadius: 7, background: C.surfaceEl, border: `1px solid ${C.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-          <Icon style={{ width: 11, height: 11, color: iconColor || C.t3 }} />
+        <div style={{ width: 22, height: 22, borderRadius: 6, background: C.card2, border: `1px solid ${C.brd}`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+          <Icon style={{ width: 10, height: 10, color: iconColor || C.t3 }} />
         </div>
       )}
       <div style={{ flex: 1 }}>
         <Lbl>{label}</Lbl>
-        {sub && <div style={{ fontSize: 11, color: C.t3, marginTop: 1 }}>{sub}</div>}
+        {sub && <div style={{ fontSize: 10.5, color: C.t3, marginTop: 1 }}>{sub}</div>}
       </div>
       {action && onAction && (
-        <button className="ccc-btn" onClick={onAction} style={{ fontSize: 11, fontWeight: 600, color: C.accent, background: C.accentSub, border: `1px solid ${C.accentBrd}`, borderRadius: 7, padding: '5px 11px', display: 'flex', alignItems: 'center', gap: 4 }}>
-          {action} <ChevronRight style={{ width: 9, height: 9 }} />
+        <button className="ccc-btn" onClick={onAction} style={{ fontSize: 11, fontWeight: 700, color: C.cyan, background: C.cyanDim, border: `1px solid ${C.cyanBrd}`, borderRadius: 7, padding: "4px 10px", display: "flex", alignItems: "center", gap: 3, fontFamily: FONT }}>
+          {action} <ChevronRight style={{ width: 8, height: 8 }} />
         </button>
       )}
     </div>
   );
 }
 
-function Card({ label, icon, iconColor, sub, action, onAction, children, style = {}, leftBorder }) {
+function Card({ label, icon, iconColor, sub, action, onAction, children, style = {}, accentBorder }) {
   return (
-    <div className="ccc-card" style={{ ...style, ...(leftBorder ? { borderLeft: `2.5px solid ${leftBorder}` } : {}) }}>
+    <div className="ccc-card" style={{ ...style, ...(accentBorder ? { borderLeft: `2.5px solid ${accentBorder}` } : {}) }}>
       {label && <CardHead label={label} icon={icon} iconColor={iconColor} sub={sub} action={action} onAction={onAction} />}
       <div style={{ padding: 16 }}>{children}</div>
     </div>
   );
 }
 
-function StatNum({ value, label, warn, mono = true }) {
-  return (
-    <div>
-      <div className={mono ? 'mono' : ''} style={{ fontSize: 24, fontWeight: 500, color: warn ? C.danger : C.t1, letterSpacing: '-0.03em', lineHeight: 1 }}>{value}</div>
-      <div style={{ fontSize: 10, fontWeight: 600, color: C.t3, marginTop: 4, textTransform: 'uppercase', letterSpacing: '.1em' }}>{label}</div>
-    </div>
-  );
-}
-
 // ─── Command Bar ──────────────────────────────────────────────────────────────
-function CommandBar({ cl, onMessage, onBook, onAssign, onEdit }) {
+function CommandBar({ cl, onMessage, onBook, onAssign }) {
   const retention = {
-    healthy:         { label: 'Healthy',          color: C.success },
-    needs_attention: { label: 'Needs Attention',  color: C.warn },
-    at_risk:         { label: 'At Risk',           color: C.danger },
-  }[cl.retention_status] || { label: 'Healthy', color: C.success };
+    healthy:         { label: "Healthy",         color: C.green },
+    needs_attention: { label: "Needs Attention", color: C.amber },
+    at_risk:         { label: "At Risk",         color: C.red   },
+  }[cl.retention_status] || { label: "Healthy", color: C.green };
 
+  const ini = (n = "") => (n || "?").split(" ").map(w => w[0]).join("").toUpperCase().slice(0, 2);
   const [scrolled, setScrolled] = useState(false);
+
   useEffect(() => {
-    const el = document.getElementById('ccc-scroll-root');
+    const el = document.getElementById("ccc-scroll");
     if (!el) return;
-    const fn = () => setScrolled(el.scrollTop > 10);
-    el.addEventListener('scroll', fn);
-    return () => el.removeEventListener('scroll', fn);
+    const fn = () => setScrolled(el.scrollTop > 8);
+    el.addEventListener("scroll", fn);
+    return () => el.removeEventListener("scroll", fn);
   }, []);
+
+  const kpis = [
+    { label: "Last Visit",   val: cl.last_visit,          warn: cl.retention_status === "at_risk" },
+    { label: "Visits / Wk", val: `${cl.visits_per_week}×`, warn: cl.visits_per_week < 2 },
+    { label: "Completion",  val: `${cl.completion_pct}%`,  warn: cl.completion_pct < 50 },
+    { label: "Streak",      val: `${cl.streak}d`,          ok: cl.streak > 7 },
+  ];
 
   return (
     <div style={{
-      position: 'sticky', top: 0, zIndex: 100,
-      background: scrolled ? 'rgba(6,11,20,0.96)' : C.bg,
-      backdropFilter: scrolled ? 'blur(16px)' : 'none',
-      borderBottom: `1px solid ${scrolled ? C.border : 'transparent'}`,
-      transition: 'all .2s',
+      position: "sticky", top: 0, zIndex: 100,
+      background: scrolled ? "rgba(0,0,0,0.95)" : C.bg,
+      backdropFilter: scrolled ? "blur(14px)" : "none",
+      borderBottom: `1px solid ${scrolled ? C.brd : "transparent"}`,
+      transition: "all .18s",
     }}>
-      <div style={{ maxWidth: 1380, margin: '0 auto', padding: '0 28px', height: 64, display: 'flex', alignItems: 'center', gap: 0 }}>
-
+      <div style={{ maxWidth: 1340, margin: "0 auto", padding: "0 24px", height: 60, display: "flex", alignItems: "center", gap: 0 }}>
         {/* Identity */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12, paddingRight: 20, flexShrink: 0 }}>
-          <div style={{ position: 'relative', flexShrink: 0 }}>
-            <div style={{ width: 38, height: 38, borderRadius: '50%', background: `${C.accent}18`, border: `2px solid ${C.accent}30`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 700, color: C.accent, overflow: 'hidden' }}>
-              {cl.avatar_url ? <img src={cl.avatar_url} alt={cl.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : ini(cl.name)}
+        <div style={{ display: "flex", alignItems: "center", gap: 11, paddingRight: 20, flexShrink: 0 }}>
+          <div style={{ position: "relative" }}>
+            <div style={{ width: 36, height: 36, borderRadius: "50%", background: C.cyanDim, border: `1.5px solid ${C.cyanBrd}`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 800, color: C.cyan }}>
+              {ini(cl.name)}
             </div>
-            <div style={{ position: 'absolute', bottom: 0, right: 0, width: 10, height: 10, borderRadius: '50%', background: retention.color, border: `2px solid ${C.bg}`, animation: cl.retention_status === 'at_risk' ? 'pulse-dot 2s ease-in-out infinite' : 'none' }} />
+            <div style={{ position: "absolute", bottom: 0, right: 0, width: 9, height: 9, borderRadius: "50%", background: retention.color, border: `2px solid ${C.bg}`, animation: cl.retention_status === "at_risk" ? "pulseDot 2s ease-in-out infinite" : "none" }} />
           </div>
           <div>
-            <div style={{ fontSize: 14, fontWeight: 700, color: C.t1, letterSpacing: '-0.02em', lineHeight: 1.1 }}>{cl.name || 'Client Profile'}</div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginTop: 2 }}>
-              <div style={{ width: 5, height: 5, borderRadius: '50%', background: retention.color }} />
+            <div style={{ fontSize: 14, fontWeight: 700, color: C.t1, letterSpacing: "-0.02em", lineHeight: 1 }}>{cl.name}</div>
+            <div style={{ display: "flex", alignItems: "center", gap: 5, marginTop: 3 }}>
+              <div style={{ width: 5, height: 5, borderRadius: "50%", background: retention.color }} />
               <span style={{ fontSize: 11, fontWeight: 600, color: retention.color }}>{retention.label}</span>
-              {cl.goal && <><span style={{ color: C.t4 }}>·</span><span style={{ fontSize: 11, color: C.t3 }}>{cl.goal}</span></>}
+              {cl.goal && <><span style={{ color: C.t4, margin: "0 2px" }}>·</span><span style={{ fontSize: 11, color: C.t3 }}>{cl.goal}</span></>}
             </div>
           </div>
         </div>
 
         {/* KPIs */}
-        <div className="command-bar-kpi">
-          <Lbl>Last Visit</Lbl>
-          <div className="mono" style={{ fontSize: 16, fontWeight: 500, color: cl.retention_status === 'at_risk' ? C.danger : C.t1, marginTop: 3 }}>{cl.last_visit}</div>
-        </div>
-        <div className="command-bar-kpi">
-          <Lbl>Visits / Wk</Lbl>
-          <div className="mono" style={{ fontSize: 16, fontWeight: 500, color: cl.visits_per_week < 2 ? C.warn : C.t1, marginTop: 3 }}>{cl.visits_per_week}×</div>
-        </div>
-        <div className="command-bar-kpi">
-          <Lbl>Completion</Lbl>
-          <div className="mono" style={{ fontSize: 16, fontWeight: 500, color: cl.completion_pct < 50 ? C.danger : C.t1, marginTop: 3 }}>{cl.completion_pct}%</div>
-        </div>
-        <div className="command-bar-kpi">
-          <Lbl>Streak</Lbl>
-          <div className="mono" style={{ fontSize: 16, fontWeight: 500, color: cl.streak === 0 ? C.t3 : C.success, marginTop: 3 }}>{cl.streak}d</div>
-        </div>
+        {kpis.map(({ label, val, warn, ok }) => (
+          <div key={label} style={{ paddingLeft: 20, borderLeft: `1px solid ${C.brd}` }}>
+            <Lbl style={{ marginBottom: 3 }}>{label}</Lbl>
+            <div className="mono" style={{ fontSize: 15, fontWeight: 500, color: warn ? C.red : ok ? C.green : C.t1 }}>{val}</div>
+          </div>
+        ))}
 
         {/* Actions */}
-        <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 7 }}>
-          <button className="action-ghost" onClick={onMessage}><MessageSquare style={{ width: 13, height: 13 }} /> Message</button>
-          <button className="action-ghost" onClick={onAssign}><Dumbbell style={{ width: 13, height: 13 }} /> Assign</button>
-          <button className="action-primary" onClick={onBook}><Calendar style={{ width: 13, height: 13 }} /> Book Session</button>
+        <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 6 }}>
+          <button className="action-ghost" onClick={onMessage} style={{ padding: "7px 14px", fontSize: 12 }}>
+            <MessageSquare style={{ width: 12, height: 12 }} /> Message
+          </button>
+          <button className="action-ghost" onClick={onAssign} style={{ padding: "7px 14px", fontSize: 12 }}>
+            <Dumbbell style={{ width: 12, height: 12 }} /> Assign
+          </button>
+          <button className="action-primary" onClick={onBook} style={{ padding: "7px 16px", fontSize: 12 }}>
+            <Calendar style={{ width: 12, height: 12 }} /> Book Session
+          </button>
         </div>
       </div>
     </div>
@@ -312,81 +269,280 @@ function CommandBar({ cl, onMessage, onBook, onAssign, onEdit }) {
 }
 
 // ─── Next Best Action ─────────────────────────────────────────────────────────
-function NextBestAction({ cl, insights, onAction }) {
+function NextBestAction({ cl, onAction }) {
   const nba = useMemo(() => {
-    if (cl.retention_status === 'at_risk') return {
-      priority: 'urgent',
-      icon: Flame,
-      title: `${cl.name?.split(' ')[0] || 'This client'} is at risk of churning`,
-      body: `No activity in over a week and no upcoming sessions booked. A personal message now is 3× more likely to re-engage them than waiting.`,
-      cta: 'Send Re-engagement Message',
-      ctaKey: 'message',
-      color: C.danger,
-      colorSub: C.dangerSub,
-      colorBrd: C.dangerBrd,
+    if (cl.retention_status === "at_risk") return {
+      icon: Flame, title: `${cl.name.split(" ")[0]} is at risk of churning`,
+      body: "No activity in over a week and no upcoming sessions. A personal message now is 3× more likely to re-engage them.",
+      cta: "Send Re-engagement Message", ctaKey: "message",
+      color: C.red, colorDim: C.redDim, colorBrd: C.redBrd, badge: "Urgent",
     };
     if (!cl.next_session) return {
-      priority: 'high',
-      icon: Calendar,
-      title: `Book ${cl.name?.split(' ')[0] || 'this client'}'s next session`,
-      body: `No upcoming sessions scheduled. Clients with sessions booked in advance are 60% more consistent. Lock in their next slot.`,
-      cta: 'Book a Session',
-      ctaKey: 'book',
-      color: C.warn,
-      colorSub: C.warnSub,
-      colorBrd: C.warnBrd,
+      icon: Calendar, title: `No upcoming session booked`,
+      body: "Clients with sessions booked in advance are 60% more consistent. Lock in their next slot now.",
+      cta: "Book a Session", ctaKey: "book",
+      color: C.amber, colorDim: C.amberDim, colorBrd: C.amberBrd, badge: "Action Required",
     };
     if (cl.completion_pct < 50) return {
-      priority: 'medium',
-      icon: Dumbbell,
-      title: `Workout completion is low (${cl.completion_pct}%)`,
-      body: `Less than half of assigned workouts are being completed. Consider simplifying the program or checking if it still fits their schedule.`,
-      cta: 'Reassign Workout',
-      ctaKey: 'assign',
-      color: C.accent,
-      colorSub: C.accentSub,
-      colorBrd: C.accentBrd,
+      icon: Dumbbell, title: `Workout completion is low (${cl.completion_pct}%)`,
+      body: "Less than half of assigned workouts completed. Consider simplifying the program or checking their schedule.",
+      cta: "Reassign Workout", ctaKey: "assign",
+      color: C.cyan, colorDim: C.cyanDim, colorBrd: C.cyanBrd, badge: "Suggested",
     };
     return {
-      priority: 'low',
-      icon: Check,
-      title: `${cl.name?.split(' ')[0] || 'Client'} is on track — maintain momentum`,
-      body: `Everything looks healthy. Keep the consistency going with a check-in message or scheduling their next milestone session.`,
-      cta: 'Send Check-in',
-      ctaKey: 'message',
-      color: C.success,
-      colorSub: C.successSub,
-      colorBrd: C.successBrd,
+      icon: Check, title: `${cl.name.split(" ")[0]} is on track`,
+      body: "Everything looks healthy. Keep momentum going with a check-in message or scheduling their next milestone session.",
+      cta: "Send Check-in", ctaKey: "message",
+      color: C.green, colorDim: C.greenDim, colorBrd: C.greenBrd, badge: "All Clear",
     };
-  }, [cl, insights]);
+  }, [cl]);
 
-  const IconComp = nba.icon;
-
+  const Ic = nba.icon;
   return (
-    <div className="nba-glow" style={{ borderRadius: RADIUS, background: C.surface, border: `1px solid ${nba.colorBrd}`, boxShadow: CARD_SHADOW, overflow: 'hidden', animation: 'fade-up .3s ease both' }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 16, padding: '18px 20px' }}>
-        {/* Icon */}
-        <div style={{ width: 44, height: 44, borderRadius: 12, background: `${nba.color}12`, border: `1px solid ${nba.colorBrd}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-          <IconComp style={{ width: 20, height: 20, color: nba.color }} />
+    <div style={{ background: C.card, border: `1px solid ${nba.colorBrd}`, borderRadius: 12, overflow: "hidden", animation: "fadeUp .3s ease both" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 16, padding: "16px 20px" }}>
+        <div style={{ width: 42, height: 42, borderRadius: 11, background: nba.colorDim, border: `1px solid ${nba.colorBrd}`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+          <Ic style={{ width: 18, height: 18, color: nba.color }} />
         </div>
-
-        {/* Copy */}
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
-            <span style={{ fontSize: 9, fontWeight: 800, color: nba.color, textTransform: 'uppercase', letterSpacing: '.14em', background: `${nba.color}12`, border: `1px solid ${nba.colorBrd}`, borderRadius: 99, padding: '2px 8px' }}>
-              Next Best Action
+          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 5 }}>
+            <span style={{ fontSize: 9, fontWeight: 800, color: nba.color, textTransform: "uppercase", letterSpacing: ".12em", background: nba.colorDim, border: `1px solid ${nba.colorBrd}`, borderRadius: 99, padding: "2px 8px" }}>
+              {nba.badge}
             </span>
+            <span style={{ fontSize: 9, fontWeight: 700, color: C.t3, textTransform: "uppercase", letterSpacing: ".12em" }}>Next Best Action</span>
           </div>
-          <div style={{ fontSize: 14, fontWeight: 700, color: C.t1, marginBottom: 4, letterSpacing: '-0.01em' }}>{nba.title}</div>
+          <div style={{ fontSize: 13.5, fontWeight: 700, color: C.t1, marginBottom: 4, letterSpacing: "-0.01em" }}>{nba.title}</div>
           <div style={{ fontSize: 12, color: C.t2, lineHeight: 1.6 }}>{nba.body}</div>
         </div>
-
-        {/* CTA */}
-        <button className="ccc-btn" onClick={() => onAction(nba.ctaKey)} style={{ flexShrink: 0, display: 'flex', alignItems: 'center', gap: 7, padding: '11px 20px', borderRadius: 10, background: nba.color, color: nba.priority === 'low' ? '#052' : '#fff', fontSize: 13, fontWeight: 700, boxShadow: `0 4px 18px ${nba.color}30`, border: 'none', fontFamily: 'inherit' }}>
-          {nba.cta} <ArrowRight style={{ width: 13, height: 13 }} />
+        <button className="ccc-btn" onClick={() => onAction(nba.ctaKey)} style={{ flexShrink: 0, display: "flex", alignItems: "center", gap: 7, padding: "10px 18px", borderRadius: 9, background: nba.color, color: "#fff", fontSize: 12.5, fontWeight: 700, border: "none", fontFamily: FONT, boxShadow: `0 4px 16px ${nba.color}30` }}>
+          {nba.cta} <ArrowRight style={{ width: 12, height: 12 }} />
         </button>
       </div>
     </div>
+  );
+}
+
+// ─── Attendance Heatmap ───────────────────────────────────────────────────────
+function AttendanceHeatmap({ clientCheckIns }) {
+  const WEEKS = 15;
+  const DAYS  = ["M","T","W","T","F","S","S"];
+
+  const cells = useMemo(() => {
+    const today = new Date();
+    const start = new Date(today);
+    start.setDate(today.getDate() - (today.getDay() || 7) + 1 - (WEEKS - 1) * 7);
+
+    const checkSet = new Set(clientCheckIns.map(c => {
+      const d = new Date(c.check_in_date);
+      return `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
+    }));
+
+    return Array.from({ length: WEEKS }, (_, w) =>
+      Array.from({ length: 7 }, (_, d) => {
+        const date = new Date(start);
+        date.setDate(start.getDate() + w * 7 + d);
+        const key = `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`;
+        return { date, checked: checkSet.has(key), future: date > today, key };
+      })
+    );
+  }, [clientCheckIns]);
+
+  const total = cells.flat().filter(c => c.checked).length;
+
+  return (
+    <Card label="Attendance" icon={Activity} sub={`${total} check-ins over the last ${WEEKS} weeks`}>
+      <div style={{ display: "flex", gap: 5 }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: 3, paddingTop: 1 }}>
+          {DAYS.map((d, i) => (
+            <div key={i} style={{ width: 10, height: 13, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 8.5, color: C.t3, fontWeight: 600 }}>{d}</div>
+          ))}
+        </div>
+        <div style={{ display: "flex", gap: 3, overflow: "hidden" }}>
+          {cells.map((week, wi) => (
+            <div key={wi} style={{ display: "flex", flexDirection: "column", gap: 3 }}>
+              {week.map((cell, di) => (
+                <div key={di} className="heatmap-cell"
+                  title={`${cell.date.toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short" })}${cell.checked ? " ✓" : ""}`}
+                  style={{
+                    width: 13, height: 13,
+                    background: cell.future ? "transparent" : cell.checked ? C.cyan : C.card2,
+                    border: cell.future ? `1px dashed ${C.t4}` : `1px solid ${cell.checked ? C.cyanBrd : C.brd}`,
+                    opacity: cell.future ? 0.2 : cell.checked ? 1 : 0.7,
+                    boxShadow: cell.checked ? `0 0 5px rgba(77,127,255,0.3)` : "none",
+                  }}
+                />
+              ))}
+            </div>
+          ))}
+        </div>
+      </div>
+      <div style={{ display: "flex", alignItems: "center", gap: 5, marginTop: 10 }}>
+        <span style={{ fontSize: 9, color: C.t3 }}>Less</span>
+        {[C.card2, `${C.cyan}30`, `${C.cyan}60`, C.cyan].map((c, i) => (
+          <div key={i} style={{ width: 9, height: 9, borderRadius: 2, background: c, border: `1px solid ${C.brd}` }} />
+        ))}
+        <span style={{ fontSize: 9, color: C.t3 }}>More</span>
+      </div>
+    </Card>
+  );
+}
+
+// ─── Weekly Frequency Chart ───────────────────────────────────────────────────
+function ChartTip({ active, payload, label }) {
+  if (!active || !payload?.length) return null;
+  return (
+    <div style={{ background: C.card2, border: `1px solid ${C.cyanBrd}`, borderRadius: 7, padding: "5px 10px", fontSize: 11.5, color: C.t1 }}>
+      <div style={{ fontSize: 10, color: C.t3, marginBottom: 2 }}>{label}</div>
+      <span style={{ color: C.cyan, fontWeight: 700 }}>{payload[0].value} visits</span>
+    </div>
+  );
+}
+
+function WeeklyFrequency({ clientCheckIns }) {
+  const weeks = useMemo(() => Array.from({ length: 8 }, (_, i) => {
+    const end   = new Date(Date.now() - i * 7 * 86400000);
+    const start = new Date(+end - 7 * 86400000);
+    const count = clientCheckIns.filter(c => { const d = new Date(c.check_in_date); return d >= start && d < end; }).length;
+    const label = i === 0 ? "This wk" : i === 1 ? "Last wk" : `W-${i}`;
+    return { label, v: count };
+  }).reverse(), [clientCheckIns]);
+
+  return (
+    <Card label="Weekly Frequency" icon={BarChart2} sub="Check-ins per week — last 8 weeks">
+      <div style={{ paddingLeft: 0, paddingRight: 4 }}>
+        <ResponsiveContainer width="100%" height={90}>
+          <AreaChart data={weeks} margin={{ top: 4, right: 4, bottom: 0, left: -26 }}>
+            <defs>
+              <linearGradient id="wf-grad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%"   stopColor={C.cyan} stopOpacity={0.3} />
+                <stop offset="100%" stopColor={C.cyan} stopOpacity={0.02} />
+              </linearGradient>
+            </defs>
+            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" vertical={false} />
+            <XAxis dataKey="label" tick={{ fill: C.t3, fontSize: 8.5, fontFamily: FONT }} axisLine={false} tickLine={false} interval={0} />
+            <YAxis tick={{ fill: C.t3, fontSize: 9, fontFamily: FONT }} axisLine={false} tickLine={false} />
+            <Tooltip content={<ChartTip />} />
+            <Area type="monotone" dataKey="v" stroke={C.cyan} strokeWidth={2} fill="url(#wf-grad)" dot={false}
+              activeDot={{ r: 3, fill: C.cyan, strokeWidth: 2, stroke: C.card }} />
+          </AreaChart>
+        </ResponsiveContainer>
+      </div>
+    </Card>
+  );
+}
+
+// ─── Session History ──────────────────────────────────────────────────────────
+function SessionHistory({ clientBookings, onBook }) {
+  const STATUS = {
+    attended:  { color: C.green,  label: "Done",      bg: C.greenDim, brd: C.greenBrd },
+    no_show:   { color: C.red,    label: "No-show",   bg: C.redDim,   brd: C.redBrd   },
+    cancelled: { color: C.amber,  label: "Cancelled", bg: C.amberDim, brd: C.amberBrd },
+  };
+
+  const sessions = useMemo(() =>
+    clientBookings.slice(0, 8).map(b => ({
+      date: b.session_date ? new Date(b.session_date).toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short" }) : "—",
+      time: b.session_date ? new Date(b.session_date).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" }) : "—",
+      name: b.session_name || "Training Session",
+      status: b.status,
+    })), [clientBookings]);
+
+  return (
+    <Card label="Session History" icon={Calendar} action="Book" onAction={onBook}>
+      {sessions.length === 0 ? (
+        <div style={{ textAlign: "center", padding: "24px 0" }}>
+          <Calendar style={{ width: 26, height: 26, color: C.t3, margin: "0 auto 8px" }} />
+          <div style={{ fontSize: 13, fontWeight: 600, color: C.t2, marginBottom: 10 }}>No sessions yet</div>
+          <button className="action-primary" onClick={onBook} style={{ margin: "0 auto", fontSize: 12, padding: "7px 14px" }}>
+            <Plus style={{ width: 11, height: 11 }} /> Book first session
+          </button>
+        </div>
+      ) : (
+        <>
+          {/* Status strip */}
+          <div style={{ display: "flex", gap: 3, marginBottom: 14 }}>
+            {sessions.map((s, i) => (
+              <div key={i} title={`${s.date} — ${STATUS[s.status]?.label}`}
+                style={{ flex: 1, height: 3, borderRadius: 99, background: STATUS[s.status]?.color || C.t3, opacity: .75 }} />
+            ))}
+          </div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 1 }}>
+            {sessions.map((s, i) => {
+              const cfg = STATUS[s.status] || STATUS.attended;
+              return (
+                <div key={i} className="row-hover" style={{ display: "flex", alignItems: "center", gap: 10, padding: "7px 8px" }}>
+                  <div style={{ width: 5, height: 5, borderRadius: "50%", background: cfg.color, flexShrink: 0 }} />
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: 12, fontWeight: 500, color: C.t1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{s.name}</div>
+                    <div className="mono" style={{ fontSize: 10, color: C.t3 }}>{s.date} · {s.time}</div>
+                  </div>
+                  <span style={{ fontSize: 10, fontWeight: 700, color: cfg.color, background: cfg.bg, border: `1px solid ${cfg.brd}`, borderRadius: 99, padding: "2px 9px", flexShrink: 0 }}>
+                    {cfg.label}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        </>
+      )}
+    </Card>
+  );
+}
+
+// ─── Workout Engagement ───────────────────────────────────────────────────────
+function WorkoutEngagement({ clientWorkouts, onAssign }) {
+  const [open, setOpen] = useState(null);
+  const workouts = useMemo(() =>
+    clientWorkouts.map(w => ({
+      name: w.workout_data?.name || "Workout Plan",
+      pct: w.is_activated ? Math.round((w.workout_data?.exercises?.length || 0) / (w.workout_data?.exercises?.length || 1) * 100) : 0,
+      total: w.workout_data?.exercises?.length || 0,
+      assigned: w.assigned_date ? new Date(w.assigned_date).toLocaleDateString("en-GB", { day: "numeric", month: "short" }) : "—",
+      active: !!w.is_activated,
+    })), [clientWorkouts]);
+
+  return (
+    <Card label="Workout Plans" icon={Dumbbell} iconColor={C.purple} action="Assign" onAction={onAssign}
+      sub={workouts.length ? `${workouts.length} plan${workouts.length > 1 ? "s" : ""} assigned` : undefined}>
+      {workouts.length === 0 ? (
+        <div style={{ textAlign: "center", padding: "20px 0" }}>
+          <Dumbbell style={{ width: 26, height: 26, color: C.t3, margin: "0 auto 8px" }} />
+          <div style={{ fontSize: 13, fontWeight: 600, color: C.t2, marginBottom: 10 }}>No workouts assigned</div>
+          <button className="action-ghost" onClick={onAssign} style={{ margin: "0 auto", fontSize: 12, padding: "7px 14px" }}>
+            <Plus style={{ width: 11, height: 11 }} /> Assign workout
+          </button>
+        </div>
+      ) : (
+        <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+          {workouts.map((w, i) => {
+            const color = w.pct >= 80 ? C.green : w.pct >= 40 ? C.cyan : C.red;
+            return (
+              <div key={i} style={{ borderRadius: 9, background: C.card2, border: `1px solid ${C.brd}`, overflow: "hidden" }}>
+                <div className="row-hover" onClick={() => setOpen(open === i ? null : i)}
+                  style={{ display: "flex", alignItems: "center", gap: 12, padding: "11px 13px", cursor: "pointer" }}>
+                  <div style={{ width: 3, height: 30, borderRadius: 99, background: color, flexShrink: 0 }} />
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: 12, fontWeight: 600, color: C.t1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", marginBottom: 6 }}>{w.name}</div>
+                    <div style={{ height: 3, borderRadius: 99, background: "rgba(255,255,255,0.06)" }}>
+                      <div style={{ height: "100%", width: `${w.active ? 68 : 0}%`, borderRadius: 99, background: color, transition: "width .5s" }} />
+                    </div>
+                  </div>
+                  <span className="mono" style={{ fontSize: 17, fontWeight: 500, color: w.active ? C.t1 : C.t3, letterSpacing: "-0.03em", flexShrink: 0 }}>{w.active ? "68%" : "0%"}</span>
+                  {open === i ? <ChevronUp style={{ width: 10, height: 10, color: C.t3 }} /> : <ChevronDown style={{ width: 10, height: 10, color: C.t3 }} />}
+                </div>
+                {open === i && (
+                  <div style={{ padding: "10px 28px 12px", borderTop: `1px solid ${C.brd}`, display: "flex", gap: 20 }}>
+                    <div><Lbl style={{ marginBottom: 3 }}>Exercises</Lbl><div className="mono" style={{ fontSize: 13, fontWeight: 500, color: C.t1 }}>{w.total}</div></div>
+                    <div><Lbl style={{ marginBottom: 3 }}>Assigned</Lbl><div className="mono" style={{ fontSize: 13, fontWeight: 500, color: C.t1 }}>{w.assigned}</div></div>
+                    <div><Lbl style={{ marginBottom: 3 }}>Status</Lbl><div style={{ fontSize: 11, fontWeight: 700, color: w.active ? C.green : C.amber }}>{w.active ? "Active" : "Not started"}</div></div>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </Card>
   );
 }
 
@@ -395,61 +551,56 @@ function CriticalInsights({ cl, clientBookings, clientCheckIns, onAction }) {
   const insights = useMemo(() => {
     const items = [];
     const now = Date.now();
-    const lastCI = clientCheckIns.length
-      ? clientCheckIns.sort((a, b) => new Date(b.check_in_date) - new Date(a.check_in_date))[0]
-      : null;
+    const lastCI = [...clientCheckIns].sort((a, b) => new Date(b.check_in_date) - new Date(a.check_in_date))[0];
     const daysAgo = lastCI ? Math.floor((now - new Date(lastCI.check_in_date)) / 86400000) : null;
 
     if (daysAgo !== null && daysAgo >= 7)
-      items.push({ id: 'inactive', sev: 'high', icon: AlertTriangle, color: C.danger, title: `Inactive for ${daysAgo} days`, body: 'Above the 7-day churn threshold. Personal outreach now.', cta: 'Message Now', key: 'message' });
+      items.push({ icon: AlertTriangle, color: C.red, title: `Inactive for ${daysAgo} days`, body: "Above the 7-day churn threshold. Personal outreach recommended.", cta: "Message", key: "message" });
 
-    const noShows = clientBookings.filter(b => b.status === 'no_show').length;
+    const noShows = clientBookings.filter(b => b.status === "no_show").length;
     if (noShows >= 2)
-      items.push({ id: 'noshows', sev: 'high', icon: XCircle, color: C.danger, title: `${noShows} no-shows recorded`, body: 'Pattern of missed sessions may indicate scheduling mismatch.', cta: 'Reschedule', key: 'book' });
+      items.push({ icon: XCircle, color: C.red, title: `${noShows} no-shows recorded`, body: "Pattern of missed sessions may indicate scheduling mismatch.", cta: "Reschedule", key: "book" });
 
     if (!cl.next_session)
-      items.push({ id: 'nobook', sev: 'med', icon: Calendar, color: C.warn, title: 'No session booked', body: 'Client has no upcoming sessions scheduled.', cta: 'Book Now', key: 'book' });
+      items.push({ icon: Calendar, color: C.amber, title: "No session booked", body: "Client has no upcoming sessions scheduled.", cta: "Book", key: "book" });
 
     if (cl.visits_per_week < 2 && cl.visits_per_week > 0)
-      items.push({ id: 'lowfreq', sev: 'med', icon: TrendingDown, color: C.warn, title: 'Visit frequency dropping', body: `Averaging ${cl.visits_per_week}×/week — below the recommended 2× minimum.`, cta: null, key: null });
-
-    if (cl.completion_pct < 40)
-      items.push({ id: 'lowcomp', sev: 'med', icon: Dumbbell, color: C.warn, title: `${cl.completion_pct}% workout completion`, body: 'Program may need simplification or rescheduling.', cta: 'Reassign', key: 'assign' });
+      items.push({ icon: TrendingDown, color: C.amber, title: "Visit frequency dropping", body: `${cl.visits_per_week}×/week — below recommended 2× minimum.`, cta: null, key: null });
 
     return items;
   }, [cl, clientBookings, clientCheckIns]);
 
   if (!insights.length) return (
-    <Card label="Insights" icon={Brain} iconColor={C.success}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '6px 0' }}>
-        <div style={{ width: 28, height: 28, borderRadius: 8, background: C.successSub, border: `1px solid ${C.successBrd}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <Check style={{ width: 13, height: 13, color: C.success }} />
+    <Card label="Insights" icon={Brain} iconColor={C.green}>
+      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+        <div style={{ width: 26, height: 26, borderRadius: 8, background: C.greenDim, border: `1px solid ${C.greenBrd}`, display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <Check style={{ width: 12, height: 12, color: C.green }} />
         </div>
         <div>
-          <div style={{ fontSize: 13, fontWeight: 600, color: C.t1 }}>All clear</div>
-          <div style={{ fontSize: 11, color: C.t3 }}>No issues detected for this client</div>
+          <div style={{ fontSize: 12.5, fontWeight: 600, color: C.t1 }}>All clear</div>
+          <div style={{ fontSize: 11, color: C.t3 }}>No issues detected</div>
         </div>
       </div>
     </Card>
   );
 
   return (
-    <div className="ccc-card" style={{ borderLeft: `2.5px solid ${C.danger}` }}>
-      <CardHead label="Critical Insights" icon={AlertTriangle} iconColor={C.danger} sub={`${insights.length} issue${insights.length > 1 ? 's' : ''} need attention`} />
-      <div style={{ padding: '10px 14px', display: 'flex', flexDirection: 'column', gap: 6 }}>
+    <div className="ccc-card" style={{ borderLeft: `2.5px solid ${C.red}` }}>
+      <CardHead label="Critical Insights" icon={AlertTriangle} iconColor={C.red} sub={`${insights.length} issue${insights.length > 1 ? "s" : ""} need attention`} />
+      <div style={{ padding: "10px 14px", display: "flex", flexDirection: "column", gap: 5 }}>
         {insights.map((ins, i) => {
           const Ic = ins.icon;
           return (
-            <div key={ins.id} className="signal-bar" style={{ padding: '10px 12px', background: i === 0 ? `${ins.color}06` : 'transparent', borderLeft: `2.5px solid ${ins.color}`, borderRadius: RADIUS, marginLeft: 0 }}>
-              <div style={{ display: 'flex', alignItems: 'flex-start', gap: 9 }}>
-                <Ic style={{ width: 12, height: 12, color: ins.color, flexShrink: 0, marginTop: 2 }} />
-                <div style={{ flex: 1, minWidth: 0 }}>
+            <div key={i} style={{ padding: "9px 11px", borderRadius: 9, background: i === 0 ? `${ins.color}08` : "transparent", borderLeft: `2px solid ${ins.color}` }}>
+              <div style={{ display: "flex", alignItems: "flex-start", gap: 9 }}>
+                <Ic style={{ width: 11, height: 11, color: ins.color, flexShrink: 0, marginTop: 2 }} />
+                <div style={{ flex: 1 }}>
                   <div style={{ fontSize: 12, fontWeight: 700, color: C.t1, marginBottom: 2 }}>{ins.title}</div>
                   <div style={{ fontSize: 11, color: C.t2, lineHeight: 1.5 }}>{ins.body}</div>
                 </div>
                 {ins.cta && (
-                  <button className="ccc-btn" onClick={() => onAction(ins.key)} style={{ flexShrink: 0, fontSize: 10, fontWeight: 700, color: ins.color, background: `${ins.color}10`, border: `1px solid ${ins.color}25`, borderRadius: 7, padding: '4px 10px', display: 'flex', alignItems: 'center', gap: 3, fontFamily: 'inherit' }}>
-                    {ins.cta} <ArrowRight style={{ width: 9, height: 9 }} />
+                  <button className="ccc-btn" onClick={() => onAction(ins.key)} style={{ flexShrink: 0, fontSize: 10, fontWeight: 700, color: ins.color, background: `${ins.color}10`, border: `1px solid ${ins.color}25`, borderRadius: 6, padding: "3px 9px", display: "flex", alignItems: "center", gap: 3, fontFamily: FONT }}>
+                    {ins.cta} <ArrowRight style={{ width: 8, height: 8 }} />
                   </button>
                 )}
               </div>
@@ -461,49 +612,108 @@ function CriticalInsights({ cl, clientBookings, clientCheckIns, onAction }) {
   );
 }
 
+// ─── Retention Risk ───────────────────────────────────────────────────────────
+function RetentionRisk({ cl }) {
+  const score = cl.retention_status === "at_risk" ? 78 : cl.retention_status === "needs_attention" ? 44 : 16;
+  const color = score >= 65 ? C.red : score >= 35 ? C.amber : C.green;
+  const label = score >= 65 ? "High Risk" : score >= 35 ? "Moderate" : "Low Risk";
+
+  const r = 30, cx = 40, cy = 40, sw = 6;
+  const toRad = deg => (deg * Math.PI) / 180;
+  const arcPath = (start, end) => {
+    const s = { x: cx + r * Math.cos(toRad(start)), y: cy + r * Math.sin(toRad(start)) };
+    const e = { x: cx + r * Math.cos(toRad(end)),   y: cy + r * Math.sin(toRad(end)) };
+    return `M ${s.x} ${s.y} A ${r} ${r} 0 ${end - start > 180 ? 1 : 0} 1 ${e.x} ${e.y}`;
+  };
+  const totalArc = 240;
+  const dashFill = (2 * Math.PI * r) * (totalArc / 360) * (score / 100);
+  const dashTotal = (2 * Math.PI * r) * (totalArc / 360);
+
+  const factors = [
+    cl.retention_status !== "healthy" && { label: "Inactivity detected", sev: "H" },
+    !cl.next_session                  && { label: "No upcoming session",  sev: "H" },
+    cl.completion_pct < 50            && { label: "Low completion",       sev: "M" },
+    cl.visits_per_week < 2            && { label: "Low frequency",        sev: "M" },
+    cl.no_show_rate > 15              && { label: "No-show pattern",      sev: "M" },
+  ].filter(Boolean);
+
+  return (
+    <Card label="Retention Risk" icon={AlertTriangle} iconColor={color}>
+      <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 14 }}>
+        <svg width={80} height={58} viewBox="0 0 80 58" style={{ overflow: "visible", flexShrink: 0 }}>
+          <path d={arcPath(-210, 30)} fill="none" stroke="rgba(255,255,255,0.05)" strokeWidth={sw} strokeLinecap="round" />
+          <path d={arcPath(-210, 30)} fill="none" stroke={color} strokeWidth={sw} strokeLinecap="round"
+            strokeDasharray={`${dashFill} ${dashTotal - dashFill}`}
+            style={{ filter: `drop-shadow(0 0 5px ${color}50)` }} />
+          <text x={cx} y={cy + 4} textAnchor="middle" fill={color} fontSize={17} fontWeight={700} fontFamily={MONO}>{score}</text>
+        </svg>
+        <div>
+          <div style={{ fontSize: 15, fontWeight: 700, color, letterSpacing: "-0.02em" }}>{label}</div>
+          <div style={{ fontSize: 11, color: C.t3, marginTop: 2 }}>Risk score / 100</div>
+        </div>
+      </div>
+      {factors.length > 0 && (
+        <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
+          {factors.map(({ label: fl, sev }) => (
+            <div key={fl} style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <span style={{ fontSize: 11, color: C.t2 }}>{fl}</span>
+              <span style={{ fontSize: 9, fontWeight: 800, color: sev === "H" ? C.red : C.amber, background: sev === "H" ? C.redDim : C.amberDim, border: `1px solid ${sev === "H" ? C.redBrd : C.amberBrd}`, borderRadius: 99, padding: "1px 7px", letterSpacing: ".05em" }}>{sev}</span>
+            </div>
+          ))}
+        </div>
+      )}
+    </Card>
+  );
+}
+
+// ─── Snapshot Stats ───────────────────────────────────────────────────────────
+function SnapshotStats({ cl, clientCheckIns, clientBookings }) {
+  const stats = [
+    { label: "Sessions",   value: clientBookings.length },
+    { label: "Check-ins",  value: clientCheckIns.length },
+    { label: "No-show %",  value: `${cl.no_show_rate}%`, warn: cl.no_show_rate > 15 },
+    { label: "Completion", value: `${cl.completion_pct}%`, warn: cl.completion_pct < 50 },
+  ];
+  return (
+    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 1, background: C.brd, border: `1px solid ${C.brd}`, borderRadius: 12, overflow: "hidden" }}>
+      {stats.map(({ label, value, warn }) => (
+        <div key={label} style={{ padding: "12px 14px", background: C.card }}>
+          <Lbl style={{ marginBottom: 5 }}>{label}</Lbl>
+          <div className="mono" style={{ fontSize: 20, fontWeight: 500, color: warn ? C.red : C.t1, letterSpacing: "-0.03em" }}>{value}</div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 // ─── Behavior Patterns ────────────────────────────────────────────────────────
 function BehaviorPatterns({ cl, clientCheckIns, clientBookings }) {
   const patterns = useMemo(() => {
     const dayCount = { Mon:0,Tue:0,Wed:0,Thu:0,Fri:0,Sat:0,Sun:0 };
-    const days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+    const days = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
     clientCheckIns.forEach(c => {
       const d = days[new Date(c.check_in_date).getDay()];
       if (dayCount[d] !== undefined) dayCount[d]++;
     });
     const topDay = Object.entries(dayCount).sort(([,a],[,b]) => b-a)[0];
-
     const items = [];
-    if (topDay && topDay[1] > 0)
-      items.push({ icon: '📅', text: `Most active on ${topDay[0]}s`, sub: `${topDay[1]} visits` });
-
-    const noShowCount = clientBookings.filter(b => b.status === 'no_show').length;
-    const total = clientBookings.length;
-    if (total > 0 && noShowCount / total > 0.2)
-      items.push({ icon: '⚠️', text: 'High no-show pattern', sub: `${Math.round((noShowCount/total)*100)}% of sessions missed` });
-
-    if (cl.streak > 7)
-      items.push({ icon: '🔥', text: `${cl.streak}-day active streak`, sub: 'Momentum is building' });
-
-    if (cl.visits_per_week >= 3)
-      items.push({ icon: '⚡', text: 'Power user frequency', sub: `${cl.visits_per_week}× per week average` });
-    else if (cl.visits_per_week <= 1)
-      items.push({ icon: '🌡️', text: 'Low engagement pattern', sub: 'Below 2× weekly threshold' });
-
-    if (cl.completion_pct >= 80)
-      items.push({ icon: '✅', text: 'High workout compliance', sub: `${cl.completion_pct}% completion rate` });
-
+    if (topDay?.[1] > 0) items.push({ icon: "📅", text: `Most active on ${topDay[0]}s`, sub: `${topDay[1]} visits` });
+    const nsCount = clientBookings.filter(b => b.status === "no_show").length;
+    if (nsCount > 0) items.push({ icon: "⚠️", text: "No-show pattern detected", sub: `${nsCount} missed sessions` });
+    if (cl.streak > 5) items.push({ icon: "🔥", text: `${cl.streak}-day streak`, sub: "Building momentum" });
+    if (cl.visits_per_week <= 1) items.push({ icon: "📉", text: "Low engagement pattern", sub: "Below 2× weekly target" });
+    if (cl.completion_pct >= 70) items.push({ icon: "✅", text: "Strong compliance", sub: `${cl.completion_pct}% workout completion` });
     return items.slice(0, 4);
   }, [cl, clientCheckIns, clientBookings]);
 
   return (
     <Card label="Behavior Patterns" icon={Brain} iconColor={C.purple}>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-        {patterns.length === 0 && (
-          <div style={{ fontSize: 12, color: C.t3, textAlign: 'center', padding: '12px 0' }}>Not enough data yet to detect patterns</div>
-        )}
-        {patterns.map((p, i) => (
-          <div key={i} className="row-hover" style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 10px' }}>
-            <div style={{ width: 28, height: 28, borderRadius: 8, background: C.surfaceEl, border: `1px solid ${C.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, flexShrink: 0 }}>
+      <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
+        {patterns.length === 0 ? (
+          <div style={{ fontSize: 12, color: C.t3, textAlign: "center", padding: "10px 0" }}>Not enough data to detect patterns</div>
+        ) : patterns.map((p, i) => (
+          <div key={i} className="row-hover" style={{ display: "flex", alignItems: "center", gap: 10, padding: "7px 8px" }}>
+            <div style={{ width: 26, height: 26, borderRadius: 7, background: C.card2, border: `1px solid ${C.brd}`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, flexShrink: 0 }}>
               {p.icon}
             </div>
             <div>
@@ -517,761 +727,194 @@ function BehaviorPatterns({ cl, clientCheckIns, clientBookings }) {
   );
 }
 
-// ─── Attendance Heatmap ───────────────────────────────────────────────────────
-function AttendanceHeatmap({ clientCheckIns }) {
-  // Build 12-week heatmap (Mon–Sun)
-  const cells = useMemo(() => {
-    const today = new Date();
-    const weeks = 14;
-    const grid = [];
-    // Start from Monday 'weeks' weeks ago
-    const startDay = new Date(today);
-    startDay.setDate(today.getDate() - (today.getDay() || 7) + 1 - (weeks - 1) * 7);
-
-    const checkSet = new Set(
-      clientCheckIns.map(c => {
-        const d = new Date(c.check_in_date);
-        return `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
-      })
-    );
-
-    for (let w = 0; w < weeks; w++) {
-      const week = [];
-      for (let d = 0; d < 7; d++) {
-        const date = new Date(startDay);
-        date.setDate(startDay.getDate() + w * 7 + d);
-        const key = `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`;
-        const isCheckedIn = checkSet.has(key);
-        const isFuture = date > today;
-        week.push({ date, checked: isCheckedIn, future: isFuture, key });
-      }
-      grid.push(week);
-    }
-    return grid;
-  }, [clientCheckIns]);
-
-  const totalCheckins = cells.flat().filter(c => c.checked).length;
-  const DAYS = ['M','T','W','T','F','S','S'];
-
-  return (
-    <Card label="Attendance Heatmap" icon={Activity} sub={`${totalCheckins} check-ins in the last 14 weeks`}>
-      <div style={{ display: 'flex', gap: 4 }}>
-        {/* Day labels */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 3, paddingTop: 0 }}>
-          {DAYS.map((d, i) => (
-            <div key={i} style={{ width: 12, height: 14, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 9, color: C.t4, fontWeight: 600 }}>{d}</div>
-          ))}
-        </div>
-        {/* Grid */}
-        <div style={{ flex: 1, overflowX: 'auto', scrollbarWidth: 'none' }}>
-          <div style={{ display: 'flex', gap: 3, minWidth: 'max-content' }}>
-            {cells.map((week, wi) => (
-              <div key={wi} style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-                {week.map((cell, di) => {
-                  const intensity = cell.checked ? 1 : 0;
-                  const bg = cell.future
-                    ? 'transparent'
-                    : cell.checked
-                      ? C.accent
-                      : C.surfaceEl;
-                  const border = cell.future ? `1px dashed ${C.t4}` : `1px solid ${cell.checked ? C.accentBrd : C.border}`;
-                  return (
-                    <div
-                      key={di}
-                      className="heatmap-cell"
-                      title={`${cell.date.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' })}${cell.checked ? ' ✓' : ''}`}
-                      style={{ width: 14, height: 14, background: bg, border, opacity: cell.future ? 0.2 : cell.checked ? 1 : 0.7, boxShadow: cell.checked ? `0 0 6px ${C.accent}40` : 'none' }}
-                    />
-                  );
-                })}
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-      {/* Legend */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 10 }}>
-        <span style={{ fontSize: 9, color: C.t4 }}>Less</span>
-        {[C.surfaceEl, `${C.accent}40`, `${C.accent}70`, C.accent].map((c, i) => (
-          <div key={i} style={{ width: 10, height: 10, borderRadius: 2, background: c, border: `1px solid ${C.border}` }} />
-        ))}
-        <span style={{ fontSize: 9, color: C.t4 }}>More</span>
-      </div>
-    </Card>
-  );
-}
-
-// ─── Engagement Timeline ──────────────────────────────────────────────────────
-const TL_CONFIG = {
-  attended:  { color: C.success, label: 'Attended',  icon: '✓' },
-  no_show:   { color: C.danger,  label: 'No-show',   icon: '✗' },
-  cancelled: { color: C.warn,    label: 'Cancelled', icon: '—' },
-  message:   { color: C.accent,  label: 'Message',   icon: '✉' },
-  workout:   { color: C.purple,  label: 'Workout',   icon: '⚡' },
-};
-
-function EngagementTimeline({ clientBookings, clientCheckIns }) {
-  const [expanded, setExpanded] = useState(false);
-
-  const events = useMemo(() => {
-    const ev = [];
-    clientBookings.forEach(b => {
-      const type = b.status === 'attended' ? 'attended' : b.status === 'no_show' ? 'no_show' : 'cancelled';
-      ev.push({ type, date: b.session_date ? new Date(b.session_date) : null, label: b.session_name || 'Session', sub: type === 'attended' ? 'Completed' : type === 'no_show' ? 'Client did not attend' : 'Session cancelled' });
-    });
-    clientCheckIns.forEach(c => {
-      ev.push({ type: 'attended', date: new Date(c.check_in_date), label: 'Gym Check-in', sub: 'Visited the gym' });
-    });
-    return ev.sort((a, b) => (b.date || 0) - (a.date || 0)).slice(0, expanded ? 20 : 6);
-  }, [clientBookings, clientCheckIns, expanded]);
-
-  const timeStr = date => {
-    if (!date) return '—';
-    const mins = Math.floor((Date.now() - date) / 60000);
-    if (mins < 60) return `${mins}m ago`;
-    if (mins < 1440) return `${Math.floor(mins / 60)}h ago`;
-    if (mins < 10080) return `${Math.floor(mins / 1440)}d ago`;
-    return date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
-  };
-
-  return (
-    <Card label="Engagement Timeline" icon={Activity}>
-      {events.length === 0 ? (
-        <div style={{ textAlign: 'center', padding: '24px 0', color: C.t3, fontSize: 12 }}>No activity recorded yet</div>
-      ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
-          {events.map((ev, i) => {
-            const cfg = TL_CONFIG[ev.type] || TL_CONFIG.attended;
-            const isLast = i === events.length - 1;
-            return (
-              <div key={i} style={{ display: 'flex', gap: 12, paddingBottom: isLast ? 0 : 2 }}>
-                {/* Timeline rail */}
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flexShrink: 0, width: 20 }}>
-                  <div style={{ width: 18, height: 18, borderRadius: '50%', background: `${cfg.color}14`, border: `1.5px solid ${cfg.color}35`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 8, color: cfg.color, fontWeight: 700, marginTop: 6, flexShrink: 0 }}>
-                    {cfg.icon}
-                  </div>
-                  {!isLast && <div style={{ width: 1, flex: 1, minHeight: 14, background: C.divider, margin: '3px 0' }} />}
-                </div>
-                {/* Content */}
-                <div className="row-hover" style={{ flex: 1, padding: '5px 8px', marginBottom: 2 }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
-                    <span style={{ fontSize: 12, fontWeight: 600, color: C.t1 }}>{ev.label}</span>
-                    <span className="mono" style={{ fontSize: 10, color: C.t4, marginLeft: 12, flexShrink: 0 }}>{timeStr(ev.date)}</span>
-                  </div>
-                  <div style={{ fontSize: 11, color: C.t3, marginTop: 1 }}>{ev.sub}</div>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      )}
-      {(clientBookings.length + clientCheckIns.length) > 6 && (
-        <button className="ccc-btn" onClick={() => setExpanded(e => !e)}
-          style={{ width: '100%', marginTop: 10, padding: '8px', borderRadius: 9, background: C.surfaceEl, border: `1px solid ${C.border}`, fontSize: 11, fontWeight: 600, color: C.t2, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5, fontFamily: 'inherit' }}>
-          {expanded ? <><ChevronUp style={{ width: 11, height: 11 }} /> Show less</> : <><ChevronDown style={{ width: 11, height: 11 }} /> Show more events</>}
-        </button>
-      )}
-    </Card>
-  );
-}
-
-// ─── Session History ──────────────────────────────────────────────────────────
-function SessionHistory({ clientBookings, onBook }) {
-  const sessions = useMemo(() =>
-    clientBookings.slice(0, 8).map(b => ({
-      date: b.session_date ? new Date(b.session_date).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' }) : '—',
-      time: b.session_date ? new Date(b.session_date).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }) : '—',
-      name: b.session_name || 'Training Session',
-      status: b.status === 'attended' ? 'attended' : b.status === 'no_show' ? 'no_show' : 'cancelled',
-    })), [clientBookings]);
-
-  const statusCfg = { attended: { color: C.success, label: 'Done' }, no_show: { color: C.danger, label: 'No-show' }, cancelled: { color: C.warn, label: 'Cancelled' } };
-
-  return (
-    <Card label="Session History" icon={Calendar} action="Book" onAction={onBook}>
-      {sessions.length === 0 ? (
-        <div style={{ textAlign: 'center', padding: '20px 0' }}>
-          <Calendar style={{ width: 28, height: 28, color: C.t4, margin: '0 auto 8px' }} />
-          <div style={{ fontSize: 13, fontWeight: 600, color: C.t2, marginBottom: 4 }}>No sessions yet</div>
-          <button className="action-primary" onClick={onBook} style={{ margin: '0 auto', fontSize: 12, padding: '8px 16px' }}>
-            <Calendar style={{ width: 12, height: 12 }} /> Book first session
-          </button>
-        </div>
-      ) : (
-        <div>
-          {/* Summary dots */}
-          <div style={{ display: 'flex', gap: 4, marginBottom: 14 }}>
-            {sessions.map((s, i) => {
-              const color = statusCfg[s.status]?.color || C.t3;
-              return (
-                <div key={i} title={`${s.date} — ${statusCfg[s.status]?.label}`}
-                  style={{ flex: 1, height: 4, borderRadius: 99, background: color, opacity: 0.7 }} />
-              );
-            })}
-          </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-            {sessions.map((s, i) => (
-              <div key={i} className="row-hover" style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '7px 8px' }}>
-                <div style={{ width: 6, height: 6, borderRadius: '50%', background: statusCfg[s.status]?.color || C.t3, flexShrink: 0 }} />
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontSize: 12, fontWeight: 500, color: C.t1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{s.name}</div>
-                  <div className="mono" style={{ fontSize: 10, color: C.t3 }}>{s.date} · {s.time}</div>
-                </div>
-                <span style={{ fontSize: 10, fontWeight: 700, color: statusCfg[s.status]?.color, background: `${statusCfg[s.status]?.color}10`, border: `1px solid ${statusCfg[s.status]?.color}20`, borderRadius: 99, padding: '2px 9px', flexShrink: 0 }}>
-                  {statusCfg[s.status]?.label}
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-    </Card>
-  );
-}
-
-// ─── Workout Engagement ───────────────────────────────────────────────────────
-function WorkoutEngagement({ clientWorkouts, onAssign }) {
-  const [open, setOpen] = useState(null);
-  const workouts = useMemo(() =>
-    clientWorkouts.map(w => ({
-      name: w.workout_data?.name || 'Workout Plan',
-      pct: w.is_activated ? 100 : 0,
-      completed: w.is_activated ? (w.workout_data?.exercises?.length || 1) : 0,
-      total: w.workout_data?.exercises?.length || 1,
-      assigned: w.assigned_date ? new Date(w.assigned_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }) : '—',
-      active: !!w.is_activated,
-    })), [clientWorkouts]);
-
-  const avgPct = workouts.length ? Math.round(workouts.reduce((a, w) => a + w.pct, 0) / workouts.length) : 0;
-
-  return (
-    <Card label="Workout Engagement" icon={Dumbbell} iconColor={C.purple} action="Assign" onAction={onAssign}
-      sub={workouts.length ? `${avgPct}% avg completion · ${workouts.length} plans` : undefined}>
-      {workouts.length === 0 ? (
-        <div style={{ textAlign: 'center', padding: '20px 0' }}>
-          <Dumbbell style={{ width: 28, height: 28, color: C.t4, margin: '0 auto 8px' }} />
-          <div style={{ fontSize: 13, fontWeight: 600, color: C.t2, marginBottom: 4 }}>No workouts assigned</div>
-          <button className="action-ghost" onClick={onAssign} style={{ margin: '0 auto', fontSize: 12, padding: '8px 16px' }}>
-            <Plus style={{ width: 12, height: 12 }} /> Assign first workout
-          </button>
-        </div>
-      ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-          {workouts.map((w, i) => (
-            <div key={i} style={{ borderRadius: 10, background: C.surfaceEl, border: `1px solid ${C.border}`, overflow: 'hidden' }}>
-              <div className="row-hover" onClick={() => setOpen(open === i ? null : i)}
-                style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '11px 13px', cursor: 'pointer' }}>
-                {/* Color bar */}
-                <div style={{ width: 3, height: 32, borderRadius: 99, background: w.pct >= 80 ? C.success : w.pct >= 40 ? C.accent : C.danger, flexShrink: 0 }} />
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontSize: 12, fontWeight: 600, color: C.t1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', marginBottom: 6 }}>{w.name}</div>
-                  {/* Progress */}
-                  <div style={{ height: 3, borderRadius: 99, background: 'rgba(255,255,255,0.06)' }}>
-                    <div style={{ height: '100%', width: `${w.pct}%`, borderRadius: 99, background: w.pct >= 80 ? C.success : w.pct >= 40 ? C.accent : C.danger, transition: 'width .6s' }} />
-                  </div>
-                </div>
-                <div className="mono" style={{ fontSize: 18, fontWeight: 500, color: w.pct < 40 ? C.danger : C.t1, letterSpacing: '-0.03em', flexShrink: 0 }}>{w.pct}%</div>
-                {open === i ? <ChevronUp style={{ width: 11, height: 11, color: C.t4 }} /> : <ChevronDown style={{ width: 11, height: 11, color: C.t4 }} />}
-              </div>
-              <AnimatePresence>
-                {open === i && (
-                  <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.15 }}
-                    style={{ overflow: 'hidden', borderTop: `1px solid ${C.divider}` }}>
-                    <div style={{ padding: '10px 13px 11px 29px', display: 'flex', gap: 18 }}>
-                      <div><Lbl style={{ marginBottom: 3 }}>Exercises</Lbl><div className="mono" style={{ fontSize: 14, fontWeight: 500, color: C.t1 }}>{w.completed}/{w.total}</div></div>
-                      <div><Lbl style={{ marginBottom: 3 }}>Assigned</Lbl><div className="mono" style={{ fontSize: 14, fontWeight: 500, color: C.t1 }}>{w.assigned}</div></div>
-                      <div><Lbl style={{ marginBottom: 3 }}>Status</Lbl><div style={{ fontSize: 11, fontWeight: 700, color: w.active ? C.success : C.warn }}>{w.active ? 'Active' : 'Not started'}</div></div>
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
-          ))}
-        </div>
-      )}
-    </Card>
-  );
-}
-
-// ─── Client Info Sidebar ──────────────────────────────────────────────────────
+// ─── Client Info ──────────────────────────────────────────────────────────────
 function ClientInfo({ cl }) {
   const rows = [
-    { icon: Mail,   v: cl.email    || '—', label: 'Email' },
-    { icon: Phone,  v: cl.phone    || '—', label: 'Phone' },
-    { icon: MapPin, v: cl.location || '—', label: 'Location' },
-    { icon: User,   v: cl.joined ? `Member since ${cl.joined}` : '—', label: 'Joined' },
-    { icon: Target, v: cl.goal     || '—', label: 'Goal' },
+    { icon: Mail,   val: cl.email,    label: "Email"    },
+    { icon: Phone,  val: cl.phone,    label: "Phone"    },
+    { icon: MapPin, val: cl.location, label: "Location" },
+    { icon: User,   val: cl.joined ? `Since ${cl.joined}` : "—", label: "Member" },
+    { icon: Target, val: cl.goal,     label: "Goal"     },
   ];
   return (
     <Card label="Client Info" icon={User}>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
-        {rows.map(({ icon: Ic, v, label }) => (
-          <div key={label} className="row-hover" style={{ display: 'flex', alignItems: 'center', gap: 9, padding: '4px 6px' }}>
-            <div style={{ width: 22, height: 22, borderRadius: 6, background: C.surfaceEl, border: `1px solid ${C.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-              <Ic style={{ width: 10, height: 10, color: C.t3 }} />
+      <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
+        {rows.map(({ icon: Ic, val, label }) => (
+          <div key={label} className="row-hover" style={{ display: "flex", alignItems: "center", gap: 9, padding: "5px 7px" }}>
+            <div style={{ width: 20, height: 20, borderRadius: 5, background: C.card2, border: `1px solid ${C.brd}`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+              <Ic style={{ width: 9, height: 9, color: C.t3 }} />
             </div>
             <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontSize: 9, fontWeight: 600, color: C.t4, textTransform: 'uppercase', letterSpacing: '.08em', marginBottom: 1 }}>{label}</div>
-              <div style={{ fontSize: 12, color: C.t1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{v}</div>
+              <div style={{ fontSize: 9, fontWeight: 700, color: C.t3, textTransform: "uppercase", letterSpacing: ".07em", marginBottom: 1 }}>{label}</div>
+              <div style={{ fontSize: 12, color: C.t1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{val || "—"}</div>
             </div>
           </div>
         ))}
         {cl.tags?.length > 0 && (
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5, marginTop: 4 }}>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 5, marginTop: 4 }}>
             {cl.tags.map(t => (
-              <span key={t} className="tag-pill" style={{ background: C.accentSub, border: `1px solid ${C.accentBrd}`, color: C.accent }}>{t}</span>
+              <span key={t} style={{ fontSize: 10.5, fontWeight: 700, padding: "3px 9px", borderRadius: 99, background: C.cyanDim, border: `1px solid ${C.cyanBrd}`, color: C.cyan }}>{t}</span>
             ))}
           </div>
         )}
       </div>
     </Card>
-  );
-}
-
-// ─── Retention Risk Gauge ─────────────────────────────────────────────────────
-function RetentionRisk({ cl }) {
-  const score = cl.retention_status === 'at_risk' ? 82 : cl.retention_status === 'needs_attention' ? 48 : 18;
-  const color = score >= 70 ? C.danger : score >= 40 ? C.warn : C.success;
-  const label = score >= 70 ? 'High Risk' : score >= 40 ? 'Moderate' : 'Healthy';
-
-  // SVG arc
-  const r = 32, cx = 44, cy = 44, strokeW = 6;
-  const startAngle = -210, endAngle = 30; // 240° arc
-  const totalArc = endAngle - startAngle;
-  const circ = 2 * Math.PI * r;
-  const arcFraction = totalArc / 360;
-  const dashTotal = circ * arcFraction;
-  const dashFill = dashTotal * (score / 100);
-  const toRad = deg => (deg * Math.PI) / 180;
-
-  // Convert to SVG coords
-  const arcPath = (start, end, radius) => {
-    const s = { x: cx + radius * Math.cos(toRad(start)), y: cy + radius * Math.sin(toRad(start)) };
-    const e = { x: cx + radius * Math.cos(toRad(end)),   y: cy + radius * Math.sin(toRad(end)) };
-    const large = end - start > 180 ? 1 : 0;
-    return `M ${s.x} ${s.y} A ${radius} ${radius} 0 ${large} 1 ${e.x} ${e.y}`;
-  };
-
-  const factors = [
-    cl.retention_status === 'at_risk'  && { label: 'Inactivity',       sev: 'H' },
-    !cl.next_session                   && { label: 'No upcoming session', sev: 'H' },
-    cl.completion_pct < 50             && { label: 'Low completion',    sev: 'M' },
-    cl.visits_per_week < 2             && { label: 'Low frequency',     sev: 'M' },
-    cl.no_show_rate > 15               && { label: 'No-show pattern',   sev: 'M' },
-  ].filter(Boolean);
-
-  return (
-    <div className="ccc-card" style={{ borderLeft: score >= 70 ? `2.5px solid ${C.danger}` : 'none' }}>
-      <CardHead label="Retention Risk" icon={AlertTriangle} iconColor={color} />
-      <div style={{ padding: '14px 16px' }}>
-        {/* Gauge */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 14 }}>
-          <svg width={88} height={66} viewBox="0 0 88 66" style={{ flexShrink: 0, overflow: 'visible' }}>
-            {/* Track */}
-            <path d={arcPath(startAngle, endAngle, r)} fill="none" stroke="rgba(255,255,255,0.05)" strokeWidth={strokeW} strokeLinecap="round" />
-            {/* Fill */}
-            <path d={arcPath(startAngle, endAngle, r)} fill="none" stroke={color} strokeWidth={strokeW} strokeLinecap="round"
-              strokeDasharray={`${dashFill} ${dashTotal - dashFill}`}
-              style={{ filter: `drop-shadow(0 0 6px ${color}60)` }} />
-            {/* Score */}
-            <text x={cx} y={cy + 6} textAnchor="middle" fill={color} fontSize={20} fontWeight={700} fontFamily="DM Mono,monospace">{score}</text>
-          </svg>
-          <div>
-            <div style={{ fontSize: 16, fontWeight: 700, color, letterSpacing: '-0.02em' }}>{label}</div>
-            <div style={{ fontSize: 11, color: C.t3, marginTop: 2 }}>Risk score / 100</div>
-          </div>
-        </div>
-
-        {/* Risk factors */}
-        {factors.length > 0 && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
-            {factors.map(({ label: fl, sev }) => (
-              <div key={fl} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span style={{ fontSize: 11, color: C.t2 }}>{fl}</span>
-                <span style={{ fontSize: 9, fontWeight: 800, color: sev === 'H' ? C.danger : C.warn, background: sev === 'H' ? C.dangerSub : C.warnSub, border: `1px solid ${sev === 'H' ? C.dangerBrd : C.warnBrd}`, borderRadius: 99, padding: '2px 8px', letterSpacing: '.06em' }}>{sev}</span>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
-
-// ─── Snapshot Stats ───────────────────────────────────────────────────────────
-function SnapshotStats({ cl, clientCheckIns, clientBookings }) {
-  const stats = [
-    { label: 'Total Sessions',  value: cl.total_sessions || clientBookings.length, mono: true },
-    { label: 'Check-ins',       value: clientCheckIns.length, mono: true },
-    { label: 'No-show Rate',    value: `${cl.no_show_rate}%`,   warn: cl.no_show_rate > 15, mono: true },
-    { label: 'Completion',      value: `${cl.completion_pct}%`, warn: cl.completion_pct < 50, mono: true },
-  ];
-  return (
-    <Card label="Snapshot" icon={BarChart2}>
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
-        {stats.map(({ label, value, warn, mono }) => (
-          <div key={label} style={{ padding: '10px 11px', borderRadius: 9, background: C.surfaceEl, border: `1px solid ${C.border}` }}>
-            <Lbl style={{ marginBottom: 5 }}>{label}</Lbl>
-            <div className={mono ? 'mono' : ''} style={{ fontSize: 18, fontWeight: 500, color: warn ? C.danger : C.t1, letterSpacing: '-0.03em' }}>{value}</div>
-          </div>
-        ))}
-      </div>
-    </Card>
-  );
-}
-
-// ─── Client Profile Editor ────────────────────────────────────────────────────
-// Saves to UserProfile entity — directly reflected on the member app Profile page.
-// Fields mirror what's shown on the CoachProfileModal on the gym community page.
-function ClientProfileEditor({ cl }) {
-  const queryClient = useQueryClient();
-
-  const { data: profiles = [], isLoading } = useQuery({
-    queryKey: ['clientUserProfile', cl.user_id],
-    queryFn: () => base44.entities.UserProfile.filter({ user_id: cl.user_id }),
-    enabled: !!cl.user_id,
-    staleTime: 2 * 60 * 1000,
-  });
-
-  const profile = profiles[0] || null;
-
-  const EMPTY_FORM = {
-    display_name:    '',
-    bio:             '',
-    workout_split:   '',
-    gym_location:    '',
-    avatar_url:      '',
-  };
-
-  const [editing, setEditing]   = useState(false);
-  const [form, setForm]         = useState(EMPTY_FORM);
-  // specialties, certifications, languages as comma-separated strings for editing
-  const [specialtiesStr,     setSpecialtiesStr]     = useState('');
-  const [certificationsStr,  setCertificationsStr]  = useState('');
-  const [languagesStr,       setLanguagesStr]        = useState('');
-
-  useEffect(() => {
-    if (profile) {
-      setForm({
-        display_name:  profile.display_name  || '',
-        bio:           profile.bio           || '',
-        workout_split: profile.workout_split || '',
-        gym_location:  profile.gym_location  || '',
-        avatar_url:    profile.avatar_url    || '',
-      });
-      setSpecialtiesStr((profile.specialties || []).join(', '));
-      setCertificationsStr((profile.certifications || []).join(', '));
-      setLanguagesStr((profile.languages || []).join(', '));
-    }
-  }, [profile?.id]);
-
-  const saveMutation = useMutation({
-    mutationFn: async (data) => {
-      if (profile) {
-        return base44.entities.UserProfile.update(profile.id, data);
-      } else {
-        return base44.entities.UserProfile.create({ user_id: cl.user_id, ...data });
-      }
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['clientUserProfile', cl.user_id] });
-      setEditing(false);
-      toast.success('Member profile updated — visible in the app immediately');
-    },
-  });
-
-  const handleSave = () => {
-    saveMutation.mutate({
-      ...form,
-      specialties:    specialtiesStr.split(',').map(s => s.trim()).filter(Boolean),
-      certifications: certificationsStr.split(',').map(s => s.trim()).filter(Boolean),
-      languages:      languagesStr.split(',').map(s => s.trim()).filter(Boolean),
-    });
-  };
-
-  const inp = { width: '100%', boxSizing: 'border-box', background: C.surfaceEl, border: `1px solid ${C.border}`, borderRadius: 9, color: C.t1, fontSize: 12, outline: 'none', padding: '9px 11px', fontFamily: 'Figtree,system-ui,sans-serif', transition: 'border-color .15s' };
-  const focus = e => { e.currentTarget.style.borderColor = C.accentBrd; };
-  const blur  = e => { e.currentTarget.style.borderColor = C.border; };
-
-  const profileUrl = `/Profile`;
-
-  // Summary rows shown in view mode
-  const summaryFields = [
-    { label: 'Display Name',   val: form.display_name },
-    { label: 'Bio',            val: form.bio, wrap: true },
-    { label: 'Workout Split',  val: form.workout_split },
-    { label: 'Location',       val: form.gym_location },
-    { label: 'Specialties',    val: specialtiesStr },
-    { label: 'Certifications', val: certificationsStr },
-    { label: 'Languages',      val: languagesStr },
-  ];
-
-  return (
-    <div className="ccc-card">
-      <CardHead
-        label="Member App Profile"
-        icon={User}
-        iconColor={C.accent}
-        sub="Changes appear live on member app"
-        action={editing ? null : 'Edit'}
-        onAction={() => setEditing(true)}
-      />
-      <div style={{ padding: '14px 16px' }}>
-
-        {/* Link to member app */}
-        <a href={profileUrl} target="_blank" rel="noopener noreferrer"
-          style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '8px 11px', marginBottom: 14, borderRadius: 9, background: C.accentSub, border: `1px solid ${C.accentBrd}`, textDecoration: 'none', transition: 'background .14s' }}
-          onMouseEnter={e => e.currentTarget.style.background = 'rgba(59,130,246,0.14)'}
-          onMouseLeave={e => e.currentTarget.style.background = C.accentSub}>
-          <ExternalLink style={{ width: 11, height: 11, color: C.accent, flexShrink: 0 }} />
-          <span style={{ fontSize: 11.5, fontWeight: 700, color: C.accent }}>View Member Profile in App</span>
-        </a>
-
-        {!editing ? (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
-            {isLoading ? (
-              <div style={{ fontSize: 12, color: C.t3 }}>Loading…</div>
-            ) : !profile ? (
-              <div style={{ fontSize: 11, color: C.t3 }}>
-                No profile configured yet — click <strong style={{ color: C.t2 }}>Edit</strong> to set it up.
-              </div>
-            ) : summaryFields.map(({ label, val, wrap }) => (
-              <div key={label} className="row-hover" style={{ display: 'flex', alignItems: 'flex-start', gap: 8, padding: '4px 6px', borderRadius: 6 }}>
-                <div style={{ fontSize: 9, fontWeight: 700, color: C.t4, textTransform: 'uppercase', letterSpacing: '.08em', minWidth: 80, paddingTop: 1, flexShrink: 0 }}>{label}</div>
-                <div style={{ fontSize: 12, color: val ? C.t1 : C.t3, lineHeight: 1.5, flex: 1, overflow: 'hidden', textOverflow: wrap ? 'unset' : 'ellipsis', whiteSpace: wrap ? 'normal' : 'nowrap' }}>
-                  {val || '—'}
-                </div>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-
-            {/* Avatar URL */}
-            <div>
-              <div style={{ fontSize: 9, fontWeight: 700, color: C.t3, textTransform: 'uppercase', letterSpacing: '.1em', marginBottom: 5 }}>Avatar URL</div>
-              <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                {form.avatar_url && (
-                  <img src={form.avatar_url} alt="avatar" style={{ width: 36, height: 36, borderRadius: '50%', objectFit: 'cover', border: `1px solid ${C.border}`, flexShrink: 0 }} onError={e => e.target.style.display = 'none'} />
-                )}
-                <input value={form.avatar_url} onChange={e => setForm(p => ({ ...p, avatar_url: e.target.value }))}
-                  placeholder="https://…" style={{ ...inp, flex: 1 }} onFocus={focus} onBlur={blur} />
-              </div>
-            </div>
-
-            {/* Display Name */}
-            <div>
-              <div style={{ fontSize: 9, fontWeight: 700, color: C.t3, textTransform: 'uppercase', letterSpacing: '.1em', marginBottom: 5 }}>Display Name</div>
-              <input value={form.display_name} onChange={e => setForm(p => ({ ...p, display_name: e.target.value }))}
-                placeholder="Name shown on their profile" style={inp} onFocus={focus} onBlur={blur} />
-            </div>
-
-            {/* Bio */}
-            <div>
-              <div style={{ fontSize: 9, fontWeight: 700, color: C.t3, textTransform: 'uppercase', letterSpacing: '.1em', marginBottom: 5 }}>Bio / About</div>
-              <textarea value={form.bio} onChange={e => setForm(p => ({ ...p, bio: e.target.value }))}
-                placeholder="Short public bio visible on their profile…" rows={3}
-                style={{ ...inp, resize: 'none', lineHeight: 1.6 }} onFocus={focus} onBlur={blur} />
-            </div>
-
-            {/* Location */}
-            <div>
-              <div style={{ fontSize: 9, fontWeight: 700, color: C.t3, textTransform: 'uppercase', letterSpacing: '.1em', marginBottom: 5 }}>Location</div>
-              <input value={form.gym_location} onChange={e => setForm(p => ({ ...p, gym_location: e.target.value }))}
-                placeholder="e.g. London, UK" style={inp} onFocus={focus} onBlur={blur} />
-            </div>
-
-            {/* Workout Split */}
-            <div>
-              <div style={{ fontSize: 9, fontWeight: 700, color: C.t3, textTransform: 'uppercase', letterSpacing: '.1em', marginBottom: 5 }}>Current Workout Split</div>
-              <input value={form.workout_split} onChange={e => setForm(p => ({ ...p, workout_split: e.target.value }))}
-                placeholder="e.g. Push / Pull / Legs" style={inp} onFocus={focus} onBlur={blur} />
-            </div>
-
-            {/* Specialties */}
-            <div>
-              <div style={{ fontSize: 9, fontWeight: 700, color: C.t3, textTransform: 'uppercase', letterSpacing: '.1em', marginBottom: 4 }}>Specialties</div>
-              <div style={{ fontSize: 10, color: C.t3, marginBottom: 5 }}>Comma-separated, e.g. Strength, HIIT, Nutrition</div>
-              <input value={specialtiesStr} onChange={e => setSpecialtiesStr(e.target.value)}
-                placeholder="Strength, HIIT, Fat Loss…" style={inp} onFocus={focus} onBlur={blur} />
-            </div>
-
-            {/* Certifications */}
-            <div>
-              <div style={{ fontSize: 9, fontWeight: 700, color: C.t3, textTransform: 'uppercase', letterSpacing: '.1em', marginBottom: 4 }}>Certifications</div>
-              <div style={{ fontSize: 10, color: C.t3, marginBottom: 5 }}>Comma-separated, e.g. NASM CPT, Level 3 PT</div>
-              <input value={certificationsStr} onChange={e => setCertificationsStr(e.target.value)}
-                placeholder="NASM CPT, Level 3 PT…" style={inp} onFocus={focus} onBlur={blur} />
-            </div>
-
-            {/* Languages */}
-            <div>
-              <div style={{ fontSize: 9, fontWeight: 700, color: C.t3, textTransform: 'uppercase', letterSpacing: '.1em', marginBottom: 5 }}>Languages</div>
-              <input value={languagesStr} onChange={e => setLanguagesStr(e.target.value)}
-                placeholder="English, Spanish…" style={inp} onFocus={focus} onBlur={blur} />
-            </div>
-
-            <div style={{ display: 'flex', gap: 7, marginTop: 2 }}>
-              <button className="action-primary"
-                onClick={handleSave}
-                disabled={saveMutation.isPending}
-                style={{ flex: 1, fontSize: 12, padding: '9px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
-                {saveMutation.isPending
-                  ? <><Loader2 style={{ width: 12, height: 12, animation: 'spin 0.7s linear infinite' }} /> Saving…</>
-                  : <><Save style={{ width: 12, height: 12 }} /> Save to Member App</>
-                }
-              </button>
-              <button className="action-ghost"
-                onClick={() => setEditing(false)}
-                style={{ fontSize: 12, padding: '9px 14px' }}>
-                Cancel
-              </button>
-            </div>
-          </div>
-        )}
-      </div>
-    </div>
   );
 }
 
 // ─── Quick Actions ────────────────────────────────────────────────────────────
-function QuickActionButton({ label, icon: Ic, fn }) {
-  const [hov, setHov] = useState(false);
-  return (
-    <button key={label} onClick={fn} onMouseEnter={() => setHov(true)} onMouseLeave={() => setHov(false)}
-      style={{ display: 'flex', alignItems: 'center', gap: 9, padding: '9px 11px', borderRadius: 9, background: hov ? C.surfaceEl : 'rgba(255,255,255,0.02)', border: `1px solid ${hov ? C.borderEl : C.border}`, fontSize: 12, fontWeight: 600, color: hov ? C.t1 : C.t2, cursor: 'pointer', fontFamily: 'inherit', transition: 'all .12s', textAlign: 'left', width: '100%' }}>
-      <div style={{ width: 24, height: 24, borderRadius: 7, background: C.surfaceEl, border: `1px solid ${C.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-        <Ic style={{ width: 11, height: 11, color: C.t3 }} />
-      </div>
-      {label}
-      <ChevronRight style={{ width: 10, height: 10, marginLeft: 'auto', color: C.t4 }} />
-    </button>
-  );
-}
-
 function QuickActions({ onMessage, onBook, onAssign }) {
   const actions = [
-    { label: 'Send check-in message', icon: MessageSquare, fn: onMessage },
-    { label: 'Book next session',     icon: Calendar,      fn: onBook    },
-    { label: 'Assign workout',        icon: Dumbbell,      fn: onAssign  },
+    { label: "Send check-in message", icon: MessageSquare, fn: onMessage },
+    { label: "Book next session",     icon: Calendar,      fn: onBook    },
+    { label: "Assign workout",        icon: Dumbbell,      fn: onAssign  },
   ];
   return (
-    <Card label="Quick Actions" icon={Zap} iconColor={C.warn}>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
-        {actions.map((action) => (
-          <QuickActionButton key={action.label} {...action} />
+    <Card label="Quick Actions" icon={Zap} iconColor={C.amber}>
+      <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+        {actions.map(({ label, icon: Ic, fn }) => (
+          <button key={label} onClick={fn}
+            style={{ display: "flex", alignItems: "center", gap: 9, padding: "9px 11px", borderRadius: 8, background: "rgba(255,255,255,0.02)", border: `1px solid ${C.brd}`, fontSize: 12, fontWeight: 600, color: C.t2, cursor: "pointer", fontFamily: FONT, transition: "all .12s", textAlign: "left", width: "100%" }}
+            onMouseEnter={e => { e.currentTarget.style.borderColor = C.cyanBrd; e.currentTarget.style.color = C.t1; e.currentTarget.style.background = C.cyanDim; }}
+            onMouseLeave={e => { e.currentTarget.style.borderColor = C.brd; e.currentTarget.style.color = C.t2; e.currentTarget.style.background = "rgba(255,255,255,0.02)"; }}>
+            <div style={{ width: 22, height: 22, borderRadius: 6, background: C.card2, border: `1px solid ${C.brd}`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+              <Ic style={{ width: 10, height: 10, color: C.t3 }} />
+            </div>
+            {label}
+            <ChevronRight style={{ width: 9, height: 9, marginLeft: "auto", color: C.t3 }} />
+          </button>
         ))}
       </div>
     </Card>
   );
 }
 
-// ─── Weekly Frequency Bars ────────────────────────────────────────────────────
-function FrequencyBars({ clientCheckIns }) {
-  const weeks = useMemo(() => Array.from({ length: 8 }, (_, i) => {
-    const end   = new Date(Date.now() - i * 7 * 86400000);
-    const start = new Date(+end - 7 * 86400000);
-    const count = clientCheckIns.filter(c => { const d = new Date(c.check_in_date); return d >= start && d < end; }).length;
-    return { label: `W${8-i}`, count };
-  }).reverse(), [clientCheckIns]);
+// ─── Right Sidebar ────────────────────────────────────────────────────────────
+function RightSidebar({ cl, clientCheckIns, clientBookings }) {
+  const attended = clientBookings.filter(b => b.status === "attended").length;
+  const total    = clientBookings.length;
+  const attendPct = total > 0 ? Math.round((attended / total) * 100) : 0;
 
-  const max = Math.max(...weeks.map(w => w.count), 1);
+  const r = 30, cx = 40, cy = 40, sw = 6;
+  const toRad = deg => (deg * Math.PI) / 180;
+  const arcPath = (start, end) => {
+    const s = { x: cx + r * Math.cos(toRad(start)), y: cy + r * Math.sin(toRad(start)) };
+    const e = { x: cx + r * Math.cos(toRad(end)),   y: cy + r * Math.sin(toRad(end)) };
+    return `M ${s.x} ${s.y} A ${r} ${r} 0 ${end - start > 180 ? 1 : 0} 1 ${e.x} ${e.y}`;
+  };
+  const dashFill = (2 * Math.PI * r) * (240 / 360) * (attendPct / 100);
+  const dashTotal = (2 * Math.PI * r) * (240 / 360);
+  const dialColor = attendPct < 40 ? C.red : attendPct < 70 ? C.amber : C.green;
+
+  const statCards = [
+    { label: "Total Sessions",  val: clientBookings.length, col: C.cyan  },
+    { label: "Check-ins",       val: clientCheckIns.length, col: C.cyan  },
+    { label: "No-show Rate",    val: `${cl.no_show_rate}%`, col: cl.no_show_rate > 15 ? C.red : C.t1 },
+    { label: "Current Streak",  val: `${cl.streak}d`,       col: cl.streak > 5 ? C.green : C.t1 },
+  ];
 
   return (
-    <Card label="Weekly Frequency" icon={BarChart2} sub="Check-ins per week (last 8 weeks)">
-      <div style={{ display: 'flex', alignItems: 'flex-end', gap: 6, height: 56 }}>
-        {weeks.map((w, i) => {
-          const pct = Math.max((w.count / max) * 100, 4);
-          const color = w.count === 0 ? C.t4 : w.count < 2 ? C.warn : C.accent;
-          const isLast = i === weeks.length - 1;
-          return (
-            <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, height: '100%', justifyContent: 'flex-end' }}>
-              <span className="mono" style={{ fontSize: 10, fontWeight: 500, color, lineHeight: 1 }}>{w.count || ''}</span>
-              <div style={{ width: '100%', borderRadius: '3px 3px 0 0', background: color, opacity: isLast ? 1 : 0.35, height: `${pct}%`, minHeight: 3, transformOrigin: 'bottom', animation: 'bar-grow .4s ease both', animationDelay: `${i * 30}ms` }} />
-              <span style={{ fontSize: 8, fontWeight: 600, color: C.t4 }}>{w.label}</span>
+    <div style={{ width: 236, flexShrink: 0, background: C.sidebar, borderLeft: `1px solid ${C.brd}`, display: "flex", flexDirection: "column", alignSelf: "flex-start", position: "sticky", top: 60 }}>
+      {/* Stats grid */}
+      <div style={{ padding: "14px 16px 12px", borderBottom: `1px solid ${C.brd}` }}>
+        <div style={{ fontSize: 12, fontWeight: 700, color: C.t1, marginBottom: 12 }}>Client Overview</div>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1px", background: C.brd, borderRadius: 10, overflow: "hidden" }}>
+          {statCards.map((s, i) => (
+            <div key={i} style={{ padding: "11px 13px", background: C.card }}>
+              <div style={{ fontSize: 9.5, color: C.t3, textTransform: "uppercase", letterSpacing: ".07em", marginBottom: 4 }}>{s.label}</div>
+              <div className="mono" style={{ fontSize: 19, fontWeight: 600, color: s.col, lineHeight: 1 }}>{s.val}</div>
             </div>
-          );
-        })}
+          ))}
+        </div>
       </div>
-    </Card>
+
+      {/* Attendance dial */}
+      <div style={{ padding: "14px 16px", borderBottom: `1px solid ${C.brd}` }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
+          <span style={{ fontSize: 12, fontWeight: 600, color: C.t1 }}>Attendance Rate</span>
+          <span style={{ fontSize: 10, color: C.t3 }}>all time</span>
+        </div>
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
+          <svg width={80} height={58} viewBox="0 0 80 58" style={{ overflow: "visible" }}>
+            <path d={arcPath(-210, 30)} fill="none" stroke="rgba(255,255,255,0.05)" strokeWidth={sw} strokeLinecap="round" />
+            <path d={arcPath(-210, 30)} fill="none" stroke={dialColor} strokeWidth={sw} strokeLinecap="round"
+              strokeDasharray={`${dashFill} ${dashTotal - dashFill}`}
+              style={{ filter: `drop-shadow(0 0 5px ${dialColor}40)` }} />
+            <text x={cx} y={cx + 4} textAnchor="middle" fill="#fff" fontSize={17} fontWeight={700} fontFamily={MONO}>{attendPct}%</text>
+            <text x={cx} y={cx + 18} textAnchor="middle" fill={dialColor} fontSize={9} fontWeight={700} fontFamily={FONT}>
+              {attendPct >= 70 ? "Good" : attendPct >= 40 ? "Fair" : "Low"}
+            </text>
+          </svg>
+          <div style={{ display: "flex", justifyContent: "space-between", width: "100%", marginTop: 4 }}>
+            <span style={{ fontSize: 9, color: C.t3 }}>0%</span>
+            <span style={{ fontSize: 9, color: C.t3 }}>100%</span>
+          </div>
+          <div style={{ textAlign: "center", fontSize: 11, color: C.t3, marginTop: 6 }}>
+            {attended} of {total} sessions attended
+          </div>
+        </div>
+      </div>
+
+      {/* Insights + risk stacked */}
+      <div style={{ padding: 14, display: "flex", flexDirection: "column", gap: 12 }}>
+        <CriticalInsights cl={cl} clientBookings={clientBookings} clientCheckIns={clientCheckIns} onAction={() => {}} />
+        <RetentionRisk cl={cl} />
+        <BehaviorPatterns cl={cl} clientCheckIns={clientCheckIns} clientBookings={clientBookings} />
+        <ClientInfo cl={cl} />
+        <QuickActions onMessage={() => {}} onBook={() => {}} onAssign={() => {}} />
+      </div>
+    </div>
   );
 }
 
-// ─── Main Export ──────────────────────────────────────────────────────────────
+// ─── Root Component ───────────────────────────────────────────────────────────
 export default function ClientCommandCenter({
-  client:         cl             = EMPTY_CLIENT,
-  onMessage,
-  onBook,
-  onAssign,
-  selectedGym,
-  currentUser,
-  clientCheckIns  = [],
-  clientBookings  = [],
-  clientWorkouts  = [],
+  client          = MOCK_CLIENT,
+  clientCheckIns  = MOCK_CHECKINS,
+  clientBookings  = MOCK_BOOKINGS,
+  clientWorkouts  = MOCK_WORKOUTS,
+  onMessage       = () => {},
+  onBook          = () => {},
+  onAssign        = () => {},
 }) {
-  const [toast_, setToast] = useState(null);
-
-  const act = key => {
-    const map = { message: onMessage, book: onBook, assign: onAssign };
-    map[key]?.();
-    const labels = { message: 'Opening messages…', book: 'Opening booking…', assign: 'Opening workouts…' };
-    setToast(labels[key] || 'Action triggered');
-    setTimeout(() => setToast(null), 2200);
-  };
+  const cl = client;
 
   return (
-    <div className="ccc" id="ccc-scroll-root" style={{ background: C.bg, minHeight: '100vh', overflowY: 'auto' }}>
+    <div className="ccc-root" id="ccc-scroll" style={{ background: C.bg, minHeight: "100vh", overflowY: "auto" }}>
       <style>{GLOBAL_CSS}</style>
 
-      {/* Toast */}
-      <AnimatePresence>
-        {toast_ && (
-          <motion.div initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }} transition={{ duration: 0.15 }}
-            style={{ position: 'fixed', top: 14, left: '50%', transform: 'translateX(-50%)', zIndex: 9999, background: C.surfaceEl, border: `1px solid ${C.borderEl}`, borderRadius: 10, padding: '9px 16px', fontSize: 12, fontWeight: 700, color: C.t1, boxShadow: '0 8px 32px rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', gap: 8, whiteSpace: 'nowrap' }}>
-            <Check style={{ width: 12, height: 12, color: C.success }} /> {toast_}
-          </motion.div>
-        )}
-      </AnimatePresence>
+      <CommandBar cl={cl} onMessage={onMessage} onBook={onBook} onAssign={onAssign} />
 
-      {/* ── Command Bar ─────────────────────────────────────────────────── */}
-      <CommandBar
-        cl={cl}
-        onMessage={() => act('message')}
-        onBook={() => act('book')}
-        onAssign={() => act('assign')}
-      />
+      <div style={{ display: "flex", flex: 1 }}>
+        {/* Main content */}
+        <div style={{ flex: 1, overflowY: "auto", minWidth: 0 }}>
+          <div style={{ padding: "20px 20px 60px 20px" }}>
+            {/* Page heading */}
+            <div style={{ marginBottom: 18, display: "flex", alignItems: "baseline", justifyContent: "space-between" }}>
+              <h1 style={{ fontSize: 22, fontWeight: 800, color: C.t1, margin: 0, letterSpacing: "-0.03em" }}>
+                Client <span style={{ color: C.cyan }}>Profile</span>
+              </h1>
+              <span style={{ fontSize: 11, color: C.t3 }}>Member since {cl.joined}</span>
+            </div>
 
-      {/* ── Content ─────────────────────────────────────────────────────── */}
-      <div style={{ maxWidth: 1380, margin: '0 auto', padding: '20px 28px 80px' }}>
+            {/* NBA Banner */}
+            <div style={{ marginBottom: 14 }}>
+              <NextBestAction cl={cl} onAction={(key) => { if (key === "message") onMessage(); else if (key === "book") onBook(); else onAssign(); }} />
+            </div>
 
-        {/* Next Best Action — full width, always first */}
-        <div style={{ marginBottom: 16 }}>
-          <NextBestAction cl={cl} insights={[]} onAction={act} />
-        </div>
-
-        {/* Main grid: left content + right sidebar */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 280px', gap: 14, alignItems: 'start' }}>
-
-          {/* ── LEFT COLUMN ── */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-            <AttendanceHeatmap clientCheckIns={clientCheckIns} />
-            <FrequencyBars clientCheckIns={clientCheckIns} />
-            <EngagementTimeline clientBookings={clientBookings} clientCheckIns={clientCheckIns} />
-            <SessionHistory clientBookings={clientBookings} onBook={() => act('book')} />
-            <WorkoutEngagement clientWorkouts={clientWorkouts} onAssign={() => act('assign')} />
-          </div>
-
-          {/* ── RIGHT SIDEBAR ── */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 12, position: 'sticky', top: 76 }}>
-            <CriticalInsights cl={cl} clientBookings={clientBookings} clientCheckIns={clientCheckIns} onAction={act} />
-            <BehaviorPatterns cl={cl} clientCheckIns={clientCheckIns} clientBookings={clientBookings} />
-            <RetentionRisk cl={cl} />
-            <SnapshotStats cl={cl} clientCheckIns={clientCheckIns} clientBookings={clientBookings} />
-            <ClientProfileEditor cl={cl} />
-            <ClientInfo cl={cl} />
-            <QuickActions onMessage={() => act('message')} onBook={() => act('book')} onAssign={() => act('assign')} />
+            {/* Main grid */}
+            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+              <SnapshotStats cl={cl} clientCheckIns={clientCheckIns} clientBookings={clientBookings} />
+              <AttendanceHeatmap clientCheckIns={clientCheckIns} />
+              <WeeklyFrequency clientCheckIns={clientCheckIns} />
+              <SessionHistory clientBookings={clientBookings} onBook={onBook} />
+              <WorkoutEngagement clientWorkouts={clientWorkouts} onAssign={onAssign} />
+            </div>
           </div>
         </div>
+
+        {/* Right sidebar */}
+        <RightSidebar cl={cl} clientCheckIns={clientCheckIns} clientBookings={clientBookings} />
       </div>
     </div>
   );
