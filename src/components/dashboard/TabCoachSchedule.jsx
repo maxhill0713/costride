@@ -1,779 +1,317 @@
 /**
- * TabCoachSchedule — Session Performance Tool
- * £500M SaaS-grade redesign
- *
- * Typography: Plus Jakarta Sans (UI) + JetBrains Mono (data)
- * Aesthetic: Ultra-refined luxury dark SaaS — think Vercel × Linear × Stripe
- *
- * Visual upgrades:
- *   - Gradient mesh + grain texture background
- *   - Glass-morphism card system with gradient borders
- *   - SVG circular progress ring for fill rate
- *   - Avatar cluster stacks on session cards
- *   - Animated capacity bars with gradient fills
- *   - Premium KPI strip with trend deltas
- *   - Timeline session cards with color accent rails
- *   - Refined sidebar with numbered optimization list
- *   - Polished typography hierarchy throughout
- *   - Directional shadows and depth system
- *   - Hover states with subtle lifts and glow
- *   - Live pulse indicator for today
- *   - Revenue sparkline in activity panel
+ * TabCoachContent — ContentPage gold-standard layout with all coach content:
+ * Workout Plans · Nutrition Plans · Programs · Sessions · Challenges · Posts
+ * Header + notification ticker · right sidebar (stats/chart/dial) · mobile FAB
+ * Zero external dependencies. Fully prop-driven.
  */
-
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 import {
-  format, subDays, addDays, startOfDay, startOfWeek, endOfWeek,
-  startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, isSameMonth,
-  differenceInMinutes,
-} from 'date-fns';
-import {
-  QrCode, Dumbbell, Calendar, Bell, Clock, Check, ChevronDown, ChevronUp,
-  UserCheck, Users, AlertCircle, CheckCircle, RefreshCw, Pencil, Trash2,
-  X, ClipboardList, User, DollarSign, Repeat, MapPin, Filter, ChevronLeft,
-  ChevronRight, TrendingUp, Zap, BarChart2, Eye, Ban, AlertTriangle,
-  Activity, Flame, ArrowRight, Info, MessageCircle, TrendingDown, UserX,
-  ArrowUpRight, ArrowDownRight, Minus, Send, RotateCcw, XCircle, PhoneCall,
-  Star, Plus, Search, MoreHorizontal, Sparkles, Lightbulb, Target,
-  Megaphone, Play, Layers, Radio,
+  Plus, Flame, Check, Clock, Users, RefreshCw,
+  ChevronDown, Trash2, Pencil, X, Send,
+  BarChart2, Search, Calendar, Dumbbell, Utensils,
+  Target, Award, FileText, Layers, UserPlus,
 } from 'lucide-react';
+import {
+  AreaChart, Area, XAxis, YAxis, Tooltip,
+  ResponsiveContainer, CartesianGrid,
+} from 'recharts';
 
-// ─── CSS INJECTION ────────────────────────────────────────────────────────────
-if (typeof document !== 'undefined' && !document.getElementById('spt-css-v2')) {
+/* ─── TOKENS ────────────────────────────────────────────────── */
+const C = {
+  bg:     '#000000',
+  sidebar:'#0f0f12',
+  card:   '#141416',
+  card2:  '#1a1a1f',
+  brd:    '#222226',
+  brd2:   '#2a2a30',
+  t1:     '#ffffff',
+  t2:     '#8a8a94',
+  t3:     '#444450',
+  cyan:   '#4d7fff',
+  cyanD:  'rgba(77,127,255,0.12)',
+  cyanB:  'rgba(77,127,255,0.28)',
+  red:    '#ff4d6d',
+  redD:   'rgba(255,77,109,0.15)',
+  redB:   'rgba(255,77,109,0.3)',
+  amber:  '#f59e0b',
+  amberD: 'rgba(245,158,11,0.13)',
+  amberB: 'rgba(245,158,11,0.28)',
+  green:  '#22c55e',
+  greenD: 'rgba(34,197,94,0.12)',
+  greenB: 'rgba(34,197,94,0.28)',
+  blue:   '#3b82f6',
+  blueD:  'rgba(59,130,246,0.12)',
+  blueB:  'rgba(59,130,246,0.28)',
+  violet: '#7c3aed',
+  violetD:'rgba(124,58,237,0.12)',
+  violetB:'rgba(124,58,237,0.28)',
+};
+const FONT = "'DM Sans','Segoe UI',system-ui,sans-serif";
+const GRAD = { background:'#2563eb', border:'none', color:'#fff' };
+
+/* ─── CSS ────────────────────────────────────────────────────── */
+if (typeof document !== 'undefined' && !document.getElementById('tcc2-css')) {
   const s = document.createElement('style');
-  s.id = 'spt-css-v2';
+  s.id = 'tcc2-css';
   s.textContent = `
-    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
-
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-    .spt {
-      font-family: 'Plus Jakarta Sans', -apple-system, sans-serif;
-      -webkit-font-smoothing: antialiased;
-      -moz-osx-font-smoothing: grayscale;
-    }
-
-    /* Animations */
-    @keyframes sptFadeUp   { from { opacity:0; transform:translateY(10px) } to { opacity:1; transform:none } }
-    @keyframes sptFadeIn   { from { opacity:0 } to { opacity:1 } }
-    @keyframes sptSlideR   { from { opacity:0; transform:translateX(16px) } to { opacity:1; transform:none } }
-    @keyframes sptPulse    { 0%,100% { opacity:.5; transform:scale(1) } 50% { opacity:1; transform:scale(1.15) } }
-    @keyframes sptRing     { 0%,100% { box-shadow:0 0 0 0 rgba(99,102,241,.0) } 50% { box-shadow:0 0 0 6px rgba(99,102,241,.08) } }
-    @keyframes sptGreenRing { 0%,100% { box-shadow:0 0 0 0 rgba(16,217,160,.0) } 50% { box-shadow:0 0 0 5px rgba(16,217,160,.1) } }
-    @keyframes sptBarFill  { from { width:0 } to { width:var(--w) } }
-    @keyframes sptShimmer  { 0% { background-position: -200% 0 } 100% { background-position: 200% 0 } }
-    @keyframes sptFloat    { 0%,100% { transform:translateY(0) } 50% { transform:translateY(-3px) } }
-
-    .spt-fade  { animation: sptFadeUp .4s cubic-bezier(.16,1,.3,1) both; }
-    .spt-fadein { animation: sptFadeIn .3s ease both; }
-    .spt-slide { animation: sptSlideR .3s cubic-bezier(.16,1,.3,1) both; }
-
-    /* Buttons */
-    .spt-btn {
-      font-family: 'Plus Jakarta Sans', sans-serif;
-      cursor: pointer; outline: none;
-      transition: all .15s cubic-bezier(.4,0,.2,1);
-      border: none; display: inline-flex; align-items: center; justify-content: center;
-    }
-    .spt-btn:active { transform: scale(.96); }
-
-    /* Cards */
-    .spt-card {
-      transition: transform .2s cubic-bezier(.16,1,.3,1), box-shadow .2s, border-color .2s;
-    }
-    .spt-card:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 12px 40px rgba(0,0,0,.4), 0 0 0 1px rgba(255,255,255,.06) !important;
-    }
-    .spt-card:hover .spt-reveal { opacity:1; pointer-events:auto; transform:none; }
-
-    .spt-reveal {
-      opacity:0; pointer-events:none;
-      transform: translateY(4px);
-      transition: all .18s cubic-bezier(.16,1,.3,1);
-    }
-
-    /* Inputs */
-    .spt-input {
-      width: 100%;
-      background: rgba(255,255,255,.025);
-      border: 1px solid rgba(255,255,255,.07);
-      color: #e2e8f0;
-      font-size: 13px;
-      font-family: 'Plus Jakarta Sans', sans-serif;
-      outline: none; border-radius: 10px; padding: 10px 14px;
-      transition: all .15s;
-    }
-    .spt-input:focus {
-      border-color: rgba(99,102,241,.45);
-      background: rgba(255,255,255,.035);
-      box-shadow: 0 0 0 3px rgba(99,102,241,.1), inset 0 1px 0 rgba(255,255,255,.03);
-    }
-    .spt-input::placeholder { color: rgba(148,163,184,.35); }
-
-    /* Layout */
-    .spt-grid { display: grid; grid-template-columns: minmax(0,1fr) 300px; gap: 20px; align-items: start; }
-    .spt-kpi-grid { display: grid; grid-template-columns: repeat(5,1fr); gap: 12px; }
-
-    @media (max-width: 1200px) { .spt-kpi-grid { grid-template-columns: repeat(3,1fr); } }
-    @media (max-width: 1024px) {
-      .spt-grid { grid-template-columns: 1fr !important; }
-      .spt-sidebar-col { display: none !important; }
-      .spt-kpi-grid { grid-template-columns: repeat(2,1fr); }
-    }
-    @media (max-width: 540px) { .spt-kpi-grid { grid-template-columns: 1fr; } }
-
-    /* Scrollbar */
-    ::-webkit-scrollbar { width: 4px; height: 4px; }
-    ::-webkit-scrollbar-track { background: transparent; }
-    ::-webkit-scrollbar-thumb { background: rgba(255,255,255,.08); border-radius: 99px; }
-    ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,.14); }
-
-    /* Gradient border trick */
-    .spt-grad-border {
-      position: relative;
-      border: none !important;
-    }
-    .spt-grad-border::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      border-radius: inherit;
-      padding: 1px;
-      background: linear-gradient(135deg, rgba(99,102,241,.25), rgba(255,255,255,.06), rgba(16,217,160,.12));
-      -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-      -webkit-mask-composite: xor;
-      mask-composite: exclude;
-      pointer-events: none;
-    }
-
-    /* Live dot */
-    .spt-live { animation: sptPulse 2s ease infinite; }
-
-    /* Capacity bar fill animation */
-    .spt-bar-fill {
-      animation: sptBarFill .8s cubic-bezier(.16,1,.3,1) both;
-      animation-delay: .2s;
-    }
-
-    /* Ring animation */
-    .spt-ring-glow { animation: sptGreenRing 3s ease infinite; }
-    .spt-ring-glow-indigo { animation: sptRing 3s ease infinite; }
+    @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700;800&display=swap');
+    .tcc2*{box-sizing:border-box}
+    .tcc2{font-family:'DM Sans','Segoe UI',sans-serif;-webkit-font-smoothing:antialiased}
+    @keyframes tcc2SlideOut{from{transform:translateX(0);opacity:1}to{transform:translateX(-110%);opacity:0}}
+    @keyframes tcc2SlideInR{from{transform:translateX(110%);opacity:0}to{transform:translateX(0);opacity:1}}
+    @keyframes tcc2FadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+    @keyframes tcc2ModalIn{from{opacity:0;transform:scale(.95) translateY(8px)}to{opacity:1;transform:none}}
+    @keyframes tcc2Pulse{0%,100%{opacity:.5}50%{opacity:1}}
+    .tcc2-fu{animation:tcc2FadeUp .35s cubic-bezier(.16,1,.3,1) both}
+    .tcc2-card{transition:border-color .15s,box-shadow .15s}
+    .tcc2-card:hover{border-color:rgba(77,127,255,0.28)!important;box-shadow:0 0 8px rgba(77,127,255,.07)}
+    .tcc2-btn{font-family:'DM Sans','Segoe UI',sans-serif;cursor:pointer;outline:none;border:none;transition:all .18s cubic-bezier(.16,1,.3,1);display:inline-flex;align-items:center;gap:6px}
+    .tcc2-scr::-webkit-scrollbar{width:3px}
+    .tcc2-scr::-webkit-scrollbar-thumb{background:#222226;border-radius:3px}
+    .tcc2-input{width:100%;background:rgba(255,255,255,0.03);border:1px solid #222226;color:#fff;font-size:13px;font-family:'DM Sans','Segoe UI',sans-serif;outline:none;border-radius:8px;padding:10px 14px;transition:all .18s}
+    .tcc2-input:focus{border-color:rgba(77,127,255,0.4);background:rgba(77,127,255,0.04)}
+    .tcc2-input::placeholder{color:#444450}
+    .tcc2-row{transition:background .1s;cursor:pointer}
+    .tcc2-row:hover{background:#1a1a1e!important}
+    @media(max-width:768px){.tcc2-sidebar{display:none!important}}
   `;
   document.head.appendChild(s);
 }
 
-// ─── DESIGN TOKENS ────────────────────────────────────────────────────────────
-const T = {
-  // Backgrounds
-  bg:      '#030609',
-  bgMesh:  `linear-gradient(135deg, #030609 0%, #04060e 100%)`,
-  surface: '#080d1a',
-  card:    '#0b1120',
-  cardH:   '#0e1528',
-  glass:   'rgba(255,255,255,.028)',
-
-  // Borders
-  border:  'rgba(255,255,255,.065)',
-  borderH: 'rgba(255,255,255,.1)',
-  borderA: 'rgba(255,255,255,.14)',
-
-  // Text
-  t1: '#f1f5f9', t2: '#94a3b8', t3: '#475569', t4: '#1e293b',
-
-  // Accents
-  indigo:    '#6366f1',
-  indigoBr:  '#818cf8',
-  indigoDim: 'rgba(99,102,241,.08)',
-  indigoBdr: 'rgba(99,102,241,.2)',
-  indigoGlow:'rgba(99,102,241,.15)',
-
-  emerald:    '#10d9a0',
-  emeraldDim: 'rgba(16,217,160,.08)',
-  emeraldBdr: 'rgba(16,217,160,.18)',
-
-  amber:    '#f59e0b',
-  amberDim: 'rgba(245,158,11,.08)',
-  amberBdr: 'rgba(245,158,11,.2)',
-
-  red:    '#f43f5e',
-  redDim: 'rgba(244,63,94,.08)',
-  redBdr: 'rgba(244,63,94,.2)',
-
-  sky:    '#38bdf8',
-  skyDim: 'rgba(56,189,248,.08)',
-  skyBdr: 'rgba(56,189,248,.18)',
-
-  violet:    '#a78bfa',
-  violetDim: 'rgba(167,139,250,.08)',
-  violetBdr: 'rgba(167,139,250,.18)',
-
-  // Typography
-  mono: "'JetBrains Mono', monospace",
-  sans: "'Plus Jakarta Sans', sans-serif",
-
-  // Shadows
-  shadow:   '0 4px 24px rgba(0,0,0,.35)',
-  shadowLg: '0 12px 48px rgba(0,0,0,.5)',
-  shadowXl: '0 24px 64px rgba(0,0,0,.65)',
+/* ─── CONSTANTS ──────────────────────────────────────────────── */
+const TABS = ['Workout Plans','Nutrition Plans','Programs','Sessions','Challenges','Posts'];
+const TAB_ACTION = {
+  'Workout Plans':   { label:'+ Plan',      modal:'workout_plan'   },
+  'Nutrition Plans': { label:'+ Nutrition', modal:'nutrition_plan' },
+  'Programs':        { label:'+ Program',   modal:'program'        },
+  'Sessions':        { label:'+ Session',   modal:'session'        },
+  'Challenges':      { label:'+ Challenge', modal:'challenge'      },
+  'Posts':           { label:'+ Post',      modal:'post'           },
+};
+const TAB_ICONS = {
+  'Workout Plans':   Dumbbell,
+  'Nutrition Plans': Utensils,
+  'Programs':        Layers,
+  'Sessions':        Calendar,
+  'Challenges':      Award,
+  'Posts':           FileText,
+};
+const WORKOUT_TYPES = ['Strength','Cardio','HIIT','Flexibility','Circuit','Sport-Specific'];
+const AV_COLORS = ['#4d7fff','#22c55e','#f59e0b','#ff4d6d','#a78bfa','#06b6d4','#f97316','#14b8a6'];
+const DIFF_COLORS = {
+  Beginner:     { color:C.green,  bg:'rgba(34,197,94,0.12)',   bdr:'rgba(34,197,94,0.28)'   },
+  Intermediate: { color:'#f59e0b', bg:'rgba(245,158,11,0.13)', bdr:'rgba(245,158,11,0.28)' },
+  Advanced:     { color:'#ff4d6d', bg:'rgba(255,77,109,0.15)', bdr:'rgba(255,77,109,0.3)'  },
+  Elite:        { color:'#7c3aed', bg:'rgba(124,58,237,0.12)', bdr:'rgba(124,58,237,0.28)' },
+};
+const POST_TYPE_STYLES = {
+  announcement:{ label:'Announcement', color:'#60a5fa', bg:'rgba(96,165,250,0.12)',  border:'rgba(96,165,250,0.28)'  },
+  achievement: { label:'Achievement',  color:'#f59e0b', bg:'rgba(245,158,11,0.12)',  border:'rgba(245,158,11,0.28)'  },
+  tip:         { label:'Fitness Tip',  color:'#a78bfa', bg:'rgba(167,139,250,0.12)', border:'rgba(167,139,250,0.28)' },
+  workout:     { label:'Workout',      color:'#4d7fff', bg:'rgba(77,127,255,0.12)',  border:'rgba(77,127,255,0.28)'  },
+  offer:       { label:'Offer',        color:'#ff4d6d', bg:'rgba(255,77,109,0.12)',  border:'rgba(255,77,109,0.28)'  },
 };
 
-// ─── CLASS TYPE REGISTRY ──────────────────────────────────────────────────────
-const CLASS_TYPE = {
-  hiit:       { color: '#f87171', grad: 'linear-gradient(135deg,#f87171,#fb923c)', label: 'HIIT',       emoji: '🔥' },
-  yoga:       { color: '#34d399', grad: 'linear-gradient(135deg,#34d399,#6ee7b7)', label: 'Yoga',       emoji: '🧘' },
-  spin:       { color: '#38bdf8', grad: 'linear-gradient(135deg,#38bdf8,#818cf8)', label: 'Spin',       emoji: '🚴' },
-  strength:   { color: '#fb923c', grad: 'linear-gradient(135deg,#fb923c,#f59e0b)', label: 'Strength',   emoji: '💪' },
-  pilates:    { color: '#e879f9', grad: 'linear-gradient(135deg,#e879f9,#a78bfa)', label: 'Pilates',    emoji: '🌸' },
-  boxing:     { color: '#fbbf24', grad: 'linear-gradient(135deg,#fbbf24,#f97316)', label: 'Boxing',     emoji: '🥊' },
-  crossfit:   { color: '#f97316', grad: 'linear-gradient(135deg,#f97316,#ef4444)', label: 'CrossFit',   emoji: '⚡' },
-  cardio:     { color: '#f472b6', grad: 'linear-gradient(135deg,#f472b6,#f87171)', label: 'Cardio',     emoji: '❤️' },
-  functional: { color: '#a78bfa', grad: 'linear-gradient(135deg,#a78bfa,#6366f1)', label: 'Functional', emoji: '🎯' },
-  personal_training: { color: '#38bdf8', grad: 'linear-gradient(135deg,#38bdf8,#6366f1)', label: 'PT', emoji: '👤' },
-  default:    { color: '#a78bfa', grad: 'linear-gradient(135deg,#a78bfa,#6366f1)', label: 'Class',      emoji: '🏋️' },
-};
-
-function getTypeCfg(cls) {
-  const name = (cls.name || cls.class_type || cls.type || '').toLowerCase();
-  for (const [key, cfg] of Object.entries(CLASS_TYPE)) {
-    if (name.includes(key)) return cfg;
-  }
-  return CLASS_TYPE.default;
+/* ─── HELPERS ────────────────────────────────────────────────── */
+function timeAgo(str) {
+  if (!str) return '';
+  let d = new Date(str);
+  if (isNaN(d.getTime())) return '';
+  if (typeof str==='string' && !str.endsWith('Z') && !str.match(/[+-]\d{2}:\d{2}$/)) d = new Date(str+'Z');
+  const s = (Date.now()-d.getTime())/1000;
+  if (s<60)       return 'just now';
+  if (s<3600)     return `${Math.floor(s/60)}m ago`;
+  if (s<86400)    return `${Math.floor(s/3600)}h ago`;
+  if (s<86400*7)  return `${Math.floor(s/86400)}d ago`;
+  return d.toLocaleDateString('en-GB',{day:'numeric',month:'short'});
 }
 
-// ─── HELPERS ──────────────────────────────────────────────────────────────────
-const LATE_CANCEL_HRS = 24;
-
-function getLateCancel(cls) {
-  if (!Array.isArray(cls.late_cancels)) return [];
-  return cls.late_cancels.filter(lc => {
-    const cancelAt = lc.cancelled_at ? new Date(lc.cancelled_at) : null;
-    const classAt = cls.start_time ? new Date(cls.start_time) : null;
-    if (!cancelAt || !classAt) return false;
-    return differenceInMinutes(classAt, cancelAt) < LATE_CANCEL_HRS * 60;
+function buildDailyData(workoutPlans, nutritionPlans, sessions, posts) {
+  const now = new Date();
+  return Array.from({length:7},(_,i)=>{
+    const date = new Date(now);
+    date.setDate(date.getDate()-(6-i));
+    date.setHours(0,0,0,0);
+    const s=date.getTime(), e=s+86400000;
+    const lbl = i===6?'Today':date.toLocaleDateString('en-GB',{weekday:'short'});
+    const inDay = str => {
+      if (!str) return false;
+      let d=new Date(str);
+      if (typeof str==='string'&&!str.endsWith('Z')&&!str.match(/[+-]\d{2}:\d{2}$/)) d=new Date(str+'Z');
+      return d.getTime()>=s && d.getTime()<e;
+    };
+    let v=0;
+    [...workoutPlans,...nutritionPlans].forEach(p=>{ if(inDay(p.created_date||p.created_at)) v++; });
+    sessions.forEach(s2=>{ if(inDay(s2.session_date||s2.created_date)) v++; });
+    posts.forEach(p=>{ if(inDay(p.created_date||p.created_at)) v++; });
+    return {label:lbl,v};
   });
 }
 
-function calcRevenue(cls, allMemberships) {
-  const booked = cls.bookings?.length || cls.attended?.length || 0;
-  if (booked === 0) return 0;
-  const prices = allMemberships.map(m => m.membership_price || m.price || 0).filter(p => p > 0);
-  const avg = prices.length > 0 ? prices.reduce((s, p) => s + p, 0) / prices.length : 0;
-  if (cls.drop_in_price) return Math.round(booked * cls.drop_in_price);
-  if (avg > 0) return Math.round((avg / 4.3) * booked);
-  return 0;
+/* ─── MOBILE HOOK ────────────────────────────────────────────── */
+function useIsMobile(bp=768) {
+  const [m,setM]=useState(typeof window!=='undefined'?window.innerWidth<bp:false);
+  useEffect(()=>{const h=()=>setM(window.innerWidth<bp);window.addEventListener('resize',h);return()=>window.removeEventListener('resize',h);},[bp]);
+  return m;
 }
 
-function calcRS(userId, checkIns, now) {
-  const uci = checkIns.filter(c => c.user_id === userId);
-  const ms = d => now - new Date(d.check_in_date);
-  const r30 = uci.filter(c => ms(c) < 30 * 864e5).length;
-  const p30 = uci.filter(c => ms(c) >= 30 * 864e5 && ms(c) < 60 * 864e5).length;
-  const sorted = [...uci].sort((a, b) => new Date(b.check_in_date) - new Date(a.check_in_date));
-  const daysAgo = sorted[0] ? Math.floor(ms(sorted[0]) / 864e5) : 999;
-  let score = 100;
-  if (daysAgo >= 999) score -= 60;
-  else if (daysAgo > 21) score -= 45;
-  else if (daysAgo > 14) score -= 30;
-  else if (daysAgo > 7) score -= 15;
-  if (r30 === 0) score -= 25;
-  else if (r30 <= 2) score -= 15;
-  score = Math.max(0, Math.min(100, score));
-  const trend = p30 > 0 ? (r30 > p30 * 1.1 ? 'up' : r30 < p30 * 0.7 ? 'down' : 'flat') : (r30 >= 2 ? 'up' : 'flat');
-  const status = score >= 65 ? 'safe' : score >= 35 ? 'at_risk' : 'high_risk';
-  const color = status === 'safe' ? T.emerald : status === 'at_risk' ? T.amber : T.red;
-  return { score, status, trend, color, daysAgo, recent30: r30, prev30: p30 };
-}
+/* ─── NOTIFICATION TICKER ────────────────────────────────────── */
+function NotificationTicker({ workoutPlans, nutritionPlans, programs, sessions, clients }) {
+  const msgs = useMemo(()=>{
+    const out=[];
+    const tp=workoutPlans.length+nutritionPlans.length;
+    if (tp>0) out.push(`${tp} plan${tp!==1?'s':''} ready to assign to clients`);
+    const ap=programs.filter(p=>!p.end_date||new Date(p.end_date)>=new Date()).length;
+    if (ap>0) out.push(`${ap} active training program${ap!==1?'s':''} in progress`);
+    const us=sessions.filter(s=>s.session_date&&new Date(s.session_date)>new Date()).length;
+    if (us>0) out.push(`${us} session${us!==1?'s':''} scheduled`);
+    if (clients.length>0) out.push(`${clients.length} client${clients.length!==1?'s':''} on your roster`);
+    if (!out.length) out.push('Create your first workout plan to get started');
+    return out;
+  },[workoutPlans,nutritionPlans,programs,sessions,clients]);
 
-function fillColor(pct) {
-  if (pct >= 80) return T.emerald;
-  if (pct >= 50) return T.indigo;
-  if (pct >= 30) return T.amber;
-  return T.red;
-}
+  const idxRef=useRef(0);
+  const [idx,setIdx]=useState(0);
+  const [prevIdx,setPrevIdx]=useState(null);
+  const [trans,setTrans]=useState(false);
 
-function fillLabel(pct) {
-  if (pct >= 90) return { label: 'At Capacity', color: T.emerald };
-  if (pct >= 70) return { label: 'Strong',       color: T.emerald };
-  if (pct >= 40) return { label: 'Moderate',     color: T.indigo  };
-  return                 { label: 'Underbooked',  color: T.red     };
-}
+  useEffect(()=>{
+    if (msgs.length<=1) return;
+    const id=setInterval(()=>{
+      const prev=idxRef.current,next=(prev+1)%msgs.length;
+      idxRef.current=next;setPrevIdx(prev);setIdx(next);setTrans(true);
+      setTimeout(()=>{setPrevIdx(null);setTrans(false);},800);
+    },12000);
+    return()=>clearInterval(id);
+  },[msgs.length]);
 
-// ─── SVG CIRCULAR RING ────────────────────────────────────────────────────────
-function FillRing({ value = 0, size = 72, stroke = 5, color = T.emerald, bg = 'rgba(255,255,255,.04)' }) {
-  const r = (size - stroke * 2) / 2;
-  const circ = 2 * Math.PI * r;
-  const offset = circ - (Math.min(value, 100) / 100) * circ;
   return (
-    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} style={{ transform: 'rotate(-90deg)', flexShrink: 0 }}>
-      <circle cx={size/2} cy={size/2} r={r} fill="none" stroke={bg} strokeWidth={stroke} />
-      <circle
-        cx={size/2} cy={size/2} r={r} fill="none"
-        stroke={color} strokeWidth={stroke}
-        strokeDasharray={circ} strokeDashoffset={offset}
-        strokeLinecap="round"
-        style={{ transition: 'stroke-dashoffset 1s cubic-bezier(.16,1,.3,1)', filter: `drop-shadow(0 0 4px ${color}60)` }}
-      />
-    </svg>
-  );
-}
-
-// ─── AVATAR CLUSTER ───────────────────────────────────────────────────────────
-function AvatarCluster({ members = [], avatarMap = {}, max = 4, size = 24 }) {
-  const shown = members.slice(0, max);
-  const extra = members.length - max;
-  const colors = [T.indigo, T.violet, T.emerald, T.sky, T.amber];
-  return (
-    <div style={{ display: 'flex', alignItems: 'center' }}>
-      {shown.map((m, i) => {
-        const initials = (m.user_name || '?').split(' ').map(w => w[0]).join('').slice(0,2).toUpperCase();
-        const color = colors[i % colors.length];
-        return (
-          <div key={m.user_id || i} title={m.user_name} style={{
-            width: size, height: size, borderRadius: '50%',
-            border: `2px solid ${T.card}`,
-            marginLeft: i === 0 ? 0 : -size * 0.38,
-            background: `${color}18`,
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: size * 0.32, fontWeight: 700, color, zIndex: shown.length - i, position: 'relative',
-            flexShrink: 0,
-            boxShadow: `0 0 0 1px ${color}20`,
-          }}>
-            {avatarMap[m.user_id]
-              ? <img src={avatarMap[m.user_id]} alt={m.user_name} style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />
-              : initials}
-          </div>
-        );
-      })}
-      {extra > 0 && (
-        <div style={{
-          width: size, height: size, borderRadius: '50%',
-          border: `2px solid ${T.card}`,
-          marginLeft: -size * 0.38,
-          background: 'rgba(255,255,255,.06)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          fontSize: size * 0.3, fontWeight: 700, color: T.t3,
-          zIndex: 0, flexShrink: 0,
-        }}>+{extra}</div>
-      )}
+    <div style={{width:'100%',height:37,background:'rgba(77,127,255,0.11)',borderRadius:4,overflow:'hidden',position:'relative',display:'flex',alignItems:'center'}}>
+      {trans&&prevIdx!==null&&<span style={{position:'absolute',left:0,right:0,textAlign:'center',fontSize:11.5,fontWeight:600,color:'#93c5fd',fontFamily:FONT,whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis',padding:'0 14px',animation:'tcc2SlideOut 0.8s cubic-bezier(0.4,0,0.2,1) forwards'}}>{msgs[prevIdx]}</span>}
+      <span key={idx} style={{position:'absolute',left:0,right:0,textAlign:'center',fontSize:11.5,fontWeight:600,color:'#93c5fd',fontFamily:FONT,whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis',padding:'0 14px',animation:trans?'tcc2SlideInR 0.8s cubic-bezier(0.4,0,0.2,1) forwards':'none'}}>{msgs[idx]}</span>
     </div>
   );
 }
 
-// ─── SHARED ATOMS ─────────────────────────────────────────────────────────────
-function Chip({ children, color = T.t3, bg, border, dot, style }) {
+/* ─── CHART TOOLTIP ──────────────────────────────────────────── */
+function ChartTip({ active, payload, label }) {
+  if (!active||!payload?.length) return null;
   return (
-    <span style={{
-      display: 'inline-flex', alignItems: 'center', gap: 5,
-      fontSize: 10, fontWeight: 700, color,
-      background: bg || `${color}0d`,
-      border: `1px solid ${border || `${color}20`}`,
-      borderRadius: 6, padding: '3px 8px',
-      letterSpacing: '.04em', textTransform: 'uppercase',
-      whiteSpace: 'nowrap', lineHeight: '16px', ...style,
-    }}>
-      {dot && <span style={{ width: 5, height: 5, borderRadius: '50%', background: color, display: 'inline-block', flexShrink: 0 }} />}
-      {children}
-    </span>
-  );
-}
-
-function StatChip({ icon: Ic, label, count, color }) {
-  return (
-    <span style={{
-      display: 'inline-flex', alignItems: 'center', gap: 4,
-      fontSize: 11, fontWeight: 600, color,
-      background: `${color}0c`, border: `1px solid ${color}1c`,
-      borderRadius: 7, padding: '4px 9px',
-    }}>
-      {Ic && <Ic style={{ width: 9, height: 9 }} />}
-      <span style={{ fontFamily: T.mono, fontWeight: 700 }}>{count}</span>
-      <span style={{ color: `${color}99`, fontWeight: 500, fontSize: 10 }}>{label}</span>
-    </span>
-  );
-}
-
-function MiniBtn({ icon: Ic, label, color, onClick, size = 'sm' }) {
-  return (
-    <button className="spt-btn" onClick={onClick} style={{
-      display: 'flex', alignItems: 'center', gap: 4,
-      padding: size === 'xs' ? '4px 8px' : '7px 13px', borderRadius: 8,
-      background: `${color}0a`, border: `1px solid ${color}1c`,
-      color, fontSize: size === 'xs' ? 10 : 11, fontWeight: 700,
-      whiteSpace: 'nowrap', transition: 'all .15s',
-    }}
-      onMouseEnter={e => { e.currentTarget.style.background = `${color}18`; e.currentTarget.style.borderColor = `${color}30`; }}
-      onMouseLeave={e => { e.currentTarget.style.background = `${color}0a`; e.currentTarget.style.borderColor = `${color}1c`; }}>
-      {Ic && <Ic style={{ width: size === 'xs' ? 10 : 11, height: size === 'xs' ? 10 : 11 }} />}
-      {label}
-    </button>
-  );
-}
-
-function SectionLabel({ icon: Ic, color = T.indigo, children }) {
-  return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
-      <div style={{ width: 28, height: 28, borderRadius: 8, background: `${color}0d`, border: `1px solid ${color}1c`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        {Ic && <Ic style={{ width: 12, height: 12, color }} />}
-      </div>
-      <span style={{ fontSize: 12, fontWeight: 700, color: T.t1, letterSpacing: '-.01em' }}>{children}</span>
+    <div style={{background:'#111c2a',border:`1px solid ${C.cyanB}`,borderRadius:7,padding:'5px 10px',fontSize:11.5,color:C.t1}}>
+      <div style={{fontSize:10,color:C.t3,marginBottom:2}}>{label}</div>
+      <span style={{color:C.cyan,fontWeight:700}}>{payload[0].value} activities</span>
     </div>
   );
 }
 
-function ConfirmDialog({ message, onConfirm, onCancel, confirmLabel = 'Cancel Class', color = T.red }) {
+/* ─── ACTIVITY DIAL ──────────────────────────────────────────── */
+function ActivityDial({ pct }) {
+  const R=62,cx=76,cy=72,c=Math.max(0,Math.min(100,pct));
+  const angle=Math.PI-(c/100)*Math.PI;
+  const x=cx+R*Math.cos(angle),y=cy-R*Math.sin(angle);
+  const trackD=`M ${cx-R} ${cy} A ${R} ${R} 0 0 1 ${cx+R} ${cy}`;
+  const fillD=c===0?'':c>=100?trackD:`M ${cx-R} ${cy} A ${R} ${R} 0 0 1 ${x.toFixed(2)} ${y.toFixed(2)}`;
+  const dc=c<30?C.red:c<60?C.amber:C.green;
+  const dl=c<30?'Low':c<60?'Moderate':c<85?'Good':'Excellent';
   return (
-    <div className="spt-fadein" style={{ position: 'fixed', inset: 0, zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,.85)', backdropFilter: 'blur(8px)' }}>
-      <div className="spt-fade" style={{
-        background: `linear-gradient(135deg, ${T.card}, ${T.surface})`,
-        border: `1px solid ${color}25`, borderRadius: 20, padding: 32,
-        maxWidth: 380, width: '90%', boxShadow: `${T.shadowXl}, 0 0 0 1px rgba(255,255,255,.04)`,
-      }}>
-        <div style={{ width: 52, height: 52, borderRadius: 16, background: `${color}0d`, border: `1px solid ${color}25`, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 18px' }}>
-          <AlertCircle style={{ width: 22, height: 22, color }} />
-        </div>
-        <p style={{ fontSize: 14, fontWeight: 600, color: T.t1, textAlign: 'center', margin: '0 0 22px', lineHeight: 1.65 }}>{message}</p>
-        <div style={{ display: 'flex', gap: 10 }}>
-          <button className="spt-btn" onClick={onCancel} style={{ flex: 1, padding: 11, borderRadius: 10, background: 'rgba(255,255,255,.04)', border: `1px solid ${T.border}`, color: T.t2, fontSize: 12, fontWeight: 700 }}>Go Back</button>
-          <button className="spt-btn" onClick={onConfirm} style={{ flex: 1, padding: 11, borderRadius: 10, background: `${color}12`, border: `1px solid ${color}28`, color, fontSize: 12, fontWeight: 700 }}>{confirmLabel}</button>
-        </div>
+    <div style={{display:'flex',flexDirection:'column',alignItems:'center',width:'100%'}}>
+      <svg width="152" height="90" viewBox="0 0 152 90" style={{overflow:'visible'}}>
+        <path d={trackD} fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="10" strokeLinecap="round"/>
+        {fillD&&<path d={fillD} fill="none" stroke={dc} strokeWidth="10" strokeLinecap="round" strokeOpacity="0.85"/>}
+        {c>0&&<circle cx={x.toFixed(2)} cy={y.toFixed(2)} r="6" fill={dc}/>}
+        <text x={cx} y={cy-4} textAnchor="middle" style={{fontSize:22,fontWeight:800,fill:'#fff',fontFamily:"'DM Sans',sans-serif"}}>{c}%</text>
+        <text x={cx} y={cy+14} textAnchor="middle" style={{fontSize:10,fontWeight:700,fill:dc,fontFamily:"'DM Sans',sans-serif"}}>{dl}</text>
+      </svg>
+      <div style={{display:'flex',justifyContent:'space-between',width:'100%',marginTop:2}}>
+        <span style={{fontSize:9,color:C.t3,fontWeight:600}}>0%</span>
+        <span style={{fontSize:9,color:C.t3,fontWeight:600}}>100%</span>
       </div>
     </div>
   );
 }
 
-// ─── KPI CARD ─────────────────────────────────────────────────────────────────
-function KpiCard({ title, value, sub, color = T.indigo, icon: Ic, accent, children, glowing, delay = 0 }) {
-  return (
-    <div className={`spt-fade ${glowing ? 'spt-ring-glow-indigo' : ''}`} style={{
-      padding: '20px 22px', borderRadius: 16,
-      background: `linear-gradient(145deg, ${T.card} 0%, ${T.surface} 100%)`,
-      border: `1px solid ${T.border}`,
-      boxShadow: `inset 0 1px 0 rgba(255,255,255,.03), ${T.shadow}`,
-      position: 'relative', overflow: 'hidden',
-      animationDelay: `${delay}s`,
-    }}>
-      {/* Accent glow top-right */}
-      <div style={{ position: 'absolute', top: -30, right: -30, width: 100, height: 100, borderRadius: '50%', background: `radial-gradient(circle, ${color}08 0%, transparent 70%)`, pointerEvents: 'none' }} />
-      {/* Top accent line */}
-      <div style={{ position: 'absolute', top: 0, left: 20, right: 20, height: 1, background: `linear-gradient(90deg, transparent, ${color}30, transparent)` }} />
+/* ─── RIGHT SIDEBAR ──────────────────────────────────────────── */
+function RightSidebar({ workoutPlans, nutritionPlans, programs, sessions, challenges, posts, clients, interactionsToday, onTabChange }) {
+  const chartData = useMemo(()=>buildDailyData(workoutPlans,nutritionPlans,sessions,posts),[workoutPlans,nutritionPlans,sessions,posts]);
+  const activeProgs      = programs.filter(p=>!p.end_date||new Date(p.end_date)>=new Date()).length;
+  const upcomingSess     = sessions.filter(s=>s.session_date&&new Date(s.session_date)>new Date()).length;
+  const activeChallenges = challenges.filter(c=>!c.end_date||new Date(c.end_date)>=new Date()).length;
+  const totalPlans       = workoutPlans.length+nutritionPlans.length;
+  const WEEK             = 7*86400000;
+  const recentSess       = sessions.filter(s=>{ const d=s.session_date||s.created_date; return d&&(Date.now()-new Date(d).getTime())<WEEK; }).length;
+  const activePct        = clients.length>0?Math.min(100,Math.round(recentSess/clients.length*100)):0;
 
-      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 16 }}>
-        <span style={{ fontSize: 10, fontWeight: 700, color: T.t3, letterSpacing: '.07em', textTransform: 'uppercase' }}>{title}</span>
-        {Ic && (
-          <div style={{ width: 28, height: 28, borderRadius: 8, background: `${color}0d`, border: `1px solid ${color}18`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <Ic style={{ width: 12, height: 12, color }} />
-          </div>
-        )}
+  const stats=[
+    {label:'Total Plans',      val:totalPlans,        col:C.cyan,   tab:'Workout Plans'},
+    {label:'Active Programs',  val:activeProgs,       col:'#7c3aed',tab:'Programs'      },
+    {label:'Sessions / week',  val:upcomingSess,      col:C.green,  tab:'Sessions'      },
+    {label:'Live Challenges',  val:activeChallenges,  col:C.amber,  tab:'Challenges'    },
+  ];
+
+  return (
+    <div className="tcc2-sidebar" style={{width:244,flexShrink:0,background:C.sidebar,borderLeft:`1px solid ${C.brd}`,display:'flex',flexDirection:'column',fontFamily:FONT,alignSelf:'flex-start'}}>
+      <div style={{padding:'16px 16px 12px',borderBottom:`1px solid ${C.brd}`}}>
+        <div style={{fontSize:12,fontWeight:700,color:C.t1}}>Content Overview</div>
       </div>
-
-      {children || (
-        <>
-          <div style={{ fontFamily: T.mono, fontSize: 38, fontWeight: 700, color, lineHeight: 1, letterSpacing: '-.05em', marginBottom: 8 }}>{value}</div>
-          {sub && <div style={{ fontSize: 11, color: T.t3, lineHeight: 1.4 }}>{sub}</div>}
-        </>
-      )}
-      {accent && <div style={{ marginTop: 12 }}>{accent}</div>}
-    </div>
-  );
-}
-
-// ─── WEEKLY PERFORMANCE BAR ───────────────────────────────────────────────────
-function WeeklyPerformanceBar({ sessions, totalBooked, totalPresent, totalNoShows, avgFill, totalRevenue, totalLateCancels, isToday, dateLabel, checkIns, now }) {
-  const thisWeekCI = checkIns.filter(c => (now - new Date(c.check_in_date)) < 7 * 864e5).length;
-  const lastWeekCI = checkIns.filter(c => { const d = now - new Date(c.check_in_date); return d >= 7 * 864e5 && d < 14 * 864e5; }).length;
-  const weekDelta = thisWeekCI - lastWeekCI;
-  const weekTrend = weekDelta > 2 ? 'up' : weekDelta < -2 ? 'down' : 'flat';
-  const fc = fillColor(avgFill);
-
-  return (
-    <div className="spt-kpi-grid" style={{ marginBottom: 24 }}>
-      {/* Sessions Today */}
-      <KpiCard
-        title={isToday ? 'Today' : dateLabel}
-        color={T.indigo}
-        icon={Calendar}
-        delay={0}
-        glowing={isToday}
-        accent={
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-            {isToday && (
-              <>
-                <span className="spt-live" style={{ width: 7, height: 7, borderRadius: '50%', background: T.emerald, display: 'inline-block', flexShrink: 0 }} />
-                <span style={{ fontSize: 10, color: T.emerald, fontWeight: 600 }}>Live</span>
-              </>
-            )}
-            {!isToday && <span style={{ fontSize: 10, color: T.t3 }}>Scheduled</span>}
+      <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'1px',background:C.brd,borderBottom:`1px solid ${C.brd}`}}>
+        {stats.map((s,i)=>(
+          <div key={i} onClick={()=>s.tab&&onTabChange?.(s.tab)} style={{padding:'12px 14px',background:C.sidebar,cursor:'pointer',transition:'background 0.12s'}}
+            onMouseEnter={e=>e.currentTarget.style.background=C.cyanD}
+            onMouseLeave={e=>e.currentTarget.style.background=C.sidebar}>
+            <div style={{fontSize:10,color:C.t3,textTransform:'uppercase',letterSpacing:'0.06em',marginBottom:4}}>{s.label}</div>
+            <div style={{fontSize:20,fontWeight:700,color:s.col,lineHeight:1}}>{s.val}</div>
           </div>
-        }
-      >
-        <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 6 }}>
-          <span style={{ fontFamily: T.mono, fontSize: 42, fontWeight: 700, color: T.indigo, lineHeight: 1, letterSpacing: '-.05em' }}>{sessions}</span>
-          <span style={{ fontSize: 13, color: T.t3, fontWeight: 500 }}>sessions</span>
+        ))}
+      </div>
+      <div style={{padding:'16px 16px 14px',borderBottom:`1px solid ${C.brd}`}}>
+        <div style={{fontSize:10,color:C.t3,textTransform:'uppercase',letterSpacing:'0.07em',marginBottom:6}}>Client Activity</div>
+        <div style={{fontSize:38,fontWeight:700,color:C.t1,letterSpacing:'-0.03em',lineHeight:1}}>{interactionsToday}</div>
+        <div style={{fontSize:11,color:C.t3,marginTop:5}}>interactions today</div>
+      </div>
+      <div style={{padding:'14px 16px 12px 4px',borderBottom:`1px solid ${C.brd}`}}>
+        <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:10,padding:'0 12px'}}>
+          <span style={{fontSize:12,fontWeight:600,color:C.t1}}>Activity This Week</span>
+          <span style={{fontSize:10,color:C.t3}}>7d</span>
         </div>
-      </KpiCard>
-
-      {/* Fill Rate */}
-      <KpiCard title="Fill Rate" color={fc} icon={Activity} delay={.05}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-          <div style={{ position: 'relative', flexShrink: 0 }}>
-            <FillRing value={avgFill} size={68} stroke={5} color={fc} />
-            <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column' }}>
-              <span style={{ fontFamily: T.mono, fontSize: 14, fontWeight: 700, color: fc, lineHeight: 1 }}>{avgFill}</span>
-              <span style={{ fontSize: 8, color: T.t3, fontWeight: 600 }}>%</span>
-            </div>
-          </div>
-          <div>
-            <div style={{ fontSize: 12, color: T.t2, fontWeight: 600, marginBottom: 4 }}>{fillLabel(avgFill).label}</div>
-            <div style={{ fontSize: 10, color: T.t3 }}>avg fill rate</div>
-          </div>
+        <ResponsiveContainer width="100%" height={108}>
+          <AreaChart data={chartData} margin={{top:4,right:22,bottom:0,left:-24}}>
+            <defs>
+              <linearGradient id="tcc2IG" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor={C.cyan} stopOpacity={0.35}/>
+                <stop offset="100%" stopColor={C.cyan} stopOpacity={0.02}/>
+              </linearGradient>
+            </defs>
+            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" vertical={false}/>
+            <XAxis dataKey="label" tick={{fill:C.t3,fontSize:8.5,fontFamily:FONT}} axisLine={false} tickLine={false} interval={0}/>
+            <YAxis tick={{fill:C.t3,fontSize:9,fontFamily:FONT}} axisLine={false} tickLine={false}/>
+            <Tooltip content={<ChartTip/>}/>
+            <Area type="monotone" dataKey="v" stroke={C.cyan} strokeWidth={2} fill="url(#tcc2IG)" dot={false} activeDot={{r:3,fill:C.cyan,strokeWidth:2,stroke:C.card}}/>
+          </AreaChart>
+        </ResponsiveContainer>
+      </div>
+      <div style={{padding:'14px 16px 20px',minHeight:190}}>
+        <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:14}}>
+          <span style={{fontSize:12,fontWeight:600,color:C.t1}}>Client Activity</span>
+          <span style={{fontSize:10,color:C.t3}}>7d</span>
         </div>
-      </KpiCard>
-
-      {/* Checked In */}
-      <KpiCard title="Checked In" color={T.emerald} icon={UserCheck} delay={.1}>
-        <div style={{ display: 'flex', alignItems: 'baseline', gap: 6, marginBottom: 8 }}>
-          <span style={{ fontFamily: T.mono, fontSize: 42, fontWeight: 700, color: T.emerald, lineHeight: 1, letterSpacing: '-.05em' }}>{totalPresent}</span>
-          <span style={{ fontSize: 14, color: T.t3, fontWeight: 500 }}>/ {totalBooked}</span>
-        </div>
-        <div style={{ height: 3, borderRadius: 99, background: 'rgba(255,255,255,.04)', overflow: 'hidden' }}>
-          <div className="spt-bar-fill" style={{ height: '100%', borderRadius: 99, background: `linear-gradient(90deg, ${T.emerald}, ${T.sky})`, '--w': totalBooked > 0 ? `${(totalPresent / totalBooked) * 100}%` : '0%', width: totalBooked > 0 ? `${(totalPresent / totalBooked) * 100}%` : '0%' }} />
-        </div>
-      </KpiCard>
-
-      {/* No-Shows */}
-      <KpiCard
-        title="No-Shows"
-        color={totalNoShows > 0 ? T.red : T.t3}
-        icon={UserX}
-        delay={.15}
-      >
-        <div style={{ display: 'flex', alignItems: 'baseline', gap: 6, marginBottom: 6 }}>
-          <span style={{ fontFamily: T.mono, fontSize: 42, fontWeight: 700, color: totalNoShows > 0 ? T.red : T.t3, lineHeight: 1, letterSpacing: '-.05em' }}>{totalNoShows}</span>
-        </div>
-        {totalLateCancels > 0
-          ? <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-              <AlertTriangle style={{ width: 9, height: 9, color: T.amber }} />
-              <span style={{ fontSize: 10, color: T.amber, fontWeight: 600 }}>{totalLateCancels} late cancel{totalLateCancels > 1 ? 's' : ''}</span>
-            </div>
-          : <span style={{ fontSize: 11, color: T.t3 }}>{totalNoShows === 0 ? 'Perfect attendance' : 'Need follow-up'}</span>
-        }
-      </KpiCard>
-
-      {/* vs Last Week */}
-      <KpiCard title="vs Last Week" color={weekTrend === 'up' ? T.emerald : weekTrend === 'down' ? T.red : T.t3} icon={TrendingUp} delay={.2}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
-          {weekTrend === 'up'   && <ArrowUpRight   style={{ width: 20, height: 20, color: T.emerald }} />}
-          {weekTrend === 'down' && <ArrowDownRight style={{ width: 20, height: 20, color: T.red }} />}
-          {weekTrend === 'flat' && <Minus          style={{ width: 20, height: 20, color: T.t3 }} />}
-          <span style={{ fontFamily: T.mono, fontSize: 38, fontWeight: 700, lineHeight: 1, letterSpacing: '-.05em', color: weekTrend === 'up' ? T.emerald : weekTrend === 'down' ? T.red : T.t3 }}>
-            {weekDelta > 0 ? '+' : ''}{weekDelta}
-          </span>
-        </div>
-        <span style={{ fontSize: 11, color: T.t3 }}>check-ins this week</span>
-      </KpiCard>
-    </div>
-  );
-}
-
-// ─── SESSION CARD ─────────────────────────────────────────────────────────────
-function SessionCard({ cls, onOpen, isSelected, now, openModal, avatarMap = {} }) {
-  const c = cls.typeCfg.color;
-  const booked = cls.booked.length || cls.attended.length;
-  const fc = fillColor(cls.fill);
-  const fl = fillLabel(cls.fill);
-  const noShows = Math.max(0, cls.booked.length - cls.attended.length);
-
-  return (
-    <div
-      className="spt-card"
-      onClick={onOpen}
-      style={{
-        borderRadius: 16, overflow: 'hidden',
-        background: isSelected
-          ? `linear-gradient(145deg, ${c}05, ${T.card})`
-          : `linear-gradient(145deg, ${T.card}, ${T.surface})`,
-        border: `1px solid ${isSelected ? `${c}22` : T.border}`,
-        boxShadow: isSelected ? `0 0 0 1px ${c}10, ${T.shadow}` : T.shadow,
-        opacity: cls.isCancelled ? .55 : 1,
-        cursor: 'pointer',
-      }}
-    >
-      {/* Color rail + gradient fade */}
-      <div style={{ display: 'flex' }}>
-        <div style={{ width: 4, flexShrink: 0, background: cls.isCancelled ? T.red : cls.typeCfg.grad, borderRadius: '0 0 0 0', minHeight: '100%' }} />
-
-        <div style={{ flex: 1, padding: '18px 20px 18px 18px' }}>
-          <div style={{ display: 'flex', alignItems: 'flex-start', gap: 16 }}>
-            {/* Icon */}
-            <div style={{
-              width: 48, height: 48, borderRadius: 14, flexShrink: 0,
-              background: `${c}0d`, border: `1px solid ${c}18`,
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: 22, boxShadow: `inset 0 1px 0 ${c}10`,
-            }}>
-              {cls.typeCfg.emoji}
-            </div>
-
-            <div style={{ flex: 1, minWidth: 0 }}>
-              {/* Row 1: name + chips */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: 7, flexWrap: 'wrap', marginBottom: 8 }}>
-                <span style={{ fontSize: 16, fontWeight: 800, color: cls.isCancelled ? T.t3 : T.t1, letterSpacing: '-.025em' }}>
-                  {cls.name}
-                </span>
-                <Chip color={c} dot>{cls.typeCfg.label}</Chip>
-                {cls.isCancelled && <Chip color={T.red} dot>Cancelled</Chip>}
-                <Chip color={fl.color} dot>{fl.label}</Chip>
-              </div>
-
-              {/* Row 2: time + meta */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14, flexWrap: 'wrap' }}>
-                {cls.scheduleStr && (
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '4px 10px', borderRadius: 8, background: `${c}0c`, border: `1px solid ${c}18` }}>
-                    <Clock style={{ width: 10, height: 10, color: c }} />
-                    <span style={{ fontFamily: T.mono, fontSize: 12, fontWeight: 600, color: c }}>{cls.scheduleStr}</span>
-                  </div>
-                )}
-                {cls.duration_minutes && (
-                  <span style={{ fontSize: 12, color: T.t3, display: 'flex', alignItems: 'center', gap: 4 }}>
-                    <span style={{ width: 3, height: 3, borderRadius: '50%', background: T.t4, display: 'inline-block' }} />
-                    {cls.duration_minutes} min
-                  </span>
-                )}
-                {cls.room && (
-                  <span style={{ fontSize: 12, color: T.t3, display: 'flex', alignItems: 'center', gap: 4 }}>
-                    <MapPin style={{ width: 10, height: 10 }} />
-                    {cls.room}
-                  </span>
-                )}
-              </div>
-
-              {/* Row 3: capacity bar */}
-              {!cls.isCancelled && (
-                <div style={{ marginBottom: 14 }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                      <AvatarCluster members={cls.booked} avatarMap={avatarMap} max={4} size={22} />
-                      <span style={{ fontFamily: T.mono, fontSize: 12, fontWeight: 700, color: fc }}>
-                        {booked} <span style={{ color: T.t3, fontWeight: 400 }}>/ {cls.capacity}</span>
-                      </span>
-                    </div>
-                    <span style={{ fontFamily: T.mono, fontSize: 12, fontWeight: 700, color: fc }}>{cls.fill}%</span>
-                  </div>
-                  <div style={{ height: 5, borderRadius: 99, background: 'rgba(255,255,255,.05)', overflow: 'hidden', position: 'relative' }}>
-                    <div style={{
-                      height: '100%', borderRadius: 99, width: `${cls.fill}%`,
-                      background: cls.fill >= 80
-                        ? `linear-gradient(90deg, ${T.emerald}, ${T.sky})`
-                        : cls.fill >= 50
-                        ? `linear-gradient(90deg, ${T.indigo}, ${T.violet})`
-                        : cls.fill >= 30
-                        ? `linear-gradient(90deg, ${T.amber}, #f97316)`
-                        : `linear-gradient(90deg, ${T.red}, #f97316)`,
-                      transition: 'width .8s cubic-bezier(.16,1,.3,1)',
-                      boxShadow: `0 0 8px ${fc}40`,
-                    }} />
-                  </div>
-                </div>
-              )}
-
-              {/* Row 4: stat chips */}
-              <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-                {cls.attended.length > 0 && <StatChip icon={Check} count={cls.attended.length} label="checked in" color={T.emerald} />}
-                {noShows > 0 && <StatChip icon={UserX} count={noShows} label="no-show" color={T.red} />}
-                {cls.waitlist.length > 0 && <StatChip icon={Clock} count={cls.waitlist.length} label="waitlist" color={T.amber} />}
-                {cls.revenue > 0 && (
-                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 11, fontWeight: 700, color: T.emerald, background: T.emeraldDim, border: `1px solid ${T.emeraldBdr}`, borderRadius: 7, padding: '4px 9px' }}>
-                    <DollarSign style={{ width: 9, height: 9 }} />
-                    <span style={{ fontFamily: T.mono }}>£{cls.revenue}</span>
-                  </span>
-                )}
-              </div>
-            </div>
-
-            {/* Right CTA */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 6, flexShrink: 0 }}>
-              <button
-                className="spt-btn"
-                onClick={e => { e.stopPropagation(); onOpen(); }}
-                style={{
-                  padding: '9px 16px', borderRadius: 10,
-                  background: `linear-gradient(135deg, ${T.emerald}, #0ea572)`,
-                  color: '#fff', fontSize: 11, fontWeight: 700, gap: 6,
-                  boxShadow: `0 2px 12px ${T.emerald}30`,
-                  whiteSpace: 'nowrap',
-                }}
-              >
-                <QrCode style={{ width: 12, height: 12 }} /> Check-In
-              </button>
-              <div className="spt-reveal" style={{ display: 'flex', gap: 5 }}>
-                <button className="spt-btn" onClick={e => { e.stopPropagation(); openModal('post', { classId: cls.id }); }} style={{
-                  flex: 1, padding: '6px 8px', borderRadius: 8,
-                  background: T.indigoDim, border: `1px solid ${T.indigoBdr}`,
-                  color: T.indigo, fontSize: 9, fontWeight: 700, gap: 3,
-                }}>
-                  <Megaphone style={{ width: 9, height: 9 }} /> Promote
-                </button>
-                <button className="spt-btn" onClick={e => { e.stopPropagation(); openModal('post', { classId: cls.id }); }} style={{
-                  flex: 1, padding: '6px 8px', borderRadius: 8,
-                  background: T.skyDim, border: `1px solid ${T.skyBdr}`,
-                  color: T.sky, fontSize: 9, fontWeight: 700, gap: 3,
-                }}>
-                  <MessageCircle style={{ width: 9, height: 9 }} /> Msg
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
+        <div style={{display:'flex',justifyContent:'center',marginBottom:12}}><ActivityDial pct={activePct}/></div>
+        <div style={{textAlign:'center',fontSize:11,color:C.t3}}>{Math.min(recentSess,clients.length)} of {clients.length} clients active this week</div>
       </div>
     </div>
   );
 }
 
-// ─── OPTIMIZATION PANEL ───────────────────────────────────────────────────────
-function OptimizationSuggestions({ classesWithData, checkIns, now }) {
-  const suggestions = useMemo(() => {
-    const items = [];
-    const underbooked = classesWithData.filter(c => c.fill < 40 && !c.isCancelled);
-    if (underbooked.length > 0) items.push({ icon: AlertTriangle, color: T.red, text: `${underbooked.length} session${underbooked.length > 1 ? 's' : ''} underbooked — promote or reschedule` });
-    const full = classesWithData.filter(c => c.fill >= 90 && !c.isCancelled);
-    if (full.length > 0) items.push({ icon: TrendingUp, color: T.sky, text: `${full.length} session${full.length > 1 ? 's' : ''} at capacity — add a second slot` });
-    const withWaitlist = classesWithData.filter(c => c.waitlist.length > 0);
-    if (withWaitlist.length > 0) {
-      const total = withWaitlist.reduce((s, c) => s + c.waitlist.length, 0);
-      items.push({ icon: Users, color: T.violet, text: `${total} member${total > 1 ? 's' : ''} on waitlists — demand exceeds supply` });
-    }
-    items.push({ icon: Lightbulb, color: T.amber, text: 'Consistent schedules retain 2.8× more members than sporadic ones' });
-    items.push({ icon: Sparkles, color: T.indigo, text: 'Send pre-class reminders 2hr before to reduce no-shows by up to 40%' });
-    return items.slice(0, 5);
-  }, [classesWithData, checkIns, now]);
-
+/* ─── TABS BAR ───────────────────────────────────────────────── */
+function TabsBar({ active, setActive, isMobile }) {
   return (
-    <div style={{ borderRadius: 16, background: `linear-gradient(145deg, ${T.card}, ${T.surface})`, border: `1px solid ${T.border}`, overflow: 'hidden', boxShadow: T.shadow }}>
-      <div style={{ padding: '14px 18px', borderBottom: `1px solid ${T.border}` }}>
-        <SectionLabel icon={Target} color={T.indigo}>Optimization</SectionLabel>
-      </div>
-      <div style={{ padding: '10px 14px 14px' }}>
-        {suggestions.map((s, i) => {
-          const Ic = s.icon;
+    <div style={{borderBottom:`1px solid ${C.brd}`,...(isMobile?{position:'sticky',top:0,zIndex:90,background:C.bg}:{})}}>
+      <div style={{display:'flex',alignItems:'center',gap:2,...(isMobile?{overflowX:'auto',WebkitOverflowScrolling:'touch',scrollbarWidth:'none'}:{})}}>
+        {TABS.map(tab=>{
+          const Icon=TAB_ICONS[tab],on=active===tab;
           return (
-            <div key={i} style={{
-              display: 'flex', alignItems: 'flex-start', gap: 10,
-              padding: '10px 8px', borderRadius: 10,
-              transition: 'background .12s',
-            }}
-              onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,.025)'}
-              onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 22, height: 22, borderRadius: 6, background: `${s.color}0d`, border: `1px solid ${s.color}1a`, flexShrink: 0 }}>
-                <Ic style={{ width: 10, height: 10, color: s.color }} />
-              </div>
-              <div style={{ flex: 1 }}>
-                <div style={{ display: 'flex', alignItems: 'flex-start', gap: 6 }}>
-                  <span style={{ fontFamily: T.mono, fontSize: 9, fontWeight: 700, color: s.color, marginTop: 1, flexShrink: 0 }}>{String(i + 1).padStart(2, '0')}</span>
-                  <span style={{ fontSize: 11, color: T.t2, lineHeight: 1.6 }}>{s.text}</span>
-                </div>
-              </div>
-            </div>
+            <button key={tab} onClick={()=>setActive(tab)} style={{display:'flex',alignItems:'center',gap:5,padding:isMobile?'10px 16px':'7px 14px',fontSize:12.5,background:'transparent',border:'none',borderBottom:`2px solid ${on?C.cyan:'transparent'}`,color:on?C.t1:C.t2,fontWeight:on?700:400,cursor:'pointer',marginBottom:-1,fontFamily:FONT,whiteSpace:'nowrap',flexShrink:0,minHeight:44}}>
+              <Icon style={{width:13,height:13,flexShrink:0}}/>{tab}
+            </button>
           );
         })}
       </div>
@@ -781,1055 +319,665 @@ function OptimizationSuggestions({ classesWithData, checkIns, now }) {
   );
 }
 
-// ─── CALENDAR WEEK CELL ───────────────────────────────────────────────────────
-function WeekCell({ date, isSelected, isToday, classCount, ciCount, avgFill, onClick }) {
-  const fc = avgFill !== null ? fillColor(avgFill) : T.t4;
+/* ─── SORT DROPDOWN ──────────────────────────────────────────── */
+function SortDropdown({ value, onChange, options }) {
+  const [open,setOpen]=useState(false);
+  const ref=useRef(null);
+  const cur=options.find(o=>o.value===value)||options[0];
+  useEffect(()=>{const h=e=>{if(ref.current&&!ref.current.contains(e.target))setOpen(false)};document.addEventListener('mousedown',h);return()=>document.removeEventListener('mousedown',h);},[]);
   return (
-    <button className="spt-btn" onClick={onClick} style={{
-      flex: 1, padding: '12px 6px 10px', borderRadius: 12, textAlign: 'center',
-      background: isSelected
-        ? `linear-gradient(135deg, ${T.indigoDim}, rgba(99,102,241,.12))`
-        : isToday
-        ? 'rgba(99,102,241,.04)'
-        : 'transparent',
-      border: isSelected
-        ? `1px solid ${T.indigoBdr}`
-        : isToday
-        ? '1px solid rgba(99,102,241,.14)'
-        : `1px solid ${T.border}`,
-      transition: 'all .15s',
-    }}
-      onMouseEnter={e => { if (!isSelected) e.currentTarget.style.background = 'rgba(255,255,255,.03)'; }}
-      onMouseLeave={e => { if (!isSelected) e.currentTarget.style.background = isToday ? 'rgba(99,102,241,.04)' : 'transparent'; }}>
-      <div style={{ fontSize: 9, fontWeight: 700, color: isSelected ? T.indigo : T.t3, textTransform: 'uppercase', letterSpacing: '.07em', marginBottom: 6 }}>{format(date, 'EEE')}</div>
-      <div style={{ fontSize: 20, fontWeight: 800, color: isSelected ? T.indigo : isToday ? T.t1 : T.t2, lineHeight: 1, marginBottom: 8, letterSpacing: '-.03em' }}>{format(date, 'd')}</div>
-      {classCount > 0 && (
-        <div style={{ display: 'flex', justifyContent: 'center', gap: 3, marginBottom: 4 }}>
-          {Array.from({ length: Math.min(classCount, 3) }, (_, j) => (
-            <div key={j} style={{ width: 5, height: 5, borderRadius: '50%', background: isSelected ? T.indigo : fc, boxShadow: isSelected ? `0 0 4px ${T.indigo}60` : 'none' }} />
+    <div ref={ref} style={{position:'relative',flexShrink:0}}>
+      <button onClick={()=>setOpen(o=>!o)} style={{display:'flex',alignItems:'center',gap:5,padding:'4px 10px',background:'rgba(255,255,255,0.04)',border:`1px solid ${open?C.cyanB:C.brd}`,borderRadius:7,color:open?C.t1:C.t2,fontSize:12,fontWeight:600,cursor:'pointer',fontFamily:FONT,transition:'all .15s'}}
+        onMouseEnter={e=>{e.currentTarget.style.borderColor=C.cyanB;e.currentTarget.style.color=C.t1;}}
+        onMouseLeave={e=>{if(!open){e.currentTarget.style.borderColor=C.brd;e.currentTarget.style.color=C.t2;}}}>
+        {cur.label}<ChevronDown style={{width:12,height:12,transition:'transform .2s',transform:open?'rotate(180deg)':'none'}}/>
+      </button>
+      {open&&(
+        <div style={{position:'absolute',top:'calc(100% + 5px)',right:0,zIndex:200,background:C.card2,border:`1px solid ${C.brd}`,borderRadius:9,overflow:'hidden',minWidth:148,boxShadow:'0 8px 24px rgba(0,0,0,0.55)'}}>
+          {options.map(opt=>(
+            <button key={opt.value} onClick={()=>{onChange(opt.value);setOpen(false);}} style={{display:'block',width:'100%',textAlign:'left',padding:'9px 13px',background:opt.value===value?C.cyanD:'transparent',border:'none',color:opt.value===value?C.cyan:C.t2,fontSize:12,fontWeight:opt.value===value?700:500,cursor:'pointer',fontFamily:FONT}}
+              onMouseEnter={e=>{if(opt.value!==value)e.currentTarget.style.background='rgba(255,255,255,0.05)'}}
+              onMouseLeave={e=>{if(opt.value!==value)e.currentTarget.style.background='transparent'}}>
+              {opt.label}
+            </button>
           ))}
         </div>
       )}
-      {ciCount > 0 && (
-        <div style={{ fontFamily: T.mono, fontSize: 9, fontWeight: 600, color: isSelected ? T.indigo : T.t3, background: isSelected ? `${T.indigo}10` : 'rgba(255,255,255,.04)', borderRadius: 4, padding: '1px 4px', display: 'inline-block' }}>
-          {ciCount}
+    </div>
+  );
+}
+
+/* ─── MICRO ──────────────────────────────────────────────────── */
+function Empty({ label, Icon=FileText, onAdd, addLabel }) {
+  return (
+    <div style={{display:'flex',flexDirection:'column',alignItems:'center',padding:'56px 0',gap:14}}>
+      <div style={{width:48,height:48,borderRadius:14,background:C.cyanD,border:`1px solid ${C.cyanB}`,display:'flex',alignItems:'center',justifyContent:'center'}}>
+        <Icon style={{width:20,height:20,color:C.cyan}}/>
+      </div>
+      <div style={{fontSize:13,fontWeight:600,color:C.t2,fontFamily:FONT}}>No {label} yet</div>
+      {onAdd&&<button onClick={onAdd} style={{display:'flex',alignItems:'center',gap:5,padding:'8px 16px',borderRadius:8,fontSize:12,fontWeight:700,cursor:'pointer',fontFamily:FONT,...GRAD}}>
+        <Plus style={{width:11,height:11}}/>{addLabel||`Create ${label}`}
+      </button>}
+    </div>
+  );
+}
+
+function Pill({ children, color, bg, bdr }) {
+  return <span style={{display:'inline-flex',alignItems:'center',fontSize:10,fontWeight:700,color:color||C.t2,background:bg||'rgba(138,138,148,0.08)',border:`1px solid ${bdr||'rgba(138,138,148,0.2)'}`,borderRadius:20,padding:'2.5px 8px',letterSpacing:'.04em',textTransform:'uppercase',whiteSpace:'nowrap',lineHeight:'16px',fontFamily:FONT}}>{children}</span>;
+}
+
+function Av({ name='?', size=28, avatarMap={}, userId=null }) {
+  const col=AV_COLORS[name.charCodeAt(0)%AV_COLORS.length];
+  const src=userId?avatarMap[userId]:null;
+  const ini=name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
+  if (src) return <img src={src} alt={name} style={{width:size,height:size,borderRadius:'50%',flexShrink:0,objectFit:'cover',border:`1.5px solid ${col}55`}}/>;
+  return <div style={{width:size,height:size,borderRadius:'50%',flexShrink:0,background:col+'1a',color:col,fontSize:size*0.32,fontWeight:800,display:'flex',alignItems:'center',justifyContent:'center',border:`1.5px solid ${col}33`,fontFamily:'monospace'}}>{ini}</div>;
+}
+
+function ConfirmDelete({ title, detail, onConfirm, onClose }) {
+  const [busy,setBusy]=useState(false);
+  return (
+    <div style={{position:'fixed',inset:0,zIndex:500,background:'rgba(0,0,0,0.72)',display:'flex',alignItems:'center',justifyContent:'center'}} onClick={e=>{if(e.target===e.currentTarget)onClose();}}>
+      <div style={{background:C.card,border:`1px solid rgba(255,77,109,0.25)`,borderRadius:14,padding:'20px 24px',width:380,maxWidth:'90vw',display:'flex',flexDirection:'column',gap:16,animation:'tcc2ModalIn .28s cubic-bezier(.16,1,.3,1) both'}}>
+        <div style={{display:'flex',alignItems:'flex-start',justifyContent:'space-between'}}>
+          <div><div style={{fontSize:15,fontWeight:800,color:C.t1}}>{title}</div>{detail&&<div style={{fontSize:12,color:C.t2,marginTop:2}}>{detail}</div>}</div>
+          <button onClick={onClose} style={{background:'none',border:'none',color:C.t3,cursor:'pointer',display:'flex',alignItems:'center',padding:4}}><X style={{width:15,height:15}}/></button>
+        </div>
+        <div style={{fontSize:12.5,color:C.t2,lineHeight:1.55}}>This will permanently remove this item. <span style={{color:C.red,fontWeight:600}}>This cannot be undone.</span></div>
+        <div style={{display:'flex',gap:8,justifyContent:'flex-end'}}>
+          <button onClick={onClose} style={{padding:'8px 16px',borderRadius:8,background:'transparent',border:`1px solid ${C.brd}`,color:C.t2,fontSize:12,fontWeight:600,cursor:'pointer',fontFamily:FONT}}>Cancel</button>
+          <button onClick={async()=>{setBusy(true);try{await onConfirm();}finally{setBusy(false);}}} disabled={busy} style={{padding:'8px 18px',borderRadius:8,background:C.red,border:'none',color:'#fff',fontSize:12,fontWeight:700,cursor:busy?'not-allowed':'pointer',opacity:busy?.7:1,fontFamily:FONT}}>
+            {busy?'Removing…':'Remove'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function actionBtn(hover=false) {
+  return {display:'flex',alignItems:'center',gap:6,padding:'6px 12px',borderRadius:8,background:'rgba(255,255,255,0.03)',border:`1px solid ${C.brd}`,color:C.t2,fontSize:12,fontWeight:600,cursor:'pointer',fontFamily:FONT,transition:'all .15s'};
+}
+
+/* ─── WORKOUT PLANS ──────────────────────────────────────────── */
+function TabWorkoutPlans({ workoutPlans, clients, avatarMap, openModal, onDelete, onEdit }) {
+  const [search,setSearch]=useState('');
+  const [typeF,setTypeF]=useState('All');
+  const [diffF,setDiffF]=useState('All');
+  const [toDel,setToDel]=useState(null);
+  const filtered=useMemo(()=>{
+    let l=[...workoutPlans];
+    if(typeF!=='All') l=l.filter(p=>p.type===typeF);
+    if(diffF!=='All') l=l.filter(p=>p.difficulty===diffF);
+    if(search.trim()) l=l.filter(p=>(p.name||'').toLowerCase().includes(search.toLowerCase())||(p.description||'').toLowerCase().includes(search.toLowerCase()));
+    return l;
+  },[workoutPlans,typeF,diffF,search]);
+  return (
+    <>
+      <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:14,flexWrap:'wrap'}}>
+        <div style={{position:'relative',flex:1,minWidth:200}}>
+          <Search style={{position:'absolute',left:12,top:'50%',transform:'translateY(-50%)',width:13,height:13,color:C.t3,pointerEvents:'none'}}/>
+          <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Search workout plans…" className="tcc2-input" style={{paddingLeft:36}}/>
+        </div>
+        <SortDropdown value={typeF} onChange={setTypeF} options={[{value:'All',label:'All Types'},...WORKOUT_TYPES.map(t=>({value:t,label:t}))]}/>
+        <SortDropdown value={diffF} onChange={setDiffF} options={[{value:'All',label:'All Levels'},{value:'Beginner',label:'Beginner'},{value:'Intermediate',label:'Intermediate'},{value:'Advanced',label:'Advanced'},{value:'Elite',label:'Elite'}]}/>
+        <button onClick={()=>openModal?.('workout_plan')} style={{display:'flex',alignItems:'center',gap:5,padding:'8px 14px',borderRadius:8,fontSize:12,fontWeight:700,cursor:'pointer',fontFamily:FONT,...GRAD}}>
+          <Plus style={{width:12,height:12}}/>Create Plan
+        </button>
+      </div>
+      <div style={{fontSize:12,fontWeight:500,color:C.t2,marginBottom:12}}>{filtered.length} workout plan{filtered.length!==1?'s':''}</div>
+      {filtered.length===0 ? <Empty label="workout plans" Icon={Dumbbell} onAdd={()=>openModal?.('workout_plan')} addLabel="Create Workout Plan"/> : (
+        <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(300px,1fr))',gap:12}}>
+          {filtered.map(plan=>{
+            const d=DIFF_COLORS[plan.difficulty]||{color:C.t2,bg:'rgba(138,138,148,0.08)',bdr:'rgba(138,138,148,0.2)'};
+            const typeColMap={Strength:C.red,Cardio:C.cyan,HIIT:C.amber,Flexibility:C.green,Circuit:'#7c3aed','Sport-Specific':C.blue};
+            const tc=typeColMap[plan.type]||C.t2;
+            const assigned=(plan.assigned_clients||[]).length;
+            return (
+              <div key={plan.id} className="tcc2-card" style={{background:C.card,border:`1px solid ${C.brd}`,borderRadius:12,overflow:'hidden'}}>
+                <div style={{padding:'14px 16px 12px',borderBottom:`1px solid ${C.brd}`}}>
+                  <div style={{display:'flex',alignItems:'flex-start',justifyContent:'space-between',marginBottom:8}}>
+                    <div style={{flex:1,minWidth:0}}>
+                      <div style={{fontSize:14,fontWeight:700,color:C.t1,marginBottom:5,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{plan.name||'Untitled Plan'}</div>
+                      <div style={{display:'flex',alignItems:'center',gap:6,flexWrap:'wrap'}}>
+                        {plan.type&&<span style={{fontSize:10,fontWeight:700,color:tc,background:tc+'15',border:`1px solid ${tc}30`,borderRadius:20,padding:'2px 8px',textTransform:'uppercase',letterSpacing:'.04em'}}>{plan.type}</span>}
+                        {plan.difficulty&&<Pill color={d.color} bg={d.bg} bdr={d.bdr}>{plan.difficulty}</Pill>}
+                      </div>
+                    </div>
+                    <div style={{display:'flex',gap:4,flexShrink:0,marginLeft:8}}>
+                      <button onClick={()=>onEdit?.(plan)} style={{width:28,height:28,borderRadius:7,display:'flex',alignItems:'center',justifyContent:'center',background:'transparent',border:`1px solid ${C.brd}`,color:C.t3,cursor:'pointer',transition:'all .15s'}}
+                        onMouseEnter={e=>{e.currentTarget.style.borderColor=C.cyanB;e.currentTarget.style.color=C.cyan;}} onMouseLeave={e=>{e.currentTarget.style.borderColor=C.brd;e.currentTarget.style.color=C.t3;}}><Pencil style={{width:11,height:11}}/></button>
+                      <button onClick={()=>setToDel(plan)} style={{width:28,height:28,borderRadius:7,display:'flex',alignItems:'center',justifyContent:'center',background:'transparent',border:`1px solid ${C.brd}`,color:C.t3,cursor:'pointer',transition:'all .15s'}}
+                        onMouseEnter={e=>{e.currentTarget.style.borderColor=C.redB;e.currentTarget.style.color=C.red;}} onMouseLeave={e=>{e.currentTarget.style.borderColor=C.brd;e.currentTarget.style.color=C.t3;}}><Trash2 style={{width:11,height:11}}/></button>
+                    </div>
+                  </div>
+                  {plan.description&&<div style={{fontSize:11.5,color:C.t2,lineHeight:1.5,display:'-webkit-box',WebkitLineClamp:2,WebkitBoxOrient:'vertical',overflow:'hidden'}}>{plan.description}</div>}
+                </div>
+                <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',borderBottom:`1px solid ${C.brd}`}}>
+                  {[
+                    {label:'Exercises',val:plan.exercises?.length||plan.exercise_count||'—',col:C.cyan},
+                    {label:'Duration', val:plan.duration_weeks?`${plan.duration_weeks}wk`:plan.duration||'—',col:C.t1},
+                    {label:'Assigned', val:assigned,col:assigned>0?C.green:C.t3},
+                  ].map((s,i)=>(
+                    <div key={i} style={{padding:'10px 12px',borderRight:i<2?`1px solid ${C.brd}`:'none',textAlign:'center'}}>
+                      <div style={{fontSize:16,fontWeight:700,color:s.col,lineHeight:1}}>{s.val}</div>
+                      <div style={{fontSize:9.5,color:C.t3,textTransform:'uppercase',letterSpacing:'.05em',marginTop:3}}>{s.label}</div>
+                    </div>
+                  ))}
+                </div>
+                {/* Exercises preview */}
+                {plan.exercises?.length>0&&(
+                  <div style={{padding:'8px 16px',borderBottom:`1px solid ${C.brd}`,display:'flex',gap:4,flexWrap:'wrap'}}>
+                    {plan.exercises.slice(0,4).map((ex,i)=>(
+                      <span key={i} style={{fontSize:10,color:C.t3,background:'rgba(255,255,255,0.04)',border:`1px solid ${C.brd}`,borderRadius:6,padding:'2px 7px'}}>{typeof ex==='string'?ex:ex.name||`Ex ${i+1}`}</span>
+                    ))}
+                    {plan.exercises.length>4&&<span style={{fontSize:10,color:C.t3}}>+{plan.exercises.length-4} more</span>}
+                  </div>
+                )}
+                <div style={{padding:'10px 14px',display:'flex',alignItems:'center',justifyContent:'space-between'}}>
+                  <div style={{fontSize:10.5,color:C.t3}}>{plan.created_date?timeAgo(plan.created_date):'—'}</div>
+                  <button onClick={()=>openModal?.('assign_plan',plan)} style={{display:'flex',alignItems:'center',gap:5,padding:'6px 12px',borderRadius:7,background:C.cyanD,border:`1px solid ${C.cyanB}`,color:C.cyan,fontSize:11,fontWeight:600,cursor:'pointer',fontFamily:FONT}}>
+                    <UserPlus style={{width:11,height:11}}/>Assign
+                  </button>
+                </div>
+              </div>
+            );
+          })}
         </div>
       )}
-      {isToday && !isSelected && (
-        <div style={{ position: 'absolute', top: 8, right: 10, width: 5, height: 5, borderRadius: '50%', background: T.emerald, boxShadow: `0 0 6px ${T.emerald}80` }} />
+      {toDel&&<ConfirmDelete title="Remove Workout Plan" detail={toDel.name} onConfirm={async()=>{await onDelete?.(toDel.id);setToDel(null);}} onClose={()=>setToDel(null)}/>}
+    </>
+  );
+}
+
+/* ─── NUTRITION PLANS ────────────────────────────────────────── */
+function TabNutritionPlans({ nutritionPlans, openModal, onDelete, onEdit }) {
+  const [search,setSearch]=useState('');
+  const [toDel,setToDel]=useState(null);
+  const filtered=useMemo(()=>{
+    if(!search.trim()) return nutritionPlans;
+    const q=search.toLowerCase();
+    return nutritionPlans.filter(p=>(p.name||'').toLowerCase().includes(q)||(p.goal||'').toLowerCase().includes(q));
+  },[nutritionPlans,search]);
+  const GOAL_COLS={'Weight Loss':C.red,'Muscle Gain':C.cyan,'Maintenance':C.green,'Performance':C.amber,'Cutting':C.red,'Bulking':C.blue};
+  return (
+    <>
+      <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:14,flexWrap:'wrap'}}>
+        <div style={{position:'relative',flex:1,minWidth:200}}>
+          <Search style={{position:'absolute',left:12,top:'50%',transform:'translateY(-50%)',width:13,height:13,color:C.t3,pointerEvents:'none'}}/>
+          <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Search nutrition plans…" className="tcc2-input" style={{paddingLeft:36}}/>
+        </div>
+        <button onClick={()=>openModal?.('nutrition_plan')} style={{display:'flex',alignItems:'center',gap:5,padding:'8px 14px',borderRadius:8,fontSize:12,fontWeight:700,cursor:'pointer',fontFamily:FONT,...GRAD}}>
+          <Plus style={{width:12,height:12}}/>Create Plan
+        </button>
+      </div>
+      <div style={{fontSize:12,fontWeight:500,color:C.t2,marginBottom:12}}>{filtered.length} nutrition plan{filtered.length!==1?'s':''}</div>
+      {filtered.length===0 ? <Empty label="nutrition plans" Icon={Utensils} onAdd={()=>openModal?.('nutrition_plan')} addLabel="Create Nutrition Plan"/> : (
+        <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(300px,1fr))',gap:12}}>
+          {filtered.map(plan=>{
+            const gc=GOAL_COLS[plan.goal]||C.t2;
+            const assigned=(plan.assigned_clients||[]).length;
+            const totalMacros=(plan.protein||0)+(plan.carbs||0)+(plan.fat||0);
+            return (
+              <div key={plan.id} className="tcc2-card" style={{background:C.card,border:`1px solid ${C.brd}`,borderRadius:12,overflow:'hidden'}}>
+                <div style={{padding:'14px 16px 12px',borderBottom:`1px solid ${C.brd}`}}>
+                  <div style={{display:'flex',alignItems:'flex-start',justifyContent:'space-between',marginBottom:8}}>
+                    <div style={{flex:1,minWidth:0}}>
+                      <div style={{fontSize:14,fontWeight:700,color:C.t1,marginBottom:5,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{plan.name||'Untitled Plan'}</div>
+                      {plan.goal&&<span style={{fontSize:10,fontWeight:700,color:gc,background:gc+'15',border:`1px solid ${gc}30`,borderRadius:20,padding:'2px 8px',textTransform:'uppercase',letterSpacing:'.04em'}}>{plan.goal}</span>}
+                    </div>
+                    <div style={{display:'flex',gap:4,flexShrink:0,marginLeft:8}}>
+                      <button onClick={()=>onEdit?.(plan)} style={{width:28,height:28,borderRadius:7,display:'flex',alignItems:'center',justifyContent:'center',background:'transparent',border:`1px solid ${C.brd}`,color:C.t3,cursor:'pointer',transition:'all .15s'}}
+                        onMouseEnter={e=>{e.currentTarget.style.borderColor=C.cyanB;e.currentTarget.style.color=C.cyan;}} onMouseLeave={e=>{e.currentTarget.style.borderColor=C.brd;e.currentTarget.style.color=C.t3;}}><Pencil style={{width:11,height:11}}/></button>
+                      <button onClick={()=>setToDel(plan)} style={{width:28,height:28,borderRadius:7,display:'flex',alignItems:'center',justifyContent:'center',background:'transparent',border:`1px solid ${C.brd}`,color:C.t3,cursor:'pointer',transition:'all .15s'}}
+                        onMouseEnter={e=>{e.currentTarget.style.borderColor=C.redB;e.currentTarget.style.color=C.red;}} onMouseLeave={e=>{e.currentTarget.style.borderColor=C.brd;e.currentTarget.style.color=C.t3;}}><Trash2 style={{width:11,height:11}}/></button>
+                    </div>
+                  </div>
+                  {plan.description&&<div style={{fontSize:11.5,color:C.t2,lineHeight:1.5,display:'-webkit-box',WebkitLineClamp:2,WebkitBoxOrient:'vertical',overflow:'hidden'}}>{plan.description}</div>}
+                </div>
+                {/* Macros */}
+                {(plan.calories||plan.protein||plan.carbs||plan.fat)&&(
+                  <div style={{padding:'12px 16px',borderBottom:`1px solid ${C.brd}`}}>
+                    <div style={{display:'flex',justifyContent:'space-between',marginBottom:8}}>
+                      {[{l:'Calories',v:plan.calories?`${plan.calories}kcal`:'—',c:C.amber},{l:'Protein',v:plan.protein?`${plan.protein}g`:'—',c:C.cyan},{l:'Carbs',v:plan.carbs?`${plan.carbs}g`:'—',c:C.green},{l:'Fat',v:plan.fat?`${plan.fat}g`:'—',c:C.red}].map((m,i)=>(
+                        <div key={i} style={{textAlign:'center'}}>
+                          <div style={{fontSize:13,fontWeight:700,color:m.c}}>{m.v}</div>
+                          <div style={{fontSize:9.5,color:C.t3,textTransform:'uppercase',letterSpacing:'.05em'}}>{m.l}</div>
+                        </div>
+                      ))}
+                    </div>
+                    {totalMacros>0&&(
+                      <div style={{height:4,borderRadius:99,overflow:'hidden',display:'flex',gap:1}}>
+                        {[{v:plan.protein||0,c:C.cyan},{v:plan.carbs||0,c:C.green},{v:plan.fat||0,c:C.red}].map((m,i)=>(
+                          <div key={i} style={{flex:m.v,background:m.c,opacity:.75,minWidth:m.v>0?3:0}}/>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+                {/* Meals preview */}
+                {plan.meals?.length>0&&(
+                  <div style={{padding:'8px 16px',borderBottom:`1px solid ${C.brd}`}}>
+                    <div style={{fontSize:10,color:C.t3,textTransform:'uppercase',letterSpacing:'.05em',marginBottom:5}}>Meals ({plan.meals.length})</div>
+                    <div style={{display:'flex',gap:4,flexWrap:'wrap'}}>
+                      {plan.meals.slice(0,4).map((m,i)=>(
+                        <span key={i} style={{fontSize:10,color:C.t3,background:'rgba(255,255,255,0.04)',border:`1px solid ${C.brd}`,borderRadius:6,padding:'2px 7px'}}>{typeof m==='string'?m:m.name||`Meal ${i+1}`}</span>
+                      ))}
+                      {plan.meals.length>4&&<span style={{fontSize:10,color:C.t3}}>+{plan.meals.length-4} more</span>}
+                    </div>
+                  </div>
+                )}
+                <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',borderBottom:`1px solid ${C.brd}`}}>
+                  {[{label:'Meals/day',val:plan.meals_per_day||plan.meal_count||plan.meals?.length||'—',col:C.t1},{label:'Assigned',val:assigned,col:assigned>0?C.green:C.t3}].map((s,i)=>(
+                    <div key={i} style={{padding:'10px 12px',borderRight:i<1?`1px solid ${C.brd}`:'none',textAlign:'center'}}>
+                      <div style={{fontSize:16,fontWeight:700,color:s.col,lineHeight:1}}>{s.val}</div>
+                      <div style={{fontSize:9.5,color:C.t3,textTransform:'uppercase',letterSpacing:'.05em',marginTop:3}}>{s.label}</div>
+                    </div>
+                  ))}
+                </div>
+                <div style={{padding:'10px 14px',display:'flex',alignItems:'center',justifyContent:'space-between'}}>
+                  <div style={{fontSize:10.5,color:C.t3}}>{plan.created_date?timeAgo(plan.created_date):'—'}</div>
+                  <button onClick={()=>openModal?.('assign_nutrition',plan)} style={{display:'flex',alignItems:'center',gap:5,padding:'6px 12px',borderRadius:7,background:C.cyanD,border:`1px solid ${C.cyanB}`,color:C.cyan,fontSize:11,fontWeight:600,cursor:'pointer',fontFamily:FONT}}>
+                    <UserPlus style={{width:11,height:11}}/>Assign
+                  </button>
+                </div>
+              </div>
+            );
+          })}
+        </div>
       )}
+      {toDel&&<ConfirmDelete title="Remove Nutrition Plan" detail={toDel.name} onConfirm={async()=>{await onDelete?.(toDel.id);setToDel(null);}} onClose={()=>setToDel(null)}/>}
+    </>
+  );
+}
+
+/* ─── PROGRAMS ───────────────────────────────────────────────── */
+function TabPrograms({ programs, openModal, onDelete }) {
+  const [toDel,setToDel]=useState(null);
+  const [rerunning,setRerunning]=useState(null);
+  const nowDate=new Date();
+  const live=programs.filter(p=>!p.end_date||new Date(p.end_date)>=nowDate);
+  const ended=programs.filter(p=>p.end_date&&new Date(p.end_date)<nowDate);
+  const btnSty={display:'flex',alignItems:'center',gap:6,padding:'6px 12px',borderRadius:8,background:'rgba(255,255,255,0.03)',border:`1px solid ${C.brd}`,color:C.t2,fontSize:12,fontWeight:600,cursor:'pointer',fontFamily:FONT,transition:'all .15s'};
+  const Card=({prog,showRerun})=>{
+    const enrolled=(prog.enrolled_clients||prog.participants||[]).length;
+    const weeks=prog.duration_weeks||prog.weeks||'—';
+    const phases=(prog.phases||[]).length;
+    return (
+      <div className="tcc2-card" style={{background:C.card,border:`1px solid ${C.brd}`,borderRadius:12,marginBottom:10,overflow:'hidden'}}>
+        <div style={{padding:'14px 16px',borderBottom:`1px solid ${C.brd}`}}>
+          <div style={{display:'flex',alignItems:'flex-start',gap:10}}>
+            <div style={{width:42,height:42,borderRadius:10,flexShrink:0,background:C.violetD||'rgba(124,58,237,0.12)',border:`1px solid ${C.violetB||'rgba(124,58,237,0.28)'}`,display:'flex',alignItems:'center',justifyContent:'center'}}>
+              <Layers style={{width:18,height:18,color:'#7c3aed'}}/>
+            </div>
+            <div style={{flex:1,minWidth:0}}>
+              <div style={{fontSize:14,fontWeight:700,color:C.t1,marginBottom:4}}>{prog.name||'Training Program'}</div>
+              {prog.description&&<div style={{fontSize:11.5,color:C.t2,lineHeight:1.5,display:'-webkit-box',WebkitLineClamp:2,WebkitBoxOrient:'vertical',overflow:'hidden'}}>{prog.description}</div>}
+            </div>
+            <button onClick={()=>setToDel(prog)} style={{width:28,height:28,borderRadius:7,flexShrink:0,display:'flex',alignItems:'center',justifyContent:'center',background:'transparent',border:`1px solid ${C.brd}`,color:C.t3,cursor:'pointer',transition:'all .15s'}}
+              onMouseEnter={e=>{e.currentTarget.style.borderColor=C.redB;e.currentTarget.style.color=C.red;}} onMouseLeave={e=>{e.currentTarget.style.borderColor=C.brd;e.currentTarget.style.color=C.t3;}}><Trash2 style={{width:11,height:11}}/></button>
+          </div>
+        </div>
+        <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',borderBottom:`1px solid ${C.brd}`}}>
+          {[{label:'Duration',val:weeks!=='—'?`${weeks} wk`:weeks,col:C.t1},{label:'Phases',val:phases||'—',col:'#7c3aed'},{label:'Enrolled',val:enrolled,col:enrolled>0?C.green:C.t3},{label:'Status',val:showRerun?'Ended':'Active',col:showRerun?C.t3:C.green}].map((s,i)=>(
+            <div key={i} style={{padding:'10px 12px',borderRight:i<3?`1px solid ${C.brd}`:'none',textAlign:'center'}}>
+              <div style={{fontSize:14,fontWeight:700,color:s.col,lineHeight:1}}>{s.val}</div>
+              <div style={{fontSize:9.5,color:C.t3,textTransform:'uppercase',letterSpacing:'.05em',marginTop:3}}>{s.label}</div>
+            </div>
+          ))}
+        </div>
+        {(prog.workout_plan_names||prog.nutrition_plan_name)&&(
+          <div style={{padding:'8px 16px',borderBottom:`1px solid ${C.brd}`,display:'flex',gap:6,flexWrap:'wrap'}}>
+            {(prog.workout_plan_names||[]).map((n,i)=><span key={i} style={{fontSize:10,color:C.red,background:C.redD,border:`1px solid ${C.redB}`,borderRadius:6,padding:'2px 7px',display:'flex',alignItems:'center',gap:3}}><Dumbbell style={{width:8,height:8}}/>{n}</span>)}
+            {prog.nutrition_plan_name&&<span style={{fontSize:10,color:C.green,background:C.greenD,border:`1px solid ${C.greenB}`,borderRadius:6,padding:'2px 7px',display:'flex',alignItems:'center',gap:3}}><Utensils style={{width:8,height:8}}/>{prog.nutrition_plan_name}</span>}
+          </div>
+        )}
+        {(prog.start_date||prog.end_date)&&<div style={{padding:'8px 16px',borderBottom:`1px solid ${C.brd}`,fontSize:11,color:C.t3}}>{prog.start_date&&`Start: ${prog.start_date}`}{prog.start_date&&prog.end_date&&' → '}{prog.end_date&&`End: ${prog.end_date}`}</div>}
+        <div style={{padding:'10px 16px',display:'flex',alignItems:'center',justifyContent:'space-between',gap:8,flexWrap:'wrap'}}>
+          <button onClick={()=>openModal?.('assign_program',prog)} style={{display:'flex',alignItems:'center',gap:5,padding:'6px 12px',borderRadius:7,background:C.cyanD,border:`1px solid ${C.cyanB}`,color:C.cyan,fontSize:11,fontWeight:600,cursor:'pointer',fontFamily:FONT}}>
+            <UserPlus style={{width:11,height:11}}/>Enrol Client
+          </button>
+          {showRerun&&(
+            <button disabled={rerunning===prog.id} onClick={async()=>{setRerunning(prog.id);try{await new Promise(r=>setTimeout(r,600));}finally{setRerunning(null);}}} style={btnSty}
+              onMouseEnter={e=>{e.currentTarget.style.borderColor=C.cyanB;e.currentTarget.style.color=C.cyan;e.currentTarget.style.background=C.cyanD;}}
+              onMouseLeave={e=>{e.currentTarget.style.borderColor=C.brd;e.currentTarget.style.color=C.t2;e.currentTarget.style.background='rgba(255,255,255,0.03)';}}>
+              <RefreshCw style={{width:11,height:11}}/>{rerunning===prog.id?'Re-running…':'Re-run Program'}
+            </button>
+          )}
+        </div>
+      </div>
+    );
+  };
+  return (
+    <>
+      <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:12,marginTop:2}}>
+        <div style={{fontSize:12,fontWeight:500,color:C.t2}}>{live.length} active program{live.length!==1?'s':''}</div>
+        <button onClick={()=>openModal?.('program')} style={{display:'flex',alignItems:'center',gap:5,padding:'8px 14px',borderRadius:8,fontSize:12,fontWeight:700,cursor:'pointer',fontFamily:FONT,...GRAD}}>
+          <Plus style={{width:12,height:12}}/>Create Program
+        </button>
+      </div>
+      {live.length===0?<Empty label="active programs" Icon={Layers} onAdd={()=>openModal?.('program')} addLabel="Create Program"/>:live.map(p=><Card key={p.id} prog={p} showRerun={false}/>)}
+      {ended.length>0&&<>
+        <div style={{fontSize:12,fontWeight:700,color:C.t2,margin:'20px 0 10px',paddingTop:12,borderTop:`1px solid ${C.brd}`,textTransform:'uppercase',letterSpacing:'0.08em'}}>Ended Programs</div>
+        {ended.map(p=><Card key={p.id} prog={p} showRerun/>)}
+      </>}
+      {toDel&&<ConfirmDelete title="Remove Program" detail={toDel.name} onConfirm={async()=>{await onDelete?.(toDel.id);setToDel(null);}} onClose={()=>setToDel(null)}/>}
+    </>
+  );
+}
+
+/* ─── SESSIONS ───────────────────────────────────────────────── */
+function TabSessions({ sessions, clients, avatarMap, openModal, now }) {
+  const nowMs=now?new Date(now).getTime():Date.now();
+  const upcoming=[...sessions.filter(s=>s.session_date&&new Date(s.session_date).getTime()>nowMs)].sort((a,b)=>new Date(a.session_date)-new Date(b.session_date));
+  const past=[...sessions.filter(s=>s.session_date&&new Date(s.session_date).getTime()<=nowMs)].sort((a,b)=>new Date(b.session_date)-new Date(a.session_date)).slice(0,12);
+  const statusCols={confirmed:C.cyan,attended:C.green,no_show:C.red,cancelled:C.t3,pending:C.amber};
+  const Card=({session,isPast})=>{
+    const d=new Date(session.session_date);
+    const dateLabel=d.toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'});
+    const timeLabel=d.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
+    const cName=session.client_name||session.member_name||'Client';
+    const status=session.status||'confirmed';
+    const sc=statusCols[status]||C.cyan;
+    return (
+      <div className="tcc2-card" style={{background:C.card,border:`1px solid ${isPast?C.brd:C.cyanB}`,borderRadius:10,padding:'13px 16px',marginBottom:8,display:'flex',alignItems:'center',gap:12,opacity:isPast?.75:1}}>
+        <div style={{width:44,height:44,borderRadius:10,flexShrink:0,background:isPast?'rgba(255,255,255,0.04)':C.cyanD,border:`1px solid ${isPast?C.brd:C.cyanB}`,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center'}}>
+          <div style={{fontSize:17,fontWeight:700,color:isPast?C.t3:C.cyan,lineHeight:1}}>{d.getDate()}</div>
+          <div style={{fontSize:8,color:isPast?C.t3:C.cyan,fontWeight:600,textTransform:'uppercase'}}>{d.toLocaleDateString('en-GB',{month:'short'})}</div>
+        </div>
+        <div style={{flex:1,minWidth:0}}>
+          <div style={{fontSize:13,fontWeight:700,color:C.t1,marginBottom:3}}>{session.session_name||session.class_name||'Coaching Session'}</div>
+          <div style={{display:'flex',alignItems:'center',gap:8}}>
+            <Av name={cName} size={20} avatarMap={avatarMap} userId={session.client_id||session.member_id}/>
+            <span style={{fontSize:11.5,color:C.t2}}>{cName}</span>
+          </div>
+        </div>
+        {session.notes&&<div style={{fontSize:11,color:C.t3,maxWidth:100,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{session.notes}</div>}
+        <div style={{textAlign:'right',flexShrink:0}}>
+          <div style={{fontSize:12,fontWeight:700,color:isPast?C.t3:C.cyan}}>{timeLabel}</div>
+          <div style={{fontSize:10.5,color:C.t3,marginTop:2}}>{dateLabel}</div>
+        </div>
+        <Pill color={sc} bg={sc+'15'} bdr={sc+'30'}>{status}</Pill>
+        {!isPast&&<div style={{width:8,height:8,borderRadius:'50%',flexShrink:0,background:C.green,animation:'tcc2Pulse 2s ease infinite'}}/>}
+      </div>
+    );
+  };
+  return (
+    <>
+      <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:12,marginTop:2}}>
+        <div style={{fontSize:12,fontWeight:500,color:C.t2}}>{upcoming.length} upcoming session{upcoming.length!==1?'s':''}</div>
+        <button onClick={()=>openModal?.('session')} style={{display:'flex',alignItems:'center',gap:5,padding:'8px 14px',borderRadius:8,fontSize:12,fontWeight:700,cursor:'pointer',fontFamily:FONT,...GRAD}}>
+          <Plus style={{width:12,height:12}}/>Book Session
+        </button>
+      </div>
+      {upcoming.length===0?<Empty label="upcoming sessions" Icon={Calendar} onAdd={()=>openModal?.('session')} addLabel="Book Session"/>:upcoming.map(s=><Card key={s.id} session={s} isPast={false}/>)}
+      {past.length>0&&<>
+        <div style={{fontSize:12,fontWeight:700,color:C.t2,margin:'20px 0 10px',paddingTop:12,borderTop:`1px solid ${C.brd}`,textTransform:'uppercase',letterSpacing:'0.08em'}}>Past Sessions</div>
+        {past.map(s=><Card key={s.id} session={s} isPast/>)}
+      </>}
+    </>
+  );
+}
+
+/* ─── CHALLENGES ─────────────────────────────────────────────── */
+function TabChallenges({ challenges, openModal, onDelete }) {
+  const [toDel,setToDel]=useState(null);
+  const [rerunning,setRerunning]=useState(null);
+  const nowDate=new Date();
+  const live=challenges.filter(c=>!c.end_date||new Date(c.end_date)>=nowDate);
+  const ended=challenges.filter(c=>c.end_date&&new Date(c.end_date)<nowDate);
+  const btnSty={display:'flex',alignItems:'center',gap:6,padding:'6px 12px',borderRadius:8,background:'rgba(255,255,255,0.03)',border:`1px solid ${C.brd}`,color:C.t2,fontSize:12,fontWeight:600,cursor:'pointer',fontFamily:FONT,transition:'all .15s'};
+  const Card=({ch,showRerun})=>(
+    <div className="tcc2-card" style={{background:C.card,border:`1px solid ${C.brd}`,borderRadius:10,padding:'13px 16px',marginBottom:8}}>
+      <div style={{display:'flex',alignItems:'flex-start',gap:12}}>
+        <div style={{flex:1,minWidth:0}}>
+          <div style={{fontSize:13,fontWeight:700,color:C.t1,marginBottom:3}}>{ch.title}</div>
+          {ch.description&&<div style={{fontSize:11.5,color:C.t2,marginBottom:3,lineHeight:1.5}}>{ch.description}</div>}
+          <div style={{display:'flex',alignItems:'center',gap:12,flexWrap:'wrap'}}>
+            {(ch.start_date||ch.end_date)&&<span style={{fontSize:11,color:C.t3}}>{ch.start_date}{ch.start_date&&ch.end_date&&' → '}{ch.end_date||'Ongoing'}</span>}
+            {ch.target&&<span style={{fontSize:11,color:C.t2}}><strong>Target:</strong> {ch.target}</span>}
+            <span style={{fontSize:11.5,color:C.t2}}>{(ch.participants||[]).length} joined</span>
+          </div>
+        </div>
+        <button onClick={()=>setToDel(ch)} style={btnSty}
+          onMouseEnter={e=>{e.currentTarget.style.borderColor=C.redB;e.currentTarget.style.color=C.red;e.currentTarget.style.background=C.redD;}}
+          onMouseLeave={e=>{e.currentTarget.style.borderColor=C.brd;e.currentTarget.style.color=C.t2;e.currentTarget.style.background='rgba(255,255,255,0.03)';}}>
+          <Trash2 style={{width:12,height:12}}/><span>Remove</span>
+        </button>
+      </div>
+      {ch.reward&&<div style={{marginTop:8,fontSize:11,color:C.amber}}><Award style={{width:10,height:10,verticalAlign:'middle',marginRight:4}}/>Reward: {ch.reward}</div>}
+      {showRerun&&(
+        <div style={{marginTop:10}}>
+          <button disabled={rerunning===ch.id} onClick={async()=>{setRerunning(ch.id);try{await new Promise(r=>setTimeout(r,600));}finally{setRerunning(null);}}} style={btnSty}
+            onMouseEnter={e=>{e.currentTarget.style.borderColor=C.cyanB;e.currentTarget.style.color=C.cyan;e.currentTarget.style.background=C.cyanD;}}
+            onMouseLeave={e=>{e.currentTarget.style.borderColor=C.brd;e.currentTarget.style.color=C.t2;e.currentTarget.style.background='rgba(255,255,255,0.03)';}}>
+            <RefreshCw style={{width:11,height:11}}/>{rerunning===ch.id?'Re-running…':'Re-run Challenge'}
+          </button>
+        </div>
+      )}
+    </div>
+  );
+  return (
+    <>
+      <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:12,marginTop:2}}>
+        <div style={{fontSize:12,fontWeight:500,color:C.t2}}>{live.length} live challenge{live.length!==1?'s':''}</div>
+        <button onClick={()=>openModal?.('challenge')} style={{display:'flex',alignItems:'center',gap:5,padding:'8px 14px',borderRadius:8,fontSize:12,fontWeight:700,cursor:'pointer',fontFamily:FONT,...GRAD}}>
+          <Plus style={{width:12,height:12}}/>New Challenge
+        </button>
+      </div>
+      {live.length===0?<Empty label="live challenges" Icon={Award} onAdd={()=>openModal?.('challenge')} addLabel="New Challenge"/>:live.map(c=><Card key={c.id} ch={c} showRerun={false}/>)}
+      {ended.length>0&&<>
+        <div style={{fontSize:12,fontWeight:700,color:C.t2,margin:'20px 0 10px',paddingTop:12,borderTop:`1px solid ${C.brd}`,textTransform:'uppercase',letterSpacing:'0.08em'}}>Ended Challenges</div>
+        {ended.map(c=><Card key={c.id} ch={c} showRerun/>)}
+      </>}
+      {toDel&&<ConfirmDelete title="Remove Challenge" detail={toDel.title} onConfirm={async()=>{await onDelete?.(toDel.id);setToDel(null);}} onClose={()=>setToDel(null)}/>}
+    </>
+  );
+}
+
+/* ─── POSTS ──────────────────────────────────────────────────── */
+function TabPosts({ posts, coach, avatarMap, openModal, onDelete, onPublish }) {
+  const [filter,setFilter]=useState('published');
+  const [publishing,setPublishing]=useState(null);
+  const PALLETE=['#6366f1','#8b5cf6','#ec4899','#14b8a6','#f59e0b','#4d7fff','#10b981'];
+  const nowMs=Date.now();
+  const published=posts.filter(p=>!p.is_hidden&&!p.is_draft&&(!p.scheduled_date||new Date(p.scheduled_date).getTime()<=nowMs));
+  const drafts   =posts.filter(p=>p.is_draft);
+  const scheduled=posts.filter(p=>p.scheduled_date&&new Date(p.scheduled_date).getTime()>nowMs&&!p.is_draft);
+  const visible=filter==='published'?published:filter==='drafts'?drafts:scheduled;
+  const cName=coach?.name||'You';
+  const avatarBg=PALLETE[(cName.charCodeAt(0)||0)%PALLETE.length];
+  const cAvatar=coach?avatarMap[coach.id]||coach.avatar||null:null;
+  const initials=cName.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2)||'?';
+  return (
+    <>
+      <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:12,marginTop:2}}>
+        <div style={{display:'flex',gap:2,padding:'3px',background:C.card,border:`1px solid ${C.brd}`,borderRadius:9}}>
+          {[{id:'published',label:`Published (${published.length})`},{id:'drafts',label:`Drafts (${drafts.length})`},{id:'scheduled',label:`Scheduled (${scheduled.length})`}].map(f=>(
+            <button key={f.id} onClick={()=>setFilter(f.id)} style={{padding:'6px 12px',borderRadius:7,fontSize:11.5,fontWeight:filter===f.id?700:400,background:filter===f.id?C.cyanD:'transparent',border:`1px solid ${filter===f.id?C.cyanB:'transparent'}`,color:filter===f.id?C.cyan:C.t3,cursor:'pointer',fontFamily:FONT,whiteSpace:'nowrap'}}>{f.label}</button>
+          ))}
+        </div>
+        <button onClick={()=>openModal?.('post')} style={{display:'flex',alignItems:'center',gap:5,padding:'8px 14px',borderRadius:8,fontSize:12,fontWeight:700,cursor:'pointer',fontFamily:FONT,...GRAD}}>
+          <Plus style={{width:12,height:12}}/>New Post
+        </button>
+      </div>
+      {visible.length===0?<Empty label={filter} Icon={FileText} onAdd={()=>openModal?.('post')} addLabel="Create Post"/>:(
+        <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10}}>
+          {visible.map(p=>{
+            const pt=POST_TYPE_STYLES[p.post_type]||POST_TYPE_STYLES.announcement;
+            const sched=p.scheduled_date?new Date(p.scheduled_date):null;
+            const schedLabel=sched?sched.toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'})+' at '+sched.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}):null;
+            return (
+              <div key={p.id} className="tcc2-card" style={{background:C.card,border:`1px solid ${C.brd}`,borderRadius:12,height:138,display:'flex',overflow:'hidden'}}>
+                {p.image_url&&<div style={{width:128,height:128,flexShrink:0,alignSelf:'center',margin:5,borderRadius:8,overflow:'hidden'}}><img src={p.image_url} alt="" style={{width:'100%',height:'100%',objectFit:'cover',display:'block'}}/></div>}
+                <div style={{flex:1,display:'flex',overflow:'hidden'}}>
+                  <div style={{flex:1,minWidth:0,padding:'10px',display:'flex',flexDirection:'column',gap:5}}>
+                    <div style={{display:'flex',alignItems:'flex-start',gap:7}}>
+                      <div style={{width:26,height:26,borderRadius:'50%',flexShrink:0,background:avatarBg,display:'flex',alignItems:'center',justifyContent:'center',fontSize:10,fontWeight:800,color:'#fff',overflow:'hidden'}}>
+                        {cAvatar?<img src={cAvatar} alt={cName} style={{width:'100%',height:'100%',objectFit:'cover'}}/>:initials}
+                      </div>
+                      <div style={{flex:1,minWidth:0}}>
+                        <div style={{display:'flex',alignItems:'center',gap:6,flexWrap:'wrap'}}>
+                          <div style={{fontSize:12,fontWeight:700,color:C.t1,lineHeight:1.2}}>{cName}</div>
+                          {p.post_type&&<span style={{fontSize:9,fontWeight:700,padding:'1px 6px',borderRadius:4,background:pt.bg,border:`1px solid ${pt.border}`,color:pt.color,flexShrink:0}}>{pt.label}</span>}
+                          {p.is_draft&&<span style={{fontSize:9,fontWeight:700,padding:'1px 6px',borderRadius:4,background:C.amberD,border:`1px solid ${C.amberB}`,color:C.amber}}>Draft</span>}
+                        </div>
+                        {schedLabel?<div style={{display:'flex',alignItems:'center',gap:4,marginTop:2}}><Clock style={{width:9,height:9,color:C.cyan}}/><span style={{fontSize:10,color:C.cyan,fontWeight:700}}>{schedLabel}</span></div>:<div style={{fontSize:10,color:C.t3,marginTop:2}}>{timeAgo(p.created_date||p.created_at)}</div>}
+                      </div>
+                    </div>
+                    {p.content&&<div style={{fontSize:11.5,color:C.t2,lineHeight:1.5,display:'-webkit-box',WebkitLineClamp:2,WebkitBoxOrient:'vertical',overflow:'hidden'}}>{p.content}</div>}
+                    {Object.keys(p.reactions||{}).length>0&&<div style={{fontSize:10,color:C.t3}}>{Object.keys(p.reactions).length} reaction{Object.keys(p.reactions).length!==1?'s':''}</div>}
+                  </div>
+                  <div style={{width:110,flexShrink:0,borderLeft:`1px solid ${C.brd}`,padding:'10px 8px',display:'flex',flexDirection:'column',gap:7}}>
+                    <div style={{fontSize:9,fontWeight:700,textTransform:'uppercase',letterSpacing:'0.10em',color:C.t3,marginBottom:2}}>Actions</div>
+                    {p.is_draft&&(
+                      <button onClick={async()=>{setPublishing(p.id);try{await onPublish?.(p);}finally{setPublishing(null);}}} disabled={publishing===p.id}
+                        style={{display:'flex',alignItems:'center',gap:5,width:'100%',padding:'4px 8px',borderRadius:8,fontSize:10.5,fontWeight:700,cursor:publishing===p.id?'default':'pointer',fontFamily:FONT,opacity:publishing===p.id?.6:1,...(publishing===p.id?{background:C.brd,border:'none',color:C.t3}:GRAD)}}>
+                        <Plus style={{width:11,height:11}}/><span>{publishing===p.id?'Posting…':'Post Now'}</span>
+                      </button>
+                    )}
+                    <button onClick={()=>onDelete?.(p.id)} style={{display:'flex',alignItems:'center',gap:5,width:'100%',padding:'4px 8px',borderRadius:8,background:'rgba(255,255,255,0.03)',border:`1px solid ${C.brd}`,color:C.t2,fontSize:10.5,fontWeight:600,cursor:'pointer',fontFamily:FONT,transition:'all .15s'}}
+                      onMouseEnter={e=>{e.currentTarget.style.borderColor=C.redB;e.currentTarget.style.color=C.red;e.currentTarget.style.background=C.redD;}}
+                      onMouseLeave={e=>{e.currentTarget.style.borderColor=C.brd;e.currentTarget.style.color=C.t2;e.currentTarget.style.background='rgba(255,255,255,0.03)';}}>
+                      <Trash2 style={{width:11,height:11}}/><span>Remove</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </>
+  );
+}
+
+/* ─── FAB ────────────────────────────────────────────────────── */
+function FAB({ onClick }) {
+  return (
+    <button onClick={onClick} style={{position:'fixed',bottom:76,right:18,zIndex:190,width:52,height:52,borderRadius:'50%',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',boxShadow:'0 4px 10px rgba(37,99,235,0.35)',...GRAD}}>
+      <Plus style={{width:22,height:22}}/>
     </button>
   );
 }
 
-// ─── MONTH CELL ───────────────────────────────────────────────────────────────
-function MonthCell({ date, isCurrentMonth, isSelected, isToday, classCount, ciCount, onClick }) {
-  return (
-    <div onClick={onClick} style={{
-      padding: '7px 4px', borderRadius: 10, cursor: 'pointer', textAlign: 'center',
-      background: isSelected ? T.indigoDim : isToday ? 'rgba(99,102,241,.05)' : 'transparent',
-      border: isSelected ? `1px solid ${T.indigoBdr}` : isToday ? '1px solid rgba(99,102,241,.14)' : '1px solid transparent',
-      opacity: isCurrentMonth ? 1 : .2, transition: 'all .12s',
-    }}
-      onMouseEnter={e => { if (!isSelected) e.currentTarget.style.background = 'rgba(255,255,255,.03)'; }}
-      onMouseLeave={e => { if (!isSelected) e.currentTarget.style.background = isToday ? 'rgba(99,102,241,.05)' : 'transparent'; }}>
-      <div style={{ fontSize: 13, fontWeight: isToday || isSelected ? 800 : 500, color: isSelected ? T.indigo : isToday ? T.t1 : T.t2, lineHeight: 1, marginBottom: 4 }}>{format(date, 'd')}</div>
-      {classCount > 0 && (
-        <div style={{ display: 'flex', justifyContent: 'center', gap: 2, marginBottom: 2 }}>
-          {Array.from({ length: Math.min(classCount, 3) }, (_, j) => (
-            <div key={j} style={{ width: 4, height: 4, borderRadius: '50%', background: isSelected ? T.indigo : `${T.indigo}50` }} />
-          ))}
-        </div>
-      )}
-      {ciCount > 0 && (
-        <div style={{ fontFamily: T.mono, fontSize: 8, fontWeight: 700, color: isSelected ? T.indigo : T.t3 }}>{ciCount}</div>
-      )}
-    </div>
-  );
-}
+/* ═══════════════════════════════════════════════════════════════
+   MAIN EXPORT
+═══════════════════════════════════════════════════════════════ */
+export default function TabCoachContent({
+  coach              = null,
+  workoutPlans       = [],
+  nutritionPlans     = [],
+  programs           = [],
+  sessions           = [],
+  challenges         = [],
+  posts              = [],
+  clients            = [],
+  checkIns           = [],
+  bookings           = [],
+  avatarMap          = {},
+  now                = new Date(),
+  openModal          = ()=>{},
+  onDeleteWorkout    = null,
+  onDeleteNutrition  = null,
+  onDeleteProgram    = null,
+  onDeleteChallenge  = null,
+  onDeletePost       = null,
+  onPublishDraft     = null,
+  onEditWorkout      = null,
+  onEditNutrition    = null,
+}) {
+  const isMobile = useIsMobile();
+  const [tab, setTab] = useState('Workout Plans');
+  const [showMenu, setShowMenu] = useState(false);
 
-// ─── SESSION DETAIL PANEL ─────────────────────────────────────────────────────
-function SessionDetailPanel({ cls, allMemberships, checkIns, avatarMap, attendance, onToggle, onMarkAll, onClearAll, onSaveNote, onSaveAnnounce, notes, classAnnounce, selDateStr, now, openModal, onClose, onCancelClass, onReinstateClass }) {
-  const [tab, setTab] = useState('attendees');
-  const [rosterQ, setRosterQ] = useState('');
-  const c = cls.typeCfg.color;
-  const key = `${cls.id}-${selDateStr}`;
-  const manualIds = attendance[key] || [];
-  const checkedIds = cls.attended.map(ci => ci.user_id);
-  const totalPresent = [...new Set([...manualIds, ...checkedIds])].length;
-  const noShowList = cls.booked.filter(b => !checkedIds.includes(b.user_id) && !manualIds.includes(b.user_id));
-  const filteredRoster = allMemberships.filter(m => !rosterQ || (m.user_name || '').toLowerCase().includes(rosterQ.toLowerCase()));
-  const fl = fillLabel(cls.fill);
-  const fc = fillColor(cls.fill);
+  const allSessions = useMemo(()=>[
+    ...sessions,
+    ...bookings.filter(b=>b.session_date).map(b=>({id:b.id,session_date:b.session_date,session_name:b.session_name||b.class_name||'Coaching Session',client_name:b.client_name||b.member_name||'Client',client_id:b.client_id||b.member_id,status:b.status})),
+  ],[sessions,bookings]);
 
-  const tabs = [
-    { id: 'attendees', label: `Roster`, count: cls.booked.length || cls.attended.length },
-    { id: 'checkin', label: `Check-In`, count: totalPresent },
-    { id: 'waitlist', label: `Waitlist`, count: cls.waitlist.length },
-    { id: 'notes', label: 'Notes', count: null },
+  const nowMs=now?new Date(now).getTime():Date.now();
+  const todayStart=new Date(nowMs); todayStart.setHours(0,0,0,0);
+  const todayMs=todayStart.getTime();
+  const isToday=str=>{if(!str)return false;let d=new Date(str);return d.getTime()>=todayMs;};
+  const interactionsToday=[
+    ...posts.filter(p=>!p.is_hidden&&isToday(p.created_date||p.created_at)),
+    ...workoutPlans.filter(p=>isToday(p.created_date)),
+    ...nutritionPlans.filter(p=>isToday(p.created_date)),
+    ...allSessions.filter(s=>isToday(s.session_date)),
+  ].length;
+
+  const tabAction=TAB_ACTION[tab];
+  const CREATE_ITEMS=[
+    {label:'💪 Workout Plan',  action:()=>{openModal('workout_plan');setShowMenu(false);setTab('Workout Plans');}},
+    {label:'🥗 Nutrition Plan', action:()=>{openModal('nutrition_plan');setShowMenu(false);setTab('Nutrition Plans');}},
+    {label:'🏗️ Program',       action:()=>{openModal('program');setShowMenu(false);setTab('Programs');}},
+    {label:'📅 Session',       action:()=>{openModal('session');setShowMenu(false);setTab('Sessions');}},
+    {label:'🏆 Challenge',     action:()=>{openModal('challenge');setShowMenu(false);setTab('Challenges');}},
+    {label:'📝 Post',          action:()=>{openModal('post');setShowMenu(false);setTab('Posts');}},
   ];
 
   return (
-    <div className="spt-slide" onClick={e => e.stopPropagation()} style={{
-      position: 'fixed', top: 0, right: 0, bottom: 0, width: 460, zIndex: 9000,
-      background: `linear-gradient(180deg, ${T.card} 0%, ${T.bg} 100%)`,
-      borderLeft: `1px solid ${T.borderA}`,
-      display: 'flex', flexDirection: 'column',
-      boxShadow: `-32px 0 80px rgba(0,0,0,.7), inset 1px 0 0 rgba(255,255,255,.04)`,
-    }}>
-      {/* Gradient top rail */}
-      <div style={{ height: 3, background: cls.isCancelled ? `linear-gradient(90deg,${T.red},${T.red}44)` : cls.typeCfg.grad, flexShrink: 0 }} />
+    <div className="tcc2" style={{display:'flex',flex:1,minHeight:0,background:C.bg,color:C.t1,fontFamily:FONT,fontSize:13,lineHeight:1.5,WebkitFontSmoothing:'antialiased'}}>
+      <div style={{flex:1,overflowY:'auto',minWidth:0,...(isMobile?{paddingBottom:80}:{})}}>
 
-      {/* Header */}
-      <div style={{ padding: '20px 24px 18px', borderBottom: `1px solid ${T.border}`, flexShrink: 0 }}>
-        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 16 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-            <div style={{ width: 52, height: 52, borderRadius: 16, background: `${c}0d`, border: `1px solid ${c}1c`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 24, boxShadow: `inset 0 1px 0 ${c}10`, flexShrink: 0 }}>{cls.typeCfg.emoji}</div>
-            <div>
-              <div style={{ fontSize: 18, fontWeight: 800, color: T.t1, letterSpacing: '-.03em' }}>{cls.name}</div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 4, flexWrap: 'wrap' }}>
-                {cls.scheduleStr && <span style={{ fontFamily: T.mono, fontSize: 11, fontWeight: 600, color: c }}>{cls.scheduleStr}</span>}
-                {cls.duration_minutes && <span style={{ fontSize: 11, color: T.t3 }}>· {cls.duration_minutes}min</span>}
-                {cls.room && <span style={{ fontSize: 11, color: T.t3, display: 'flex', alignItems: 'center', gap: 3 }}><MapPin style={{ width: 9, height: 9 }} />{cls.room}</span>}
+        {!isMobile&&(
+          <div style={{padding:'4px 16px 0 4px',display:'flex',alignItems:'center',justifyContent:'space-between',position:'relative'}}>
+            <h1 style={{fontSize:22,fontWeight:800,color:C.t1,margin:0,letterSpacing:'-0.03em',lineHeight:1.2,flexShrink:0}}>Content <span style={{color:C.cyan}}>Hub</span></h1>
+            <div style={{position:'absolute',left:'50%',transform:'translateX(-50%)',width:'clamp(300px,52%,780px)',pointerEvents:'none'}}>
+              <div style={{pointerEvents:'auto'}}>
+                <NotificationTicker workoutPlans={workoutPlans} nutritionPlans={nutritionPlans} programs={programs} sessions={allSessions} clients={clients}/>
               </div>
             </div>
-          </div>
-          <button className="spt-btn" onClick={onClose} style={{ width: 32, height: 32, borderRadius: 10, background: 'rgba(255,255,255,.04)', border: `1px solid ${T.border}`, color: T.t3 }}>
-            <X style={{ width: 13, height: 13 }} />
-          </button>
-        </div>
-
-        {/* Capacity fill */}
-        <div style={{ marginBottom: 14, padding: '14px 16px', borderRadius: 12, background: 'rgba(255,255,255,.02)', border: `1px solid ${T.border}` }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-              <AvatarCluster members={cls.booked} avatarMap={avatarMap || {}} max={5} size={24} />
-              <span style={{ fontFamily: T.mono, fontSize: 13, fontWeight: 700, color: fc }}>
-                {cls.booked.length || cls.attended.length} <span style={{ color: T.t3, fontWeight: 400 }}>/ {cls.capacity}</span>
-              </span>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-              <Chip color={fl.color} dot style={{ fontSize: 9 }}>{fl.label}</Chip>
-              <span style={{ fontFamily: T.mono, fontSize: 12, fontWeight: 700, color: fc }}>{cls.fill}%</span>
+            <div style={{display:'flex',alignItems:'center',gap:6,flexShrink:0}}>
+              {tabAction&&<button onClick={()=>openModal(tabAction.modal)} style={{display:'flex',alignItems:'center',gap:4,padding:'9px 18px',borderRadius:9,fontSize:12.5,fontWeight:700,cursor:'pointer',fontFamily:FONT,...GRAD}}><Plus style={{width:12,height:12}}/>{tabAction.label.replace('+ ','')}</button>}
             </div>
           </div>
-          <div style={{ height: 5, borderRadius: 99, background: 'rgba(255,255,255,.05)', overflow: 'hidden' }}>
-            <div style={{ height: '100%', width: `${cls.fill}%`, borderRadius: 99, background: `linear-gradient(90deg, ${fc}, ${fc}88)`, transition: 'width .6s' }} />
-          </div>
-        </div>
+        )}
 
-        {/* Status chips */}
-        <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap' }}>
-          <StatChip icon={Check} count={totalPresent} label="present" color={T.emerald} />
-          {noShowList.length > 0 && <StatChip icon={UserX} count={noShowList.length} label="no-show" color={T.red} />}
-          {cls.waitlist.length > 0 && <StatChip icon={Clock} count={cls.waitlist.length} label="waiting" color={T.amber} />}
-          {cls.lateCancels.length > 0 && <StatChip icon={AlertTriangle} count={cls.lateCancels.length} label="late cancel" color={T.amber} />}
-          {cls.isCancelled && <Chip color={T.red} dot>Cancelled</Chip>}
+        {isMobile&&(
+          <div style={{padding:'14px 16px 10px',display:'flex',alignItems:'center',justifyContent:'space-between',background:C.bg,borderBottom:`1px solid ${C.brd}`}}>
+            <div>
+              <div style={{fontSize:17,fontWeight:800,color:C.t1,letterSpacing:'-0.02em'}}>Content <span style={{color:C.cyan}}>Hub</span></div>
+              <div style={{fontSize:11,color:C.t3,marginTop:2}}>{workoutPlans.length+nutritionPlans.length} plans · {programs.length} programs</div>
+            </div>
+            <button onClick={()=>setShowMenu(o=>!o)} style={{width:40,height:40,borderRadius:11,background:C.cyanD,border:`1px solid ${C.cyanB}`,display:'flex',alignItems:'center',justifyContent:'center',cursor:'pointer'}}>
+              <BarChart2 style={{width:16,height:16,color:C.cyan}}/>
+            </button>
+          </div>
+        )}
+
+        <div style={{padding:isMobile?'0 0':'0 4px'}}><TabsBar active={tab} setActive={setTab} isMobile={isMobile}/></div>
+
+        <div style={{padding:isMobile?'8px 12px 24px':'0 16px 32px 4px'}}>
+          {tab==='Workout Plans'&&<TabWorkoutPlans workoutPlans={workoutPlans} clients={clients} avatarMap={avatarMap} openModal={openModal} onDelete={onDeleteWorkout} onEdit={onEditWorkout}/>}
+          {tab==='Nutrition Plans'&&<TabNutritionPlans nutritionPlans={nutritionPlans} openModal={openModal} onDelete={onDeleteNutrition} onEdit={onEditNutrition}/>}
+          {tab==='Programs'&&<TabPrograms programs={programs} openModal={openModal} onDelete={onDeleteProgram}/>}
+          {tab==='Sessions'&&<TabSessions sessions={allSessions} clients={clients} avatarMap={avatarMap} openModal={openModal} now={now}/>}
+          {tab==='Challenges'&&<TabChallenges challenges={challenges} openModal={openModal} onDelete={onDeleteChallenge}/>}
+          {tab==='Posts'&&<TabPosts posts={posts} coach={coach} avatarMap={avatarMap} openModal={openModal} onDelete={onDeletePost} onPublish={onPublishDraft}/>}
         </div>
       </div>
 
-      {/* Tabs */}
-      <div style={{ display: 'flex', padding: '0 16px', borderBottom: `1px solid ${T.border}`, flexShrink: 0, gap: 2 }}>
-        {tabs.map(t => (
-          <button key={t.id} className="spt-btn" onClick={() => setTab(t.id)} style={{
-            flex: 1, padding: '11px 4px', background: 'none',
-            borderBottom: `2px solid ${tab === t.id ? c : 'transparent'}`,
-            color: tab === t.id ? c : T.t3,
-            fontSize: 11, fontWeight: tab === t.id ? 700 : 500, marginBottom: -1,
-            gap: 5, transition: 'all .12s',
-          }}>
-            {t.label}
-            {t.count !== null && t.count > 0 && (
-              <span style={{ fontFamily: T.mono, fontSize: 9, fontWeight: 700, color: tab === t.id ? c : T.t3, background: tab === t.id ? `${c}15` : 'rgba(255,255,255,.05)', borderRadius: 99, padding: '1px 5px' }}>{t.count}</span>
-            )}
-          </button>
-        ))}
-      </div>
+      {!isMobile&&(
+        <RightSidebar workoutPlans={workoutPlans} nutritionPlans={nutritionPlans} programs={programs} sessions={allSessions} challenges={challenges} posts={posts} clients={clients} interactionsToday={interactionsToday} onTabChange={setTab}/>
+      )}
 
-      {/* Content area */}
-      <div style={{ flex: 1, overflowY: 'auto', padding: '16px 20px' }}>
-
-        {/* Attendees */}
-        {tab === 'attendees' && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-            {noShowList.length > 0 && (
-              <div style={{ padding: '14px 16px', borderRadius: 14, background: T.redDim, border: `1px solid ${T.redBdr}`, borderLeft: `3px solid ${T.red}`, marginBottom: 4 }}>
-                <div style={{ fontSize: 11, fontWeight: 700, color: T.red, marginBottom: 10, display: 'flex', alignItems: 'center', gap: 6 }}>
-                  <UserX style={{ width: 11, height: 11 }} />
-                  {noShowList.length} No-Show{noShowList.length !== 1 ? 's' : ''}
-                </div>
-                {noShowList.map((m, i) => (
-                  <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: i < noShowList.length - 1 ? 8 : 0 }}>
-                    <div style={{ width: 28, height: 28, borderRadius: 9, background: `${T.red}15`, border: `1px solid ${T.red}20`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700, color: T.red, flexShrink: 0 }}>
-                      {(m.user_name || '?').split(' ').map(w => w[0]).join('').slice(0,2).toUpperCase()}
-                    </div>
-                    <span style={{ fontSize: 12, color: T.t1, fontWeight: 600, flex: 1 }}>{m.user_name}</span>
-                    <MiniBtn icon={MessageCircle} label="Message" color={T.indigo} onClick={() => openModal('post', { memberId: m.user_id })} size="xs" />
-                    <MiniBtn icon={Calendar} label="Rebook" color={T.amber} onClick={() => openModal('bookIntoClass', { memberId: m.user_id })} size="xs" />
-                  </div>
+      {isMobile&&(
+        <>
+          <FAB onClick={()=>setShowMenu(o=>!o)}/>
+          {showMenu&&(
+            <>
+              <div onClick={()=>setShowMenu(false)} style={{position:'fixed',inset:0,zIndex:188}}/>
+              <div style={{position:'fixed',bottom:136,right:16,zIndex:189,background:C.card,border:`1px solid ${C.brd}`,borderRadius:12,overflow:'hidden',minWidth:195,boxShadow:'0 -4px 40px rgba(0,0,0,0.8)'}}>
+                {CREATE_ITEMS.map(item=>(
+                  <button key={item.label} onClick={item.action} style={{width:'100%',display:'block',padding:'14px 18px',background:'transparent',border:'none',borderBottom:`1px solid ${C.brd}`,color:C.t1,fontSize:13.5,fontWeight:500,cursor:'pointer',textAlign:'left',fontFamily:FONT,minHeight:52}}>{item.label}</button>
                 ))}
               </div>
-            )}
-
-            {(cls.booked.length > 0 ? cls.booked : cls.regulars || []).map((m, j) => {
-              const isIn = checkedIds.includes(m.user_id) || manualIds.includes(m.user_id);
-              const isCxl = (cls.late_cancels || []).some(lc => lc.user_id === m.user_id);
-              const rs = calcRS(m.user_id, checkIns, now);
-              return (
-                <div key={m.user_id || j} style={{
-                  padding: '13px 16px', borderRadius: 14,
-                  background: isIn ? T.emeraldDim : isCxl ? T.redDim : 'rgba(255,255,255,.02)',
-                  border: `1px solid ${isIn ? T.emeraldBdr : isCxl ? T.redBdr : T.border}`,
-                  transition: 'all .15s',
-                }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                    <div style={{ width: 36, height: 36, borderRadius: 12, background: `${isIn ? T.emerald : T.indigo}12`, border: `1px solid ${isIn ? T.emerald : T.indigo}20`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 700, color: isIn ? T.emerald : T.indigo, flexShrink: 0 }}>
-                      {(m.user_name || '?').split(' ').map(w => w[0]).join('').slice(0,2).toUpperCase()}
-                    </div>
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontSize: 13, fontWeight: 600, color: T.t1, letterSpacing: '-.01em' }}>{m.user_name || 'Member'}</div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 3 }}>
-                        {rs.daysAgo < 999 && (
-                          <span style={{ fontSize: 10, color: rs.daysAgo > 14 ? T.red : rs.daysAgo > 7 ? T.amber : T.t3 }}>
-                            Last: {rs.daysAgo === 0 ? 'Today' : `${rs.daysAgo}d ago`}
-                          </span>
-                        )}
-                        <span style={{ fontSize: 9, fontWeight: 700, color: rs.trend === 'up' ? T.emerald : rs.trend === 'down' ? T.red : T.t3, display: 'flex', alignItems: 'center', gap: 2 }}>
-                          {rs.trend === 'up' && <ArrowUpRight style={{ width: 9, height: 9 }} />}
-                          {rs.trend === 'down' && <ArrowDownRight style={{ width: 9, height: 9 }} />}
-                          {rs.trend === 'up' ? 'Improving' : rs.trend === 'down' ? 'Declining' : 'Stable'}
-                        </span>
-                      </div>
-                    </div>
-                    <Chip color={isIn ? T.emerald : isCxl ? T.red : T.t2} style={{ fontSize: 9 }}>
-                      {isIn ? '✓ Present' : isCxl ? '✗ Cancelled' : 'Booked'}
-                    </Chip>
-                  </div>
-                  <div style={{ display: 'flex', gap: 5, marginTop: 10 }}>
-                    <MiniBtn icon={MessageCircle} label="Message" color={T.indigo} onClick={() => openModal('post', { memberId: m.user_id })} size="xs" />
-                    {!isIn && !isCxl && <MiniBtn icon={Check} label="Mark Present" color={T.emerald} onClick={() => {}} size="xs" />}
-                    <MiniBtn icon={Calendar} label="Rebook" color={T.amber} onClick={() => openModal('bookIntoClass', { memberId: m.user_id })} size="xs" />
-                  </div>
-                </div>
-              );
-            })}
-            {cls.booked.length === 0 && (!cls.regulars || cls.regulars.length === 0) && (
-              <div style={{ textAlign: 'center', padding: '40px 0', color: T.t3, fontSize: 13 }}>
-                <Users style={{ width: 24, height: 24, margin: '0 auto 10px', opacity: .3 }} />
-                No bookings yet
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* Check-In */}
-        {tab === 'checkin' && (
-          <div>
-            <div style={{ display: 'flex', gap: 6, marginBottom: 14 }}>
-              <div style={{ flex: 1, position: 'relative' }}>
-                <Search style={{ position: 'absolute', left: 11, top: '50%', transform: 'translateY(-50%)', width: 12, height: 12, color: T.t3 }} />
-                <input className="spt-input" value={rosterQ} onChange={e => setRosterQ(e.target.value)} placeholder="Search members…" style={{ paddingLeft: 32, fontSize: 12 }} />
-              </div>
-              <MiniBtn icon={CheckCircle} label="All" color={T.emerald} onClick={() => onMarkAll(key)} size="xs" />
-              <MiniBtn icon={X} label="Clear" color={T.red} onClick={() => onClearAll(key)} size="xs" />
-            </div>
-            <div style={{ borderRadius: 14, border: `1px solid ${T.border}`, overflow: 'hidden', background: 'rgba(255,255,255,.01)' }}>
-              {filteredRoster.map((m, mi) => {
-                const isManual = manualIds.includes(m.user_id);
-                const isQR = checkedIds.includes(m.user_id);
-                const present = isManual || isQR;
-                return (
-                  <div key={m.user_id || mi} onClick={() => !isQR && onToggle(key, m.user_id)} style={{
-                    display: 'flex', alignItems: 'center', gap: 10, padding: '11px 14px',
-                    borderBottom: mi < filteredRoster.length - 1 ? `1px solid ${T.border}` : 'none',
-                    cursor: isQR ? 'default' : 'pointer',
-                    background: present ? T.emeraldDim : 'transparent',
-                    transition: 'background .1s',
-                  }}
-                    onMouseEnter={e => { if (!present) e.currentTarget.style.background = 'rgba(255,255,255,.02)'; }}
-                    onMouseLeave={e => { if (!present) e.currentTarget.style.background = 'transparent'; }}>
-                    <div style={{
-                      width: 19, height: 19, borderRadius: 6, flexShrink: 0,
-                      border: `1.5px solid ${present ? T.emerald : 'rgba(255,255,255,.1)'}`,
-                      background: present ? T.emerald : 'transparent',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      transition: 'all .1s', boxShadow: present ? `0 0 6px ${T.emerald}40` : 'none',
-                    }}>
-                      {present && <Check style={{ width: 10, height: 10, color: '#fff' }} />}
-                    </div>
-                    <div style={{ width: 30, height: 30, borderRadius: 10, background: `${present ? T.emerald : T.indigo}12`, border: `1px solid ${present ? T.emerald : T.indigo}18`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700, color: present ? T.emerald : T.indigo, flexShrink: 0 }}>
-                      {(m.user_name || '?').split(' ').map(w => w[0]).join('').slice(0,2).toUpperCase()}
-                    </div>
-                    <span style={{ flex: 1, fontSize: 12, fontWeight: 500, color: present ? T.t1 : T.t2 }}>{m.user_name || 'Member'}</span>
-                    {isQR && <Chip color={T.emerald} style={{ fontSize: 8, padding: '1px 6px' }}>QR ✓</Chip>}
-                    {isManual && !isQR && <Chip color={T.violet} style={{ fontSize: 8, padding: '1px 6px' }}>Manual</Chip>}
-                  </div>
-                );
-              })}
-            </div>
-            <div style={{ marginTop: 12, display: 'flex', alignItems: 'center', gap: 10 }}>
-              <span style={{ fontFamily: T.mono, fontSize: 11, color: T.t3, whiteSpace: 'nowrap' }}>{totalPresent} / {filteredRoster.length}</span>
-              <div style={{ flex: 1, height: 4, borderRadius: 99, background: 'rgba(255,255,255,.04)', overflow: 'hidden' }}>
-                <div style={{ height: '100%', width: `${filteredRoster.length > 0 ? (totalPresent / filteredRoster.length) * 100 : 0}%`, background: `linear-gradient(90deg,${T.emerald},${T.sky})`, borderRadius: 99, transition: 'width .4s' }} />
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Waitlist */}
-        {tab === 'waitlist' && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-            {cls.waitlist.length === 0 ? (
-              <div style={{ padding: '14px 16px', borderRadius: 12, background: T.emeraldDim, border: `1px solid ${T.emeraldBdr}`, display: 'flex', alignItems: 'center', gap: 8 }}>
-                <CheckCircle style={{ width: 13, height: 13, color: T.emerald }} />
-                <span style={{ fontSize: 12, color: T.emerald, fontWeight: 600 }}>No one on the waitlist</span>
-              </div>
-            ) : cls.waitlist.map((w, j) => (
-              <div key={w.user_id || j} style={{ padding: '14px 16px', borderRadius: 14, background: 'rgba(255,255,255,.02)', border: `1px solid ${T.border}`, borderLeft: `3px solid ${T.amber}` }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
-                  <div style={{ width: 26, height: 26, borderRadius: 8, background: T.amberDim, border: `1px solid ${T.amberBdr}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: T.mono, fontSize: 11, fontWeight: 700, color: T.amber, flexShrink: 0 }}>{j + 1}</div>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ fontSize: 13, fontWeight: 600, color: T.t1 }}>{w.user_name || 'Member'}</div>
-                    {w.wait_since && <div style={{ fontSize: 10, color: T.t3, marginTop: 2 }}>Since {format(new Date(w.wait_since), 'MMM d, h:mm a')}</div>}
-                  </div>
-                </div>
-                <div style={{ display: 'flex', gap: 6 }}>
-                  <MiniBtn icon={ArrowUpRight} label="Promote" color={T.emerald} onClick={() => openModal('promoteWaitlist', w)} size="xs" />
-                  <MiniBtn icon={Bell} label="Notify" color={T.indigo} onClick={() => openModal('post', { memberId: w.user_id })} size="xs" />
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-
-        {/* Notes */}
-        {tab === 'notes' && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-            <div>
-              <div style={{ fontSize: 10, fontWeight: 700, color: T.t3, textTransform: 'uppercase', letterSpacing: '.08em', marginBottom: 10, display: 'flex', alignItems: 'center', gap: 6 }}>
-                <Megaphone style={{ width: 10, height: 10, color: T.indigo }} /> Class Announcement
-              </div>
-              <textarea className="spt-input" value={classAnnounce[key] || ''} onChange={e => onSaveAnnounce(key, e.target.value)} placeholder="Visible to all members before this class…" style={{ minHeight: 80, resize: 'vertical', lineHeight: 1.65 }} />
-              <button className="spt-btn" onClick={() => openModal('post', { classId: cls.id, announcement: classAnnounce[key] })} style={{
-                marginTop: 8, padding: '9px 16px', borderRadius: 10, gap: 7,
-                background: `linear-gradient(135deg, ${T.indigo}, #4f46e5)`,
-                color: '#fff', fontSize: 12, fontWeight: 700,
-                boxShadow: `0 2px 10px ${T.indigo}30`,
-              }}>
-                <Send style={{ width: 11, height: 11 }} /> Push to Members
-              </button>
-            </div>
-            <div>
-              <div style={{ fontSize: 10, fontWeight: 700, color: T.t3, textTransform: 'uppercase', letterSpacing: '.08em', marginBottom: 10, display: 'flex', alignItems: 'center', gap: 6 }}>
-                <Pencil style={{ width: 10, height: 10, color: T.violet }} /> Coach Notes (Private)
-              </div>
-              <textarea className="spt-input" value={notes[key] || ''} onChange={e => onSaveNote(key, e.target.value)} placeholder="Cues, modifications, energy notes, what worked…" style={{ minHeight: 80, resize: 'vertical', lineHeight: 1.65 }} />
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* Footer */}
-      <div style={{ padding: '14px 20px', borderTop: `1px solid ${T.border}`, display: 'flex', gap: 7, flexWrap: 'wrap', flexShrink: 0, background: `linear-gradient(0deg, ${T.bg}, transparent)` }}>
-        <MiniBtn icon={QrCode} label="Scan QR" color={T.emerald} onClick={() => openModal('qrScanner', cls)} />
-        <MiniBtn icon={Bell} label="Remind All" color={T.indigo} onClick={() => openModal('post', { classId: cls.id })} />
-        <MiniBtn icon={Pencil} label="Edit" color={T.t2} onClick={() => openModal('editClass', cls)} />
-        {cls.isCancelled
-          ? <MiniBtn icon={RefreshCw} label="Reinstate" color={T.emerald} onClick={() => { onReinstateClass(cls); onClose(); }} />
-          : <MiniBtn icon={XCircle} label="Cancel Class" color={T.red} onClick={() => openModal('confirmCancel', cls)} />
-        }
-      </div>
-    </div>
-  );
-}
-
-// ─── ACTION CENTRE ────────────────────────────────────────────────────────────
-function ActionCentre({ allMemberships, checkIns, myClasses, now, openModal }) {
-  const [section, setSection] = useState('issues');
-
-  const noShows = useMemo(() => myClasses.flatMap(cls => {
-    const booked = cls.bookings || [];
-    const attended = checkIns.filter(c => isSameDay(new Date(c.check_in_date), now));
-    return booked.filter(b => !attended.some(a => a.user_id === b.user_id)).map(b => ({ ...b, className: cls.name }));
-  }).slice(0, 8), [myClasses, checkIns, now]);
-
-  const fading = useMemo(() => allMemberships.map(m => {
-    const rs = calcRS(m.user_id, checkIns, now);
-    if (rs.status === 'safe') return null;
-    return { ...m, rs, reason: rs.daysAgo > 21 ? `No visit in ${rs.daysAgo} days` : 'Low engagement' };
-  }).filter(Boolean).sort((a, b) => a.rs.score - b.rs.score).slice(0, 5), [allMemberships, checkIns, now]);
-
-  const tabs = [
-    { id: 'issues', label: 'Issues', count: noShows.length, color: T.red },
-    { id: 'fading', label: 'Fading', count: fading.length, color: T.amber },
-  ];
-
-  return (
-    <div style={{ borderRadius: 16, background: `linear-gradient(145deg, ${T.card}, ${T.surface})`, border: `1px solid ${T.border}`, overflow: 'hidden', boxShadow: T.shadow }}>
-      <div style={{ padding: '14px 18px 12px', borderBottom: `1px solid ${T.border}` }}>
-        <SectionLabel icon={Zap} color={T.amber}>Action Centre</SectionLabel>
-        <div style={{ display: 'flex', gap: 4, padding: 3, background: 'rgba(255,255,255,.025)', borderRadius: 10, border: `1px solid ${T.border}` }}>
-          {tabs.map(s => (
-            <button key={s.id} className="spt-btn" onClick={() => setSection(s.id)} style={{
-              flex: 1, padding: '6px 8px', borderRadius: 8, fontSize: 10, fontWeight: 700, position: 'relative',
-              background: section === s.id ? `${s.color}0f` : 'transparent',
-              border: `1px solid ${section === s.id ? `${s.color}20` : 'transparent'}`,
-              color: section === s.id ? s.color : T.t3,
-              transition: 'all .12s', gap: 5,
-            }}>
-              {s.label}
-              {s.count > 0 && (
-                <span style={{ fontFamily: T.mono, fontSize: 9, fontWeight: 700, color: '#fff', background: s.color, borderRadius: 99, padding: '1px 5px', marginLeft: 4, boxShadow: `0 0 6px ${s.color}60` }}>{s.count}</span>
-              )}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      <div style={{ padding: '10px 14px 14px', maxHeight: 300, overflowY: 'auto' }}>
-        {section === 'issues' && (
-          noShows.length === 0
-            ? <div style={{ padding: '12px 14px', borderRadius: 12, background: T.emeraldDim, border: `1px solid ${T.emeraldBdr}`, display: 'flex', alignItems: 'center', gap: 8 }}>
-                <CheckCircle style={{ width: 13, height: 13, color: T.emerald }} />
-                <span style={{ fontSize: 12, color: T.emerald, fontWeight: 600 }}>No issues today</span>
-              </div>
-            : noShows.map((m, i) => (
-              <div key={i} style={{ padding: '11px 12px', borderRadius: 12, background: 'rgba(255,255,255,.015)', border: `1px solid ${T.border}`, borderLeft: `3px solid ${T.red}`, marginBottom: 6 }}>
-                <div style={{ fontSize: 12, fontWeight: 700, color: T.t1, marginBottom: 2 }}>{m.user_name || 'Client'}</div>
-                <div style={{ fontSize: 10, color: T.t3, marginBottom: 8 }}>No-show — {m.className}</div>
-                <div style={{ display: 'flex', gap: 5 }}>
-                  <MiniBtn icon={MessageCircle} label="Message" color={T.indigo} onClick={() => openModal('post', { memberId: m.user_id })} size="xs" />
-                  <MiniBtn icon={Calendar} label="Rebook" color={T.amber} onClick={() => openModal('bookIntoClass', { memberId: m.user_id })} size="xs" />
-                </div>
-              </div>
-            ))
-        )}
-        {section === 'fading' && (
-          fading.length === 0
-            ? <div style={{ padding: '12px 14px', borderRadius: 12, background: T.emeraldDim, border: `1px solid ${T.emeraldBdr}`, display: 'flex', alignItems: 'center', gap: 8 }}>
-                <CheckCircle style={{ width: 13, height: 13, color: T.emerald }} />
-                <span style={{ fontSize: 12, color: T.emerald, fontWeight: 600 }}>All members healthy</span>
-              </div>
-            : fading.map((m, i) => (
-              <div key={i} style={{ padding: '11px 12px', borderRadius: 12, background: 'rgba(255,255,255,.015)', border: `1px solid ${T.border}`, borderLeft: `3px solid ${m.rs.color}`, marginBottom: 6 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ fontSize: 12, fontWeight: 700, color: T.t1 }}>{m.user_name || 'Client'}</div>
-                    <div style={{ fontSize: 10, color: T.t3, marginTop: 1 }}>{m.reason}</div>
-                  </div>
-                  <div style={{ textAlign: 'center' }}>
-                    <div style={{ fontFamily: T.mono, fontSize: 16, fontWeight: 700, color: m.rs.color, lineHeight: 1 }}>{m.rs.score}</div>
-                    <div style={{ fontSize: 8, color: T.t3, textTransform: 'uppercase', letterSpacing: '.05em' }}>score</div>
-                  </div>
-                </div>
-                <div style={{ display: 'flex', gap: 5 }}>
-                  <MiniBtn icon={MessageCircle} label="Message" color={T.indigo} onClick={() => openModal('post', { memberId: m.user_id })} size="xs" />
-                  <MiniBtn icon={Calendar} label="Book Class" color={T.amber} onClick={() => openModal('bookIntoClass', { memberId: m.user_id })} size="xs" />
-                </div>
-              </div>
-            ))
-        )}
-      </div>
-    </div>
-  );
-}
-
-// ─── ACTIVITY SPARKLINE ───────────────────────────────────────────────────────
-function ActivitySpark({ checkIns, now }) {
-  const last30 = useMemo(() => Array.from({ length: 30 }, (_, i) => {
-    const d = subDays(now, 29 - i);
-    return { label: format(d, 'MMM d'), count: checkIns.filter(c => isSameDay(new Date(c.check_in_date), d)).length };
-  }), [checkIns, now]);
-  const maxVal = Math.max(...last30.map(d => d.count), 1);
-  const total = last30.reduce((s, d) => s + d.count, 0);
-  const avg = (total / 30).toFixed(1);
-  const peak = Math.max(...last30.map(d => d.count));
-
-  return (
-    <div style={{ borderRadius: 16, background: `linear-gradient(145deg, ${T.card}, ${T.surface})`, border: `1px solid ${T.border}`, overflow: 'hidden', boxShadow: T.shadow }}>
-      <div style={{ padding: '14px 18px 0' }}>
-        <SectionLabel icon={Activity} color={T.violet}>30-Day Activity</SectionLabel>
-      </div>
-      <div style={{ padding: '0 18px 18px' }}>
-        {/* Sparkline bars */}
-        <div style={{ display: 'flex', alignItems: 'flex-end', gap: 2, height: 52, marginBottom: 8 }}>
-          {last30.map((d, i) => {
-            const isRecent = i >= 27;
-            const h = d.count === 0 ? 2 : Math.max(4, (d.count / maxVal) * 48);
-            return (
-              <div key={i} title={`${d.label}: ${d.count} check-ins`} style={{
-                flex: 1, height: h,
-                borderRadius: '3px 3px 1px 1px',
-                background: isRecent
-                  ? `linear-gradient(0deg, ${T.indigo}, ${T.violet})`
-                  : `rgba(99,102,241,.18)`,
-                transition: 'height .4s cubic-bezier(.16,1,.3,1)',
-                boxShadow: isRecent ? `0 0 6px ${T.indigo}40` : 'none',
-                cursor: 'default',
-              }} />
-            );
-          })}
-        </div>
-        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 14 }}>
-          <span style={{ fontFamily: T.mono, fontSize: 8, color: T.t3 }}>{format(subDays(now, 29), 'MMM d')}</span>
-          <span style={{ fontFamily: T.mono, fontSize: 8, color: T.indigo, fontWeight: 700 }}>Today</span>
-        </div>
-
-        {/* Stats row */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 8 }}>
-          {[
-            { label: 'Total', value: total, color: T.indigo },
-            { label: 'Peak', value: peak, color: T.violet },
-            { label: 'Avg/Day', value: avg, color: T.emerald },
-          ].map((s, i) => (
-            <div key={i} style={{ textAlign: 'center', padding: '10px 4px', borderRadius: 10, background: `${s.color}06`, border: `1px solid ${s.color}12` }}>
-              <div style={{ fontFamily: T.mono, fontSize: 18, fontWeight: 700, color: s.color, lineHeight: 1, marginBottom: 3 }}>{s.value}</div>
-              <div style={{ fontSize: 9, color: T.t3, textTransform: 'uppercase', letterSpacing: '.06em' }}>{s.label}</div>
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// ─── EMPTY STATE ──────────────────────────────────────────────────────────────
-function EmptyState({ openModal }) {
-  return (
-    <div className="spt-fade" style={{
-      padding: '64px 40px', textAlign: 'center', borderRadius: 20,
-      background: `linear-gradient(145deg, ${T.card}, ${T.surface})`,
-      border: `1px solid ${T.border}`,
-      boxShadow: `inset 0 1px 0 rgba(255,255,255,.03)`,
-    }}>
-      <div style={{
-        width: 64, height: 64, borderRadius: 20, margin: '0 auto 24px',
-        background: `linear-gradient(135deg, ${T.indigoDim}, rgba(99,102,241,.14))`,
-        border: `1px solid ${T.indigoBdr}`,
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        boxShadow: `0 8px 32px ${T.indigo}15`,
-      }}>
-        <Calendar style={{ width: 26, height: 26, color: T.indigo }} />
-      </div>
-      <h3 style={{ fontSize: 22, fontWeight: 800, color: T.t1, margin: '0 0 8px', letterSpacing: '-.04em' }}>Build Your Schedule</h3>
-      <p style={{ fontSize: 13, color: T.t3, margin: '0 auto 36px', maxWidth: 420, lineHeight: 1.7 }}>
-        Create your first class and start tracking attendance, fill rates, revenue, and member engagement — all in one place.
-      </p>
-
-      {[
-        { t: '6:00 AM', type: 'Morning HIIT', emoji: '🔥', color: '#f87171' },
-        { t: '12:00 PM', type: 'Lunchtime Yoga', emoji: '🧘', color: '#34d399' },
-        { t: '5:30 PM', type: 'Evening Strength', emoji: '💪', color: '#fb923c' },
-      ].map((slot, i) => (
-        <div key={i} className="spt-fade" style={{
-          display: 'flex', alignItems: 'center', gap: 14, padding: '14px 18px',
-          borderRadius: 14, maxWidth: 440, margin: '0 auto 10px',
-          background: 'rgba(255,255,255,.02)', border: `1px dashed ${T.border}`,
-          textAlign: 'left', animationDelay: `${i * .1 + .2}s`,
-        }}>
-          <div style={{ width: 40, height: 40, borderRadius: 12, background: `${slot.color}10`, border: `1px solid ${slot.color}20`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, flexShrink: 0 }}>{slot.emoji}</div>
-          <div style={{ flex: 1 }}>
-            <div style={{ fontFamily: T.mono, fontSize: 11, fontWeight: 600, color: slot.color }}>{slot.t}</div>
-            <div style={{ fontSize: 12, color: T.t2, fontWeight: 500, marginTop: 2 }}>{slot.type}</div>
-          </div>
-          <button className="spt-btn" onClick={() => openModal('classes')} style={{
-            fontSize: 11, fontWeight: 700, color: T.indigo,
-            background: T.indigoDim, border: `1px solid ${T.indigoBdr}`,
-            borderRadius: 9, padding: '6px 14px',
-          }}>+ Add</button>
-        </div>
-      ))}
-
-      <button className="spt-btn" onClick={() => openModal('classes')} style={{
-        marginTop: 28, padding: '13px 28px', borderRadius: 12, gap: 8,
-        background: `linear-gradient(135deg, ${T.indigo}, #4f46e5)`,
-        color: '#fff', fontSize: 13, fontWeight: 700,
-        boxShadow: `0 4px 20px ${T.indigo}30`,
-      }}>
-        <Plus style={{ width: 14, height: 14 }} /> Create Your First Class
-      </button>
-    </div>
-  );
-}
-
-// ─── MAIN EXPORT ──────────────────────────────────────────────────────────────
-export default function TabCoachSchedule({ myClasses = [], checkIns = [], events = [], allMemberships = [], avatarMap = {}, openModal, now }) {
-  const [calView, setCalView] = useState('week');
-  const [selectedDate, setSelectedDate] = useState(now);
-  const [monthDate, setMonthDate] = useState(now);
-  const [detailCls, setDetailCls] = useState(null);
-  const [typeFilter, setTypeFilter] = useState('all');
-  const [confirmCancel, setConfirmCancel] = useState(null);
-
-  const load = (key, fallback) => { try { return JSON.parse(localStorage.getItem(key) || fallback); } catch { return JSON.parse(fallback); } };
-  const [attendance, setAttendance] = useState(() => load('coachAttendanceSheets', '{}'));
-  const [notes, setNotes] = useState(() => load('coachSessionNotes', '{}'));
-  const [cancelledClasses, setCancelledClasses] = useState(() => load('coachCancelledClasses', '[]'));
-  const [classAnnounce, setClassAnnounce] = useState(() => load('coachClassAnnouncements', '{}'));
-
-  const persist = (key, data) => { try { localStorage.setItem(key, JSON.stringify(data)); } catch {} };
-  const saveNote = (k, v) => { const u = { ...notes, [k]: v }; setNotes(u); persist('coachSessionNotes', u); };
-  const saveAnnounce = (k, v) => { const u = { ...classAnnounce, [k]: v }; setClassAnnounce(u); persist('coachClassAnnouncements', u); };
-  const toggleAttendance = (rk, uid) => { const s = attendance[rk] || []; const u = { ...attendance, [rk]: s.includes(uid) ? s.filter(id => id !== uid) : [...s, uid] }; setAttendance(u); persist('coachAttendanceSheets', u); };
-  const markAllPresent = (rk) => { const u = { ...attendance, [rk]: allMemberships.map(m => m.user_id) }; setAttendance(u); persist('coachAttendanceSheets', u); };
-  const clearAttendance = (rk) => { const u = { ...attendance, [rk]: [] }; setAttendance(u); persist('coachAttendanceSheets', u); };
-  const cancelClass = (cls, ds) => { const k = `${cls.id}-${ds}`; const u = [...cancelledClasses, k]; setCancelledClasses(u); persist('coachCancelledClasses', u); setConfirmCancel(null); setDetailCls(null); };
-  const reinstateClass = (cls) => { const k = `${cls.id}-${selDateStr}`; const u = cancelledClasses.filter(x => x !== k); setCancelledClasses(u); persist('coachCancelledClasses', u); };
-
-  const selDateStr = format(selectedDate, 'yyyy-MM-dd');
-  const isToday = isSameDay(selectedDate, now);
-  const weekStart = startOfWeek(selectedDate, { weekStartsOn: 1 });
-  const week = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
-  const monthStart = startOfMonth(monthDate);
-  const monthEnd = endOfMonth(monthDate);
-  const gridStart = startOfWeek(monthStart, { weekStartsOn: 1 });
-  const gridEnd = endOfWeek(monthEnd, { weekStartsOn: 1 });
-  const monthDays = eachDayOfInterval({ start: gridStart, end: gridEnd });
-  const dayCIs = (day) => checkIns.filter(c => isSameDay(new Date(c.check_in_date), day));
-  const selCIs = dayCIs(selectedDate);
-  const weekCICounts = useMemo(() => week.map(d => dayCIs(d).length), [week, checkIns]);
-
-  const navigate = (dir) => {
-    if (calView === 'day') setSelectedDate(d => dir > 0 ? addDays(d, 1) : subDays(d, 1));
-    if (calView === 'week') setSelectedDate(d => dir > 0 ? addDays(d, 7) : subDays(d, 7));
-    if (calView === 'month') setMonthDate(d => dir > 0 ? addDays(startOfMonth(d), 32) : subDays(startOfMonth(d), 1));
-  };
-
-  const appointments = useMemo(() => myClasses.filter(c => c.type === 'personal_training' || c.is_appointment || c.type === 'pt'), [myClasses]);
-  const groupClasses = useMemo(() => myClasses.filter(c => !c.type || (c.type !== 'personal_training' && !c.is_appointment && c.type !== 'pt')), [myClasses]);
-
-  const classesWithData = useMemo(() => {
-    let cls = groupClasses;
-    if (typeFilter !== 'all') cls = cls.filter(c => (c.name || c.class_type || c.type || '').toLowerCase().includes(typeFilter));
-    return cls.map(c => {
-      const typeCfg = getTypeCfg(c);
-      const capacity = c.max_capacity || c.capacity || 20;
-      const booked = c.bookings || [];
-      const waitlist = c.waitlist || [];
-      const isCancelled = cancelledClasses.includes(`${c.id}-${selDateStr}`);
-      const lateCancels = getLateCancel(c);
-      const revenue = calcRevenue(c, allMemberships);
-      const _sched = typeof c.schedule === 'string' ? c.schedule : (Array.isArray(c.schedule) && c.schedule[0]?.time ? c.schedule[0].time : '');
-      const attended = selCIs.filter(ci => {
-        if (!_sched) return false;
-        const m = _sched.match(/(\d{1,2})(?::?\d{2})?\s*(am|pm)/i);
-        if (!m) return false;
-        let sh = parseInt(m[1]);
-        if (m[2].toLowerCase() === 'pm' && sh !== 12) sh += 12;
-        const h = new Date(ci.check_in_date).getHours();
-        return h === sh || h === sh + 1;
-      });
-      const classHour = (() => {
-        const m = _sched.match(/(\d{1,2})(?::?\d{2})?\s*(am|pm)/i);
-        if (!m) return null;
-        let h = parseInt(m[1]);
-        if (m[2].toLowerCase() === 'pm' && h !== 12) h += 12;
-        return h;
-      })();
-      const freq = {};
-      if (classHour !== null) checkIns.forEach(ci => { const h = new Date(ci.check_in_date).getHours(); if (h === classHour || h === classHour + 1) freq[ci.user_id] = (freq[ci.user_id] || 0) + 1; });
-      const regulars = allMemberships.filter(m => (freq[m.user_id] || 0) >= 2);
-      const fill = booked.length > 0 ? Math.min(100, Math.round((booked.length / capacity) * 100)) : Math.min(100, Math.round((attended.length / capacity) * 100));
-      return { ...c, attended, capacity, booked, waitlist, regulars, fill, isCancelled, typeCfg, revenue, lateCancels, scheduleStr: _sched };
-    });
-  }, [groupClasses, selCIs, checkIns, allMemberships, cancelledClasses, selDateStr, typeFilter, now]);
-
-  const classTypes = useMemo(() => {
-    const types = new Set(groupClasses.map(c => {
-      const name = (c.name || c.class_type || c.type || '').toLowerCase();
-      for (const key of Object.keys(CLASS_TYPE)) { if (name.includes(key) && key !== 'default') return key; }
-      return null;
-    }).filter(Boolean));
-    return [...types];
-  }, [groupClasses]);
-
-  const totalBooked = classesWithData.reduce((s, c) => s + (c.booked.length || c.attended.length), 0);
-  const totalPresent = classesWithData.reduce((s, c) => { const ids = [...new Set([...c.attended.map(ci => ci.user_id), ...(attendance[`${c.id}-${selDateStr}`] || [])])]; return s + ids.length; }, 0);
-  const totalNoShows = classesWithData.reduce((s, c) => s + Math.max(0, c.booked.length - c.attended.length), 0);
-  const avgFill = classesWithData.length > 0 ? Math.round(classesWithData.reduce((s, c) => s + c.fill, 0) / classesWithData.length) : 0;
-  const totalRevToday = classesWithData.reduce((s, c) => s + (c.revenue || 0), 0);
-  const totalLateCancels = classesWithData.reduce((s, c) => s + c.lateCancels.length, 0);
-
-  useEffect(() => {
-    if (detailCls) {
-      const updated = classesWithData.find(c => c.id === detailCls.id);
-      if (updated) setDetailCls(updated);
-    }
-  }, [classesWithData]);
-
-  const openDetail = (cls) => setDetailCls(prev => prev?.id === cls.id ? null : cls);
-  const hasClasses = groupClasses.length > 0;
-
-  return (
-    <div className="spt" style={{
-      background: T.bgMesh, minHeight: '100vh', padding: '28px 24px',
-      position: 'relative',
-    }}>
-      {/* Background gradient mesh */}
-      <div style={{ position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: 0, overflow: 'hidden' }}>
-        <div style={{ position: 'absolute', top: '-20%', left: '-10%', width: '60%', height: '60%', background: 'radial-gradient(ellipse, rgba(99,102,241,0.055) 0%, transparent 65%)', borderRadius: '50%' }} />
-        <div style={{ position: 'absolute', bottom: '-20%', right: '-10%', width: '50%', height: '50%', background: 'radial-gradient(ellipse, rgba(16,217,160,0.025) 0%, transparent 65%)', borderRadius: '50%' }} />
-      </div>
-
-      <div style={{ position: 'relative', zIndex: 1 }}>
-        {confirmCancel && (
-          <ConfirmDialog
-            message={`Cancel "${confirmCancel.name}" on ${format(selectedDate, 'EEEE, MMM d')}?\nAll booked members must be notified manually.`}
-            onConfirm={() => cancelClass(confirmCancel, selDateStr)}
-            onCancel={() => setConfirmCancel(null)}
-          />
-        )}
-
-        {detailCls && (
-          <>
-            <div className="spt-fadein" style={{ position: 'fixed', inset: 0, zIndex: 8999, background: 'rgba(0,0,0,.6)', backdropFilter: 'blur(6px)' }} onClick={() => setDetailCls(null)} />
-            <SessionDetailPanel
-              cls={detailCls} allMemberships={allMemberships} checkIns={checkIns} avatarMap={avatarMap}
-              attendance={attendance} onToggle={toggleAttendance} onMarkAll={markAllPresent} onClearAll={clearAttendance}
-              onSaveNote={saveNote} onSaveAnnounce={saveAnnounce} notes={notes} classAnnounce={classAnnounce}
-              selDateStr={selDateStr} now={now}
-              openModal={(type, data) => { if (type === 'confirmCancel') { setConfirmCancel(data); return; } openModal(type, data); }}
-              onClose={() => setDetailCls(null)} onCancelClass={(cls) => setConfirmCancel(cls)} onReinstateClass={reinstateClass}
-            />
-          </>
-        )}
-
-        {/* ── PAGE HEADER ── */}
-        <div className="spt-fade" style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 28, gap: 20 }}>
-          <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
-              <h1 style={{ fontSize: 26, fontWeight: 800, color: T.t1, margin: 0, letterSpacing: '-.04em', lineHeight: 1 }}>Session Performance</h1>
-              {isToday && (
-                <div style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '3px 10px', borderRadius: 99, background: `${T.emerald}0d`, border: `1px solid ${T.emeraldBdr}` }}>
-                  <span className="spt-live" style={{ width: 6, height: 6, borderRadius: '50%', background: T.emerald, display: 'inline-block' }} />
-                  <span style={{ fontSize: 10, fontWeight: 700, color: T.emerald, letterSpacing: '.04em' }}>LIVE</span>
-                </div>
-              )}
-            </div>
-            <p style={{ fontSize: 12, color: T.t3, margin: 0, display: 'flex', alignItems: 'center', gap: 8 }}>
-              <span style={{ fontFamily: T.mono, fontWeight: 600, color: T.indigo }}>{classesWithData.length}</span>
-              <span>sessions</span>
-              <span style={{ color: T.t4 }}>·</span>
-              <span style={{ fontFamily: T.mono, fontWeight: 600, color: T.emerald }}>{selCIs.length}</span>
-              <span>check-ins</span>
-              <span style={{ color: T.t4 }}>·</span>
-              <span style={{ color: T.t2, fontWeight: 500 }}>{format(selectedDate, 'EEEE, MMMM d')}</span>
-            </p>
-          </div>
-          <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
-            <button className="spt-btn" onClick={() => openModal('qrScanner')} style={{
-              padding: '10px 20px', borderRadius: 11, gap: 7,
-              background: `linear-gradient(135deg, ${T.emerald}, #0ea572)`,
-              color: '#fff', fontSize: 13, fontWeight: 700,
-              boxShadow: `0 4px 16px ${T.emerald}30`,
-            }}>
-              <QrCode style={{ width: 14, height: 14 }} /> Check-In
-            </button>
-            <button className="spt-btn" onClick={() => openModal('classes')} style={{
-              padding: '10px 20px', borderRadius: 11, gap: 7,
-              background: `linear-gradient(135deg, ${T.indigo}, #4f46e5)`,
-              color: '#fff', fontSize: 13, fontWeight: 700,
-              boxShadow: `0 4px 16px ${T.indigo}28`,
-            }}>
-              <Plus style={{ width: 14, height: 14 }} /> Add Class
-            </button>
-          </div>
-        </div>
-
-        {!hasClasses ? (
-          <EmptyState openModal={openModal} />
-        ) : (
-          <>
-            {/* KPI Strip */}
-            <WeeklyPerformanceBar
-              sessions={classesWithData.length} totalBooked={totalBooked} totalPresent={totalPresent}
-              totalNoShows={totalNoShows} avgFill={avgFill} totalRevenue={totalRevToday}
-              totalLateCancels={totalLateCancels} isToday={isToday} dateLabel={format(selectedDate, 'EEE, MMM d')}
-              checkIns={checkIns} now={now}
-            />
-
-            {/* Main two-column grid */}
-            <div className="spt-grid">
-              {/* ── LEFT COLUMN ── */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-
-                {/* Calendar panel */}
-                <div className="spt-fade" style={{
-                  borderRadius: 18, background: `linear-gradient(145deg, ${T.card}, ${T.surface})`,
-                  border: `1px solid ${T.border}`, padding: '20px 22px',
-                  boxShadow: `inset 0 1px 0 rgba(255,255,255,.03), ${T.shadow}`,
-                  animationDelay: '.05s',
-                }}>
-                  {/* Nav bar */}
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 20, flexWrap: 'wrap' }}>
-                    {/* View toggle */}
-                    <div style={{ display: 'flex', gap: 2, padding: 3, background: 'rgba(255,255,255,.025)', border: `1px solid ${T.border}`, borderRadius: 11 }}>
-                      {[{ id: 'day', label: 'Day' }, { id: 'week', label: 'Week' }, { id: 'month', label: 'Month' }].map(v => (
-                        <button key={v.id} className="spt-btn" onClick={() => setCalView(v.id)} style={{
-                          padding: '6px 16px', borderRadius: 9, fontSize: 12,
-                          border: `1px solid ${calView === v.id ? T.indigoBdr : 'transparent'}`,
-                          background: calView === v.id ? `linear-gradient(135deg, ${T.indigoDim}, rgba(99,102,241,.14))` : 'transparent',
-                          color: calView === v.id ? T.indigo : T.t3,
-                          fontWeight: calView === v.id ? 700 : 500,
-                        }}>{v.label}</button>
-                      ))}
-                    </div>
-
-                    {/* Nav arrows */}
-                    <button className="spt-btn" onClick={() => navigate(-1)} style={{ width: 32, height: 32, borderRadius: 9, background: 'rgba(255,255,255,.03)', border: `1px solid ${T.border}`, color: T.t3 }}>
-                      <ChevronLeft style={{ width: 14, height: 14 }} />
-                    </button>
-
-                    <span style={{ fontSize: 15, fontWeight: 800, color: T.t1, flex: 1, letterSpacing: '-.03em' }}>
-                      {calView === 'month'
-                        ? format(monthDate, 'MMMM yyyy')
-                        : calView === 'week'
-                        ? `${format(week[0], 'MMM d')} – ${format(week[6], 'MMM d, yyyy')}`
-                        : format(selectedDate, 'EEEE, MMMM d, yyyy')}
-                    </span>
-
-                    <button className="spt-btn" onClick={() => navigate(1)} style={{ width: 32, height: 32, borderRadius: 9, background: 'rgba(255,255,255,.03)', border: `1px solid ${T.border}`, color: T.t3 }}>
-                      <ChevronRight style={{ width: 14, height: 14 }} />
-                    </button>
-
-                    <button className="spt-btn" onClick={() => { setSelectedDate(now); setMonthDate(now); }} style={{
-                      padding: '7px 16px', borderRadius: 9, fontSize: 12, fontWeight: 700,
-                      background: T.indigoDim, border: `1px solid ${T.indigoBdr}`, color: T.indigo,
-                    }}>Today</button>
-                  </div>
-
-                  {/* Week strip */}
-                  {(calView === 'week' || calView === 'day') && (
-                    <div style={{ display: 'flex', gap: 6 }}>
-                      {week.map((d, i) => (
-                        <WeekCell
-                          key={i} date={d}
-                          isSelected={isSameDay(d, selectedDate)} isToday={isSameDay(d, now)}
-                          classCount={groupClasses.length} ciCount={weekCICounts[i]}
-                          avgFill={weekCICounts[i] > 0 ? Math.min(100, Math.round((weekCICounts[i] / Math.max(groupClasses.length * 15, 1)) * 100)) : null}
-                          onClick={() => { setSelectedDate(d); setCalView('day'); setDetailCls(null); }}
-                        />
-                      ))}
-                    </div>
-                  )}
-
-                  {/* Month grid */}
-                  {calView === 'month' && (
-                    <div>
-                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7,1fr)', gap: 4, marginBottom: 6 }}>
-                        {['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].map(d => (
-                          <div key={d} style={{ textAlign: 'center', fontSize: 9, fontWeight: 700, color: T.t3, textTransform: 'uppercase', letterSpacing: '.07em', padding: '4px 0' }}>{d}</div>
-                        ))}
-                      </div>
-                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7,1fr)', gap: 4 }}>
-                        {monthDays.map((d, i) => (
-                          <MonthCell
-                            key={i} date={d}
-                            isCurrentMonth={isSameMonth(d, monthDate)}
-                            isSelected={isSameDay(d, selectedDate)} isToday={isSameDay(d, now)}
-                            classCount={groupClasses.length} ciCount={dayCIs(d).length}
-                            onClick={() => { setSelectedDate(d); setCalView('day'); setDetailCls(null); }}
-                          />
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
-
-                {/* Section header for sessions */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
-                  <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 10 }}>
-                    <div style={{ width: 4, height: 18, borderRadius: 99, background: `linear-gradient(180deg, ${T.indigo}, ${T.violet})` }} />
-                    <span style={{ fontSize: 15, fontWeight: 800, color: T.t1, letterSpacing: '-.03em' }}>
-                      {isToday ? "Today's Sessions" : `${format(selectedDate, 'EEE, MMM d')} Sessions`}
-                    </span>
-                    <span style={{ fontFamily: T.mono, fontSize: 11, fontWeight: 700, color: T.indigo, background: T.indigoDim, border: `1px solid ${T.indigoBdr}`, borderRadius: 6, padding: '2px 7px' }}>{classesWithData.length}</span>
-                  </div>
-
-                  {/* Type filters */}
-                  <div style={{ display: 'flex', gap: 5, overflowX: 'auto' }}>
-                    {['all', ...classTypes].map(type => {
-                      const cfg = type === 'all' ? { color: T.indigo, label: 'All', emoji: '📋' } : CLASS_TYPE[type] || CLASS_TYPE.default;
-                      const active = typeFilter === type;
-                      return (
-                        <button key={type} className="spt-btn" onClick={() => setTypeFilter(type)} style={{
-                          display: 'flex', alignItems: 'center', gap: 4,
-                          padding: '5px 12px', borderRadius: 99, fontSize: 11,
-                          border: `1px solid ${active ? `${cfg.color}28` : T.border}`,
-                          background: active ? `${cfg.color}0d` : 'transparent',
-                          color: active ? cfg.color : T.t3,
-                          fontWeight: active ? 700 : 500, transition: 'all .12s',
-                          whiteSpace: 'nowrap',
-                        }}>
-                          <span style={{ fontSize: 12 }}>{cfg.emoji}</span> {cfg.label}
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-
-                {/* Session list */}
-                {classesWithData.length === 0 ? (
-                  <div style={{
-                    padding: '48px 32px', textAlign: 'center', borderRadius: 18,
-                    background: `linear-gradient(145deg, ${T.card}, ${T.surface})`,
-                    border: `1px solid ${T.border}`,
-                  }}>
-                    <Calendar style={{ width: 22, height: 22, color: T.t3, margin: '0 auto 12px', opacity: .4 }} />
-                    <p style={{ fontSize: 14, color: T.t2, fontWeight: 700, margin: '0 0 5px', letterSpacing: '-.02em' }}>No sessions on this day</p>
-                    <p style={{ fontSize: 12, color: T.t3, margin: '0 0 20px' }}>{typeFilter !== 'all' ? 'Try clearing the type filter' : 'Select a different day or add a class'}</p>
-                    <button className="spt-btn" onClick={() => openModal('classes')} style={{
-                      fontSize: 12, fontWeight: 700, color: T.indigo,
-                      background: T.indigoDim, border: `1px solid ${T.indigoBdr}`, borderRadius: 10, padding: '9px 20px', gap: 6,
-                    }}>
-                      <Plus style={{ width: 12, height: 12 }} /> Add Class
-                    </button>
-                  </div>
-                ) : (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                    {classesWithData.map((cls, idx) => (
-                      <div key={cls.id || idx} className="spt-fade" style={{ animationDelay: `${Math.min(idx * .06, .4)}s` }}>
-                        <SessionCard cls={cls} onOpen={() => openDetail(cls)} isSelected={detailCls?.id === cls.id} now={now} openModal={openModal} avatarMap={avatarMap} />
-                      </div>
-                    ))}
-                  </div>
-                )}
-
-                {/* PT / 1:1 appointments */}
-                {appointments.length > 0 && (
-                  <div className="spt-fade" style={{ animationDelay: '.3s' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
-                      <div style={{ width: 4, height: 18, borderRadius: 99, background: `linear-gradient(180deg, ${T.sky}, ${T.indigo})` }} />
-                      <span style={{ fontSize: 15, fontWeight: 800, color: T.t1, flex: 1, letterSpacing: '-.03em' }}>PT / 1:1 Appointments</span>
-                      <button className="spt-btn" onClick={() => openModal('bookAppointment')} style={{
-                        fontSize: 11, fontWeight: 700, color: T.sky,
-                        background: T.skyDim, border: `1px solid ${T.skyBdr}`, borderRadius: 9, padding: '6px 14px', gap: 5,
-                      }}>
-                        <Plus style={{ width: 11, height: 11 }} /> Book
-                      </button>
-                    </div>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px,1fr))', gap: 10 }}>
-                      {appointments.map((apt, i) => {
-                        const m = allMemberships.find(x => x.user_id === apt.client_id || x.user_id === apt.user_id);
-                        const name = apt.client_name || m?.user_name || 'Client';
-                        const initials = name.split(' ').map(w => w[0]).join('').slice(0,2).toUpperCase();
-                        return (
-                          <div key={apt.id || i} style={{
-                            padding: '16px 18px', borderRadius: 16,
-                            background: `linear-gradient(145deg, ${T.card}, ${T.surface})`,
-                            border: `1px solid ${T.border}`, borderLeft: `3px solid ${T.sky}`,
-                            display: 'flex', alignItems: 'center', gap: 12, boxShadow: T.shadow,
-                          }}>
-                            <div style={{ width: 44, height: 44, borderRadius: 14, background: `${T.sky}12`, border: `1px solid ${T.sky}20`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, fontWeight: 800, color: T.sky, flexShrink: 0 }}>
-                              {initials}
-                            </div>
-                            <div style={{ flex: 1, minWidth: 0 }}>
-                              <div style={{ fontSize: 14, fontWeight: 700, color: T.t1, letterSpacing: '-.02em', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{name}</div>
-                              <div style={{ fontFamily: T.mono, fontSize: 11, color: T.sky, marginTop: 3, fontWeight: 600 }}>{apt.schedule || apt.time || 'TBD'}</div>
-                            </div>
-                            <MiniBtn icon={QrCode} label="Check In" color={T.emerald} onClick={() => openModal('qrScanner')} size="xs" />
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* ── RIGHT SIDEBAR ── */}
-              <div className="spt-sidebar-col" style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-                <OptimizationSuggestions classesWithData={classesWithData} checkIns={checkIns} now={now} />
-                <ActionCentre allMemberships={allMemberships} checkIns={checkIns} myClasses={myClasses} now={now} openModal={openModal} />
-
-                {/* Day Summary */}
-                <div style={{ borderRadius: 16, background: `linear-gradient(145deg, ${T.card}, ${T.surface})`, border: `1px solid ${T.border}`, padding: '16px 18px', boxShadow: T.shadow }}>
-                  <SectionLabel icon={BarChart2} color={T.sky}>Day Summary</SectionLabel>
-                  {[
-                    { label: 'Sessions', value: classesWithData.length, color: T.indigo },
-                    { label: 'Checked In', value: totalPresent, color: T.emerald },
-                    { label: 'Expected', value: totalBooked, color: T.t2 },
-                    { label: 'No-Shows', value: totalNoShows, color: totalNoShows > 0 ? T.red : T.t3 },
-                    { label: 'Avg Fill Rate', value: `${avgFill}%`, color: fillColor(avgFill) },
-                    { label: 'Est. Revenue', value: totalRevToday > 0 ? `£${totalRevToday}` : '—', color: T.emerald },
-                    { label: 'PT Sessions', value: appointments.length, color: T.sky },
-                  ].map((s, i, arr) => (
-                    <div key={i} style={{
-                      display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                      padding: '9px 0',
-                      borderBottom: i < arr.length - 1 ? `1px solid ${T.border}` : 'none',
-                    }}>
-                      <span style={{ fontSize: 11, color: T.t2, fontWeight: 500 }}>{s.label}</span>
-                      <span style={{ fontFamily: T.mono, fontSize: 14, fontWeight: 700, color: s.color }}>{s.value}</span>
-                    </div>
-                  ))}
-                </div>
-
-                {/* Class mix */}
-                {classTypes.length > 0 && (
-                  <div style={{ borderRadius: 16, background: `linear-gradient(145deg, ${T.card}, ${T.surface})`, border: `1px solid ${T.border}`, padding: '16px 18px', boxShadow: T.shadow }}>
-                    <SectionLabel icon={Layers} color={T.violet}>Class Mix</SectionLabel>
-                    {classTypes.map((type, i, arr) => {
-                      const cfg = CLASS_TYPE[type] || CLASS_TYPE.default;
-                      const typeCls = classesWithData.filter(c => (c.name || '').toLowerCase().includes(type));
-                      const count = typeCls.length;
-                      const avgF = typeCls.length > 0 ? Math.round(typeCls.reduce((s, c) => s + c.fill, 0) / typeCls.length) : 0;
-                      return (
-                        <div key={type} style={{ marginBottom: i < arr.length - 1 ? 14 : 0 }}>
-                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
-                              <span style={{ fontSize: 14 }}>{cfg.emoji}</span>
-                              <span style={{ fontSize: 12, color: cfg.color, fontWeight: 700 }}>{cfg.label}</span>
-                            </div>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                              <span style={{ fontFamily: T.mono, fontSize: 10, color: T.t3 }}>{count} class{count !== 1 ? 'es' : ''}</span>
-                              <span style={{ fontFamily: T.mono, fontSize: 10, fontWeight: 700, color: fillColor(avgF) }}>{avgF}%</span>
-                            </div>
-                          </div>
-                          <div style={{ height: 4, borderRadius: 99, background: 'rgba(255,255,255,.04)', overflow: 'hidden' }}>
-                            <div style={{ height: '100%', width: `${avgF}%`, background: cfg.grad, borderRadius: 99, transition: 'width .7s cubic-bezier(.16,1,.3,1)', boxShadow: `0 0 6px ${cfg.color}40` }} />
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
-
-                <ActivitySpark checkIns={checkIns} now={now} />
-
-                {/* Quick Actions */}
-                <div style={{ borderRadius: 16, background: `linear-gradient(145deg, ${T.card}, ${T.surface})`, border: `1px solid ${T.border}`, padding: '16px 18px', boxShadow: T.shadow }}>
-                  <SectionLabel icon={Zap} color={T.amber}>Quick Actions</SectionLabel>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                    {[
-                      { icon: QrCode,    label: 'Scan Check-In',  sub: 'Open QR scanner',    color: T.emerald, fn: () => openModal('qrScanner') },
-                      { icon: Calendar,  label: 'Create Event',   sub: 'Add to schedule',    color: T.indigo,  fn: () => openModal('event') },
-                      { icon: Bell,      label: 'Send Reminder',  sub: 'Notify members',     color: T.sky,     fn: () => openModal('post') },
-                      { icon: Dumbbell,  label: 'Manage Classes', sub: 'Edit class library', color: T.violet,  fn: () => openModal('classes') },
-                    ].map(({ icon: Ic, label, sub, color, fn }, i) => (
-                      <button key={i} className="spt-btn" onClick={fn} style={{
-                        display: 'flex', alignItems: 'center', gap: 12, padding: '11px 13px',
-                        borderRadius: 12, width: '100%', background: 'rgba(255,255,255,.02)',
-                        border: `1px solid ${T.border}`, textAlign: 'left', transition: 'all .15s',
-                      }}
-                        onMouseEnter={e => { e.currentTarget.style.background = `${color}07`; e.currentTarget.style.borderColor = `${color}18`; e.currentTarget.style.transform = 'translateX(2px)'; }}
-                        onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,.02)'; e.currentTarget.style.borderColor = T.border; e.currentTarget.style.transform = 'none'; }}>
-                        <div style={{ width: 34, height: 34, borderRadius: 10, background: `${color}0d`, border: `1px solid ${color}18`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                          <Ic style={{ width: 13, height: 13, color }} />
-                        </div>
-                        <div style={{ flex: 1, minWidth: 0 }}>
-                          <div style={{ fontSize: 12, fontWeight: 700, color: T.t1, letterSpacing: '-.01em' }}>{label}</div>
-                          <div style={{ fontSize: 10, color: T.t3, marginTop: 1 }}>{sub}</div>
-                        </div>
-                        <ArrowRight style={{ width: 12, height: 12, color: T.t4, flexShrink: 0 }} />
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </div>
-          </>
-        )}
-      </div>
+            </>
+          )}
+        </>
+      )}
     </div>
   );
 }
