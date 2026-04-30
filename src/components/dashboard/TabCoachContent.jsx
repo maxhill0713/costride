@@ -11,6 +11,8 @@ import {
   BarChart2, Search, Calendar, Dumbbell, Utensils,
   Target, Award, FileText, Layers, UserPlus,
 } from 'lucide-react';
+import CreateWorkoutPlanModal from './CreateWorkoutPlanModal';
+import CreateNutritionPlanModal from './CreateNutritionPlanModal';
 import {
   AreaChart, Area, XAxis, YAxis, Tooltip,
   ResponsiveContainer, CartesianGrid,
@@ -883,13 +885,26 @@ export default function TabCoachContent({
   onDeleteProgram    = null,
   onDeleteChallenge  = null,
   onDeletePost       = null,
-  onPublishDraft     = null,
-  onEditWorkout      = null,
-  onEditNutrition    = null,
+  onPublishDraft        = null,
+  onEditWorkout         = null,
+  onEditNutrition       = null,
+  onCreateWorkoutPlan   = null,
+  onCreateNutritionPlan = null,
 }) {
   const isMobile = useIsMobile();
   const [tab, setTab] = useState('Workout Plans');
   const [showMenu, setShowMenu] = useState(false);
+  const [showWorkoutModal, setShowWorkoutModal] = useState(false);
+  const [showNutritionModal, setShowNutritionModal] = useState(false);
+  const [savingWorkout, setSavingWorkout] = useState(false);
+  const [savingNutrition, setSavingNutrition] = useState(false);
+
+  // Intercept workout_plan and nutrition_plan modals internally
+  const handleOpenModal = (name, ...args) => {
+    if (name === 'workout_plan') { setShowWorkoutModal(true); return; }
+    if (name === 'nutrition_plan') { setShowNutritionModal(true); return; }
+    openModal(name, ...args);
+  };
 
   const allSessions = useMemo(()=>[
     ...sessions,
@@ -909,12 +924,12 @@ export default function TabCoachContent({
 
   const tabAction=TAB_ACTION[tab];
   const CREATE_ITEMS=[
-    {label:'💪 Workout Plan',  action:()=>{openModal('workout_plan');setShowMenu(false);setTab('Workout Plans');}},
-    {label:'🥗 Nutrition Plan', action:()=>{openModal('nutrition_plan');setShowMenu(false);setTab('Nutrition Plans');}},
-    {label:'🏗️ Program',       action:()=>{openModal('program');setShowMenu(false);setTab('Programs');}},
-    {label:'📅 Session',       action:()=>{openModal('session');setShowMenu(false);setTab('Sessions');}},
-    {label:'🏆 Challenge',     action:()=>{openModal('challenge');setShowMenu(false);setTab('Challenges');}},
-    {label:'📝 Post',          action:()=>{openModal('post');setShowMenu(false);setTab('Posts');}},
+    {label:'💪 Workout Plan',  action:()=>{handleOpenModal('workout_plan');setShowMenu(false);setTab('Workout Plans');}},
+    {label:'🥗 Nutrition Plan', action:()=>{handleOpenModal('nutrition_plan');setShowMenu(false);setTab('Nutrition Plans');}},
+    {label:'🏗️ Program',       action:()=>{handleOpenModal('program');setShowMenu(false);setTab('Programs');}},
+    {label:'📅 Session',       action:()=>{handleOpenModal('session');setShowMenu(false);setTab('Sessions');}},
+    {label:'🏆 Challenge',     action:()=>{handleOpenModal('challenge');setShowMenu(false);setTab('Challenges');}},
+    {label:'📝 Post',          action:()=>{handleOpenModal('post');setShowMenu(false);setTab('Posts');}},
   ];
 
   return (
@@ -930,7 +945,7 @@ export default function TabCoachContent({
               </div>
             </div>
             <div style={{display:'flex',alignItems:'center',gap:6,flexShrink:0}}>
-              {tabAction&&<button onClick={()=>openModal(tabAction.modal)} style={{display:'flex',alignItems:'center',gap:4,padding:'9px 18px',borderRadius:9,fontSize:12.5,fontWeight:700,cursor:'pointer',fontFamily:FONT,...GRAD}}><Plus style={{width:12,height:12}}/>{tabAction.label.replace('+ ','')}</button>}
+              {tabAction&&<button onClick={()=>handleOpenModal(tabAction.modal)} style={{display:'flex',alignItems:'center',gap:4,padding:'9px 18px',borderRadius:9,fontSize:12.5,fontWeight:700,cursor:'pointer',fontFamily:FONT,...GRAD}}><Plus style={{width:12,height:12}}/>{tabAction.label.replace('+ ','')}</button>}
             </div>
           </div>
         )}
@@ -950,12 +965,12 @@ export default function TabCoachContent({
         <div style={{padding:isMobile?'0 0':'0 4px'}}><TabsBar active={tab} setActive={setTab} isMobile={isMobile}/></div>
 
         <div style={{padding:isMobile?'8px 12px 24px':'0 16px 32px 4px'}}>
-          {tab==='Workout Plans'&&<TabWorkoutPlans workoutPlans={workoutPlans} clients={clients} avatarMap={avatarMap} openModal={openModal} onDelete={onDeleteWorkout} onEdit={onEditWorkout}/>}
-          {tab==='Nutrition Plans'&&<TabNutritionPlans nutritionPlans={nutritionPlans} openModal={openModal} onDelete={onDeleteNutrition} onEdit={onEditNutrition}/>}
-          {tab==='Programs'&&<TabPrograms programs={programs} openModal={openModal} onDelete={onDeleteProgram}/>}
-          {tab==='Sessions'&&<TabSessions sessions={allSessions} clients={clients} avatarMap={avatarMap} openModal={openModal} now={now}/>}
-          {tab==='Challenges'&&<TabChallenges challenges={challenges} openModal={openModal} onDelete={onDeleteChallenge}/>}
-          {tab==='Posts'&&<TabPosts posts={posts} coach={coach} avatarMap={avatarMap} openModal={openModal} onDelete={onDeletePost} onPublish={onPublishDraft}/>}
+          {tab==='Workout Plans'&&<TabWorkoutPlans workoutPlans={workoutPlans} clients={clients} avatarMap={avatarMap} openModal={handleOpenModal} onDelete={onDeleteWorkout} onEdit={onEditWorkout}/>}
+          {tab==='Nutrition Plans'&&<TabNutritionPlans nutritionPlans={nutritionPlans} openModal={handleOpenModal} onDelete={onDeleteNutrition} onEdit={onEditNutrition}/>}
+          {tab==='Programs'&&<TabPrograms programs={programs} openModal={handleOpenModal} onDelete={onDeleteProgram}/>}
+          {tab==='Sessions'&&<TabSessions sessions={allSessions} clients={clients} avatarMap={avatarMap} openModal={handleOpenModal} now={now}/>}
+          {tab==='Challenges'&&<TabChallenges challenges={challenges} openModal={handleOpenModal} onDelete={onDeleteChallenge}/>}
+          {tab==='Posts'&&<TabPosts posts={posts} coach={coach} avatarMap={avatarMap} openModal={handleOpenModal} onDelete={onDeletePost} onPublish={onPublishDraft}/>}
         </div>
       </div>
 
@@ -978,6 +993,29 @@ export default function TabCoachContent({
           )}
         </>
       )}
+
+      <CreateWorkoutPlanModal
+        open={showWorkoutModal}
+        onClose={()=>setShowWorkoutModal(false)}
+        isLoading={savingWorkout}
+        onSave={async(data)=>{
+          setSavingWorkout(true);
+          try { await onCreateWorkoutPlan?.(data); } catch {}
+          setSavingWorkout(false);
+          setShowWorkoutModal(false);
+        }}
+      />
+      <CreateNutritionPlanModal
+        open={showNutritionModal}
+        onClose={()=>setShowNutritionModal(false)}
+        isLoading={savingNutrition}
+        onSave={async(data)=>{
+          setSavingNutrition(true);
+          try { await onCreateNutritionPlan?.(data); } catch {}
+          setSavingNutrition(false);
+          setShowNutritionModal(false);
+        }}
+      />
     </div>
   );
 }

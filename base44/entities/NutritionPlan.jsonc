@@ -1,0 +1,144 @@
+{
+  "name": "NutritionPlan",
+  "type": "object",
+  "properties": {
+    "coach_id": {
+      "type": "string",
+      "description": "Coach who created this plan"
+    },
+    "gym_id": {
+      "type": "string",
+      "description": "Gym this plan belongs to"
+    },
+    "name": {
+      "type": "string",
+      "description": "Plan name"
+    },
+    "goal": {
+      "type": "string",
+      "enum": [
+        "Weight Loss",
+        "Muscle Gain",
+        "Maintenance",
+        "Performance",
+        "Cutting",
+        "Bulking"
+      ],
+      "description": "Nutrition goal"
+    },
+    "description": {
+      "type": "string",
+      "description": "Plan description"
+    },
+    "calories": {
+      "type": "number",
+      "description": "Daily calories (kcal)"
+    },
+    "protein": {
+      "type": "number",
+      "description": "Daily protein (g)"
+    },
+    "carbs": {
+      "type": "number",
+      "description": "Daily carbohydrates (g)"
+    },
+    "fat": {
+      "type": "number",
+      "description": "Daily fat (g)"
+    },
+    "meals_per_day": {
+      "type": "number",
+      "description": "Number of meals per day"
+    },
+    "meal_count": {
+      "type": "number",
+      "description": "Number of meals"
+    },
+    "meals": {
+      "type": "array",
+      "description": "Meal names",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "assigned_clients": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Client IDs this plan is assigned to"
+    }
+  },
+  "required": [
+    "name"
+  ],
+  "rls": {
+    "create": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "data.coach_id": "{{user.id}}"
+        }
+      ]
+    },
+    "read": {
+      "$or": [
+        {
+          "data.coach_id": "{{user.id}}"
+        },
+        {
+          "data.gym_id": {
+            "$in": {
+              "$map": {
+                "input": "{{user.gymMemberships}}",
+                "as": "m",
+                "in": "$$m.data.gym_id"
+              }
+            }
+          },
+          "user_condition": {
+            "account_type": "gym_owner"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "data.coach_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "data.coach_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}

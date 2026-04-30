@@ -423,6 +423,26 @@ export default function GymOwnerDashboard() {
     },
     enabled: on && isCoach, staleTime: 2 * 60 * 1000
   });
+  const { data: coachWorkoutPlans = [] } = useQuery({
+    queryKey: ['coachWorkoutPlans', selectedGym?.id, currentUser?.id],
+    queryFn: () => base44.entities.WorkoutPlan.filter({ coach_id: currentUser.id }, '-created_date', 100),
+    enabled: on && isCoach && !!currentUser?.id, staleTime: 2 * 60 * 1000
+  });
+  const { data: coachNutritionPlans = [] } = useQuery({
+    queryKey: ['coachNutritionPlans', selectedGym?.id, currentUser?.id],
+    queryFn: () => base44.entities.NutritionPlan.filter({ coach_id: currentUser.id }, '-created_date', 100),
+    enabled: on && isCoach && !!currentUser?.id, staleTime: 2 * 60 * 1000
+  });
+  const createWorkoutPlanM = useMutation({
+    mutationFn: (d) => base44.entities.WorkoutPlan.create({ ...d, coach_id: currentUser?.id, gym_id: selectedGym?.id }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['coachWorkoutPlans', selectedGym?.id, currentUser?.id] }),
+    onError: onErr,
+  });
+  const createNutritionPlanM = useMutation({
+    mutationFn: (d) => base44.entities.NutritionPlan.create({ ...d, coach_id: currentUser?.id, gym_id: selectedGym?.id }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['coachNutritionPlans', selectedGym?.id, currentUser?.id] }),
+    onError: onErr,
+  });
   const { data: stats = {} } = useQuery({
     queryKey: ['dashboardStats', selectedGym?.id, atRiskDays, chartRange],
     queryFn: () => base44.functions.invoke('getDashboardStats', { gymId: selectedGym.id, atRiskDays, chartRange }).then((r) => r.data),
@@ -586,7 +606,33 @@ export default function GymOwnerDashboard() {
         <TabMembersComponent allMemberships={effectiveMemberships} checkIns={checkIns} ci30={ci30} memberLastCheckIn={memberLastCheckIn} selectedGym={selectedGym} atRisk={atRisk} atRiskMembersList={atRiskMembersList} retentionRate={retentionRate} totalMembers={totalMembers} activeThisWeek={activeThisWeek} newSignUps={newSignUps} weeklyChangePct={weeklyChangePct} avatarMap={avatarMapFull} memberFilter={memberFilter} setMemberFilter={setMemberFilter} memberSearch={memberSearch} setMemberSearch={setMemberSearch} memberSort={memberSort} setMemberSort={setMemberSort} memberPage={memberPage} setMemberPage={setMemberPage} memberPageSize={memberPageSize} selectedRows={selectedRows} setSelectedRows={setSelectedRows} openModal={openModal} now={now} Spark={Spark} Delta={Delta} />;
     } else if (item.id === 'content') {
       content = isCoach ?
-        <TabCoachContent bookings={coachBookings} assignedWorkouts={coachAssignedWorkouts} events={coachEvents} challenges={coachChallenges} polls={coachPolls} posts={coachPosts} classes={myClasses} checkIns={coachCheckIns} ci30={coachCi30} avatarMap={avatarMapFull} allMemberships={coachMemberships} openModal={openModal} now={now} onDeletePost={(id) => deletePostM.mutate(id)} onDeleteEvent={(id) => deleteEventM.mutate(id)} onDeleteChallenge={(id) => deleteChallengeM.mutate(id)} onDeleteClass={(id) => deleteClassM.mutate(id)} onDeletePoll={(id) => deletePollM.mutate(id)} /> :
+        <TabCoachContent
+          coach={activeCoachRecord}
+          workoutPlans={coachWorkoutPlans}
+          nutritionPlans={coachNutritionPlans}
+          programs={[]}
+          sessions={[]}
+          challenges={coachChallenges}
+          posts={coachPosts}
+          clients={coachMemberships}
+          bookings={coachBookings}
+          assignedWorkouts={coachAssignedWorkouts}
+          events={coachEvents}
+          polls={coachPolls}
+          classes={myClasses}
+          checkIns={coachCheckIns}
+          avatarMap={avatarMapFull}
+          allMemberships={coachMemberships}
+          openModal={openModal}
+          now={now}
+          onDeletePost={(id) => deletePostM.mutate(id)}
+          onDeleteEvent={(id) => deleteEventM.mutate(id)}
+          onDeleteChallenge={(id) => deleteChallengeM.mutate(id)}
+          onDeleteClass={(id) => deleteClassM.mutate(id)}
+          onDeletePoll={(id) => deletePollM.mutate(id)}
+          onCreateWorkoutPlan={(d) => createWorkoutPlanM.mutateAsync(d)}
+          onCreateNutritionPlan={(d) => createNutritionPlanM.mutateAsync(d)}
+        /> :
         <TabContentComponent events={events} challenges={challenges} polls={polls} posts={posts} classes={classes} checkIns={checkIns} ci30={ci30} avatarMap={avatarMapFull} nameMap={memberNameMap} currentUser={currentUser} gym={selectedGym} leaderboardView={leaderboardView} setLeaderboardView={setLeaderboardView} openModal={openModal} now={now} onDeletePost={(id, reason) => deletePostM.mutate({ id, reason })} onUpdatePost={() => inv('posts')} onDeleteEvent={(id) => deleteEventM.mutate(id)} onUpdateEvent={() => inv('events')} onDeleteChallenge={(id) => deleteChallengeM.mutate(id)} onDeleteClass={(id) => deleteClassM.mutate(id)} onCreateClass={(data) => createClassM.mutateAsync(data)} onUpdateClass={(id, data) => updateClassM.mutateAsync({ id, data })} onDeletePoll={(id) => deletePollM.mutate(id)} memberCount={totalMembers} memberUserRecords={memberUserRecords} allMemberships={effectiveMemberships} coaches={coaches} bookings={coachBookings} />;
     } else if (item.id === 'analytics') {
       content = isCoach ?

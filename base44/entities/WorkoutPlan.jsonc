@@ -1,0 +1,144 @@
+{
+  "name": "WorkoutPlan",
+  "type": "object",
+  "properties": {
+    "coach_id": {
+      "type": "string",
+      "description": "Coach who created this plan"
+    },
+    "gym_id": {
+      "type": "string",
+      "description": "Gym this plan belongs to"
+    },
+    "name": {
+      "type": "string",
+      "description": "Plan name"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "Strength",
+        "Cardio",
+        "HIIT",
+        "Flexibility",
+        "Circuit",
+        "Sport-Specific"
+      ],
+      "description": "Workout type"
+    },
+    "difficulty": {
+      "type": "string",
+      "enum": [
+        "Beginner",
+        "Intermediate",
+        "Advanced",
+        "Elite"
+      ],
+      "description": "Difficulty level"
+    },
+    "duration_weeks": {
+      "type": "number",
+      "description": "Duration in weeks"
+    },
+    "description": {
+      "type": "string",
+      "description": "Plan description"
+    },
+    "exercises": {
+      "type": "array",
+      "description": "Exercise list",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "sets": {
+            "type": "string"
+          },
+          "reps": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "exercise_count": {
+      "type": "number",
+      "description": "Number of exercises"
+    },
+    "assigned_clients": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Client IDs this plan is assigned to"
+    }
+  },
+  "required": [
+    "name"
+  ],
+  "rls": {
+    "create": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "data.coach_id": "{{user.id}}"
+        }
+      ]
+    },
+    "read": {
+      "$or": [
+        {
+          "data.coach_id": "{{user.id}}"
+        },
+        {
+          "data.gym_id": {
+            "$in": {
+              "$map": {
+                "input": "{{user.gymMemberships}}",
+                "as": "m",
+                "in": "$$m.data.gym_id"
+              }
+            }
+          },
+          "user_condition": {
+            "account_type": "gym_owner"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "data.coach_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "data.coach_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}
