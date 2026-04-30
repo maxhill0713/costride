@@ -433,16 +433,6 @@ export default function GymOwnerDashboard() {
     queryFn: () => base44.entities.NutritionPlan.filter({ coach_id: currentUser.id }, '-created_date', 100),
     enabled: on && isCoach && !!currentUser?.id, staleTime: 2 * 60 * 1000
   });
-  const createWorkoutPlanM = useMutation({
-    mutationFn: (d) => base44.entities.WorkoutPlan.create({ ...d, coach_id: currentUser?.id, gym_id: selectedGym?.id }),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['coachWorkoutPlans', selectedGym?.id, currentUser?.id] }),
-    onError: onErr,
-  });
-  const createNutritionPlanM = useMutation({
-    mutationFn: (d) => base44.entities.NutritionPlan.create({ ...d, coach_id: currentUser?.id, gym_id: selectedGym?.id }),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['coachNutritionPlans', selectedGym?.id, currentUser?.id] }),
-    onError: onErr,
-  });
   const { data: stats = {} } = useQuery({
     queryKey: ['dashboardStats', selectedGym?.id, atRiskDays, chartRange],
     queryFn: () => base44.functions.invoke('getDashboardStats', { gymId: selectedGym.id, atRiskDays, chartRange }).then((r) => r.data),
@@ -455,6 +445,16 @@ export default function GymOwnerDashboard() {
   const inv = useCallback((...keys) => { keys.forEach((k) => queryClient.invalidateQueries({ queryKey: [k, selectedGym?.id] })); queryClient.invalidateQueries({ queryKey: ['dashboardStats', selectedGym?.id] }); }, [queryClient, selectedGym?.id]);
   const invGyms = useCallback(() => queryClient.invalidateQueries({ queryKey: ['gyms'] }), [queryClient]);
   const onErr = useCallback((e) => toast.error(e?.message || 'Something went wrong'), []);
+  const createWorkoutPlanM = useMutation({
+    mutationFn: (d) => base44.entities.WorkoutPlan.create({ ...d, coach_id: currentUser?.id, gym_id: selectedGym?.id }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['coachWorkoutPlans', selectedGym?.id, currentUser?.id] }),
+    onError: onErr,
+  });
+  const createNutritionPlanM = useMutation({
+    mutationFn: (d) => base44.entities.NutritionPlan.create({ ...d, coach_id: currentUser?.id, gym_id: selectedGym?.id }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['coachNutritionPlans', selectedGym?.id, currentUser?.id] }),
+    onError: onErr,
+  });
   const createRewardM = useMutation({ mutationFn: (d) => base44.entities.Reward.create(d), onSuccess: () => inv('rewards'), onError: onErr });
   const deleteRewardM = useMutation({ mutationFn: (id) => base44.entities.Reward.delete(id), onSuccess: () => inv('rewards'), onError: onErr });
   const createClassM = useMutation({ mutationFn: (d) => base44.entities.GymClass.create(d), onSuccess: () => inv('classes'), onError: onErr });
