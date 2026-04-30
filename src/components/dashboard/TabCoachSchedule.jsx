@@ -1,4 +1,3 @@
-javascript
 /**
  * TabCoachSchedule — Session Performance Tool
  * Redesigned to match ContentPage design language.
