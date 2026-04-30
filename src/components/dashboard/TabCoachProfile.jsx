@@ -920,6 +920,133 @@ function SnapshotStats({ cl, clientCheckIns, clientBookings }) {
   );
 }
 
+// ─── Client Profile Editor ────────────────────────────────────────────────────
+function ClientProfileEditor({ cl }) {
+  const queryClient = useQueryClient();
+
+  const { data: profiles = [] } = useQuery({
+    queryKey: ['clientUserProfile', cl.user_id],
+    queryFn: () => base44.entities.UserProfile.filter({ user_id: cl.user_id }),
+    enabled: !!cl.user_id,
+    staleTime: 2 * 60 * 1000,
+  });
+
+  const profile = profiles[0] || null;
+
+  const [editing, setEditing] = useState(false);
+  const [form, setForm] = useState({ display_name: '', bio: '', workout_split: '' });
+
+  useEffect(() => {
+    if (profile) {
+      setForm({
+        display_name: profile.display_name || '',
+        bio:          profile.bio          || '',
+        workout_split: profile.workout_split || '',
+      });
+    }
+  }, [profile?.id]);
+
+  const saveMutation = useMutation({
+    mutationFn: async (data) => {
+      if (profile) {
+        return base44.entities.UserProfile.update(profile.id, data);
+      } else {
+        return base44.entities.UserProfile.create({ user_id: cl.user_id, ...data });
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['clientUserProfile', cl.user_id] });
+      setEditing(false);
+      toast.success('Client profile updated');
+    },
+  });
+
+  const fields = [
+    { key: 'display_name', label: 'Display Name',   placeholder: 'How they appear in the app' },
+    { key: 'bio',          label: 'Bio',             placeholder: 'Short public bio…', multiline: true },
+    { key: 'workout_split',label: 'Workout Split',   placeholder: 'e.g. Push / Pull / Legs' },
+  ];
+
+  return (
+    <div className="ccc-card">
+      <CardHead
+        label="Client Profile"
+        icon={User}
+        iconColor={C.accent}
+        sub="Edits visible in member app"
+        action={editing ? null : 'Edit'}
+        onAction={() => setEditing(true)}
+      />
+      <div style={{ padding: '14px 16px' }}>
+        {!editing ? (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {fields.map(({ key, label }) => (
+              <div key={key} className="row-hover" style={{ display: 'flex', alignItems: 'flex-start', gap: 9, padding: '4px 6px' }}>
+                <div style={{ width: 22, height: 22, borderRadius: 6, background: C.surfaceEl, border: `1px solid ${C.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: 2 }}>
+                  <User style={{ width: 10, height: 10, color: C.t3 }} />
+                </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontSize: 9, fontWeight: 600, color: C.t4, textTransform: 'uppercase', letterSpacing: '.08em', marginBottom: 1 }}>{label}</div>
+                  <div style={{ fontSize: 12, color: form[key] ? C.t1 : C.t3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: key === 'bio' ? 'normal' : 'nowrap', lineHeight: 1.5 }}>
+                    {form[key] || '—'}
+                  </div>
+                </div>
+              </div>
+            ))}
+            {!profile && (
+              <div style={{ fontSize: 11, color: C.t3, marginTop: 4 }}>No profile set yet. Click Edit to create one.</div>
+            )}
+          </div>
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            {fields.map(({ key, label, placeholder, multiline }) => (
+              <div key={key}>
+                <div style={{ fontSize: 9, fontWeight: 700, color: C.t3, textTransform: 'uppercase', letterSpacing: '.1em', marginBottom: 5 }}>{label}</div>
+                {multiline ? (
+                  <textarea
+                    value={form[key]}
+                    onChange={e => setForm(p => ({ ...p, [key]: e.target.value }))}
+                    placeholder={placeholder}
+                    rows={3}
+                    style={{ width: '100%', boxSizing: 'border-box', background: C.surfaceEl, border: `1px solid ${C.border}`, borderRadius: 9, color: C.t1, fontSize: 12, outline: 'none', padding: '9px 11px', fontFamily: 'Figtree,system-ui,sans-serif', resize: 'none', lineHeight: 1.6, transition: 'border-color .15s' }}
+                    onFocus={e => e.currentTarget.style.borderColor = C.accentBrd}
+                    onBlur={e => e.currentTarget.style.borderColor = C.border}
+                  />
+                ) : (
+                  <input
+                    value={form[key]}
+                    onChange={e => setForm(p => ({ ...p, [key]: e.target.value }))}
+                    placeholder={placeholder}
+                    style={{ width: '100%', boxSizing: 'border-box', background: C.surfaceEl, border: `1px solid ${C.border}`, borderRadius: 9, color: C.t1, fontSize: 12, outline: 'none', padding: '9px 11px', fontFamily: 'Figtree,system-ui,sans-serif', transition: 'border-color .15s' }}
+                    onFocus={e => e.currentTarget.style.borderColor = C.accentBrd}
+                    onBlur={e => e.currentTarget.style.borderColor = C.border}
+                  />
+                )}
+              </div>
+            ))}
+            <div style={{ display: 'flex', gap: 7, marginTop: 2 }}>
+              <button className="action-primary"
+                onClick={() => saveMutation.mutate(form)}
+                disabled={saveMutation.isPending}
+                style={{ flex: 1, fontSize: 12, padding: '9px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
+                {saveMutation.isPending
+                  ? <><Loader2 style={{ width: 12, height: 12, animation: 'spin 0.7s linear infinite' }} /> Saving…</>
+                  : <><Save style={{ width: 12, height: 12 }} /> Save to App</>
+                }
+              </button>
+              <button className="action-ghost"
+                onClick={() => setEditing(false)}
+                style={{ fontSize: 12, padding: '9px 14px' }}>
+                Cancel
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 // ─── Quick Actions ────────────────────────────────────────────────────────────
 function QuickActionButton({ label, icon: Ic, fn }) {
   const [hov, setHov] = useState(false);
@@ -1053,6 +1180,7 @@ export default function ClientCommandCenter({
             <BehaviorPatterns cl={cl} clientCheckIns={clientCheckIns} clientBookings={clientBookings} />
             <RetentionRisk cl={cl} />
             <SnapshotStats cl={cl} clientCheckIns={clientCheckIns} clientBookings={clientBookings} />
+            <ClientProfileEditor cl={cl} />
             <ClientInfo cl={cl} />
             <QuickActions onMessage={() => act('message')} onBook={() => act('book')} onAssign={() => act('assign')} />
           </div>
