@@ -27,7 +27,7 @@ import {
   TrendingDown, TrendingUp, Minus, ChevronRight, ChevronDown,
   ChevronUp, Activity, BarChart2, User, Phone, Mail, MapPin,
   Target, Check, Edit2, Plus, X, Loader2, Save, Clock,
-  Zap, ArrowRight, Brain, Flame, RefreshCw, Eye, XCircle,
+  Zap, ArrowRight, Brain, Flame, RefreshCw, Eye, XCircle, ExternalLink,
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -921,10 +921,12 @@ function SnapshotStats({ cl, clientCheckIns, clientBookings }) {
 }
 
 // ─── Client Profile Editor ────────────────────────────────────────────────────
+// Saves to UserProfile entity — directly reflected on the member app Profile page.
+// Fields mirror what's shown on the CoachProfileModal on the gym community page.
 function ClientProfileEditor({ cl }) {
   const queryClient = useQueryClient();
 
-  const { data: profiles = [] } = useQuery({
+  const { data: profiles = [], isLoading } = useQuery({
     queryKey: ['clientUserProfile', cl.user_id],
     queryFn: () => base44.entities.UserProfile.filter({ user_id: cl.user_id }),
     enabled: !!cl.user_id,
@@ -933,16 +935,33 @@ function ClientProfileEditor({ cl }) {
 
   const profile = profiles[0] || null;
 
-  const [editing, setEditing] = useState(false);
-  const [form, setForm] = useState({ display_name: '', bio: '', workout_split: '' });
+  const EMPTY_FORM = {
+    display_name:    '',
+    bio:             '',
+    workout_split:   '',
+    gym_location:    '',
+    avatar_url:      '',
+  };
+
+  const [editing, setEditing]   = useState(false);
+  const [form, setForm]         = useState(EMPTY_FORM);
+  // specialties, certifications, languages as comma-separated strings for editing
+  const [specialtiesStr,     setSpecialtiesStr]     = useState('');
+  const [certificationsStr,  setCertificationsStr]  = useState('');
+  const [languagesStr,       setLanguagesStr]        = useState('');
 
   useEffect(() => {
     if (profile) {
       setForm({
-        display_name: profile.display_name || '',
-        bio:          profile.bio          || '',
+        display_name:  profile.display_name  || '',
+        bio:           profile.bio           || '',
         workout_split: profile.workout_split || '',
+        gym_location:  profile.gym_location  || '',
+        avatar_url:    profile.avatar_url    || '',
       });
+      setSpecialtiesStr((profile.specialties || []).join(', '));
+      setCertificationsStr((profile.certifications || []).join(', '));
+      setLanguagesStr((profile.languages || []).join(', '));
     }
   }, [profile?.id]);
 
@@ -957,81 +976,149 @@ function ClientProfileEditor({ cl }) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['clientUserProfile', cl.user_id] });
       setEditing(false);
-      toast.success('Client profile updated');
+      toast.success('Member profile updated — visible in the app immediately');
     },
   });
 
-  const fields = [
-    { key: 'display_name', label: 'Display Name',   placeholder: 'How they appear in the app' },
-    { key: 'bio',          label: 'Bio',             placeholder: 'Short public bio…', multiline: true },
-    { key: 'workout_split',label: 'Workout Split',   placeholder: 'e.g. Push / Pull / Legs' },
+  const handleSave = () => {
+    saveMutation.mutate({
+      ...form,
+      specialties:    specialtiesStr.split(',').map(s => s.trim()).filter(Boolean),
+      certifications: certificationsStr.split(',').map(s => s.trim()).filter(Boolean),
+      languages:      languagesStr.split(',').map(s => s.trim()).filter(Boolean),
+    });
+  };
+
+  const inp = { width: '100%', boxSizing: 'border-box', background: C.surfaceEl, border: `1px solid ${C.border}`, borderRadius: 9, color: C.t1, fontSize: 12, outline: 'none', padding: '9px 11px', fontFamily: 'Figtree,system-ui,sans-serif', transition: 'border-color .15s' };
+  const focus = e => { e.currentTarget.style.borderColor = C.accentBrd; };
+  const blur  = e => { e.currentTarget.style.borderColor = C.border; };
+
+  const profileUrl = `/Profile`;
+
+  // Summary rows shown in view mode
+  const summaryFields = [
+    { label: 'Display Name',   val: form.display_name },
+    { label: 'Bio',            val: form.bio, wrap: true },
+    { label: 'Workout Split',  val: form.workout_split },
+    { label: 'Location',       val: form.gym_location },
+    { label: 'Specialties',    val: specialtiesStr },
+    { label: 'Certifications', val: certificationsStr },
+    { label: 'Languages',      val: languagesStr },
   ];
 
   return (
     <div className="ccc-card">
       <CardHead
-        label="Client Profile"
+        label="Member App Profile"
         icon={User}
         iconColor={C.accent}
-        sub="Edits visible in member app"
+        sub="Changes appear live on member app"
         action={editing ? null : 'Edit'}
         onAction={() => setEditing(true)}
       />
       <div style={{ padding: '14px 16px' }}>
+
+        {/* Link to member app */}
+        <a href={profileUrl} target="_blank" rel="noopener noreferrer"
+          style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '8px 11px', marginBottom: 14, borderRadius: 9, background: C.accentSub, border: `1px solid ${C.accentBrd}`, textDecoration: 'none', transition: 'background .14s' }}
+          onMouseEnter={e => e.currentTarget.style.background = 'rgba(59,130,246,0.14)'}
+          onMouseLeave={e => e.currentTarget.style.background = C.accentSub}>
+          <ExternalLink style={{ width: 11, height: 11, color: C.accent, flexShrink: 0 }} />
+          <span style={{ fontSize: 11.5, fontWeight: 700, color: C.accent }}>View Member Profile in App</span>
+        </a>
+
         {!editing ? (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-            {fields.map(({ key, label }) => (
-              <div key={key} className="row-hover" style={{ display: 'flex', alignItems: 'flex-start', gap: 9, padding: '4px 6px' }}>
-                <div style={{ width: 22, height: 22, borderRadius: 6, background: C.surfaceEl, border: `1px solid ${C.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: 2 }}>
-                  <User style={{ width: 10, height: 10, color: C.t3 }} />
-                </div>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontSize: 9, fontWeight: 600, color: C.t4, textTransform: 'uppercase', letterSpacing: '.08em', marginBottom: 1 }}>{label}</div>
-                  <div style={{ fontSize: 12, color: form[key] ? C.t1 : C.t3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: key === 'bio' ? 'normal' : 'nowrap', lineHeight: 1.5 }}>
-                    {form[key] || '—'}
-                  </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
+            {isLoading ? (
+              <div style={{ fontSize: 12, color: C.t3 }}>Loading…</div>
+            ) : !profile ? (
+              <div style={{ fontSize: 11, color: C.t3 }}>
+                No profile configured yet — click <strong style={{ color: C.t2 }}>Edit</strong> to set it up.
+              </div>
+            ) : summaryFields.map(({ label, val, wrap }) => (
+              <div key={label} className="row-hover" style={{ display: 'flex', alignItems: 'flex-start', gap: 8, padding: '4px 6px', borderRadius: 6 }}>
+                <div style={{ fontSize: 9, fontWeight: 700, color: C.t4, textTransform: 'uppercase', letterSpacing: '.08em', minWidth: 80, paddingTop: 1, flexShrink: 0 }}>{label}</div>
+                <div style={{ fontSize: 12, color: val ? C.t1 : C.t3, lineHeight: 1.5, flex: 1, overflow: 'hidden', textOverflow: wrap ? 'unset' : 'ellipsis', whiteSpace: wrap ? 'normal' : 'nowrap' }}>
+                  {val || '—'}
                 </div>
               </div>
             ))}
-            {!profile && (
-              <div style={{ fontSize: 11, color: C.t3, marginTop: 4 }}>No profile set yet. Click Edit to create one.</div>
-            )}
           </div>
         ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-            {fields.map(({ key, label, placeholder, multiline }) => (
-              <div key={key}>
-                <div style={{ fontSize: 9, fontWeight: 700, color: C.t3, textTransform: 'uppercase', letterSpacing: '.1em', marginBottom: 5 }}>{label}</div>
-                {multiline ? (
-                  <textarea
-                    value={form[key]}
-                    onChange={e => setForm(p => ({ ...p, [key]: e.target.value }))}
-                    placeholder={placeholder}
-                    rows={3}
-                    style={{ width: '100%', boxSizing: 'border-box', background: C.surfaceEl, border: `1px solid ${C.border}`, borderRadius: 9, color: C.t1, fontSize: 12, outline: 'none', padding: '9px 11px', fontFamily: 'Figtree,system-ui,sans-serif', resize: 'none', lineHeight: 1.6, transition: 'border-color .15s' }}
-                    onFocus={e => e.currentTarget.style.borderColor = C.accentBrd}
-                    onBlur={e => e.currentTarget.style.borderColor = C.border}
-                  />
-                ) : (
-                  <input
-                    value={form[key]}
-                    onChange={e => setForm(p => ({ ...p, [key]: e.target.value }))}
-                    placeholder={placeholder}
-                    style={{ width: '100%', boxSizing: 'border-box', background: C.surfaceEl, border: `1px solid ${C.border}`, borderRadius: 9, color: C.t1, fontSize: 12, outline: 'none', padding: '9px 11px', fontFamily: 'Figtree,system-ui,sans-serif', transition: 'border-color .15s' }}
-                    onFocus={e => e.currentTarget.style.borderColor = C.accentBrd}
-                    onBlur={e => e.currentTarget.style.borderColor = C.border}
-                  />
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+
+            {/* Avatar URL */}
+            <div>
+              <div style={{ fontSize: 9, fontWeight: 700, color: C.t3, textTransform: 'uppercase', letterSpacing: '.1em', marginBottom: 5 }}>Avatar URL</div>
+              <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                {form.avatar_url && (
+                  <img src={form.avatar_url} alt="avatar" style={{ width: 36, height: 36, borderRadius: '50%', objectFit: 'cover', border: `1px solid ${C.border}`, flexShrink: 0 }} onError={e => e.target.style.display = 'none'} />
                 )}
+                <input value={form.avatar_url} onChange={e => setForm(p => ({ ...p, avatar_url: e.target.value }))}
+                  placeholder="https://…" style={{ ...inp, flex: 1 }} onFocus={focus} onBlur={blur} />
               </div>
-            ))}
+            </div>
+
+            {/* Display Name */}
+            <div>
+              <div style={{ fontSize: 9, fontWeight: 700, color: C.t3, textTransform: 'uppercase', letterSpacing: '.1em', marginBottom: 5 }}>Display Name</div>
+              <input value={form.display_name} onChange={e => setForm(p => ({ ...p, display_name: e.target.value }))}
+                placeholder="Name shown on their profile" style={inp} onFocus={focus} onBlur={blur} />
+            </div>
+
+            {/* Bio */}
+            <div>
+              <div style={{ fontSize: 9, fontWeight: 700, color: C.t3, textTransform: 'uppercase', letterSpacing: '.1em', marginBottom: 5 }}>Bio / About</div>
+              <textarea value={form.bio} onChange={e => setForm(p => ({ ...p, bio: e.target.value }))}
+                placeholder="Short public bio visible on their profile…" rows={3}
+                style={{ ...inp, resize: 'none', lineHeight: 1.6 }} onFocus={focus} onBlur={blur} />
+            </div>
+
+            {/* Location */}
+            <div>
+              <div style={{ fontSize: 9, fontWeight: 700, color: C.t3, textTransform: 'uppercase', letterSpacing: '.1em', marginBottom: 5 }}>Location</div>
+              <input value={form.gym_location} onChange={e => setForm(p => ({ ...p, gym_location: e.target.value }))}
+                placeholder="e.g. London, UK" style={inp} onFocus={focus} onBlur={blur} />
+            </div>
+
+            {/* Workout Split */}
+            <div>
+              <div style={{ fontSize: 9, fontWeight: 700, color: C.t3, textTransform: 'uppercase', letterSpacing: '.1em', marginBottom: 5 }}>Current Workout Split</div>
+              <input value={form.workout_split} onChange={e => setForm(p => ({ ...p, workout_split: e.target.value }))}
+                placeholder="e.g. Push / Pull / Legs" style={inp} onFocus={focus} onBlur={blur} />
+            </div>
+
+            {/* Specialties */}
+            <div>
+              <div style={{ fontSize: 9, fontWeight: 700, color: C.t3, textTransform: 'uppercase', letterSpacing: '.1em', marginBottom: 4 }}>Specialties</div>
+              <div style={{ fontSize: 10, color: C.t3, marginBottom: 5 }}>Comma-separated, e.g. Strength, HIIT, Nutrition</div>
+              <input value={specialtiesStr} onChange={e => setSpecialtiesStr(e.target.value)}
+                placeholder="Strength, HIIT, Fat Loss…" style={inp} onFocus={focus} onBlur={blur} />
+            </div>
+
+            {/* Certifications */}
+            <div>
+              <div style={{ fontSize: 9, fontWeight: 700, color: C.t3, textTransform: 'uppercase', letterSpacing: '.1em', marginBottom: 4 }}>Certifications</div>
+              <div style={{ fontSize: 10, color: C.t3, marginBottom: 5 }}>Comma-separated, e.g. NASM CPT, Level 3 PT</div>
+              <input value={certificationsStr} onChange={e => setCertificationsStr(e.target.value)}
+                placeholder="NASM CPT, Level 3 PT…" style={inp} onFocus={focus} onBlur={blur} />
+            </div>
+
+            {/* Languages */}
+            <div>
+              <div style={{ fontSize: 9, fontWeight: 700, color: C.t3, textTransform: 'uppercase', letterSpacing: '.1em', marginBottom: 5 }}>Languages</div>
+              <input value={languagesStr} onChange={e => setLanguagesStr(e.target.value)}
+                placeholder="English, Spanish…" style={inp} onFocus={focus} onBlur={blur} />
+            </div>
+
             <div style={{ display: 'flex', gap: 7, marginTop: 2 }}>
               <button className="action-primary"
-                onClick={() => saveMutation.mutate(form)}
+                onClick={handleSave}
                 disabled={saveMutation.isPending}
                 style={{ flex: 1, fontSize: 12, padding: '9px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
                 {saveMutation.isPending
                   ? <><Loader2 style={{ width: 12, height: 12, animation: 'spin 0.7s linear infinite' }} /> Saving…</>
-                  : <><Save style={{ width: 12, height: 12 }} /> Save to App</>
+                  : <><Save style={{ width: 12, height: 12 }} /> Save to Member App</>
                 }
               </button>
               <button className="action-ghost"
